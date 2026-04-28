@@ -554,16 +554,9 @@ export function formatActivity(input: FormatInput): SentencePart[] {
       return [u, text(' fastställde kontrollen '), primary]
 
     // Story 21.12 — revisionsrapport PDF generation
-    case 'cycle_report_generated': {
-      const kind = pickString(newP, 'kind')
-      const kindLabel =
-        kind === 'SEALED' ? 'fastställd' : kind === 'COMPLETE' ? 'slutförd' : ''
-      return [
-        u,
-        text(' genererade revisionsrapport'),
-        text(kindLabel ? ` (${kindLabel})` : ''),
-      ]
-    }
+    // Story 21.26 — kind-branching dropped; only COMPLETE remains.
+    case 'cycle_report_generated':
+      return [u, text(' genererade revisionsrapport')]
 
     // ----------------- Compliance-audit findings (Epic 21) -----------------
     case 'finding_created': {

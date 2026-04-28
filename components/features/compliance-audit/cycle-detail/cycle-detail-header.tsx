@@ -2,13 +2,9 @@
 
 /** Story 21.5 — Header for /laglistor/kontroller/[cycleId]. */
 
-import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 import { sv } from 'date-fns/locale'
-import { Copy, ShieldCheck, X } from 'lucide-react'
-import { toast } from 'sonner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
 import {
   Tooltip,
   TooltipContent,
@@ -20,23 +16,20 @@ import { CycleStatusBadge } from './cycle-status-badge'
 import { CycleActionsDropdown } from './cycle-actions-dropdown'
 import { useCycleItems } from './cycle-items-context'
 import type { CycleDetail } from '@/app/actions/compliance-audit-cycle'
-import { ComplianceCycleStatus, AuditType } from '@prisma/client'
+import { AuditType } from '@prisma/client'
 import { cn } from '@/lib/utils'
 
 interface CycleDetailHeaderProps {
   cycle: CycleDetail
-  readOnly: boolean
   findingCounts: { open: number; closed: number }
   // Story 21.6 — cycle-lifecycle affordances. Counts are plumbed as props
   // (not consumed via useCycleItems()) for symmetry with findingCounts.
   totalCount: number
   signeradeCount: number
   canRevert: boolean
-  // Story 21.9 — seal affordances.
-  canSeal: boolean
+  // Story 21.26 — Seal removed; canSeal + onSealClick props dropped.
   onCompleteClick: () => void
   onRevertClick: () => void
-  onSealClick: () => void
 }
 
 function initialsFromName(name: string | null): string {
@@ -49,18 +42,13 @@ function initialsFromName(name: string | null): string {
 
 export function CycleDetailHeader({
   cycle,
-  readOnly,
   findingCounts,
   totalCount,
   signeradeCount,
   canRevert,
-  canSeal,
   onCompleteClick,
   onRevertClick,
-  onSealClick,
 }: CycleDetailHeaderProps) {
-  const isSealed = cycle.status === ComplianceCycleStatus.SEALED
-
   return (
     <div className="space-y-4">
       {/* The global workspace breadcrumb (components/layout/breadcrumbs.tsx)
@@ -68,11 +56,10 @@ export function CycleDetailHeader({
           the raw cycle UUID is replaced with the cycle name. */}
       <BreadcrumbOverride label={cycle.name} />
 
-      {/* Story 21.9 — rich sealed-cycle banner with seal hash + copy button.
-          Supersedes the generic read-only banner for SEALED cycles; the
-          read-only banner still shows for ARKIVERAD. */}
-      {isSealed ? <SealedCycleBanner cycle={cycle} /> : null}
-      {readOnly && !isSealed ? <ReadOnlyBanner cycle={cycle} /> : null}
+      {/* Story 21.26 — SealedCycleBanner removed alongside the SEAL collapse.
+          Story 21.27 — ReadOnlyBanner removed alongside the ARKIVERAD collapse.
+          AVSLUTAD has its own page-level reassurance banner from Phase 1
+          (rendered in cycle-detail-page.tsx). */}
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 flex-1 space-y-2">
@@ -91,84 +78,18 @@ export function CycleDetailHeader({
         <div className="flex items-center gap-4">
           <ProgressCluster />
           {/* Story 21.6 — Åtgärder dropdown (Complete / Revert).
-              Story 21.9 — extended with Fastställ kontroll (seal). */}
+              Story 21.26 — Fastställ kontroll item removed; completion handles
+              the AVSLUTAD transition end-to-end. */}
           <CycleActionsDropdown
             cycle={cycle}
             totalCount={totalCount}
             signeradeCount={signeradeCount}
             canRevert={canRevert}
-            canSeal={canSeal}
             onCompleteClick={onCompleteClick}
             onRevertClick={onRevertClick}
-            onSealClick={onSealClick}
           />
         </div>
       </div>
-    </div>
-  )
-}
-
-/**
- * Story 21.9 — rich SEALED-cycle banner. Renders the seal hash (truncated
- * with a copy-to-clipboard button), the "Fastställd av X den Y" subline,
- * and a shield-check icon. Always-on (not dismissible) for SEALED cycles
- * so the seal metadata is persistently visible.
- */
-export function SealedCycleBanner({ cycle }: { cycle: CycleDetail }) {
-  const handleCopy = async () => {
-    if (!cycle.sealHash) return
-    try {
-      await navigator.clipboard.writeText(cycle.sealHash)
-      toast.success('Kontrollsumma kopierad')
-    } catch {
-      toast.error('Kunde inte kopiera — försök välja texten manuellt.')
-    }
-  }
-
-  const truncated = cycle.sealHash
-    ? `${cycle.sealHash.slice(0, 8)}…${cycle.sealHash.slice(-4)}`
-    : 'okänd hash'
-  const sealerName = cycle.sealedBy?.name ?? 'okänd användare'
-  const sealedAtLabel = cycle.sealedAt
-    ? format(cycle.sealedAt, 'd MMM yyyy', { locale: sv })
-    : 'okänt datum'
-
-  return (
-    <div
-      role="status"
-      aria-label="Fastställd kontroll — kontrollsumma tillgänglig"
-      className="space-y-1 rounded-md border border-amber-500/50 bg-amber-50/50 px-3 py-2 text-sm dark:border-amber-500/40 dark:bg-amber-950/30"
-    >
-      <div className="flex items-center gap-2">
-        <ShieldCheck
-          className="h-4 w-4 text-amber-700 dark:text-amber-300"
-          aria-hidden="true"
-        />
-        <span className="font-medium text-amber-900 dark:text-amber-100">
-          Fastställd
-        </span>
-        <code
-          data-testid="seal-hash-truncated"
-          className="rounded bg-amber-100/60 px-1.5 py-0.5 font-mono text-xs text-amber-900 dark:bg-amber-900/40 dark:text-amber-100"
-        >
-          {truncated}
-        </code>
-        {cycle.sealHash ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => void handleCopy()}
-            aria-label="Kopiera kontrollsumma"
-            className="h-6 px-2"
-          >
-            <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-          </Button>
-        ) : null}
-      </div>
-      <p className="pl-6 text-xs text-amber-900/80 dark:text-amber-100/80">
-        Fastställd av {sealerName} den {sealedAtLabel}
-      </p>
     </div>
   )
 }
@@ -310,55 +231,6 @@ function ProgressCluster() {
           signeradeBtn
         )}
       </TooltipProvider>
-    </div>
-  )
-}
-
-function storageKey(cycleId: string) {
-  return `laglig:cycle-readonly-banner-dismissed:${cycleId}`
-}
-
-function ReadOnlyBanner({ cycle }: { cycle: CycleDetail }) {
-  const [dismissed, setDismissed] = useState(false)
-
-  useEffect(() => {
-    try {
-      if (sessionStorage.getItem(storageKey(cycle.id)) === '1') {
-        setDismissed(true)
-      }
-    } catch {
-      // sessionStorage unavailable (SSR, private mode) — show banner by default.
-    }
-  }, [cycle.id])
-
-  if (dismissed) return null
-
-  const isSealed = cycle.status === ComplianceCycleStatus.SEALED
-  const message = isSealed
-    ? `Denna kontroll är fastställd (${cycle.sealHash ? cycle.sealHash.slice(0, 12) + '…' : 'okänd hash'}). Läsbehörighet endast.`
-    : 'Denna kontroll är arkiverad. Läsbehörighet endast.'
-
-  return (
-    <div
-      role="status"
-      className="flex items-start justify-between gap-3 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
-    >
-      <p className="flex-1">{message}</p>
-      <button
-        type="button"
-        onClick={() => {
-          try {
-            sessionStorage.setItem(storageKey(cycle.id), '1')
-          } catch {
-            // Ignore storage errors; just dismiss for the current view.
-          }
-          setDismissed(true)
-        }}
-        aria-label="Stäng meddelande"
-        className="rounded p-1 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
-      >
-        <X className="h-3.5 w-3.5" />
-      </button>
     </div>
   )
 }

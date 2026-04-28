@@ -1,17 +1,15 @@
 /**
  * Story 21.14: Unit tests for lib/compliance-audit/authorization.ts.
- * Mocks Prisma; pure logic for canSealCycle + isLeadAuditor.
+ * Story 21.26: `canSealCycle` removed alongside the SEAL collapse.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import type { Prisma } from '@prisma/client'
 import {
   isLeadAuditor,
-  canSealCycle,
   canCompleteOrRevertCycle,
   canSignOffItem,
 } from '@/lib/compliance-audit/authorization'
-import type { WorkspaceRole } from '@prisma/client'
+import type { Prisma, WorkspaceRole } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 
 // ============================================================================
@@ -125,167 +123,9 @@ describe('isLeadAuditor', () => {
   })
 })
 
-// ============================================================================
-// canSealCycle
-// ============================================================================
-
-describe('canSealCycle', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
-  it('OWNER returns true without DB hit', async () => {
-    const result = await canSealCycle(prisma, {
-      role: 'OWNER',
-      userId: USER_ID,
-      cycleId: CYCLE_ID,
-      workspaceId: WORKSPACE_ID,
-    })
-
-    expect(result).toBe(true)
-    expect(prisma.complianceAuditCycle.findFirst).not.toHaveBeenCalled()
-  })
-
-  it('ADMIN returns true without DB hit', async () => {
-    const result = await canSealCycle(prisma, {
-      role: 'ADMIN',
-      userId: USER_ID,
-      cycleId: CYCLE_ID,
-      workspaceId: WORKSPACE_ID,
-    })
-
-    expect(result).toBe(true)
-    expect(prisma.complianceAuditCycle.findFirst).not.toHaveBeenCalled()
-  })
-
-  it('MEMBER who is lead_auditor returns true', async () => {
-    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue({
-      id: CYCLE_ID,
-    } as never)
-
-    const result = await canSealCycle(prisma, {
-      role: 'MEMBER',
-      userId: USER_ID,
-      cycleId: CYCLE_ID,
-      workspaceId: WORKSPACE_ID,
-    })
-
-    expect(result).toBe(true)
-    expect(prisma.complianceAuditCycle.findFirst).toHaveBeenCalledTimes(1)
-  })
-
-  it('MEMBER who is NOT lead_auditor returns false', async () => {
-    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue(null)
-
-    const result = await canSealCycle(prisma, {
-      role: 'MEMBER',
-      userId: USER_ID,
-      cycleId: CYCLE_ID,
-      workspaceId: WORKSPACE_ID,
-    })
-
-    expect(result).toBe(false)
-    expect(prisma.complianceAuditCycle.findFirst).toHaveBeenCalledTimes(1)
-  })
-
-  it('AUDITOR who is NOT lead_auditor returns false', async () => {
-    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue(null)
-
-    const result = await canSealCycle(prisma, {
-      role: 'AUDITOR',
-      userId: USER_ID,
-      cycleId: CYCLE_ID,
-      workspaceId: WORKSPACE_ID,
-    })
-
-    expect(result).toBe(false)
-  })
-
-  // This is a theoretical edge case — AUDITOR role being made lead-auditor is
-  // not a common flow but the authorization logic must still be coherent.
-  // Product may want a separate policy later — see the story's "Not-in-scope"
-  // section ("AUDITOR-as-lead-auditor policy") for the product-level stance.
-  it('AUDITOR who happens to be lead_auditor returns true', async () => {
-    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue({
-      id: CYCLE_ID,
-    } as never)
-
-    const result = await canSealCycle(prisma, {
-      role: 'AUDITOR',
-      userId: USER_ID,
-      cycleId: CYCLE_ID,
-      workspaceId: WORKSPACE_ID,
-    })
-
-    expect(result).toBe(true)
-  })
-
-  it('accepts a top-level Prisma client (outside transaction)', async () => {
-    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue({
-      id: CYCLE_ID,
-    } as never)
-
-    const result = await canSealCycle(prisma, {
-      role: 'MEMBER',
-      userId: USER_ID,
-      cycleId: CYCLE_ID,
-      workspaceId: WORKSPACE_ID,
-    })
-
-    expect(result).toBe(true)
-  })
-
-  it('accepts a Prisma.TransactionClient (inside transaction)', async () => {
-    // Double-cast is required under strict TS: Prisma.TransactionClient has
-    // 30+ model properties and this helper only touches one.
-    const txStub = {
-      complianceAuditCycle: {
-        findFirst: vi.fn().mockResolvedValue({ id: CYCLE_ID }),
-      },
-    } as unknown as Prisma.TransactionClient
-
-    const result = await canSealCycle(txStub, {
-      role: 'MEMBER',
-      userId: USER_ID,
-      cycleId: CYCLE_ID,
-      workspaceId: WORKSPACE_ID,
-    })
-
-    expect(result).toBe(true)
-    // The top-level prisma mock must NOT have been called — proves the helper
-    // used the passed-in transaction client, not the module-level client.
-    expect(prisma.complianceAuditCycle.findFirst).not.toHaveBeenCalled()
-  })
-
-  // IV3 regression pin: no cache staleness on lead-auditor demotion.
-  it('reads live DB state on every invocation (no caching)', async () => {
-    // First call: user IS lead auditor → returns true.
-    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce({
-      id: CYCLE_ID,
-    } as never)
-    const first = await canSealCycle(prisma, {
-      role: 'MEMBER',
-      userId: USER_ID,
-      cycleId: CYCLE_ID,
-      workspaceId: WORKSPACE_ID,
-    })
-    expect(first).toBe(true)
-
-    // Simulate demotion: lead_auditor_user_id updated to OTHER_USER_ID via
-    // updateCycleMetadata. Subsequent lookup for USER_ID returns null.
-    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValueOnce(null)
-    const second = await canSealCycle(prisma, {
-      role: 'MEMBER',
-      userId: USER_ID,
-      cycleId: CYCLE_ID,
-      workspaceId: WORKSPACE_ID,
-    })
-    expect(second).toBe(false)
-
-    // Proves the helper did NOT cache the first result.
-    expect(prisma.complianceAuditCycle.findFirst).toHaveBeenCalledTimes(2)
-  })
-})
+// Story 21.26 — canSealCycle describe block deleted alongside the SEAL collapse.
+// canCompleteOrRevertCycle now uses an inline OWNER/ADMIN role check
+// instead of canSealAuditCycle. Tests below cover the surviving helper.
 
 // ============================================================================
 // canCompleteOrRevertCycle — Story 21.6

@@ -33,10 +33,7 @@ interface PermissionHelpers {
   editTasks: boolean
   acknowledgeChanges: boolean
 
-  // Compliance-audit management
-  // Role-based scope only — runtime lead-auditor override not modelled
-  // client-side (requires DB lookup; authoritative only in server code).
-  sealAuditCycle: boolean
+  // Story 21.26 — `sealAuditCycle` removed alongside the SEAL collapse.
 
   // Employee management
   viewEmployees: boolean
@@ -126,8 +123,9 @@ export function usePermissions(): UsePermissionsResult {
       editTasks: checkPermission('tasks:edit'),
       acknowledgeChanges: checkPermission('changes:acknowledge'),
 
-      // Compliance-audit management
-      sealAuditCycle: checkPermission('audit:seal'),
+      // Story 21.26 — `audit:seal` permission removed. Cycle completion is
+      // gated by `tasks:edit`; revert is gated server-side via
+      // `canCompleteOrRevertCycle` (lead auditor + privileged role check).
 
       // Employee management
       viewEmployees: checkPermission('employees:view'),

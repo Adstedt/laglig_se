@@ -24,6 +24,10 @@ interface LinkedCyclesBoxProps {
   correctiveActionFinding: TaskDetails['complianceFinding']
 }
 
+// Story 21.27 — lifecycle is PLANERAD | PAGAENDE | AVSLUTAD post-collapse.
+// Legacy SEALED + ARKIVERAD labels retained as defensive fallbacks for any
+// task linked to a pre-collapse historical cycle that survives in the join
+// table. Map is keyed on string (not enum) so missing keys don't crash render.
 const CYCLE_STATUS_LABELS: Record<string, string> = {
   PLANERAD: 'Planerad',
   PAGAENDE: 'Pågående',

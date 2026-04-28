@@ -840,17 +840,15 @@ describe('unsignOffItem — authorization (symmetric with sign)', () => {
 })
 
 // ============================================================================
-// AVSLUTAD/SEALED/ARKIVERAD guard — cross-action via describe.each
+// AVSLUTAD guard — cross-action via describe.each
+// Story 21.26 + 21.27 — SEALED + ARKIVERAD collapsed; AVSLUTAD is the only
+// terminal state that locks items.
 // ============================================================================
 
 const READONLY_ERROR =
-  'Kontrollen är avslutad, fastställd eller arkiverad — ändringar är inte tillåtna. Återställ till pågående för att redigera.'
+  'Kontrollen är avslutad — ändringar är inte tillåtna. Återställ till pågående för att redigera.'
 
-describe.each([
-  { status: ComplianceCycleStatus.AVSLUTAD, label: 'AVSLUTAD' },
-  { status: ComplianceCycleStatus.SEALED, label: 'SEALED' },
-  { status: ComplianceCycleStatus.ARKIVERAD, label: 'ARKIVERAD' },
-])(
+describe.each([{ status: ComplianceCycleStatus.AVSLUTAD, label: 'AVSLUTAD' }])(
   'editable guard — all four mutation actions reject on $label cycles',
   ({ status }) => {
     beforeEach(() => {

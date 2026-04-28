@@ -22,16 +22,7 @@ describe('CycleStatusBadge', () => {
       label: 'Avslutad',
       colorClass: 'bg-amber-100',
     },
-    {
-      status: ComplianceCycleStatus.SEALED,
-      label: 'Fastställd',
-      colorClass: 'bg-emerald-100',
-    },
-    {
-      status: ComplianceCycleStatus.ARKIVERAD,
-      label: 'Arkiverad',
-      colorClass: 'bg-slate-200',
-    },
+    // Story 21.27 — ARKIVERAD entry removed alongside the ARKIVERAD collapse.
   ])(
     'renders $label with $colorClass for $status',
     ({ status, label, colorClass }) => {

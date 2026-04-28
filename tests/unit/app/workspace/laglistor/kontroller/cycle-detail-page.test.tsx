@@ -61,29 +61,25 @@ vi.mock('@/app/actions/compliance-finding', () => ({
     listFindingsForCycleMock(...args),
 }))
 
-// Story 21.6 + 21.9: canRevert + canSeal props resolved server-side only
-// when cycle is AVSLUTAD. Mock both helpers so we can assert call counts.
+// Story 21.6 — canRevert prop resolved server-side only when cycle is AVSLUTAD.
+// Story 21.26 — canSealCycle helper removed alongside the SEAL collapse; only
+// canCompleteOrRevertCycle remains.
 const canCompleteOrRevertCycleMock = vi.fn()
-const canSealCycleMock = vi.fn()
 vi.mock('@/lib/compliance-audit/authorization', () => ({
   canCompleteOrRevertCycle: (...args: unknown[]) =>
     canCompleteOrRevertCycleMock(...args),
-  canSealCycle: (...args: unknown[]) => canSealCycleMock(...args),
-}))
-
-// Story 21.9: the RSC page now imports prisma to pass through to canSealCycle.
-vi.mock('@/lib/prisma', () => ({
-  prisma: {} as unknown,
 }))
 
 // Stub the client component so we don't try to render its internals.
+// Story 21.27 — only `itemsReadOnly` survives. Findings have no cycle-status
+// read-only mode any more.
 vi.mock('@/components/features/compliance-audit/cycle-detail', async () => {
   const React = await import('react')
   return {
     CycleDetailPage: (props: Record<string, unknown>) =>
       React.createElement('div', {
         'data-testid': 'cycle-detail-page',
-        'data-read-only': props.readOnly ? 'true' : 'false',
+        'data-items-read-only': props.itemsReadOnly ? 'true' : 'false',
       }),
   }
 })
@@ -115,11 +111,11 @@ function makeCycle(
     updatedAt: new Date(),
     lawListId: 'l1',
     scopeDefinition: { kind: 'all' as const },
-    sealHash: null,
     sealedAt: null,
     sealedBy: null,
     createdBy: { id: 'u0', name: 'Creator' },
     deletedAt: null,
+    description: null,
   }
 }
 
@@ -143,7 +139,6 @@ beforeEach(() => {
         id: CYCLE_ID,
         status: ComplianceCycleStatus.PAGAENDE,
         name: 'Q2',
-        sealHash: null,
       },
     },
   })
@@ -152,7 +147,6 @@ beforeEach(() => {
     data: { findings: [] },
   })
   canCompleteOrRevertCycleMock.mockResolvedValue(true)
-  canSealCycleMock.mockResolvedValue(true)
 })
 
 // ============================================================================
@@ -185,11 +179,13 @@ describe('CycleDetailRoute — RSC gating', () => {
     expect(redirectMock).toHaveBeenCalledWith('/laglistor/kontroller')
   })
 
-  it('renders with readOnly=true when cycle is SEALED', async () => {
-    const sealedCycle = makeCycle(ComplianceCycleStatus.SEALED)
+  // Story 21.27 — `findingsReadOnly` plumbing dropped alongside ARKIVERAD
+  // collapse. Only `itemsReadOnly` survives; it's true on AVSLUTAD only.
+
+  it('renders with itemsReadOnly=true when cycle is AVSLUTAD', async () => {
     getCycleByIdMock.mockResolvedValue({
       success: true,
-      data: { cycle: sealedCycle },
+      data: { cycle: makeCycle(ComplianceCycleStatus.AVSLUTAD) },
     })
     getCycleItemsForCycleMock.mockResolvedValue({
       success: true,
@@ -197,36 +193,8 @@ describe('CycleDetailRoute — RSC gating', () => {
         items: [],
         cycle: {
           id: CYCLE_ID,
-          status: ComplianceCycleStatus.SEALED,
+          status: ComplianceCycleStatus.AVSLUTAD,
           name: 'Q2',
-          sealHash: 'abc123',
-        },
-      },
-    })
-
-    const element = await CycleDetailRoute({
-      params: Promise.resolve({ cycleId: CYCLE_ID }),
-    })
-    // The returned element tree is our stubbed CycleDetailPage mock;
-    // its props surface via data attributes.
-    const json = JSON.stringify(element)
-    expect(json).toContain('"readOnly":true')
-  })
-
-  it('renders with readOnly=true when cycle is ARKIVERAD', async () => {
-    getCycleByIdMock.mockResolvedValue({
-      success: true,
-      data: { cycle: makeCycle(ComplianceCycleStatus.ARKIVERAD) },
-    })
-    getCycleItemsForCycleMock.mockResolvedValue({
-      success: true,
-      data: {
-        items: [],
-        cycle: {
-          id: CYCLE_ID,
-          status: ComplianceCycleStatus.ARKIVERAD,
-          name: 'Q2',
-          sealHash: null,
         },
       },
     })
@@ -235,15 +203,15 @@ describe('CycleDetailRoute — RSC gating', () => {
       params: Promise.resolve({ cycleId: CYCLE_ID }),
     })
     const json = JSON.stringify(element)
-    expect(json).toContain('"readOnly":true')
+    expect(json).toContain('"itemsReadOnly":true')
   })
 
-  it('renders readOnly=false for PAGAENDE cycles', async () => {
+  it('renders with itemsReadOnly=false for PAGAENDE cycles', async () => {
     const element = await CycleDetailRoute({
       params: Promise.resolve({ cycleId: CYCLE_ID }),
     })
     const json = JSON.stringify(element)
-    expect(json).toContain('"readOnly":false')
+    expect(json).toContain('"itemsReadOnly":false')
   })
 
   it('fails open (items=[]) when items fetch fails but cycle loaded', async () => {
@@ -334,7 +302,6 @@ describe('CycleDetailRoute — RSC gating', () => {
           id: CYCLE_ID,
           status: ComplianceCycleStatus.AVSLUTAD,
           name: 'Q2',
-          sealHash: null,
         },
       },
     })
@@ -353,46 +320,7 @@ describe('CycleDetailRoute — RSC gating', () => {
     })
   })
 
-  // Story 21.9 — canSeal prop resolution (AC 11 + 14).
-  it('canSeal: canSealCycle NOT called when cycle is PAGAENDE', async () => {
-    await CycleDetailRoute({
-      params: Promise.resolve({ cycleId: CYCLE_ID }),
-    })
-    expect(canSealCycleMock).not.toHaveBeenCalled()
-  })
-
-  it('canSeal: canSealCycle called exactly once with correct args when cycle is AVSLUTAD', async () => {
-    getCycleByIdMock.mockResolvedValue({
-      success: true,
-      data: { cycle: makeCycle(ComplianceCycleStatus.AVSLUTAD) },
-    })
-    getCycleItemsForCycleMock.mockResolvedValue({
-      success: true,
-      data: {
-        items: [],
-        cycle: {
-          id: CYCLE_ID,
-          status: ComplianceCycleStatus.AVSLUTAD,
-          name: 'Q2',
-          sealHash: null,
-        },
-      },
-    })
-
-    await CycleDetailRoute({
-      params: Promise.resolve({ cycleId: CYCLE_ID }),
-    })
-
-    expect(canSealCycleMock).toHaveBeenCalledTimes(1)
-    expect(canSealCycleMock).toHaveBeenCalledWith(
-      // prismaClient is the first positional arg (SF-1).
-      expect.anything(),
-      {
-        role: 'OWNER',
-        userId: 'u1',
-        cycleId: CYCLE_ID,
-        workspaceId: 'w1',
-      }
-    )
-  })
+  // Story 21.26 — canSealCycle helper + the parallel `canSeal` lookup were
+  // removed alongside the SEAL collapse. Cycle completion + revert are the
+  // only post-PAGAENDE transitions.
 })

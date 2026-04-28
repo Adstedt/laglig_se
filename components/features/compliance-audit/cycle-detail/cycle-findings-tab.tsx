@@ -37,8 +37,6 @@ import { FindingCard } from '@/components/features/compliance-audit/finding-card
 import { VerifyFindingDialog } from './verify-finding-dialog'
 import { ManualCloseFindingDialog } from './manual-close-finding-dialog'
 import { FindingSeverity, FindingType } from '@prisma/client'
-import type { ComplianceCycleStatus } from '@prisma/client'
-import { getCycleReadOnlyReason } from '@/components/features/compliance-audit/cycle-copy'
 import type { CycleItemRow } from '@/app/actions/compliance-audit-item'
 
 const VIRTUALIZATION_THRESHOLD = 50
@@ -52,8 +50,6 @@ type StatusFilter = 'all' | 'open' | 'closed'
 interface CycleFindingsTabProps {
   cycleId: string
   findings: FindingRow[]
-  readOnly: boolean
-  cycleStatus: ComplianceCycleStatus
   items: CycleItemRow[]
   onFindingMutation: (_finding: FindingRow) => void
   /** Story 21.16 — drill into the Items-tab modal on the finding's parent law
@@ -61,11 +57,12 @@ interface CycleFindingsTabProps {
   onFindingClick?: ((_finding: FindingRow) => void) | undefined
 }
 
+// Story 21.27 — `readOnly` + `cycleStatus` props removed. Findings have no
+// cycle-status read-only mode after the ARKIVERAD collapse.
+
 export function CycleFindingsTab({
   cycleId,
   findings,
-  readOnly,
-  cycleStatus,
   items,
   onFindingMutation,
   onFindingClick,
@@ -211,17 +208,6 @@ export function CycleFindingsTab({
 
   return (
     <div className="space-y-4">
-      {readOnly ? (
-        <div
-          role="status"
-          className="rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900"
-        >
-          {getCycleReadOnlyReason(cycleStatus) ??
-            'Kontrollen kan inte redigeras.'}{' '}
-          Anmärkningar kan endast visas.
-        </div>
-      ) : null}
-
       <div className="flex flex-wrap items-center justify-between gap-3">
         <FilterChips
           typeFilter={typeFilter}
@@ -231,16 +217,14 @@ export function CycleFindingsTab({
           statusFilter={statusFilter}
           setStatusFilter={setStatusFilter}
         />
-        {!readOnly ? (
-          <Button
-            type="button"
-            onClick={openEditorForCreate}
-            data-testid="cycle-findings-add-button"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Lägg till anmärkning
-          </Button>
-        ) : null}
+        <Button
+          type="button"
+          onClick={openEditorForCreate}
+          data-testid="cycle-findings-add-button"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Lägg till anmärkning
+        </Button>
       </div>
 
       {filtered.length === 0 ? (
@@ -254,7 +238,6 @@ export function CycleFindingsTab({
           findings={filtered}
           virtualizer={virtualizer}
           scrollRef={scrollRef}
-          readOnly={readOnly}
           onEdit={openEditorForEdit}
           onClose={handleClose}
           onReopen={handleReopen}
@@ -265,7 +248,6 @@ export function CycleFindingsTab({
       ) : (
         <PlainBody
           findings={filtered}
-          readOnly={readOnly}
           onEdit={openEditorForEdit}
           onClose={handleClose}
           onReopen={handleReopen}
@@ -428,7 +410,6 @@ function FilterChips({
 
 interface BodyProps {
   findings: FindingRow[]
-  readOnly: boolean
   onEdit: (_f: FindingRow) => void
   onClose: (_f: FindingRow) => Promise<void>
   onReopen: (_f: FindingRow) => Promise<void>
@@ -439,7 +420,6 @@ interface BodyProps {
 
 function PlainBody({
   findings,
-  readOnly,
   onEdit,
   onClose,
   onReopen,
@@ -466,7 +446,6 @@ function PlainBody({
             actions={
               <FindingActions
                 finding={f}
-                readOnly={readOnly}
                 onEdit={() => onEdit(f)}
                 onClose={() => onClose(f)}
                 onReopen={() => onReopen(f)}
@@ -490,7 +469,6 @@ function VirtualisedBody({
   findings,
   virtualizer,
   scrollRef,
-  readOnly,
   onEdit,
   onClose,
   onReopen,
@@ -540,7 +518,6 @@ function VirtualisedBody({
                 actions={
                   <FindingActions
                     finding={f}
-                    readOnly={readOnly}
                     onEdit={() => onEdit(f)}
                     onClose={() => onClose(f)}
                     onReopen={() => onReopen(f)}
@@ -563,7 +540,6 @@ function VirtualisedBody({
 
 interface FindingActionsProps {
   finding: FindingRow
-  readOnly: boolean
   onEdit: () => void
   onClose: () => Promise<void>
   onReopen: () => Promise<void>
@@ -573,19 +549,23 @@ interface FindingActionsProps {
 
 function FindingActions({
   finding,
-  readOnly,
   onEdit,
   onClose,
   onReopen,
   onSpawnTask,
   onVerify,
 }: FindingActionsProps) {
-  if (readOnly) return null
-
-  // Epic 21 follow-up: three-state action switch driven by getFindingStatus.
+  // Phase 2 / Epic 23 foundation: 5-state derivation; collapse the three
+  // closed variants (closed-verified / closed-plain / closed-dismissed) into
+  // a single Återöppna affordance. Phase 3 will replace this entire FindingActions
+  // block with click-row → FindingModal navigation.
   const status = getFindingStatus(finding)
+  const isClosed =
+    status === 'closed-verified' ||
+    status === 'closed-plain' ||
+    status === 'closed-dismissed'
 
-  if (status === 'closed') {
+  if (isClosed) {
     return (
       <Button
         type="button"

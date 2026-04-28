@@ -32,24 +32,8 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { withWorkspace } from '@/lib/auth/workspace-context'
 import { logActivity } from '@/lib/services/activity-logger'
-import {
-  canCompleteOrRevertCycle,
-  canSealCycle,
-} from '@/lib/compliance-audit/authorization'
-import { gatherSealEvidenceForCycle } from '@/lib/compliance-audit/gather-seal-evidence'
-import {
-  hashFileEvidence,
-  hashDocumentEvidence,
-} from '@/lib/compliance-audit/evidence-hash'
-import { buildSealManifest } from '@/lib/compliance-audit/seal-manifest-builder'
-import type {
-  SealManifestInput,
-  SealManifestItem,
-  SealManifestFinding,
-  SealManifestEvidence,
-} from '@/lib/compliance-audit/seal-manifest-builder'
-import { computeSealHash } from '@/lib/compliance-audit/seal-hash'
-import { createHash } from 'node:crypto'
+import { canCompleteOrRevertCycle } from '@/lib/compliance-audit/authorization'
+import { generateCycleReport } from '@/app/actions/compliance-audit-report'
 import {
   AuditType,
   ComplianceCycleStatus,
@@ -58,18 +42,6 @@ import {
   Prisma,
   type ComplianceAuditCycle,
 } from '@prisma/client'
-
-/**
- * Story 21.9 — sentinel thrown inside the seal transaction when the
- * status-scoped `updateMany` matches zero rows (concurrent seal race).
- * Caught by the outer handler and mapped to a Swedish user-facing error.
- */
-class SealRaceError extends Error {
-  constructor() {
-    super('CYCLE_STATUS_CHANGED')
-    this.name = 'SealRaceError'
-  }
-}
 
 // ============================================================================
 // Types
@@ -114,7 +86,6 @@ export interface CycleSummary {
 export interface CycleDetail extends CycleSummary {
   lawListId: string
   scopeDefinition: ScopeDefinition
-  sealHash: string | null
   sealedAt: Date | null
   sealedBy: { id: string; name: string | null } | null
   createdBy: { id: string; name: string | null }
@@ -214,20 +185,7 @@ const RevertCycleSchema = z.object({
   cycleId: z.string().uuid(),
 })
 
-// Story 21.9 — seal (AVSLUTAD → SEALED). SF-3: `.trim()` inside `.refine`
-// is load-bearing — rejects whitespace-only override reasons that would
-// otherwise pass a naive `.min(20)`.
-const SealCycleSchema = z.object({
-  cycleId: z.string().uuid(),
-  overrideReason: z
-    .string()
-    .max(1000)
-    .optional()
-    .refine(
-      (s) => s === undefined || s.trim().length >= 20,
-      'Motivering måste vara minst 20 tecken (efter trimning)'
-    ),
-})
+// Story 21.26 — `SealCycleSchema` removed alongside `sealCycle` action.
 
 // ============================================================================
 // Module-private helpers
@@ -287,7 +245,6 @@ function mapCycleRowToDetail(row: CycleDetailRow): CycleDetail {
     updatedAt: row.updated_at,
     lawListId: row.law_list_id,
     scopeDefinition: row.scope_definition as unknown as ScopeDefinition,
-    sealHash: row.seal_hash,
     sealedAt: row.sealed_at,
     sealedBy: row.sealed_by
       ? { id: row.sealed_by.id, name: row.sealed_by.name }
@@ -728,15 +685,13 @@ export async function updateCycleMetadata(
         return { success: false, error: 'Kontrollen hittades inte' }
       }
 
-      if (
-        existing.status === ComplianceCycleStatus.AVSLUTAD ||
-        existing.status === ComplianceCycleStatus.SEALED ||
-        existing.status === ComplianceCycleStatus.ARKIVERAD
-      ) {
+      // Story 21.26 + 21.27 — SEALED + ARKIVERAD collapsed into AVSLUTAD;
+      // AVSLUTAD is the only terminal active state.
+      if (existing.status === ComplianceCycleStatus.AVSLUTAD) {
         return {
           success: false,
           error:
-            'Kontrollen är avslutad, fastställd eller arkiverad — ändringar är inte tillåtna. Återställ till pågående för att redigera.',
+            'Kontrollen är avslutad — ändringar är inte tillåtna. Återställ till pågående för att redigera.',
         }
       }
 
@@ -856,7 +811,7 @@ export async function softDeleteCycle(cycleId: string): Promise<ActionResult> {
 
   try {
     return await withWorkspace(async (ctx) => {
-      // TODO(21.10): assertCycleEditable(tx, cycleId) — reject writes on SEALED/ARKIVERAD.
+      // TODO(21.10): assertCycleEditable(tx, cycleId) — reject writes on AVSLUTAD.
 
       const existing = await loadCycleScopedToWorkspace(
         parsed.data.cycleId,
@@ -909,9 +864,9 @@ export async function softDeleteCycle(cycleId: string): Promise<ActionResult> {
  * Story 21.6 — transition cycle from PAGAENDE → AVSLUTAD.
  *
  * Gate: `tasks:edit` permission + every item has `signed_off_at != null` +
- * `items.length > 0`. The transition is reversible via `revertCycleToPagaende`
- * until sealing (Story 21.9). Items, findings, and motivering all remain
- * editable post-complete; read-only only kicks in on SEALED/ARKIVERAD.
+ * `items.length > 0`. The transition is reversible via `revertCycleToPagaende`.
+ * Story 21.27 — AVSLUTAD is the only terminal active state; items lock here,
+ * findings stay editable forever, revert is the only way back.
  */
 export async function completeCycle(
   cycleId: string
@@ -926,7 +881,7 @@ export async function completeCycle(
 
   try {
     return await withWorkspace(async (ctx) => {
-      // TODO(21.10): assertCycleEditable(tx, cycleId) — reject writes on SEALED/ARKIVERAD.
+      // TODO(21.10): assertCycleEditable(tx, cycleId) — reject writes on AVSLUTAD.
 
       const existing = await loadCycleScopedToWorkspace(
         parsed.data.cycleId,
@@ -971,10 +926,18 @@ export async function completeCycle(
         }
       }
 
+      // Story 21.26 — completeCycle absorbs former sealCycle responsibilities:
+      // populate sealed_at + sealed_by_user_id (column names retained for
+      // migration safety; semantically these now record the AVSLUTAD transition's
+      // timestamp + actor). The cryptographic seal_hash ceremony was dropped.
       const completedAt = new Date()
       await prisma.complianceAuditCycle.update({
         where: { id: parsed.data.cycleId },
-        data: { status: ComplianceCycleStatus.AVSLUTAD },
+        data: {
+          status: ComplianceCycleStatus.AVSLUTAD,
+          sealed_at: completedAt,
+          sealed_by_user_id: ctx.userId,
+        },
       })
 
       // Story 21.12 SF-3: invalidate any existing COMPLETE-kind report PDF
@@ -1008,6 +971,23 @@ export async function completeCycle(
 
       revalidatePath('/laglistor/kontroller')
       revalidatePath(`/laglistor/kontroller/${parsed.data.cycleId}`)
+
+      // Story 21.26 — eager PDF generation moves from sealCycle to completeCycle.
+      // Fire-and-forget via after() so the user response isn't blocked.
+      // Failures are logged but don't fail the user-visible response.
+      after(async () => {
+        try {
+          await generateCycleReport({
+            cycleId: parsed.data.cycleId,
+            kind: 'COMPLETE',
+          })
+        } catch (err) {
+          console.error(
+            '[completeCycle] eager PDF generation failed (non-fatal):',
+            err
+          )
+        }
+      })
 
       // SF-4: refresh via the inline helper (no nested withWorkspace).
       const cycle = await loadCycleDetailInline(
@@ -1055,7 +1035,7 @@ export async function revertCycleToPagaende(
 
   try {
     return await withWorkspace(async (ctx) => {
-      // TODO(21.10): assertCycleEditable(tx, cycleId) — reject writes on SEALED/ARKIVERAD.
+      // TODO(21.10): assertCycleEditable(tx, cycleId) — reject writes on AVSLUTAD.
 
       const existing = await loadCycleScopedToWorkspace(
         parsed.data.cycleId,
@@ -1087,15 +1067,10 @@ export async function revertCycleToPagaende(
         }
       }
 
-      // Defensive: sealed cycles are already blocked by the status guard
-      // (SEALED !== AVSLUTAD), but an explicit sealed-hash check gives future
-      // logic a belt-and-braces barrier.
-      if (existing.sealed_at !== null) {
-        return {
-          success: false,
-          error: 'Förseglade kontroller kan inte återställas',
-        }
-      }
+      // Story 21.26 — defensive sealed_at != null check removed alongside the
+      // SEAL collapse. Now sealed_at is populated on every AVSLUTAD cycle by
+      // completeCycle, so that check would block all reverts. Status guard
+      // (existing.status === AVSLUTAD) is sufficient.
 
       await prisma.complianceAuditCycle.update({
         where: { id: parsed.data.cycleId },
@@ -1135,458 +1110,9 @@ export async function revertCycleToPagaende(
 }
 
 // ============================================================================
-// sealCycle (Story 21.9)
+// Story 21.26 — sealCycle deleted. AVSLUTAD is now the terminal active state;
+// completeCycle absorbs the timestamp + signer + eager-PDF responsibilities.
 // ============================================================================
-
-/**
- * Story 21.9 — transition cycle from AVSLUTAD → SEALED with a tamper-evident
- * SHA-256 hash over a canonical manifest + frozen per-evidence SHA-256
- * snapshots. Irreversible per architecture §6.4; the only recovery path is
- * to create a new cycle.
- *
- * Gate: `tasks:edit` permission + runtime `canSealCycle` (OWNER/ADMIN via
- * `audit:seal` scope OR the cycle's lead auditor). See `lib/compliance-audit/
- * authorization.ts:52-67`. Open-AVVIKELSE gate (AC 6) — seal is blocked if
- * any open AVVIKELSE exists and no `overrideReason` was provided; override
- * is logged to ActivityLog + the canonical manifest.
- *
- * Transaction structure:
- *   1. Evidence gather (tx-participating, batched across all items).
- *   2. Per-evidence SHA-256 (OUTSIDE the tx — Storage I/O + compute that
- *      must not hold a Postgres connection).
- *   3. Manifest + hash (pure functions).
- *   4. Transactional persistence: status-scoped `updateMany`, snapshot
- *      `createMany`, report row upsert, ActivityLog.
- */
-export async function sealCycle(input: {
-  cycleId: string
-  overrideReason?: string
-}): Promise<ActionResult<{ cycle: CycleDetail }>> {
-  const parsed = SealCycleSchema.safeParse(input)
-  if (!parsed.success) {
-    return {
-      success: false,
-      error: parsed.error.issues[0]?.message ?? 'Valideringsfel',
-    }
-  }
-
-  const { cycleId, overrideReason } = parsed.data
-
-  try {
-    return await withWorkspace(async (ctx) => {
-      // TODO(21.10): assertCycleEditable(tx, cycleId) — reject writes on SEALED/ARKIVERAD.
-
-      const existing = await loadCycleScopedToWorkspace(
-        cycleId,
-        ctx.workspaceId
-      )
-      if (!existing) {
-        return { success: false, error: 'Kontrollen hittades inte' }
-      }
-
-      // Runtime authorization — SF-1: prismaClient is the first positional arg.
-      const allowed = await canSealCycle(prisma, {
-        role: ctx.role,
-        userId: ctx.userId,
-        cycleId,
-        workspaceId: ctx.workspaceId,
-      })
-      if (!allowed) {
-        return {
-          success: false,
-          error:
-            "Endast revisionsledaren eller administratörer med behörighet 'audit:seal' kan fastställa kontrollen",
-        }
-      }
-
-      if (existing.status !== ComplianceCycleStatus.AVSLUTAD) {
-        return {
-          success: false,
-          error: 'Kontrollen kan bara fastställas från status Avslutad',
-        }
-      }
-
-      // Defensive: AVSLUTAD with non-null sealed_at should be impossible
-      // (sealed_at is only set by this action), but belt-and-braces matches
-      // 21.6's revertCycleToPagaende guard style.
-      if (existing.sealed_at !== null) {
-        return {
-          success: false,
-          error: 'Kontrollen är redan fastställd',
-        }
-      }
-
-      // -- Step 1: gather evidence refs (brief tx for a batched read) --
-      const evidenceRefs = await prisma.$transaction(async (tx) => {
-        return gatherSealEvidenceForCycle(cycleId, tx)
-      })
-
-      // -- Step 1b: integrity policy on linked styrdokument status.
-      // v0.4 (INTEGRITY-001): hard-blocked if any DRAFT was linked.
-      // v0.5 (PO softening): snapshot-and-accept-with-override — DRAFTs no
-      // longer hard-block; instead they require an `overrideReason` (mirrors
-      // the AVVIKELSE override pattern) and the acknowledged drafts are
-      // locked into the canonical manifest + activity log so an external
-      // auditor can later see "yes, these specific drafts were knowingly
-      // included via override."
-      //
-      // Why DRAFT documents need acknowledgement: hashDocumentEvidence reads
-      // `WorkspaceDocument.current_version`, which `autosaveDocument` mutates
-      // IN-PLACE for DRAFT-state docs. So the seal-time hash will not match
-      // the live content after any later edit. Override = "user has been told
-      // about this fragility and accepts the consequence."
-      const uniqueDocumentIds = Array.from(
-        new Set(
-          evidenceRefs
-            .filter((r) => r.kind === 'DOCUMENT' && r.documentId !== null)
-            .map((r) => r.documentId as string)
-        )
-      )
-      let acknowledgedDraftDocs: { id: string; title: string }[] = []
-      if (uniqueDocumentIds.length > 0) {
-        const draftDocs = await prisma.workspaceDocument.findMany({
-          where: {
-            id: { in: uniqueDocumentIds },
-            status: 'DRAFT',
-          },
-          select: { id: true, title: true },
-        })
-        if (draftDocs.length > 0 && overrideReason === undefined) {
-          const titles = draftDocs.map((d) => d.title).join(', ')
-          return {
-            success: false,
-            error: `Fastställande blockeras: ${draftDocs.length} styrdokument i utkast-status (${titles}). Ange en motivering för att fastställa trots utkast-styrdokument.`,
-          }
-        }
-        // Override provided OR no drafts — capture acknowledged drafts for
-        // the manifest + activity log (empty array when none).
-        acknowledgedDraftDocs = draftDocs
-      }
-
-      // -- Step 2: pre-compute per-evidence SHA-256 OUTSIDE the seal tx --
-      // Serial iteration respects the memory-ceiling (see evidence-hash.ts).
-      const evidenceHashes = new Map<string, string>() // key: `${kind}:${evidenceId}`
-      for (const ref of evidenceRefs) {
-        const evidenceId = ref.kind === 'FILE' ? ref.fileId! : ref.documentId!
-        const hashKey = `${ref.kind}:${evidenceId}`
-        if (evidenceHashes.has(hashKey)) continue // already hashed this artifact
-        try {
-          const hash =
-            ref.kind === 'FILE'
-              ? await hashFileEvidence(evidenceId)
-              : await hashDocumentEvidence(evidenceId)
-          evidenceHashes.set(hashKey, hash)
-        } catch {
-          // AC 3 step 2: evidence lost between gather and hash → abort seal.
-          return {
-            success: false as const,
-            error: 'Bevis har tagits bort under fastställandet. Försök igen.',
-          }
-        }
-      }
-
-      // -- Step 3: load full cycle metadata + items + findings for manifest --
-      const [items, findings] = await Promise.all([
-        prisma.complianceAuditItem.findMany({
-          where: { cycle_id: cycleId },
-          select: {
-            id: true,
-            law_list_item_id: true,
-            efterlevnadsbedomning: true,
-            motivering: true,
-            reviewed_at: true,
-            reviewed_by_user_id: true,
-            signed_off_at: true,
-            signed_off_by_user_id: true,
-          },
-        }),
-        prisma.complianceFinding.findMany({
-          where: { cycle_id: cycleId },
-          select: {
-            id: true,
-            type: true,
-            severity: true,
-            title: true,
-            description: true,
-            root_cause: true,
-            law_list_item_id: true,
-            requirement_id: true,
-            corrective_action_task_id: true,
-            due_date: true,
-            closed_at: true,
-            closed_by_user_id: true,
-          },
-        }),
-      ])
-
-      // Open-AVVIKELSE gate (AC 6) — QA RACE-001 fix: derived from the findings
-      // array we just loaded (same source of truth as what goes into the
-      // manifest). Previously this used a separate count query that created a
-      // narrow window where a newly-created AVVIKELSE could appear in the
-      // manifest without triggering the override requirement.
-      const openAvvikelsesCount = findings.filter(
-        (f) => f.type === 'AVVIKELSE' && f.closed_at === null
-      ).length
-      if (openAvvikelsesCount > 0 && overrideReason === undefined) {
-        return {
-          success: false,
-          error: `Fastställande blockeras: ${openAvvikelsesCount} öppna avvikelser. Ange en motivering för att fastställa trots öppna avvikelser.`,
-        }
-      }
-
-      // -- Step 4: build manifest (hashes free-text fields for privacy/size) --
-      const sealedAtInstant = new Date()
-      const manifestItems: SealManifestItem[] = items.map((i) => ({
-        id: i.id,
-        lawListItemId: i.law_list_item_id,
-        efterlevnadsbedomning: i.efterlevnadsbedomning ?? null,
-        motiveringSha256: i.motivering
-          ? createHash('sha256').update(i.motivering, 'utf8').digest('hex')
-          : null,
-        reviewedAt: i.reviewed_at?.toISOString() ?? null,
-        reviewedByUserId: i.reviewed_by_user_id ?? null,
-        signedOffAt: i.signed_off_at?.toISOString() ?? null,
-        signedOffByUserId: i.signed_off_by_user_id ?? null,
-      }))
-      const manifestFindings: SealManifestFinding[] = findings.map((f) => ({
-        id: f.id,
-        type: f.type,
-        severity: f.severity ?? null,
-        title: f.title,
-        descriptionSha256: createHash('sha256')
-          .update(f.description, 'utf8')
-          .digest('hex'),
-        rootCauseSha256: f.root_cause
-          ? createHash('sha256').update(f.root_cause, 'utf8').digest('hex')
-          : null,
-        lawListItemId: f.law_list_item_id ?? null,
-        requirementId: f.requirement_id ?? null,
-        correctiveActionTaskId: f.corrective_action_task_id ?? null,
-        dueDate: f.due_date?.toISOString() ?? null,
-        closedAt: f.closed_at?.toISOString() ?? null,
-        closedByUserId: f.closed_by_user_id ?? null,
-      }))
-      const manifestEvidence: SealManifestEvidence[] = evidenceRefs.map(
-        (r) => ({
-          lawListItemId: r.lawListItemId,
-          requirementId: r.requirementId,
-          kind: r.kind,
-          evidenceId: (r.fileId ?? r.documentId)!,
-          sha256: evidenceHashes.get(`${r.kind}:${r.fileId ?? r.documentId}`)!,
-        })
-      )
-      const manifestInput: SealManifestInput = {
-        cycleId: existing.id,
-        workspaceId: ctx.workspaceId,
-        lawListId: existing.law_list_id,
-        name: existing.name,
-        auditType: existing.audit_type,
-        scheduledStart: existing.scheduled_start.toISOString(),
-        scheduledEnd: existing.scheduled_end.toISOString(),
-        lawChangeCutoffDate: existing.law_change_cutoff_date.toISOString(),
-        leadAuditorUserId: existing.lead_auditor_user_id,
-        createdByUserId: existing.created_by_user_id,
-        createdAt: existing.created_at.toISOString(),
-        sealedAt: sealedAtInstant.toISOString(),
-        sealedByUserId: ctx.userId,
-        scopeDefinition:
-          existing.scope_definition as unknown as ScopeDefinition,
-        overrideReason: overrideReason ?? null,
-        // v0.5: lock acknowledged DRAFT-styrdokument identities into the
-        // canonical manifest. Always present (empty when no override or no
-        // drafts) so the canonical hash shape stays stable across cycles.
-        draftDocumentsAtSeal: acknowledgedDraftDocs.map((d) => ({
-          id: d.id,
-          title: d.title,
-        })),
-        items: manifestItems,
-        findings: manifestFindings,
-        evidence: manifestEvidence,
-      }
-      const sortedManifest = buildSealManifest(manifestInput)
-      const { canonicalJson, hash } = computeSealHash(sortedManifest)
-
-      // -- Step 5: seal transaction — status-scoped updateMany + snapshots + report --
-      try {
-        await prisma.$transaction(async (tx) => {
-          // SF-2: status-scoped updateMany — race-safe without explicit locking.
-          const updateResult = await tx.complianceAuditCycle.updateMany({
-            where: { id: cycleId, status: ComplianceCycleStatus.AVSLUTAD },
-            data: {
-              status: ComplianceCycleStatus.SEALED,
-              sealed_at: sealedAtInstant,
-              sealed_by_user_id: ctx.userId,
-              seal_hash: hash,
-            },
-          })
-          if (updateResult.count !== 1) {
-            throw new SealRaceError()
-          }
-
-          // Snapshot rows (SF-4: already deduped by gather-seal-evidence).
-          if (evidenceRefs.length > 0) {
-            await tx.complianceEvidenceSnapshot.createMany({
-              data: evidenceRefs.map((r) => ({
-                cycle_id: cycleId,
-                law_list_item_id: r.lawListItemId,
-                requirement_id: r.requirementId,
-                evidence_kind: r.kind,
-                evidence_file_id: r.fileId,
-                evidence_document_id: r.documentId,
-                evidence_sha256: evidenceHashes.get(
-                  `${r.kind}:${r.fileId ?? r.documentId}`
-                )!,
-                captured_at: sealedAtInstant,
-              })),
-            })
-          }
-
-          // Report upsert — QA CONSTRAINT-001 fix: the `@@unique([cycle_id,
-          // report_kind])` migration now enforces one-row-per-(cycle, kind) at
-          // the DB level, so `upsert` is the idiomatic single-statement form.
-          // SF-2's updateMany + count === 1 still serialises sealCycle, but
-          // future multi-write callers (21.12 COMPLETE-kind regen) are now
-          // safe here without extra schema churn.
-          await tx.complianceAuditReport.upsert({
-            where: {
-              cycle_id_report_kind: {
-                cycle_id: cycleId,
-                report_kind: 'SEALED',
-              },
-            },
-            create: {
-              cycle_id: cycleId,
-              report_kind: 'SEALED',
-              generated_at: sealedAtInstant,
-              manifest: canonicalJson as unknown as Prisma.InputJsonValue,
-            },
-            update: {
-              generated_at: sealedAtInstant,
-              manifest: canonicalJson as unknown as Prisma.InputJsonValue,
-            },
-          })
-
-          // CONSIST-001 fix — write ActivityLog INSIDE the seal transaction
-          // so the cycle_sealed audit-trail row is atomic with the cycle
-          // status flip + snapshot rows + report row. Previously this was an
-          // outside-transaction call that could leave a permanently-sealed
-          // cycle with no activity log row if the log write failed post-commit
-          // (the status guard prevents any retry).
-          await tx.activityLog.create({
-            data: {
-              workspace_id: ctx.workspaceId,
-              user_id: ctx.userId,
-              entity_type: 'compliance_audit_cycle',
-              entity_id: cycleId,
-              action: 'cycle_sealed',
-              old_value: { status: ComplianceCycleStatus.AVSLUTAD },
-              // NH-1 privacy note: overrideReason is stored VERBATIM (not
-              // hashed) in both new_value AND the seal manifest. External
-              // certifieringsorgan must be able to read the rationale; do
-              // NOT hash this field.
-              new_value: {
-                status: ComplianceCycleStatus.SEALED,
-                sealHash: hash,
-                sealedAt: sealedAtInstant.toISOString(),
-                ...(overrideReason !== undefined
-                  ? {
-                      overrideReason,
-                      openAvvikelsesAtSeal: openAvvikelsesCount,
-                      // v0.5: list acknowledged DRAFT styrdokument so the
-                      // activity-feed entry shows what was knowingly
-                      // included via override (parallel to the manifest's
-                      // draftDocumentsAtSeal lock-in).
-                      ...(acknowledgedDraftDocs.length > 0
-                        ? {
-                            draftDocumentsAtSeal: acknowledgedDraftDocs.map(
-                              (d) => ({ id: d.id, title: d.title })
-                            ),
-                          }
-                        : {}),
-                    }
-                  : {}),
-              },
-            },
-          })
-        })
-      } catch (txError) {
-        if (txError instanceof SealRaceError) {
-          return {
-            success: false,
-            error:
-              'Kontrollens status ändrades under fastställandet. Försök igen.',
-          }
-        }
-        throw txError
-      }
-
-      // (Step 6 ActivityLog was moved INSIDE the seal transaction above per
-      // QA CONSIST-001 — the cycle_sealed audit-trail row is now atomic with
-      // the status flip + snapshot + report writes.)
-
-      revalidatePath('/laglistor/kontroller')
-      revalidatePath(`/laglistor/kontroller/${cycleId}`)
-
-      const cycle = await loadCycleDetailInline(cycleId, ctx.workspaceId)
-      if (!cycle) {
-        return {
-          success: false,
-          error: 'Kontrollen kunde inte hämtas efter fastställandet',
-        }
-      }
-
-      // Story 21.12: eagerly render the sealed-kind PDF after the response
-      // flushes. Non-fatal — the seal transaction is already committed; if
-      // Puppeteer fails (cold-start timeout, transient Chromium crash), the
-      // route handler's lazy-generation branch re-attempts on first download.
-      // The dynamic import is necessary because `compliance-audit-report.ts`
-      // imports from this file (createCycle/getCycleById), so a static import
-      // here would create a cycle at module-load time.
-      after(async () => {
-        // Story 21.12 AUTH-001 hardening: log on BOTH success and failure so
-        // production-log grep can confirm `after()`-callback workspace-context
-        // propagation is working. If the success log never appears despite
-        // seals succeeding, the after() context is broken and a Vercel cron
-        // sweeper (architect's original §9.1 plan) needs to be reinstated.
-        const eagerStart = Date.now()
-        try {
-          const { generateCycleReport } = await import(
-            '@/app/actions/compliance-audit-report'
-          )
-          const result = await generateCycleReport({
-            cycleId,
-            kind: 'SEALED',
-          })
-          const eagerDurationMs = Date.now() - eagerStart
-          if (result.success) {
-            // Intentional production telemetry — see AUTH-001 hardening note
-            // above. Searching for this exact prefix in production logs is
-            // the operational signal that after()-context propagation works.
-            // eslint-disable-next-line no-console
-            console.log(
-              `[sealCycle after] Eager PDF generated for cycle ${cycleId} in ${eagerDurationMs}ms (path: ${result.data?.pdfStoragePath})`
-            )
-          } else {
-            console.error(
-              `[sealCycle after] Eager PDF generation returned error for cycle ${cycleId} after ${eagerDurationMs}ms — lazy fallback armed:`,
-              result.error
-            )
-          }
-        } catch (err) {
-          console.error(
-            `[sealCycle after] Eager PDF generation threw for cycle ${cycleId} after ${Date.now() - eagerStart}ms — lazy fallback armed:`,
-            err
-          )
-        }
-      })
-
-      return { success: true, data: { cycle } }
-    }, 'tasks:edit')
-  } catch (error) {
-    console.error('sealCycle error:', error)
-    return { success: false, error: 'Kunde inte fastställa kontrollen' }
-  }
-}
 
 // ============================================================================
 // materialiseCycleItems (Story 21.4 AC 6–11)
@@ -1779,7 +1305,7 @@ export async function materialiseCycleItems(
 
   try {
     return await withWorkspace(async (ctx) => {
-      // TODO(21.10): assertCycleEditable(tx, cycleId) — reject writes on SEALED/ARKIVERAD.
+      // TODO(21.10): assertCycleEditable(tx, cycleId) — reject writes on AVSLUTAD.
 
       const existing = await loadCycleScopedToWorkspace(
         parsed.data.cycleId,

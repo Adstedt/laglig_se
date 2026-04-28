@@ -2,9 +2,11 @@
  * Story 21.1: Integration tests for compliance audit cycle schema.
  *
  * Verifies DB-level constraints that the type-only unit test cannot:
- * - XOR CHECK constraint on compliance_evidence_snapshots
  * - Cascade delete from cycle → children
  * - Restrict delete of LawListItem referenced by a cycle item
+ *
+ * Story 21.26 — XOR CHECK on compliance_evidence_snapshots removed (table
+ * dropped alongside the SEAL collapse).
  *
  * Requires: real Prisma connection to a DB with the Story 21.1 migration
  * applied (either local dev DB or a test DB). Not run in CI — excluded
@@ -119,42 +121,9 @@ describe('Story 21.1: Compliance Audit Cycle schema (integration)', () => {
     })
   }
 
-  describe('XOR CHECK on compliance_evidence_snapshots', () => {
-    it('rejects a snapshot with both evidence_file_id AND evidence_document_id populated', async () => {
-      const cycle = await makeBaseCycle()
-
-      await expect(
-        prisma.complianceEvidenceSnapshot.create({
-          data: {
-            cycle_id: cycle.id,
-            evidence_kind: 'FILE',
-            evidence_file_id: 'fake-file-id',
-            evidence_document_id: 'fake-doc-id',
-            evidence_sha256: 'a'.repeat(64),
-          },
-        })
-      ).rejects.toThrow()
-
-      await prisma.complianceAuditCycle.delete({ where: { id: cycle.id } })
-    })
-
-    it('rejects a snapshot with neither evidence_file_id nor evidence_document_id populated', async () => {
-      const cycle = await makeBaseCycle()
-
-      await expect(
-        prisma.complianceEvidenceSnapshot.create({
-          data: {
-            cycle_id: cycle.id,
-            evidence_kind: 'FILE',
-            evidence_sha256: 'a'.repeat(64),
-            // Neither FK populated — should fail CHECK.
-          },
-        })
-      ).rejects.toThrow()
-
-      await prisma.complianceAuditCycle.delete({ where: { id: cycle.id } })
-    })
-  })
+  // Story 21.26 — `compliance_evidence_snapshots` table dropped alongside the
+  // SEAL collapse. The XOR CHECK constraint test block is removed; the only
+  // writer was sealCycle's gather-seal-evidence path, which no longer exists.
 
   describe('Cascade delete from cycle', () => {
     it('deleting a cycle also deletes its items + findings + reports', async () => {

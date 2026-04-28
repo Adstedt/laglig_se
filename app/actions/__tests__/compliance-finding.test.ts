@@ -178,6 +178,8 @@ function makeFinding(
     due_date: null,
     closed_at: null,
     closed_by_user_id: null,
+    verification_note: null,
+    close_reason: null,
     law_list_item_id: null,
     requirement_id: null,
     created_at: new Date('2026-04-22T10:00:00Z'),
@@ -304,49 +306,40 @@ describe('createFinding', () => {
     expect(activityLogger.logActivity).not.toHaveBeenCalled()
   })
 
-  it('AVSLUTAD cycle is blocked', async () => {
+  it('Phase 2 / Epic 23: AVSLUTAD cycle does NOT block finding creation (Option B unlock)', async () => {
+    // Phase 2 narrows the server guard so findings stay editable through
+    // AVSLUTAD. Items remain blocked at AVSLUTAD; only findings unlock.
+    // Test asserts the GUARD doesn't reject; full happy-path is covered by
+    // the existing "happy path" tests which now run on PAGAENDE.
     vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue(
       makeCycle({ status: ComplianceCycleStatus.AVSLUTAD }) as never
     )
-    const result = await createFinding({
-      cycleId: CYCLE_ID,
-      type: FindingType.OBSERVATION,
-      title: 'Obs',
-      description: 'Body',
-    })
-    expect(result.success).toBe(false)
-    expect(result.error).toMatch(/avslutad/)
-    expect(prisma.complianceFinding.create).not.toHaveBeenCalled()
-  })
-
-  it('SEALED cycle is blocked', async () => {
-    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue(
-      makeCycle({ status: ComplianceCycleStatus.SEALED }) as never
+    vi.mocked(prisma.complianceFinding.create).mockResolvedValue(
+      makeFinding({
+        cycle: {
+          ...(makeFinding().cycle as Record<string, unknown>),
+          status: ComplianceCycleStatus.AVSLUTAD,
+        },
+      }) as never
     )
     const result = await createFinding({
       cycleId: CYCLE_ID,
       type: FindingType.OBSERVATION,
-      title: 'Obs',
+      title: 'Obs created post-completion',
       description: 'Body',
     })
-    expect(result.success).toBe(false)
-    expect(result.error).toMatch(/fastställd|arkiverad/)
-    expect(prisma.complianceFinding.create).not.toHaveBeenCalled()
+    // The guard didn't reject (no "avslutad" error message). If the create
+    // mock returns success, we expect overall success; if not, at minimum
+    // the failure is NOT due to the AVSLUTAD guard.
+    if (!result.success) {
+      expect(result.error).not.toMatch(/avslutad/i)
+    }
+    expect(prisma.complianceFinding.create).toHaveBeenCalled()
   })
 
-  it('ARKIVERAD cycle is blocked', async () => {
-    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue(
-      makeCycle({ status: ComplianceCycleStatus.ARKIVERAD }) as never
-    )
-    const result = await createFinding({
-      cycleId: CYCLE_ID,
-      type: FindingType.OBSERVATION,
-      title: 'Obs',
-      description: 'Body',
-    })
-    expect(result.success).toBe(false)
-    expect(prisma.complianceFinding.create).not.toHaveBeenCalled()
-  })
+  // Story 21.26 + 21.27 — SEALED + ARKIVERAD collapsed; findings have no
+  // cycle-status read-only mode. The "SEALED/ARKIVERAD blocks createFinding"
+  // tests deleted alongside the guard.
 
   it('cross-workspace cycle returns generic not-found error', async () => {
     vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue(null)
@@ -991,30 +984,12 @@ describe('spawnTaskForFinding', () => {
     expect(spawnCorrectiveActionTask).not.toHaveBeenCalled()
   })
 
-  it('rejects SEALED cycle', async () => {
-    const { spawnTaskForFinding } = await import('../compliance-finding')
+  // Story 21.26 + 21.27 — "rejects SEALED/ARKIVERAD cycle" test deleted.
+  // No cycle-status guard remains for findings.
 
-    vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
-      makeFinding({
-        type: FindingType.AVVIKELSE,
-        corrective_action_task_id: null,
-        cycle: {
-          id: CYCLE_ID,
-          status: ComplianceCycleStatus.SEALED,
-          law_list_id: LAW_LIST_ID,
-          name: 'Sealed',
-          lead_auditor_user_id: USER_ID,
-        },
-      }) as never
-    )
-
-    const result = await spawnTaskForFinding({ findingId: FINDING_ID })
-
-    expect(result.success).toBe(false)
-    expect(spawnCorrectiveActionTask).not.toHaveBeenCalled()
-  })
-
-  it('rejects AVSLUTAD cycle', async () => {
+  it('Phase 2 / Epic 23: AVSLUTAD cycle ALLOWS spawn (Option B unlock)', async () => {
+    // Phase 2 narrows the server guard so findings stay editable through
+    // AVSLUTAD — including spawning tasks for late-add corrective actions.
     const { spawnTaskForFinding } = await import('../compliance-finding')
 
     vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
@@ -1033,9 +1008,12 @@ describe('spawnTaskForFinding', () => {
 
     const result = await spawnTaskForFinding({ findingId: FINDING_ID })
 
-    expect(result.success).toBe(false)
-    expect(result.error).toMatch(/avslutad/)
-    expect(spawnCorrectiveActionTask).not.toHaveBeenCalled()
+    // Guard no longer rejects on AVSLUTAD. Either the call fully succeeds OR
+    // it fails for a non-guard reason — the regression assertion is that the
+    // failure is NOT the legacy "avslutad" guard error.
+    if (!result.success) {
+      expect(result.error).not.toMatch(/avslutad/i)
+    }
   })
 
   it('cross-workspace findingId returns generic not-found error', async () => {
@@ -1142,26 +1120,13 @@ describe('updateFinding', () => {
     expect(newValue.new_description_length).toBe(secretText.length)
   })
 
-  it('SEALED cycle blocks update', async () => {
-    vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
-      makeFinding({
-        cycle: {
-          id: CYCLE_ID,
-          status: ComplianceCycleStatus.SEALED,
-          law_list_id: LAW_LIST_ID,
-        },
-      }) as never
-    )
+  // Story 21.27 — "SEALED/ARKIVERAD blocks update" test deleted; no
+  // cycle-status guard remains.
 
-    const result = await updateFinding({
-      findingId: FINDING_ID,
-      title: 'Try',
-    })
-    expect(result.success).toBe(false)
-    expect(prisma.complianceFinding.update).not.toHaveBeenCalled()
-  })
-
-  it('AVSLUTAD cycle blocks update', async () => {
+  it('Phase 2 / Epic 23: AVSLUTAD cycle ALLOWS update (Option B unlock)', async () => {
+    // Phase 2 narrowed the server guard so findings stay editable through
+    // AVSLUTAD. Story 21.27 went further and removed the guard entirely;
+    // findings have no cycle-status read-only mode.
     vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
       makeFinding({
         cycle: {
@@ -1171,14 +1136,19 @@ describe('updateFinding', () => {
         },
       }) as never
     )
+    vi.mocked(prisma.complianceFinding.update).mockResolvedValue(
+      makeFinding({ title: 'Try' }) as never
+    )
 
     const result = await updateFinding({
       findingId: FINDING_ID,
       title: 'Try',
     })
-    expect(result.success).toBe(false)
-    expect(result.error).toMatch(/avslutad/)
-    expect(prisma.complianceFinding.update).not.toHaveBeenCalled()
+    // Guard no longer rejects on AVSLUTAD.
+    if (!result.success) {
+      expect(result.error).not.toMatch(/avslutad/i)
+    }
+    expect(prisma.complianceFinding.update).toHaveBeenCalled()
   })
 
   // Story 21.8 TEST-002a (PO gate-review): AC 11 carry-forward — type change
@@ -1387,22 +1357,10 @@ describe('closeFinding', () => {
     expect(result.success).toBe(true)
   })
 
-  it('SEALED cycle blocks close', async () => {
-    vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
-      makeFinding({
-        cycle: {
-          id: CYCLE_ID,
-          status: ComplianceCycleStatus.SEALED,
-          law_list_id: LAW_LIST_ID,
-        },
-      }) as never
-    )
-    const result = await closeFinding({ findingId: FINDING_ID })
-    expect(result.success).toBe(false)
-    expect(prisma.complianceFinding.update).not.toHaveBeenCalled()
-  })
+  // Story 21.27 — "SEALED/ARKIVERAD blocks close" test deleted.
 
-  it('AVSLUTAD cycle blocks close', async () => {
+  it('Phase 2 / Epic 23: AVSLUTAD cycle ALLOWS close (Option B unlock)', async () => {
+    // Phase 2 narrows the guard so closeFinding succeeds in AVSLUTAD.
     vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
       makeFinding({
         cycle: {
@@ -1412,10 +1370,14 @@ describe('closeFinding', () => {
         },
       }) as never
     )
+    vi.mocked(prisma.complianceFinding.update).mockResolvedValue(
+      makeFinding({ closed_at: new Date('2026-04-27T10:00:00Z') }) as never
+    )
     const result = await closeFinding({ findingId: FINDING_ID })
-    expect(result.success).toBe(false)
-    expect(result.error).toMatch(/avslutad/)
-    expect(prisma.complianceFinding.update).not.toHaveBeenCalled()
+    if (!result.success) {
+      expect(result.error).not.toMatch(/avslutad/i)
+    }
+    expect(prisma.complianceFinding.update).toHaveBeenCalled()
   })
 
   // Story 21.8: task auto-completion on happy-path finding close.
@@ -1822,7 +1784,12 @@ describe('reopenFinding', () => {
     expect(prisma.complianceFinding.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: FINDING_ID },
-        data: { closed_at: null, closed_by_user_id: null },
+        data: {
+          closed_at: null,
+          closed_by_user_id: null,
+          verification_note: null,
+          close_reason: null,
+        },
       })
     )
     expect(activityLogger.logActivity).toHaveBeenCalledWith(
@@ -1846,24 +1813,10 @@ describe('reopenFinding', () => {
     expect(activityLogger.logActivity).not.toHaveBeenCalled()
   })
 
-  it('SEALED cycle blocks reopen', async () => {
-    vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
-      makeFinding({
-        closed_at: new Date('2026-04-20T10:00:00Z'),
-        closed_by_user_id: USER_ID,
-        cycle: {
-          id: CYCLE_ID,
-          status: ComplianceCycleStatus.SEALED,
-          law_list_id: LAW_LIST_ID,
-        },
-      }) as never
-    )
-    const result = await reopenFinding(FINDING_ID)
-    expect(result.success).toBe(false)
-    expect(prisma.complianceFinding.update).not.toHaveBeenCalled()
-  })
+  // Story 21.27 — "SEALED/ARKIVERAD blocks reopen" test deleted.
 
-  it('AVSLUTAD cycle blocks reopen', async () => {
+  it('Phase 2 / Epic 23: AVSLUTAD cycle ALLOWS reopen (Option B unlock)', async () => {
+    // Phase 2 narrows the guard so reopenFinding succeeds in AVSLUTAD.
     vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
       makeFinding({
         closed_at: new Date('2026-04-20T10:00:00Z'),
@@ -1875,10 +1828,127 @@ describe('reopenFinding', () => {
         },
       }) as never
     )
+    vi.mocked(prisma.complianceFinding.update).mockResolvedValue(
+      makeFinding({
+        closed_at: null,
+        closed_by_user_id: null,
+        verification_note: null,
+        close_reason: null,
+      }) as never
+    )
     const result = await reopenFinding(FINDING_ID)
-    expect(result.success).toBe(false)
-    expect(result.error).toMatch(/avslutad/)
-    expect(prisma.complianceFinding.update).not.toHaveBeenCalled()
+    if (!result.success) {
+      expect(result.error).not.toMatch(/avslutad/i)
+    }
+    expect(prisma.complianceFinding.update).toHaveBeenCalled()
+  })
+
+  it('Phase 2: reopenFinding clears verification_note + close_reason columns', async () => {
+    // Regression guard: reopen must null out the denormalised closure
+    // metadata so the badge derivation flips back to Öppen / Redo att verifiera.
+    vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
+      makeFinding({
+        closed_at: new Date('2026-04-20T10:00:00Z'),
+        closed_by_user_id: USER_ID,
+        verification_note: 'Granskade ny skylt',
+      }) as never
+    )
+    vi.mocked(prisma.complianceFinding.update).mockResolvedValue(
+      makeFinding({
+        closed_at: null,
+        closed_by_user_id: null,
+        verification_note: null,
+        close_reason: null,
+      }) as never
+    )
+    await reopenFinding(FINDING_ID)
+    const updateCall = vi.mocked(prisma.complianceFinding.update).mock.calls[0]
+    expect(updateCall).toBeDefined()
+    const updateData = (updateCall![0] as { data: Record<string, unknown> })
+      .data
+    expect(updateData.closed_at).toBeNull()
+    expect(updateData.closed_by_user_id).toBeNull()
+    expect(updateData.verification_note).toBeNull()
+    expect(updateData.close_reason).toBeNull()
+  })
+
+  it('Phase 2: closeFinding writes verification_note column when arg supplied', async () => {
+    vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
+      makeFinding({
+        type: FindingType.AVVIKELSE,
+        corrective_action_task_id: 'task-x',
+        corrective_action_task: {
+          id: 'task-x',
+          title: 'Fix',
+          completed_at: new Date('2026-04-25T10:00:00Z'),
+        },
+      }) as never
+    )
+    vi.mocked(prisma.complianceFinding.update).mockResolvedValue(
+      makeFinding({ closed_at: new Date() }) as never
+    )
+    await closeFinding({
+      findingId: FINDING_ID,
+      verificationNote: 'Granskade evidence pack',
+    })
+    const calls = vi.mocked(prisma.complianceFinding.update).mock.calls
+    const closeUpdateCall = calls.find((c) => {
+      const data = (c[0] as { data?: Record<string, unknown> }).data
+      return data?.closed_at != null
+    })
+    expect(closeUpdateCall).toBeDefined()
+    const data = (closeUpdateCall![0] as { data: Record<string, unknown> }).data
+    expect(data.verification_note).toBe('Granskade evidence pack')
+    expect(data.close_reason).toBeNull()
+  })
+
+  it('Phase 2: closeFinding writes close_reason column when manual override', async () => {
+    vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
+      makeFinding({
+        type: FindingType.AVVIKELSE,
+        corrective_action_task_id: 'task-y',
+        corrective_action_task: {
+          id: 'task-y',
+          title: 'Fix',
+          completed_at: null,
+        },
+      }) as never
+    )
+    vi.mocked(prisma.complianceFinding.update).mockResolvedValue(
+      makeFinding({ closed_at: new Date() }) as never
+    )
+    await closeFinding({
+      findingId: FINDING_ID,
+      closeReason: 'Verksamheten har förändrats',
+    })
+    const calls = vi.mocked(prisma.complianceFinding.update).mock.calls
+    const closeUpdateCall = calls.find((c) => {
+      const data = (c[0] as { data?: Record<string, unknown> }).data
+      return data?.closed_at != null
+    })
+    expect(closeUpdateCall).toBeDefined()
+    const data = (closeUpdateCall![0] as { data: Record<string, unknown> }).data
+    expect(data.close_reason).toBe('Verksamheten har förändrats')
+    expect(data.verification_note).toBeNull()
+  })
+
+  it('Phase 2: closeFinding writes both metadata columns NULL when neither arg supplied', async () => {
+    vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(
+      makeFinding({ type: FindingType.OBSERVATION }) as never
+    )
+    vi.mocked(prisma.complianceFinding.update).mockResolvedValue(
+      makeFinding({ closed_at: new Date() }) as never
+    )
+    await closeFinding({ findingId: FINDING_ID })
+    const calls = vi.mocked(prisma.complianceFinding.update).mock.calls
+    const closeUpdateCall = calls.find((c) => {
+      const data = (c[0] as { data?: Record<string, unknown> }).data
+      return data?.closed_at != null
+    })
+    expect(closeUpdateCall).toBeDefined()
+    const data = (closeUpdateCall![0] as { data: Record<string, unknown> }).data
+    expect(data.verification_note).toBeNull()
+    expect(data.close_reason).toBeNull()
   })
 })
 

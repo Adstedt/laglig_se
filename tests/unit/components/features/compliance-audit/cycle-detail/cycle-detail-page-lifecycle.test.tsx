@@ -99,25 +99,18 @@ vi.mock(
     CycleActionsDropdown: ({
       cycle,
       canRevert,
-      canSeal,
       onCompleteClick,
       onRevertClick,
-      onSealClick,
     }: {
       cycle: { status: ComplianceCycleStatus }
       canRevert: boolean
-      canSeal: boolean
       onCompleteClick: () => void
       onRevertClick: () => void
-      onSealClick: () => void
     }) => (
       <div data-testid="stub-dropdown" data-status={cycle.status}>
         <button onClick={onCompleteClick}>stub-complete</button>
         <button onClick={onRevertClick} disabled={!canRevert}>
           stub-revert
-        </button>
-        <button onClick={onSealClick} disabled={!canSeal}>
-          stub-seal
         </button>
       </div>
     ),
@@ -215,12 +208,8 @@ function renderPage(
         items={items}
         initialFindings={findings}
         cyclePartial={makeCyclePartial(status)}
-        readOnly={
-          status === ComplianceCycleStatus.SEALED ||
-          status === ComplianceCycleStatus.ARKIVERAD
-        }
+        itemsReadOnly={status === ComplianceCycleStatus.AVSLUTAD}
         canRevert={opts.canRevert ?? false}
-        canSeal={false}
       />
     </SWRConfig>
   )
@@ -366,7 +355,7 @@ describe('CycleDetailPage — lifecycle integration', () => {
 // ============================================================================
 // The banner reframes "audit complete" as "snapshot taken; findings continue
 // to be followed up" — appears between the header and the tab strip when
-// `localCycle.status === 'AVSLUTAD'`. Hidden in PAGAENDE / SEALED / ARKIVERAD.
+// `localCycle.status === 'AVSLUTAD'`. Hidden in PAGAENDE.
 
 describe('CycleDetailPage — AVSLUTAD reassurance banner', () => {
   it('renders banner when status is AVSLUTAD', () => {
@@ -383,13 +372,7 @@ describe('CycleDetailPage — AVSLUTAD reassurance banner', () => {
     expect(screen.queryByTestId('cycle-avslutad-advisory')).toBeNull()
   })
 
-  it('does NOT render banner in SEALED (read-only banner inside Findings tab takes over)', () => {
-    renderPage({ status: ComplianceCycleStatus.SEALED })
-    expect(screen.queryByTestId('cycle-avslutad-advisory')).toBeNull()
-  })
-
-  it('does NOT render banner in ARKIVERAD', () => {
-    renderPage({ status: ComplianceCycleStatus.ARKIVERAD })
-    expect(screen.queryByTestId('cycle-avslutad-advisory')).toBeNull()
-  })
+  // Story 21.26 + 21.27 — "does NOT render banner in SEALED/ARKIVERAD"
+  // tests deleted alongside the SEAL + ARKIVERAD collapses. AVSLUTAD is
+  // the only state where the banner renders.
 })

@@ -9,10 +9,6 @@ import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { withWorkspace } from '@/lib/auth/workspace-context'
 import { getStorageClient } from '@/lib/supabase/storage'
-import {
-  findActiveSnapshotReferences,
-  formatBlockedByCyclesError,
-} from '@/lib/compliance-audit/check-evidence-references'
 import { z } from 'zod'
 import type { FileCategory } from '@prisma/client'
 
@@ -834,16 +830,9 @@ export async function deleteFile(fileId: string): Promise<ActionResult> {
         }
       }
 
-      // Story 21.9 — block deletion if file is snapshot-referenced by any
-      // SEALED cycle. Integrity contract: bytes hashed at seal time must
-      // remain retrievable.
-      const blockingRefs = await findActiveSnapshotReferences({ fileId })
-      if (blockingRefs.length > 0) {
-        return {
-          success: false,
-          error: formatBlockedByCyclesError(blockingRefs),
-        }
-      }
+      // Story 21.26 — evidence-snapshot deletion guard removed alongside
+      // the SEALED collapse and ComplianceEvidenceSnapshot model deletion.
+      // If we re-add evidence-protection in the future, it'll live elsewhere.
 
       // Delete from storage (only if file has storage_path - folders don't)
       if (file.storage_path) {
@@ -1213,42 +1202,8 @@ export async function deleteFilesBulk(
         return { success: false, error: 'Inga filer att radera' }
       }
 
-      // Story 21.9 — block the batch if ANY file is snapshot-referenced by
-      // a SEALED cycle. Check all files in parallel, aggregate refs, return
-      // a single formatted error listing the blocking cycles.
-      const refCheckResults = await Promise.all(
-        files.map((f) =>
-          findActiveSnapshotReferences({ fileId: f.id }).then((refs) => ({
-            fileId: f.id,
-            refs,
-          }))
-        )
-      )
-      const aggregatedRefs = new Map<
-        string,
-        { cycleId: string; cycleName: string; status: 'SEALED' }
-      >()
-      for (const { refs } of refCheckResults) {
-        for (const ref of refs) {
-          if (!aggregatedRefs.has(ref.cycleId)) {
-            aggregatedRefs.set(ref.cycleId, {
-              cycleId: ref.cycleId,
-              cycleName: ref.cycleName,
-              status: 'SEALED',
-            })
-          }
-        }
-      }
-      if (aggregatedRefs.size > 0) {
-        return {
-          success: false,
-          error: formatBlockedByCyclesError(
-            Array.from(aggregatedRefs.values()).sort((a, b) =>
-              a.cycleName.localeCompare(b.cycleName, 'sv')
-            )
-          ),
-        }
-      }
+      // Story 21.26 — evidence-snapshot deletion guard removed alongside the
+      // SEALED collapse and the ComplianceEvidenceSnapshot model deletion.
 
       // Delete from storage (filter out folders which don't have storage_path)
       const paths = files

@@ -33,7 +33,9 @@ import { CycleStatusBadge } from '@/components/features/compliance-audit/cycle-d
 import type { CycleSummary } from '@/app/actions/compliance-audit-cycle'
 import { ComplianceCycleStatus, AuditType } from '@prisma/client'
 
-type FilterKey = 'aktiva' | 'slutforda' | 'forseglade' | 'arkiverade' | 'alla'
+// Story 21.26 — `forseglade` filter removed alongside the SEAL collapse.
+// Story 21.27 — `arkiverade` filter removed alongside the ARKIVERAD collapse.
+type FilterKey = 'aktiva' | 'slutforda' | 'alla'
 
 interface FilterDef {
   key: FilterKey
@@ -51,16 +53,6 @@ const FILTERS: FilterDef[] = [
     key: 'slutforda',
     label: 'Slutförda',
     statuses: [ComplianceCycleStatus.AVSLUTAD],
-  },
-  {
-    key: 'forseglade',
-    label: 'Fastställda',
-    statuses: [ComplianceCycleStatus.SEALED],
-  },
-  {
-    key: 'arkiverade',
-    label: 'Arkiverade',
-    statuses: [ComplianceCycleStatus.ARKIVERAD],
   },
   { key: 'alla', label: 'Alla', statuses: 'all' },
 ]
@@ -92,8 +84,6 @@ export function CycleListTable({ cycles, canCreate }: CycleListTableProps) {
         (byStatus[ComplianceCycleStatus.PLANERAD] ?? 0) +
         (byStatus[ComplianceCycleStatus.PAGAENDE] ?? 0),
       slutforda: byStatus[ComplianceCycleStatus.AVSLUTAD] ?? 0,
-      forseglade: byStatus[ComplianceCycleStatus.SEALED] ?? 0,
-      arkiverade: byStatus[ComplianceCycleStatus.ARKIVERAD] ?? 0,
       alla: cycles.length,
     }
   }, [cycles])

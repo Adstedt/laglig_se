@@ -33,16 +33,16 @@ describe('Story 21.1: Compliance Audit Cycle schema', () => {
   })
 
   describe('ComplianceCycleStatus enum', () => {
-    it('has exactly 5 values (the cycle lifecycle)', () => {
-      expect(Object.values(ComplianceCycleStatus)).toHaveLength(5)
+    // Story 21.26 — SEALED collapsed into AVSLUTAD.
+    // Story 21.27 — ARKIVERAD also collapsed; lifecycle is 3-state.
+    it('has exactly 3 values (the cycle lifecycle)', () => {
+      expect(Object.values(ComplianceCycleStatus)).toHaveLength(3)
     })
 
-    it('contains PLANERAD, PAGAENDE, AVSLUTAD, SEALED, ARKIVERAD', () => {
+    it('contains PLANERAD, PAGAENDE, AVSLUTAD', () => {
       expect(ComplianceCycleStatus.PLANERAD).toBe('PLANERAD')
       expect(ComplianceCycleStatus.PAGAENDE).toBe('PAGAENDE')
       expect(ComplianceCycleStatus.AVSLUTAD).toBe('AVSLUTAD')
-      expect(ComplianceCycleStatus.SEALED).toBe('SEALED')
-      expect(ComplianceCycleStatus.ARKIVERAD).toBe('ARKIVERAD')
     })
   })
 
@@ -82,9 +82,10 @@ describe('Story 21.1: Compliance Audit Cycle schema', () => {
   })
 
   describe('ReportKind enum', () => {
-    it('contains COMPLETE and SEALED', () => {
+    // Story 21.26 — SEALED dropped; only COMPLETE remains post-collapse.
+    it('contains COMPLETE', () => {
       expect(ReportKind.COMPLETE).toBe('COMPLETE')
-      expect(ReportKind.SEALED).toBe('SEALED')
+      expect(Object.values(ReportKind)).toHaveLength(1)
     })
   })
 
@@ -121,7 +122,7 @@ describe('Story 21.1: Compliance Audit Cycle schema', () => {
       expect(fields.lead_auditor_user_id).toBe('lead_auditor_user_id')
       expect(fields.sealed_at).toBe('sealed_at')
       expect(fields.sealed_by_user_id).toBe('sealed_by_user_id')
-      expect(fields.seal_hash).toBe('seal_hash')
+      // Story 21.26 — `seal_hash` column dropped; cryptographic ceremony removed.
       expect(fields.created_at).toBe('created_at')
       expect(fields.updated_at).toBe('updated_at')
       expect(fields.deleted_at).toBe('deleted_at')
@@ -164,20 +165,9 @@ describe('Story 21.1: Compliance Audit Cycle schema', () => {
     })
   })
 
-  describe('ComplianceEvidenceSnapshot model types', () => {
-    it('exposes ComplianceEvidenceSnapshotScalarFieldEnum with all expected fields', () => {
-      const fields = Prisma.ComplianceEvidenceSnapshotScalarFieldEnum
-      expect(fields.id).toBe('id')
-      expect(fields.cycle_id).toBe('cycle_id')
-      expect(fields.law_list_item_id).toBe('law_list_item_id')
-      expect(fields.requirement_id).toBe('requirement_id')
-      expect(fields.evidence_kind).toBe('evidence_kind')
-      expect(fields.evidence_file_id).toBe('evidence_file_id')
-      expect(fields.evidence_document_id).toBe('evidence_document_id')
-      expect(fields.evidence_sha256).toBe('evidence_sha256')
-      expect(fields.captured_at).toBe('captured_at')
-    })
-  })
+  // Story 21.26 — ComplianceEvidenceSnapshot model dropped alongside the SEAL
+  // collapse. The only writer was sealCycle's gather-seal-evidence path; no
+  // remaining consumers post-collapse. Model + table removed via the migration.
 
   describe('ComplianceAuditReport model types', () => {
     it('exposes ComplianceAuditReportScalarFieldEnum with all expected fields', () => {

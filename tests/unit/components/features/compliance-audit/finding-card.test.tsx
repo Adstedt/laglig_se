@@ -27,6 +27,8 @@ function makeFinding(overrides: Partial<FindingRow> = {}): FindingRow {
     dueDate: null,
     closedAt: null,
     closedBy: null,
+    verificationNote: null,
+    closeReason: null,
     lawListItemId: 'l1',
     lawListItem: {
       id: 'l1',
@@ -90,7 +92,12 @@ describe('FindingCard', () => {
     )
     const title = screen.getByText('Saknad utbildningsplan')
     expect(title.className).toContain('line-through')
-    expect(screen.getByText('Stängd')).toBeInTheDocument()
+    // Phase 2 / Epic 23: closed-plain (closedAt set, both metadata fields null)
+    // renders the "Åtgärdad" badge — replaces the legacy "Stängd" text.
+    expect(
+      screen.getByTestId('finding-status-closed-plain')
+    ).toBeInTheDocument()
+    expect(screen.getByText('Åtgärdad')).toBeInTheDocument()
     // Stängd metadata line includes "av Alice"
     expect(screen.getByText(/stängd.*av Alice/i)).toBeInTheDocument()
   })

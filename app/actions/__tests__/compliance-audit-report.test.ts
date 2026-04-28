@@ -39,9 +39,6 @@ import type { FindingRow, ListFindingsResult } from '../compliance-finding'
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
-    complianceEvidenceSnapshot: {
-      findMany: vi.fn(),
-    },
     complianceAuditCycle: {
       findFirst: vi.fn(),
     },
@@ -165,7 +162,6 @@ function makeCycle(overrides: Partial<CycleDetail> = {}): CycleDetail {
     updatedAt: new Date('2026-03-31T00:00:00.000Z'),
     lawListId: LAW_LIST_ID,
     scopeDefinition: { kind: 'all' },
-    sealHash: null,
     sealedAt: null,
     sealedBy: null,
     createdBy: { id: USER_ID, name: 'Creator' },
@@ -187,7 +183,6 @@ function makeItemsResult(
         id: CYCLE_ID,
         status: cycleStatus,
         name: 'Test cycle',
-        sealHash: null,
       },
     },
   }
@@ -203,7 +198,7 @@ function makeFindingsResult(findings: FindingRow[] = []): {
 beforeEach(() => {
   vi.clearAllMocks()
   mockWorkspaceCtx({ role: 'OWNER' })
-  vi.mocked(prisma.complianceEvidenceSnapshot.findMany).mockResolvedValue([])
+  // Story 21.26 — complianceEvidenceSnapshot mock removed.
   vi.mocked(getCycleById).mockResolvedValue({
     success: true,
     data: { cycle: makeCycle() },
@@ -229,52 +224,10 @@ describe('getRevisionsrapportInput — happy path', () => {
     expect(result.data!.html).toContain('Test cycle')
   })
 
-  it('SEALED cycle with snapshots hydrates evidenceSnapshots + renders seal block', async () => {
-    vi.mocked(getCycleById).mockResolvedValue({
-      success: true,
-      data: {
-        cycle: makeCycle({
-          status: 'SEALED',
-          sealHash:
-            'abc123def456abc123def456abc123def456abc123def456abc123def456abcd',
-          sealedAt: new Date('2026-04-01T14:30:00.000Z'),
-          sealedBy: { id: USER_ID, name: 'Sealer' },
-        }),
-      },
-    })
-    vi.mocked(prisma.complianceEvidenceSnapshot.findMany).mockResolvedValue([
-      {
-        id: 'ssss1111-1111-4111-8111-111111111111',
-        cycle_id: CYCLE_ID,
-        law_list_item_id: null,
-        requirement_id: null,
-        evidence_kind: 'FILE',
-        evidence_file_id: 'ffff1111-1111-4111-8111-111111111111',
-        evidence_document_id: null,
-        evidence_sha256:
-          '0000111122223333444455556666777788889999aaaabbbbccccddddeeeeffff',
-        captured_at: new Date('2026-04-01T14:30:00.000Z'),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        evidence_file: {
-          id: 'ffff1111-1111-4111-8111-111111111111',
-          filename: 'evidence.pdf',
-        },
-        evidence_document: null,
-      } as unknown as Awaited<
-        ReturnType<typeof prisma.complianceEvidenceSnapshot.findMany>
-      >[number],
-    ])
-
-    const result = await getRevisionsrapportInput({ cycleId: CYCLE_ID })
-
-    expect(result.success).toBe(true)
-    expect(result.data!.input.snapshots).toHaveLength(1)
-    expect(result.data!.input.snapshots[0]!.displayName).toBe('evidence.pdf')
-    expect(result.data!.html).toContain('class="seal-block"')
-    expect(result.data!.html).toContain(
-      'abc123def456abc123def456abc123def456abc123def456abc123def456abcd'
-    )
-  })
+  // Story 21.26 — "SEALED cycle with snapshots" test deleted alongside the
+  // SEAL collapse. ComplianceEvidenceSnapshot table is gone; seal-hash is gone;
+  // the seal-block HTML is gone. AVSLUTAD-cycle rendering is covered by the
+  // happy-path test above; the snapshots array always returns empty now.
 
   it('PLANERAD cycle still returns success; client component decides whether to call', async () => {
     vi.mocked(getCycleById).mockResolvedValue({
@@ -334,9 +287,6 @@ describe('getRevisionsrapportInput — error paths', () => {
     expect(result.success).toBe(false)
     expect(result.error).toBeDefined()
     expect(vi.mocked(getCycleById)).not.toHaveBeenCalled()
-    expect(
-      vi.mocked(prisma.complianceEvidenceSnapshot.findMany)
-    ).not.toHaveBeenCalled()
   })
 
   it('propagates getCycleItemsForCycle failure', async () => {
@@ -368,21 +318,10 @@ describe('getRevisionsrapportInput — error paths', () => {
 // Tenant isolation
 // ============================================================================
 
-describe('getRevisionsrapportInput — tenant isolation', () => {
-  it('evidence-snapshot query includes the workspace filter on the cycle join', async () => {
-    await getRevisionsrapportInput({ cycleId: CYCLE_ID })
-    expect(
-      vi.mocked(prisma.complianceEvidenceSnapshot.findMany)
-    ).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          cycle_id: CYCLE_ID,
-          cycle: { workspace_id: WORKSPACE_ID },
-        }),
-      })
-    )
-  })
-})
+// Story 21.26 — evidence-snapshot tenant isolation test removed alongside the
+// SEAL collapse. ComplianceEvidenceSnapshot model is gone; the cycle/workspace
+// tenant filter in getRevisionsrapportInput is now exercised via the cycle
+// fetch path itself (see "fetches cycle by cycleId + workspaceId" coverage above).
 
 // ============================================================================
 // Determinism at action layer
@@ -424,7 +363,7 @@ describe('reportNeedsRegeneration', () => {
       reportNeedsRegeneration(
         {
           pdf_storage_path: null,
-          report_kind: 'SEALED',
+          report_kind: 'COMPLETE',
           generated_at: baseGeneratedAt,
         },
         null
@@ -432,18 +371,9 @@ describe('reportNeedsRegeneration', () => {
     ).toBe(true)
   })
 
-  it('SEALED with populated path → false regardless of touch timestamp', () => {
-    expect(
-      reportNeedsRegeneration(
-        {
-          pdf_storage_path: 'path/report.pdf',
-          report_kind: 'SEALED',
-          generated_at: baseGeneratedAt,
-        },
-        Date.now() + 100_000 // Even if touch is newer, SEALED is frozen.
-      )
-    ).toBe(false)
-  })
+  // Story 21.26 — "SEALED with populated path → false regardless of touch"
+  // test deleted; SEALED state no longer exists. The COMPLETE-touch tests
+  // below cover the surviving regeneration semantics.
 
   it('COMPLETE with touch newer than generated_at → true', () => {
     expect(
@@ -594,16 +524,8 @@ describe('generateCycleReport', () => {
     expect(result.success).toBe(false)
   })
 
-  it('SEALED kind on a non-sealed cycle — rejected', async () => {
-    // Cycle is AVSLUTAD (default), kind is SEALED → mismatch.
-    const result = await generateCycleReport({
-      cycleId: CYCLE_ID,
-      kind: 'SEALED',
-    })
-
-    expect(result.success).toBe(false)
-    expect(result.error).toContain('fastställda')
-  })
+  // Story 21.26 — "SEALED kind on a non-sealed cycle — rejected" test removed.
+  // SEALED kind no longer exists; the kind-vs-status mismatch case is gone.
 
   it('cycle not found (cross-workspace) → Swedish error', async () => {
     vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue(null)
@@ -677,99 +599,10 @@ describe('generateCycleReport', () => {
     }
   })
 
-  it('happy path SEALED — uses pure update (no manifest field anywhere)', async () => {
-    // Cycle is SEALED for this test.
-    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue({
-      id: CYCLE_ID,
-      status: 'SEALED',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any)
-    vi.mocked(getCycleById).mockResolvedValue({
-      success: true,
-      data: {
-        cycle: makeCycle({
-          status: 'SEALED',
-          sealHash: 'abc'.padEnd(64, '0'),
-          sealedAt: new Date('2026-04-01T14:30:00.000Z'),
-          sealedBy: { id: USER_ID, name: 'Sealer' },
-        }),
-      },
-    })
-    // Existing SEALED row (from seal transaction — manifest already set).
-    vi.mocked(prisma.complianceAuditReport.findUnique).mockResolvedValue({
-      id: 'rrr11111-1111-4111-8111-111111111111',
-      pdf_storage_path: null,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any)
-
-    const result = await generateCycleReport({
-      cycleId: CYCLE_ID,
-      kind: 'SEALED',
-    })
-
-    expect(result.success).toBe(true)
-
-    // CRITICAL INVARIANT (QA gate INVARIANT-001): SEALED uses pure `update`,
-    // not `upsert`. No `manifest` field is written anywhere in the SEALED
-    // path — the canonical manifest from sealCycle is sacrosanct.
-    expect(
-      vi.mocked(prisma.complianceAuditReport.upsert)
-    ).not.toHaveBeenCalled()
-    const updateCall = vi.mocked(prisma.complianceAuditReport.update).mock
-      .calls[0]?.[0]
-    expect(updateCall?.data).toBeDefined()
-    expect(updateCall?.data).not.toHaveProperty('manifest')
-    expect(updateCall?.data).toHaveProperty('pdf_storage_path')
-    expect(updateCall?.data).toHaveProperty('html_storage_path')
-    expect(updateCall?.data).toHaveProperty('generated_at')
-  })
-
-  // QA gate TEST-001 / INVARIANT-001 regression: SEALED kind requires the
-  // seal-row to pre-exist. If it does not, generateCycleReport must refuse
-  // rather than fall back to a non-canonical manifest. Pairs with the
-  // INVARIANT-001 fix that removed the `manifest ?? buildComplianceReportManifest(...)`
-  // create-branch fallback.
-  it('SEALED kind with missing seal-row → refuses with Swedish error, no manifest written', async () => {
-    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue({
-      id: CYCLE_ID,
-      status: 'SEALED',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any)
-    vi.mocked(getCycleById).mockResolvedValue({
-      success: true,
-      data: {
-        cycle: makeCycle({
-          status: 'SEALED',
-          sealHash: 'abc'.padEnd(64, '0'),
-          sealedAt: new Date('2026-04-01T14:30:00.000Z'),
-          sealedBy: { id: USER_ID, name: 'Sealer' },
-        }),
-      },
-    })
-    // The anomaly: cycle is SEALED but no report row exists. (sealCycle
-    // should always create one; this guards against a data backfill / manual
-    // cleanup state that would otherwise let us silently corrupt the
-    // canonical manifest.)
-    vi.mocked(prisma.complianceAuditReport.findUnique).mockResolvedValue(null)
-
-    const result = await generateCycleReport({
-      cycleId: CYCLE_ID,
-      kind: 'SEALED',
-    })
-
-    expect(result.success).toBe(false)
-    expect(result.error).toContain('seal-transaktion')
-
-    // Critical: NO manifest write of any form.
-    expect(
-      vi.mocked(prisma.complianceAuditReport.upsert)
-    ).not.toHaveBeenCalled()
-    expect(
-      vi.mocked(prisma.complianceAuditReport.update)
-    ).not.toHaveBeenCalled()
-    // No activity log either — this is a guard, not a workflow event.
-    expect(vi.mocked(logActivity)).not.toHaveBeenCalled()
-  })
+  // Story 21.26 — "happy path SEALED — uses pure update" and "SEALED kind with
+  // missing seal-row" tests removed. SEALED kind no longer exists; the
+  // sacrosanct-manifest invariant is moot now that completeCycle owns the
+  // (always-create) report row directly.
 
   it('storage upload failure — returns Swedish error, no DB write', async () => {
     mockStorageClient(
@@ -849,26 +682,7 @@ describe('shouldRegenerateReport', () => {
     expect(result).toBe(true)
   })
 
-  it('SEALED report with populated path → false even if items are newer', async () => {
-    vi.mocked(prisma.complianceAuditReport.findUnique).mockResolvedValue({
-      pdf_storage_path: 'path/report.pdf',
-      report_kind: 'SEALED',
-      generated_at: new Date('2026-04-01T00:00:00.000Z'),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any)
-    vi.mocked(prisma.complianceAuditCycle.findFirst).mockResolvedValue({
-      updated_at: new Date('2026-05-01T00:00:00.000Z'),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any)
-    vi.mocked(prisma.complianceAuditItem.findFirst).mockResolvedValue(null)
-    vi.mocked(prisma.complianceFinding.findFirst).mockResolvedValue(null)
-
-    const result = await shouldRegenerateReport(
-      CYCLE_ID,
-      WORKSPACE_ID,
-      'SEALED'
-    )
-
-    expect(result).toBe(false)
-  })
+  // Story 21.26 — "SEALED report with populated path → false" test deleted.
+  // SEALED state no longer exists; reportNeedsRegeneration covers the
+  // surviving COMPLETE-kind freshness logic.
 })

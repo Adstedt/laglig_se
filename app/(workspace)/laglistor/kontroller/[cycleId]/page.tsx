@@ -18,11 +18,7 @@ import {
 import { getCycleById } from '@/app/actions/compliance-audit-cycle'
 import { getCycleItemsForCycle } from '@/app/actions/compliance-audit-item'
 import { listFindingsForCycle } from '@/app/actions/compliance-finding'
-import {
-  canCompleteOrRevertCycle,
-  canSealCycle,
-} from '@/lib/compliance-audit/authorization'
-import { prisma } from '@/lib/prisma'
+import { canCompleteOrRevertCycle } from '@/lib/compliance-audit/authorization'
 import { CycleDetailPage } from '@/components/features/compliance-audit/cycle-detail'
 
 export const dynamic = 'force-dynamic'
@@ -83,28 +79,20 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
       ? findingsResult.data.findings
       : []
 
-  // Story 21.6 + 21.9 — resolve Revert AND Seal permissions server-side. Both
-  // are only meaningful when the cycle is AVSLUTAD (UI hides each menu item
-  // otherwise) so we skip the DB lookup for every other state. Run the two
-  // cheap findFirst lookups in parallel when applicable.
+  // Story 21.6 — resolve Revert permission server-side. Only meaningful when
+  // the cycle is AVSLUTAD (UI hides the menu item otherwise) so we skip the
+  // DB lookup for every other state. Story 21.26 dropped the parallel canSeal
+  // lookup alongside the SEAL collapse.
   const cycleStatus = cycleResult.data.cycle.status
-  const [canRevert, canSeal] =
+  const canRevert =
     cycleStatus === ComplianceCycleStatus.AVSLUTAD
-      ? await Promise.all([
-          canCompleteOrRevertCycle({
-            role: ctx.role,
-            userId: ctx.userId,
-            cycleId,
-            workspaceId: ctx.workspaceId,
-          }),
-          canSealCycle(prisma, {
-            role: ctx.role,
-            userId: ctx.userId,
-            cycleId,
-            workspaceId: ctx.workspaceId,
-          }),
-        ])
-      : [false, false]
+      ? await canCompleteOrRevertCycle({
+          role: ctx.role,
+          userId: ctx.userId,
+          cycleId,
+          workspaceId: ctx.workspaceId,
+        })
+      : false
 
   if (!itemsResult.success || !itemsResult.data) {
     // Fail-open with an empty items array — the UI renders the empty state and
@@ -119,11 +107,9 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
           id: cycleResult.data.cycle.id,
           status: cycleResult.data.cycle.status,
           name: cycleResult.data.cycle.name,
-          sealHash: cycleResult.data.cycle.sealHash,
         }}
-        readOnly={isReadOnly(cycleResult.data.cycle.status)}
+        itemsReadOnly={itemsReadOnly(cycleResult.data.cycle.status)}
         canRevert={canRevert}
-        canSeal={canSeal}
         currentUserId={ctx.userId}
         currentUserRole={ctx.role}
       />
@@ -136,19 +122,18 @@ export default async function CycleDetailRoute({ params }: RouteParams) {
       items={itemsResult.data.items}
       initialFindings={initialFindings}
       cyclePartial={itemsResult.data.cycle}
-      readOnly={isReadOnly(itemsResult.data.cycle.status)}
+      itemsReadOnly={itemsReadOnly(itemsResult.data.cycle.status)}
       canRevert={canRevert}
-      canSeal={canSeal}
       currentUserId={ctx.userId}
       currentUserRole={ctx.role}
     />
   )
 }
 
-function isReadOnly(status: CycleStatusType): boolean {
-  return (
-    status === ComplianceCycleStatus.AVSLUTAD ||
-    status === ComplianceCycleStatus.SEALED ||
-    status === ComplianceCycleStatus.ARKIVERAD
-  )
+// Story 21.26 — split readOnly into items vs findings semantics.
+// Story 21.27 — ARKIVERAD collapsed; AVSLUTAD is the only terminal state.
+// Items remain frozen at AVSLUTAD (the audit snapshot). Findings have no
+// cycle-status read-only mode any more — `findingsReadOnly` helper deleted.
+function itemsReadOnly(status: CycleStatusType): boolean {
+  return status === ComplianceCycleStatus.AVSLUTAD
 }

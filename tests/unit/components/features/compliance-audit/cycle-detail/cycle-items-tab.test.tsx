@@ -154,7 +154,6 @@ function makeCycleDetail(overrides: Partial<CycleDetail> = {}): CycleDetail {
     updatedAt: new Date(),
     lawListId: 'l1',
     scopeDefinition: { kind: 'all' },
-    sealHash: null,
     sealedAt: null,
     sealedBy: null,
     createdBy: { id: 'u0', name: 'Creator' },
@@ -168,7 +167,6 @@ function makeCyclePartial(overrides: Partial<CyclePartial> = {}): CyclePartial {
     id: CYCLE_ID,
     status: ComplianceCycleStatus.PAGAENDE,
     name: 'Q2 miljörevision',
-    sealHash: null,
     ...overrides,
   }
 }
@@ -237,12 +235,11 @@ function renderPage(
         }
         initialFindings={[]}
         cyclePartial={
-          overrides.cyclePartial ??
-          makeCyclePartial({ status: cycle.status, sealHash: cycle.sealHash })
+          overrides.cyclePartial ?? makeCyclePartial({ status: cycle.status })
         }
-        readOnly={overrides.readOnly ?? false}
+        itemsReadOnly={overrides.readOnly ?? false}
+        findingsReadOnly={overrides.readOnly ?? false}
         canRevert={false}
-        canSeal={false}
         currentUserId="u1"
         currentUserRole="OWNER"
       />
@@ -363,25 +360,23 @@ describe('CycleDetailPage — items tab', () => {
   })
 
   it('read-only mode: no sign buttons, no unsign X, read-only banner visible', () => {
+    // Story 21.26 — SEAL collapsed into AVSLUTAD. Items are read-only at
+    // AVSLUTAD (Phase 2 lock); the richer SealedCycleBanner is gone.
     renderPage({
       cycle: makeCycleDetail({
-        status: ComplianceCycleStatus.SEALED,
-        sealHash: 'abc123def456aaaabbbbccccdddd',
+        status: ComplianceCycleStatus.AVSLUTAD,
       }),
       cyclePartial: makeCyclePartial({
-        status: ComplianceCycleStatus.SEALED,
-        sealHash: 'abc123def456aaaabbbbccccdddd',
+        status: ComplianceCycleStatus.AVSLUTAD,
       }),
       readOnly: true,
     })
 
-    // Story 21.9 — SEALED cycles render the richer SealedCycleBanner (replaces
-    // the old ReadOnlyBanner for SEALED state). Banner copy is "Fastställd"
-    // (capitalised) with a truncated hash chip.
-    const banner = screen.getByRole('status')
-    expect(banner.textContent).toContain('Fastställd')
-    // Truncated hash format: first 8 + "…" + last 4
-    expect(banner.textContent).toContain('abc123de')
+    // Story 21.26 — AVSLUTAD shows the Phase-1 forward-looking advisory
+    // banner (data-testid="cycle-avslutad-advisory"). Story 21.27 dropped
+    // the ARKIVERAD ReadOnlyBanner entirely since ARKIVERAD no longer exists.
+    const advisory = screen.getByTestId('cycle-avslutad-advisory')
+    expect(advisory.textContent).toContain('Kontrollen är slutförd')
 
     // No sign-off buttons rendered in read-only mode (AC 8 — hidden, not disabled).
     expect(screen.queryByRole('button', { name: 'Signera' })).toBeNull()
@@ -391,21 +386,8 @@ describe('CycleDetailPage — items tab', () => {
     expect(screen.queryAllByLabelText('Bedömning').length).toBe(0)
   })
 
-  it('read-only mode ARKIVERAD variant — banner omits hash', () => {
-    renderPage({
-      cycle: makeCycleDetail({
-        status: ComplianceCycleStatus.ARKIVERAD,
-      }),
-      cyclePartial: makeCyclePartial({
-        status: ComplianceCycleStatus.ARKIVERAD,
-      }),
-      readOnly: true,
-    })
-
-    const banner = screen.getByRole('status')
-    expect(banner.textContent).toContain('arkiverad')
-    expect(banner.textContent).not.toContain('fastställd')
-  })
+  // Story 21.27 — "ARKIVERAD variant — banner omits hash" test deleted
+  // alongside the ARKIVERAD collapse. AVSLUTAD is the only terminal state.
 
   // --- Story 21.16 — row-click-opens-modal (replaces drawer expand) ---------
 

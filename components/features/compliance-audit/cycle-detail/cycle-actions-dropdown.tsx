@@ -7,9 +7,10 @@
  * The two handler props push work up to `CycleDetailPage` (the orchestrator),
  * where dialog open/close state and mutation callbacks already live.
  *
- * Dropdown visibility rule (AC 1, 6, 6.6):
- *  - Rendered in PAGAENDE + AVSLUTAD only. Hidden in PLANERAD (empty cycle) +
- *    SEALED/ARKIVERAD (read-only banner covers it).
+ * Dropdown visibility rule:
+ *  - Rendered in PAGAENDE + AVSLUTAD only. Hidden in PLANERAD (empty cycle).
+ *    Story 21.26 + 21.27 collapsed SEALED + ARKIVERAD into AVSLUTAD; only
+ *    three states remain.
  *  - PAGAENDE shows "Slutför kontroll".
  *  - AVSLUTAD shows "Återställ till Pågående" (destructive styling).
  *
@@ -48,9 +49,7 @@ export const DROPDOWN_TOOLTIP_COPY = {
     `Slutför kontroll: ${unsigned} av ${total} dokument behöver signeras.`,
   cannotRevert:
     'Endast revisionsledaren eller administratörer kan återställa kontrollen.',
-  // Story 21.9 — seal permission denial (matches the server-action error verbatim).
-  cannotSeal:
-    "Endast revisionsledaren eller administratörer med behörighet 'audit:seal' kan fastställa kontrollen.",
+  // Story 21.26 — `cannotSeal` removed alongside the SEAL collapse.
 } as const
 
 interface CycleActionsDropdownProps {
@@ -58,11 +57,9 @@ interface CycleActionsDropdownProps {
   totalCount: number
   signeradeCount: number
   canRevert: boolean
-  // Story 21.9 — runtime flag for the Seal affordance.
-  canSeal: boolean
   onCompleteClick: () => void
   onRevertClick: () => void
-  onSealClick: () => void
+  // Story 21.26 — Seal action removed; canSeal + onSealClick props gone.
   /**
    * Test-only escape hatch. Radix DropdownMenu's pointer-event-based open
    * semantics are unreliable in happy-dom; tests pass `defaultOpen` to force
@@ -77,20 +74,16 @@ export function CycleActionsDropdown({
   totalCount,
   signeradeCount,
   canRevert,
-  canSeal,
   onCompleteClick,
   onRevertClick,
-  onSealClick,
   defaultOpen,
 }: CycleActionsDropdownProps) {
   const showComplete = cycle.status === ComplianceCycleStatus.PAGAENDE
   const showRevert = cycle.status === ComplianceCycleStatus.AVSLUTAD
-  const showSeal = cycle.status === ComplianceCycleStatus.AVSLUTAD
 
-  // Dropdown renders in PAGAENDE + AVSLUTAD only. Other states
-  // (PLANERAD / SEALED / ARKIVERAD) return null — the read-only banner or
-  // empty-cycle UX covers the messaging.
-  if (!showComplete && !showRevert && !showSeal) {
+  // Dropdown renders in PAGAENDE + AVSLUTAD only. PLANERAD returns null
+  // — empty-cycle UX covers the messaging.
+  if (!showComplete && !showRevert) {
     return null
   }
 
@@ -113,9 +106,6 @@ export function CycleActionsDropdown({
           ) : null}
           {showRevert ? (
             <RevertMenuItem canRevert={canRevert} onClick={onRevertClick} />
-          ) : null}
-          {showSeal ? (
-            <SealMenuItem canSeal={canSeal} onClick={onSealClick} />
           ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
@@ -211,41 +201,5 @@ function RevertMenuItem({ canRevert, onClick }: RevertMenuItemProps) {
   )
 }
 
-// ---------------------------------------------------------------------------
-// Fastställ kontroll — AVSLUTAD only (Story 21.9)
-// ---------------------------------------------------------------------------
-
-interface SealMenuItemProps {
-  canSeal: boolean
-  onClick: () => void
-}
-
-function SealMenuItem({ canSeal, onClick }: SealMenuItemProps) {
-  if (canSeal) {
-    return (
-      <DropdownMenuItem
-        onSelect={onClick}
-        className="text-destructive focus:text-destructive"
-      >
-        Fastställ kontroll
-      </DropdownMenuItem>
-    )
-  }
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <DropdownMenuItem
-          onSelect={(e) => e.preventDefault()}
-          aria-disabled={true}
-          className={cn(
-            'cursor-not-allowed text-destructive opacity-60 focus:text-destructive'
-          )}
-        >
-          Fastställ kontroll
-        </DropdownMenuItem>
-      </TooltipTrigger>
-      <TooltipContent>{DROPDOWN_TOOLTIP_COPY.cannotSeal}</TooltipContent>
-    </Tooltip>
-  )
-}
+// Story 21.26 — SealMenuItem removed alongside the SEAL collapse. Cycle
+// completion now handles the AVSLUTAD transition end-to-end.

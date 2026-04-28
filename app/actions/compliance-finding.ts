@@ -5,9 +5,9 @@
  * app/actions/compliance-audit-item.ts (Story 21.5). Task auto-spawn for
  * AVVIKELSE is Story 21.8's concern.
  *
- * NOTE: Story 21.10 will replace the inline `assertCycleEditableUi` helper
- * with `lib/compliance-audit/cycle-guards.ts#assertCycleEditable(tx, cycleId)`.
- * Every mutation carries a TODO(21.10) marker at the callback entry.
+ * Story 21.27 — Findings have no cycle-status read-only mode. The
+ * `assertCycleEditableUi` helper was deleted; mutation paths now run
+ * unconditional once tenant + permission checks pass.
  */
 
 import { revalidatePath } from 'next/cache'
@@ -52,6 +52,11 @@ export interface FindingRow {
   dueDate: Date | null
   closedAt: Date | null
   closedBy: { id: string; name: string | null } | null
+  // Phase 2 / Epic 23 foundation — denormalised closure metadata for client-side
+  // badge derivation. Both null = open OR plain "Åtgärdad" close. Activity log
+  // retains the source-of-truth audit trail; these mirror the latest event.
+  verificationNote: string | null
+  closeReason: string | null
   lawListItemId: string | null
   lawListItem: { id: string; title: string; documentNumber: string } | null
   requirementId: string | null
@@ -238,6 +243,8 @@ type LoadedFinding = {
   due_date: Date | null
   closed_at: Date | null
   closed_by_user_id: string | null
+  verification_note: string | null
+  close_reason: string | null
   law_list_item_id: string | null
   requirement_id: string | null
   created_at: Date
@@ -276,6 +283,8 @@ function mapRowToFindingRow(row: LoadedFinding): FindingRow {
     closedBy: row.closed_by
       ? { id: row.closed_by.id, name: row.closed_by.name }
       : null,
+    verificationNote: row.verification_note,
+    closeReason: row.close_reason,
     lawListItemId: row.law_list_item_id,
     lawListItem: row.law_list_item
       ? {
@@ -301,27 +310,12 @@ function mapRowToFindingRow(row: LoadedFinding): FindingRow {
   }
 }
 
-type EditableCheck = { ok: true } | { ok: false; error: string }
-
-/**
- * TODO(21.10): replace with lib/compliance-audit/cycle-guards.ts#assertCycleEditable
- * once Story 21.10 ships. Copy of compliance-audit-item.ts:196-208 — deliberate
- * duplication until the shared helper lands.
- */
-function assertCycleEditableUi(status: ComplianceCycleStatus): EditableCheck {
-  if (
-    status === ComplianceCycleStatus.AVSLUTAD ||
-    status === ComplianceCycleStatus.SEALED ||
-    status === ComplianceCycleStatus.ARKIVERAD
-  ) {
-    return {
-      ok: false,
-      error:
-        'Kontrollen är avslutad, fastställd eller arkiverad — ändringar är inte tillåtna. Återställ till pågående för att redigera.',
-    }
-  }
-  return { ok: true }
-}
+// Story 21.26 — SEALED collapsed into AVSLUTAD; findings stayed editable
+// through AVSLUTAD (Phase 2 unlock).
+// Story 21.27 — ARKIVERAD also collapsed; findings now have no read-only
+// state. Activity log + DB write history provide change-tracking. The
+// items-side equivalent (compliance-audit-item.ts#assertCycleEditableUi)
+// still locks at AVSLUTAD — only findings became always-editable.
 
 /**
  * Story 21.8 — resolves `LawListItem.responsible_user_id` for an item-linked
@@ -402,7 +396,6 @@ export async function createFinding(input: {
 
   try {
     return await withWorkspace(async (ctx) => {
-      // TODO(21.10): assertCycleEditable(tx, cycleId) — transaction-participating guard.
       // Story 21.8: extended cycle select to include `name` and
       // `lead_auditor_user_id` — both required by the spawner for the
       // task's `created_by`/`assignee_id` fallback + activity log payload.
@@ -421,11 +414,6 @@ export async function createFinding(input: {
       })
       if (!cycle) {
         return { success: false, error: 'Kontrollen hittades inte' }
-      }
-
-      const guard = assertCycleEditableUi(cycle.status)
-      if (!guard.ok) {
-        return { success: false, error: guard.error }
       }
 
       // Cross-link validation (tenant isolation).
@@ -674,12 +662,6 @@ export async function spawnTaskForFinding(input: {
         }
       }
 
-      // TODO(21.10): assertCycleEditable(tx, cycleId) — transaction-participating guard.
-      const guard = assertCycleEditableUi(existing.cycle.status)
-      if (!guard.ok) {
-        return { success: false, error: guard.error }
-      }
-
       const {
         finding: updatedFinding,
         spawnedTaskId,
@@ -778,18 +760,12 @@ export async function updateFinding(input: {
 
   try {
     return await withWorkspace(async (ctx) => {
-      // TODO(21.10): assertCycleEditable(tx, cycleId) — transaction-participating guard.
       const existing = await loadFindingScopedToWorkspace(
         parsed.data.findingId,
         ctx.workspaceId
       )
       if (!existing) {
         return { success: false, error: 'Finding hittades inte' }
-      }
-
-      const guard = assertCycleEditableUi(existing.cycle.status)
-      if (!guard.ok) {
-        return { success: false, error: guard.error }
       }
 
       if (existing.closed_at !== null) {
@@ -978,18 +954,12 @@ export async function closeFinding(input: {
 
   try {
     return await withWorkspace(async (ctx) => {
-      // TODO(21.10): assertCycleEditable(tx, cycleId) — transaction-participating guard.
       const existing = await loadFindingScopedToWorkspace(
         parsed.data.findingId,
         ctx.workspaceId
       )
       if (!existing) {
         return { success: false, error: 'Finding hittades inte' }
-      }
-
-      const guard = assertCycleEditableUi(existing.cycle.status)
-      if (!guard.ok) {
-        return { success: false, error: guard.error }
       }
 
       // Idempotent: already closed → return current row, no write, no log.
@@ -1027,13 +997,24 @@ export async function closeFinding(input: {
       // Story 21.8: wrap the finding close + linked task auto-complete in a
       // single transaction so a failed task update rolls back the close.
       const now = new Date()
+      const verificationNoteForColumn =
+        parsed.data.verificationNote !== null &&
+        parsed.data.verificationNote !== undefined
+          ? parsed.data.verificationNote
+          : null
       const { refreshed, autoCompletedTask } = await prisma.$transaction(
         async (tx) => {
+          // Phase 2 / Epic 23 foundation — denormalise closure metadata so the
+          // client can derive the five-state badge without activity-log lookups.
+          // Activity log retains the source-of-truth audit trail (additive); these
+          // columns hold the latest snapshot, cleared on reopenFinding.
           const updated = (await tx.complianceFinding.update({
             where: { id: parsed.data.findingId },
             data: {
               closed_at: now,
               closed_by_user_id: ctx.userId,
+              verification_note: verificationNoteForColumn,
+              close_reason: closeReason ?? null,
             },
             include: FINDING_INCLUDE,
           })) as unknown as LoadedFinding
@@ -1192,18 +1173,12 @@ export async function reopenFinding(
 
   try {
     return await withWorkspace(async (ctx) => {
-      // TODO(21.10): assertCycleEditable(tx, cycleId) — transaction-participating guard.
       const existing = await loadFindingScopedToWorkspace(
         parsed.data.findingId,
         ctx.workspaceId
       )
       if (!existing) {
         return { success: false, error: 'Finding hittades inte' }
-      }
-
-      const guard = assertCycleEditableUi(existing.cycle.status)
-      if (!guard.ok) {
-        return { success: false, error: guard.error }
       }
 
       // Idempotent: already open → no-op.
@@ -1217,11 +1192,17 @@ export async function reopenFinding(
       const previousClosedAt = existing.closed_at
       const previousClosedBy = existing.closed_by_user_id
 
+      // Phase 2 / Epic 23 foundation — clear closure metadata so the badge
+      // returns to Öppen / Redo att verifiera. Activity log retains the
+      // historical closure event(s); these columns reflect only the current
+      // closure (now: none).
       const refreshed = (await prisma.complianceFinding.update({
         where: { id: parsed.data.findingId },
         data: {
           closed_at: null,
           closed_by_user_id: null,
+          verification_note: null,
+          close_reason: null,
         },
         include: FINDING_INCLUDE,
       })) as unknown as LoadedFinding

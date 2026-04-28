@@ -19,7 +19,6 @@ import { CycleItemsTab } from './cycle-items-tab'
 import { CycleFindingsTab } from './cycle-findings-tab'
 import { CompleteCycleDialog } from './complete-cycle-dialog'
 import { RevertCycleDialog } from './revert-cycle-dialog'
-import { SealCycleDialog } from './seal-cycle-dialog'
 import { CycleRapportTab } from './cycle-rapport-tab'
 import { CycleItemModal } from '@/components/features/compliance-audit/cycle-item-modal'
 import {
@@ -44,15 +43,11 @@ import {
 import {
   completeCycle,
   revertCycleToPagaende,
-  sealCycle,
-  getDraftEvidenceDocuments,
   type CycleDetail,
-  type DraftDocumentSummary,
 } from '@/app/actions/compliance-audit-cycle'
 import {
   complianceAuditItemsKey,
   complianceFindingsKey,
-  complianceDraftEvidenceDocsKey,
 } from '@/lib/swr-keys/compliance-audit'
 import type { EfterlevnadsBedomning, WorkspaceRole } from '@prisma/client'
 
@@ -70,18 +65,16 @@ interface CycleDetailPageProps {
   items: CycleItemRow[]
   initialFindings: FindingRow[]
   cyclePartial: CyclePartial
-  readOnly: boolean
+  // Phase 2 + Story 21.27 — only items lock (at AVSLUTAD). Findings have no
+  // cycle-status read-only mode — they stay editable forever. The
+  // `findingsReadOnly` prop was removed when ARKIVERAD collapsed.
+  itemsReadOnly: boolean
   // Story 21.6 — runtime flag for the Revert affordance. Server-resolved
   // via `canCompleteOrRevertCycle` in the RSC route shell so the dropdown
   // can render a disabled-with-tooltip state for MEMBER-not-lead-auditor
   // without a client-side DB lookup. Always `false` when cycle.status is
   // not AVSLUTAD (RSC skips the lookup for other states).
   canRevert: boolean
-  // Story 21.9 — runtime flag for the Seal affordance. Server-resolved via
-  // `canSealCycle` in the RSC route shell (OWNER/ADMIN with `audit:seal`
-  // scope OR the cycle's lead auditor). Always `false` when cycle.status
-  // is not AVSLUTAD.
-  canSeal: boolean
   // Per-row sign-off authorization input. Threaded down to CycleItemsTab
   // and CycleItemModal so the Signera button can render disabled+tooltip
   // for users who aren't the lead auditor / responsible user / admin.
@@ -94,15 +87,13 @@ export function CycleDetailPage({
   items: initialItems,
   initialFindings,
   cyclePartial,
-  readOnly,
+  itemsReadOnly,
   canRevert,
-  canSeal,
   currentUserId,
   currentUserRole,
 }: CycleDetailPageProps) {
   const itemsKey = complianceAuditItemsKey(cycle.id)
   const findingsKey = complianceFindingsKey(cycle.id)
-  const draftDocsKey = complianceDraftEvidenceDocsKey(cycle.id)
   const { mutate: globalMutate } = useSWRConfig()
 
   // Story 21.6 — local cycle state seeded from the RSC prop. Post-transition
@@ -124,9 +115,7 @@ export function CycleDetailPage({
   const [completeSubmitting, setCompleteSubmitting] = useState(false)
   const [revertDialogOpen, setRevertDialogOpen] = useState(false)
   const [revertSubmitting, setRevertSubmitting] = useState(false)
-  // Story 21.9 — seal dialog state.
-  const [sealDialogOpen, setSealDialogOpen] = useState(false)
-  const [sealSubmitting, setSealSubmitting] = useState(false)
+  // Story 21.26 — seal dialog state removed alongside the SEAL collapse.
 
   const { data: itemsData } = useSWR<GetCycleItemsResult>(
     itemsKey,
@@ -160,29 +149,10 @@ export function CycleDetailPage({
     }
   )
 
-  // v0.5 — DRAFT-status styrdokument in scope, surfaced in SealCycleDialog.
-  // No fallbackData: data isn't required at first paint; the dialog only
-  // mounts on user click, by which time SWR has resolved. If still pending
-  // when dialog opens, draftDocuments renders as [] (override gate idle).
-  const { data: draftDocsData } = useSWR<{
-    draftDocuments: DraftDocumentSummary[]
-  }>(
-    draftDocsKey,
-    async () => {
-      const result = await getDraftEvidenceDocuments(cycle.id)
-      if (!result.success || !result.data) {
-        throw new Error(result.error ?? 'Kunde inte hämta utkast-styrdokument')
-      }
-      return result.data
-    },
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 30_000,
-    }
-  )
+  // Story 21.26 — DRAFT styrdokument SWR removed. SealCycleDialog (its only
+  // consumer) was deleted; the override panel UX no longer exists.
 
   const items = itemsData?.items ?? initialItems
-  const draftDocuments = draftDocsData?.draftDocuments ?? []
   const findings = findingsData?.findings ?? initialFindings
 
   const [tab, setTab] = useState<TabValue>(DEFAULT_TAB)
@@ -402,32 +372,9 @@ export function CycleDetailPage({
     }
   }, [localCycle.id])
 
-  // Story 21.9 — seal handler. Calls sealCycle with optional overrideReason;
-  // on success, flips localCycle status to SEALED which ripples to the header
-  // banner, the dropdown, and the Rapport tab.
-  const handleSealCycle = useCallback(
-    async (overrideReason?: string) => {
-      setSealSubmitting(true)
-      try {
-        const result = await sealCycle({
-          cycleId: localCycle.id,
-          ...(overrideReason !== undefined ? { overrideReason } : {}),
-        })
-        if (!result.success || !result.data) {
-          toast.error('Kunde inte fastställa kontrollen', {
-            description: result.error,
-          })
-          return
-        }
-        setLocalCycle(result.data.cycle)
-        setSealDialogOpen(false)
-        toast.success('Kontrollen är fastställd')
-      } finally {
-        setSealSubmitting(false)
-      }
-    },
-    [localCycle.id]
-  )
+  // Story 21.26 — handleSealCycle removed alongside the SEAL collapse. Cycle
+  // completion (PAGAENDE → AVSLUTAD) now records sealed_at + sealed_by and
+  // kicks the eager PDF generation; no second-step ceremony.
 
   // Story 21.7 — finding mutation reconciler. Mirrors replaceRow.
   // Replace-in-place when the finding exists; prepend when it's a new create
@@ -509,26 +456,7 @@ export function CycleDetailPage({
     [findings]
   )
 
-  // Story 21.9 — open AVVIKELSE projection for the SealCycleDialog override
-  // gate. AVVIKELSE is the only finding type that gates seal; OBSERVATION
-  // and FORBATTRING are non-blocking per the PO-approved Gate-with-override
-  // policy. Project to a minimal summary shape so the dialog can SURFACE
-  // each open avvikelse (per UX feedback 2026-04-24 — count alone forces
-  // users to context-switch to the Anmärkningar tab).
-  const openAvvikelser = useMemo(
-    () =>
-      findings
-        .filter((f) => f.type === 'AVVIKELSE' && f.closedAt === null)
-        .map((f) => ({
-          id: f.id,
-          title: f.title,
-          severity: f.severity,
-          contextLabel: f.lawListItem
-            ? `${f.lawListItem.documentNumber} ${f.lawListItem.title}`
-            : null,
-        })),
-    [findings]
-  )
+  // Story 21.26 — openAvvikelser projection removed alongside the SealCycleDialog.
 
   const contextValue: CycleItemsContextValue = useMemo(
     () => ({
@@ -553,15 +481,12 @@ export function CycleDetailPage({
       <div className="space-y-6">
         <CycleDetailHeader
           cycle={localCycle}
-          readOnly={readOnly}
           findingCounts={findingCounts}
           totalCount={items.length}
           signeradeCount={signeradeCount}
           canRevert={canRevert}
-          canSeal={canSeal}
           onCompleteClick={() => setCompleteDialogOpen(true)}
           onRevertClick={() => setRevertDialogOpen(true)}
-          onSealClick={() => setSealDialogOpen(true)}
         />
 
         {localCycle.status === 'AVSLUTAD' ? (
@@ -571,7 +496,7 @@ export function CycleDetailPage({
             className="rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900"
           >
             Kontrollen är slutförd. Öppna anmärkningar fortsätter att följas upp
-            — fastställandet bygger på dagens snapshot.
+            — bedömningarna bygger på dagens snapshot.
           </div>
         ) : null}
 
@@ -586,7 +511,7 @@ export function CycleDetailPage({
           <TabsContent value="items">
             <CycleItemsTab
               items={items}
-              readOnly={readOnly}
+              readOnly={itemsReadOnly}
               cycleStatus={localCycle.status}
               highlightedRowId={highlightedRowId}
               selectedItemId={selectedItemId}
@@ -605,8 +530,6 @@ export function CycleDetailPage({
             <CycleFindingsTab
               cycleId={localCycle.id}
               findings={findings}
-              readOnly={readOnly}
-              cycleStatus={localCycle.status}
               items={items}
               onFindingMutation={handleFindingMutation}
               onFindingClick={handleFindingClick}
@@ -642,16 +565,7 @@ export function CycleDetailPage({
           onConfirm={handleRevertCycle}
           isSubmitting={revertSubmitting}
         />
-        {/* Story 21.9 — seal dialog with conditional override gate. */}
-        <SealCycleDialog
-          open={sealDialogOpen}
-          onOpenChange={setSealDialogOpen}
-          onConfirm={handleSealCycle}
-          isSubmitting={sealSubmitting}
-          openAvvikelser={openAvvikelser}
-          draftDocuments={draftDocuments}
-          pendingTasks={pendingTasks}
-        />
+        {/* Story 21.26 — SealCycleDialog mount removed alongside the SEAL collapse. */}
 
         {/* Story 21.16 — cycle-item modal. `selectedItemId === null` → closed. */}
         <CycleItemModal
@@ -665,7 +579,7 @@ export function CycleDetailPage({
           cycleId={localCycle.id}
           cycleName={localCycle.name}
           cycleStatus={localCycle.status}
-          readOnly={readOnly}
+          readOnly={itemsReadOnly}
           focusFindingId={focusFindingId}
           onClose={handleCloseModal}
           onBedomningChange={handleBedomningChange}

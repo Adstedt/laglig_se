@@ -90,15 +90,10 @@ export async function GET(
       )
     }
 
-    // 5. Resolve default kind server-side. UI sends the right one per AC 4,
-    //    but direct-URL access (deep link, API test) may omit it.
-    const kindLower =
-      parsed.data ??
-      (cycle.status === ComplianceCycleStatus.SEALED ||
-      cycle.status === ComplianceCycleStatus.ARKIVERAD
-        ? 'sealed'
-        : 'complete')
-    const kindUpper = kindLower.toUpperCase() as 'COMPLETE' | 'SEALED'
+    // 5. Story 21.26 — only one report kind exists post-SEAL-collapse.
+    //    The legacy 'sealed' query param value is silently coerced to
+    //    'complete' so deep-link URLs from before the collapse keep working.
+    const kindUpper = 'COMPLETE' as const
 
     // 6. Staleness check + lazy generation if needed.
     const needsRegen = await shouldRegenerateReport(

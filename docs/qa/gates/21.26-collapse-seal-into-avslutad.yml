@@ -1,0 +1,94 @@
+schema: 1
+story: '21.26'
+story_title: 'Collapse SEAL into AVSLUTAD as terminal active state'
+gate: PASS
+status_reason: >-
+  All 5 must-fix test files (TEST-001..005) closed. 3 orphaned dev scripts deleted
+  (SCRIPT-001). Code-hygiene refactors landed (typecheck clean, kind-branching
+  removed from activity formatter, dead SEALED branch dropped from
+  report-staleness, unused readOnly prop dropped from CycleDetailHeader). Story
+  status flipped Ready for Review with Dev Agent Record populated. Remaining low-
+  severity items (DOC-001, DOC-002, CSS-001) explicitly deferred per the original
+  gate's "future" recommendation. Gate flips CONCERNS → PASS for Story 21.26's
+  scope. Story 21.27 (ARKIVERAD collapse) is mid-flight in the working tree and
+  has introduced fresh prop-drift in cycle-detail-page.tsx + cycle-findings-tab.tsx
+  + the RSC gating test — those are 21.27's responsibility, not 21.26's.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-28T11:10:00+00:00'
+
+quality_score: 90
+expires: '2026-05-12T11:10:00+00:00'
+
+evidence:
+  tests_reviewed: 232
+  tests_failing_due_to_story_21_26: 0
+  tests_failing_due_to_story_21_27_overlap: 3  # cycle-detail-page.test.tsx assertions on dropped findingsReadOnly prop
+  tests_failing_unrelated: 22  # Redis / sync / caching / auth integration suites — pre-existing
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 25]
+    ac_partial: [23]  # UAT plan §6.6/6.7/6.8/6.9 deferred — low-severity hygiene
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      `audit:seal` permission scope cleanly removed. `canCompleteOrRevertCycle`
+      enforces OWNER/ADMIN-or-lead-auditor at server boundary. PDF route still
+      gates on `activity:view || tasks:edit`. Migration scrubs `seal_hash` data
+      and reconciles report-kind duplicates without privilege escalation.
+  performance:
+    status: PASS
+    notes: >-
+      Eager PDF generation moved cleanly from sealCycle to completeCycle's
+      `after()` continuation; route's `maxDuration = 300` retained for headroom.
+      No N+1 regressions introduced.
+  reliability:
+    status: PASS
+    notes: >-
+      Migration is well-engineered. Orphaned dev scripts (SCRIPT-001) deleted —
+      no longer a runtime-fail risk on next dev run.
+  maintainability:
+    status: CONCERNS
+    notes: >-
+      Low-severity stale-comment debt remains in 4 files (DOC-001) + UAT plan §6
+      (DOC-002) + dead `.seal-hash` CSS (CSS-001). Explicitly deferred per the
+      original gate's "future" recommendation; would benefit from a comment-
+      hygiene sweep ~2 weeks post-merge.
+
+top_issues: []
+
+waiver:
+  active: false
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Story 21.27 (ARKIVERAD collapse) is mid-flight: cycle-detail-page.tsx still passes `cycleStatus` to CycleFindingsTab (prop dropped from interface), and the RSC gating test asserts a `findingsReadOnly` prop that has been removed from CycleDetailPage. Reconcile the call site + the 3 failing test assertions as part of 21.27.'
+      refs:
+        - 'components/features/compliance-audit/cycle-detail/cycle-detail-page.tsx:533'
+        - 'tests/unit/app/workspace/laglistor/kontroller/cycle-detail-page.test.tsx:185-247'
+    - action: 'Comment-hygiene sweep ~2 weeks post-merge: remove "Story 21.26 — SEAL collapse" gravestone markers across the cycle module. Useful as cross-team awareness now; becomes noise after the team has internalised the change.'
+      refs:
+        - 'app/actions/compliance-audit-cycle.ts:18-27'
+        - 'app/actions/compliance-audit-report.ts:207-218'
+        - 'app/(workspace)/laglistor/kontroller/[cycleId]/rapport/pdf/route.ts:4-18'
+        - 'components/features/compliance-audit/cycle-detail/cycle-rapport-tab.tsx:5-13'
+    - action: 'Rename `.seal-block` CSS class to `.completion-block` and drop dead `.seal-hash` rule in the renderer.'
+      refs: ['lib/compliance-audit/revisionsrapport-renderer.ts:219-233']
+    - action: 'Rename DB columns `sealed_at` / `sealed_by_user_id` → `completed_at` / `completed_by_user_id` in a follow-up migration. Story keeps the names for migration safety; semantic mismatch will compound over time.'
+      refs: ['prisma/schema.prisma:1938-1939']
+    - action: 'Clean UAT plan §6.6, §6.7, §6.8, §6.9 to drop SEALED-cycle references.'
+      refs: ['docs/uat/epic-21-uat-plan.md:127-130']
+
+# History — preserved for audit trail
+history:
+  - timestamp: '2026-04-28T08:00:00+00:00'
+    gate: CONCERNS
+    quality_score: 70
+    reason: '5 stale test files + 3 orphaned dev scripts + 11 stale doc-blocks; story task "Update tests across the codebase" checked off but not done.'
+  - timestamp: '2026-04-28T11:10:00+00:00'
+    gate: PASS
+    quality_score: 90
+    reason: 'James fix-pass closed TEST-001..005 + SCRIPT-001 + STORY-001. Low-severity DOC/CSS items explicitly deferred. Story scope complete.'
