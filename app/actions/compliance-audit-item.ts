@@ -42,11 +42,12 @@ interface ActionResult<T = void> {
   error?: string
 }
 
+// Story 21.26 — `sealHash` field removed from CyclePartial alongside the
+// SEAL collapse + seal_hash column drop.
 export interface CyclePartial {
   id: string
   status: ComplianceCycleStatus
   name: string
-  sealHash: string | null
 }
 
 export interface CycleItemRow {
@@ -237,15 +238,14 @@ type EditableCheck = { ok: true } | { ok: false; error: string }
  * object (no throws across the server-action boundary).
  */
 function assertCycleEditableUi(status: ComplianceCycleStatus): EditableCheck {
-  if (
-    status === ComplianceCycleStatus.AVSLUTAD ||
-    status === ComplianceCycleStatus.SEALED ||
-    status === ComplianceCycleStatus.ARKIVERAD
-  ) {
+  // Story 21.26 — SEALED collapsed into AVSLUTAD.
+  // Story 21.27 — ARKIVERAD also collapsed into AVSLUTAD. AVSLUTAD is the
+  // only terminal active state; items remain frozen there per Phase 2.
+  if (status === ComplianceCycleStatus.AVSLUTAD) {
     return {
       ok: false,
       error:
-        'Kontrollen är avslutad, fastställd eller arkiverad — ändringar är inte tillåtna. Återställ till pågående för att redigera.',
+        'Kontrollen är avslutad — ändringar är inte tillåtna. Återställ till pågående för att redigera.',
     }
   }
   return { ok: true }
@@ -291,7 +291,7 @@ export async function getCycleItemsForCycle(
           id: parsed.data.cycleId,
           workspace_id: ctx.workspaceId,
         },
-        select: { id: true, status: true, name: true, seal_hash: true },
+        select: { id: true, status: true, name: true },
       })
       if (!cycle) {
         return { success: false, error: 'Kontrollen hittades inte' }
@@ -330,7 +330,6 @@ export async function getCycleItemsForCycle(
             id: cycle.id,
             status: cycle.status,
             name: cycle.name,
-            sealHash: cycle.seal_hash,
           },
         },
       }

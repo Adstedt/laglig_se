@@ -8,11 +8,7 @@ import {
   fireEvent,
   within,
 } from '@testing-library/react'
-import {
-  ComplianceCycleStatus,
-  FindingSeverity,
-  FindingType,
-} from '@prisma/client'
+import { FindingSeverity, FindingType } from '@prisma/client'
 import type { CycleItemRow } from '@/app/actions/compliance-audit-item'
 import type { FindingRow } from '@/app/actions/compliance-finding'
 
@@ -60,6 +56,8 @@ function makeFinding(overrides: Partial<FindingRow> = {}): FindingRow {
     dueDate: null,
     closedAt: null,
     closedBy: null,
+    verificationNote: null,
+    closeReason: null,
     lawListItemId: null,
     lawListItem: null,
     requirementId: null,
@@ -126,8 +124,6 @@ describe('CycleFindingsTab', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={findings}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={makeItems()}
         onFindingMutation={vi.fn()}
       />
@@ -150,8 +146,6 @@ describe('CycleFindingsTab', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={[]}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
       />
@@ -175,8 +169,6 @@ describe('CycleFindingsTab', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={findings}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
       />
@@ -197,8 +189,6 @@ describe('CycleFindingsTab', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={[]}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
       />
@@ -214,23 +204,32 @@ describe('CycleFindingsTab', () => {
     ).toBeInTheDocument()
   })
 
-  it('"Lägg till finding" button hidden in read-only mode', () => {
+  // Story 21.27 — "Lägg till finding hidden in read-only mode" test deleted.
+  // Findings have no cycle-status read-only mode after the ARKIVERAD collapse;
+  // the `readOnly` + `cycleStatus` props are gone from CycleFindingsTab.
+
+  it('Phase 2 / Option B — findings stay actionable on AVSLUTAD cycle', () => {
+    // Phase 2 unlocked findings on AVSLUTAD; Story 21.27 went further and
+    // removed the readOnly prop entirely. Findings now render with full
+    // actions on every cycle status.
+    const finding = makeFinding({
+      type: FindingType.AVVIKELSE,
+      severity: FindingSeverity.MAJOR,
+      title: 'Open AVVIKELSE on AVSLUTAD cycle',
+    })
     render(
       <CycleFindingsTab
         cycleId={CYCLE_ID}
-        findings={[]}
-        readOnly
-        cycleStatus={ComplianceCycleStatus.AVSLUTAD}
+        findings={[finding]}
         items={[]}
         onFindingMutation={vi.fn()}
       />
     )
+    expect(screen.getByTestId('cycle-findings-add-button')).toBeInTheDocument()
     expect(
-      screen.queryByTestId('cycle-findings-add-button')
-    ).not.toBeInTheDocument()
-    // Banner copy is status-aware via getCycleReadOnlyReason — AVSLUTAD
-    // surfaces revert guidance instead of the legacy "fastställd" string.
-    expect(screen.getByText(/Kontrollen är avslutad/)).toBeInTheDocument()
+      screen.getByTestId(`cycle-finding-close-${finding.id}`)
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/Kontrollen är avslutad/)).toBeNull()
   })
 
   it('Story 21.16 — clicking a finding card body fires onFindingClick with the finding', () => {
@@ -243,8 +242,6 @@ describe('CycleFindingsTab', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={findings}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
         onFindingClick={onFindingClick}
@@ -270,8 +267,6 @@ describe('CycleFindingsTab', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={findings}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
         onFindingClick={onFindingClick}
@@ -291,8 +286,6 @@ describe('CycleFindingsTab', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={findings}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
       />
@@ -317,8 +310,6 @@ describe('CycleFindingsTab', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={[finding]}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={onFindingMutation}
       />
@@ -337,8 +328,6 @@ describe('CycleFindingsTab', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={[finding]}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
       />
@@ -358,8 +347,6 @@ describe('CycleFindingsTab', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={findings}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
       />
@@ -384,8 +371,6 @@ describe('CycleFindingsTab — spawn-task late-add (Epic 21 follow-up)', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={[finding]}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
       />
@@ -405,8 +390,6 @@ describe('CycleFindingsTab — spawn-task late-add (Epic 21 follow-up)', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={[finding]}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
       />
@@ -427,8 +410,6 @@ describe('CycleFindingsTab — spawn-task late-add (Epic 21 follow-up)', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={[finding]}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
       />
@@ -438,27 +419,9 @@ describe('CycleFindingsTab — spawn-task late-add (Epic 21 follow-up)', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('+ Skapa åtgärdsuppgift button hidden in read-only mode', () => {
-    const finding = makeFinding({
-      id: 'fro',
-      type: FindingType.AVVIKELSE,
-      severity: FindingSeverity.MAJOR,
-      correctiveActionTaskId: null,
-    })
-    render(
-      <CycleFindingsTab
-        cycleId={CYCLE_ID}
-        findings={[finding]}
-        readOnly
-        cycleStatus={ComplianceCycleStatus.AVSLUTAD}
-        items={[]}
-        onFindingMutation={vi.fn()}
-      />
-    )
-    expect(
-      screen.queryByTestId(`cycle-finding-spawn-task-${finding.id}`)
-    ).not.toBeInTheDocument()
-  })
+  // Story 21.27 — "Skapa åtgärdsuppgift hidden in read-only mode" test
+  // deleted alongside the readOnly prop. Findings have no cycle-status
+  // read-only mode any more.
 
   it('clicking + Skapa åtgärdsuppgift calls spawnTaskForFinding + fires onFindingMutation', async () => {
     const onFindingMutation = vi.fn()
@@ -479,8 +442,6 @@ describe('CycleFindingsTab — spawn-task late-add (Epic 21 follow-up)', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={[finding]}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={onFindingMutation}
       />
@@ -516,8 +477,6 @@ describe('CycleFindingsTab — verify step (Epic 21 follow-up)', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={[finding]}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
       />
@@ -543,8 +502,6 @@ describe('CycleFindingsTab — verify step (Epic 21 follow-up)', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={[finding]}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
       />
@@ -574,8 +531,6 @@ describe('CycleFindingsTab — verify step (Epic 21 follow-up)', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={[finding]}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
       />
@@ -608,8 +563,6 @@ describe('CycleFindingsTab — verify step (Epic 21 follow-up)', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={[finding]}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={onFindingMutation}
       />
@@ -642,8 +595,6 @@ describe('CycleFindingsTab — type badge assertion helper', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={findings}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
       />
@@ -689,8 +640,6 @@ describe('CycleFindingsTab — manual-close fallback', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={[finding]}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
       />
@@ -738,8 +687,6 @@ describe('CycleFindingsTab — manual-close fallback', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={[finding]}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={onFindingMutation}
       />
@@ -790,8 +737,6 @@ describe('CycleFindingsTab — manual-close fallback', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={[finding]}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
       />
@@ -830,8 +775,6 @@ describe('CycleFindingsTab — manual-close fallback', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={[finding]}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
       />
@@ -870,8 +813,6 @@ describe('CycleFindingsTab — manual-close fallback', () => {
       <CycleFindingsTab
         cycleId={CYCLE_ID}
         findings={[finding]}
-        readOnly={false}
-        cycleStatus={ComplianceCycleStatus.PAGAENDE}
         items={[]}
         onFindingMutation={vi.fn()}
       />
@@ -891,5 +832,94 @@ describe('CycleFindingsTab — manual-close fallback', () => {
     expect(
       screen.queryByText('Stäng anmärkning utan slutförd åtgärd')
     ).toBeNull()
+  })
+})
+
+// ============================================================================
+// Phase 2 / Epic 23 foundation — five-state badge rendering
+// ============================================================================
+// FindingCard reads FINDING_STATUS_BADGES from finding-copy.ts. Three closed
+// variants (verified / plain / dismissed) plus the existing "Redo att verifiera"
+// surface different visual treatments. Open is implicit (no badge).
+
+describe('CycleFindingsTab — five-state badge rendering', () => {
+  it('closed-verified finding renders Åtgärdad badge with check icon', () => {
+    const finding = makeFinding({
+      id: 'f-verified',
+      title: 'Verified close',
+      closedAt: new Date('2026-04-26T14:00:00Z'),
+      verificationNote: 'Granskade ny skylt',
+    })
+    render(
+      <CycleFindingsTab
+        cycleId={CYCLE_ID}
+        findings={[finding]}
+        items={[]}
+        onFindingMutation={vi.fn()}
+      />
+    )
+    const badge = screen.getByTestId('finding-status-closed-verified')
+    expect(badge).toBeInTheDocument()
+    expect(badge.textContent).toContain('Åtgärdad')
+    // The check icon is an inline <svg> with role/aria absent — assert on its
+    // presence via the SVG node count inside the badge container.
+    expect(badge.querySelector('svg')).toBeInTheDocument()
+  })
+
+  it('closed-plain finding renders Åtgärdad badge without check icon', () => {
+    const finding = makeFinding({
+      id: 'f-plain',
+      title: 'Plain close',
+      closedAt: new Date('2026-04-24T10:00:00Z'),
+      // verificationNote + closeReason both null
+    })
+    render(
+      <CycleFindingsTab
+        cycleId={CYCLE_ID}
+        findings={[finding]}
+        items={[]}
+        onFindingMutation={vi.fn()}
+      />
+    )
+    const badge = screen.getByTestId('finding-status-closed-plain')
+    expect(badge).toBeInTheDocument()
+    expect(badge.textContent).toContain('Åtgärdad')
+    expect(badge.querySelector('svg')).not.toBeInTheDocument()
+  })
+
+  it('closed-dismissed finding renders Avskriven badge', () => {
+    const finding = makeFinding({
+      id: 'f-dismissed',
+      title: 'Dismissed close',
+      closedAt: new Date('2026-04-23T09:00:00Z'),
+      closeReason: 'Verksamheten har förändrats',
+    })
+    render(
+      <CycleFindingsTab
+        cycleId={CYCLE_ID}
+        findings={[finding]}
+        items={[]}
+        onFindingMutation={vi.fn()}
+      />
+    )
+    const badge = screen.getByTestId('finding-status-closed-dismissed')
+    expect(badge).toBeInTheDocument()
+    expect(badge.textContent).toContain('Avskriven')
+  })
+
+  it('open finding does NOT render a status badge (open is implicit)', () => {
+    const finding = makeFinding({ id: 'f-open', title: 'Still open' })
+    render(
+      <CycleFindingsTab
+        cycleId={CYCLE_ID}
+        findings={[finding]}
+        items={[]}
+        onFindingMutation={vi.fn()}
+      />
+    )
+    expect(screen.queryByTestId('finding-status-open')).toBeNull()
+    expect(screen.queryByTestId('finding-status-closed-verified')).toBeNull()
+    expect(screen.queryByTestId('finding-status-closed-plain')).toBeNull()
+    expect(screen.queryByTestId('finding-status-closed-dismissed')).toBeNull()
   })
 })

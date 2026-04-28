@@ -122,52 +122,9 @@ describe('CycleRapportTab — AVSLUTAD', () => {
   })
 })
 
-describe('CycleRapportTab — SEALED', () => {
-  it('renders the info row above the iframe + PDF link uses kind=sealed (Story 21.12)', async () => {
-    getInputMock.mockResolvedValueOnce(makeSuccessResult())
-
-    renderTab(ComplianceCycleStatus.SEALED)
-
-    await screen.findByTitle(/^Revisionsrapport/)
-    expect(
-      screen.getByText(
-        'Fastställd kontroll — seal-hash visas på titelsidan och i sidfoten.'
-      )
-    ).toBeInTheDocument()
-
-    const pdfLink = screen.getByRole('link', { name: 'Ladda ner PDF' })
-    expect(pdfLink).toHaveAttribute(
-      'href',
-      `/laglistor/kontroller/${CYCLE_ID}/rapport/pdf?kind=sealed`
-    )
-
-    // "60 sekunder" hint is AVSLUTAD-only — not rendered for SEALED.
-    expect(
-      screen.queryByText(/Första nedladdningen kan ta upp till 60 sekunder/)
-    ).not.toBeInTheDocument()
-  })
-})
-
-describe('CycleRapportTab — ARKIVERAD', () => {
-  it('renders the SEALED-equivalent info row + PDF link uses kind=sealed', async () => {
-    getInputMock.mockResolvedValueOnce(makeSuccessResult())
-
-    renderTab(ComplianceCycleStatus.ARKIVERAD)
-
-    await screen.findByTitle(/^Revisionsrapport/)
-    expect(
-      screen.getByText(
-        'Fastställd kontroll — seal-hash visas på titelsidan och i sidfoten.'
-      )
-    ).toBeInTheDocument()
-
-    const pdfLink = screen.getByRole('link', { name: 'Ladda ner PDF' })
-    expect(pdfLink).toHaveAttribute(
-      'href',
-      `/laglistor/kontroller/${CYCLE_ID}/rapport/pdf?kind=sealed`
-    )
-  })
-})
+// Story 21.26 — SEALED-tab describe removed alongside the SEAL collapse.
+// Story 21.27 — ARKIVERAD-tab describe removed alongside the ARKIVERAD
+// collapse. AVSLUTAD is the only state that fetches the rapport.
 
 // ============================================================================
 // Loading state

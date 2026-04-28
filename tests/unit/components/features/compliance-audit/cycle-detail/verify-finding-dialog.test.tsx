@@ -30,6 +30,8 @@ function makeFindingWithCompletedTask(
     dueDate: null,
     closedAt: null,
     closedBy: null,
+    verificationNote: null,
+    closeReason: null,
     lawListItemId: null,
     lawListItem: null,
     requirementId: null,

@@ -1,6 +1,8 @@
 # Epic 21 — Lagefterlevnadskontroll Brownfield Enhancement Architecture
 
-**Status:** Substantially Done (UAT-ready) — **13 of 14 stories shipped** as of 2026-04-27. Stories 21.9 (Seal — INTEGRITY-001 v0.5 softening) and 21.12 (background PDF generation) shipped after the 2026-04-23 catch-up snapshot. **Story 21.10** (`assertCycleEditable` runtime guard) remains deferred — defence-in-depth hardening only; the inline `assertCycleEditableUi` already enforces SEALED/ARKIVERAD read-only correctly. **Story 21.15** (manual kontroll↔task linkage) remains in `docs/stories/backlog/frontend/`. Architecture choices validated against shipped code. See §1.3 for the landed-vs-deferred snapshot.
+> **Story 21.26 + 21.27 (2026-04-27/28) collapsed SEAL + ARKIVERAD into AVSLUTAD.** The lifecycle is now `PLANERAD → PAGAENDE → AVSLUTAD` (3 states). 21.26 dropped the cryptographic seal ceremony — `seal_hash` column, `ComplianceEvidenceSnapshot` table, `audit:seal` permission scope, `sealCycle` server action, manifest builder, evidence-deletion gate. 21.27 then dropped the phantom ARKIVERAD state — its `findingsReadOnly` plumbing (route helper, prop on `CycleDetailPage` and `CycleFindingsTab`), the `ReadOnlyBanner` component, and the "Arkiverade" filter chip on the cycle list. `completeCycle` now records `sealed_at` + `sealed_by_user_id` and triggers eager PDF via `after()`. Items still freeze at AVSLUTAD; findings stay editable forever; revert-to-PAGAENDE remains the escape hatch. **Sections 4.1 (Data Models), 6.3 (evidence-deletion), 6.4 (seal-reversal) below are partially superseded** — read them as historical record and refer to `docs/stories/21.26.collapse-seal-into-avslutad.md` + `docs/stories/21.27.collapse-arkiverad-into-avslutad.md` for the current shape.
+
+**Status:** Substantially Done (UAT-ready) — **14 of 14 stories shipped** as of 2026-04-28 (Story 21.26 closed the residual sweep). **Story 21.10** (`assertCycleEditable` runtime guard) remains deferred — defence-in-depth hardening only; the inline `assertCycleEditableUi` already enforces AVSLUTAD/ARKIVERAD read-only correctly. **Story 21.15** (manual kontroll↔task linkage) remains in `docs/stories/backlog/frontend/`. Architecture choices validated against shipped code. See §1.3 for the landed-vs-deferred snapshot.
 **Author:** Winston (Architect) — 2026-04-22
 **Last reviewed:** 2026-04-27 (Sarah, PO — Epic 21 UAT-readiness pass; 21.9 + 21.12 reconciled to shipped, post-shipping UX addenda noted on Stories 21.4 / 21.5 / 21.9 / 21.11 / 21.14)
 **Supersedes/supplements:** `docs/architecture/` (sharded, existing)
@@ -172,18 +174,18 @@ This section is a status overlay on top of the v0.1 architecture below — it do
 - `scheduled_start: DateTime`
 - `scheduled_end: DateTime`
 - `law_change_cutoff_date: DateTime` — amendment scope boundary
-- `status: ComplianceCycleStatus` — enum `PLANERAD | PAGAENDE | AVSLUTAD | SEALED | ARKIVERAD`
+- `status: ComplianceCycleStatus` — enum `PLANERAD | PAGAENDE | AVSLUTAD` (Story 21.26 dropped `SEALED`; Story 21.27 dropped `ARKIVERAD`)
 - `lead_auditor_user_id: String` — FK to User
-- `sealed_at: DateTime?`
-- `sealed_by_user_id: String?` — FK to User
-- `seal_hash: String?` — SHA-256 hex, 64 chars
+- `sealed_at: DateTime?` — populated by `completeCycle` at AVSLUTAD transition (semantic = "completed_at"; column kept for migration parsimony)
+- `sealed_by_user_id: String?` — FK to User; populated by `completeCycle`
+- ~~`seal_hash: String?`~~ — DROPPED in Story 21.26 (cryptographic ceremony removed)
 - `created_at, updated_at, deleted_at: DateTime`
 - `created_by_user_id: String` — FK to User
 
 **Relationships:**
 
 - With existing: `LawList` (many cycles per list), `Workspace` (many cycles per workspace), `User` (three nullable/non-nullable user references).
-- With new: `ComplianceAuditItem[]` (1:N, cascade on soft-delete), `ComplianceFinding[]` (1:N), `ComplianceEvidenceSnapshot[]` (1:N), `ComplianceAuditReport[]` (1:N — one per generation event, latest is current).
+- With new: `ComplianceAuditItem[]` (1:N, cascade on soft-delete), `ComplianceFinding[]` (1:N), `ComplianceAuditReport[]` (1:N — one per generation event, latest is current). ~~`ComplianceEvidenceSnapshot[]`~~ DROPPED in Story 21.26.
 
 #### ComplianceAuditItem
 
@@ -509,9 +511,11 @@ This is the section the PM asked for explicitly. Each decision is grounded in ac
 
 **Implementation note:** Wrap the library in `lib/compliance-audit/canonicalize.ts` so if we ever need to swap implementations (e.g., custom for performance), only one file changes. Unit test with a golden fixture at `lib/compliance-audit/__fixtures__/canonical-seal-input.json` → `canonical-seal-output.txt`; any schema change to cycle entities requires a deliberate fixture update PR.
 
-### 6.3 Evidence-file-deletion policy — **RESOLVED: block deletion while referenced**
+### 6.3 Evidence-file-deletion policy — **SUPERSEDED by Story 21.26 (no longer enforced)**
 
-**Decision:** Mutating Server Actions on `WorkspaceFile` and `WorkspaceDocument` check for active references in `ComplianceEvidenceSnapshot` before allowing delete. If any snapshot references the file/document and its cycle is not `ARKIVERAD`, delete is blocked with a structured error listing the affected cycles.
+> **Story 21.26 (2026-04-27):** With the SEAL ceremony gone, there is no longer a "preserve the exact bytes we hashed" promise to defend. The `findActiveSnapshotReferences` helper, the `ComplianceEvidenceSnapshot` table, and both delete-guard call sites in `app/actions/files.ts` / `documents.ts` were removed. Evidence files referenced by AVSLUTAD or ARKIVERAD cycles are NO LONGER blocked from deletion at the server-action layer. The remaining audit-trail defensibility relies on activity log + DB write history + signed PDF — and the PDF retains its rendered evidence as embedded byte snapshots inside the document itself, not via a separate hash-table reference. If a customer signal emerges that this gap matters, the replacement gate would filter on `cycle.status IN ('AVSLUTAD', 'ARKIVERAD')` against the join tables in `app/actions/linked-artifacts.ts`. Original §6.3 text below preserved as historical record.
+
+**Original decision (now superseded):** Mutating Server Actions on `WorkspaceFile` and `WorkspaceDocument` check for active references in `ComplianceEvidenceSnapshot` before allowing delete. If any snapshot references the file/document and its cycle is not `ARKIVERAD`, delete is blocked with a structured error listing the affected cycles.
 
 **Rationale:**
 
@@ -526,16 +530,17 @@ This is the section the PM asked for explicitly. Each decision is grounded in ac
 - Does NOT require modifying the existing `WorkspaceFile` or `WorkspaceDocument` Prisma models — the guard lives at the Server Action layer. (A database-level FK constraint would be stricter but would also break soft-delete semantics of existing file workflows. Server-layer enforcement is the right trade-off.)
 - Document this in the Story 21.9 acceptance criteria as a test case.
 
-### 6.4 Seal reversal policy — **RESOLVED: irreversible; reversal = new cycle**
+### 6.4 Seal reversal policy — **REWRITTEN by Story 21.26: AVSLUTAD finality with revert escape hatch**
 
-**Decision:** `sealCycle` is a one-way transition. No `unsealCycle` Server Action exists. The `assertCycleEditable` guard rejects every mutation on sealed cycles.
+**Current decision (post Story 21.26):** AVSLUTAD is the terminal active state. `completeCycle` is *reversible* via `revertCycleToPagaende` for the lead auditor, OWNER, or ADMIN — there is no separate "irreversible" SEAL stage anymore. Items still freeze at AVSLUTAD (Phase 2 lock); findings continue editable through AVSLUTAD; revert simply unfreezes both. ARKIVERAD remains the only truly read-only terminal state, locking findings as well as items.
 
 **Rationale:**
 
-- Aligns with PRD NFR10 and brief-level assumption. Preserves the tamper-evidence claim — if a seal can be undone, it has no legal weight.
-- If a material error is discovered post-seal, the remedy is: create a new cycle with scope covering the same lagar, re-run the affected items, seal. The old sealed cycle remains untouched (read-only evidence of the error + correction).
-- UI copy in the seal confirmation dialog must be unambiguous: *"Denna åtgärd kan inte ångras. Om du upptäcker fel efter fastställande måste du skapa en ny kontroll."*
-- Database-level recovery (DBA intervention) is an operational concern, explicitly out of feature scope. Document the DBA runbook separately.
+- The two-step SEAL ceremony was bureaucracy without payoff for SMB self-audit (see Story 21.26 Context). Nordic regulators want documented audit records, named auditor, dated review, retention — none require cryptographic tamper-evidence.
+- A single completion moment with a reversible escape hatch matches Laglig's customer reality. The audit-trail defensibility downgrades to: activity log entries (`cycle_completed`, `cycle_reverted_to_pagaende`), DB write history, and signed PDF metadata.
+- The complete-cycle dialog keeps its Phase-1 forward-looking advisory copy ("Kontrollen är slutförd. Öppna anmärkningar fortsätter att följas upp — fastställandet bygger på dagens snapshot.") — no override panels, no type-to-confirm friction.
+
+**Original decision (superseded):** `sealCycle` was a one-way transition. No `unsealCycle` Server Action existed. The `assertCycleEditable` guard rejected every mutation on sealed cycles. Aligned with PRD NFR10 and brief-level assumption. Story 21.26 reversed this on the grounds that NFR10's tamper-evidence claim outpaced the actual customer need.
 
 ### 6.5 PDF storage location — **RESOLVED: Supabase Storage, new path prefix**
 

@@ -364,9 +364,8 @@ model LawListItem {
   requirements LawListItemRequirement[]
 
   // Epic 21: Lagefterlevnadskontroll
-  compliance_audit_items        ComplianceAuditItem[]
-  compliance_findings           ComplianceFinding[]          @relation("FindingLawListItem")
-  compliance_evidence_snapshots ComplianceEvidenceSnapshot[] @relation("SnapshotLawListItem")
+  compliance_audit_items ComplianceAuditItem[]
+  compliance_findings    ComplianceFinding[] @relation("FindingLawListItem")
 
   @@unique([law_list_id, document_id])
   @@index([law_list_id])
@@ -402,8 +401,7 @@ model LawListItemRequirement {
   evidence_links   RequirementEvidenceLink[]
 
   // Epic 21: Lagefterlevnadskontroll
-  compliance_findings           ComplianceFinding[]          @relation("FindingRequirement")
-  compliance_evidence_snapshots ComplianceEvidenceSnapshot[] @relation("SnapshotRequirement")
+  compliance_findings ComplianceFinding[] @relation("FindingRequirement")
 
   @@index([list_item_id, position])
   @@index([created_by])
@@ -1239,9 +1237,6 @@ model WorkspaceFile {
   // Story 17.16: Kravpunkter evidence links
   requirement_evidence_links RequirementEvidenceLink[]
 
-  // Epic 21: Sealed-cycle evidence snapshots that reference this file's bytes + SHA-256.
-  compliance_evidence_snapshots ComplianceEvidenceSnapshot[] @relation("SnapshotFile")
-
   // Story 6.7b: Unique filename within same folder
   @@unique([workspace_id, parent_folder_id, filename], name: "unique_filename_in_folder")
   @@index([workspace_id])
@@ -1793,9 +1788,6 @@ model WorkspaceDocument {
   // Story 17.16: Kravpunkter evidence links
   requirement_evidence_links RequirementEvidenceLink[]
 
-  // Epic 21: Sealed-cycle evidence snapshots that reference this document's content + SHA-256.
-  compliance_evidence_snapshots ComplianceEvidenceSnapshot[] @relation("SnapshotDocument")
-
   @@index([workspace_id, status])
   @@index([workspace_id, document_type])
   @@index([workspace_id, created_at])
@@ -1888,12 +1880,17 @@ enum AuditType {
   EXTERN
 }
 
+// Story 21.26 (2026-04-27) — collapsed SEAL into AVSLUTAD as terminal active
+// state. AVSLUTAD now records sealed_at + sealed_by (column names retained
+// for migration safety; semantically: completion).
+// Story 21.27 (2026-04-28) — collapsed ARKIVERAD into AVSLUTAD too. ARKIVERAD
+// had no UI transition; the only behavioral difference (locking findings)
+// wasn't worth a phantom state for SMB self-audit. AVSLUTAD is now the
+// only terminal active state; revertCycleToPagaende remains the escape hatch.
 enum ComplianceCycleStatus {
   PLANERAD
   PAGAENDE
   AVSLUTAD
-  SEALED
-  ARKIVERAD
 }
 
 enum EfterlevnadsBedomning {
@@ -1919,9 +1916,11 @@ enum EvidenceKind {
   DOCUMENT
 }
 
+// Story 21.26 (2026-04-27) — collapsed SEAL into AVSLUTAD; only one report kind
+// remains. Kept as an enum (not removed) to preserve the column shape and
+// retain a single explicit value for clarity in queries.
 enum ReportKind {
   COMPLETE
-  SEALED
 }
 
 model ComplianceAuditCycle {
@@ -1936,9 +1935,11 @@ model ComplianceAuditCycle {
   law_change_cutoff_date DateTime
   status                 ComplianceCycleStatus @default(PLANERAD)
   lead_auditor_user_id   String
+  // Story 21.26 — populated by completeCycle (was: sealCycle). Column names
+  // retained to avoid a wider migration; semantically these now record the
+  // AVSLUTAD transition's timestamp + actor.
   sealed_at              DateTime?
   sealed_by_user_id      String?
-  seal_hash              String? // SHA-256 hex over canonical JSON (64 chars)
   description            String?               @db.Text
   created_at             DateTime              @default(now())
   updated_at             DateTime              @updatedAt
@@ -1951,10 +1952,9 @@ model ComplianceAuditCycle {
   sealed_by    User?     @relation("CycleSealedBy", fields: [sealed_by_user_id], references: [id], onDelete: SetNull)
   created_by   User      @relation("CycleCreatedBy", fields: [created_by_user_id], references: [id], onDelete: Restrict)
 
-  items              ComplianceAuditItem[]
-  findings           ComplianceFinding[]
-  evidence_snapshots ComplianceEvidenceSnapshot[]
-  reports            ComplianceAuditReport[]
+  items    ComplianceAuditItem[]
+  findings ComplianceFinding[]
+  reports  ComplianceAuditReport[]
 
   // Epic 21 Story 21.8: reverse of ComplianceCycleTaskLink — cycle's linked tasks.
   task_links ComplianceCycleTaskLink[]
@@ -2004,6 +2004,12 @@ model ComplianceFinding {
   due_date                  DateTime?
   closed_at                 DateTime?
   closed_by_user_id         String?
+  // Phase 2 / Epic 23 foundation — denormalised closure metadata exposed to the
+  // client for badge derivation (closed-verified vs closed-plain vs closed-dismissed).
+  // Activity log retains the full audit trail; these are latest-snapshot mirrors.
+  // Cleared on reopenFinding so they always reflect the current closure event (if any).
+  verification_note         String?          @db.Text
+  close_reason              String?          @db.Text
   created_at                DateTime         @default(now())
   updated_at                DateTime         @updatedAt
 
@@ -2024,32 +2030,9 @@ model ComplianceFinding {
   @@map("compliance_findings")
 }
 
-model ComplianceEvidenceSnapshot {
-  id                   String       @id @default(uuid())
-  cycle_id             String
-  law_list_item_id     String?
-  requirement_id       String?
-  evidence_kind        EvidenceKind
-  evidence_file_id     String? // XOR with evidence_document_id — DB CHECK constraint added in migration
-  evidence_document_id String? // XOR with evidence_file_id
-  evidence_sha256      String // 64-char hex of file/document bytes at capture time
-  captured_at          DateTime     @default(now())
-
-  cycle             ComplianceAuditCycle    @relation(fields: [cycle_id], references: [id], onDelete: Cascade)
-  law_list_item     LawListItem?            @relation("SnapshotLawListItem", fields: [law_list_item_id], references: [id], onDelete: SetNull)
-  requirement       LawListItemRequirement? @relation("SnapshotRequirement", fields: [requirement_id], references: [id], onDelete: SetNull)
-  evidence_file     WorkspaceFile?          @relation("SnapshotFile", fields: [evidence_file_id], references: [id], onDelete: SetNull)
-  evidence_document WorkspaceDocument?      @relation("SnapshotDocument", fields: [evidence_document_id], references: [id], onDelete: SetNull)
-  // XOR (evidence_file_id vs evidence_document_id) is enforced at the DB level
-  // via a CHECK constraint added as a raw SQL step in the migration. This is
-  // stricter than the existing RequirementEvidenceLink (which uses app-layer
-  // Zod .refine only) — justified here by audit integrity requirements.
-
-  @@index([cycle_id])
-  @@index([evidence_file_id])
-  @@index([evidence_document_id])
-  @@map("compliance_evidence_snapshots")
-}
+// Story 21.26 (2026-04-27) — ComplianceEvidenceSnapshot model removed. The
+// only writer was sealCycle's gather-seal-evidence path; no remaining consumers
+// after SEAL collapse. Migration drops the underlying table.
 
 model ComplianceAuditReport {
   id                String     @id @default(uuid())

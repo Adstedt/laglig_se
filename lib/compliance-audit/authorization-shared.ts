@@ -10,7 +10,6 @@
  */
 
 import type { WorkspaceRole } from '@prisma/client'
-import { canSealAuditCycle } from '@/lib/auth/permissions'
 
 /**
  * Authorizes sign-off (and unsign) on a single ComplianceAuditItem row.
@@ -25,6 +24,10 @@ import { canSealAuditCycle } from '@/lib/auth/permissions'
  * or the item's responsible user (when set). Everyone else with `tasks:edit`
  * is intentionally blocked — the outer `withWorkspace(..., 'tasks:edit')`
  * gate still keeps AUDITOR out, this helper narrows the inner ring.
+ *
+ * Story 21.26 — replaces the previous `canSealAuditCycle(role)` check with an
+ * inline OWNER/ADMIN role test (the `audit:seal` permission scope was removed
+ * alongside the SEAL collapse).
  */
 export function canSignOffItem(args: {
   role: WorkspaceRole
@@ -32,7 +35,7 @@ export function canSignOffItem(args: {
   leadAuditorUserId: string
   responsibleUserId: string | null
 }): boolean {
-  if (canSealAuditCycle(args.role)) return true
+  if (args.role === 'OWNER' || args.role === 'ADMIN') return true
   if (args.userId === args.leadAuditorUserId) return true
   if (
     args.responsibleUserId !== null &&

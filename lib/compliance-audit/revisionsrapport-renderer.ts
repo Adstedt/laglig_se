@@ -147,10 +147,6 @@ function cycleStatusLabel(status: ComplianceCycleStatus): string {
       return 'Pågående'
     case 'AVSLUTAD':
       return 'Avslutad'
-    case 'SEALED':
-      return 'Fastställd'
-    case 'ARKIVERAD':
-      return 'Arkiverad'
   }
 }
 
@@ -370,18 +366,17 @@ function renderTitelsida(
   const periodEnd = formatDate(cycle.scheduledEnd)
   const generatedLabel = formatDate(generatedAt, 'd MMM yyyy HH:mm')
 
+  // Story 21.26 — sealHash dropped from CycleDetail. Completion-block now
+  // shows just the timestamp + signer when AVSLUTAD/ARKIVERAD; no hash.
   let sealBlock = ''
-  if (cycle.sealHash !== null) {
-    const sealedAt = cycle.sealedAt
-      ? formatDate(cycle.sealedAt, 'd MMM yyyy HH:mm')
-      : '—'
+  if (cycle.sealedAt !== null) {
+    const sealedAt = formatDate(cycle.sealedAt, 'd MMM yyyy HH:mm')
     const sealedBy = cycle.sealedBy?.name ?? '—'
     sealBlock = `
     <div class="seal-block">
-      <h3>Fastställd kontroll</h3>
-      <p class="meta">Fastställd: ${escapeHtml(sealedAt)}</p>
-      <p class="meta">Fastställd av: ${escapeHtml(sealedBy)}</p>
-      <code class="seal-hash">${escapeHtml(cycle.sealHash)}</code>
+      <h3>Avslutad kontroll</h3>
+      <p class="meta">Avslutad: ${escapeHtml(sealedAt)}</p>
+      <p class="meta">Avslutad av: ${escapeHtml(sealedBy)}</p>
     </div>`
   }
 
@@ -834,14 +829,12 @@ ${body}
 }
 
 function renderFooter(input: RevisionsrapportInput): string {
+  // Story 21.26 — sealSuffix removed; sealHash no longer exists on CycleDetail.
   const { cycle, generatedAt } = input
   const generatedLabel = formatDate(generatedAt, 'd MMM yyyy HH:mm')
   const shortId = cycle.id.slice(0, 8)
-  const sealSuffix = cycle.sealHash
-    ? ` · Seal: ${escapeHtml(cycle.sealHash)}`
-    : ''
   return `  <footer>
-    Rapport genererad ${escapeHtml(generatedLabel)} · Kontroll-ID: ${escapeHtml(shortId)}… · Laglig.se${sealSuffix}
+    Rapport genererad ${escapeHtml(generatedLabel)} · Kontroll-ID: ${escapeHtml(shortId)}… · Laglig.se
   </footer>`
 }
 

@@ -19,12 +19,19 @@
 
 import { format } from 'date-fns'
 import { sv } from 'date-fns/locale'
-import { AlertTriangle, ClipboardCheck, Eye, Lightbulb } from 'lucide-react'
+import {
+  AlertTriangle,
+  Check,
+  ClipboardCheck,
+  Eye,
+  Lightbulb,
+} from 'lucide-react'
 import { FindingSeverity, FindingType } from '@prisma/client'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import {
   FINDING_SEVERITY_LABELS,
+  FINDING_STATUS_BADGES,
   FINDING_TYPE_LABELS,
   getFindingStatus,
 } from '@/components/features/compliance-audit/finding-copy'
@@ -147,30 +154,28 @@ export function FindingCard({
               Åtgärdsuppgift
             </Badge>
           ) : null}
-          {/* Epic 21 follow-up (verify step): three-state badge driven by
-              getFindingStatus. "Öppen" is implicit (no badge). "Redo att
-              verifiera" surfaces the auditor's action moment in amber.
-              "Stängd" is terminal. */}
+          {/* Phase 2 / Epic 23 foundation — five-state badge driven by
+              FINDING_STATUS_BADGES lookup. Öppen renders no badge (implicit).
+              Closed states distinguish verified / plain / dismissed via the
+              denormalised closure metadata columns. */}
           {(() => {
             const status = getFindingStatus(finding)
-            if (status === 'closed') {
-              return (
-                <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
-                  Stängd
-                </Badge>
-              )
-            }
-            if (status === 'ready-to-verify') {
-              return (
-                <Badge
-                  variant="outline"
-                  className="h-5 border-amber-300 bg-amber-50 px-1.5 text-[10px] text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200"
-                >
-                  Redo att verifiera
-                </Badge>
-              )
-            }
-            return null
+            const config = FINDING_STATUS_BADGES[status]
+            if (!config) return null
+            return (
+              <Badge
+                variant="outline"
+                className={cn('h-5 gap-1 px-1.5 text-[10px]', config.className)}
+                data-testid={`finding-status-${status}`}
+              >
+                {config.icon === 'check' ? (
+                  <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                ) : null}
+                <span className={config.strike ? 'line-through' : undefined}>
+                  {config.label}
+                </span>
+              </Badge>
+            )
           })()}
         </div>
 

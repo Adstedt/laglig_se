@@ -1,0 +1,1064 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Findings state refactor — UI prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        font-family:
+          ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial;
+      }
+      .frame {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow:
+          0 1px 0 rgba(15, 23, 42, 0.04),
+          0 8px 24px -12px rgba(15, 23, 42, 0.08);
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        font-size: 11px;
+        line-height: 1.4;
+        border-radius: 999px;
+        font-weight: 500;
+      }
+      .pill-type {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 1px 6px;
+        font-size: 10px;
+        line-height: 1.4;
+        border-radius: 4px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+      .arrow {
+        color: #94a3b8;
+      }
+      .state-node {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        min-width: 130px;
+      }
+      .state-arrow-h {
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(to right, #cbd5e1 50%, transparent 50%);
+        background-size: 8px 1px;
+        position: relative;
+      }
+      .state-arrow-h::after {
+        content: '▶';
+        position: absolute;
+        right: -2px;
+        top: -7px;
+        color: #94a3b8;
+        font-size: 10px;
+      }
+      .modal-mock {
+        background: #1f2937;
+        border: 1px solid #374151;
+        border-radius: 10px;
+        color: #e5e7eb;
+        padding: 22px 22px 18px;
+        width: 100%;
+        max-width: 480px;
+      }
+      .modal-mock label {
+        font-size: 11px;
+        color: #9ca3af;
+        text-transform: none;
+      }
+      .modal-mock textarea,
+      .modal-mock input {
+        width: 100%;
+        background: #111827;
+        border: 1px solid #374151;
+        border-radius: 6px;
+        color: #e5e7eb;
+        padding: 8px 10px;
+        font-size: 12px;
+        font-family: inherit;
+      }
+      .modal-mock .ctx {
+        background: rgba(55, 65, 81, 0.4);
+        border: 1px solid #374151;
+        border-radius: 6px;
+        padding: 8px 10px;
+        font-size: 11px;
+      }
+      .row-divider {
+        border-top: 1px solid #e2e8f0;
+      }
+      .finding-row {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 12px;
+        align-items: center;
+        padding: 12px 14px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 5px 10px;
+        font-size: 12px;
+        line-height: 1.2;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        font-weight: 500;
+      }
+      .btn-ghost {
+        background: transparent;
+        color: #475569;
+      }
+      .btn-ghost:hover {
+        background: #f1f5f9;
+      }
+      .btn-outline {
+        background: #fff;
+        border-color: #cbd5e1;
+        color: #0f172a;
+      }
+      .btn-outline:hover {
+        background: #f8fafc;
+      }
+      .btn-primary {
+        background: #0f172a;
+        color: #fff;
+      }
+      .strike {
+        text-decoration: line-through;
+        text-decoration-color: #94a3b8;
+        color: #64748b;
+      }
+      .legend-grid {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 8px 24px;
+        align-items: start;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+    <div class="mx-auto max-w-6xl px-6 py-10">
+      <!-- Header -->
+      <header class="mb-12">
+        <div class="flex items-baseline gap-3">
+          <p class="text-xs uppercase tracking-wider text-slate-500">
+            Epic 21 · Lagefterlevnadskontroll
+          </p>
+          <span
+            class="rounded bg-violet-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-violet-700"
+            >Phase 2 · Findings state refactor</span
+          >
+        </div>
+        <h1 class="mt-1 text-3xl font-semibold tracking-tight">
+          Markera som åtgärdat — unified verb, five derived badges
+        </h1>
+        <p class="mt-3 max-w-3xl leading-relaxed text-slate-600">
+          Three close-paths (plain, verify, manual-override) collapse into one
+          user-facing CTA. The badge tells you <em>how</em> a finding was
+          resolved. Findings stay editable through AVSLUTAD; only items freeze.
+          SEAL untouched (separate decision).
+        </p>
+      </header>
+
+      <!-- ============================================================== -->
+      <!-- 1. STATE MACHINE                                                 -->
+      <!-- ============================================================== -->
+      <section class="mb-14">
+        <h2 class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          1 — State machine
+        </h2>
+        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+          From three states to five — same inputs, richer signal
+        </h3>
+
+        <div class="frame p-7">
+          <!-- Top row: Open states -->
+          <div class="mb-3 flex items-center gap-3">
+            <div class="state-node">
+              <span class="badge bg-slate-100 text-slate-600">
+                <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                Öppen
+              </span>
+              <p class="text-center text-[10px] text-slate-500">
+                closedAt = null<br />
+                ingen task <em>eller</em> task pågår
+              </p>
+            </div>
+            <div class="state-arrow-h"></div>
+            <div class="state-node">
+              <span
+                class="badge border border-amber-300 bg-amber-50 text-amber-800"
+              >
+                Redo att verifiera
+              </span>
+              <p class="text-center text-[10px] text-slate-500">
+                closedAt = null<br />
+                task.completedAt ≠ null
+              </p>
+            </div>
+            <div class="state-arrow-h"></div>
+            <div class="state-node">
+              <span
+                class="badge border border-emerald-300 bg-emerald-50 text-emerald-800"
+              >
+                ✓ Åtgärdad
+              </span>
+              <p class="text-center text-[10px] text-slate-500">
+                closedAt ≠ null<br />
+                verification_note ≠ null
+              </p>
+            </div>
+          </div>
+
+          <!-- Connecting branch labels -->
+          <div class="mb-1 grid grid-cols-3 gap-3 text-center">
+            <div class="text-[10px] italic text-slate-400">
+              Skapa åtgärdsuppgift &amp; markera task som klar
+            </div>
+            <div class="text-[10px] italic text-slate-400">
+              Markera som åtgärdat (verify-läge)
+            </div>
+            <div></div>
+          </div>
+
+          <div class="my-4 h-px bg-slate-200"></div>
+
+          <!-- Bottom row: Other close paths -->
+          <div class="grid grid-cols-3 gap-6">
+            <div class="rounded-lg border border-slate-200 bg-slate-50/60 p-4">
+              <p class="mb-2 text-[10px] uppercase tracking-wider text-slate-500">
+                Direkt-stängning (utan task eller utan verifiering)
+              </p>
+              <div class="flex items-center gap-2">
+                <span class="badge bg-slate-100 text-slate-600">Öppen</span>
+                <span class="arrow text-xs">→</span>
+                <span class="badge bg-slate-200 text-slate-700">Åtgärdad</span>
+              </div>
+              <p class="mt-2 text-[10px] leading-relaxed text-slate-500">
+                closedAt ≠ null, båda metadata-kolumner null. Auditor markerade
+                klart utan formell verifiering.
+              </p>
+            </div>
+
+            <div class="rounded-lg border border-slate-200 bg-slate-50/60 p-4">
+              <p class="mb-2 text-[10px] uppercase tracking-wider text-slate-500">
+                Manuell stängning utan åtgärd (avskrivning)
+              </p>
+              <div class="flex items-center gap-2">
+                <span class="badge bg-slate-100 text-slate-600">Öppen</span>
+                <span class="arrow text-xs">→</span>
+                <span
+                  class="badge border border-slate-300 bg-slate-100 text-slate-500"
+                  ><span class="strike">Avskriven</span></span
+                >
+              </div>
+              <p class="mt-2 text-[10px] leading-relaxed text-slate-500">
+                closedAt ≠ null, close_reason ≠ null. Anmärkningen är inte
+                längre relevant; anledning sparas i logg + på findingen.
+              </p>
+            </div>
+
+            <div class="rounded-lg border border-slate-200 bg-slate-50/60 p-4">
+              <p class="mb-2 text-[10px] uppercase tracking-wider text-slate-500">
+                Återöppna (vilket stängt-läge som helst)
+              </p>
+              <div class="flex items-center gap-2">
+                <span class="badge bg-slate-200 text-slate-700">Åtgärdad</span>
+                <span class="arrow text-xs">→</span>
+                <span class="badge bg-slate-100 text-slate-600">Öppen</span>
+              </div>
+              <p class="mt-2 text-[10px] leading-relaxed text-slate-500">
+                Båda metadata-kolumner nollställs; aktivitetsloggen behåller
+                hela historiken.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- 2. BADGE LEGEND                                                  -->
+      <!-- ============================================================== -->
+      <section class="mb-14">
+        <h2 class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          2 — Badge legend
+        </h2>
+        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+          Five derived badges, no schema-stored state
+        </h3>
+
+        <div class="frame p-6">
+          <div class="legend-grid">
+            <div>
+              <span class="badge bg-slate-100 text-slate-600">
+                <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                Öppen
+              </span>
+            </div>
+            <div class="text-sm text-slate-600">
+              <code class="text-xs">closedAt === null</code> AND
+              <code class="text-xs">correctiveActionTask?.completedAt</code> är
+              null. Auditorn jobbar fortfarande på den.
+            </div>
+
+            <div>
+              <span
+                class="badge border border-amber-300 bg-amber-50 text-amber-800"
+                >Redo att verifiera</span
+              >
+            </div>
+            <div class="text-sm text-slate-600">
+              Öppen, men kopplad task är klar. Knappen
+              <strong>Markera som åtgärdat</strong> öppnar verify-mode-dialog.
+            </div>
+
+            <div>
+              <span
+                class="badge border border-emerald-300 bg-emerald-50 text-emerald-800"
+              >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Åtgärdad
+              </span>
+            </div>
+            <div class="text-sm text-slate-600">
+              Stängd via verify-flödet med en
+              <code class="text-xs">verification_note</code> som
+              audit-bevismaterial. Starkast ISO-spår.
+            </div>
+
+            <div>
+              <span class="badge bg-slate-200 text-slate-700">Åtgärdad</span>
+            </div>
+            <div class="text-sm text-slate-600">
+              Stängd direkt utan formell verifiering — auditorn bedömde att den
+              är åtgärdad utan task-spår.
+            </div>
+
+            <div>
+              <span
+                class="badge border border-slate-300 bg-slate-100 text-slate-500"
+                ><span class="strike">Avskriven</span></span
+              >
+            </div>
+            <div class="text-sm text-slate-600">
+              Manuellt stängd med
+              <code class="text-xs">close_reason</code> — anmärkningen blev
+              irrelevant (verksamhet ändrad, krav borttaget, etc.).
+              Genomstrykning + dämpad färg signalerar "avslutad utan
+              verkställande".
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- 3. FINDINGS TAB — PAGAENDE                                       -->
+      <!-- ============================================================== -->
+      <section class="mb-14">
+        <h2 class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          3 — Findings tab · PÅGÅENDE state
+        </h2>
+        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+          One CTA "Markera som åtgärdat" — dialog adapts to context
+        </h3>
+
+        <div class="frame">
+          <!-- Cycle header strip -->
+          <div class="px-6 pb-3 pt-5">
+            <p class="text-[11px] text-slate-400">
+              Almåsa Havshotell AB › Laglistor › Kontroller ›
+              <span class="text-slate-600">Testkontroll 2</span>
+            </p>
+            <div class="mt-1 flex items-center gap-3">
+              <h4 class="text-xl font-semibold">Testkontroll 2</h4>
+              <span
+                class="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-700"
+                >Pågående</span
+              >
+            </div>
+          </div>
+
+          <!-- Tabs -->
+          <div class="flex gap-1 border-b border-slate-200 px-5">
+            <button class="rounded-t px-3 py-2 text-sm text-slate-500">Dokument</button>
+            <button
+              class="rounded-t border-b-2 border-slate-900 px-3 py-2 text-sm font-medium"
+            >
+              Anmärkningar
+            </button>
+            <button class="rounded-t px-3 py-2 text-sm text-slate-500">Rapport</button>
+            <button class="rounded-t px-3 py-2 text-sm text-slate-500">Aktivitet</button>
+          </div>
+
+          <!-- Filter chips + add -->
+          <div class="flex items-center justify-between px-5 py-3">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="badge bg-slate-900 text-white">Alla</span>
+              <span class="badge bg-slate-100 text-slate-600">Avvikelse</span>
+              <span class="badge bg-slate-100 text-slate-600">Observation</span>
+              <span class="badge bg-slate-100 text-slate-600">Förbättringsförslag</span>
+              <span class="mx-2 h-3 w-px bg-slate-300"></span>
+              <span class="badge bg-slate-900 text-white">Alla</span>
+              <span class="badge bg-slate-100 text-slate-600">Öppna</span>
+              <span class="badge bg-slate-100 text-slate-600">Stängda</span>
+            </div>
+            <button class="btn btn-outline">+ Lägg till anmärkning</button>
+          </div>
+
+          <div class="row-divider"></div>
+
+          <!-- Finding rows: one per state -->
+
+          <!-- ÖPPEN, no task -->
+          <div class="finding-row">
+            <div class="space-y-1">
+              <div class="flex items-center gap-1.5">
+                <span class="pill-type bg-red-100 text-red-700">▲ Avvikelse</span>
+                <span class="pill-type bg-red-50 text-red-600">Större</span>
+                <span class="badge bg-slate-100 text-slate-600">
+                  <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                  Öppen
+                </span>
+              </div>
+              <p class="text-sm font-medium">Saknar utbildningsplan för kemikaliehantering</p>
+              <p class="text-[11px] text-slate-500">
+                27 apr. 2026 · Arbetsmiljölagen (1977:1160)
+              </p>
+            </div>
+            <div></div>
+            <div class="flex items-center gap-1">
+              <button class="btn btn-ghost">+ Skapa åtgärdsuppgift</button>
+              <button class="btn btn-ghost">Redigera</button>
+              <button class="btn btn-outline">Markera som åtgärdat</button>
+            </div>
+          </div>
+
+          <div class="row-divider"></div>
+
+          <!-- READY-TO-VERIFY -->
+          <div class="finding-row">
+            <div class="space-y-1">
+              <div class="flex items-center gap-1.5">
+                <span class="pill-type bg-red-100 text-red-700">▲ Avvikelse</span>
+                <span class="pill-type bg-amber-50 text-amber-700">Mindre</span>
+                <span
+                  class="badge border border-amber-300 bg-amber-50 text-amber-800"
+                  >Redo att verifiera</span
+                >
+              </div>
+              <p class="text-sm font-medium">Otydlig märkning på nödutgång</p>
+              <p class="text-[11px] text-slate-500">
+                22 apr. 2026 · Arbetsmiljölagen (1977:1160) · Åtgärdsuppgift
+                slutförd 2026-04-26
+              </p>
+            </div>
+            <div></div>
+            <div class="flex items-center gap-1">
+              <button class="btn btn-ghost">Redigera</button>
+              <button class="btn btn-primary">Markera som åtgärdat</button>
+            </div>
+          </div>
+
+          <div class="row-divider"></div>
+
+          <!-- ÅTGÄRDAD ✓ (closed-verified) -->
+          <div class="finding-row">
+            <div class="space-y-1">
+              <div class="flex items-center gap-1.5">
+                <span class="pill-type bg-amber-100 text-amber-700">◆ Observation</span>
+                <span
+                  class="badge border border-emerald-300 bg-emerald-50 text-emerald-800"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Åtgärdad
+                </span>
+              </div>
+              <p class="text-sm font-medium text-slate-700">
+                Brandövningar inte dokumenterade
+              </p>
+              <p class="text-[11px] text-slate-500">
+                stängd 26 apr. 2026 av Maria A. · "Granskade ny dokumentation
+                2026-04-26, närvarolista bifogad"
+              </p>
+            </div>
+            <div></div>
+            <div class="flex items-center gap-1">
+              <button class="btn btn-outline">Återöppna</button>
+            </div>
+          </div>
+
+          <div class="row-divider"></div>
+
+          <!-- ÅTGÄRDAD plain -->
+          <div class="finding-row">
+            <div class="space-y-1">
+              <div class="flex items-center gap-1.5">
+                <span class="pill-type bg-blue-100 text-blue-700">＋ Förbättringsförslag</span>
+                <span class="badge bg-slate-200 text-slate-700">Åtgärdad</span>
+              </div>
+              <p class="text-sm font-medium text-slate-700">
+                Uppdatera onboarding-checklista
+              </p>
+              <p class="text-[11px] text-slate-500">
+                stängd 24 apr. 2026 av Alexander A. · ingen verifieringsnot
+              </p>
+            </div>
+            <div></div>
+            <div class="flex items-center gap-1">
+              <button class="btn btn-outline">Återöppna</button>
+            </div>
+          </div>
+
+          <div class="row-divider"></div>
+
+          <!-- AVSKRIVEN -->
+          <div class="finding-row">
+            <div class="space-y-1">
+              <div class="flex items-center gap-1.5">
+                <span class="pill-type bg-red-100 text-red-700">▲ Avvikelse</span>
+                <span
+                  class="badge border border-slate-300 bg-slate-100 text-slate-500"
+                >
+                  <span class="strike">Avskriven</span>
+                </span>
+              </div>
+              <p class="text-sm font-medium text-slate-500 line-through">
+                Saknar separat avfallshantering
+              </p>
+              <p class="text-[11px] text-slate-500">
+                avskriven 23 apr. 2026 · "Verksamheten har förändrats — kravet
+                gäller inte längre denna lokal."
+              </p>
+            </div>
+            <div></div>
+            <div class="flex items-center gap-1">
+              <button class="btn btn-outline">Återöppna</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- 4. FINDINGS TAB — AVSLUTAD (Option B unlock)                     -->
+      <!-- ============================================================== -->
+      <section class="mb-14">
+        <h2 class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          4 — Findings tab · AVSLUTAD state (Option B unlock)
+        </h2>
+        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+          Items frozen, findings still workable
+        </h3>
+
+        <div class="frame">
+          <div class="px-6 pb-3 pt-5">
+            <p class="text-[11px] text-slate-400">
+              Almåsa Havshotell AB › Laglistor › Kontroller ›
+              <span class="text-slate-600">Testkontroll 2</span>
+            </p>
+            <div class="mt-1 flex items-center gap-3">
+              <h4 class="text-xl font-semibold">Testkontroll 2</h4>
+              <span
+                class="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700"
+                >Avslutad</span
+              >
+            </div>
+          </div>
+
+          <!-- AVSLUTAD reassurance banner (the only banner — no stack) -->
+          <div class="mx-5 mb-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+            Kontrollen är slutförd. Öppna anmärkningar fortsätter att följas
+            upp — fastställandet bygger på dagens snapshot.
+          </div>
+
+          <!-- Tabs -->
+          <div class="flex gap-1 border-b border-slate-200 px-5">
+            <button class="rounded-t px-3 py-2 text-sm text-slate-500">Dokument</button>
+            <button
+              class="rounded-t border-b-2 border-slate-900 px-3 py-2 text-sm font-medium"
+            >
+              Anmärkningar
+            </button>
+            <button class="rounded-t px-3 py-2 text-sm text-slate-500">Rapport</button>
+            <button class="rounded-t px-3 py-2 text-sm text-slate-500">Aktivitet</button>
+          </div>
+
+          <div class="flex items-center justify-between px-5 py-3">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="badge bg-slate-900 text-white">Alla</span>
+              <span class="badge bg-slate-100 text-slate-600">Öppna</span>
+              <span class="badge bg-slate-100 text-slate-600">Stängda</span>
+            </div>
+            <!-- Lägg till anmärkning still visible — auditor can add follow-ups post-AVSLUTAD if needed -->
+            <button class="btn btn-outline">+ Lägg till anmärkning</button>
+          </div>
+
+          <div class="row-divider"></div>
+
+          <div class="finding-row">
+            <div class="space-y-1">
+              <div class="flex items-center gap-1.5">
+                <span class="pill-type bg-red-100 text-red-700">▲ Avvikelse</span>
+                <span class="pill-type bg-amber-50 text-amber-700">Mindre</span>
+                <span
+                  class="badge border border-amber-300 bg-amber-50 text-amber-800"
+                  >Redo att verifiera</span
+                >
+              </div>
+              <p class="text-sm font-medium">Otydlig märkning på nödutgång</p>
+              <p class="text-[11px] text-slate-500">
+                Skapad i denna kontroll · Åtgärdsuppgift slutförd 2 dagar efter
+                AVSLUTAD-transitionen
+              </p>
+            </div>
+            <div></div>
+            <!-- Actions VISIBLE — Option B in action -->
+            <div class="flex items-center gap-1">
+              <button class="btn btn-ghost">Redigera</button>
+              <button class="btn btn-primary">Markera som åtgärdat</button>
+            </div>
+          </div>
+
+          <div class="row-divider"></div>
+
+          <div class="finding-row">
+            <div class="space-y-1">
+              <div class="flex items-center gap-1.5">
+                <span class="pill-type bg-red-100 text-red-700">▲ Avvikelse</span>
+                <span class="badge bg-slate-100 text-slate-600">
+                  <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                  Öppen
+                </span>
+              </div>
+              <p class="text-sm font-medium">Saknar utbildningsplan för kemikaliehantering</p>
+              <p class="text-[11px] text-slate-500">
+                Skapad i denna kontroll · ingen åtgärd ännu — bevakas till
+                nästa cykel
+              </p>
+            </div>
+            <div></div>
+            <div class="flex items-center gap-1">
+              <button class="btn btn-ghost">+ Skapa åtgärdsuppgift</button>
+              <button class="btn btn-ghost">Redigera</button>
+              <button class="btn btn-outline">Markera som åtgärdat</button>
+            </div>
+          </div>
+        </div>
+
+        <p class="mt-3 text-xs italic text-slate-500">
+          What changed vs today: the redundant "Kontrollen är avslutad.
+          Återställ till pågående för att redigera." findings-tab banner is
+          gone (it lied — findings are NOT items). The header's spurious "är
+          arkiverad" banner is gone (was firing for AVSLUTAD due to the
+          collapsed isReadOnly bucket). All three finding actions remain
+          interactive on AVSLUTAD.
+        </p>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- 5. MARK-AS-RESOLVED DIALOG — three modes                          -->
+      <!-- ============================================================== -->
+      <section class="mb-14">
+        <h2 class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          5 — MarkResolvedDialog · three modes from one component
+        </h2>
+        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+          Same entry CTA. Dialog adapts to the finding's state at click time.
+        </h3>
+
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <!-- VERIFY MODE -->
+          <div>
+            <p class="mb-2 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
+              Mode: verify
+            </p>
+            <p class="mb-3 text-xs text-slate-500">
+              Triggered when finding is <code>ready-to-verify</code> (linked
+              task is <code>completedAt != null</code>).
+            </p>
+            <div class="modal-mock">
+              <p class="text-[15px] font-semibold">Markera som åtgärdat</p>
+              <p class="mt-1 text-xs text-slate-400">
+                Bekräfta att den korrigerande åtgärden löser anmärkningen
+                effektivt.
+              </p>
+              <div class="ctx mt-4">
+                <p>
+                  <span class="font-medium">Anmärkning:</span> Otydlig märkning
+                  på nödutgång
+                </p>
+                <p class="mt-1">
+                  <span class="font-medium">Åtgärdsuppgift:</span>
+                  <a class="text-sky-300 underline-offset-2 hover:underline"
+                    >Sätt upp tydligare nödutgångsskylt ↗</a
+                  >
+                  <span class="text-slate-400">— slutförd 26 apr. 2026</span>
+                </p>
+              </div>
+              <div class="mt-4">
+                <label>Verifieringskommentar (frivilligt)</label>
+                <textarea
+                  rows="3"
+                  placeholder="T.ex. Granskade ny skylt 2026-04-26, foto bifogat"
+                ></textarea>
+                <p class="mt-1 text-[10px] text-slate-500">
+                  Anteckna vad du granskade — sparas i aktivitetsloggen som
+                  bevis.
+                </p>
+              </div>
+              <div class="mt-5 flex justify-end gap-2">
+                <button
+                  class="rounded border border-slate-600 px-3 py-1.5 text-xs text-slate-300"
+                >
+                  Avbryt
+                </button>
+                <button
+                  class="rounded bg-emerald-500 px-3 py-1.5 text-xs font-medium text-white"
+                >
+                  Bekräfta åtgärd
+                </button>
+              </div>
+            </div>
+            <p class="mt-2 text-[11px] italic text-slate-500">
+              Skriver <code>verification_note</code>-kolumn (om ifylld) →
+              badge: <strong>Åtgärdad ✓</strong>
+            </p>
+          </div>
+
+          <!-- MANUAL OVERRIDE MODE -->
+          <div>
+            <p class="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-600">
+              Mode: manual-override
+            </p>
+            <p class="mb-3 text-xs text-slate-500">
+              Triggered when finding is open and linked task is incomplete (or
+              user attempted plain close and server gated with
+              <code>FINDING_REQUIRES_TASK_CLOSURE</code>).
+            </p>
+            <div class="modal-mock">
+              <p class="text-[15px] font-semibold">Markera som åtgärdat</p>
+              <p class="mt-1 text-xs text-slate-400">
+                Den kopplade åtgärdsuppgiften är inte slutförd. Ange en manuell
+                anledning.
+              </p>
+              <div class="ctx mt-4">
+                <p>
+                  <span class="font-medium">Anmärkning:</span> Saknar separat
+                  avfallshantering
+                </p>
+                <p class="mt-1">
+                  <span class="font-medium">Åtgärdsuppgift:</span>
+                  <a class="text-sky-300 underline-offset-2 hover:underline"
+                    >Inrätta källsorteringsstation ↗</a
+                  >
+                  <span class="text-slate-400">— ej slutförd</span>
+                </p>
+              </div>
+              <div class="mt-4">
+                <label
+                  >Anledning för manuell stängning <span class="text-rose-400">*</span></label
+                >
+                <textarea
+                  rows="3"
+                  placeholder="T.ex. Verksamheten har förändrats — kravet gäller inte längre."
+                ></textarea>
+                <p class="mt-1 text-[10px] text-slate-500">
+                  Krävs för audit-spårbarhet.
+                </p>
+              </div>
+              <div class="mt-5 flex justify-end gap-2">
+                <button
+                  class="rounded border border-slate-600 px-3 py-1.5 text-xs text-slate-300"
+                >
+                  Avbryt
+                </button>
+                <button
+                  class="rounded bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-900"
+                >
+                  Markera ändå
+                </button>
+              </div>
+            </div>
+            <p class="mt-2 text-[11px] italic text-slate-500">
+              Skriver <code>close_reason</code>-kolumn → badge:
+              <strong>Avskriven</strong>
+            </p>
+          </div>
+
+          <!-- SIMPLE MODE -->
+          <div>
+            <p class="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              Mode: simple
+            </p>
+            <p class="mb-3 text-xs text-slate-500">
+              Triggered when finding is open and has no linked task at all
+              (typically OBSERVATION or FÖRBÄTTRING — no auto-spawn).
+            </p>
+            <div class="modal-mock">
+              <p class="text-[15px] font-semibold">Markera som åtgärdat</p>
+              <p class="mt-1 text-xs text-slate-400">
+                Stäng anmärkningen direkt — ingen åtgärdsuppgift kopplad.
+              </p>
+              <div class="ctx mt-4">
+                <p>
+                  <span class="font-medium">Anmärkning:</span> Uppdatera
+                  onboarding-checklista
+                </p>
+                <p class="mt-1 text-[11px] text-slate-400">
+                  Ingen åtgärdsuppgift kopplad till denna anmärkning.
+                </p>
+              </div>
+              <div class="mt-3 text-[11px] italic text-slate-400">
+                Inget extra fält behövs.
+              </div>
+              <div class="mt-5 flex justify-end gap-2">
+                <button
+                  class="rounded border border-slate-600 px-3 py-1.5 text-xs text-slate-300"
+                >
+                  Avbryt
+                </button>
+                <button
+                  class="rounded bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-900"
+                >
+                  Markera som åtgärdat
+                </button>
+              </div>
+            </div>
+            <p class="mt-2 text-[11px] italic text-slate-500">
+              Båda metadata-kolumner förblir null → badge:
+              <strong>Åtgärdad</strong> (utan check)
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- 6. BEFORE / AFTER ACTION ROW                                      -->
+      <!-- ============================================================== -->
+      <section class="mb-14">
+        <h2 class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          6 — Before / after · the action row
+        </h2>
+        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+          Verb sprawl → one verb
+        </h3>
+
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div class="frame p-5">
+            <p class="mb-3 text-[10px] font-semibold uppercase tracking-wider text-rose-600">
+              Today (three close-paths, three verbs)
+            </p>
+            <div class="space-y-3 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="badge bg-slate-100 text-slate-600">Öppen</span>
+                <span class="arrow">→</span>
+                <button class="btn btn-ghost">+ Skapa åtgärdsuppgift</button>
+                <button class="btn btn-ghost">Redigera</button>
+                <button class="btn btn-outline">Markera som åtgärdat</button>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="badge border border-amber-300 bg-amber-50 text-amber-800"
+                  >Redo att verifiera</span
+                >
+                <span class="arrow">→</span>
+                <button class="btn btn-ghost">Redigera</button>
+                <button class="btn btn-primary">Verifiera</button>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="badge bg-slate-200 text-slate-700">Stängd</span>
+                <span class="arrow">→</span>
+                <button class="btn btn-outline">Återöppna</button>
+              </div>
+              <p class="mt-2 text-[11px] text-slate-500">
+                User has to learn 3 verbs (Stäng / Verifiera / Markera ändå)
+                that all do roughly "close this finding."
+              </p>
+            </div>
+          </div>
+
+          <div class="frame p-5">
+            <p class="mb-3 text-[10px] font-semibold uppercase tracking-wider text-emerald-600">
+              After (one verb, dialog adapts)
+            </p>
+            <div class="space-y-3 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="badge bg-slate-100 text-slate-600">Öppen</span>
+                <span class="arrow">→</span>
+                <button class="btn btn-ghost">+ Skapa åtgärdsuppgift</button>
+                <button class="btn btn-ghost">Redigera</button>
+                <button class="btn btn-outline">Markera som åtgärdat</button>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="badge border border-amber-300 bg-amber-50 text-amber-800"
+                  >Redo att verifiera</span
+                >
+                <span class="arrow">→</span>
+                <button class="btn btn-ghost">Redigera</button>
+                <button class="btn btn-primary">Markera som åtgärdat</button>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="badge bg-slate-200 text-slate-700">Åtgärdad</span>
+                <span class="arrow">→</span>
+                <button class="btn btn-outline">Återöppna</button>
+              </div>
+              <p class="mt-2 text-[11px] text-slate-500">
+                One verb everywhere. Behind the scenes the dialog selects mode
+                (verify / manual-override / simple) based on finding state.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- 7. ACTIVITY LOG (unchanged behavior — confirmation)               -->
+      <!-- ============================================================== -->
+      <section class="mb-14">
+        <h2 class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          7 — Activity log · same as today
+        </h2>
+        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+          Audit trail captures the path; columns capture the snapshot
+        </h3>
+
+        <div class="frame divide-y divide-slate-200">
+          <div class="grid grid-cols-[140px_180px_120px_1fr] gap-4 px-5 py-3 text-xs">
+            <span class="text-slate-500">2026-04-26 14:22</span>
+            <span class="font-medium">Maria Adstedt</span>
+            <span class="badge bg-emerald-100 text-emerald-700">Livscykel</span>
+            <span>
+              <strong>Maria Adstedt</strong> verifierade anmärkningen
+              <em>"Otydlig märkning på nödutgång"</em>
+              <span class="text-slate-500">
+                — "Granskade ny skylt 2026-04-26, foto bifogat"
+              </span>
+            </span>
+          </div>
+          <div class="grid grid-cols-[140px_180px_120px_1fr] gap-4 px-5 py-3 text-xs">
+            <span class="text-slate-500">2026-04-26 14:22</span>
+            <span class="font-medium">Maria Adstedt</span>
+            <span class="badge bg-emerald-100 text-emerald-700">Livscykel</span>
+            <span>
+              <strong>Maria Adstedt</strong> stängde anmärkningen
+              <em>"Otydlig märkning på nödutgång"</em>
+            </span>
+          </div>
+          <div class="grid grid-cols-[140px_180px_120px_1fr] gap-4 px-5 py-3 text-xs">
+            <span class="text-slate-500">2026-04-23 09:14</span>
+            <span class="font-medium">Alexander Adstedt</span>
+            <span class="badge bg-emerald-100 text-emerald-700">Livscykel</span>
+            <span>
+              <strong>Alexander Adstedt</strong> stängde anmärkningen
+              <em>"Saknar separat avfallshantering"</em> manuellt
+              <span class="text-slate-500">
+                — "Verksamheten har förändrats — kravet gäller inte längre…"
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <p class="mt-3 text-xs italic text-slate-500">
+          The activity log emissions are unchanged from today —
+          <code>finding_verified</code> + <code>finding_closed</code> for
+          verify path, <code>finding_closed</code> with
+          <code>manual_override</code> + <code>close_reason</code> for the
+          override path. The new
+          <code>verification_note</code> / <code>close_reason</code> columns
+          are denormalized snapshots of the latest values for fast badge
+          derivation; the audit trail is still in the activity log.
+        </p>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- 8. WHAT THIS BUILDS TOWARD                                        -->
+      <!-- ============================================================== -->
+      <section class="mb-14">
+        <h2 class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
+          8 — Phase 3 vision (out of scope for this PR)
+        </h2>
+        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+          The longitudinal-findings layer this enables
+        </h3>
+
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4">
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              /anmärkningar registry
+            </p>
+            <p class="mt-1 text-sm font-medium">Workspace-level findings page</p>
+            <p class="mt-2 text-[11px] text-slate-500">
+              Cross-cycle table with filters (status, ansvarig, kravpunkt,
+              cykel, severity). The five badges defined here drive the
+              registry's status column directly. Open findings persist
+              independent of which cycle "owns" them.
+            </p>
+          </div>
+          <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4">
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              law-list-item history
+            </p>
+            <p class="mt-1 text-sm font-medium">Anmärkningshistorik-accordion</p>
+            <p class="mt-2 text-[11px] text-slate-500">
+              Inside legal-document-modal: "Q1 2026 · Avvikelse · Åtgärdad ✓".
+              Trivial query (already-existing
+              <code>lawListItemId</code> FK on findings).
+            </p>
+          </div>
+          <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4">
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              cycle-item · prior-cycle ribbon
+            </p>
+            <p class="mt-1 text-sm font-medium">"Tidigare anmärkningar"</p>
+            <p class="mt-2 text-[11px] text-slate-500">
+              When auditor opens kravpunkt X in cycle Q3, surface findings
+              from prior cycles. Quick action: "Bär över till denna kontroll"
+              if still open. The competitive moat.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <footer class="mt-16 border-t border-slate-200 pt-6 text-xs text-slate-500">
+        Plan file: <code>~/.claude/plans/crispy-launching-moore.md</code> ·
+        Phase 1 shipped (reframing copy + AVSLUTAD banner) · Phase 2 in this
+        prototype · Phase 3 deferred.
+      </footer>
+    </div>
+  </body>
+</html>

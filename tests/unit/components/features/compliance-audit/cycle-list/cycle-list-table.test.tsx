@@ -64,11 +64,7 @@ const FIXTURE_CYCLES: CycleSummary[] = [
     status: ComplianceCycleStatus.AVSLUTAD,
     name: 'Avslutad C',
   }),
-  makeCycle({
-    id: 'd',
-    status: ComplianceCycleStatus.SEALED,
-    name: 'Fastställd D',
-  }),
+  // Story 21.27 — ARKIVERAD entry removed. Lifecycle is 3-state.
 ]
 
 beforeEach(() => {
@@ -90,7 +86,7 @@ describe('CycleListTable', () => {
     expect(screen.getByText('Planerad A')).toBeInTheDocument()
     expect(screen.getByText('Pågående B')).toBeInTheDocument()
     expect(screen.queryByText('Avslutad C')).toBeNull()
-    expect(screen.queryByText('Fastställd D')).toBeNull()
+    expect(screen.queryByText('Arkiverad D')).toBeNull()
   })
 
   it('clicking "Slutförda" chip filters to AVSLUTAD only', () => {
@@ -101,7 +97,6 @@ describe('CycleListTable', () => {
     expect(screen.queryByText('Planerad A')).toBeNull()
     expect(screen.queryByText('Pågående B')).toBeNull()
     expect(screen.getByText('Avslutad C')).toBeInTheDocument()
-    expect(screen.queryByText('Fastställd D')).toBeNull()
   })
 
   it('clicking "Alla" chip shows every cycle regardless of status', () => {
@@ -112,28 +107,22 @@ describe('CycleListTable', () => {
     expect(screen.getByText('Planerad A')).toBeInTheDocument()
     expect(screen.getByText('Pågående B')).toBeInTheDocument()
     expect(screen.getByText('Avslutad C')).toBeInTheDocument()
-    expect(screen.getByText('Fastställd D')).toBeInTheDocument()
   })
 
   it('chip count badges reflect totals across all cycles (not the current filter)', () => {
     render(<CycleListTable cycles={FIXTURE_CYCLES} canCreate />)
 
-    // Aktiva = 2 (PLANERAD + PAGAENDE); Slutförda = 1; Fastställda = 1;
-    // Arkiverade = 0; Alla = 4. Assert on each chip's count badge.
+    // Story 21.26 — Fastställda chip removed alongside the SEAL collapse.
+    // Story 21.27 — Arkiverade chip removed alongside the ARKIVERAD collapse.
+    // Aktiva = 2 (PLANERAD + PAGAENDE); Slutförda = 1 (AVSLUTAD); Alla = 3.
     const aktivaTab = screen.getByRole('tab', { name: /Aktiva/ })
     expect(within(aktivaTab).getByText('2')).toBeInTheDocument()
 
     const slutfordaTab = screen.getByRole('tab', { name: /Slutförda/ })
     expect(within(slutfordaTab).getByText('1')).toBeInTheDocument()
 
-    const fastställdaTab = screen.getByRole('tab', { name: /Fastställda/ })
-    expect(within(fastställdaTab).getByText('1')).toBeInTheDocument()
-
-    const arkiveradeTab = screen.getByRole('tab', { name: /Arkiverade/ })
-    expect(within(arkiveradeTab).getByText('0')).toBeInTheDocument()
-
     const allaTab = screen.getByRole('tab', { name: /^Alla/ })
-    expect(within(allaTab).getByText('4')).toBeInTheDocument()
+    expect(within(allaTab).getByText('3')).toBeInTheDocument()
   })
 
   it('canCreate=true renders the Skapa kontroll CTA in the page header', () => {
@@ -153,10 +142,12 @@ describe('CycleListTable', () => {
   })
 
   it('empty state for Aktiva filter renders "inga aktiva" copy + CTA when canCreate', () => {
-    const onlySealed = [
-      makeCycle({ id: 'x', status: ComplianceCycleStatus.SEALED }),
+    // Story 21.27 — only AVSLUTAD remains as a non-active state. A workspace
+    // with only AVSLUTAD cycles produces the "inga aktiva" empty state.
+    const onlyClosed = [
+      makeCycle({ id: 'x', status: ComplianceCycleStatus.AVSLUTAD }),
     ]
-    render(<CycleListTable cycles={onlySealed} canCreate />)
+    render(<CycleListTable cycles={onlyClosed} canCreate />)
 
     expect(
       screen.getByText('Du har inga aktiva kontroller just nu.')
@@ -174,8 +165,8 @@ describe('CycleListTable', () => {
     ]
     render(<CycleListTable cycles={onlyPagaende} canCreate />)
 
-    // Switch to Arkiverade → zero rows match.
-    fireEvent.click(screen.getByRole('tab', { name: /Arkiverade/ }))
+    // Switch to Slutförda → zero rows match.
+    fireEvent.click(screen.getByRole('tab', { name: /Slutförda/ }))
 
     expect(
       screen.getByText('Inga kontroller matchar det valda filtret.')

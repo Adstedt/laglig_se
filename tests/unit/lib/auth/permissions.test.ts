@@ -20,7 +20,6 @@ import {
   canAcknowledgeChanges,
   canViewEmployees,
   canManageEmployees,
-  canSealAuditCycle,
 } from '@/lib/auth/permissions'
 import type { WorkspaceRole } from '@prisma/client'
 
@@ -42,7 +41,6 @@ describe('hasPermission', () => {
       expect(hasPermission(role, 'changes:acknowledge')).toBe(true)
       expect(hasPermission(role, 'employees:view')).toBe(true)
       expect(hasPermission(role, 'employees:manage')).toBe(true)
-      expect(hasPermission(role, 'audit:seal')).toBe(true)
       expect(hasPermission(role, 'read')).toBe(true)
     })
   })
@@ -78,10 +76,6 @@ describe('hasPermission', () => {
       expect(hasPermission(role, 'changes:acknowledge')).toBe(true)
       expect(hasPermission(role, 'read')).toBe(true)
     })
-
-    test('can seal compliance audit cycles', () => {
-      expect(hasPermission(role, 'audit:seal')).toBe(true)
-    })
   })
 
   describe('HR_MANAGER role', () => {
@@ -113,10 +107,6 @@ describe('hasPermission', () => {
       expect(hasPermission(role, 'workspace:delete')).toBe(false)
       expect(hasPermission(role, 'workspace:billing')).toBe(false)
     })
-
-    test('cannot seal compliance audit cycles', () => {
-      expect(hasPermission(role, 'audit:seal')).toBe(false)
-    })
   })
 
   describe('MEMBER role', () => {
@@ -141,10 +131,6 @@ describe('hasPermission', () => {
 
     test('can read', () => {
       expect(hasPermission(role, 'read')).toBe(true)
-    })
-
-    test('cannot seal compliance audit cycles', () => {
-      expect(hasPermission(role, 'audit:seal')).toBe(false)
     })
   })
 
@@ -174,10 +160,6 @@ describe('hasPermission', () => {
       expect(hasPermission(role, 'employees:manage')).toBe(false)
     })
 
-    test('cannot seal compliance audit cycles', () => {
-      expect(hasPermission(role, 'audit:seal')).toBe(false)
-    })
-
     // Regression pin: if a future refactor removes `activity:view` from
     // AUDITOR, the AUDITOR-reads-cycles contract (Stories 21.2 + 21.5) breaks
     // silently. This test locks it down.
@@ -190,12 +172,11 @@ describe('hasPermission', () => {
 describe('getPermissions', () => {
   test('returns all permissions for OWNER', () => {
     const permissions = getPermissions('OWNER')
-    expect(permissions).toHaveLength(18)
+    expect(permissions).toHaveLength(17)
     expect(permissions).toContain('workspace:delete')
     expect(permissions).toContain('employees:manage')
     expect(permissions).toContain('workspace:settings')
     expect(permissions).toContain('activity:view')
-    expect(permissions).toContain('audit:seal')
     expect(permissions).toContain('ai:chat')
   })
 
@@ -282,13 +263,5 @@ describe('convenience functions', () => {
     expect(canManageEmployees('HR_MANAGER')).toBe(true)
     expect(canManageEmployees('ADMIN')).toBe(false)
     expect(canManageEmployees('MEMBER')).toBe(false)
-  })
-
-  test('canSealAuditCycle', () => {
-    expect(canSealAuditCycle('OWNER')).toBe(true)
-    expect(canSealAuditCycle('ADMIN')).toBe(true)
-    expect(canSealAuditCycle('HR_MANAGER')).toBe(false)
-    expect(canSealAuditCycle('MEMBER')).toBe(false)
-    expect(canSealAuditCycle('AUDITOR')).toBe(false)
   })
 })

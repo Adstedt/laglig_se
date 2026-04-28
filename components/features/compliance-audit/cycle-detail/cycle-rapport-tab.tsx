@@ -4,10 +4,11 @@
  * Story 21.11 — Rapport tab.
  *
  * Status-branched client component. For PLANERAD | PAGAENDE it renders a
- * placeholder + skips the fetch entirely (conditional SWR key). For
- * AVSLUTAD | SEALED | ARKIVERAD it fetches the pre-rendered HTML from
- * `getRevisionsrapportInput` and renders it inside a sandboxed iframe so the
- * report's self-contained `<style>` block does not leak into the parent app.
+ * placeholder + skips the fetch entirely (conditional SWR key). For AVSLUTAD
+ * (the only terminal active state post Story 21.27) it fetches the
+ * pre-rendered HTML from `getRevisionsrapportInput` and renders it inside a
+ * sandboxed iframe so the report's self-contained `<style>` block does not
+ * leak into the parent app.
  *
  * `srcdoc` + auto-height-iframe is a new pattern in this codebase — no
  * existing precedent to mirror (verified by grep at story-draft time).
@@ -40,10 +41,9 @@ export function CycleRapportTab({
   cycleStatus,
   cycleName,
 }: CycleRapportTabProps) {
-  const shouldFetch =
-    cycleStatus === 'AVSLUTAD' ||
-    cycleStatus === 'SEALED' ||
-    cycleStatus === 'ARKIVERAD'
+  // Story 21.26 — SEALED collapsed into AVSLUTAD; only the post-completion
+  // states fetch a rapport.
+  const shouldFetch = cycleStatus === 'AVSLUTAD'
 
   const swrKey = shouldFetch ? previewKey(cycleId) : null
 
@@ -130,20 +130,11 @@ export function CycleRapportTab({
     )
   }
 
-  const isSealed = cycleStatus === 'SEALED' || cycleStatus === 'ARKIVERAD'
-  const resolvedKind = isSealed ? 'sealed' : 'complete'
+  // Story 21.26 — only one report kind remains (`complete`). The legacy
+  // SEALED branch + emerald advisory copy went away with the SEAL collapse.
 
   return (
     <div className="space-y-4 p-6">
-      {isSealed ? (
-        <div
-          className="rounded-md border bg-emerald-50 p-3 text-sm text-emerald-900"
-          role="status"
-        >
-          Fastställd kontroll — seal-hash visas på titelsidan och i sidfoten.
-        </div>
-      ) : null}
-
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h3 className="text-sm font-semibold">
@@ -158,7 +149,7 @@ export function CycleRapportTab({
         </div>
         <Button type="button" variant="outline" size="sm" asChild>
           <a
-            href={`/laglistor/kontroller/${cycleId}/rapport/pdf?kind=${resolvedKind}`}
+            href={`/laglistor/kontroller/${cycleId}/rapport/pdf?kind=complete`}
             target="_blank"
             rel="noopener noreferrer"
             download

@@ -9,30 +9,86 @@ import type { FindingSeverity, FindingType } from '@prisma/client'
 import type { FindingRow } from '@/app/actions/compliance-finding'
 
 /**
- * Epic 21 follow-up: three-state finding status derived from existing
- * FindingRow fields. No schema change — `closedAt` + `correctiveActionTask`
- * already carry everything we need.
+ * Phase 2 / Epic 23 foundation — five-state finding status derived from
+ * existing FindingRow fields plus the new `verificationNote` / `closeReason`
+ * columns (denormalised closure metadata, source-of-truth still in activity log).
  *
- *  - `closed` → finding has been closed (with or without a linked task).
- *  - `ready-to-verify` → finding is open AND has a corrective-action task
- *    whose `completedAt` is set. The auditor's verification moment.
- *  - `open` → anything else (no task, or task still in progress).
+ *  - `open` — closedAt null, no linked task OR task still in progress
+ *  - `ready-to-verify` — closedAt null, linked task `completedAt` is set
+ *  - `closed-verified` — closedAt set, `verificationNote` populated (verify path)
+ *  - `closed-plain` — closedAt set, both metadata fields null (direct close)
+ *  - `closed-dismissed` — closedAt set, `closeReason` populated (manual override)
  *
- * Used to drive the status badge + action-button switch on the Findings tab.
- * The auditor's "Verifiera" step is explicit only when status is
- * `ready-to-verify` — otherwise the button is plain "Stäng".
+ * Used to drive the status badge in `FindingCard` and the action-button switch
+ * in the cycle findings tab. Phase 3 / Epic 23 will collapse the action UX into
+ * a single "Markera som åtgärdat" verb invoked from a workspace-level FindingModal,
+ * but the five-state derivation is foundational for the registry's badge column.
  */
-export type FindingStatus = 'open' | 'ready-to-verify' | 'closed'
+export type FindingStatus =
+  | 'open'
+  | 'ready-to-verify'
+  | 'closed-verified'
+  | 'closed-plain'
+  | 'closed-dismissed'
 
 export function getFindingStatus(finding: FindingRow): FindingStatus {
-  if (finding.closedAt !== null) return 'closed'
-  if (
-    finding.correctiveActionTask !== null &&
-    finding.correctiveActionTask.completedAt !== null
-  ) {
+  if (finding.closedAt !== null) {
+    if (finding.closeReason != null) return 'closed-dismissed'
+    if (finding.verificationNote != null) return 'closed-verified'
+    return 'closed-plain'
+  }
+  if (finding.correctiveActionTask?.completedAt != null) {
     return 'ready-to-verify'
   }
   return 'open'
+}
+
+/**
+ * Centralised badge config consumed by `FindingCard`. Open findings render
+ * NO badge by default (current behavior — open is the assumed state); only
+ * the four post-default states surface a visible badge.
+ */
+export interface FindingStatusBadge {
+  /** Swedish label rendered in the badge */
+  label: string
+  /** Tailwind class string for background + text + border */
+  className: string
+  /** Optional icon prefix (rendered inline-flex before the label) */
+  icon?: 'check' | 'circle-dashed'
+  /** Optional strike-through styling on the label (used for Avskriven) */
+  strike?: boolean
+}
+
+export const FINDING_STATUS_BADGES: Record<
+  FindingStatus,
+  FindingStatusBadge | null
+> = {
+  // Open findings render no explicit badge — the absence IS the signal.
+  // Matches Story 21.16 decision: "open findings don't carry an explicit
+  // 'Öppen' badge" (closed/special states are the exception).
+  open: null,
+  'ready-to-verify': {
+    label: 'Redo att verifiera',
+    className:
+      'border border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200',
+  },
+  'closed-verified': {
+    label: 'Åtgärdad',
+    className:
+      'border border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200',
+    icon: 'check',
+  },
+  'closed-plain': {
+    label: 'Åtgärdad',
+    className:
+      'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200',
+  },
+  'closed-dismissed': {
+    label: 'Avskriven',
+    className:
+      'border border-slate-300 bg-slate-100 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400',
+    strike: true,
+  },
 }
 
 export const FINDING_TYPE_LABELS: Record<FindingType, string> = {

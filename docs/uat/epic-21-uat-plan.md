@@ -79,9 +79,10 @@
 | 3.1 | Create a finding of type AVVIKELSE with severity MAJOR | Activity log entry `finding_created` + `finding_task_spawned`; Task auto-created in workspace's leftmost non-Done column with priority HIGH; assignee = item responsibleUser (or lead auditor fallback); right-rail "Länkade kontroller" card shows the cycle |
 | 3.2 | Create a finding of type OBSERVATION | NO task spawned (only AVVIKELSE auto-spawns) |
 | 3.3 | Verify the spawned Task on the Kanban board | `compliance_finding_id` FK present on the Task; right-rail card shows the originating cycle |
-| 3.4 | Mark a finding as resolved (CTA: **"Markera som åtgärdat"**, replaces legacy "Stäng") | Button text reads **"Markera som åtgärdat"** on open-finding rows; finding status flips to Stängd in UI; Task status remains as-is (the finding-level state, not Task state); activity log captures `finding_closed` (internal action name unchanged); success toast: *"Anmärkning markerad som åtgärdad"* |
-| 3.4a | Click **"Markera som åtgärdat"** on an AVVIKELSE whose linked task is NOT yet done | `ManualCloseFindingDialog` opens with title **"Markera som åtgärdat utan slutförd uppgift"** and required textarea labelled "Anledning för manuell stängning *". Submit CTA reads **"Markera ändå"**. Empty/whitespace-only reason disables submit. On submit, `closeFinding` is called with `closeReason`; activity log captures `finding_closed` with the reason in `newValue`; success toast: *"Anmärkning markerad som åtgärdad med manuell anledning"* |
-| 3.5 | Verify a finding (Verifiera flow) | "Verifiera" button appears only when a finding is `ready-to-verify` (linked task `completed_at != null`). Dialog renders the task title as a **clickable link** that opens `/tasks?task={id}` in a **new tab** (target=_blank, rel=noopener noreferrer). Verifieringskommentar field is currently optional (frivilligt) — required-rule adjustment is tracked separately as a known mismatch. Submit CTA reads **"Bekräfta åtgärd"** (replaces legacy "Verifiera och stäng"). Activity log captures `finding_verified` with the verification note (when supplied) in `newValue` |
+| 3.4 | Mark a finding as resolved (CTA: **"Markera som åtgärdat"**, replaces legacy "Stäng") | Button text reads **"Markera som åtgärdat"** on open-finding rows; finding status flips to closed in UI; Task status remains as-is (the finding-level state, not Task state); activity log captures `finding_closed` (internal action name unchanged); success toast: *"Anmärkning markerad som åtgärdad"*. **Phase 2 / Epic 23 foundation:** the resulting badge varies based on closure metadata: **Åtgärdad** (slate, no icon) when both `verification_note` and `close_reason` are NULL; **Åtgärdad ✓** (emerald, check icon) when `verification_note` is supplied via verify path; **Avskriven** (muted-slate, strike-through) when `close_reason` is supplied via manual-override path. |
+| 3.4a | Click **"Markera som åtgärdat"** on an AVVIKELSE whose linked task is NOT yet done | `ManualCloseFindingDialog` opens with title **"Markera som åtgärdat utan slutförd uppgift"** and required textarea labelled "Anledning för manuell stängning *". Submit CTA reads **"Markera ändå"**. Empty/whitespace-only reason disables submit. On submit, `closeFinding` is called with `closeReason`; activity log captures `finding_closed` with the reason in `newValue`; success toast: *"Anmärkning markerad som åtgärdad med manuell anledning"*. **Phase 2 result:** finding renders the **Avskriven** badge (muted-slate, strike-through). |
+| 3.5 | Verify a finding (Verifiera flow) | "Verifiera" button appears only when a finding is `ready-to-verify` (linked task `completed_at != null`). Dialog renders the task title as a **clickable link** that opens `/tasks?task={id}` in a **new tab** (target=_blank, rel=noopener noreferrer). Verifieringskommentar field is currently optional (frivilligt) — required-rule adjustment is tracked separately as a known mismatch. Submit CTA reads **"Bekräfta åtgärd"** (replaces legacy "Verifiera och stäng"). Activity log captures `finding_verified` with the verification note (when supplied) in `newValue`. **Phase 2 result:** when a `verification_note` is submitted, finding renders the **Åtgärdad ✓** badge (emerald + check icon); empty submit yields plain **Åtgärdad** badge. |
+| 3.5a | Re-open a closed-verified finding (or a closed-dismissed finding) | Activity log captures `finding_reopened`. Both `verification_note` AND `close_reason` columns clear in DB. Row badge returns to **Öppen** (no badge — open is implicit) OR **Redo att verifiera** if linked task is still `completed_at != null`. Subsequent close via the verify path repopulates `verification_note`; via manual override repopulates `close_reason`. |
 | 3.6 | Re-open a closed finding | Idempotent; activity log captures the diff |
 | 3.7 | Filter chips at top of Findings tab | Type + severity + state chips toggle correctly |
 | 3.8 | Click Redigera on a finding, edit description / root cause / due date in the dialog, click Spara | Dialog closes; row updates with the new values; activity log captures the diff |
@@ -93,33 +94,24 @@
 | # | Action | Expected | Role |
 |---|---|---|---|
 | 4.1 | Cycle status = PAGAENDE, all items signed | Åtgärder dropdown shows "Slutför kontroll" enabled | Lead auditor or OWNER |
-| 4.2 | Click "Slutför kontroll" | Status flips to AVSLUTAD; **items become read-only** (bedömning/motivering inputs disabled, sign-off buttons hidden); banner reads "Kontrollen är avslutad. Återställ till pågående för att redigera."; to make further edits, revert via Åtgärder-menyn (no per-item-signature workaround needed); activity log captures `cycle_completed`. Confirmation dialog's open-work advisory uses forward-looking phrasing **"Följs upp efter avslutad kontroll: N öppna anmärkningar…"** (replaces legacy "Just nu: …"). Open findings do **not** block completion — items signed-off is the sole gate. | Lead auditor or OWNER |
-| 4.2a | On the AVSLUTAD cycle, switch between Dokument / Anmärkningar / Rapport / Aktivitet tabs | The cycle-wide read-only banner appears on Dokument + Anmärkningar tabs (banner copy: "Kontrollen är avslutad. Återställ till pågående för att redigera."). All editing affordances (Bedömning select, Motivering editor, Lägg till anmärkning, Redigera/Stäng/Återöppna on findings) are disabled or hidden. Banner disappears if cycle is reverted to PAGAENDE; reappears if completed again. SEALED + ARKIVERAD show their own status-specific copy via the same helper. | All roles |
+| 4.2 | Click "Slutför kontroll" | Status flips to AVSLUTAD; **items become read-only** (bedömning/motivering inputs disabled, sign-off buttons hidden); banner reads "Kontrollen är avslutad. Återställ till pågående för att redigera." on the **Dokument tab only**; activity log captures `cycle_completed`. **Story 21.26**: completeCycle ALSO populates `sealed_at` + `sealed_by_user_id` (was: sealCycle's job). An eager PDF generation kicks via `after()` — within ~30-60s the rapport PDF appears in Supabase Storage; subsequent downloads are immediate. Confirmation dialog's open-work advisory uses forward-looking phrasing **"Följs upp efter avslutad kontroll: N öppna anmärkningar…"** (replaces legacy "Just nu: …"). Open findings do **not** block completion — items signed-off is the sole gate. **Phase 2 / Epic 23: findings tab remains interactive on AVSLUTAD** — Markera som åtgärdat / Verifiera / Redigera / Skapa åtgärdsuppgift / Återöppna all continue to work. The Lägg till anmärkning button is still rendered. The cycle-wide AVSLUTAD reassurance banner ("Kontrollen är slutförd. Öppna anmärkningar fortsätter att följas upp…") sits above the tabs and persists across all four tabs. | Lead auditor or OWNER |
+| 4.2a | On the AVSLUTAD cycle, switch between Dokument / Anmärkningar / Rapport / Aktivitet tabs | The amber AVSLUTAD reassurance banner appears between header and tab strip on **all four tabs**, reading *"Kontrollen är slutförd. Öppna anmärkningar fortsätter att följas upp — fastställandet bygger på dagens snapshot."* Items tab additionally shows the legacy items-readonly banner inside the tab body. **Findings tab does NOT show a readOnly banner** (Phase 2: findingsReadOnly=false on AVSLUTAD); per-row finding actions stay interactive. Banner disappears if cycle reverts to PAGAENDE; reappears if completed again. SEALED + ARKIVERAD show their status-specific banners (and findingsReadOnly flips true so the findings tab also locks). | All roles |
 | 4.3 | Cycle status = AVSLUTAD, click "Återställ till pågående" | Status reverts to PAGAENDE; activity log captures `cycle_reverted_to_pagaende` | Lead auditor or OWNER/ADMIN |
 | 4.4 | (Edge) MEMBER who is NOT lead auditor attempts revert | Dropdown item disabled with tooltip; if bypassed via API call, server returns Swedish error |
 | 4.5 | Try to slutför when not all items signed | Dropdown item disabled with tooltip explaining the gate; server-side enforcement also rejects |
 
 ---
 
-## 5. Cycle seal (Story 21.9 — INTEGRITY-001 v0.5)
+## 5. Cycle seal (REMOVED — Story 21.26)
 
-| # | Action | Expected | Role |
-|---|---|---|---|
-| 5.1 | Cycle status = AVSLUTAD, no open AVVIKELSE, no DRAFT styrdokument in scope, click "Fastställ kontroll" | SealCycleDialog opens; no override textarea visible | Lead auditor or OWNER/ADMIN |
-| 5.2 | Submit the seal | Status flips to SEALED; sealed cycle banner appears on detail header showing seal hash (truncated `abc123de…abcd`) + copy button + "Fastställd av X den Y" subline; activity log captures `cycle_sealed` with full hash in `new_value` |
-| 5.3 | Click the copy button on the seal hash | Toast "Kontrollsumma kopierad"; clipboard contains the full 64-char SHA-256 hex |
-| 5.4 | Re-open SEALED cycle | Items tab is read-only; bedömning/motivering inputs are disabled; Signera buttons are hidden (not just disabled) |
-| 5.5 | (NEW — DRAFT override path) | | |
-| 5.5a | Cycle has 1 styrdokument linked as evidence in DRAFT status, click Fastställ kontroll | Dialog shows DRAFT panel listing the offending document(s); override textarea visible with placeholder; submit blocked until ≥20 trimmed chars | Lead auditor |
-| 5.5b | Enter a 25-char override motivering and submit | Seal succeeds; activity log `new_value.draftDocumentsAtSeal: [{id, title}]` populated; manifest hash includes the draft list |
-| 5.5c | (Edge) 19-char override | Submit blocked; inline error "Motivering måste vara minst 20 tecken (efter trimning)" |
-| 5.5d | (Edge) 20-char whitespace-only override | Same block — `.trim()` regression pin |
-| 5.6 | (NEW — combined override path) | | |
-| 5.6a | Cycle has 1 open AVVIKELSE AND 1 DRAFT styrdokument in scope, click Fastställ kontroll | Both panels stack; single shared override textarea with adapted Swedish label "Motivera varför kontrollen fastställs trots öppen avvikelse och ett utkast-styrdokument" | Lead auditor |
-| 5.6b | Submit single override that satisfies the ≥20-char gate | Seal succeeds; both panels' acknowledgement locked into manifest |
-| 5.7 | Try to delete a file that is referenced as evidence in a SEALED cycle | Toast / dialog error: "Filen är låst — refereras av N fastställda kontroller (cycle names listed up to 3, then '… och M fler')" |
-| 5.8 | Cycle is SEALED, AUDITOR opens it | Page renders; all controls disabled; no Åtgärder dropdown items |
-| 5.9 | Cycle is SEALED, MEMBER (no privileged role, not lead) opens it | Same as 5.8 — read-only across the board |
+Story 21.26 collapsed the SEAL state into AVSLUTAD as the terminal active state. The cryptographic seal_hash ceremony is gone; the SealCycleDialog (with override panels) is gone; the `audit:seal` permission is gone. AVSLUTAD now records `sealed_at` + `sealed_by_user_id` and triggers eager PDF generation in one step.
+
+What replaces this section's coverage:
+- **Section 4.2** (cycle completion) extended to assert that completeCycle populates `sealed_at` + `sealed_by_user_id` AND kicks the eager PDF generation. Test the seal-equivalent behavior there.
+- **Section 6** (Rapport) — PDF is generated on `cycle_completed` (was: on `cycle_sealed`).
+- **Section 8** (Permissions matrix) — `Can seal cycle?` column dropped; revert + complete are gated by `tasks:edit` + the runtime lead-auditor override.
+
+Section 5's pre-Story-21.26 rows (SealCycleDialog, INTEGRITY-001 override panels, evidence-deletion-blocked-by-SEALED-cycles) are intentionally not retested — that surface no longer exists.
 
 ---
 
@@ -151,13 +143,15 @@
 
 ## 8. Permissions matrix sanity sweep (Story 21.14)
 
-| Role | Can view cycles? | Can create cycle? | Can edit items? | Can sign items? | Can complete cycle? | Can revert cycle? | Can seal cycle? |
+| Role | Can view cycles? | Can create cycle? | Can edit items? | Can sign items? | Can edit findings post-AVSLUTAD? | Can complete cycle? | Can revert cycle? |
 |---|---|---|---|---|---|---|---|
 | OWNER | Yes | Yes | Yes | Yes (escape hatch) | Yes | Yes | Yes |
 | ADMIN | Yes | Yes | Yes | Yes (escape hatch) | Yes | Yes | Yes |
-| HR_MANAGER | Yes | Yes | Yes | Only if lead auditor or item responsible_user | Only if lead auditor | Only if lead auditor | No |
-| MEMBER | Yes | Yes | Yes | Only if lead auditor or item responsible_user | Only if lead auditor | Only if lead auditor | No |
-| AUDITOR | Yes (read) | No | No | No (no `tasks:edit`) | No | No | No |
+| HR_MANAGER | Yes | Yes | Yes | Only if lead auditor or item responsible_user | Yes | Only if lead auditor | Only if lead auditor |
+| MEMBER | Yes | Yes | Yes | Only if lead auditor or item responsible_user | Yes | Only if lead auditor | Only if lead auditor |
+| AUDITOR | Yes (read) | No | No | No (no `tasks:edit`) | No (no `tasks:edit`) | No | No |
+
+> **Story 21.26**: the "Can seal cycle?" column was removed when SEAL collapsed into AVSLUTAD. Completion is the only post-PAGAENDE transition; revert is the only escape hatch back to PAGAENDE.
 
 Verify the matrix above by attempting each cell as the corresponding role.
 

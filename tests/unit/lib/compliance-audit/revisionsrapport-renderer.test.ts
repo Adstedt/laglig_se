@@ -43,7 +43,7 @@ function makeCycle(overrides: Partial<CycleDetail> = {}): CycleDetail {
   const base: CycleDetail = {
     id: '44444444-4444-4444-8444-444444444444',
     name: 'Årskontroll 2026 — AB Testbolaget',
-    status: 'SEALED',
+    status: 'AVSLUTAD',
     auditType: 'EXTERN' as AuditType,
     scheduledStart: fixedDate('2026-01-15T00:00:00.000Z'),
     scheduledEnd: fixedDate('2026-03-31T00:00:00.000Z'),
@@ -61,8 +61,8 @@ function makeCycle(overrides: Partial<CycleDetail> = {}): CycleDetail {
     updatedAt: fixedDate('2026-04-01T12:00:00.000Z'),
     lawListId: '55555555-5555-4555-8555-555555555555',
     scopeDefinition: { kind: 'all' },
-    sealHash:
-      'abc123def456abc123def456abc123def456abc123def456abc123def456abcd',
+    // Story 21.26 — sealHash dropped from CycleDetail; sealedAt now records
+    // the AVSLUTAD-completion timestamp.
     sealedAt: fixedDate('2026-04-01T14:30:00.000Z'),
     sealedBy: {
       id: '22222222-2222-4222-8222-222222222222',
@@ -434,37 +434,11 @@ describe('renderRevisionsrapport — INTERN/EXTERN framing (FR18)', () => {
 })
 
 // ============================================================================
-// Seal block conditional (FR13)
+// Story 21.26 — Seal block conditional (FR13) tests removed alongside the
+// SEAL collapse. sealHash is gone; the title-page "Avslutad kontroll" block
+// renders sealed_at + sealed_by directly when set. Surface coverage moves to
+// the AVSLUTAD-cycle render tests in the rest of this file.
 // ============================================================================
-
-describe('renderRevisionsrapport — seal block (FR13)', () => {
-  it('renders the seal block + full hash in the footer when sealHash is non-null', () => {
-    const input = buildFixtureInput()
-    const html = renderRevisionsrapport(input)
-    expect(html).toContain('class="seal-block"')
-    expect(html).toContain('Fastställd kontroll')
-    expect(html).toContain(input.cycle.sealHash!)
-    expect(html).toContain(`Seal: ${input.cycle.sealHash}`)
-  })
-
-  it('omits the seal block entirely when sealHash is null', () => {
-    const base = buildFixtureInput()
-    const unsealed: RevisionsrapportInput = {
-      ...base,
-      cycle: {
-        ...base.cycle,
-        sealHash: null,
-        sealedAt: null,
-        sealedBy: null,
-        status: 'AVSLUTAD',
-      },
-    }
-    const html = renderRevisionsrapport(unsealed)
-    expect(html).not.toContain('class="seal-block"')
-    expect(html).not.toContain('Fastställd kontroll')
-    expect(html).not.toContain(' · Seal: ')
-  })
-})
 
 // ============================================================================
 // Bakgrund (description) section

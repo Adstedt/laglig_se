@@ -1,0 +1,1242 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Findings as first-class — Phase 3 prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        font-family:
+          ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial;
+      }
+      .frame {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow:
+          0 1px 0 rgba(15, 23, 42, 0.04),
+          0 8px 24px -12px rgba(15, 23, 42, 0.08);
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        font-size: 11px;
+        line-height: 1.4;
+        border-radius: 999px;
+        font-weight: 500;
+      }
+      .pill-type {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 1px 6px;
+        font-size: 10px;
+        line-height: 1.4;
+        border-radius: 4px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+      .strike {
+        text-decoration: line-through;
+        text-decoration-color: #94a3b8;
+        color: #64748b;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 5px 10px;
+        font-size: 12px;
+        line-height: 1.2;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .btn-ghost {
+        background: transparent;
+        color: #475569;
+      }
+      .btn-ghost:hover {
+        background: #f1f5f9;
+      }
+      .btn-outline {
+        background: #fff;
+        border-color: #cbd5e1;
+        color: #0f172a;
+      }
+      .btn-outline:hover {
+        background: #f8fafc;
+      }
+      .btn-primary {
+        background: #0f172a;
+        color: #fff;
+      }
+      .btn-emerald {
+        background: #059669;
+        color: #fff;
+      }
+      .row-divider {
+        border-top: 1px solid #e2e8f0;
+      }
+      .modal-shell {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 24px 48px -16px rgba(15, 23, 42, 0.18);
+      }
+      .accordion-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .arrow {
+        color: #94a3b8;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+    <div class="mx-auto max-w-7xl px-6 py-10">
+      <!-- Header -->
+      <header class="mb-12">
+        <div class="flex items-baseline gap-3">
+          <p class="text-xs uppercase tracking-wider text-slate-500">
+            Epic 21 · Lagefterlevnadskontroll
+          </p>
+          <span
+            class="rounded bg-violet-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-violet-700"
+            >Phase 3 · Findings as first-class objects</span
+          >
+        </div>
+        <h1 class="mt-1 text-3xl font-semibold tracking-tight">
+          Cycles identify · Registry resolves
+        </h1>
+        <p class="mt-3 max-w-3xl leading-relaxed text-slate-600">
+          Strict separation: kontroller surface and create findings (the audit
+          act of identifying gaps); the new
+          <code>/anmärkningar</code> workspace surface owns all lifecycle
+          actions (the operational act of resolving them). One
+          <strong>FindingModal</strong> invoked from both entry points — same
+          UX everywhere.
+        </p>
+      </header>
+
+      <!-- ============================================================== -->
+      <!-- 1. ARCHITECTURE DIAGRAM                                          -->
+      <!-- ============================================================== -->
+      <section class="mb-14">
+        <h2
+          class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500"
+        >
+          1 — Architecture
+        </h2>
+        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+          Two surfaces, one modal — single source of truth for actions
+        </h3>
+
+        <div class="frame p-7">
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-3 md:items-center">
+            <!-- LEFT: Cycle (identification surface) -->
+            <div class="space-y-3">
+              <div class="rounded-lg border-2 border-blue-200 bg-blue-50/40 p-4">
+                <p
+                  class="text-[10px] font-semibold uppercase tracking-wider text-blue-700"
+                >
+                  Cycle (kontroll)
+                </p>
+                <p class="mt-1 text-sm font-semibold">Identification surface</p>
+                <ul class="mt-3 space-y-1.5 text-xs text-slate-600">
+                  <li>✓ <strong>List</strong> findings (read-only badges)</li>
+                  <li>✓ <strong>Create</strong> "Lägg till anmärkning"</li>
+                  <li>✓ <strong>Click row</strong> → open FindingModal</li>
+                  <li class="text-slate-400">✗ Inline state actions</li>
+                  <li class="text-slate-400">✗ Verify / dismiss / reopen</li>
+                </ul>
+              </div>
+              <p
+                class="rounded bg-slate-100 p-3 text-[11px] italic leading-relaxed text-slate-600"
+              >
+                The cycle's job: capture what was found at audit time. Locks
+                cleanly at AVSLUTAD without unfinished-business friction —
+                because there's no "business" to finish here.
+              </p>
+            </div>
+
+            <!-- CENTER: Modal (the shared action surface) -->
+            <div class="flex flex-col items-center gap-2">
+              <div class="hidden h-px w-full md:block"></div>
+              <div class="rotate-180 text-2xl text-slate-300 md:rotate-0">→</div>
+              <div
+                class="rounded-lg border-2 border-violet-300 bg-violet-50/60 p-4 text-center"
+              >
+                <p
+                  class="text-[10px] font-semibold uppercase tracking-wider text-violet-700"
+                >
+                  FindingModal
+                </p>
+                <p class="mt-1 text-sm font-semibold">
+                  Single shared component
+                </p>
+                <ul class="mt-3 space-y-1 text-[11px] text-slate-600">
+                  <li>Markera som åtgärdat</li>
+                  <li>Avskriv (manual)</li>
+                  <li>Återöppna</li>
+                  <li>Skapa åtgärdsuppgift</li>
+                  <li>Tilldela ansvarig</li>
+                  <li>Kommentera</li>
+                  <li>Redigera fält</li>
+                </ul>
+              </div>
+              <div class="text-2xl text-slate-300">←</div>
+            </div>
+
+            <!-- RIGHT: Registry (resolution surface) -->
+            <div class="space-y-3">
+              <div
+                class="rounded-lg border-2 border-emerald-200 bg-emerald-50/40 p-4"
+              >
+                <p
+                  class="text-[10px] font-semibold uppercase tracking-wider text-emerald-700"
+                >
+                  /anmärkningar (registry)
+                </p>
+                <p class="mt-1 text-sm font-semibold">Resolution surface</p>
+                <ul class="mt-3 space-y-1.5 text-xs text-slate-600">
+                  <li>✓ <strong>Cross-cycle</strong> table view</li>
+                  <li>✓ <strong>Filter / sort / segment</strong></li>
+                  <li>✓ <strong>Click row</strong> → open FindingModal</li>
+                  <li>✓ <strong>All lifecycle actions</strong></li>
+                  <li>✓ <strong>Bulk operations</strong></li>
+                </ul>
+              </div>
+              <p
+                class="rounded bg-slate-100 p-3 text-[11px] italic leading-relaxed text-slate-600"
+              >
+                The registry's job: ongoing remediation. Independent of any
+                cycle's lifecycle. Open findings from cycle Q1 can resolve in
+                Q3 without touching either cycle's snapshot.
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900">
+            <p class="font-semibold">Why this separation matters</p>
+            <ul class="mt-1.5 list-disc space-y-0.5 pl-5">
+              <li>
+                <strong>One FindingModal</strong> means one place to test, one
+                place to evolve action UX, no surface-drift.
+              </li>
+              <li>
+                <strong>AVSLUTAD/SEAL no longer asks "are findings editable?"</strong>
+                — they were never edited from the cycle in the first place.
+                Cycle locks normally; findings continue on their own clock.
+              </li>
+              <li>
+                <strong>Board-level questions</strong> ("how many findings open?",
+                "recurring across cycles?") are native registry queries, not
+                cross-cycle aggregation work.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- 2. /ANMÄRKNINGAR REGISTRY PAGE                                    -->
+      <!-- ============================================================== -->
+      <section class="mb-14">
+        <h2
+          class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500"
+        >
+          2 — Registry page
+        </h2>
+        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+          /anmärkningar — workspace-level findings registry
+        </h3>
+
+        <div class="frame">
+          <!-- Page header -->
+          <div class="border-b border-slate-200 px-6 pb-4 pt-5">
+            <p class="text-[11px] text-slate-400">
+              Almåsa Havshotell AB ›
+              <span class="text-slate-600">Anmärkningar</span>
+            </p>
+            <div class="mt-1 flex items-center justify-between">
+              <div>
+                <h4 class="text-2xl font-semibold tracking-tight">Anmärkningar</h4>
+                <p class="mt-1 text-sm text-slate-500">
+                  12 öppna · 4 redo att verifiera · 28 åtgärdade · 3 avskrivna
+                </p>
+              </div>
+              <button class="btn btn-primary">+ Skapa anmärkning</button>
+            </div>
+          </div>
+
+          <!-- Quick segments -->
+          <div class="flex flex-wrap items-center gap-1.5 border-b border-slate-200 px-6 py-3">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              Snabbfilter:
+            </span>
+            <span class="badge bg-slate-900 text-white">Alla öppna</span>
+            <span class="badge bg-slate-100 text-slate-600">Tilldelade mig</span>
+            <span class="badge bg-slate-100 text-slate-600">Förfallna</span>
+            <span class="badge bg-slate-100 text-slate-600">
+              Återkommande (2+ cykler)
+            </span>
+            <span class="badge bg-slate-100 text-slate-600">Avskrivna</span>
+            <span class="badge bg-slate-100 text-slate-600">Senast 30 dagar</span>
+          </div>
+
+          <!-- Filter row -->
+          <div class="flex flex-wrap items-center gap-3 border-b border-slate-200 bg-slate-50/60 px-6 py-3 text-xs">
+            <input
+              type="text"
+              placeholder="Sök i titel, beskrivning, grundorsak..."
+              class="w-72 rounded border border-slate-300 px-2.5 py-1.5"
+            />
+            <select class="rounded border border-slate-300 bg-white px-2.5 py-1.5">
+              <option>Status: Alla öppna</option>
+            </select>
+            <select class="rounded border border-slate-300 bg-white px-2.5 py-1.5">
+              <option>Typ: Alla</option>
+            </select>
+            <select class="rounded border border-slate-300 bg-white px-2.5 py-1.5">
+              <option>Ansvarig: Alla</option>
+            </select>
+            <select class="rounded border border-slate-300 bg-white px-2.5 py-1.5">
+              <option>Källa kontroll: Alla</option>
+            </select>
+            <select class="rounded border border-slate-300 bg-white px-2.5 py-1.5">
+              <option>Lag/Kravpunkt: Alla</option>
+            </select>
+            <button class="ml-auto btn btn-ghost">↻ Återställ</button>
+          </div>
+
+          <!-- Table -->
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+              <tr>
+                <th class="w-8 px-4 py-3 text-left">
+                  <input type="checkbox" />
+                </th>
+                <th class="px-3 py-3 text-left">Anmärkning</th>
+                <th class="px-3 py-3 text-left">Status</th>
+                <th class="px-3 py-3 text-left">Kravpunkt / Lag</th>
+                <th class="px-3 py-3 text-left">Ansvarig</th>
+                <th class="px-3 py-3 text-left">Källa</th>
+                <th class="px-3 py-3 text-left">Förfaller</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <!-- Row: Open with severity -->
+              <tr class="cursor-pointer hover:bg-slate-50">
+                <td class="px-4 py-3"><input type="checkbox" /></td>
+                <td class="px-3 py-3">
+                  <div class="flex items-center gap-1.5">
+                    <span class="pill-type bg-red-100 text-red-700">▲ AVVIKELSE</span>
+                    <span class="pill-type bg-red-50 text-red-600">Större</span>
+                  </div>
+                  <p class="mt-1 font-medium">Saknar utbildningsplan för kemikaliehantering</p>
+                  <p class="mt-0.5 text-[11px] text-slate-500">
+                    1 åtgärdsuppgift · 3 kommentarer
+                  </p>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="badge bg-slate-100 text-slate-600">
+                    <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                    Öppen
+                  </span>
+                </td>
+                <td class="px-3 py-3 text-xs">
+                  <p>Arbetsmiljölagen (1977:1160)</p>
+                  <p class="text-slate-500">
+                    Kravpunkt: §§ 3 — Förebyggande arbete...
+                  </p>
+                </td>
+                <td class="px-3 py-3">
+                  <div class="flex items-center gap-1.5 text-xs">
+                    <div
+                      class="flex h-5 w-5 items-center justify-center rounded-full bg-blue-200 text-[10px] font-medium text-blue-900"
+                    >
+                      MA
+                    </div>
+                    <span>Maria A.</span>
+                  </div>
+                </td>
+                <td class="px-3 py-3 text-xs text-slate-600">
+                  <a class="hover:underline">Q1 2026 ↗</a>
+                </td>
+                <td class="px-3 py-3 text-xs text-rose-600">15 maj 2026</td>
+              </tr>
+
+              <!-- Row: Ready to verify -->
+              <tr class="cursor-pointer bg-amber-50/30 hover:bg-amber-50">
+                <td class="px-4 py-3"><input type="checkbox" /></td>
+                <td class="px-3 py-3">
+                  <div class="flex items-center gap-1.5">
+                    <span class="pill-type bg-red-100 text-red-700">▲ AVVIKELSE</span>
+                    <span class="pill-type bg-amber-50 text-amber-700">Mindre</span>
+                  </div>
+                  <p class="mt-1 font-medium">Otydlig märkning på nödutgång</p>
+                  <p class="mt-0.5 text-[11px] text-slate-500">
+                    Åtgärdsuppgift slutförd för 1 dag sedan
+                  </p>
+                </td>
+                <td class="px-3 py-3">
+                  <span
+                    class="badge border border-amber-300 bg-amber-50 text-amber-800"
+                    >Redo att verifiera</span
+                  >
+                </td>
+                <td class="px-3 py-3 text-xs">
+                  <p>Arbetsmiljölagen (1977:1160)</p>
+                  <p class="text-slate-500">Kravpunkt: §§ 8 — Märkning</p>
+                </td>
+                <td class="px-3 py-3">
+                  <div class="flex items-center gap-1.5 text-xs">
+                    <div
+                      class="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-200 text-[10px] font-medium text-emerald-900"
+                    >
+                      AA
+                    </div>
+                    <span>Alexander A.</span>
+                  </div>
+                </td>
+                <td class="px-3 py-3 text-xs text-slate-600">
+                  <a class="hover:underline">Q1 2026 ↗</a>
+                </td>
+                <td class="px-3 py-3 text-xs text-slate-500">—</td>
+              </tr>
+
+              <!-- Row: Closed verified -->
+              <tr class="cursor-pointer hover:bg-slate-50">
+                <td class="px-4 py-3"><input type="checkbox" /></td>
+                <td class="px-3 py-3">
+                  <div class="flex items-center gap-1.5">
+                    <span class="pill-type bg-amber-100 text-amber-700">◆ OBSERVATION</span>
+                  </div>
+                  <p class="mt-1 font-medium text-slate-700">
+                    Brandövningar inte dokumenterade
+                  </p>
+                </td>
+                <td class="px-3 py-3">
+                  <span
+                    class="badge border border-emerald-300 bg-emerald-50 text-emerald-800"
+                  >
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="3"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Åtgärdad
+                  </span>
+                </td>
+                <td class="px-3 py-3 text-xs">
+                  <p>AFS 2001:1</p>
+                  <p class="text-slate-500">Kravpunkt: §§ 6</p>
+                </td>
+                <td class="px-3 py-3">
+                  <div class="flex items-center gap-1.5 text-xs">
+                    <div
+                      class="flex h-5 w-5 items-center justify-center rounded-full bg-blue-200 text-[10px] font-medium text-blue-900"
+                    >
+                      MA
+                    </div>
+                    <span>Maria A.</span>
+                  </div>
+                </td>
+                <td class="px-3 py-3 text-xs text-slate-600">
+                  <a class="hover:underline">Q4 2025 ↗</a>
+                </td>
+                <td class="px-3 py-3 text-xs text-slate-500">—</td>
+              </tr>
+
+              <!-- Row: Avskriven -->
+              <tr class="cursor-pointer hover:bg-slate-50">
+                <td class="px-4 py-3"><input type="checkbox" /></td>
+                <td class="px-3 py-3">
+                  <div class="flex items-center gap-1.5">
+                    <span class="pill-type bg-red-100 text-red-700">▲ AVVIKELSE</span>
+                  </div>
+                  <p class="mt-1 font-medium text-slate-500 line-through">
+                    Saknar separat avfallshantering
+                  </p>
+                  <p class="mt-0.5 text-[11px] italic text-slate-500">
+                    "Verksamheten har förändrats — kravet gäller inte längre."
+                  </p>
+                </td>
+                <td class="px-3 py-3">
+                  <span
+                    class="badge border border-slate-300 bg-slate-100 text-slate-500"
+                    ><span class="strike">Avskriven</span></span
+                  >
+                </td>
+                <td class="px-3 py-3 text-xs">
+                  <p>Miljöbalken (1998:808)</p>
+                  <p class="text-slate-500">Kravpunkt: 15 kap. § 1</p>
+                </td>
+                <td class="px-3 py-3 text-xs text-slate-500">—</td>
+                <td class="px-3 py-3 text-xs text-slate-600">
+                  <a class="hover:underline">Q4 2025 ↗</a>
+                </td>
+                <td class="px-3 py-3 text-xs text-slate-500">—</td>
+              </tr>
+
+              <!-- Row: Recurring (visual marker) -->
+              <tr class="cursor-pointer hover:bg-slate-50">
+                <td class="px-4 py-3"><input type="checkbox" /></td>
+                <td class="px-3 py-3">
+                  <div class="flex items-center gap-1.5">
+                    <span class="pill-type bg-red-100 text-red-700">▲ AVVIKELSE</span>
+                    <span class="pill-type bg-red-50 text-red-600">Större</span>
+                    <span
+                      class="pill-type border border-rose-400 bg-rose-50 text-rose-700"
+                      >↻ ÅTERKOMMANDE</span
+                    >
+                  </div>
+                  <p class="mt-1 font-medium">
+                    Riskbedömning saknas för truckhantering
+                  </p>
+                  <p class="mt-0.5 text-[11px] text-rose-700">
+                    Samma kravpunkt har haft öppen anmärkning i 3 av 4 senaste cyklerna
+                  </p>
+                </td>
+                <td class="px-3 py-3">
+                  <span class="badge bg-slate-100 text-slate-600">
+                    <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                    Öppen
+                  </span>
+                </td>
+                <td class="px-3 py-3 text-xs">
+                  <p>AFS 2001:1</p>
+                  <p class="text-slate-500">Kravpunkt: §§ 8 — Riskbedömning</p>
+                </td>
+                <td class="px-3 py-3">
+                  <div class="flex items-center gap-1.5 text-xs">
+                    <div
+                      class="flex h-5 w-5 items-center justify-center rounded-full bg-amber-200 text-[10px] font-medium text-amber-900"
+                    >
+                      AA
+                    </div>
+                    <span>Alexander A.</span>
+                  </div>
+                </td>
+                <td class="px-3 py-3 text-xs text-slate-600">
+                  <a class="hover:underline">Q1 2026 ↗</a>
+                </td>
+                <td class="px-3 py-3 text-xs text-rose-600">8 maj 2026</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div
+            class="flex items-center justify-between border-t border-slate-200 px-6 py-3 text-xs text-slate-500"
+          >
+            <span>Visar 1–5 av 47 anmärkningar</span>
+            <div class="flex items-center gap-2">
+              <button class="btn btn-ghost">‹ Föregående</button>
+              <button class="btn btn-ghost">Nästa ›</button>
+            </div>
+          </div>
+        </div>
+
+        <p class="mt-3 text-xs italic text-slate-500">
+          Note the "↻ ÅTERKOMMANDE" pill on the last row — derived from
+          <code>lawListItemId</code> grouping across cycles. This is the
+          differentiating signal that surfaces compounding compliance health
+          over time. None of the Nordic competitors render this.
+        </p>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- 3. FINDING MODAL                                                  -->
+      <!-- ============================================================== -->
+      <section class="mb-14">
+        <h2
+          class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500"
+        >
+          3 — FindingModal
+        </h2>
+        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+          The shared work surface — same modal from cycle row OR registry row
+        </h3>
+
+        <div class="modal-shell mx-auto max-w-5xl overflow-hidden">
+          <!-- Modal header -->
+          <div class="flex items-start justify-between border-b border-slate-200 px-6 py-4">
+            <div class="flex-1">
+              <p class="text-[11px] text-slate-400">
+                Anmärkningar › <span class="text-slate-600">Otydlig märkning på nödutgång</span>
+              </p>
+              <div class="mt-1 flex items-center gap-2">
+                <span class="pill-type bg-red-100 text-red-700">▲ AVVIKELSE</span>
+                <span class="pill-type bg-amber-50 text-amber-700">Mindre</span>
+                <span class="badge border border-amber-300 bg-amber-50 text-amber-800"
+                  >Redo att verifiera</span
+                >
+              </div>
+              <h4 class="mt-1.5 text-xl font-semibold">
+                Otydlig märkning på nödutgång
+              </h4>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="btn btn-ghost" title="Dela">⤴</button>
+              <button class="btn btn-ghost" title="Mer">⋯</button>
+              <button class="btn btn-ghost text-lg" title="Stäng">×</button>
+            </div>
+          </div>
+
+          <!-- Body: split panel -->
+          <div class="grid grid-cols-1 lg:grid-cols-[1fr_300px]">
+            <!-- LEFT: editable content + activity -->
+            <div class="space-y-5 px-6 py-5">
+              <!-- Beskrivning accordion -->
+              <div class="rounded-lg border border-slate-200">
+                <div class="accordion-trigger border-b border-slate-200">
+                  <span>Beskrivning</span>
+                  <span class="arrow">▾</span>
+                </div>
+                <div class="px-4 py-3 text-sm leading-relaxed text-slate-700">
+                  Skylten ovanför nödutgång B2 är blekt och otydlig — texten
+                  "Nödutgång" är knappt synlig på avstånd. Upptäcktes vid
+                  rundvandring 22 apr.
+                </div>
+              </div>
+
+              <!-- Grundorsak -->
+              <div class="rounded-lg border border-slate-200">
+                <div class="accordion-trigger border-b border-slate-200">
+                  <span>Grundorsak <span class="text-[10px] font-normal text-slate-400">(frivilligt)</span></span>
+                  <span class="arrow">▾</span>
+                </div>
+                <div class="px-4 py-3 text-sm leading-relaxed text-slate-700">
+                  UV-blekning över tid; ingen rutin för periodisk inspektion av
+                  utrymningsskyltar.
+                </div>
+              </div>
+
+              <!-- Kravpunkt link -->
+              <div class="rounded-lg border border-slate-200 bg-slate-50/60">
+                <div class="px-4 py-3 text-sm">
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                    Kopplad kravpunkt
+                  </p>
+                  <p class="mt-1.5 font-medium">
+                    Arbetsmiljölagen (1977:1160) ↗
+                  </p>
+                  <p class="mt-0.5 text-xs text-slate-600">
+                    §§ 8 — Märkning av utrymningsvägar
+                  </p>
+                </div>
+              </div>
+
+              <!-- Aktivitet -->
+              <div>
+                <h5 class="mb-2 text-sm font-semibold">Aktivitet</h5>
+                <div class="mb-3 flex gap-1 border-b border-slate-200">
+                  <button class="border-b-2 border-slate-900 px-3 py-1.5 text-xs font-medium">
+                    Alla
+                  </button>
+                  <button class="px-3 py-1.5 text-xs text-slate-500">
+                    Kommentarer
+                  </button>
+                  <button class="px-3 py-1.5 text-xs text-slate-500">Historik</button>
+                </div>
+
+                <!-- Comment input -->
+                <div class="mb-4 flex gap-2">
+                  <div
+                    class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-200 text-[10px] font-medium text-emerald-900"
+                  >
+                    AA
+                  </div>
+                  <div class="flex-1 rounded-md border border-slate-300 bg-white">
+                    <textarea
+                      placeholder="Lägg till en kommentar..."
+                      class="block w-full resize-none border-0 bg-transparent px-3 py-2 text-sm focus:outline-none"
+                      rows="2"
+                    ></textarea>
+                    <div
+                      class="flex items-center justify-between border-t border-slate-200 px-3 py-1.5"
+                    >
+                      <span class="text-[10px] text-slate-400">
+                        Tryck Enter för att skicka
+                      </span>
+                      <button class="btn btn-primary text-[11px]">Skicka</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Activity items -->
+                <div class="space-y-3">
+                  <div class="flex gap-2 text-xs">
+                    <div
+                      class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-200 text-[10px] font-medium text-blue-900"
+                    >
+                      MA
+                    </div>
+                    <div class="flex-1">
+                      <p>
+                        <strong>Maria A.</strong> markerade åtgärdsuppgiften
+                        <em>"Sätt upp ny nödutgångsskylt"</em> som klar
+                      </p>
+                      <p class="text-[10px] text-slate-400">2026-04-26 14:08 · 1 dag sedan</p>
+                    </div>
+                  </div>
+                  <div class="flex gap-2 text-xs">
+                    <div
+                      class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-200 text-[10px] font-medium text-emerald-900"
+                    >
+                      AA
+                    </div>
+                    <div class="flex-1">
+                      <p>
+                        <strong>Alexander A.</strong> tilldelade Maria A. som ansvarig
+                      </p>
+                      <p class="text-[10px] text-slate-400">2026-04-22 11:14</p>
+                    </div>
+                  </div>
+                  <div class="flex gap-2 text-xs">
+                    <div
+                      class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-200 text-[10px] font-medium text-emerald-900"
+                    >
+                      AA
+                    </div>
+                    <div class="flex-1">
+                      <p>
+                        <strong>Alexander A.</strong> skapade åtgärdsuppgift
+                        <em>"Sätt upp ny nödutgångsskylt"</em>
+                      </p>
+                      <p class="text-[10px] text-slate-400">2026-04-22 11:13</p>
+                    </div>
+                  </div>
+                  <div class="flex gap-2 text-xs">
+                    <div
+                      class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-200 text-[10px] font-medium text-emerald-900"
+                    >
+                      AA
+                    </div>
+                    <div class="flex-1">
+                      <p>
+                        <strong>Alexander A.</strong> skapade anmärkningen i kontroll
+                        <a class="underline-offset-2 hover:underline">Q1 2026 ↗</a>
+                      </p>
+                      <p class="text-[10px] text-slate-400">2026-04-22 11:12</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT: details rail -->
+            <aside class="space-y-3 border-t border-slate-200 bg-slate-50/40 px-5 py-5 lg:border-l lg:border-t-0">
+              <!-- Primary action card -->
+              <div class="rounded-lg border-2 border-emerald-200 bg-emerald-50/40 p-3">
+                <p class="text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
+                  Nästa steg
+                </p>
+                <p class="mt-1 text-xs text-slate-700">
+                  Åtgärdsuppgift slutförd. Granska resultatet och bekräfta
+                  åtgärden.
+                </p>
+                <button class="btn btn-emerald mt-3 w-full justify-center">
+                  Markera som åtgärdat
+                </button>
+              </div>
+
+              <!-- Details card -->
+              <div class="rounded-lg border border-slate-200 bg-white p-3 text-xs">
+                <p class="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                  Detaljer
+                </p>
+                <dl class="space-y-2">
+                  <div class="flex justify-between gap-2">
+                    <dt class="text-slate-500">Status</dt>
+                    <dd>
+                      <span
+                        class="badge border border-amber-300 bg-amber-50 text-amber-800"
+                        >Redo att verifiera</span
+                      >
+                    </dd>
+                  </div>
+                  <div class="flex justify-between gap-2">
+                    <dt class="text-slate-500">Typ</dt>
+                    <dd>Avvikelse · Mindre</dd>
+                  </div>
+                  <div class="flex justify-between gap-2">
+                    <dt class="text-slate-500">Ansvarig</dt>
+                    <dd>Maria A. ▾</dd>
+                  </div>
+                  <div class="flex justify-between gap-2">
+                    <dt class="text-slate-500">Förfaller</dt>
+                    <dd>—</dd>
+                  </div>
+                  <div class="flex justify-between gap-2">
+                    <dt class="text-slate-500">Skapad</dt>
+                    <dd>22 apr. 2026</dd>
+                  </div>
+                  <div class="flex justify-between gap-2">
+                    <dt class="text-slate-500">Källa</dt>
+                    <dd>
+                      <a class="text-slate-700 underline-offset-2 hover:underline"
+                        >Kontroll Q1 2026 ↗</a
+                      >
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+
+              <!-- Linked tasks -->
+              <div class="rounded-lg border border-slate-200 bg-white p-3 text-xs">
+                <div class="mb-2 flex items-center justify-between">
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                    Åtgärdsuppgifter (1)
+                  </p>
+                  <button class="btn btn-ghost text-[10px]">+ Skapa</button>
+                </div>
+                <a class="block rounded border border-slate-200 px-2.5 py-2 hover:bg-slate-50">
+                  <div class="flex items-center justify-between">
+                    <span class="font-medium">Sätt upp ny nödutgångsskylt</span>
+                    <span class="text-[10px] text-emerald-700">✓ Klar</span>
+                  </div>
+                  <p class="mt-0.5 text-[10px] text-slate-500">Maria A. · 2026-04-26</p>
+                </a>
+              </div>
+
+              <!-- Bevis -->
+              <div class="rounded-lg border border-slate-200 bg-white p-3 text-xs">
+                <div class="mb-2 flex items-center justify-between">
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                    Bevis
+                  </p>
+                  <button class="btn btn-ghost text-[10px]">+ Lägg till</button>
+                </div>
+                <p class="text-[10px] italic text-slate-500">
+                  Inga bevis kopplade ännu.
+                </p>
+              </div>
+
+              <!-- Snabblänkar -->
+              <div class="rounded-lg border border-slate-200 bg-white p-3 text-xs">
+                <p class="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                  Snabblänkar
+                </p>
+                <a class="block rounded px-2 py-1.5 text-slate-700 hover:bg-slate-50">
+                  ◊ Fråga Lexa om denna anmärkning
+                </a>
+                <a class="block rounded px-2 py-1.5 text-slate-700 hover:bg-slate-50">
+                  ⚖ Öppna kravpunkt
+                </a>
+                <a class="block rounded px-2 py-1.5 text-slate-700 hover:bg-slate-50">
+                  ⊞ Öppna källkontroll Q1 2026
+                </a>
+              </div>
+
+              <!-- Secondary actions -->
+              <div class="rounded-lg border border-slate-200 bg-white p-3 text-xs">
+                <p class="mb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                  Åtgärder
+                </p>
+                <button class="block w-full rounded px-2 py-1.5 text-left text-slate-700 hover:bg-slate-50">
+                  Avskriv (utan åtgärd)
+                </button>
+                <button class="block w-full rounded px-2 py-1.5 text-left text-slate-700 hover:bg-slate-50">
+                  Redigera fält
+                </button>
+                <button class="block w-full rounded px-2 py-1.5 text-left text-rose-600 hover:bg-rose-50">
+                  Ta bort anmärkning
+                </button>
+              </div>
+            </aside>
+          </div>
+        </div>
+
+        <p class="mt-3 text-xs italic text-slate-500">
+          The "Nästa steg" emerald action card is context-aware — when the
+          finding is <code>open + no task</code> it suggests creating one;
+          when <code>ready-to-verify</code> it's the verify CTA; when closed
+          it's the reopen path. Single visible CTA at any moment, with
+          secondary actions in the bottom rail card.
+        </p>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- 4. CYCLE FINDINGS TAB — STRIPPED                                  -->
+      <!-- ============================================================== -->
+      <section class="mb-14">
+        <h2
+          class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500"
+        >
+          4 — Cycle findings tab · stripped to identification
+        </h2>
+        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+          Display + create + click-to-open. No inline state actions.
+        </h3>
+
+        <div class="frame">
+          <div class="px-6 pb-3 pt-5">
+            <p class="text-[11px] text-slate-400">
+              Almåsa Havshotell AB › Laglistor › Kontroller ›
+              <span class="text-slate-600">Testkontroll 2</span>
+            </p>
+            <div class="mt-1 flex items-center gap-3">
+              <h4 class="text-xl font-semibold">Testkontroll 2</h4>
+              <span class="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-700"
+                >Pågående</span
+              >
+            </div>
+          </div>
+
+          <div class="flex gap-1 border-b border-slate-200 px-5">
+            <button class="rounded-t px-3 py-2 text-sm text-slate-500">Dokument</button>
+            <button class="rounded-t border-b-2 border-slate-900 px-3 py-2 text-sm font-medium">
+              Anmärkningar
+            </button>
+            <button class="rounded-t px-3 py-2 text-sm text-slate-500">Rapport</button>
+            <button class="rounded-t px-3 py-2 text-sm text-slate-500">Aktivitet</button>
+          </div>
+
+          <div class="flex items-center justify-between px-5 py-3">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="badge bg-slate-900 text-white">Alla</span>
+              <span class="badge bg-slate-100 text-slate-600">Avvikelse</span>
+              <span class="badge bg-slate-100 text-slate-600">Observation</span>
+              <span class="badge bg-slate-100 text-slate-600">Förbättringsförslag</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <a class="text-xs text-slate-500 underline-offset-2 hover:underline">
+                Öppna i registret ↗
+              </a>
+              <button class="btn btn-outline">+ Lägg till anmärkning</button>
+            </div>
+          </div>
+
+          <div class="row-divider"></div>
+
+          <!-- Each row is now a single click target opening the modal — no inline buttons -->
+          <a class="flex cursor-pointer items-center gap-3 px-5 py-3 hover:bg-slate-50">
+            <div class="flex-1 space-y-1">
+              <div class="flex items-center gap-1.5">
+                <span class="pill-type bg-red-100 text-red-700">▲ Avvikelse</span>
+                <span class="pill-type bg-red-50 text-red-600">Större</span>
+                <span class="badge bg-slate-100 text-slate-600">
+                  <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                  Öppen
+                </span>
+              </div>
+              <p class="text-sm font-medium">Saknar utbildningsplan för kemikaliehantering</p>
+              <p class="text-[11px] text-slate-500">
+                Skapad i denna kontroll · Maria A. · ingen åtgärdsuppgift
+              </p>
+            </div>
+            <span class="arrow text-sm">›</span>
+          </a>
+
+          <div class="row-divider"></div>
+
+          <a class="flex cursor-pointer items-center gap-3 px-5 py-3 hover:bg-slate-50">
+            <div class="flex-1 space-y-1">
+              <div class="flex items-center gap-1.5">
+                <span class="pill-type bg-red-100 text-red-700">▲ Avvikelse</span>
+                <span class="pill-type bg-amber-50 text-amber-700">Mindre</span>
+                <span class="badge border border-amber-300 bg-amber-50 text-amber-800"
+                  >Redo att verifiera</span
+                >
+              </div>
+              <p class="text-sm font-medium">Otydlig märkning på nödutgång</p>
+              <p class="text-[11px] text-slate-500">
+                Skapad i denna kontroll · Alexander A. · åtgärdsuppgift slutförd igår
+              </p>
+            </div>
+            <span class="arrow text-sm">›</span>
+          </a>
+
+          <div class="row-divider"></div>
+
+          <a class="flex cursor-pointer items-center gap-3 px-5 py-3 hover:bg-slate-50">
+            <div class="flex-1 space-y-1">
+              <div class="flex items-center gap-1.5">
+                <span class="pill-type bg-amber-100 text-amber-700">◆ Observation</span>
+                <span class="badge border border-emerald-300 bg-emerald-50 text-emerald-800">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  Åtgärdad
+                </span>
+              </div>
+              <p class="text-sm font-medium text-slate-700">Brandövningar inte dokumenterade</p>
+              <p class="text-[11px] text-slate-500">
+                Skapad i denna kontroll · stängd 2 dagar sedan
+              </p>
+            </div>
+            <span class="arrow text-sm">›</span>
+          </a>
+        </div>
+
+        <p class="mt-3 text-xs italic text-slate-500">
+          What's gone vs today: no inline "Markera som åtgärdat", no "Verifiera",
+          no "Återöppna", no "Skapa åtgärdsuppgift" on the row. The row is a
+          single click target opening the FindingModal. Edit / state actions
+          all happen there. "+ Lägg till anmärkning" stays — creation is part
+          of the audit identification act.
+        </p>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- 5. CYCLE-ITEM MODAL · FINDINGS ACCORDION                          -->
+      <!-- ============================================================== -->
+      <section class="mb-14">
+        <h2
+          class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500"
+        >
+          5 — Cycle-item modal · Anmärkningar accordion
+        </h2>
+        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+          Same pattern: display + create. Click → opens FindingModal.
+        </h3>
+
+        <div class="frame mx-auto max-w-2xl p-5">
+          <p class="text-[11px] text-slate-400">
+            Testkontroll 2 › <span class="text-slate-600">SFS 1977:1160 — Arbetsmiljölagen</span>
+          </p>
+          <h4 class="mt-1 text-base font-semibold">Arbetsmiljölagen</h4>
+
+          <div class="mt-4 rounded-lg border border-slate-200">
+            <div class="accordion-trigger border-b border-slate-200">
+              <span class="flex items-center gap-2">
+                <span>⚠ Anmärkningar</span>
+                <span class="text-[11px] font-normal text-slate-500">
+                  2 öppna · 1 åtgärdad
+                </span>
+              </span>
+              <span class="arrow">▾</span>
+            </div>
+            <div class="space-y-2 p-3">
+              <a class="block cursor-pointer rounded border border-slate-200 bg-white p-2.5 hover:bg-slate-50">
+                <div class="flex items-center gap-1.5">
+                  <span class="pill-type bg-red-100 text-red-700">▲ Avvikelse</span>
+                  <span class="pill-type bg-red-50 text-red-600">Större</span>
+                  <span class="badge bg-slate-100 text-slate-600">
+                    <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                    Öppen
+                  </span>
+                </div>
+                <p class="mt-1 text-xs font-medium">
+                  Saknar utbildningsplan för kemikaliehantering
+                </p>
+              </a>
+              <a class="block cursor-pointer rounded border border-slate-200 bg-white p-2.5 hover:bg-slate-50">
+                <div class="flex items-center gap-1.5">
+                  <span class="pill-type bg-red-100 text-red-700">▲ Avvikelse</span>
+                  <span class="badge border border-amber-300 bg-amber-50 text-amber-800"
+                    >Redo att verifiera</span
+                  >
+                </div>
+                <p class="mt-1 text-xs font-medium">
+                  Otydlig märkning på nödutgång
+                </p>
+              </a>
+              <button
+                class="block w-full rounded border border-dashed border-slate-300 px-2.5 py-2 text-xs text-slate-500 hover:bg-slate-50"
+              >
+                + Lägg till anmärkning
+              </button>
+            </div>
+          </div>
+
+          <p class="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
+            Anmärkningshistorik från tidigare kontroller (Q4 2025, Q3 2025) visas
+            i en separat "Tidigare anmärkningar"-accordion nedan — Phase 3
+            scope. Ger auditorn kontext: "har vi redan hittat detta tidigare?"
+          </p>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- 6. NAVIGATION FLOW                                                -->
+      <!-- ============================================================== -->
+      <section class="mb-14">
+        <h2
+          class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500"
+        >
+          6 — How the modal opens
+        </h2>
+        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+          One modal · two entry points · in-place overlay
+        </h3>
+
+        <div class="frame p-7">
+          <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <!-- Path A: from cycle -->
+            <div>
+              <p class="mb-3 text-[10px] font-semibold uppercase tracking-wider text-blue-700">
+                Path A · From cycle row
+              </p>
+              <div class="space-y-2 text-xs text-slate-600">
+                <div class="rounded border border-slate-200 bg-slate-50 p-2.5">
+                  <p class="font-mono text-[11px] text-slate-500">
+                    /laglistor/kontroller/[id]
+                  </p>
+                  <p class="mt-1">User on cycle's Anmärkningar tab</p>
+                </div>
+                <div class="text-center text-slate-400">↓ click row</div>
+                <div class="rounded border border-violet-200 bg-violet-50 p-2.5">
+                  <p class="font-mono text-[11px] text-violet-700">
+                    FindingModal opens (in-place overlay)
+                  </p>
+                  <p class="mt-1">URL becomes <code>?finding=&lt;id&gt;</code> for shareability</p>
+                  <p class="mt-1 text-slate-600">Same modal component as Path B</p>
+                </div>
+                <div class="text-center text-slate-400">↓ close modal</div>
+                <div class="rounded border border-slate-200 bg-slate-50 p-2.5">
+                  <p class="font-mono text-[11px] text-slate-500">
+                    /laglistor/kontroller/[id]
+                  </p>
+                  <p class="mt-1">Back on cycle, row reflects updated badge</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Path B: from registry -->
+            <div>
+              <p class="mb-3 text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
+                Path B · From registry row
+              </p>
+              <div class="space-y-2 text-xs text-slate-600">
+                <div class="rounded border border-slate-200 bg-slate-50 p-2.5">
+                  <p class="font-mono text-[11px] text-slate-500">/anmärkningar</p>
+                  <p class="mt-1">User on workspace registry</p>
+                </div>
+                <div class="text-center text-slate-400">↓ click row</div>
+                <div class="rounded border border-violet-200 bg-violet-50 p-2.5">
+                  <p class="font-mono text-[11px] text-violet-700">
+                    FindingModal opens (in-place overlay)
+                  </p>
+                  <p class="mt-1">URL becomes <code>?finding=&lt;id&gt;</code></p>
+                  <p class="mt-1 text-slate-600">Same modal component as Path A</p>
+                </div>
+                <div class="text-center text-slate-400">↓ close modal</div>
+                <div class="rounded border border-slate-200 bg-slate-50 p-2.5">
+                  <p class="font-mono text-[11px] text-slate-500">/anmärkningar</p>
+                  <p class="mt-1">Back on registry, row reflects updated badge</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700">
+            <p class="font-semibold">Implementation note</p>
+            <p class="mt-1">
+              FindingModal lives in
+              <code>components/features/anmärkningar/finding-modal/</code> —
+              imported by both the cycle's findings-tab and the registry page.
+              State (open finding id) lives at the page level via URL query
+              param so deep-links work. Modal-on-modal behavior (clicking
+              "Öppna källkontroll" from inside the modal) follows the existing
+              law-list-item modal precedent.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- 7. WHAT THIS COSTS / DELIVERS                                     -->
+      <!-- ============================================================== -->
+      <section class="mb-14">
+        <h2
+          class="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500"
+        >
+          7 — Phase split (revised)
+        </h2>
+        <h3 class="mb-4 text-xl font-semibold tracking-tight">
+          What ships when
+        </h3>
+
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <div class="rounded-lg border border-slate-200 bg-white p-4">
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              Phase 1 · DONE
+            </p>
+            <p class="mt-1 text-sm font-semibold">Reframing copy</p>
+            <ul class="mt-2 space-y-1 text-[11px] text-slate-600">
+              <li>✓ "Markera som åtgärdat" rename</li>
+              <li>✓ AVSLUTAD advisory banner</li>
+              <li>✓ Forward-looking dialog copy</li>
+              <li>✓ Verify-dialog task link</li>
+            </ul>
+          </div>
+
+          <div class="rounded-lg border-2 border-violet-300 bg-violet-50/30 p-4">
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-violet-700">
+              Phase 2 · narrowed
+            </p>
+            <p class="mt-1 text-sm font-semibold">Foundation refactor (~3 days)</p>
+            <ul class="mt-2 space-y-1 text-[11px] text-slate-600">
+              <li>+ Schema columns (verification_note, close_reason)</li>
+              <li>+ Server: drop AVSLUTAD from finding guard</li>
+              <li>+ State derivation: 5-state in finding-copy.ts</li>
+              <li>+ Cycle findings-tab: <strong>strip inline actions</strong></li>
+              <li>+ Cycle row click → opens FindingModal stub</li>
+              <li class="text-slate-400">– Inline action handlers DELETED</li>
+            </ul>
+          </div>
+
+          <div class="rounded-lg border-2 border-emerald-300 bg-emerald-50/30 p-4">
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-emerald-700">
+              Phase 3 · the win (~1.5 weeks)
+            </p>
+            <p class="mt-1 text-sm font-semibold">Findings as first-class</p>
+            <ul class="mt-2 space-y-1 text-[11px] text-slate-600">
+              <li>+ <code>/anmärkningar</code> registry page</li>
+              <li>+ FindingModal (full lifecycle UX)</li>
+              <li>+ Recurring-finding signal (↻ pill)</li>
+              <li>+ Quick segments / saved filters</li>
+              <li>+ Law-list-item history accordion</li>
+              <li>+ Cycle-item "Tidigare anmärkningar"</li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="mt-4 text-xs italic text-slate-500">
+          Phase 2 narrows because the MarkResolvedDialog work moves into Phase
+          3 (it's part of FindingModal, not a cycle-tab dialog). Phase 2 ships
+          the schema + server unlock + cycle-tab-strip; Phase 3 builds the
+          actual operational surface. After Phase 3, Laglig has a categorically
+          different product than Notisum/Lextre.
+        </p>
+      </section>
+
+      <footer class="mt-16 border-t border-slate-200 pt-6 text-xs text-slate-500">
+        Plan file: <code>~/.claude/plans/crispy-launching-moore.md</code> ·
+        Companion prototype: <code>_prototypes/findings-state-refactor.html</code>
+        (Phase 2 state machine + badges) · This file:
+        <code>_prototypes/findings-as-first-class.html</code>
+      </footer>
+    </div>
+  </body>
+</html>

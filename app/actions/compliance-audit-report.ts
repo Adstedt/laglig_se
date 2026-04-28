@@ -63,40 +63,15 @@ const GetRevisionsrapportInputSchema = z.object({
 // ============================================================================
 
 /**
- * Tenant-scoped evidence-snapshot loader. Joins `ComplianceEvidenceSnapshot` →
- * `WorkspaceFile` / `WorkspaceDocument` and filters by the cycle's workspace
- * through the nested relation filter (matches the `getCycleById` tenant
- * isolation pattern at `compliance-audit-cycle.ts:437-474`).
- *
- * Returns an empty array for non-SEALED cycles — 21.9 hydrates these rows as
- * part of the seal transaction; before seal there are none to read.
+ * Story 21.26 — `loadEvidenceSnapshotsForCycle` removed alongside the
+ * ComplianceEvidenceSnapshot model deletion. The renderer no longer reads
+ * snapshot data; an empty array is supplied as a transitional placeholder.
  */
 async function loadEvidenceSnapshotsForCycle(
-  cycleId: string,
-  workspaceId: string
+  _cycleId: string,
+  _workspaceId: string
 ): Promise<EvidenceSnapshotRow[]> {
-  const rows = await prisma.complianceEvidenceSnapshot.findMany({
-    where: {
-      cycle_id: cycleId,
-      cycle: { workspace_id: workspaceId },
-    },
-    include: {
-      evidence_file: { select: { id: true, filename: true } },
-      evidence_document: { select: { id: true, title: true } },
-    },
-    orderBy: { captured_at: 'asc' },
-  })
-
-  return rows.map((row) => ({
-    id: row.id,
-    lawListItemId: row.law_list_item_id,
-    requirementId: row.requirement_id,
-    evidenceKind: row.evidence_kind,
-    evidenceSha256: row.evidence_sha256,
-    capturedAt: row.captured_at,
-    displayName:
-      row.evidence_file?.filename ?? row.evidence_document?.title ?? '—',
-  }))
+  return []
 }
 
 // ============================================================================
@@ -185,9 +160,12 @@ export interface GenerateCycleReportResult {
   durationMs: number
 }
 
+// Story 21.26 — `kind` collapses to a single value. Kept as a const so the
+// schema shape stays stable for callers; downstream code treats it as
+// effectively unconditional.
 const GenerateCycleReportSchema = z.object({
   cycleId: z.string().uuid(),
-  kind: z.enum(['COMPLETE', 'SEALED']),
+  kind: z.enum(['COMPLETE']),
 })
 
 /**
@@ -242,7 +220,7 @@ function buildComplianceReportManifest(
 function buildReportStoragePath(
   workspaceId: string,
   cycleId: string,
-  kind: 'COMPLETE' | 'SEALED',
+  kind: 'COMPLETE',
   extension: 'pdf' | 'html'
 ): string {
   // Deterministic UTC timestamp — ISO string (`YYYY-MM-DDTHH:mm:ss.sssZ`)
@@ -274,7 +252,7 @@ function buildReportStoragePath(
  */
 export async function generateCycleReport(input: {
   cycleId: string
-  kind: 'COMPLETE' | 'SEALED'
+  kind: 'COMPLETE'
 }): Promise<ActionResult<GenerateCycleReportResult>> {
   const parsed = GenerateCycleReportSchema.safeParse(input)
   if (!parsed.success) {
@@ -309,17 +287,8 @@ export async function generateCycleReport(input: {
         }
       }
 
-      if (
-        kind === 'SEALED' &&
-        cycle.status !== ComplianceCycleStatus.SEALED &&
-        cycle.status !== ComplianceCycleStatus.ARKIVERAD
-      ) {
-        return {
-          success: false,
-          error:
-            'SEALED-rapport kan endast genereras för fastställda kontroller',
-        }
-      }
+      // Story 21.26 — SEALED-specific status gate removed alongside the
+      // SEAL collapse. Only COMPLETE kind exists.
 
       // 1. Load + render HTML (reuse Story 21.11 action).
       const inputResult = await getRevisionsrapportInput({ cycleId })
@@ -336,7 +305,9 @@ export async function generateCycleReport(input: {
       const pdfBuffer = await renderRevisionsrapportPdf(html, {
         cycleIdShort: cycleId.slice(0, 8),
         generatedAt: rendererInput.generatedAt,
-        sealHash: rendererInput.cycle.sealHash ?? null,
+        // Story 21.26 — sealHash always null post-collapse. Renderer keeps
+        // the parameter to preserve its signature; just passes null.
+        sealHash: null,
       })
 
       // 3. Upload to Supabase Storage in parallel.
@@ -381,15 +352,9 @@ export async function generateCycleReport(input: {
         }
       }
 
-      // 4. Upsert ComplianceAuditReport row.
-      // INVARIANT (Story 21.12 + 21.9): sealCycle is the sole authority for
-      // the canonical SEALED manifest. generateCycleReport must NEVER author
-      // a manifest for SEALED-kind rows — neither on update nor on create.
-      // QA gate INVARIANT-001 hardening: split SEALED (pure update, no
-      // manifest field) from COMPLETE (upsert with freshly-built manifest).
-      // The earlier defensive fallback `manifest ?? buildComplianceReportManifest(...)`
-      // was removed because it could silently write a non-canonical manifest
-      // if the seal-row was ever absent.
+      // 4. Story 21.26 — Upsert ComplianceAuditReport row.
+      // SEALED-specific branch removed alongside the SEAL collapse. COMPLETE
+      // is the only remaining kind; manifest is built fresh on every gen.
       const existing = await prisma.complianceAuditReport.findUnique({
         where: {
           cycle_id_report_kind: { cycle_id: cycleId, report_kind: kind },
@@ -398,65 +363,31 @@ export async function generateCycleReport(input: {
       })
       const previousPdfPath = existing?.pdf_storage_path ?? null
 
-      // SEALED requires the seal-row to pre-exist. If sealCycle has not
-      // populated the canonical manifest yet, refuse rather than fall back.
-      if (kind === 'SEALED' && !existing) {
-        return {
-          success: false,
-          error:
-            'SEALED-rapport saknar seal-transaktion — manifest måste skrivas av sealCycle först',
-        }
-      }
-
       const generatedAtDate = new Date()
-      let report: { id: string }
-      if (kind === 'SEALED') {
-        // Pure update — `existing` is non-null per the guard above, so no
-        // create branch is needed. The canonical manifest from sealCycle is
-        // never touched.
-        report = await prisma.complianceAuditReport.update({
-          where: {
-            cycle_id_report_kind: {
-              cycle_id: cycleId,
-              report_kind: 'SEALED',
-            },
-          },
-          data: {
-            generated_at: generatedAtDate,
-            pdf_storage_path: pdfPath,
-            html_storage_path: htmlPath,
-          },
-          select: { id: true },
-        })
-      } else {
-        // COMPLETE: upsert with freshly-built operational manifest. The
-        // create branch fires on first generation; the update branch fires
-        // on regen after a content edit (SF-3 covers revert-and-recomplete).
-        const manifest = buildComplianceReportManifest(rendererInput)
-        report = await prisma.complianceAuditReport.upsert({
-          where: {
-            cycle_id_report_kind: {
-              cycle_id: cycleId,
-              report_kind: 'COMPLETE',
-            },
-          },
-          create: {
+      const manifest = buildComplianceReportManifest(rendererInput)
+      const report = await prisma.complianceAuditReport.upsert({
+        where: {
+          cycle_id_report_kind: {
             cycle_id: cycleId,
             report_kind: 'COMPLETE',
-            generated_at: generatedAtDate,
-            pdf_storage_path: pdfPath,
-            html_storage_path: htmlPath,
-            manifest,
           },
-          update: {
-            generated_at: generatedAtDate,
-            pdf_storage_path: pdfPath,
-            html_storage_path: htmlPath,
-            manifest,
-          },
-          select: { id: true },
-        })
-      }
+        },
+        create: {
+          cycle_id: cycleId,
+          report_kind: 'COMPLETE',
+          generated_at: generatedAtDate,
+          pdf_storage_path: pdfPath,
+          html_storage_path: htmlPath,
+          manifest,
+        },
+        update: {
+          generated_at: generatedAtDate,
+          pdf_storage_path: pdfPath,
+          html_storage_path: htmlPath,
+          manifest,
+        },
+        select: { id: true },
+      })
 
       const durationMs = Date.now() - startedAt
 
@@ -506,7 +437,7 @@ export async function generateCycleReport(input: {
 export async function shouldRegenerateReport(
   cycleId: string,
   workspaceId: string,
-  kind: 'COMPLETE' | 'SEALED'
+  kind: 'COMPLETE'
 ): Promise<boolean> {
   const [report, mostRecentTouchMs] = await Promise.all([
     prisma.complianceAuditReport.findUnique({

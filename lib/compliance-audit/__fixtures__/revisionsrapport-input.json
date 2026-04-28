@@ -2,7 +2,7 @@
   "cycle": {
     "id": "44444444-4444-4444-8444-444444444444",
     "name": "Årskontroll 2026 — AB Testbolaget",
-    "status": "SEALED",
+    "status": "AVSLUTAD",
     "auditType": "EXTERN",
     "scheduledStart": "2026-01-15T00:00:00.000Z",
     "scheduledEnd": "2026-03-31T00:00:00.000Z",
@@ -22,7 +22,6 @@
     "scopeDefinition": {
       "kind": "all"
     },
-    "sealHash": "abc123def456abc123def456abc123def456abc123def456abc123def456abcd",
     "sealedAt": "2026-04-01T14:30:00.000Z",
     "sealedBy": {
       "id": "22222222-2222-4222-8222-222222222222",
