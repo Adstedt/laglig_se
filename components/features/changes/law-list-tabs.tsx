@@ -3,16 +3,22 @@
 /**
  * Story 8.1 Task 1: Law List Tabs
  * Tab wrapper rendering "Laglistor" (existing content) and "Ändringar" tab.
- * Uses the same toggle pattern as the Mallar page for design consistency.
- * Active tab is stored in URL search params (?tab=changes) for deep linking.
  *
- * Perf: changeCount and initialChanges are fetched server-side in
- * laglistor/page.tsx and passed as props — no client-side waterfall.
+ * Story 22.3 follow-up — Migrated from hand-rolled `<button>` toggles
+ * inside a `rounded-lg border bg-muted/30` enclosing pill to the shared
+ * `WorkspaceViewTabs` primitive. Same loose chrome as /tasks +
+ * /workspace/styrdokument.
+ *
+ * Active tab is stored in URL search params (?tab=changes) for deep linking.
  */
 
 import { type ReactNode } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { cn } from '@/lib/utils'
+import {
+  WorkspaceViewTabs,
+  WorkspaceViewTabsList,
+  WorkspaceViewTabsTrigger,
+} from '@/components/ui/workspace-view-tabs'
 import { ChangesTab } from './changes-tab'
 import type { UnacknowledgedChange } from '@/lib/changes/change-utils'
 
@@ -48,36 +54,21 @@ export function LawListTabs({
 
   return (
     <div className="space-y-4">
-      {/* Tab toggle — matches Mallar page design pattern */}
-      <div className="inline-flex min-w-[232px] rounded-lg border bg-muted/30 p-0.5">
-        <button
-          onClick={() => handleTabChange('lists')}
-          className={cn(
-            'flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-            activeTab === 'lists'
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
-        >
-          Laglistor
-        </button>
-        <button
-          onClick={() => handleTabChange('changes')}
-          className={cn(
-            'relative flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-            activeTab === 'changes'
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
-        >
-          Ändringar
-          {initialChangeCount > 0 && (
-            <span className="absolute -top-2 -right-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-medium text-destructive-foreground">
-              {initialChangeCount}
-            </span>
-          )}
-        </button>
-      </div>
+      <WorkspaceViewTabs value={activeTab} onValueChange={handleTabChange}>
+        <WorkspaceViewTabsList>
+          <WorkspaceViewTabsTrigger value="lists">
+            Laglistor
+          </WorkspaceViewTabsTrigger>
+          <WorkspaceViewTabsTrigger value="changes" className="relative">
+            Ändringar
+            {initialChangeCount > 0 && (
+              <span className="absolute -top-2 -right-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-medium text-destructive-foreground">
+                {initialChangeCount}
+              </span>
+            )}
+          </WorkspaceViewTabsTrigger>
+        </WorkspaceViewTabsList>
+      </WorkspaceViewTabs>
 
       {/* Tab content */}
       {activeTab === 'lists' ? (
