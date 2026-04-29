@@ -31,6 +31,10 @@ import {
 } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import {
+  getStatusBadgeProps,
+  getPriorityBadgeProps,
+} from '@/lib/ui/badge-tones'
+import {
   updateListItemComplianceStatus,
   updateListItemResponsible,
   updateListItemPriority,
@@ -72,65 +76,25 @@ function suggestStatusFromRequirements(
   return 'PAGAENDE'
 }
 
-// Status configuration - aligned with law list column dropdowns
-// Story 6.16: Added tooltips for each status option, renamed "Pågående" → "Delvis uppfylld"
-const STATUS_CONFIG: Record<
-  ComplianceStatus,
-  { label: string; className: string; tooltip: string; strikethrough?: boolean }
-> = {
-  EJ_PABORJAD: {
-    label: 'Ej påbörjad',
-    className: 'bg-gray-100 text-gray-700',
-    tooltip: 'Inga rutiner eller dokumentation finns på plats',
-  },
-  PAGAENDE: {
-    label: 'Delvis uppfylld',
-    className: 'bg-blue-100 text-blue-700',
-    tooltip: 'Vissa krav är uppfyllda, men åtgärder eller underlag saknas',
-  },
-  UPPFYLLD: {
-    label: 'Uppfylld',
-    className: 'bg-green-100 text-green-700',
-    tooltip: 'Kraven bedöms vara uppfyllda i nuläget',
-  },
-  EJ_UPPFYLLD: {
-    label: 'Ej uppfylld',
-    className: 'bg-red-100 text-red-700',
-    tooltip: 'Kraven är kända men inte uppfyllda',
-  },
-  EJ_TILLAMPLIG: {
-    label: 'Ej tillämplig',
-    className: 'bg-gray-100 text-gray-500',
-    tooltip: 'Kravet bedöms inte vara tillämpligt för verksamheten',
-    strikethrough: true,
-  },
+// Story 22.1 follow-up — STATUS_CONFIG and PRIORITY_CONFIG class strings
+// migrated to the Badge primitive. Only `tooltip` text is preserved here;
+// labels + tone/variant come from `getStatusBadgeProps` /
+// `getPriorityBadgeProps` at render time.
+const STATUS_TOOLTIPS: Record<ComplianceStatus, string> = {
+  EJ_PABORJAD: 'Inga rutiner eller dokumentation finns på plats',
+  PAGAENDE: 'Vissa krav är uppfyllda, men åtgärder eller underlag saknas',
+  UPPFYLLD: 'Kraven bedöms vara uppfyllda i nuläget',
+  EJ_UPPFYLLD: 'Kraven är kända men inte uppfyllda',
+  EJ_TILLAMPLIG: 'Kravet bedöms inte vara tillämpligt för verksamheten',
 }
 
-// Priority configuration - aligned with list table
-// Story 6.16: Added tooltips for each priority option
-const PRIORITY_CONFIG = {
-  LOW: {
-    label: 'Låg',
-    className: 'bg-slate-100 text-slate-700',
-    iconClassName: 'text-slate-500',
-    tooltip: 'Begränsad risk eller låg påverkan vid bristande efterlevnad',
-  },
-  MEDIUM: {
-    label: 'Medel',
-    className: 'bg-amber-100 text-amber-700',
-    iconClassName: 'text-amber-500',
-    tooltip: 'Måttlig risk som kan påverka verksamheten eller kräva åtgärder',
-  },
-  HIGH: {
-    label: 'Hög',
-    className: 'bg-rose-100 text-rose-700',
-    iconClassName: 'text-rose-500',
-    tooltip:
-      'Hög risk med allvarliga konsekvenser, till exempel sanktioner, vite eller personansvar',
-  },
+const PRIORITY_TOOLTIPS = {
+  LOW: 'Begränsad risk eller låg påverkan vid bristande efterlevnad',
+  MEDIUM: 'Måttlig risk som kan påverka verksamheten eller kräva åtgärder',
+  HIGH: 'Hög risk med allvarliga konsekvenser, till exempel sanktioner, vite eller personansvar',
 } as const
 
-type Priority = keyof typeof PRIORITY_CONFIG
+type Priority = keyof typeof PRIORITY_TOOLTIPS
 
 // Story 6.16: Column header tooltip content (same as in document-list-table.tsx)
 const EFTERLEVNAD_INFO_CONTENT = {
@@ -208,8 +172,8 @@ export function DetailsBox({
   }
 
   // Use local state values for display (optimistic)
-  const statusConfig = STATUS_CONFIG[localStatus]
-  const priorityConfig = PRIORITY_CONFIG[localPriority]
+  const statusBadge = getStatusBadgeProps('compliance-status', localStatus)
+  const priorityBadge = getPriorityBadgeProps(localPriority)
 
   // Story 17.18: surface the "Ny" badge when the latest tracked change is more
   // recent than the user's onboarding floor. A null acknowledgement floor (law
@@ -264,12 +228,13 @@ export function DetailsBox({
                         {requirementProgress.total} uppfyllda — föreslår{' '}
                         <span className="font-medium">
                           {
-                            STATUS_CONFIG[
+                            getStatusBadgeProps(
+                              'compliance-status',
                               suggestStatusFromRequirements(
                                 requirementProgress.fulfilled,
                                 requirementProgress.total
                               )
-                            ].label
+                            ).label
                           }
                         </span>
                       </p>
@@ -292,40 +257,45 @@ export function DetailsBox({
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <SelectValue>
-                      <span
-                        className={cn(
-                          'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-                          statusConfig.className,
-                          statusConfig.strikethrough && 'line-through'
-                        )}
+                      <Badge
+                        tone={statusBadge.tone}
+                        variant={statusBadge.variant}
                       >
-                        {statusConfig.label}
-                      </span>
+                        {statusBadge.label}
+                      </Badge>
                     </SelectValue>
                   )}
                 </SelectTrigger>
                 <SelectContent align="end">
                   <TooltipProvider delayDuration={300}>
-                    {Object.entries(STATUS_CONFIG).map(([value, config]) => (
-                      <Tooltip key={value}>
-                        <TooltipTrigger asChild>
-                          <SelectItem value={value}>
-                            <span
-                              className={cn(
-                                'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-                                config.className,
-                                config.strikethrough && 'line-through'
-                              )}
+                    {(Object.keys(STATUS_TOOLTIPS) as ComplianceStatus[]).map(
+                      (value) => {
+                        const props = getStatusBadgeProps(
+                          'compliance-status',
+                          value
+                        )
+                        return (
+                          <Tooltip key={value}>
+                            <TooltipTrigger asChild>
+                              <SelectItem value={value}>
+                                <Badge
+                                  tone={props.tone}
+                                  variant={props.variant}
+                                >
+                                  {props.label}
+                                </Badge>
+                              </SelectItem>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="left"
+                              className="max-w-[220px]"
                             >
-                              {config.label}
-                            </span>
-                          </SelectItem>
-                        </TooltipTrigger>
-                        <TooltipContent side="left" className="max-w-[220px]">
-                          <p>{config.tooltip}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    ))}
+                              <p>{STATUS_TOOLTIPS[value]}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )
+                      }
+                    )}
                   </TooltipProvider>
                 </SelectContent>
               </Select>
@@ -354,39 +324,43 @@ export function DetailsBox({
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <SelectValue>
-                    <div className="flex items-center gap-1.5">
-                      <Flag
-                        className={cn(
-                          'h-3.5 w-3.5',
-                          priorityConfig.iconClassName
-                        )}
-                      />
-                      <span className="text-sm text-foreground">
-                        {priorityConfig.label}
-                      </span>
-                    </div>
+                    <Badge
+                      tone={priorityBadge.tone}
+                      variant={priorityBadge.variant}
+                      className="gap-1.5"
+                    >
+                      <Flag className="h-3 w-3" aria-hidden="true" />
+                      {priorityBadge.label}
+                    </Badge>
                   </SelectValue>
                 )}
               </SelectTrigger>
               <SelectContent align="end">
                 <TooltipProvider delayDuration={300}>
-                  {Object.entries(PRIORITY_CONFIG).map(([value, config]) => (
-                    <Tooltip key={value}>
-                      <TooltipTrigger asChild>
-                        <SelectItem value={value}>
-                          <div className="flex items-center gap-2">
-                            <Flag
-                              className={cn('h-4 w-4', config.iconClassName)}
-                            />
-                            <span>{config.label}</span>
-                          </div>
-                        </SelectItem>
-                      </TooltipTrigger>
-                      <TooltipContent side="left" className="max-w-[250px]">
-                        <p>{config.tooltip}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
+                  {(Object.keys(PRIORITY_TOOLTIPS) as Priority[]).map(
+                    (value) => {
+                      const props = getPriorityBadgeProps(value)
+                      return (
+                        <Tooltip key={value}>
+                          <TooltipTrigger asChild>
+                            <SelectItem value={value}>
+                              <Badge
+                                tone={props.tone}
+                                variant={props.variant}
+                                className="gap-1.5"
+                              >
+                                <Flag className="h-3 w-3" aria-hidden="true" />
+                                {props.label}
+                              </Badge>
+                            </SelectItem>
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="max-w-[250px]">
+                            <p>{PRIORITY_TOOLTIPS[value]}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      )
+                    }
+                  )}
                 </TooltipProvider>
               </SelectContent>
             </Select>

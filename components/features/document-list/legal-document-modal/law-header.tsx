@@ -2,13 +2,24 @@
 
 /**
  * Story 6.3: Law Header
- * Title display with compliance status and priority badges
- * Aligned with Task Modal header design
+ * Title display with compliance status and priority badges.
+ * Aligned with Task Modal header design.
+ *
+ * Story 22.1 follow-up — Migrated pills from hand-rolled `bg-X-100 text-X-700`
+ * spans to the tone-aware `<Badge>` primitive. Single source of truth for
+ * status/priority colors via `lib/ui/badge-tones.ts`. Dot/icon prefix
+ * preserved as inline content; the bg/text class strings now flow from the
+ * shared map and adapt to light + dark theme automatically.
  */
 
 import { Flag } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
+import {
+  getStatusBadgeProps,
+  getPriorityBadgeProps,
+} from '@/lib/ui/badge-tones'
 import type { ComplianceStatus } from '@prisma/client'
 
 interface LawHeaderProps {
@@ -20,62 +31,15 @@ interface LawHeaderProps {
   headerActions?: ReactNode
 }
 
-// Compliance status - aligned with law list column dropdowns
-const COMPLIANCE_CONFIG: Record<
-  ComplianceStatus,
-  {
-    label: string
-    className: string
-    dotColor: string
-    strikethrough?: boolean
-  }
-> = {
-  EJ_PABORJAD: {
-    label: 'Ej påbörjad',
-    className: 'bg-gray-100 text-gray-700',
-    dotColor: 'bg-gray-700',
-  },
-  PAGAENDE: {
-    label: 'Pågående',
-    className: 'bg-blue-100 text-blue-700',
-    dotColor: 'bg-blue-700',
-  },
-  UPPFYLLD: {
-    label: 'Uppfylld',
-    className: 'bg-green-100 text-green-700',
-    dotColor: 'bg-green-700',
-  },
-  EJ_UPPFYLLD: {
-    label: 'Ej uppfylld',
-    className: 'bg-red-100 text-red-700',
-    dotColor: 'bg-red-700',
-  },
-  EJ_TILLAMPLIG: {
-    label: 'Ej tillämplig',
-    className: 'bg-gray-100 text-gray-500',
-    dotColor: 'bg-gray-500',
-    strikethrough: true,
-  },
+// Tone-color → dot bg class. Mirrors the inline dot prefix that pre-22.1
+// renders used. Independent of light/dark theme — solid color reads on both.
+const DOT_BG_CLASS: Record<string, string> = {
+  neutral: 'bg-slate-500',
+  info: 'bg-blue-500',
+  success: 'bg-emerald-500',
+  warning: 'bg-amber-500',
+  danger: 'bg-rose-500',
 }
-
-// Priority configuration - aligned with list table and details-box
-const PRIORITY_CONFIG = {
-  LOW: {
-    label: 'Låg',
-    className: 'bg-slate-100 text-slate-700',
-    iconClassName: 'text-slate-500',
-  },
-  MEDIUM: {
-    label: 'Medel',
-    className: 'bg-amber-100 text-amber-700',
-    iconClassName: 'text-amber-500',
-  },
-  HIGH: {
-    label: 'Hög',
-    className: 'bg-rose-100 text-rose-700',
-    iconClassName: 'text-rose-500',
-  },
-} as const
 
 export function LawHeader({
   title,
@@ -84,40 +48,42 @@ export function LawHeader({
   priority,
   headerActions,
 }: LawHeaderProps) {
-  const complianceConfig = COMPLIANCE_CONFIG[complianceStatus]
-  const priorityConfig = PRIORITY_CONFIG[priority]
+  const complianceProps = getStatusBadgeProps(
+    'compliance-status',
+    complianceStatus
+  )
+  const priorityProps = getPriorityBadgeProps(priority)
 
   return (
     <div className="space-y-3">
       {/* Title - aligned with Task Modal (text-xl) */}
       <h2 className="text-xl font-semibold leading-tight">{title}</h2>
 
-      {/* Status and Priority Badges - rounded-full pills matching law list columns */}
+      {/* Status and Priority Badges */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* Compliance Status Pill */}
-        <span
-          className={cn(
-            'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium',
-            complianceConfig.className,
-            complianceConfig.strikethrough && 'line-through'
-          )}
+        <Badge
+          tone={complianceProps.tone}
+          variant={complianceProps.variant}
+          className="gap-1.5"
         >
           <span
-            className={cn('w-2 h-2 rounded-full', complianceConfig.dotColor)}
+            className={cn(
+              'h-2 w-2 rounded-full',
+              DOT_BG_CLASS[complianceProps.tone]
+            )}
+            aria-hidden="true"
           />
-          {complianceConfig.label}
-        </span>
+          {complianceProps.label}
+        </Badge>
 
-        {/* Priority Pill */}
-        <span
-          className={cn(
-            'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium',
-            priorityConfig.className
-          )}
+        <Badge
+          tone={priorityProps.tone}
+          variant={priorityProps.variant}
+          className="gap-1.5"
         >
-          <Flag className={cn('h-3 w-3', priorityConfig.iconClassName)} />
-          {priorityConfig.label}
-        </span>
+          <Flag className="h-3 w-3" aria-hidden="true" />
+          {priorityProps.label}
+        </Badge>
 
         {headerActions && <div className="ml-auto">{headerActions}</div>}
       </div>
