@@ -37,6 +37,8 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
+import { getPriorityBadgeProps } from '@/lib/ui/badge-tones'
 import {
   updateTaskStatusColumn,
   updateTaskAssignee,
@@ -63,35 +65,11 @@ interface DetailsBoxProps {
   onOptimisticDueDateChange?: ((_dueDate: Date | null) => void) | undefined
 }
 
-const PRIORITY_CONFIG: Record<
-  TaskPriority,
-  { label: string; color: string; bgColor: string; iconColor: string }
-> = {
-  LOW: {
-    label: 'Låg',
-    color: 'text-gray-700',
-    bgColor: 'bg-gray-100',
-    iconColor: 'text-gray-500',
-  },
-  MEDIUM: {
-    label: 'Medel',
-    color: 'text-blue-700',
-    bgColor: 'bg-blue-50',
-    iconColor: 'text-blue-500',
-  },
-  HIGH: {
-    label: 'Hög',
-    color: 'text-orange-700',
-    bgColor: 'bg-orange-50',
-    iconColor: 'text-orange-500',
-  },
-  CRITICAL: {
-    label: 'Kritisk',
-    color: 'text-red-700',
-    bgColor: 'bg-red-50',
-    iconColor: 'text-red-500',
-  },
-}
+// Story 22.1 follow-up — PRIORITY_CONFIG class strings replaced by the
+// tone-aware Badge primitive consumed via getPriorityBadgeProps. This
+// surface (task-modal details-box) used the data only for the dropdown
+// trigger pill + each menu item; the migration just delegates to the
+// shared map at render time.
 
 export function DetailsBox({
   task,
@@ -161,7 +139,7 @@ export function DetailsBox({
     (m) => m.id === task.assignee_id
   )
   const currentColumn = columns.find((c) => c.id === task.column_id)
-  const priorityConfig = PRIORITY_CONFIG[task.priority]
+  const priorityProps = getPriorityBadgeProps(task.priority)
 
   return (
     <Card className="border-border/60">
@@ -319,23 +297,34 @@ export function DetailsBox({
             <Select value={task.priority} onValueChange={handlePriorityChange}>
               <SelectTrigger className="!h-auto !p-0 !border-0 !shadow-none !bg-transparent hover:!bg-transparent focus:!ring-0 !w-auto gap-1.5 [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:opacity-70">
                 <SelectValue>
-                  <div className="flex items-center gap-1.5">
-                    <Flag className={cn('h-4 w-4', priorityConfig.iconColor)} />
-                    <span className="text-sm text-foreground">
-                      {priorityConfig.label}
-                    </span>
-                  </div>
+                  <Badge
+                    tone={priorityProps.tone}
+                    variant={priorityProps.variant}
+                    className="gap-1.5"
+                  >
+                    <Flag className="h-3 w-3" aria-hidden="true" />
+                    {priorityProps.label}
+                  </Badge>
                 </SelectValue>
               </SelectTrigger>
               <SelectContent align="end">
-                {Object.entries(PRIORITY_CONFIG).map(([value, config]) => (
-                  <SelectItem key={value} value={value}>
-                    <div className="flex items-center gap-2">
-                      <Flag className={cn('h-4 w-4', config.iconColor)} />
-                      <span>{config.label}</span>
-                    </div>
-                  </SelectItem>
-                ))}
+                {(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as TaskPriority[]).map(
+                  (value) => {
+                    const props = getPriorityBadgeProps(value)
+                    return (
+                      <SelectItem key={value} value={value}>
+                        <Badge
+                          tone={props.tone}
+                          variant={props.variant}
+                          className="gap-1.5"
+                        >
+                          <Flag className="h-3 w-3" aria-hidden="true" />
+                          {props.label}
+                        </Badge>
+                      </SelectItem>
+                    )
+                  }
+                )}
               </SelectContent>
             </Select>
           </DetailRow>

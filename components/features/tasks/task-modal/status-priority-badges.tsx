@@ -2,13 +2,20 @@
 
 /**
  * Story 6.6: Status and Priority Badges
- * Display-only badges for task status and priority
+ * Display-only badges for task status and priority.
+ *
+ * Story 22.1 follow-up — Priority pill migrated to the tone-aware Badge
+ * primitive (closes the audit-found "Hög orange vs rose" drift on the
+ * Tasks surface; aligns with /tasks list-tab pill rendering). Status pill
+ * keeps its inline-style hex rendering — task statuses are user-defined
+ * column colors, a different domain from the enum-based status pills.
  */
 
 import { Badge } from '@/components/ui/badge'
 import { Flag, CheckCircle2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
+import { getPriorityBadgeProps } from '@/lib/ui/badge-tones'
 import type { TaskPriority } from '@prisma/client'
 
 interface StatusPriorityBadgesProps {
@@ -20,29 +27,6 @@ interface StatusPriorityBadgesProps {
   headerActions?: ReactNode
 }
 
-const PRIORITY_CONFIG = {
-  LOW: {
-    label: 'Låg',
-    className: 'bg-gray-100 text-gray-700 hover:bg-gray-100',
-    iconClassName: 'text-gray-500',
-  },
-  MEDIUM: {
-    label: 'Medel',
-    className: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
-    iconClassName: 'text-blue-500',
-  },
-  HIGH: {
-    label: 'Hög',
-    className: 'bg-orange-100 text-orange-700 hover:bg-orange-100',
-    iconClassName: 'text-orange-500',
-  },
-  CRITICAL: {
-    label: 'Kritisk',
-    className: 'bg-red-100 text-red-700 hover:bg-red-100',
-    iconClassName: 'text-red-500',
-  },
-} as const
-
 export function StatusPriorityBadges({
   status,
   statusColor,
@@ -50,11 +34,11 @@ export function StatusPriorityBadges({
   isDone,
   headerActions,
 }: StatusPriorityBadgesProps) {
-  const priorityConfig = PRIORITY_CONFIG[priority]
+  const priorityProps = getPriorityBadgeProps(priority)
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {/* Status Badge */}
+      {/* Status Badge — user-customised column hex color */}
       <span
         className={cn(
           'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium',
@@ -73,13 +57,14 @@ export function StatusPriorityBadges({
         {status}
       </span>
 
-      {/* Priority Badge */}
+      {/* Priority Badge — tone-aware via shared map */}
       <Badge
-        variant="secondary"
-        className={cn('gap-1.5', priorityConfig.className)}
+        tone={priorityProps.tone}
+        variant={priorityProps.variant}
+        className="gap-1.5"
       >
-        <Flag className={cn('h-3 w-3', priorityConfig.iconClassName)} />
-        {priorityConfig.label}
+        <Flag className="h-3 w-3" aria-hidden="true" />
+        {priorityProps.label}
       </Badge>
 
       {headerActions && <div className="ml-auto">{headerActions}</div>}
