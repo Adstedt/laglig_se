@@ -8,9 +8,10 @@
  *
  * Story 22.1 — UI Primitives Alignment.
  *
- * Class strings target the dark theme (the active theme today). Light
- * analogues are tracked in BADGE_TONES_LIGHT for future-use; no surface
- * renders in light mode today, so the active map is BADGE_TONES.
+ * Each cell carries BOTH light + dark theme classes via Tailwind's `dark:`
+ * prefix, so a single Badge call renders correctly in both themes without
+ * consumer awareness. Light: `-100`/`-700` Tailwind pairs. Dark: `-500/15`
+ * tinted bg + `-300` text.
  */
 
 export const TONES = [
