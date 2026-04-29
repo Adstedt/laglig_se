@@ -7,6 +7,12 @@ const config: Config = {
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
+    // Story 22.1 — `lib/ui/badge-tones.ts` holds the canonical tone × variant
+    // class string map (bg-X-500/15, text-X-300, etc). Without scanning lib/,
+    // Tailwind doesn't see the literals and doesn't generate the rules — the
+    // classes land in the DOM but render as transparent. Adding lib/** to the
+    // scan list closes that gap.
+    './lib/**/*.{js,ts,jsx,tsx,mdx}',
     './node_modules/streamdown/dist/**/*.{js,cjs}',
   ],
   theme: {
