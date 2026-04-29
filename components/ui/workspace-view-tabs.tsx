@@ -9,15 +9,17 @@ import { cn } from '@/lib/utils'
  *
  * Canonical view-switcher tab strip used by every workspace tabular
  * surface (`/laglistor`, `/laglistor/kontroller/[cycleId]`, `/tasks`,
- * `/workspace/styrdokument`). Wraps shadcn `<Tabs>` with the agreed-upon
- * "loose" chrome:
+ * `/workspace/styrdokument`). Wraps shadcn `<Tabs>` with the agreed
+ * chrome:
  *
- *   - No enclosing muted-bg pill around the strip (each surface had a
- *     different one before consolidation: Tasks `bg-muted/50`, Laglistor
- *     bordered `bg-muted/30 p-0.5`, Styrdokument default `bg-muted`).
- *   - Active trigger renders a soft dark-fill button via shadcn's
- *     default `data-[state=active]:bg-background` token.
- *   - Inactive triggers are transparent text + optional icon.
+ *   - Subtle `bg-muted/50` enclosing pill so the strip reads as one
+ *     coherent control (consolidated from 3 different per-surface
+ *     pre-22.3 implementations: Tasks `bg-muted/50`, Laglistor bordered
+ *     `bg-muted/30 p-0.5`, Styrdokument bare `bg-transparent`).
+ *   - Active trigger: dark-fill button via shadcn's
+ *     `data-[state=active]:bg-background data-[state=active]:shadow-sm`.
+ *   - Inactive triggers: transparent text + leading icon (each tab
+ *     SHOULD pass an icon — pure text-only triggers are out-of-spec).
  *
  * The thin wrappers below re-export shadcn's primitives unchanged but with
  * default class strings pre-applied. Consumers can still pass `className`
@@ -33,7 +35,7 @@ const WorkspaceViewTabsList = React.forwardRef<
   return (
     <TabsList
       ref={ref}
-      className={cn('h-auto bg-transparent p-1', className)}
+      className={cn('h-auto bg-muted/50 p-1', className)}
       {...props}
     />
   )
