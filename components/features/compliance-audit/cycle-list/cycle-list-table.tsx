@@ -28,8 +28,8 @@ import {
 } from '@/components/ui/table'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import { CycleStatusBadge } from '@/components/features/compliance-audit/cycle-detail/cycle-status-badge'
+import { FilterChip, FilterChipGroup } from '@/components/ui/filter-chip'
 import type { CycleSummary } from '@/app/actions/compliance-audit-cycle'
 import { ComplianceCycleStatus, AuditType } from '@prisma/client'
 
@@ -116,44 +116,19 @@ export function CycleListTable({ cycles, canCreate }: CycleListTableProps) {
         ) : null}
       </div>
 
-      {/* Filter chips */}
-      <div
-        role="tablist"
-        aria-label="Filtrera kontroller efter status"
-        className="flex flex-wrap gap-2"
-      >
-        {FILTERS.map((f) => {
-          const isActive = f.key === filter
-          const count = counts[f.key]
-          return (
-            <button
-              key={f.key}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => setFilter(f.key)}
-              className={cn(
-                'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors',
-                isActive
-                  ? 'border-foreground bg-foreground text-background'
-                  : 'border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground'
-              )}
-            >
-              <span>{f.label}</span>
-              <span
-                className={cn(
-                  'rounded-full px-1.5 text-xs',
-                  isActive
-                    ? 'bg-background/20 text-background'
-                    : 'bg-muted text-muted-foreground'
-                )}
-              >
-                {count}
-              </span>
-            </button>
-          )
-        })}
-      </div>
+      {/* Filter chips — Story 22.2 migration to <FilterChipGroup>. */}
+      <FilterChipGroup aria-label="Filtrera kontroller efter status">
+        {FILTERS.map((f) => (
+          <FilterChip
+            key={f.key}
+            pressed={f.key === filter}
+            onPressedChange={() => setFilter(f.key)}
+            count={counts[f.key]}
+          >
+            {f.label}
+          </FilterChip>
+        ))}
+      </FilterChipGroup>
 
       {/* Table — brand wrapper: rounded-md border overflow-x-auto.
           Matches /tasks list-tab, /workspace/styrdokument document-table,

@@ -1,0 +1,28 @@
+schema: 1
+story: '22.2'
+story_title: 'FilterChip primitive + Tabs/FilterChip semantic split'
+gate: PASS
+status_reason: 'Single-primitive ship with two surface migrations (cycle-list filter chips, cycle-findings type/severity/state filter chips). All 6 ACs traced, AC 6 grep guard clean (only stray match is in MY OWN comment text in cycle-findings-tab.tsx noting the migration). 14/14 FilterChip primitive tests pass. Cycle-detail shadcn <Tabs> for view-switching (Items/Findings/Rapport/Aktivitet) explicitly unchanged. Zero behaviour change in filter logic; only chip render markup differs. Gate PASS.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-29T22:10:00Z'
+story_status: 'Done'
+waiver: { active: false }
+history:
+  - at: '2026-04-29T22:10:00Z'
+    gate: PASS
+top_issues: []
+nfrs:
+  maintainability: PASS
+  performance: PASS
+  security: PASS
+  reliability: PASS
+  testability: PASS
+quality_score: 100
+expires: '2026-05-13T22:10:00Z'
+evidence:
+  tests_added: 14
+  files_changed: 4
+  ac_count: 6
+  iv_count: 5
+  ac_pass_count: 6
+  iv_pass_count: 5
