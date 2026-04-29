@@ -14,6 +14,7 @@
 
 import { type ReactNode } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { BookOpen, History } from 'lucide-react'
 import {
   WorkspaceViewTabs,
   WorkspaceViewTabsList,
@@ -57,9 +58,11 @@ export function LawListTabs({
       <WorkspaceViewTabs value={activeTab} onValueChange={handleTabChange}>
         <WorkspaceViewTabsList>
           <WorkspaceViewTabsTrigger value="lists">
+            <BookOpen className="h-4 w-4" />
             Laglistor
           </WorkspaceViewTabsTrigger>
           <WorkspaceViewTabsTrigger value="changes" className="relative">
+            <History className="h-4 w-4" />
             Ändringar
             {initialChangeCount > 0 && (
               <span className="absolute -top-2 -right-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-medium text-destructive-foreground">
