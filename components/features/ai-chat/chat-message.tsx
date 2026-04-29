@@ -30,6 +30,7 @@ import { code } from '@streamdown/code'
 import { CitationPillInline } from './citation-pill'
 import { CitationSourceProvider } from '@/lib/ai/citation-context'
 import { rehypeCitationPills } from '@/lib/ai/rehype-citation-pills'
+import { useRotatingThinkingPhrase } from '@/lib/ai-chat/thinking-phrases'
 import {
   Collapsible,
   CollapsibleContent,
@@ -662,6 +663,22 @@ function ReasoningBlock({
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
   const isThinking = state === 'streaming'
+  const phrase = useRotatingThinkingPhrase(isThinking)
+
+  // While thinking, mask the underlying (English) reasoning trace with a
+  // rotating Swedish status line. The raw trace becomes inspectable only after
+  // streaming completes — the post-done disclosure stays opt-in (collapsed by
+  // default) so the chat surface reads as Swedish-first.
+  if (isThinking) {
+    return (
+      <div className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-muted-foreground">
+        <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-amber-500" />
+        <span className="font-medium" aria-live="polite">
+          {phrase}…
+        </span>
+      </div>
+    )
+  }
 
   return (
     <div className="rounded-lg border border-border/60 bg-muted/30 overflow-hidden">
@@ -669,15 +686,9 @@ function ReasoningBlock({
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
       >
-        {isThinking ? (
-          <Brain className="h-3.5 w-3.5 shrink-0 text-amber-500 animate-pulse" />
-        ) : (
-          <Brain className="h-3.5 w-3.5 shrink-0" />
-        )}
+        <Brain className="h-3.5 w-3.5 shrink-0" />
 
-        <span className="font-medium flex-1 text-left">
-          {isThinking ? 'Tänker...' : 'Tänkte'}
-        </span>
+        <span className="font-medium flex-1 text-left">Tänkte</span>
 
         <ChevronRight
           className={cn(
