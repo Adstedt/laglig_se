@@ -1,0 +1,200 @@
+schema: 1
+story: '22.1'
+story_title: 'Badge `tone` primitive + Priority enum alignment'
+gate: PASS
+status_reason: 'Full requirements traceability across all 10 ACs + 4 IV checks. Implementation cleanly composes onto the shadcn primitive extension pattern; legacy variant API preserved (regression-pinned via 4 dedicated tests). Single token module backs all 5 status domains + Priority. The audit-flagged Hög-orange-vs-rose drift on Uppgifter is closed by routing both Laglistor and Uppgifter through the same canonical PriorityEditor + getPriorityBadgeProps. 53 new + 8 updated tests; 85/85 touched-test pass rate; 0 regressions across the full unit suite (15 pre-existing failures all integration/DB-dependent, verified failing on main pre-22.1). 3 medium-confidence concerns (out-of-scope dirt that the dev correctly flagged in the Dev Agent Record but did not migrate) — all are non-blocking for 22.1 and explicitly live within Story 22.1''s ACs as out-of-scope. Gate PASS with one watch-item.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-29T22:00:00Z'
+story_status: 'Ready for Review'
+
+waiver: { active: false }
+
+history:
+  - at: '2026-04-29T22:00:00Z'
+    gate: PASS
+    note: 'Initial review. PASS with 1 watch-item (out-of-scope dirt acknowledged; deferred-to-follow-up by design). No CONCERNS, no FAIL.'
+
+# ============================================================================
+# Requirements traceability — Given/When/Then per AC
+# ============================================================================
+
+requirements_traceability:
+  AC_1_badge_primitive_extended:
+    status: PASS
+    evidence:
+      - file: components/ui/badge.tsx
+        lines: '47-78'
+        finding: 'cva config has tone (5 values) + variant axes; compoundVariants populated programmatically from BADGE_TONES via flatMap (15 cells). Default variant retained as legacy "default". JSDoc steers status/priority/severity callers to the tone API.'
+      - file: tests/unit/components/ui/badge.test.tsx
+        lines: '17-39'
+        finding: 'All 15 tone × variant cells render with the expected BADGE_TONES class string (parameterised via TONES × VARIANTS const arrays).'
+    observation: 'No `whitespace-nowrap` baked into base classes (consumer decides) — confirms AC sub-bullet.'
+
+  AC_2_token_module_created:
+    status: PASS
+    evidence:
+      - file: lib/ui/badge-tones.ts
+        finding: '232 lines. Exports Tone, Variant, BADGE_TONES, BADGE_TONES_LIGHT (analogue retained for future use), STATUS_DOMAINS, getStatusBadgeProps, getPriorityBadgeProps, PriorityValue. Uses `as const` array + indexed-type pattern per project standard.'
+      - file: tests/unit/lib/ui/badge-tones.test.ts
+        finding: 'Exhaustive enum coverage: 5 compliance + 5 cycle + 5 document + 2 severity + 3 type + 4 priority = 24 enum cases pinned. Plus fallback case + TONES/VARIANTS shape pins.'
+    note: 'Project Structure decision deferred from story authoring (lib/ui/ vs lib/utils/) was resolved as lib/ui/ — reserves namespace for future UI-token modules (filter-chip-tokens, page-header-tokens, etc).'
+
+  AC_3_compliance_status_migrated:
+    status: PASS
+    evidence:
+      - file: components/features/document-list/table-cell-editors/compliance-status-editor.tsx
+        finding: 'Trigger pill + each SelectItem render via <Badge {...getStatusBadgeProps("compliance-status", value)} />. OPTIONS array stripped of .color and .strikethrough fields (now { value, label, tooltip }).'
+      - file: components/features/document-list/compliance-filters.tsx
+        finding: 'STATUS_FILTER_OPTIONS populator uses getStatusBadgeProps to compute tone/variant per option (drops legacy .color pass-through).'
+      - file: components/ui/filter-popover.tsx
+        finding: 'FilterOption shape migrated: tone/variant added; default renderer wraps option label in <Badge tone variant>; .color retained as free-form pass-through for `renderOption` callers (Tasks hex-color column-status case).'
+      - file: components/features/compliance-audit/cycle-detail/cycle-items-tab.tsx (line 305-319)
+        finding: 'Status pill render migrated; uses getStatusBadgeProps directly off the row value.'
+      - file: components/features/compliance-audit/cycle-item-modal/right-panel.tsx (line 247-258)
+        finding: 'Same migration pattern.'
+    observation: 'Story scoped Task 3 to only the editor file, but IV4 grep guard required full-tree migration of downstream `.color` consumers. Dev expanded scope correctly + flagged it transparently in completion notes.'
+
+  AC_4_cycle_status_migrated:
+    status: PASS
+    evidence:
+      - file: components/features/compliance-audit/cycle-detail/cycle-status-badge.tsx
+        finding: 'STATUS_VARIANTS map deleted; <Badge tone variant data-status> wrapper from cycle-status domain map. data-status preserved for any e2e selector dependency.'
+      - file: tests/unit/components/features/compliance-audit/cycle-detail/cycle-status-badge.test.tsx
+        finding: 'Tests assert on tone-class strings sourced from BADGE_TONES (not the literal classes — pinned to the shared map).'
+
+  AC_5_document_status_migrated:
+    status: PASS
+    evidence:
+      - file: components/features/documents/document-status-badge.tsx
+        finding: 'Refactored to call getStatusBadgeProps("document-status", status). STATUS_CONFIG export preserved as label catalog (only external consumer status-transition-controls.tsx reads .label).'
+    note: 'Acknowledged visual delta: Utkast (was solid `bg-secondary`) and Under granskning (was solid `bg-primary`) become soft-tone pills. Aligns Styrdokument with the rest of the app per epic DoD.'
+
+  AC_6_finding_pills_migrated:
+    status: PASS
+    evidence:
+      - file: components/features/compliance-audit/finding-card.tsx
+        finding: 'TypeBadge + SeverityBadge migrated. Per-type icon prefix preserved (AlertTriangle / Eye / Lightbulb), wrapped in <Badge tone variant>. Filter chips on cycle-findings-tab.tsx untouched (Story 22.2 territory) — confirmed by grep.'
+    observation: 'Story AC 6 originally listed severity values as KRITISK / STORRE / MINDRE; actual Prisma enum is MAJOR | MINOR. Dev corrected the badge-tones map to use the real enum keys (with Swedish display labels Större/Mindre via FINDING_SEVERITY_LABELS precedent). Story author intent preserved; enum reality reflected.'
+
+  AC_7_priority_editor_unified:
+    status: PASS
+    evidence:
+      - audit_finding: 'Confirmed parallel TASK_PRIORITY_OPTIONS in components/features/tasks/task-workspace/list-tab.tsx with HIGH=bg-orange-100/text-orange-700 (vs Laglistor''s bg-rose-100/text-rose-700) and MEDIUM=bg-blue-100/text-blue-700 (vs Laglistor''s bg-amber-100/text-amber-700). The audit-found drift.'
+      - resolution: 'Both surfaces now route through the canonical components/features/document-list/table-cell-editors/priority-editor.tsx — single function definition site (verified: grep returns one export). Editor accepts `options` prop for the 4-value Tasks list (incl. CRITICAL).'
+      - file: lib/ui/badge-tones.ts
+        finding: 'getPriorityBadgeProps handles all 4 values: CRITICAL → danger+solid, HIGH → danger+soft, MEDIUM → warning+soft, LOW → neutral+soft. Single mapping shared by Laglistor (LOW/MEDIUM/HIGH) and Uppgifter (LOW/MEDIUM/HIGH/CRITICAL).'
+
+  AC_8_medium_relabel:
+    status: PASS
+    evidence:
+      - finding: 'Swept across 10 files: task-creation-form, create-task-modal, all-work-tab, task-filters-toolbar, bulk-action-bar, task-modal/{details-box,right-panel-rail,status-priority-badges}, summary-tab, notify-weekly-digest cron. DB enum stays English (MEDIUM); only display label is Swedish (Medel).'
+      - verification: 'Final grep: 0 priority-context "Medium" label literals remaining.'
+
+  AC_9_test_coverage:
+    status: PASS
+    evidence:
+      - badge_primitive_tests: '19 tests in tests/unit/components/ui/badge.test.tsx — 15 tone×variant cells + default behaviour + 4 legacy-variant regression-guards + className merge + content rendering. Story specced minimum 15.'
+      - helper_tests: '34 tests in tests/unit/lib/ui/badge-tones.test.ts — 24 enum mappings + fallback case + TONES/VARIANTS shape pins. Story specced minimum 24 enum cases.'
+      - touched_component_test_updates: '8 tests across 3 existing test files updated to assert on tone-class strings (sourced from BADGE_TONES, not literal class strings — pinned to the shared map so future tweaks don''t require test changes).'
+
+  AC_10_existing_test_updates:
+    status: PASS
+    evidence:
+      - cycle_status_badge: 'Updated to assert tone classes via BADGE_TONES[tone][variant].split. Test names retained but assertion mechanism upgraded.'
+      - compliance_status_editor: 'Strikethrough test rewritten as outline-tone test (intentional visual delta — outline conveys "set apart" instead of strikethrough decoration).'
+      - document_status_badge: 'APPROVED + SUPERSEDED tests updated to assert success-soft / neutral-outline tone classes respectively.'
+      - priority_editor: 'Existing test passed without modification (asserts on label rendering, not class strings — robust to migration).'
+
+# ============================================================================
+# Integration verification
+# ============================================================================
+
+integration_verification:
+  IV1_inline_dropdown_mutations:
+    status: PASS
+    note: 'Editor onChange handlers and trigger composition unchanged. Snapshot test shape preserved; only pill class strings differ.'
+  IV2_priority_edits_both_surfaces:
+    status: PASS
+    note: 'Both Laglistor and Uppgifter now route through the canonical PriorityEditor. Verified: grep returns ONE PriorityEditor export.'
+  IV3_cycle_status_consistency:
+    status: PASS
+    note: 'CycleStatusBadge consumed by both cycle-list-table.tsx row + cycle-detail-header.tsx inline pill — single source of truth. data-status attribute preserved for selector consumers.'
+  IV4_grep_guards:
+    status: PASS_WITH_OBSERVATIONS
+    findings:
+      - guard_1_old_pattern: 'Old light-theme `bg-X-100` hand-rolled pills outside primitive layer — 1 residual hit at components/features/landing/risk-section.tsx:67. CONFIRMED out-of-scope (landing-page hero strip, not a status pill). Regex caught incidentally; not a 22.1-owned issue.'
+      - guard_2_new_pattern: 'New dark-theme `bg-X-500/15` hand-rolled (anti-drift) — ZERO hits outside lib/ui/badge-tones.ts and components/ui/badge.tsx. Anti-drift contract holds.'
+      - guard_3_medium_label: 'Medium priority-label literals — ZERO remaining hits.'
+
+# ============================================================================
+# NFR assessment
+# ============================================================================
+
+nfrs:
+  maintainability: PASS
+  performance: PASS
+  security: PASS
+  reliability: PASS
+  testability: PASS
+  notes: 'Pure UI refactor; no server-side changes, no API surface changes, no data shape changes. Performance neutral (one extra import at consumer call sites). Maintainability significantly improved — single token map vs 5+ scattered class-string maps.'
+
+# ============================================================================
+# Watch items / out-of-scope dirt acknowledged by dev
+# ============================================================================
+
+top_issues:
+  - id: 'BEDOMNING-001'
+    severity: low
+    finding: 'components/features/compliance-audit/bedomning-copy.ts exports color strings (bg-X-100/text-X-700) for EfterlevnadsBedomning per-item bedömning pills. Not migrated in 22.1. Story''s 5 status domains do not include bedömning explicitly; IV4 grep guard would flag as drift if/when bedömning pills are caught.'
+    suggested_action: 'Add bedömning as a 6th badge-tones domain in a follow-up story (recommended before Epic 22 closes). Not a 22.1 blocker; dev correctly flagged in completion notes.'
+    suggested_owner: dev
+
+  - id: 'FINDING-STATUS-001'
+    severity: low
+    finding: 'components/features/compliance-audit/finding-copy.ts FINDING_STATUS_BADGES (5-state finding closure-metadata badge — Phase 2 / Epic 23 foundation) uses hand-rolled tailwind class strings outside the badge-tones map.'
+    suggested_action: 'Migrate during Epic 23 work where the broader finding-as-first-class refactor lives. Out-of-scope for 22.1 per story author intent (post-21.27 addition).'
+    suggested_owner: dev
+
+  - id: 'ATGARDS-BADGE-001'
+    severity: low
+    finding: 'finding-card.tsx Åtgärdsuppgift inline badge (line 148-156) uses border-blue-200/bg-blue-50 hand-rolled. Non-status semantic badge ("this finding has a linked task").'
+    suggested_action: 'Consider migrating to <Badge tone="info" variant="soft"> with the icon retained — visually equivalent. Bundle with BEDOMNING-001 cleanup.'
+    suggested_owner: dev
+
+# Resolved during dev — kept as closure record
+resolved_issues:
+  - id: 'ENUM-MISALIGN-001'
+    severity: low
+    closed_by: 'dev — discovered during Task 6 implementation'
+    resolution: 'Story AC 6 listed FindingSeverity values as KRITISK/STORRE/MINDRE; actual Prisma enum is MAJOR/MINOR. Dev corrected the badge-tones map to use Prisma enum keys + Swedish display labels (Större/Mindre) via FINDING_SEVERITY_LABELS precedent.'
+
+  - id: 'COMPLIANCE-DELVIS-001'
+    severity: low
+    closed_by: 'dev — discovered during Task 8 test verification'
+    resolution: 'Initial badge-tones.ts COMPLIANCE_STATUS_MAP listed DELVIS_UPPFYLLD and EJ_RELEVANT as separate keys; Prisma enum has 5 values (no DELVIS_UPPFYLLD — that is a Story 6.16 RELABEL of PAGAENDE from "Pågående" to "Delvis uppfylld" in the compliance-status context only). Dev corrected: PAGAENDE → label "Delvis uppfylld" in compliance-status; cycle-status PAGAENDE retains "Pågående".'
+
+quality_score: 95  # 100 - (10 × 0 CONCERNS) - (5 × 1 watch-item bundle) = 95.
+expires: '2026-05-13T22:00:00Z'
+
+evidence:
+  tests_reviewed: 85  # All touched-component tests + new Badge + new badge-tones
+  tests_added: 53     # 19 Badge + 34 badge-tones helpers
+  tests_updated: 8    # cycle-status-badge / compliance-status-editor / document-status-badge
+  files_changed: 28
+  loc_added: 905
+  loc_removed: 278
+  ac_count: 10
+  iv_count: 4
+  ac_pass_count: 10
+  iv_pass_count: 4
+
+# ============================================================================
+# Recommendations
+# ============================================================================
+
+recommendations:
+  must_fix: []  # No blockers
+  should_consider:
+    - 'Bundle BEDOMNING-001 + ATGARDS-BADGE-001 into a small follow-up story before Epic 22 closes — completes the "no hand-rolled pills outside primitive layer" promise of IV4 across the full compliance-audit surface.'
+  may_defer:
+    - 'FINDING-STATUS-001 — defer to Epic 23 since the broader finding-as-first-class refactor lives there.'
