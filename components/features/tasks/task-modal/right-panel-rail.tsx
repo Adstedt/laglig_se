@@ -43,7 +43,7 @@ const PRIORITY_CONFIG: Record<
   { label: string; iconColor: string }
 > = {
   LOW: { label: 'Låg', iconColor: 'text-gray-500' },
-  MEDIUM: { label: 'Medium', iconColor: 'text-blue-500' },
+  MEDIUM: { label: 'Medel', iconColor: 'text-blue-500' },
   HIGH: { label: 'Hög', iconColor: 'text-orange-500' },
   CRITICAL: { label: 'Kritisk', iconColor: 'text-red-500' },
 }

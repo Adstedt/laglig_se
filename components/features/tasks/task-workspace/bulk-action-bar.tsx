@@ -41,7 +41,7 @@ interface BulkActionBarProps {
 const PRIORITIES = [
   { value: 'CRITICAL', label: 'Kritisk' },
   { value: 'HIGH', label: 'Hög' },
-  { value: 'MEDIUM', label: 'Medium' },
+  { value: 'MEDIUM', label: 'Medel' },
   { value: 'LOW', label: 'Låg' },
 ]
 

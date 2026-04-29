@@ -101,7 +101,7 @@ interface CreateTaskModalProps {
 
 const PRIORITY_OPTIONS = [
   { value: 'LOW', label: 'Låg', color: 'text-gray-500' },
-  { value: 'MEDIUM', label: 'Medium', color: 'text-blue-500' },
+  { value: 'MEDIUM', label: 'Medel', color: 'text-blue-500' },
   { value: 'HIGH', label: 'Hög', color: 'text-orange-500' },
   { value: 'CRITICAL', label: 'Kritisk', color: 'text-red-500' },
 ] as const

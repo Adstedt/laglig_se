@@ -2,8 +2,12 @@
 
 /**
  * Story 6.2: Inline Compliance Status Editor for Table View
- * Story 6.16: Added tooltips for each status option
- * Swedish labels with color-coded badges
+ * Story 6.16: Tooltips for each status option
+ * Story 22.1: Pill rendering migrated from hand-rolled `bg-X-100` spans to
+ *   the tone-aware `<Badge>` primitive backed by `lib/ui/badge-tones.ts`.
+ *   The exported `COMPLIANCE_STATUS_OPTIONS` is the canonical
+ *   {value, label, tooltip} catalog consumed across the workspace; tone /
+ *   variant are derived per-render via `getStatusBadgeProps`.
  */
 
 import { useState } from 'react'
@@ -19,47 +23,41 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { Badge } from '@/components/ui/badge'
 import { Loader2 } from 'lucide-react'
 import type { ComplianceStatus } from '@prisma/client'
 import { cn } from '@/lib/utils'
+import { getStatusBadgeProps } from '@/lib/ui/badge-tones'
 
 export const COMPLIANCE_STATUS_OPTIONS: {
   value: ComplianceStatus
   label: string
-  color: string
   tooltip: string
-  strikethrough?: boolean
 }[] = [
   {
     value: 'EJ_PABORJAD',
     label: 'Ej påbörjad',
-    color: 'bg-gray-100 text-gray-700',
     tooltip: 'Inga rutiner eller dokumentation finns på plats',
   },
   {
     value: 'PAGAENDE',
     label: 'Delvis uppfylld',
-    color: 'bg-blue-100 text-blue-700',
     tooltip: 'Vissa krav är uppfyllda, men åtgärder eller underlag saknas',
   },
   {
     value: 'UPPFYLLD',
     label: 'Uppfylld',
-    color: 'bg-green-100 text-green-700',
     tooltip: 'Kraven bedöms vara uppfyllda i nuläget',
   },
   {
     value: 'EJ_UPPFYLLD',
     label: 'Ej uppfylld',
-    color: 'bg-red-100 text-red-700',
     tooltip: 'Kraven är kända men inte uppfyllda',
   },
   {
     value: 'EJ_TILLAMPLIG',
     label: 'Ej tillämplig',
-    color: 'bg-gray-100 text-gray-500',
     tooltip: 'Kravet bedöms inte vara tillämpligt för verksamheten',
-    strikethrough: true,
   },
 ]
 
@@ -75,9 +73,7 @@ export function ComplianceStatusEditor({
   className,
 }: ComplianceStatusEditorProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const currentOption = COMPLIANCE_STATUS_OPTIONS.find(
-    (opt) => opt.value === value
-  )
+  const currentProps = getStatusBadgeProps('compliance-status', value)
 
   const handleChange = async (newValue: ComplianceStatus) => {
     if (newValue === value) return
@@ -101,39 +97,34 @@ export function ComplianceStatusEditor({
         {isLoading ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
-          <span
-            className={cn(
-              'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap',
-              currentOption?.color,
-              currentOption?.strikethrough && 'line-through'
-            )}
+          <Badge
+            tone={currentProps.tone}
+            variant={currentProps.variant}
+            className="whitespace-nowrap"
           >
-            {currentOption?.label}
-          </span>
+            {currentProps.label}
+          </Badge>
         )}
       </SelectTrigger>
       <SelectContent>
         <TooltipProvider delayDuration={300}>
-          {COMPLIANCE_STATUS_OPTIONS.map((option) => (
-            <Tooltip key={option.value}>
-              <TooltipTrigger asChild>
-                <SelectItem value={option.value}>
-                  <span
-                    className={cn(
-                      'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-                      option.color,
-                      option.strikethrough && 'line-through'
-                    )}
-                  >
-                    {option.label}
-                  </span>
-                </SelectItem>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="max-w-[220px]">
-                <p>{option.tooltip}</p>
-              </TooltipContent>
-            </Tooltip>
-          ))}
+          {COMPLIANCE_STATUS_OPTIONS.map((option) => {
+            const props = getStatusBadgeProps('compliance-status', option.value)
+            return (
+              <Tooltip key={option.value}>
+                <TooltipTrigger asChild>
+                  <SelectItem value={option.value}>
+                    <Badge tone={props.tone} variant={props.variant}>
+                      {props.label}
+                    </Badge>
+                  </SelectItem>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-[220px]">
+                  <p>{option.tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            )
+          })}
         </TooltipProvider>
       </SelectContent>
     </Select>
@@ -141,14 +132,15 @@ export function ComplianceStatusEditor({
 }
 
 /**
- * Helper function to get label and color for a compliance status
+ * Helper: returns `{ value, label }` for a compliance status. Color comes
+ * from the badge-tones map at render time — call `getStatusBadgeProps` if
+ * you need tone / variant.
  */
 export function getComplianceStatusDisplay(status: ComplianceStatus) {
   return (
     COMPLIANCE_STATUS_OPTIONS.find((opt) => opt.value === status) ?? {
       value: status,
       label: status,
-      color: 'bg-gray-100 text-gray-700',
     }
   )
 }

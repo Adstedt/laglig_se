@@ -66,7 +66,7 @@ interface AllWorkTabProps {
 
 const PRIORITY_CONFIG = {
   LOW: { label: 'Låg', color: 'bg-gray-100 text-gray-700' },
-  MEDIUM: { label: 'Medium', color: 'bg-blue-100 text-blue-700' },
+  MEDIUM: { label: 'Medel', color: 'bg-blue-100 text-blue-700' },
   HIGH: { label: 'Hög', color: 'bg-orange-100 text-orange-700' },
   CRITICAL: { label: 'Kritisk', color: 'bg-red-100 text-red-700' },
 } as const

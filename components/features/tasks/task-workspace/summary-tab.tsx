@@ -174,7 +174,7 @@ export function SummaryTab({ initialStats, columns }: SummaryTabProps) {
                 color="bg-orange-500"
               />
               <StatusBar
-                label="Medium"
+                label="Medel"
                 count={initialStats.byPriority.MEDIUM}
                 total={initialStats.total}
                 color="bg-blue-500"

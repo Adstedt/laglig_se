@@ -34,6 +34,8 @@ import {
   ItemSignOffButton,
 } from '@/components/features/compliance-audit/item-bedomning-editor'
 import { COMPLIANCE_STATUS_OPTIONS } from '@/components/features/document-list/table-cell-editors/compliance-status-editor'
+import { Badge } from '@/components/ui/badge'
+import { getStatusBadgeProps } from '@/lib/ui/badge-tones'
 import { getLinkedArtifactsForListItem } from '@/app/actions/linked-artifacts'
 import { FindingSeverity, FindingType } from '@prisma/client'
 import type { CycleItemRow } from '@/app/actions/compliance-audit-item'
@@ -244,15 +246,17 @@ export function CycleItemModalRightPanel({
               <div className="space-y-0">
                 <DetailRow label="Nuvarande status">
                   {statusOption ? (
-                    <span
-                      className={cn(
-                        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-                        statusOption.color,
-                        statusOption.strikethrough && 'line-through'
-                      )}
-                    >
-                      {statusOption.label}
-                    </span>
+                    (() => {
+                      const props = getStatusBadgeProps(
+                        'compliance-status',
+                        statusOption.value
+                      )
+                      return (
+                        <Badge tone={props.tone} variant={props.variant}>
+                          {props.label}
+                        </Badge>
+                      )
+                    })()
                   ) : (
                     <span className="text-xs text-muted-foreground">—</span>
                   )}

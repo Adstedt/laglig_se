@@ -74,7 +74,7 @@ const PRIORITY_CONFIG: Record<
     iconColor: 'text-gray-500',
   },
   MEDIUM: {
-    label: 'Medium',
+    label: 'Medel',
     color: 'text-blue-700',
     bgColor: 'bg-blue-50',
     iconColor: 'text-blue-500',

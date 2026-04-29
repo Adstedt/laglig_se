@@ -1,18 +1,15 @@
-/** Story 21.5 — Swedish-labelled status badge for ComplianceAuditCycle. */
+/**
+ * Story 21.5 — Swedish-labelled status badge for ComplianceAuditCycle.
+ * Story 22.1 — Migrated to tone-aware `<Badge>` primitive.
+ *
+ * Note on `data-status` attribute: preserved for any e2e selectors that key
+ * on it. The visual representation comes from `<Badge tone variant>` via
+ * the `cycle-status` domain map in `lib/ui/badge-tones.ts`.
+ */
 
 import { ComplianceCycleStatus } from '@prisma/client'
-import { cn } from '@/lib/utils'
-
-interface StatusVariant {
-  label: string
-  color: string
-}
-
-const STATUS_VARIANTS: Record<ComplianceCycleStatus, StatusVariant> = {
-  PLANERAD: { label: 'Planerad', color: 'bg-gray-100 text-gray-700' },
-  PAGAENDE: { label: 'Pågående', color: 'bg-blue-100 text-blue-700' },
-  AVSLUTAD: { label: 'Avslutad', color: 'bg-amber-100 text-amber-700' },
-}
+import { Badge } from '@/components/ui/badge'
+import { getStatusBadgeProps } from '@/lib/ui/badge-tones'
 
 interface CycleStatusBadgeProps {
   status: ComplianceCycleStatus
@@ -20,17 +17,15 @@ interface CycleStatusBadgeProps {
 }
 
 export function CycleStatusBadge({ status, className }: CycleStatusBadgeProps) {
-  const variant = STATUS_VARIANTS[status]
+  const props = getStatusBadgeProps('cycle-status', status)
   return (
-    <span
-      className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
-        variant.color,
-        className
-      )}
+    <Badge
+      tone={props.tone}
+      variant={props.variant}
       data-status={status}
+      className={className}
     >
-      {variant.label}
-    </span>
+      {props.label}
+    </Badge>
   )
 }
