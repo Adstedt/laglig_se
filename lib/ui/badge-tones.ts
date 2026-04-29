@@ -26,8 +26,13 @@ export const VARIANTS = ['soft', 'solid', 'outline'] as const
 export type Variant = (typeof VARIANTS)[number]
 
 /**
- * Dark-theme tone × variant class strings. Tailwind JIT requires literal
- * full class names — do NOT construct these at runtime.
+ * Dual-theme tone × variant class strings. Each cell combines the light-
+ * theme defaults (high-contrast `-100`/`-700` pairs) with `dark:` overrides
+ * (low-opacity tinted bg + `-300` text) so a single Badge renders correctly
+ * in both themes without consumer awareness.
+ *
+ * Tailwind JIT requires literal full class names — do NOT construct these
+ * at runtime.
  *
  * `soft` (default): low-contrast tinted background, suitable for inline
  *   table-cell pills. Reads as "this is a status, not a button".
@@ -36,65 +41,42 @@ export type Variant = (typeof VARIANTS)[number]
  * `outline`: bordered, transparent background. Use for "secondary signal"
  *   readings (open/closed state, not-applicable) where the row's primary
  *   identifier lives elsewhere.
+ *
+ * Story 22.1 v0.2 — initial release shipped dark-only classes which left
+ * pills illegible in light theme (`text-{tone}-300` on white → poor AA
+ * contrast). Now dual-theme via `dark:` prefix.
  */
 export const BADGE_TONES: Record<Tone, Record<Variant, string>> = {
   neutral: {
-    soft: 'bg-slate-500/15 text-slate-300',
-    solid: 'bg-slate-500 text-white',
-    outline: 'border border-slate-700 text-slate-300',
+    soft: 'bg-slate-100 text-slate-700 dark:bg-slate-500/15 dark:text-slate-300',
+    solid: 'bg-slate-500 text-white dark:bg-slate-500 dark:text-white',
+    outline:
+      'border border-slate-300 text-slate-700 dark:border-slate-700 dark:text-slate-300',
   },
   info: {
-    soft: 'bg-blue-500/15 text-blue-300',
-    solid: 'bg-blue-500 text-white',
-    outline: 'border border-blue-700 text-blue-300',
+    soft: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+    solid: 'bg-blue-500 text-white dark:bg-blue-500 dark:text-white',
+    outline:
+      'border border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-300',
   },
   success: {
-    soft: 'bg-emerald-500/15 text-emerald-300',
-    solid: 'bg-emerald-500 text-white',
-    outline: 'border border-emerald-700 text-emerald-300',
+    soft: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
+    solid: 'bg-emerald-500 text-white dark:bg-emerald-500 dark:text-white',
+    outline:
+      'border border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-300',
   },
   warning: {
-    soft: 'bg-amber-500/15 text-amber-300',
-    // warning solid uses dark text for AA contrast on amber
-    solid: 'bg-amber-500 text-amber-950',
-    outline: 'border border-amber-700 text-amber-300',
+    soft: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
+    // amber-500 needs dark text for AA contrast in both themes
+    solid: 'bg-amber-500 text-amber-950 dark:bg-amber-500 dark:text-amber-950',
+    outline:
+      'border border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-300',
   },
   danger: {
-    soft: 'bg-rose-500/15 text-rose-300',
-    solid: 'bg-rose-500 text-white',
-    outline: 'border border-rose-700 text-rose-300',
-  },
-}
-
-/**
- * Light-theme analogues, retained for future surfaces that opt into a light
- * theme. Not consumed by the Badge primitive today.
- */
-export const BADGE_TONES_LIGHT: Record<Tone, Record<Variant, string>> = {
-  neutral: {
-    soft: 'bg-slate-100 text-slate-700',
-    solid: 'bg-slate-500 text-white',
-    outline: 'border border-slate-300 text-slate-700',
-  },
-  info: {
-    soft: 'bg-blue-100 text-blue-700',
-    solid: 'bg-blue-500 text-white',
-    outline: 'border border-blue-300 text-blue-700',
-  },
-  success: {
-    soft: 'bg-emerald-100 text-emerald-700',
-    solid: 'bg-emerald-500 text-white',
-    outline: 'border border-emerald-300 text-emerald-700',
-  },
-  warning: {
-    soft: 'bg-amber-100 text-amber-700',
-    solid: 'bg-amber-500 text-amber-950',
-    outline: 'border border-amber-300 text-amber-700',
-  },
-  danger: {
-    soft: 'bg-rose-100 text-rose-700',
-    solid: 'bg-rose-500 text-white',
-    outline: 'border border-rose-300 text-rose-700',
+    soft: 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300',
+    solid: 'bg-rose-500 text-white dark:bg-rose-500 dark:text-white',
+    outline:
+      'border border-rose-300 text-rose-700 dark:border-rose-700 dark:text-rose-300',
   },
 }
 
