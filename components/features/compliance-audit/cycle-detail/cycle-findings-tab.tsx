@@ -19,8 +19,8 @@ import {
 import { Plus } from 'lucide-react'
 import { useVirtualizer, type Virtualizer } from '@tanstack/react-virtual'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { FilterChip, FilterChipGroup } from '@/components/ui/filter-chip'
 import {
   closeFinding,
   reopenFinding,
@@ -328,78 +328,59 @@ function FilterChips({
     { value: 'closed', label: 'Stängda' },
   ]
 
+  // Story 22.2 — chips migrated to <FilterChipGroup> + <FilterChip>. The
+  // `role="group"` semantics are now owned by the primitive (no role="tab"
+  // anywhere — the cycle-detail <Tabs> for view-switching stays separate).
+  // TODO(22.2): add counts derived from filtered finding state. Out-of-scope
+  // for this story per the AC ("counts optional, do not block").
   return (
     <div className="flex flex-wrap items-center gap-4">
-      <div className="flex items-center gap-1" role="group" aria-label="Typ">
+      <FilterChipGroup aria-label="Filtrera anmärkningar efter typ">
         {typeOptions.map((opt) => (
-          <button
+          <FilterChip
             key={opt.value}
-            type="button"
-            aria-pressed={typeFilter === opt.value}
+            pressed={typeFilter === opt.value}
+            onPressedChange={() => setTypeFilter(opt.value)}
             data-testid={`finding-filter-type-${opt.value}`}
-            onClick={() => setTypeFilter(opt.value)}
-            className={cn(
-              'rounded-full border px-3 py-1 text-xs transition-colors',
-              typeFilter === opt.value
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-input text-muted-foreground hover:bg-muted'
-            )}
           >
             {opt.label}
-          </button>
+          </FilterChip>
         ))}
-      </div>
+      </FilterChipGroup>
 
       {typeFilter === FindingType.AVVIKELSE ? (
-        <div
-          className="flex items-center gap-1"
-          role="group"
-          aria-label="Allvarlighetsgrad"
+        <FilterChipGroup
+          aria-label="Filtrera anmärkningar efter allvarlighetsgrad"
           data-testid="finding-filter-severity-group"
         >
           {severityOptions.map((opt) => (
-            <button
+            <FilterChip
               key={opt.value}
-              type="button"
-              aria-pressed={severityFilter === opt.value}
+              pressed={severityFilter === opt.value}
+              onPressedChange={() => setSeverityFilter(opt.value)}
               data-testid={`finding-filter-severity-${opt.value}`}
-              onClick={() => setSeverityFilter(opt.value)}
-              className={cn(
-                'rounded-full border px-3 py-1 text-xs transition-colors',
-                severityFilter === opt.value
-                  ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-input text-muted-foreground hover:bg-muted'
-              )}
             >
               {opt.label}
-            </button>
+            </FilterChip>
           ))}
-        </div>
+        </FilterChipGroup>
       ) : null}
 
-      <div
-        className="ml-auto flex items-center gap-1"
-        role="group"
-        aria-label="Status"
+      <FilterChipGroup
+        aria-label="Filtrera anmärkningar efter status"
+        className="ml-auto"
       >
         {statusOptions.map((opt) => (
-          <button
+          <FilterChip
             key={opt.value}
-            type="button"
-            aria-pressed={statusFilter === opt.value}
+            pressed={statusFilter === opt.value}
+            onPressedChange={() => setStatusFilter(opt.value)}
             data-testid={`finding-filter-status-${opt.value}`}
-            onClick={() => setStatusFilter(opt.value)}
-            className={cn(
-              'rounded-full border px-3 py-1 text-xs transition-colors',
-              statusFilter === opt.value
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-input text-muted-foreground hover:bg-muted'
-            )}
           >
             {opt.label}
-          </button>
+          </FilterChip>
         ))}
-      </div>
+      </FilterChipGroup>
     </div>
   )
 }
