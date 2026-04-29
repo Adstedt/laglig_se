@@ -2,11 +2,16 @@
 
 /**
  * Story 6.4: Task Workspace Tab Navigation
- * Horizontal tab bar with URL persistence
+ * Story 22.3 follow-up — migrated to the shared `WorkspaceViewTabs`
+ * primitive so the chrome matches /laglistor + /workspace/styrdokument.
  */
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  WorkspaceViewTabs,
+  WorkspaceViewTabsList,
+  WorkspaceViewTabsTrigger,
+} from '@/components/ui/workspace-view-tabs'
 import { BarChart3, LayoutGrid, List, Calendar, Clock } from 'lucide-react'
 
 export type TaskTab =
@@ -40,19 +45,15 @@ export function TabNavigation({ currentTab }: TabNavigationProps) {
   }
 
   return (
-    <Tabs value={currentTab} onValueChange={handleTabChange}>
-      <TabsList className="h-auto p-1 bg-muted/50 overflow-x-auto flex-wrap sm:flex-nowrap">
+    <WorkspaceViewTabs value={currentTab} onValueChange={handleTabChange}>
+      <WorkspaceViewTabsList className="overflow-x-auto flex-wrap sm:flex-nowrap">
         {TABS.map(({ value, label, icon: Icon }) => (
-          <TabsTrigger
-            key={value}
-            value={value}
-            className="data-[state=active]:bg-background gap-2 whitespace-nowrap"
-          >
+          <WorkspaceViewTabsTrigger key={value} value={value}>
             <Icon className="h-4 w-4" />
             <span className="hidden sm:inline">{label}</span>
-          </TabsTrigger>
+          </WorkspaceViewTabsTrigger>
         ))}
-      </TabsList>
-    </Tabs>
+      </WorkspaceViewTabsList>
+    </WorkspaceViewTabs>
   )
 }

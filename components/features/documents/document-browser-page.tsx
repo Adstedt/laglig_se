@@ -15,7 +15,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { FilePlus, Upload, FileText, Archive, Loader2 } from 'lucide-react'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  WorkspaceViewTabs,
+  WorkspaceViewTabsList,
+  WorkspaceViewTabsTrigger,
+} from '@/components/ui/workspace-view-tabs'
 import { PageHeader } from '@/components/ui/page-header'
 import { TableToolbar } from '@/components/ui/table-toolbar'
 import { toast } from 'sonner'
@@ -243,23 +247,18 @@ export function DocumentBrowserPage() {
           the `filters` slot. */}
       <TableToolbar
         views={
-          <Tabs value={activeTab} onValueChange={handleTabChange}>
-            {/* Story 22.3 — TabsList uses shadcn defaults so the enclosing
-                pill chrome matches /laglistor (Laglistor / Ändringar) and
-                /tasks (Sammanfattning / Aktiva / Lista / ...) — Styrdokument
-                previously overrode bg-transparent + h-auto + p-1 which made
-                its tabs look loose vs the other surfaces. */}
-            <TabsList>
-              <TabsTrigger value="aktiva" className="gap-2">
+          <WorkspaceViewTabs value={activeTab} onValueChange={handleTabChange}>
+            <WorkspaceViewTabsList>
+              <WorkspaceViewTabsTrigger value="aktiva">
                 <FileText className="h-4 w-4" />
                 Aktiva
-              </TabsTrigger>
-              <TabsTrigger value="arkiverade" className="gap-2">
+              </WorkspaceViewTabsTrigger>
+              <WorkspaceViewTabsTrigger value="arkiverade">
                 <Archive className="h-4 w-4" />
                 Arkiverade
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+              </WorkspaceViewTabsTrigger>
+            </WorkspaceViewTabsList>
+          </WorkspaceViewTabs>
         }
         filters={
           <DocumentFilterControls
