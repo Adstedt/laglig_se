@@ -63,41 +63,74 @@ rows.forEach((r, i) => {
 })
 
 console.log('\nAGGREGATE:')
-console.log(`  Total input tokens:        ${sum('input_tokens').toLocaleString()}`)
-console.log(`  Total cache-read tokens:   ${sum('cache_read_input_tokens').toLocaleString()}`)
-console.log(`  Total cache-write tokens:  ${sum('cache_write_input_tokens').toLocaleString()}`)
-console.log(`  Total output tokens:       ${sum('output_tokens').toLocaleString()}`)
-console.log(`  Total reasoning tokens:    ${sum('reasoning_tokens').toLocaleString()}`)
-console.log(`  Total step_count:          ${sum('step_count').toLocaleString()}`)
+console.log(
+  `  Total input tokens:        ${sum('input_tokens').toLocaleString()}`
+)
+console.log(
+  `  Total cache-read tokens:   ${sum('cache_read_input_tokens').toLocaleString()}`
+)
+console.log(
+  `  Total cache-write tokens:  ${sum('cache_write_input_tokens').toLocaleString()}`
+)
+console.log(
+  `  Total output tokens:       ${sum('output_tokens').toLocaleString()}`
+)
+console.log(
+  `  Total reasoning tokens:    ${sum('reasoning_tokens').toLocaleString()}`
+)
+console.log(
+  `  Total step_count:          ${sum('step_count').toLocaleString()}`
+)
 
 const cacheHitRatio = sum('cache_read_input_tokens') / sum('input_tokens')
-const fresh = sum('input_tokens') - sum('cache_read_input_tokens') - sum('cache_write_input_tokens')
-console.log(`  Fresh input ratio:         ${((fresh / sum('input_tokens')) * 100).toFixed(1)}%`)
+const fresh =
+  sum('input_tokens') -
+  sum('cache_read_input_tokens') -
+  sum('cache_write_input_tokens')
+console.log(
+  `  Fresh input ratio:         ${((fresh / sum('input_tokens')) * 100).toFixed(1)}%`
+)
 console.log(`  Cache-read ratio:          ${(cacheHitRatio * 100).toFixed(1)}%`)
-console.log(`  Cache-write ratio:         ${((sum('cache_write_input_tokens') / sum('input_tokens')) * 100).toFixed(1)}%`)
+console.log(
+  `  Cache-write ratio:         ${((sum('cache_write_input_tokens') / sum('input_tokens')) * 100).toFixed(1)}%`
+)
 
 console.log('\nPER-TURN MEAN:')
-console.log(`  Input:        ${Math.round(mean('input_tokens')).toLocaleString()}`)
-console.log(`  Output:       ${Math.round(mean('output_tokens')).toLocaleString()}`)
-console.log(`  Cache-read:   ${Math.round(mean('cache_read_input_tokens')).toLocaleString()}`)
-console.log(`  Cache-write:  ${Math.round(mean('cache_write_input_tokens')).toLocaleString()}`)
+console.log(
+  `  Input:        ${Math.round(mean('input_tokens')).toLocaleString()}`
+)
+console.log(
+  `  Output:       ${Math.round(mean('output_tokens')).toLocaleString()}`
+)
+console.log(
+  `  Cache-read:   ${Math.round(mean('cache_read_input_tokens')).toLocaleString()}`
+)
+console.log(
+  `  Cache-write:  ${Math.round(mean('cache_write_input_tokens')).toLocaleString()}`
+)
 console.log(`  Step count:   ${mean('step_count').toFixed(2)}`)
 
 console.log('\nPER-TURN MEDIAN:')
 console.log(`  Input:        ${median('input_tokens').toLocaleString()}`)
 console.log(`  Output:       ${median('output_tokens').toLocaleString()}`)
-console.log(`  Cache-read:   ${median('cache_read_input_tokens').toLocaleString()}`)
+console.log(
+  `  Cache-read:   ${median('cache_read_input_tokens').toLocaleString()}`
+)
 console.log(`  Step count:   ${median('step_count')}`)
 
 console.log('\nMAX (worst-case turn):')
 console.log(`  Input:        ${max('input_tokens').toLocaleString()}`)
 console.log(`  Output:       ${max('output_tokens').toLocaleString()}`)
-console.log(`  Cache-read:   ${max('cache_read_input_tokens').toLocaleString()}`)
+console.log(
+  `  Cache-read:   ${max('cache_read_input_tokens').toLocaleString()}`
+)
 console.log(`  Step count:   ${max('step_count')}`)
 
 console.log('\nCOST TOTALS (15 turns):')
 console.log(`  As-is (Sonnet 4.6):  $${sonnetTotal.toFixed(4)}`)
-console.log(`  DB cost_usd_estimate: $${dbCostTotal.toFixed(4)}  (sanity check vs As-is)`)
+console.log(
+  `  DB cost_usd_estimate: $${dbCostTotal.toFixed(4)}  (sanity check vs As-is)`
+)
 console.log(`  Projected Opus 4.6:  $${opusTotal.toFixed(4)}`)
 console.log(`  Projected Haiku 4.5: $${haikuTotal.toFixed(4)}`)
 
@@ -113,14 +146,16 @@ console.log('\n=== TIER ECONOMICS @ 75% MARGIN ===\n')
 const SEK_PER_USD = 10.5
 
 const tiers = [
-  { name: 'Solo',                sek: 499,      users: 1 },
-  { name: 'Team (3 users base)', sek: 1299,     users: 3 },
-  { name: 'Team add-on user',    sek: 300,      users: 1 },
+  { name: 'Solo', sek: 499, users: 1 },
+  { name: 'Team (3 users base)', sek: 1299, users: 3 },
+  { name: 'Team add-on user', sek: 300, users: 1 },
 ]
 
 const NON_AI_INFRA_PER_USER = 2.5
 
-console.log(`Assumptions: 1 USD = ${SEK_PER_USD} SEK; non-AI infra per user/mo = $${NON_AI_INFRA_PER_USER}\n`)
+console.log(
+  `Assumptions: 1 USD = ${SEK_PER_USD} SEK; non-AI infra per user/mo = $${NON_AI_INFRA_PER_USER}\n`
+)
 
 tiers.forEach((t) => {
   const usdRev = t.sek / SEK_PER_USD
@@ -131,7 +166,9 @@ tiers.forEach((t) => {
   const turnsOpus = Math.floor(aiBudget / opusPerTurn)
   const turnsSonnet = Math.floor(aiBudget / sonnetPerTurn)
 
-  console.log(`${t.name} (${t.sek} SEK = $${usdRev.toFixed(2)}, $${usdRevPerUser.toFixed(2)}/user)`)
+  console.log(
+    `${t.name} (${t.sek} SEK = $${usdRev.toFixed(2)}, $${usdRevPerUser.toFixed(2)}/user)`
+  )
   console.log(`  COGS budget @ 25%: $${cogsBudget.toFixed(2)}/user`)
   console.log(`  AI budget after infra: $${aiBudget.toFixed(2)}/user`)
   console.log(`  → ${turnsOpus} turns/user/mo on 100% Opus 4.6`)

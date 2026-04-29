@@ -1,6 +1,11 @@
 import { config } from 'dotenv'
 import path from 'path'
 
+// Pin the TZ so date-fns output (revisionsrapport renderer, finding timestamps,
+// cycle-detail formatters) is stable across local Stockholm devs and UTC CI.
+// Must be set before any module that touches Intl / Date formatting initialises.
+process.env.TZ = 'Europe/Stockholm'
+
 // Load .env.local FIRST before any other imports
 // This ensures env vars are available when modules initialize
 const envResult = config({ path: path.resolve(process.cwd(), '.env.local') })

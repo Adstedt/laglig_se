@@ -55,7 +55,9 @@ describe('CompleteCycleDialog', () => {
       )
     ).toBeInTheDocument()
     expect(
-      screen.getByText(/Kontrollen blir låst när den slutförs/)
+      screen.getByText(
+        /Bedömningarna och motiveringarna låses när kontrollen slutförs/
+      )
     ).toBeInTheDocument()
   })
 

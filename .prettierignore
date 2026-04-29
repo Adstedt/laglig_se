@@ -22,6 +22,9 @@ prisma/migrations/
 # vendored/minified
 public/pdf.worker.min.mjs
 
+# golden-snapshot fixtures (must remain byte-exact to renderer output)
+**/__fixtures__/
+
 # misc
 *.lock
 pnpm-lock.yaml
