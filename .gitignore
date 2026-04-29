@@ -65,3 +65,21 @@ results/
 # Temp screenshots
 scroll-check.png
 notisum-*.png
+
+# One-off data sweep artifacts (script checkpoints, parser/ingest output)
+data/*-progress.json
+data/*-checkpoint.json
+data/ingest-errors-*.json
+data/tmp-*
+data/derive-output.log
+data/agent-simulation.html
+data/assessment-simulation.html
+data/test.md
+data/celex_master*.json
+data/batch-progress.json
+
+# Throwaway investigation scripts at root (use scripts/ for kept tools)
+/tmp_*.ts
+/tmp_*.tsx
+/tmp_*.mjs
+/tmp_*.js
