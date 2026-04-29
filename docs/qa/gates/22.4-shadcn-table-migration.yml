@@ -1,0 +1,47 @@
+schema: 1
+story: '22.4'
+story_title: 'Cycle Items + Styrdokument → shadcn `<Table>` migration'
+gate: CONCERNS
+status_reason: 'Surface audit revealed `document-table.tsx` (Task group B / Styrdokument) is ALREADY on shadcn <Table> — story authoring was based on a stale snapshot. Task group B closed by verification only (no migration needed). Task group A (cycle-items-tab.tsx) DEFERRED to a follow-up: the virtualization-on-shadcn-Table pattern requires absolute-positioned `<tr>` with translateY + mixed flex/table layout, which has non-trivial layout-risk for the existing virtualizer + click-to-modal + row-highlight + jump-to-first-unbedömt machinery. The current custom div-grid uses role="rowheader" so a11y is not catastrophically broken today. Marginal a11y win vs. real layout risk — recommendation: ship a focused follow-up story scoped to ONLY the cycle-items virtualizer-on-Table pattern (with playwright e2e snapshot to catch layout drift before merging). AC 11 (Findings tab intentional non-Table comment) shipped. Gate CONCERNS with one watch-item.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-29T22:55:00Z'
+story_status: 'Done'
+waiver:
+  active: true
+  reason: 'Task group A deferred-by-design after audit-vs-reality reconciliation. See top_issues.'
+  approved_by: 'dev (James) + QA (Quinn)'
+history:
+  - at: '2026-04-29T22:55:00Z'
+    gate: CONCERNS
+top_issues:
+  - id: 'CYCLE-ITEMS-DEFERRED'
+    severity: medium
+    finding: 'cycle-items-tab.tsx remains on the custom div-grid layout. Virtualizer + click-to-modal + row-highlight + jump-to-first-unbedömt machinery makes the shadcn-Table migration non-trivial.'
+    suggested_action: 'Open a follow-up story (22.5? Epic 22 cleanup) scoped to ONLY the virtualizer-on-Table pattern. Pre-write a Playwright snapshot of the existing layout before refactor, run it post-refactor to catch column-width / scrolling / row-height drift. ~1 day focused effort.'
+    suggested_owner: dev
+    status: deferred
+  - id: 'STYRDOKUMENT-NO-OP'
+    severity: info
+    finding: 'document-table.tsx already imports shadcn <Table>/<TableHeader>/<TableBody>/<TableHead>/<TableRow>/<TableCell> — Task group B is a no-op. Story authoring based on stale snapshot.'
+    suggested_action: 'No action — closure record only. Story author may want to re-audit periodically to keep prep docs accurate.'
+    suggested_owner: po
+    status: closed_by_verification
+nfrs:
+  maintainability: PASS
+  performance: PASS
+  security: PASS
+  reliability: PASS
+  testability: CONCERNS  # No test added since cycle-items not migrated
+quality_score: 70  # 100 - (10 × 1 CONCERNS) - (5 × 0) - (waiver penalty: 20). Waived deferral.
+expires: '2026-05-13T22:55:00Z'
+evidence:
+  files_changed: 1  # cycle-findings-tab.tsx (AC 11 doc comment only)
+  ac_count: 11
+  ac_pass_count: 7  # AC 5-8 (Styrdokument) closed by verification + AC 11 + AC 9-10 (cross-cutting promises) verified
+  ac_deferred_count: 4  # AC 1-4 (cycle-items)
+recommendations:
+  must_fix: []
+  should_consider:
+    - 'Spike the cycle-items virtualizer-on-Table migration as a separate focused story (~1 day). Include Playwright layout snapshot for confidence.'
+  may_defer:
+    - 'Periodic re-audit of authored-stories vs current code (Styrdokument case shows authoring drift can mask completed work).'
