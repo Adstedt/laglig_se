@@ -244,7 +244,12 @@ export function DocumentBrowserPage() {
       <TableToolbar
         views={
           <Tabs value={activeTab} onValueChange={handleTabChange}>
-            <TabsList className="h-auto p-1 bg-transparent">
+            {/* Story 22.3 — TabsList uses shadcn defaults so the enclosing
+                pill chrome matches /laglistor (Laglistor / Ändringar) and
+                /tasks (Sammanfattning / Aktiva / Lista / ...) — Styrdokument
+                previously overrode bg-transparent + h-auto + p-1 which made
+                its tabs look loose vs the other surfaces. */}
+            <TabsList>
               <TabsTrigger value="aktiva" className="gap-2">
                 <FileText className="h-4 w-4" />
                 Aktiva
