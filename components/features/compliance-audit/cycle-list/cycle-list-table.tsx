@@ -30,6 +30,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { CycleStatusBadge } from '@/components/features/compliance-audit/cycle-detail/cycle-status-badge'
 import { FilterChip, FilterChipGroup } from '@/components/ui/filter-chip'
+import { PageHeader } from '@/components/ui/page-header'
+import { TableToolbar } from '@/components/ui/table-toolbar'
 import type { CycleSummary } from '@/app/actions/compliance-audit-cycle'
 import { ComplianceCycleStatus, AuditType } from '@prisma/client'
 
@@ -98,37 +100,43 @@ export function CycleListTable({ cycles, canCreate }: CycleListTableProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header row — title + CTA (matches /laglistor + /tasks) */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Kontroller</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Hantera pågående och tidigare efterlevnadskontroller.
-          </p>
-        </div>
-        {canCreate ? (
-          <Button asChild>
-            <Link href="/laglistor/kontroller/skapa">
-              <Plus className="mr-1.5 h-4 w-4" aria-hidden="true" />
-              Skapa kontroll
-            </Link>
-          </Button>
-        ) : null}
-      </div>
+      {/* Story 22.3 — PageHeader primitive. Title + subtitle + primary CTA.
+          Slot order is enforced by the primitive (breadcrumbs above title;
+          primaryAction top-right). */}
+      <PageHeader
+        title="Kontroller"
+        subtitle="Hantera pågående och tidigare efterlevnadskontroller."
+        primaryAction={
+          canCreate ? (
+            <Button asChild>
+              <Link href="/laglistor/kontroller/skapa">
+                <Plus className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                Skapa kontroll
+              </Link>
+            </Button>
+          ) : undefined
+        }
+      />
 
-      {/* Filter chips — Story 22.2 migration to <FilterChipGroup>. */}
-      <FilterChipGroup aria-label="Filtrera kontroller efter status">
-        {FILTERS.map((f) => (
-          <FilterChip
-            key={f.key}
-            pressed={f.key === filter}
-            onPressedChange={() => setFilter(f.key)}
-            count={counts[f.key]}
-          >
-            {f.label}
-          </FilterChip>
-        ))}
-      </FilterChipGroup>
+      {/* Story 22.3 — TableToolbar primitive. Filter chips (Story 22.2)
+          flow into the `filters` slot. No `views` slot since this surface
+          has only one view. */}
+      <TableToolbar
+        filters={
+          <FilterChipGroup aria-label="Filtrera kontroller efter status">
+            {FILTERS.map((f) => (
+              <FilterChip
+                key={f.key}
+                pressed={f.key === filter}
+                onPressedChange={() => setFilter(f.key)}
+                count={counts[f.key]}
+              >
+                {f.label}
+              </FilterChip>
+            ))}
+          </FilterChipGroup>
+        }
+      />
 
       {/* Table — brand wrapper: rounded-md border overflow-x-auto.
           Matches /tasks list-tab, /workspace/styrdokument document-table,
