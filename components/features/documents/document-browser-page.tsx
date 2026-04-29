@@ -16,6 +16,8 @@ import {
 } from '@/components/ui/alert-dialog'
 import { FilePlus, Upload, FileText, Archive, Loader2 } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PageHeader } from '@/components/ui/page-header'
+import { TableToolbar } from '@/components/ui/table-toolbar'
 import { toast } from 'sonner'
 import {
   getWorkspaceDocuments,
@@ -217,29 +219,30 @@ export function DocumentBrowserPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Styrdokument</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Policyer, rutiner och instruktioner med versionshistorik
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+      {/* Story 22.3 — PageHeader. `Importera` (secondaryAction) renders to
+          the LEFT of `Nytt dokument` (primaryAction) per the slot order. */}
+      <PageHeader
+        title="Styrdokument"
+        subtitle="Policyer, rutiner och instruktioner med versionshistorik"
+        secondaryActions={
           <Button variant="outline" onClick={() => setImportOpen(true)}>
             <Upload className="mr-2 h-4 w-4" />
             Importera
           </Button>
+        }
+        primaryAction={
           <Button onClick={() => setCreateOpen(true)}>
             <FilePlus className="mr-2 h-4 w-4" />
             Nytt dokument
           </Button>
-        </div>
-      </div>
+        }
+      />
 
-      {/* Toolbar band: tabs + filters */}
-      <div className="border-b border-border/60">
-        <div className="flex items-center gap-2 py-2 flex-wrap">
+      {/* Story 22.3 — TableToolbar wraps the existing tabs + filter dropdowns.
+          Tabs stay shadcn (view-switcher), DocumentFilterControls flows into
+          the `filters` slot. */}
+      <TableToolbar
+        views={
           <Tabs value={activeTab} onValueChange={handleTabChange}>
             <TabsList className="h-auto p-1 bg-transparent">
               <TabsTrigger value="aktiva" className="gap-2">
@@ -252,15 +255,16 @@ export function DocumentBrowserPage() {
               </TabsTrigger>
             </TabsList>
           </Tabs>
-
+        }
+        filters={
           <DocumentFilterControls
             filters={filters}
             onFiltersChange={handleFiltersChange}
             hideStatusFilter={activeTab === 'arkiverade'}
             excludeStatuses={activeTab === 'aktiva' ? ['ARCHIVED'] : undefined}
           />
-        </div>
-      </div>
+        }
+      />
 
       {/* Content */}
       {loading ? (
