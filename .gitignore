@@ -78,8 +78,12 @@ data/test.md
 data/celex_master*.json
 data/batch-progress.json
 
-# Throwaway investigation scripts at root (use scripts/ for kept tools)
+# Throwaway investigation scripts (root + scripts/). Reproducible if ever needed.
 /tmp_*.ts
 /tmp_*.tsx
 /tmp_*.mjs
 /tmp_*.js
+scripts/tmp-*.ts
+scripts/tmp-*.tsx
+scripts/tmp-*.mjs
+scripts/tmp-*.js
