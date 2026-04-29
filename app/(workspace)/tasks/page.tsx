@@ -7,6 +7,7 @@ import { Suspense } from 'react'
 import { Metadata } from 'next'
 import { TaskWorkspace } from '@/components/features/tasks/task-workspace'
 import { WorkspaceSkeleton } from '@/components/features/tasks/task-workspace/workspace-skeleton'
+import { PageHeader } from '@/components/ui/page-header'
 import {
   getWorkspaceTasks,
   getTaskColumns,
@@ -54,12 +55,15 @@ export default async function TasksPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Uppgifter</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Hantera och spåra efterlevnadsuppgifter för din organisation.
-        </p>
-      </div>
+      {/* Story 22.3 — PageHeader primitive. The "Ny uppgift" primaryAction
+          stays inside TaskWorkspace's UnifiedToolbar (which predates this
+          story's TableToolbar primitive); a full lift to page-level
+          primaryAction would require restructuring TaskWorkspace's modal
+          state and is out-of-scope for this story. */}
+      <PageHeader
+        title="Uppgifter"
+        subtitle="Hantera och spåra efterlevnadsuppgifter för din organisation."
+      />
 
       <Suspense fallback={<WorkspaceSkeleton tab="sammanfattning" />}>
         <TaskWorkspace
