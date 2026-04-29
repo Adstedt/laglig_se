@@ -25,6 +25,7 @@ import {
   FilterPopover,
   type FilterOption,
 } from '@/components/ui/filter-popover'
+import { getStatusBadgeProps } from '@/lib/ui/badge-tones'
 import { cn } from '@/lib/utils'
 
 export interface ComplianceFiltersState {
@@ -52,18 +53,18 @@ function getInitials(name: string | null, email: string): string {
   return email.substring(0, 2).toUpperCase()
 }
 
-// Map compliance status options to FilterOption format
+// Map compliance status options to FilterOption format. Tone/variant come
+// from the badge-tones map so the filter dropdown pills match the inline
+// table-cell pills exactly. Story 22.1.
 const STATUS_FILTER_OPTIONS: FilterOption[] = COMPLIANCE_STATUS_OPTIONS.map(
   (opt) => {
-    const base: FilterOption = {
+    const props = getStatusBadgeProps('compliance-status', opt.value)
+    return {
       value: opt.value,
       label: opt.label,
-      color: opt.color,
+      tone: props.tone,
+      variant: props.variant,
     }
-    if (opt.strikethrough) {
-      base.strikethrough = opt.strikethrough
-    }
-    return base
   }
 )
 

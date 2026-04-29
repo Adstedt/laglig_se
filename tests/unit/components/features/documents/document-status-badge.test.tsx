@@ -31,16 +31,21 @@ describe('DocumentStatusBadge', () => {
     expect(screen.getByText('Arkiverad')).toBeInTheDocument()
   })
 
-  it('applies green className for APPROVED', () => {
+  // Story 22.1 — APPROVED and SUPERSEDED migrated to tone-aware Badge.
+  // APPROVED: success+soft → bg-emerald-500/15 text-emerald-300
+  // SUPERSEDED: neutral+outline → border border-slate-700 text-slate-300
+  it('applies success-soft tone classes for APPROVED', () => {
     const { container } = render(<DocumentStatusBadge status="APPROVED" />)
     const badge = container.firstChild as HTMLElement
-    expect(badge.className).toContain('bg-green-100')
+    expect(badge.className).toContain('bg-emerald-500/15')
+    expect(badge.className).toContain('text-emerald-300')
   })
 
-  it('applies orange className for SUPERSEDED', () => {
+  it('applies neutral-outline tone classes for SUPERSEDED', () => {
     const { container } = render(<DocumentStatusBadge status="SUPERSEDED" />)
     const badge = container.firstChild as HTMLElement
-    expect(badge.className).toContain('bg-orange-100')
+    expect(badge.className).toContain('border-slate-700')
+    expect(badge.className).toContain('text-slate-300')
   })
 
   it('falls back gracefully for unknown status', () => {

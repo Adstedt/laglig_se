@@ -2,7 +2,12 @@
 
 /**
  * Story 6.19: Generic Filter Popover Component
- * Reusable Popover + Checkbox + Badge pattern for filter dropdowns
+ * Reusable Popover + Checkbox + Badge pattern for filter dropdowns.
+ *
+ * Story 22.1: option pills migrated from hand-rolled `bg-X-100/text-X-700`
+ * spans to the tone-aware `<Badge tone variant>` primitive. Callers populate
+ * `tone` / `variant` (typically by spreading `getStatusBadgeProps()` output);
+ * options without a tone fall back to plain text.
  */
 
 import type { ReactNode } from 'react'
@@ -15,14 +20,25 @@ import {
 } from '@/components/ui/popover'
 import { Badge } from '@/components/ui/badge'
 import { ChevronDown } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import type { Tone, Variant } from '@/lib/ui/badge-tones'
 
 export interface FilterOption {
   value: string
   label: string
+  /**
+   * Tone-aware Badge props. When set, the default renderer wraps the option
+   * label in `<Badge tone variant>`. Populate via `getStatusBadgeProps()` /
+   * `getPriorityBadgeProps()` from `@/lib/ui/badge-tones`.
+   */
+  tone?: Tone
+  variant?: Variant
+  /**
+   * Free-form pass-through for callers that supply their own `renderOption`.
+   * Typical use: hex colors from user-customized Task columns where the
+   * Tone enum doesn't fit. Ignored by the default renderer.
+   */
   color?: string
   icon?: ReactNode
-  strikethrough?: boolean
 }
 
 export interface FilterPopoverProps {
@@ -67,16 +83,10 @@ export function FilterPopover({
               />
               {renderOption ? (
                 renderOption(option)
-              ) : option.color ? (
-                <span
-                  className={cn(
-                    'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium',
-                    option.color,
-                    option.strikethrough && 'line-through'
-                  )}
-                >
+              ) : option.tone ? (
+                <Badge tone={option.tone} variant={option.variant}>
                   {option.label}
-                </span>
+                </Badge>
               ) : (
                 <span className="text-sm">{option.label}</span>
               )}

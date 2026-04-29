@@ -1,28 +1,28 @@
+/**
+ * Document status badge.
+ * Story 22.1 — Migrated from custom shadcn variant overrides to the
+ * tone-aware `<Badge>` primitive backed by `lib/ui/badge-tones.ts`.
+ *
+ * Acknowledged visual delta: "Utkast" (was solid `bg-secondary`) and
+ * "Under granskning" (was solid `bg-primary`) become soft-tone pills,
+ * aligning the Styrdokument surface with the rest of the workspace.
+ *
+ * `STATUS_CONFIG` is preserved as a label catalog for the one external
+ * consumer (`status-transition-controls.tsx`) which only reads `.label`.
+ */
+
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
 import { WorkspaceDocumentStatus } from '@prisma/client'
+import { getStatusBadgeProps } from '@/lib/ui/badge-tones'
 
-interface StatusConfig {
-  label: string
-  variant: 'default' | 'secondary' | 'outline'
-  className?: string | undefined
-}
-
-export const STATUS_CONFIG: Record<WorkspaceDocumentStatus, StatusConfig> = {
-  DRAFT: { label: 'Utkast', variant: 'secondary' },
-  IN_REVIEW: { label: 'Under granskning', variant: 'default' },
-  APPROVED: {
-    label: 'Godkänd',
-    variant: 'secondary',
-    className: 'bg-green-100 text-green-800 border-green-200',
-  },
-  SUPERSEDED: {
-    label: 'Ersatt',
-    variant: 'secondary',
-    className: 'bg-orange-100 text-orange-800 border-orange-200',
-  },
-  ARCHIVED: { label: 'Arkiverad', variant: 'outline', className: 'italic' },
-}
+export const STATUS_CONFIG: Record<WorkspaceDocumentStatus, { label: string }> =
+  {
+    DRAFT: { label: 'Utkast' },
+    IN_REVIEW: { label: 'Under granskning' },
+    APPROVED: { label: 'Godkänd' },
+    SUPERSEDED: { label: 'Ersatt' },
+    ARCHIVED: { label: 'Arkiverad' },
+  }
 
 interface DocumentStatusBadgeProps {
   status: WorkspaceDocumentStatus | string
@@ -33,14 +33,10 @@ export function DocumentStatusBadge({
   status,
   className,
 }: DocumentStatusBadgeProps) {
-  const config = STATUS_CONFIG[status as WorkspaceDocumentStatus] ?? {
-    label: status,
-    variant: 'secondary' as const,
-  }
-
+  const props = getStatusBadgeProps('document-status', status)
   return (
-    <Badge variant={config.variant} className={cn(config.className, className)}>
-      {config.label}
+    <Badge tone={props.tone} variant={props.variant} className={className}>
+      {props.label}
     </Badge>
   )
 }

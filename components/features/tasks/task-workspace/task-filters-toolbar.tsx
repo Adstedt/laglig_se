@@ -59,7 +59,7 @@ interface TaskFilterBarProps {
 const PRIORITY_FILTER_OPTIONS: FilterOption[] = [
   { value: 'CRITICAL', label: 'Kritisk', color: 'bg-red-100 text-red-700' },
   { value: 'HIGH', label: 'Hög', color: 'bg-orange-100 text-orange-700' },
-  { value: 'MEDIUM', label: 'Medium', color: 'bg-blue-100 text-blue-700' },
+  { value: 'MEDIUM', label: 'Medel', color: 'bg-blue-100 text-blue-700' },
   { value: 'LOW', label: 'Låg', color: 'bg-gray-100 text-gray-700' },
 ]
 

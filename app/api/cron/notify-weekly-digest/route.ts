@@ -67,7 +67,7 @@ function logError(
 
 const PRIORITY_LABEL: Record<string, string> = {
   LOW: 'Låg',
-  MEDIUM: 'Medium',
+  MEDIUM: 'Medel',
   HIGH: 'Hög',
   CRITICAL: 'Kritisk',
 }

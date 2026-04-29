@@ -27,7 +27,7 @@ const PRIORITY_CONFIG = {
     iconClassName: 'text-gray-500',
   },
   MEDIUM: {
-    label: 'Medium',
+    label: 'Medel',
     className: 'bg-blue-100 text-blue-700 hover:bg-blue-100',
     iconClassName: 'text-blue-500',
   },

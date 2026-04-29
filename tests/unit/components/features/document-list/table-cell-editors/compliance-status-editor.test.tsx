@@ -133,11 +133,16 @@ describe('ComplianceStatusEditor', () => {
     }
   })
 
-  it('applies strikethrough style for EJ_TILLAMPLIG status', () => {
+  // Story 22.1 — EJ_TILLAMPLIG migrated from strikethrough decoration to the
+  // neutral-outline tone variant. The visual signal "this status is set apart
+  // from the active flow" now reads as a bordered transparent pill instead of
+  // a strikethrough.
+  it('applies neutral-outline tone classes for EJ_TILLAMPLIG status', () => {
     render(<ComplianceStatusEditor value="EJ_TILLAMPLIG" onChange={vi.fn()} />)
 
     const badge = screen.getByText('Ej tillämplig')
-    expect(badge).toHaveClass('line-through')
+    expect(badge.className).toContain('border-slate-700')
+    expect(badge.className).toContain('text-slate-300')
   })
 })
 

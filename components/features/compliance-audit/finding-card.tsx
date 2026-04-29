@@ -29,10 +29,9 @@ import {
 import { FindingSeverity, FindingType } from '@prisma/client'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import { getStatusBadgeProps } from '@/lib/ui/badge-tones'
 import {
-  FINDING_SEVERITY_LABELS,
   FINDING_STATUS_BADGES,
-  FINDING_TYPE_LABELS,
   getFindingStatus,
 } from '@/components/features/compliance-audit/finding-copy'
 import type { FindingRow } from '@/app/actions/compliance-finding'
@@ -287,52 +286,44 @@ export function FindingCard({
 // Sub-badges
 // ---------------------------------------------------------------------------
 
+// Story 22.1 — Type / Severity badges migrated to tone-aware <Badge>.
+// Tone + variant come from `lib/ui/badge-tones.ts`; the icon prefix per
+// type (AlertTriangle / Eye / Lightbulb) is finding-card-specific decoration
+// and stays inline.
+
+const TYPE_ICON: Record<
+  FindingType,
+  React.ComponentType<{ className?: string }>
+> = {
+  AVVIKELSE: AlertTriangle,
+  OBSERVATION: Eye,
+  FORBATTRING: Lightbulb,
+}
+
 function TypeBadge({ type }: { type: FindingType }) {
-  if (type === FindingType.AVVIKELSE) {
-    return (
-      <Badge
-        variant="outline"
-        className="h-5 gap-1 border-red-200 bg-red-50 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
-      >
-        <AlertTriangle className="h-2.5 w-2.5" />
-        {FINDING_TYPE_LABELS.AVVIKELSE}
-      </Badge>
-    )
-  }
-  if (type === FindingType.OBSERVATION) {
-    return (
-      <Badge
-        variant="outline"
-        className="h-5 gap-1 border-amber-200 bg-amber-50 px-1.5 text-[10px] font-medium uppercase tracking-wide text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200"
-      >
-        <Eye className="h-2.5 w-2.5" />
-        {FINDING_TYPE_LABELS.OBSERVATION}
-      </Badge>
-    )
-  }
+  const props = getStatusBadgeProps('finding-type', type)
+  const Icon = TYPE_ICON[type]
   return (
     <Badge
-      variant="outline"
-      className="h-5 gap-1 border-blue-200 bg-blue-50 px-1.5 text-[10px] font-medium uppercase tracking-wide text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300"
+      tone={props.tone}
+      variant={props.variant}
+      className="h-5 gap-1 px-1.5 text-[10px] font-semibold uppercase tracking-wide"
     >
-      <Lightbulb className="h-2.5 w-2.5" />
-      {FINDING_TYPE_LABELS.FORBATTRING}
+      <Icon className="h-2.5 w-2.5" />
+      {props.label}
     </Badge>
   )
 }
 
 function SeverityBadge({ severity }: { severity: FindingSeverity }) {
+  const props = getStatusBadgeProps('finding-severity', severity)
   return (
     <Badge
-      variant="outline"
-      className={cn(
-        'h-5 px-1.5 text-[10px] font-semibold uppercase tracking-wide',
-        severity === FindingSeverity.MAJOR
-          ? 'border-red-300 bg-red-100 text-red-900 dark:border-red-800 dark:bg-red-900/50 dark:text-red-200'
-          : 'border-orange-300 bg-orange-100 text-orange-900 dark:border-orange-800 dark:bg-orange-900/50 dark:text-orange-200'
-      )}
+      tone={props.tone}
+      variant={props.variant}
+      className="h-5 px-1.5 text-[10px] font-semibold uppercase tracking-wide"
     >
-      {FINDING_SEVERITY_LABELS[severity]}
+      {props.label}
     </Badge>
   )
 }

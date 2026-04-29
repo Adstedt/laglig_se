@@ -106,15 +106,15 @@ const VIRTUAL_TABLE_MAX_HEIGHT = 600
 // Task Priority Options (4 levels, matching task schema)
 // ============================================================================
 
+// Story 22.1: shape aligned with the canonical PriorityEditor (Laglistor +
+// Uppgifter share one editor + one tone-aware Badge render). Labels match
+// the badge-tones map ("Medel" replaces the legacy "Medium" leak the audit
+// flagged on Uppgifter).
 const TASK_PRIORITY_OPTIONS: PriorityOption[] = [
-  { value: 'LOW', label: 'Låg', color: 'bg-gray-100 text-gray-700' },
-  { value: 'MEDIUM', label: 'Medium', color: 'bg-blue-100 text-blue-700' },
-  { value: 'HIGH', label: 'Hög', color: 'bg-orange-100 text-orange-700' },
-  {
-    value: 'CRITICAL',
-    label: 'Kritisk',
-    color: 'bg-red-100 text-red-700',
-  },
+  { value: 'LOW', label: 'Låg' },
+  { value: 'MEDIUM', label: 'Medel' },
+  { value: 'HIGH', label: 'Hög' },
+  { value: 'CRITICAL', label: 'Kritisk' },
 ]
 
 // ============================================================================
