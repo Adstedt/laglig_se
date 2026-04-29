@@ -511,7 +511,6 @@ export function ChatMessage({
   showActions = true,
   isStreaming = false,
   onDelete,
-  contextType,
 }: ChatMessageProps) {
   const isUser = message.role === 'user'
 
@@ -576,12 +575,7 @@ export function ChatMessage({
 
           if (isReasoningUIPart(part)) {
             return (
-              <ReasoningBlock
-                key={`reasoning-${index}`}
-                text={part.text}
-                state={part.state}
-                defaultOpen={contextType === 'change'}
-              />
+              <ReasoningBlock key={`reasoning-${index}`} state={part.state} />
             )
           }
 
@@ -649,26 +643,26 @@ export function ChatMessage({
 }
 
 // ---------------------------------------------------------------------------
-// ReasoningBlock — collapsible thinking section
+// ReasoningBlock — Swedish-first thinking-state surface.
+//
+// Streaming: spinner + rotating Swedish phrase, masking the English reasoning
+//   trace that Anthropic's extended thinking emits regardless of conversation
+//   language.
+// Done: a single static "Tänkte klart" breadcrumb pill that persists in
+//   scrollback. The raw reasoning text is intentionally NOT rendered — the
+//   action chips below convey what the model actually did, and the Swedish
+//   response carries the substance. Auditing of reasoning is a server-side
+//   concern (activity log), not a UI surface.
 // ---------------------------------------------------------------------------
 
 function ReasoningBlock({
-  text,
   state,
-  defaultOpen = false,
 }: {
-  text: string
   state?: 'streaming' | 'done' | undefined
-  defaultOpen?: boolean
 }) {
-  const [isOpen, setIsOpen] = useState(defaultOpen)
   const isThinking = state === 'streaming'
   const phrase = useRotatingThinkingPhrase(isThinking)
 
-  // While thinking, mask the underlying (English) reasoning trace with a
-  // rotating Swedish status line. The raw trace becomes inspectable only after
-  // streaming completes — the post-done disclosure stays opt-in (collapsed by
-  // default) so the chat surface reads as Swedish-first.
   if (isThinking) {
     return (
       <div className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-muted-foreground">
@@ -681,30 +675,9 @@ function ReasoningBlock({
   }
 
   return (
-    <div className="rounded-lg border border-border/60 bg-muted/30 overflow-hidden">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 w-full px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <Brain className="h-3.5 w-3.5 shrink-0" />
-
-        <span className="font-medium flex-1 text-left">Tänkte</span>
-
-        <ChevronRight
-          className={cn(
-            'h-3 w-3 shrink-0 transition-transform duration-200 ease-out',
-            isOpen && 'rotate-90'
-          )}
-        />
-      </button>
-
-      {isOpen && (
-        <div className="px-3 pb-2.5">
-          <p className="text-xs text-muted-foreground leading-relaxed pl-1 whitespace-pre-wrap">
-            {text}
-          </p>
-        </div>
-      )}
+    <div className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-muted-foreground">
+      <Brain className="h-3.5 w-3.5 shrink-0" />
+      <span className="font-medium">Tänkte klart</span>
     </div>
   )
 }
