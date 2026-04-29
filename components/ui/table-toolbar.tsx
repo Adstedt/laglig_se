@@ -49,9 +49,21 @@ const TableToolbar = React.forwardRef<HTMLDivElement, TableToolbarProps>(
               !views && 'ml-0'
             )}
           >
-            {search ? <div>{search}</div> : null}
-            {filters ? <div>{filters}</div> : null}
-            {rightSlot ? <div>{rightSlot}</div> : null}
+            {/* Each slot's wrapper is itself a flex container so children
+                returned as React Fragments (e.g. `DocumentFilterControls`
+                renders <search/> + <Popover/>... as siblings) line up
+                horizontally instead of stacking via default block layout. */}
+            {search ? (
+              <div className="flex flex-wrap items-center gap-2">{search}</div>
+            ) : null}
+            {filters ? (
+              <div className="flex flex-wrap items-center gap-2">{filters}</div>
+            ) : null}
+            {rightSlot ? (
+              <div className="flex flex-wrap items-center gap-2">
+                {rightSlot}
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>
