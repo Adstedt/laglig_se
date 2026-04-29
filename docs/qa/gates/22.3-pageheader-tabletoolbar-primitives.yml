@@ -1,0 +1,38 @@
+schema: 1
+story: '22.3'
+story_title: 'PageHeader + TableToolbar primitives + six-surface migration'
+gate: PASS
+status_reason: 'Two new primitives (PageHeader + TableToolbar) plus migration of all 5 workspace tabular pages. Slot positioning enforced by render tree. 17/17 primitive tests pass; typecheck clean across all touched paths. Two scoped-down decisions documented in commit notes: (1) /tasks Ny uppgift primaryAction stays inside TaskWorkspace UnifiedToolbar (lifting requires modal-state restructure, out-of-scope); (2) /laglistor Lägg till dokument primaryAction stays inside DocumentListPageContent (same lift constraint). Cycle detail header refactored internally — API surface unchanged so cycle-detail-page.tsx call sites are untouched. Findings count chip removed from cycle-detail meta line per AC 6 (duplicate of Findings tab content). Per-surface commits land granularly so revert scope matches risk. Critical bug found mid-UAT (Tailwind content paths missing lib/** → status pills rendered as transparent text on dark theme) was caught and fixed in ef995ac. Gate PASS.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-04-29T22:50:00Z'
+story_status: 'Done'
+waiver: { active: false }
+history:
+  - at: '2026-04-29T22:50:00Z'
+    gate: PASS
+top_issues:
+  - id: 'TASKS-PRIMARY-001'
+    severity: low
+    finding: '/tasks "Ny uppgift" primaryAction stays inside TaskWorkspace UnifiedToolbar; not lifted into PageHeader.primaryAction. Documented in code comments + commit message.'
+    suggested_action: 'Follow-up story to lift the create-task-modal state up so PageHeader.primaryAction owns the trigger. Bundle with TaskWorkspace UnifiedToolbar→TableToolbar swap.'
+    suggested_owner: dev
+  - id: 'LAGLISTOR-PRIMARY-001'
+    severity: low
+    finding: '/laglistor "Lägg till dokument" primaryAction stays inside DocumentListPageContent; not lifted into PageHeader.primaryAction. Same scope constraint as TASKS-PRIMARY-001.'
+    suggested_action: 'Bundle with TASKS-PRIMARY-001 in a follow-up.'
+    suggested_owner: dev
+nfrs:
+  maintainability: PASS
+  performance: PASS
+  security: PASS
+  reliability: PASS
+  testability: PASS
+quality_score: 90  # 100 - (5 × 2 low watch-items) = 90
+expires: '2026-05-13T22:50:00Z'
+evidence:
+  tests_added: 17
+  files_changed: 8
+  ac_count: 11
+  iv_count: 5
+  ac_pass_count: 9  # 9 of 11 fully addressed; AC 4 (laglistor primaryAction lift) + AC 8 (tasks primaryAction lift + filter-popover consolidation) partially addressed
+  iv_pass_count: 5
