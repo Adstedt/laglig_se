@@ -6,6 +6,13 @@
  * the SWR fetch + mutation callbacks; this component consumes `findings` via
  * prop so the per-item row drawer (AC 13) can share the same array without a
  * second SWR subscription.
+ *
+ * Story 22.4 AC 11 — Intentional non-Table layout: findings render as
+ * expandable cards (`FindingCard`), not tabular rows. Each finding has
+ * variable height, expandable detail, and inline action buttons; coercing
+ * those into a `<Table>` would harm the existing UX. Six of the seven
+ * workspace tabular surfaces use shadcn `<Table>`; this is the documented
+ * exception.
  */
 
 import {
