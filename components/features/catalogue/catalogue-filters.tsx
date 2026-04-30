@@ -3,7 +3,11 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useTransition } from 'react'
 import { cn } from '@/lib/utils'
-import { Input } from '@/components/ui/input'
+import {
+  DatePicker,
+  parseISODate,
+  toISODate,
+} from '@/components/ui/date-picker'
 import { X, Loader2 } from 'lucide-react'
 import { prefetchBrowse } from '@/lib/hooks/use-catalogue-browse'
 import type { BrowseInput } from '@/app/actions/browse'
@@ -435,14 +439,12 @@ export function CatalogueFilters({
             >
               Från
             </label>
-            <Input
+            <DatePicker
               id="date-from"
-              type="date"
-              value={dateFrom ?? ''}
-              onChange={(e) =>
-                updateFilters('from', e.target.value || undefined)
+              value={parseISODate(dateFrom)}
+              onChange={(d) =>
+                updateFilters('from', d ? toISODate(d) : undefined)
               }
-              className="h-9"
             />
           </div>
           <div>
@@ -452,12 +454,12 @@ export function CatalogueFilters({
             >
               Till
             </label>
-            <Input
+            <DatePicker
               id="date-to"
-              type="date"
-              value={dateTo ?? ''}
-              onChange={(e) => updateFilters('to', e.target.value || undefined)}
-              className="h-9"
+              value={parseISODate(dateTo)}
+              onChange={(d) =>
+                updateFilters('to', d ? toISODate(d) : undefined)
+              }
             />
           </div>
         </div>

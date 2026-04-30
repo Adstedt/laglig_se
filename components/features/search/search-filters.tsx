@@ -4,7 +4,11 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import {
+  DatePicker,
+  parseISODate,
+  toISODate,
+} from '@/components/ui/date-picker'
 import { X } from 'lucide-react'
 
 const CONTENT_TYPES = [
@@ -251,14 +255,12 @@ export function SearchFilters({
             >
               Från
             </label>
-            <Input
+            <DatePicker
               id="date-from"
-              type="date"
-              value={dateFrom ?? ''}
-              onChange={(e) =>
-                updateFilters('from', e.target.value || undefined)
+              value={parseISODate(dateFrom)}
+              onChange={(d) =>
+                updateFilters('from', d ? toISODate(d) : undefined)
               }
-              className="h-9"
             />
           </div>
           <div>
@@ -268,12 +270,12 @@ export function SearchFilters({
             >
               Till
             </label>
-            <Input
+            <DatePicker
               id="date-to"
-              type="date"
-              value={dateTo ?? ''}
-              onChange={(e) => updateFilters('to', e.target.value || undefined)}
-              className="h-9"
+              value={parseISODate(dateTo)}
+              onChange={(d) =>
+                updateFilters('to', d ? toISODate(d) : undefined)
+              }
             />
           </div>
         </div>

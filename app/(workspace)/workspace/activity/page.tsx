@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Download, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/ui/page-header'
 import {
   getWorkspaceActivity,
   type WorkspaceActivityEntry,
@@ -105,18 +106,16 @@ export default function WorkspaceActivityPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Aktivitetslogg</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Alla ändringar och aktiviteter i din workspace.
-          </p>
-        </div>
-        <Button variant="outline" onClick={handleExportCsv}>
-          <Download className="h-4 w-4 mr-2" />
-          Exportera CSV
-        </Button>
-      </div>
+      <PageHeader
+        title="Aktivitetslogg"
+        subtitle="Alla ändringar och aktiviteter i din workspace."
+        secondaryActions={
+          <Button variant="outline" size="sm" onClick={handleExportCsv}>
+            <Download className="h-4 w-4 mr-2" />
+            Exportera CSV
+          </Button>
+        }
+      />
 
       <ActivityFilters onFiltersChange={handleFiltersChange} />
 

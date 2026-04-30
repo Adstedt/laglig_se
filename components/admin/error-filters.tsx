@@ -4,6 +4,11 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useCallback } from 'react'
 
 import { Button } from '@/components/ui/button'
+import {
+  DatePicker,
+  parseISODate,
+  toISODate,
+} from '@/components/ui/date-picker'
 
 interface ErrorFiltersProps {
   jobNames: { name: string; displayName: string }[]
@@ -70,12 +75,10 @@ export function ErrorFilters({
         >
           Från
         </label>
-        <input
+        <DatePicker
           id="from-filter"
-          type="date"
-          className="h-9 rounded-md border bg-background px-3 text-sm"
-          value={currentFrom ?? ''}
-          onChange={(e) => updateParam('from', e.target.value || null)}
+          value={parseISODate(currentFrom)}
+          onChange={(d) => updateParam('from', d ? toISODate(d) : null)}
         />
       </div>
       <div>
@@ -85,12 +88,10 @@ export function ErrorFilters({
         >
           Till
         </label>
-        <input
+        <DatePicker
           id="to-filter"
-          type="date"
-          className="h-9 rounded-md border bg-background px-3 text-sm"
-          value={currentTo ?? ''}
-          onChange={(e) => updateParam('to', e.target.value || null)}
+          value={parseISODate(currentTo)}
+          onChange={(d) => updateParam('to', d ? toISODate(d) : null)}
         />
       </div>
       {(currentJobName || currentFrom || currentTo) && (
