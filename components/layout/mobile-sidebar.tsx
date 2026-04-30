@@ -81,9 +81,18 @@ const platformItems = [
     isAccordion: true,
     subItems: [
       { title: 'Bläddra alla', href: '/browse/rattskallor' },
-      { title: 'Svenska lagar', href: '/browse/lagar' },
-      { title: 'Myndighetsföreskrifter', href: '/browse/foreskrifter' },
-      { title: 'EU-rätt', href: '/browse/eu' },
+      {
+        title: 'Svenska lagar',
+        href: '/browse/rattskallor?types=SFS_LAW',
+      },
+      {
+        title: 'Myndighetsföreskrifter',
+        href: '/browse/rattskallor?types=AGENCY_REGULATION',
+      },
+      {
+        title: 'EU-rätt',
+        href: '/browse/rattskallor?types=EU_REGULATION,EU_DIRECTIVE',
+      },
     ],
   },
 ]

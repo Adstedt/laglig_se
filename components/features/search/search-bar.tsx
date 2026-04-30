@@ -37,7 +37,7 @@ export function SearchBar({ initialQuery }: SearchBarProps) {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Sök lagar, rättsfall, EU-lagstiftning..."
+          placeholder="Sök lagar, föreskrifter, EU-lagstiftning..."
           className="h-14 pl-12 pr-24 text-base"
         />
         {query && (

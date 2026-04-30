@@ -173,8 +173,8 @@ export function CatalogueSearchBar({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => query.length >= 2 && setShowSuggestions(true)}
-          placeholder="Sök lagar, rättsfall, EU-lagstiftning..."
-          className="h-14 pl-12 pr-24 text-base"
+          placeholder="Sök lagar, föreskrifter, EU-lagstiftning..."
+          className="h-14 bg-card pl-12 pr-24 text-base shadow-sm"
           autoComplete="off"
         />
         {isLoading && (

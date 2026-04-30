@@ -195,7 +195,7 @@ export function GlobalSearchDialog({
             <Command.Input
               value={query}
               onValueChange={handleQueryChange}
-              placeholder="Sök lagar, rättsfall, EU-lagstiftning..."
+              placeholder="Sök lagar, föreskrifter, EU-lagstiftning..."
               className="flex-1 bg-transparent py-4 pl-3 text-base outline-none placeholder:text-muted-foreground"
             />
             {query && (
