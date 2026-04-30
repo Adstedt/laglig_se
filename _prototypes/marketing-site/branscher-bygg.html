@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bygg & Anläggning — laglig.se</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script>
+      tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'], display: ['Fraunces', 'Georgia', 'serif'] } } } };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
+    <style>
+      body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; background: #fafaf7; color: #1c1917; }
+      .display { font-family: 'Fraunces', Georgia, serif; letter-spacing: -0.02em; }
+      .mock-window { box-shadow: 0 24px 48px -16px rgba(15, 12, 8, 0.12), 0 8px 16px -8px rgba(15, 12, 8, 0.08); }
+    </style>
+  </head>
+  <body data-active="branscher" class="min-h-screen antialiased">
+    <div id="site-nav"></div>
+
+    <main>
+      <!-- Breadcrumb -->
+      <div class="border-b border-stone-200/70">
+        <div class="mx-auto flex max-w-7xl items-center gap-2 px-6 py-3 text-xs text-stone-500">
+          <a href="index.html" class="hover:text-stone-800">Hem</a>
+          <i data-lucide="chevron-right" class="h-3 w-3"></i>
+          <a href="branscher.html" class="hover:text-stone-800">Branscher</a>
+          <i data-lucide="chevron-right" class="h-3 w-3"></i>
+          <span class="text-stone-700">Bygg & Anläggning</span>
+        </div>
+      </div>
+
+      <!-- Hero -->
+      <section class="relative overflow-hidden">
+        <div class="mx-auto grid max-w-7xl gap-12 px-6 py-16 lg:grid-cols-[1.2fr,1fr] lg:gap-16 lg:py-24">
+          <div>
+            <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-200/70 bg-amber-50/80 px-3 py-1.5 text-xs font-medium text-amber-900">
+              <i data-lucide="hard-hat" class="h-3.5 w-3.5"></i>
+              För bygg och anläggning
+            </div>
+            <h1 class="display text-5xl font-semibold leading-[1.05] text-stone-900 md:text-6xl">
+              Compliance och lagbevakning<br />
+              <span class="text-stone-500">för bygg och anläggning.</span>
+            </h1>
+            <p class="mt-6 max-w-xl text-lg text-stone-600">
+              Arbetsmiljöplan, AFS-paketet, AB04 och ID06-loggning — full koll utan postit-lappar och pärmar. När AFS uppdateras blir det en uppgift, inte ett mejl ni glömmer.
+            </p>
+
+            <div class="mt-8 flex flex-wrap gap-3">
+              <a href="#" class="inline-flex items-center gap-2 rounded-md bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 shadow-sm transition hover:bg-stone-800">
+                Kom igång gratis
+                <i data-lucide="arrow-right" class="h-4 w-4"></i>
+              </a>
+              <a href="#" class="inline-flex items-center gap-2 rounded-md border border-stone-300 bg-white px-5 py-3 text-sm font-medium text-stone-800 transition hover:bg-stone-50">
+                <i data-lucide="calendar" class="h-4 w-4"></i>
+                Boka demo
+              </a>
+            </div>
+
+            <div class="mt-8 flex flex-wrap gap-3 text-xs text-stone-600">
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 ring-1 ring-stone-200"><i data-lucide="check" class="h-3 w-3 text-emerald-600"></i> 14 dagar gratis</span>
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 ring-1 ring-stone-200"><i data-lucide="check" class="h-3 w-3 text-emerald-600"></i> Inget kort krävs</span>
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 ring-1 ring-stone-200"><i data-lucide="check" class="h-3 w-3 text-emerald-600"></i> ISO 45001-redo</span>
+            </div>
+          </div>
+
+          <!-- Industry-specific hero mock -->
+          <div class="relative">
+            <div class="absolute -inset-6 rounded-3xl bg-gradient-to-br from-amber-200/40 via-orange-100/20 to-stone-100/40 blur-3xl"></div>
+            <div class="mock-window relative rounded-xl border border-stone-200 bg-white p-5">
+              <div class="flex items-center gap-2 border-b border-stone-100 pb-3">
+                <span class="h-2.5 w-2.5 rounded-full bg-stone-200"></span>
+                <span class="h-2.5 w-2.5 rounded-full bg-stone-200"></span>
+                <span class="h-2.5 w-2.5 rounded-full bg-stone-200"></span>
+                <div class="ml-3 flex-1 truncate text-xs text-stone-400">laglig.se / laglistor / Bygg AB</div>
+              </div>
+              <div class="mt-4">
+                <div class="text-xs uppercase tracking-wider text-stone-500">Laglista · Bygg AB · 41.20 SNI</div>
+                <div class="mt-1 text-base font-semibold text-stone-900">Arbetsmiljö (28 lagar)</div>
+              </div>
+              <div class="mt-3 space-y-1.5">
+                <div class="flex items-center gap-3 rounded-md border border-amber-200 bg-amber-50/50 px-3 py-2">
+                  <i data-lucide="alert-circle" class="h-4 w-4 text-amber-700"></i>
+                  <div class="min-w-0 flex-1">
+                    <div class="truncate text-sm font-medium text-stone-900">AFS 2020:1 — Ändring publicerad i går</div>
+                    <div class="text-xs text-amber-800">2 kravpunkter påverkas · konsekvensanalys klar</div>
+                  </div>
+                  <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-900">Ny</span>
+                </div>
+                <div class="flex items-center gap-3 rounded-md border border-stone-100 px-3 py-2">
+                  <i data-lucide="check-circle" class="h-4 w-4 text-emerald-600"></i>
+                  <div class="min-w-0 flex-1">
+                    <div class="truncate text-sm font-medium text-stone-900">AFS 2001:1 — Systematiskt arbetsmiljöarbete</div>
+                    <div class="text-xs text-stone-500">14 kravpunkter · 12 uppfyllda</div>
+                  </div>
+                  <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-800">Pågår</span>
+                </div>
+                <div class="flex items-center gap-3 rounded-md border border-stone-100 px-3 py-2">
+                  <i data-lucide="check-circle" class="h-4 w-4 text-emerald-600"></i>
+                  <div class="min-w-0 flex-1">
+                    <div class="truncate text-sm font-medium text-stone-900">AB04 — Allmänna bestämmelser</div>
+                    <div class="text-xs text-stone-500">8 kravpunkter · 8 uppfyllda</div>
+                  </div>
+                  <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-800">Klar</span>
+                </div>
+                <div class="flex items-center gap-3 rounded-md border border-stone-100 px-3 py-2">
+                  <i data-lucide="hourglass" class="h-4 w-4 text-amber-600"></i>
+                  <div class="min-w-0 flex-1">
+                    <div class="truncate text-sm font-medium text-stone-900">Skatteförfarandelagen — ID06-personalliggare</div>
+                    <div class="text-xs text-stone-500">Granskas av: BAS-U Erik P.</div>
+                  </div>
+                  <span class="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-800">Pågår</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Benefit strip — industry-specific -->
+      <section class="border-y border-stone-200/70 bg-white">
+        <div class="mx-auto grid max-w-7xl gap-6 px-6 py-10 md:grid-cols-3">
+          <div class="flex items-start gap-3">
+            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-amber-100 text-amber-800"><i data-lucide="hard-hat" class="h-4 w-4"></i></span>
+            <div>
+              <div class="text-sm font-semibold text-stone-900">AFS-bevakning som faktiskt analyserar</div>
+              <div class="mt-0.5 text-sm text-stone-600">När AFS uppdateras får ni inte bara en notis — vi visar vilka kravpunkter som påverkas.</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-emerald-100 text-emerald-800"><i data-lucide="shield-check" class="h-4 w-4"></i></span>
+            <div>
+              <div class="text-sm font-semibold text-stone-900">ISO 45001-redo lagefterlevnadskontroll</div>
+              <div class="mt-0.5 text-sm text-stone-600">Periodiska revisioner enligt § 9.1.2 — sigillerad rapport som klarar extern revisor.</div>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-stone-100 text-stone-800"><i data-lucide="users" class="h-4 w-4"></i></span>
+            <div>
+              <div class="text-sm font-semibold text-stone-900">BAS-P / BAS-U-flöde inbyggt</div>
+              <div class="mt-0.5 text-sm text-stone-600">Roll-baserad åtkomst för byggherre, BAS-P, BAS-U och underentreprenör.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Logo strip — bygg-coded -->
+      <section class="bg-stone-100/50">
+        <div class="mx-auto max-w-7xl px-6 py-10">
+          <div class="mb-5 flex items-end justify-between">
+            <div class="text-xs font-semibold uppercase tracking-wider text-stone-500">Compliance-team i bygg-Sverige som litar på laglig.se</div>
+            <div class="text-sm text-stone-600"><span class="font-semibold text-stone-900">170 000+</span> rättskällor · uppdateras dagligen</div>
+          </div>
+          <div class="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
+            <div class="flex h-12 items-center justify-center rounded-md bg-white text-xs font-semibold tracking-wider text-stone-500 ring-1 ring-stone-200">NORDIA·B</div>
+            <div class="flex h-12 items-center justify-center rounded-md bg-white text-xs font-semibold tracking-wider text-stone-500 ring-1 ring-stone-200">VÄSTBYGG</div>
+            <div class="flex h-12 items-center justify-center rounded-md bg-white text-xs font-semibold tracking-wider text-stone-500 ring-1 ring-stone-200">BORÅS·H</div>
+            <div class="flex h-12 items-center justify-center rounded-md bg-white text-xs font-semibold tracking-wider text-stone-500 ring-1 ring-stone-200">ARKHEM</div>
+            <div class="flex h-12 items-center justify-center rounded-md bg-white text-xs font-semibold tracking-wider text-stone-500 ring-1 ring-stone-200">STENA·M</div>
+            <div class="flex h-12 items-center justify-center rounded-md bg-white text-xs font-semibold tracking-wider text-stone-500 ring-1 ring-stone-200">UPPLAND·V</div>
+            <div class="flex h-12 items-center justify-center rounded-md bg-white text-xs font-semibold tracking-wider text-stone-500 ring-1 ring-stone-200">FOLIO·BYGG</div>
+            <div class="flex h-12 items-center justify-center rounded-md bg-white text-xs font-semibold tracking-wider text-stone-500 ring-1 ring-stone-200">KRONA·E</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Feature blocks — REORDERED for bygg: Lagefterlevnadskontroll, Lagbevakning, Krav, AI -->
+      <section>
+        <div class="mx-auto max-w-7xl px-6 py-20">
+          <!-- 1. Lagefterlevnadskontroll first — top concern for ISO 45001 builders -->
+          <div class="grid gap-12 lg:grid-cols-2 lg:items-center">
+            <div>
+              <div class="text-xs font-semibold uppercase tracking-wider text-amber-800">Det vi börjar med</div>
+              <h2 class="display mt-2 text-3xl font-semibold text-stone-900 md:text-4xl">Lagefterlevnadskontroll enligt ISO 45001 § 9.1.2</h2>
+              <p class="mt-4 text-stone-600">
+                Periodiska revisioner ska göras systematiskt och dokumenterat. Vi materialiserar varje krav som ska bedömas, samlar bevis, dokumenterar avvikelser och spawnar uppgifter. Slutresultatet är en SHA-256-sigillerad PDF som klarar Skanska, NCC eller en konsult.
+              </p>
+              <a href="produkt-lagefterlevnadskontroll.html" class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-stone-900 hover:text-amber-800">Läs mer om Lagefterlevnadskontroll <i data-lucide="arrow-right" class="h-4 w-4"></i></a>
+            </div>
+            <div class="mock-window rounded-xl border border-stone-200 bg-white p-5">
+              <div class="text-xs font-semibold uppercase tracking-wider text-stone-500">Cykel · Q2 2026 · ISO 45001</div>
+              <div class="mt-3 grid grid-cols-4 gap-2">
+                <div class="rounded-md bg-emerald-50 p-2.5 text-center">
+                  <div class="text-base font-semibold text-emerald-900">42</div>
+                  <div class="mt-0.5 text-[10px] uppercase tracking-wider text-emerald-700">Uppfyllda</div>
+                </div>
+                <div class="rounded-md bg-amber-50 p-2.5 text-center">
+                  <div class="text-base font-semibold text-amber-900">14</div>
+                  <div class="mt-0.5 text-[10px] uppercase tracking-wider text-amber-700">Delvis</div>
+                </div>
+                <div class="rounded-md bg-rose-50 p-2.5 text-center">
+                  <div class="text-base font-semibold text-rose-900">3</div>
+                  <div class="mt-0.5 text-[10px] uppercase tracking-wider text-rose-700">Avvikelse</div>
+                </div>
+                <div class="rounded-md bg-stone-50 p-2.5 text-center">
+                  <div class="text-base font-semibold text-stone-900">7</div>
+                  <div class="mt-0.5 text-[10px] uppercase tracking-wider text-stone-600">Ej tillämpl.</div>
+                </div>
+              </div>
+              <div class="mt-3 rounded-md bg-stone-50 p-3 font-mono text-[10px] text-stone-600">
+                <div>scope: AFS-paketet (28) + ID06 + AB04 (8)</div>
+                <div>granskare: M. Söderlund · BAS-U + 2</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Lagbevakning -->
+          <div class="mt-24 grid gap-12 lg:grid-cols-2 lg:items-center">
+            <div class="order-2 lg:order-1 mock-window rounded-xl border border-stone-200 bg-white p-5">
+              <div class="flex items-center gap-2 border-b border-stone-100 pb-3">
+                <i data-lucide="radar" class="h-4 w-4 text-sky-700"></i>
+                <span class="text-sm font-semibold text-stone-900">Ändring upptäckt · 2026-04-29 06:14</span>
+              </div>
+              <div class="mt-3 rounded-md bg-amber-50/50 p-3 ring-1 ring-amber-200">
+                <div class="text-[10px] font-semibold uppercase tracking-wider text-amber-800">AFS</div>
+                <div class="mt-1 text-sm font-medium text-stone-900">AFS 2020:1 — Arbetsplatsens utformning</div>
+                <div class="mt-1 text-xs text-stone-700">Ändring i § 12. Skyltning av nödutgångar förtydligas. Träder i kraft 2026-07-01.</div>
+              </div>
+              <div class="mt-3 space-y-2">
+                <div class="text-xs font-semibold text-stone-700">Påverkar 2 av era kravpunkter:</div>
+                <div class="flex items-center gap-3 rounded-md border border-stone-200 px-3 py-2">
+                  <i data-lucide="check-square" class="h-4 w-4 text-stone-500"></i>
+                  <div class="min-w-0 flex-1 text-sm font-medium text-stone-900">Krav 12.3 — Skyltning på flervåningsplan</div>
+                  <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-900">Granska</span>
+                </div>
+                <div class="flex items-center gap-3 rounded-md border border-stone-200 px-3 py-2">
+                  <i data-lucide="check-square" class="h-4 w-4 text-stone-500"></i>
+                  <div class="min-w-0 flex-1 text-sm font-medium text-stone-900">Krav 12.7 — Larmsystem och utrymning</div>
+                  <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-800">OK</span>
+                </div>
+              </div>
+            </div>
+            <div class="order-1 lg:order-2">
+              <div class="text-xs font-semibold uppercase tracking-wider text-amber-800">Lagbevakning</div>
+              <h2 class="display mt-2 text-3xl font-semibold text-stone-900 md:text-4xl">När AFS uppdateras vet vi vilka kravpunkter som rör er</h2>
+              <p class="mt-4 text-stone-600">
+                Daglig polling av Riksdagen, Arbetsmiljöverkets föreskriftsregister och EUR-Lex. När en ändring detekteras körs en konsekvensanalys mot er specifika laglista — vi visar vilka kravpunkter som påverkas, inte bara att <em>något</em> har hänt.
+              </p>
+            </div>
+          </div>
+
+          <!-- 3. Krav & Kravpunkter -->
+          <div class="mt-24 grid gap-12 lg:grid-cols-2 lg:items-center">
+            <div>
+              <div class="text-xs font-semibold uppercase tracking-wider text-amber-800">Krav & Kravpunkter</div>
+              <h2 class="display mt-2 text-3xl font-semibold text-stone-900 md:text-4xl">Arbetsmiljöplanen blir 38 atomära krav — inte ett 14-sidors dokument</h2>
+              <p class="mt-4 text-stone-600">
+                Bryt ner AFS 2001:1, AFS 2020:1 och hela AFS-paketet i kravpunkter. Tilldela en ansvarig per krav (Erik på BAS-U, Anna på säkerhetsombud), länka bevis (intyg, riskbedömning, BAM-utbildning), och se täckningsgraden i realtid.
+              </p>
+            </div>
+            <div class="mock-window rounded-xl border border-stone-200 bg-white p-5">
+              <div class="border-b border-stone-100 pb-3 text-sm font-semibold text-stone-900">AFS 2001:1 — Systematiskt arbetsmiljöarbete</div>
+              <div class="mt-3 space-y-1.5">
+                <div class="flex items-center gap-2 rounded-md border border-stone-200 px-3 py-2">
+                  <i data-lucide="check-circle" class="h-4 w-4 text-emerald-600"></i>
+                  <div class="flex-1 text-xs"><div class="font-medium text-stone-900">3.1 Riskbedömning årligen</div><div class="text-stone-500">Ansvarig: BAS-U Erik P · 4 bevis</div></div>
+                  <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-800">Uppfylld</span>
+                </div>
+                <div class="flex items-center gap-2 rounded-md border border-stone-200 px-3 py-2">
+                  <i data-lucide="check-circle" class="h-4 w-4 text-emerald-600"></i>
+                  <div class="flex-1 text-xs"><div class="font-medium text-stone-900">5.2 Skyddsombud utsett</div><div class="text-stone-500">Ansvarig: Anna L · 2 bevis</div></div>
+                  <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-800">Uppfylld</span>
+                </div>
+                <div class="flex items-center gap-2 rounded-md border border-stone-200 px-3 py-2">
+                  <i data-lucide="hourglass" class="h-4 w-4 text-amber-600"></i>
+                  <div class="flex-1 text-xs"><div class="font-medium text-stone-900">7.4 Skyddsrond varje månad</div><div class="text-stone-500">Ansvarig: BAS-U Erik P · uppgift skapad</div></div>
+                  <span class="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-800">Pågår</span>
+                </div>
+                <div class="flex items-center gap-2 rounded-md border border-stone-200 px-3 py-2">
+                  <i data-lucide="circle" class="h-4 w-4 text-stone-400"></i>
+                  <div class="flex-1 text-xs"><div class="font-medium text-stone-900">9.1 Tillbudsrapportering</div><div class="text-stone-500">Ej tilldelad</div></div>
+                  <span class="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-stone-600">Att göra</span>
+                </div>
+              </div>
+              <div class="mt-3 flex items-center justify-between border-t border-stone-100 pt-3 text-xs">
+                <span class="text-stone-500">12 av 14 krav uppfyllda</span>
+                <span class="font-medium text-amber-800">Visa hela laglistan →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Flywheel mini-section adapted for bygg -->
+      <section class="border-y border-stone-200/70 bg-gradient-to-br from-stone-50 via-amber-50/40 to-emerald-50/30">
+        <div class="mx-auto max-w-7xl px-6 py-16">
+          <div class="grid gap-10 lg:grid-cols-[1.3fr,1fr] lg:items-center">
+            <div>
+              <div class="inline-flex items-center gap-2 rounded-full border border-amber-200/70 bg-white/70 px-3 py-1.5 text-xs font-medium text-amber-900">
+                <i data-lucide="git-merge" class="h-3.5 w-3.5"></i>
+                Network effect · datadriven AI
+              </div>
+              <h2 class="display mt-3 text-3xl font-semibold text-stone-900 md:text-4xl">
+                Allt ni gör i bygget blir<br />kontext för AI-assistenten.
+              </h2>
+              <p class="mt-4 max-w-2xl text-stone-700">
+                Skyddsronden ni dokumenterade förra veckan, BAM-intyget ni laddade upp i mars, avvikelsen ni stängde under Q1 — allt blir kontext. När någon frågar AI:n "vilka krav i AFS 2020:1 har vi gott bevis för?" citerar hon era egna dokument och uppgifter, inte bara lagtexten.
+              </p>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div class="rounded-lg border border-stone-200 bg-white p-4">
+                <i data-lucide="check-square" class="h-4 w-4 text-amber-700"></i>
+                <div class="mt-2 font-semibold text-stone-900">Lagar & krav</div>
+                <div class="mt-1 text-xs text-stone-500">170 000 rättskällor · uppdateras dagligen</div>
+              </div>
+              <div class="rounded-lg border border-stone-200 bg-white p-4">
+                <i data-lucide="layout-kanban" class="h-4 w-4 text-emerald-700"></i>
+                <div class="mt-2 font-semibold text-stone-900">Uppgifter</div>
+                <div class="mt-1 text-xs text-stone-500">Findings spawnar åtgärder · auto-tilldelade</div>
+              </div>
+              <div class="rounded-lg border border-stone-200 bg-white p-4">
+                <i data-lucide="folder-open" class="h-4 w-4 text-sky-700"></i>
+                <div class="mt-2 font-semibold text-stone-900">Bevis & styrdokument</div>
+                <div class="mt-1 text-xs text-stone-500">BAM-intyg, riskbedömning, skyddsronder</div>
+              </div>
+              <div class="rounded-lg border border-stone-200 bg-white p-4 ring-2 ring-stone-900/10">
+                <i data-lucide="sparkles" class="h-4 w-4 text-stone-900"></i>
+                <div class="mt-2 font-semibold text-stone-900">AI-assistent</div>
+                <div class="mt-1 text-xs text-stone-500">Citerar lag <em>och</em> era dokument</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Testimonials — bygg-coded -->
+      <section class="bg-white">
+        <div class="mx-auto max-w-7xl px-6 py-20">
+          <div class="mb-10">
+            <div class="text-xs font-semibold uppercase tracking-wider text-stone-500">Compliance-team i bygg-Sverige</div>
+            <h2 class="display mt-2 text-3xl font-semibold text-stone-900 md:text-4xl">Vad bygg-bolagen säger</h2>
+          </div>
+          <div class="grid gap-5 md:grid-cols-3">
+            <figure class="rounded-xl border border-stone-200 bg-stone-50/40 p-6">
+              <i data-lucide="quote" class="h-5 w-5 text-amber-700"></i>
+              <blockquote class="mt-3 text-stone-800">"Förra ISO 45001-revisionen tog tre dagar. Den här tog en eftermiddag — för att alla bevis redan var länkade till rätt krav."</blockquote>
+              <figcaption class="mt-5 flex items-center gap-3">
+                <span class="grid h-10 w-10 place-items-center rounded-full bg-stone-200 text-sm font-semibold text-stone-700">MS</span>
+                <div>
+                  <div class="text-sm font-medium text-stone-900">Maria Söderlund</div>
+                  <div class="text-xs text-stone-500">Compliance Manager · Nordia Bygg</div>
+                </div>
+              </figcaption>
+            </figure>
+            <figure class="rounded-xl border border-stone-200 bg-stone-50/40 p-6">
+              <i data-lucide="quote" class="h-5 w-5 text-amber-700"></i>
+              <blockquote class="mt-3 text-stone-800">"När AFS 2020:1 ändrades fick jag en notis som visade exakt vilka av mina 28 kravpunkter som blev påverkade. Det är inte normalt."</blockquote>
+              <figcaption class="mt-5 flex items-center gap-3">
+                <span class="grid h-10 w-10 place-items-center rounded-full bg-stone-200 text-sm font-semibold text-stone-700">EP</span>
+                <div>
+                  <div class="text-sm font-medium text-stone-900">Erik Persson</div>
+                  <div class="text-xs text-stone-500">BAS-U / KMA-ansvarig · Västbygg AB</div>
+                </div>
+              </figcaption>
+            </figure>
+            <figure class="rounded-xl border border-stone-200 bg-stone-50/40 p-6">
+              <i data-lucide="quote" class="h-5 w-5 text-amber-700"></i>
+              <blockquote class="mt-3 text-stone-800">"Vi flyttade från Notisum för att vi behövde ett system som <em>gjorde</em> något, inte bara visade dokument."</blockquote>
+              <figcaption class="mt-5 flex items-center gap-3">
+                <span class="grid h-10 w-10 place-items-center rounded-full bg-stone-200 text-sm font-semibold text-stone-700">JK</span>
+                <div>
+                  <div class="text-sm font-medium text-stone-900">Johan Karlsson</div>
+                  <div class="text-xs text-stone-500">Platschef · Borås Husbyggare</div>
+                </div>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bygg-specific FAQ -->
+      <section class="border-t border-stone-200/70 bg-stone-50/60">
+        <div class="mx-auto max-w-3xl px-6 py-20">
+          <div class="mb-10 text-center">
+            <div class="text-xs font-semibold uppercase tracking-wider text-stone-500">Vanliga frågor från bygg-bolag</div>
+            <h2 class="display mt-2 text-3xl font-semibold text-stone-900 md:text-4xl">Frågor BAS-U och KMA-ansvariga ställer</h2>
+          </div>
+          <div class="space-y-3">
+            <details class="group rounded-xl border border-stone-200 bg-white">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-sm font-medium text-stone-900">Vilka AFS gäller mitt byggbolag?
+                <i data-lucide="chevron-down" class="h-4 w-4 text-stone-400 transition group-open:rotate-180"></i>
+              </summary>
+              <div class="px-5 pb-5 text-sm text-stone-700">När ni anger ert organisationsnummer hämtar vi SNI-koden från Bolagsverket och föreslår tillämpliga AFS automatiskt — typiskt AFS 2001:1 (SAM), AFS 2020:1 (Arbetsplatsens utformning), AFS 2018:4 (Smittrisker), AFS 1999:3 (Byggnads- och anläggningsarbete). Listan justeras baserat på er aktivitetsprofil (tunga maskiner, kemikalier, höjdarbete, m.m.).</div>
+            </details>
+            <details class="group rounded-xl border border-stone-200 bg-white">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-sm font-medium text-stone-900">Hur fungerar det med ID06 och personalliggare?
+                <i data-lucide="chevron-down" class="h-4 w-4 text-stone-400 transition group-open:rotate-180"></i>
+              </summary>
+              <div class="px-5 pb-5 text-sm text-stone-700">Laglig.se hanterar inte själva personalliggaren — för den biten används separata system (t.ex. Entral, Sveriges Byggindustrier eller Fieldly). Vi bevakar däremot kraven runt personalliggaren (Skatteförfarandelagen 39 kap, ID06-standarden) och dokumenterar att rutinerna finns på plats — t.ex. att utbildning sker, att rutinen är uppdaterad och att kontrollerna utförs.</div>
+            </details>
+            <details class="group rounded-xl border border-stone-200 bg-white">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-sm font-medium text-stone-900">Är detta godkänt som intern revision enligt ISO 45001?
+                <i data-lucide="chevron-down" class="h-4 w-4 text-stone-400 transition group-open:rotate-180"></i>
+              </summary>
+              <div class="px-5 pb-5 text-sm text-stone-700">Lagefterlevnadskontrollen i laglig.se uppfyller § 9.1.2 (Evaluation of compliance). Det är <em>en del av</em> intern revision men inte hela. För full intern revision enligt § 9.2 krävs också processrevision — som typiskt görs av en konsult eller av er internrevisor. Vår rapport är dock en accepterad input i deras arbete.</div>
+            </details>
+            <details class="group rounded-xl border border-stone-200 bg-white">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-sm font-medium text-stone-900">Kan vi importera vår nuvarande laglista från Notisum eller JP Infonet?
+                <i data-lucide="chevron-down" class="h-4 w-4 text-stone-400 transition group-open:rotate-180"></i>
+              </summary>
+              <div class="px-5 pb-5 text-sm text-stone-700">Ja. Skicka över er nuvarande laglista som Excel eller PDF, så mappar vår onboarding-team den mot vår strukturerade laglista. Den manuella mappningen tar typiskt 1–3 dagar och inkluderar att vi länkar era befintliga styrdokument som bevis i kravpunkterna.</div>
+            </details>
+            <details class="group rounded-xl border border-stone-200 bg-white">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-sm font-medium text-stone-900">Hur hanteras AB04 / ABT06 / AFB-uppdateringar?
+                <i data-lucide="chevron-down" class="h-4 w-4 text-stone-400 transition group-open:rotate-180"></i>
+              </summary>
+              <div class="px-5 pb-5 text-sm text-stone-700">Standardavtalsversioner (AB04, ABT06, AFB) är inte SFS — de släpps av branschorganisationer. Vi tar in dem som referensmaterial och flaggar när nya versioner publiceras, men förlitar oss på era jurister för att tolka kontraktuella konsekvenser. AFS-uppdateringar däremot bevakar vi via Arbetsmiljöverkets feed dagligen.</div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cross-sell to other industries + features -->
+      <section class="border-t border-stone-200/70">
+        <div class="mx-auto max-w-7xl px-6 py-16">
+          <div class="mb-8">
+            <div class="text-xs font-semibold uppercase tracking-wider text-stone-500">Andra branscher · samma plattform</div>
+            <h2 class="display mt-2 text-2xl font-semibold text-stone-900">Inte bara för bygg</h2>
+          </div>
+          <div class="grid gap-3 md:grid-cols-3 lg:grid-cols-5">
+            <a href="branscher.html" class="group rounded-xl border border-stone-200 bg-white p-4 transition hover:border-emerald-300 hover:bg-emerald-50/40">
+              <i data-lucide="factory" class="h-4 w-4 text-emerald-700"></i>
+              <div class="mt-2 text-sm font-semibold text-stone-900 group-hover:text-emerald-900">Industri</div>
+            </a>
+            <a href="branscher.html" class="group rounded-xl border border-stone-200 bg-white p-4 transition hover:border-rose-300 hover:bg-rose-50/40">
+              <i data-lucide="utensils" class="h-4 w-4 text-rose-700"></i>
+              <div class="mt-2 text-sm font-semibold text-stone-900 group-hover:text-rose-900">Restaurang</div>
+            </a>
+            <a href="branscher.html" class="group rounded-xl border border-stone-200 bg-white p-4 transition hover:border-sky-300 hover:bg-sky-50/40">
+              <i data-lucide="cpu" class="h-4 w-4 text-sky-700"></i>
+              <div class="mt-2 text-sm font-semibold text-stone-900 group-hover:text-sky-900">Tech & SaaS</div>
+            </a>
+            <a href="branscher.html" class="group rounded-xl border border-stone-200 bg-white p-4 transition hover:border-pink-300 hover:bg-pink-50/40">
+              <i data-lucide="heart-pulse" class="h-4 w-4 text-pink-700"></i>
+              <div class="mt-2 text-sm font-semibold text-stone-900 group-hover:text-pink-900">Vård & Omsorg</div>
+            </a>
+            <a href="branscher.html" class="group rounded-xl border border-stone-200 bg-white p-4 transition hover:border-stone-400 hover:bg-stone-50">
+              <i data-lucide="landmark" class="h-4 w-4 text-stone-700"></i>
+              <div class="mt-2 text-sm font-semibold text-stone-900 group-hover:text-stone-800">Offentlig sektor</div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Closing CTA -->
+      <section class="relative overflow-hidden border-t border-stone-200/70 bg-stone-900 text-stone-50">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(252,211,77,0.18),transparent_60%)]"></div>
+        <div class="relative mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-2 lg:items-center">
+          <div>
+            <h2 class="display text-4xl font-semibold leading-[1.05] md:text-5xl">
+              Er bygg-laglista byggs på minuter.<br />
+              <span class="text-stone-400">Med rätt AFS, från start.</span>
+            </h2>
+            <p class="mt-4 max-w-xl text-stone-300">Skriv in ert organisationsnummer så hämtar vi SNI-kod (typiskt 41.20, 42.11, 43.X) och föreslår era tillämpliga AFS direkt.</p>
+          </div>
+          <div class="rounded-2xl bg-white/5 p-2 ring-1 ring-white/10 backdrop-blur">
+            <div class="rounded-xl bg-white p-5 text-stone-900">
+              <label class="text-xs font-semibold uppercase tracking-wider text-stone-500">Organisationsnummer</label>
+              <div class="mt-2 flex items-center gap-2 rounded-md border border-stone-300 bg-white px-3 py-2.5">
+                <i data-lucide="building-2" class="h-4 w-4 text-stone-500"></i>
+                <input type="text" placeholder="556677-8899" class="w-full bg-transparent text-base font-medium text-stone-900 placeholder:text-stone-400 focus:outline-none" />
+              </div>
+              <button class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md bg-stone-900 px-5 py-3 text-sm font-medium text-stone-50 transition hover:bg-stone-800">
+                Visa min bygg-laglista
+                <i data-lucide="arrow-right" class="h-4 w-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="site-footer"></div>
+    <script src="_layout.js"></script>
+  </body>
+</html>
