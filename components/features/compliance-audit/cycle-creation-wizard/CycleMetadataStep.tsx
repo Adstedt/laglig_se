@@ -6,6 +6,11 @@ import { useEffect, useId, useRef } from 'react'
 import Link from 'next/link'
 import { AuditType } from '@prisma/client'
 import { Button } from '@/components/ui/button'
+import {
+  DatePicker,
+  parseISODate,
+  toISODate,
+} from '@/components/ui/date-picker'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -201,25 +206,23 @@ export function CycleMetadataStep({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor={startId}>Startdatum</Label>
-          <Input
+          <DatePicker
             id={startId}
-            type="date"
-            value={value.scheduledStart ?? ''}
-            aria-invalid={Boolean(errors.scheduledStart)}
-            onChange={(e) => onChange({ scheduledStart: e.target.value })}
+            value={parseISODate(value.scheduledStart)}
+            onChange={(d) => onChange({ scheduledStart: toISODate(d) })}
+            invalid={Boolean(errors.scheduledStart)}
+            clearable={false}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor={endId}>Slutdatum</Label>
-          <Input
+          <DatePicker
             id={endId}
-            type="date"
-            value={value.scheduledEnd ?? ''}
-            aria-invalid={Boolean(errors.scheduledEnd)}
-            aria-describedby={
-              errors.scheduledEnd ? `${endId}-error` : undefined
-            }
-            onChange={(e) => onChange({ scheduledEnd: e.target.value })}
+            value={parseISODate(value.scheduledEnd)}
+            onChange={(d) => onChange({ scheduledEnd: toISODate(d) })}
+            invalid={Boolean(errors.scheduledEnd)}
+            ariaDescribedBy={errors.scheduledEnd ? `${endId}-error` : undefined}
+            clearable={false}
           />
           {errors.scheduledEnd ? (
             <p
@@ -235,12 +238,12 @@ export function CycleMetadataStep({
 
       <div className="space-y-2">
         <Label htmlFor={cutoffId}>Brytdatum för lagändringar</Label>
-        <Input
+        <DatePicker
           id={cutoffId}
-          type="date"
-          value={value.lawChangeCutoffDate ?? ''}
-          aria-describedby={`${cutoffId}-help`}
-          onChange={(e) => onChange({ lawChangeCutoffDate: e.target.value })}
+          value={parseISODate(value.lawChangeCutoffDate)}
+          onChange={(d) => onChange({ lawChangeCutoffDate: toISODate(d) })}
+          ariaDescribedBy={`${cutoffId}-help`}
+          clearable={false}
         />
         <p id={`${cutoffId}-help`} className="text-xs text-muted-foreground">
           Lagändringar publicerade efter detta datum ingår inte i kontrollens

@@ -10,6 +10,7 @@ import { unstable_cache } from 'next/cache'
 import { getWorkspaceContext } from '@/lib/auth/workspace-context'
 import { prisma } from '@/lib/prisma'
 import { SettingsTabs } from '@/components/features/settings/settings-tabs'
+import { PageHeader } from '@/components/ui/page-header'
 import { getTaskColumns } from '@/app/actions/tasks'
 import { getCompanyProfile } from '@/app/actions/company-profile'
 
@@ -104,12 +105,10 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-semibold">Inställningar</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Hantera din arbetsplats och dina preferenser
-        </p>
-      </div>
+      <PageHeader
+        title="Inställningar"
+        subtitle="Hantera din arbetsplats och dina preferenser"
+      />
 
       <SettingsTabs
         workspace={workspace}

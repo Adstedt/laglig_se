@@ -300,7 +300,22 @@
       "Bash(echo \"TASK-MODAL FILES:\")",
       "Bash(ls /c/Users/audri/Desktop/dev/laglig_se/components/features/tasks/task-modal/)",
       "Read(//tmp/**)",
-      "WebFetch(domain:docs.claude.com)"
+      "WebFetch(domain:docs.claude.com)",
+      "Bash(gh pr *)",
+      "Bash(xxd)",
+      "Bash(gtimeout 25 npx -y chrome-devtools-mcp@latest --help)",
+      "Bash(mkdir -p ~/.local/share)",
+      "Read(//Users/alexanderadstedt/.local/share/**)",
+      "Bash(tar -xzf node-20.tar.gz)",
+      "Bash(rm -rf node-20)",
+      "Bash(mv node-v20.20.2-darwin-arm64 node-20)",
+      "Bash(claude mcp *)",
+      "Bash(/Users/alexanderadstedt/.local/share/node-20/bin/npx -y chrome-devtools-mcp@latest --help)",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__chrome-devtools__click",
+      "mcp__chrome-devtools__press_key",
+      "mcp__chrome-devtools__fill_form",
+      "mcp__chrome-devtools__wait_for"
     ],
     "deny": [],
     "ask": []

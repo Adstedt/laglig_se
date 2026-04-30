@@ -1,11 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
+import { config as dotenvConfig } from 'dotenv'
 
-/**
- * Playwright E2E Test Configuration
- *
- * Runs E2E tests against deployed environments (preview, staging, or production)
- * Base URL is set via BASE_URL environment variable
- */
+dotenvConfig({ path: '.env.local', override: false })
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
@@ -18,23 +15,38 @@ export default defineConfig({
     baseURL: process.env.BASE_URL || 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
 
   projects: [
     {
+      name: 'setup',
+      testMatch: /auth\.setup\.ts/,
+    },
+    {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: [/auth\.setup\.ts/, /epic-21\//],
+    },
+    {
+      name: 'chromium-authed',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'tests/.auth/user.json',
+      },
+      testMatch: /epic-21\/.*\.spec\.ts/,
+      dependencies: ['setup'],
     },
   ],
 
-  // Don't use webServer in CI - we test against deployed URLs
   ...(process.env.CI
     ? {}
     : {
         webServer: {
           command: 'pnpm dev',
           url: 'http://localhost:3000',
-          reuseExistingServer: !process.env.CI,
+          reuseExistingServer: true,
+          timeout: 120_000,
         },
       }),
 })

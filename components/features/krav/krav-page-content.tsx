@@ -27,6 +27,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/ui/page-header'
 import { LegalDocumentModal } from '@/components/features/document-list/legal-document-modal'
 import { updateRequirement } from '@/app/actions/law-list-item-requirements'
 import { useDebounce } from '@/lib/hooks/use-debounce'
@@ -390,16 +391,10 @@ export function KravPageContent({
 
   return (
     <div className="space-y-4">
-      {/* Header — mirrors `/laglistor` layout (title + description left, actions right). */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Krav</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Alla kravpunkter i din arbetsyta — filtrera efter luckor, mina krav
-            eller krav som saknar bevis.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Krav"
+        subtitle="Alla kravpunkter i din arbetsyta — filtrera efter luckor, mina krav eller krav som saknar bevis."
+      />
 
       {/* Filter chips + search toolbar (single horizontal row, wraps on narrow) */}
       <div className="flex flex-wrap items-center gap-3">

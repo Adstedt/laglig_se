@@ -9,6 +9,7 @@ import {
   getUniqueDomains,
 } from '@/lib/db/queries/template-catalog'
 import { TemplateCatalogClient } from '@/components/features/templates/template-catalog-client'
+import { PageHeader } from '@/components/ui/page-header'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,14 +27,10 @@ export default async function TemplateCatalogPage() {
 
   return (
     <div className="space-y-4">
-      {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-semibold">Mallar</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Utforska färdiga laglistor och hitta en relevant utgångspunkt för ditt
-          efterlevnadsarbete.
-        </p>
-      </div>
+      <PageHeader
+        title="Mallar"
+        subtitle="Utforska färdiga laglistor och hitta en relevant utgångspunkt för ditt efterlevnadsarbete."
+      />
 
       <TemplateCatalogClient templates={templates} domains={domains} />
     </div>
