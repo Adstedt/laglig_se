@@ -87,3 +87,6 @@ scripts/tmp-*.ts
 scripts/tmp-*.tsx
 scripts/tmp-*.mjs
 scripts/tmp-*.js
+
+# npm lockfile (project uses pnpm)
+package-lock.json
