@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lagordlista — laglig.se</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script>
+      tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'], display: ['Fraunces', 'Georgia', 'serif'] } } } };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
+    <style>
+      body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; background: #fafaf7; color: #1c1917; }
+      .display { font-family: 'Fraunces', Georgia, serif; letter-spacing: -0.02em; }
+      .anchor-row a { transition: all 120ms ease; }
+      .term-link { border-bottom: 1px dotted #b45309; color: #92400e; font-weight: 500; }
+      .term-link:hover { background: #fef3c7; color: #78350f; }
+    </style>
+  </head>
+  <body data-active="resurser" class="min-h-screen antialiased">
+    <div id="site-nav"></div>
+
+    <main>
+      <!-- Breadcrumb -->
+      <div class="border-b border-stone-200/70">
+        <div class="mx-auto flex max-w-7xl items-center gap-2 px-6 py-3 text-xs text-stone-500">
+          <a href="index.html" class="hover:text-stone-800">Hem</a>
+          <i data-lucide="chevron-right" class="h-3 w-3"></i>
+          <a href="#" class="hover:text-stone-800">Resurser</a>
+          <i data-lucide="chevron-right" class="h-3 w-3"></i>
+          <span class="text-stone-700">Lagordlista</span>
+        </div>
+      </div>
+
+      <!-- Hero -->
+      <section>
+        <div class="mx-auto max-w-7xl px-6 py-12 lg:py-16">
+          <div class="mx-auto max-w-3xl text-center">
+            <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-sky-200/70 bg-sky-50/80 px-3 py-1.5 text-xs font-medium text-sky-900">
+              <i data-lucide="book-open" class="h-3.5 w-3.5"></i>
+              Compliance-vokabulär · ~150 termer
+            </div>
+            <h1 class="display text-5xl font-semibold leading-[1.05] text-stone-900 md:text-6xl">
+              Lagordlista<br /><span class="text-stone-500">— compliance-svenska, från A till Ö.</span>
+            </h1>
+            <p class="mx-auto mt-5 max-w-2xl text-lg text-stone-600">
+              CSRD, ESRS, AFS, AB04, NIS2, lagefterlevnadskontroll, byggherreansvar, kravpunkt, kollektivavtal, författningssamling — vi förklarar varje begrepp på en mening, plus var det dyker upp i praktiken.
+            </p>
+            <!-- Search (visual only) -->
+            <div class="mx-auto mt-8 flex max-w-xl items-center gap-2 rounded-lg border border-stone-300 bg-white px-4 py-3 shadow-sm">
+              <i data-lucide="search" class="h-4 w-4 text-stone-500"></i>
+              <input type="text" placeholder="Sök en term — t.ex. 'kravpunkt' eller 'NIS2'" class="w-full bg-transparent text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none" />
+              <kbd class="hidden rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-medium text-stone-500 sm:inline">/</kbd>
+            </div>
+            <!-- A-Ö anchor row -->
+            <div class="anchor-row mx-auto mt-8 flex max-w-3xl flex-wrap justify-center gap-1.5 text-sm">
+              <a href="#a" class="rounded-md bg-white px-2.5 py-1.5 font-semibold text-stone-700 ring-1 ring-stone-200 hover:bg-stone-100 hover:text-amber-800">A</a>
+              <a href="#b" class="rounded-md bg-white px-2.5 py-1.5 font-semibold text-stone-700 ring-1 ring-stone-200 hover:bg-stone-100 hover:text-amber-800">B</a>
+              <a href="#c" class="rounded-md bg-white px-2.5 py-1.5 font-semibold text-stone-700 ring-1 ring-stone-200 hover:bg-stone-100 hover:text-amber-800">C</a>
+              <a href="#d" class="rounded-md bg-white px-2.5 py-1.5 font-semibold text-stone-700 ring-1 ring-stone-200 hover:bg-stone-100 hover:text-amber-800">D</a>
+              <a href="#e" class="rounded-md bg-white px-2.5 py-1.5 font-semibold text-stone-700 ring-1 ring-stone-200 hover:bg-stone-100 hover:text-amber-800">E</a>
+              <span class="rounded-md px-2.5 py-1.5 font-semibold text-stone-300">F</span>
+              <a href="#g" class="rounded-md bg-white px-2.5 py-1.5 font-semibold text-stone-700 ring-1 ring-stone-200 hover:bg-stone-100 hover:text-amber-800">G</a>
+              <a href="#h" class="rounded-md bg-white px-2.5 py-1.5 font-semibold text-stone-700 ring-1 ring-stone-200 hover:bg-stone-100 hover:text-amber-800">H</a>
+              <a href="#i" class="rounded-md bg-white px-2.5 py-1.5 font-semibold text-stone-700 ring-1 ring-stone-200 hover:bg-stone-100 hover:text-amber-800">I</a>
+              <span class="rounded-md px-2.5 py-1.5 font-semibold text-stone-300">J</span>
+              <a href="#k" class="rounded-md bg-white px-2.5 py-1.5 font-semibold text-stone-700 ring-1 ring-stone-200 hover:bg-stone-100 hover:text-amber-800">K</a>
+              <a href="#l" class="rounded-md bg-white px-2.5 py-1.5 font-semibold text-stone-700 ring-1 ring-stone-200 hover:bg-stone-100 hover:text-amber-800">L</a>
+              <a href="#m" class="rounded-md bg-white px-2.5 py-1.5 font-semibold text-stone-700 ring-1 ring-stone-200 hover:bg-stone-100 hover:text-amber-800">M</a>
+              <a href="#n" class="rounded-md bg-white px-2.5 py-1.5 font-semibold text-stone-700 ring-1 ring-stone-200 hover:bg-stone-100 hover:text-amber-800">N</a>
+              <span class="rounded-md px-2.5 py-1.5 font-semibold text-stone-300">O</span>
+              <a href="#p" class="rounded-md bg-white px-2.5 py-1.5 font-semibold text-stone-700 ring-1 ring-stone-200 hover:bg-stone-100 hover:text-amber-800">P</a>
+              <span class="rounded-md px-2.5 py-1.5 font-semibold text-stone-300">Q</span>
+              <a href="#r" class="rounded-md bg-white px-2.5 py-1.5 font-semibold text-stone-700 ring-1 ring-stone-200 hover:bg-stone-100 hover:text-amber-800">R</a>
+              <a href="#s" class="rounded-md bg-white px-2.5 py-1.5 font-semibold text-stone-700 ring-1 ring-stone-200 hover:bg-stone-100 hover:text-amber-800">S</a>
+              <span class="rounded-md px-2.5 py-1.5 font-semibold text-stone-300">T</span>
+              <span class="rounded-md px-2.5 py-1.5 font-semibold text-stone-300">U</span>
+              <span class="rounded-md px-2.5 py-1.5 font-semibold text-stone-300">V</span>
+              <span class="rounded-md px-2.5 py-1.5 font-semibold text-stone-300">W</span>
+              <span class="rounded-md px-2.5 py-1.5 font-semibold text-stone-300">X</span>
+              <span class="rounded-md px-2.5 py-1.5 font-semibold text-stone-300">Y</span>
+              <span class="rounded-md px-2.5 py-1.5 font-semibold text-stone-300">Z</span>
+              <span class="rounded-md px-2.5 py-1.5 font-semibold text-stone-300">Å</span>
+              <span class="rounded-md px-2.5 py-1.5 font-semibold text-stone-300">Ä</span>
+              <a href="#o" class="rounded-md bg-white px-2.5 py-1.5 font-semibold text-stone-700 ring-1 ring-stone-200 hover:bg-stone-100 hover:text-amber-800">Ö</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Glossary entries -->
+      <section class="border-t border-stone-200/70 bg-white">
+        <div class="mx-auto max-w-3xl px-6 py-16">
+          <!-- A -->
+          <div id="a" class="scroll-mt-20">
+            <h2 class="display sticky top-16 z-10 -mx-6 border-b border-stone-200/80 bg-white/90 px-6 py-3 text-3xl font-semibold text-amber-800 backdrop-blur">A</h2>
+            <div class="mt-6 space-y-6">
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">AB04 — Allmänna Bestämmelser för byggnads-, anläggnings- och installationsentreprenader</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Standardavtal som reglerar förhållandet mellan beställare och entreprenör vid utförandeentreprenader. Inte en lag utan ett branschavtal — men i praktiken bindande i de flesta byggprojekt. Hänvisningar till AB04 dyker upp i nästan alla <a href="branscher-bygg.html" class="term-link">bygg-projektets dokument</a>.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">AFS — Arbetsmiljöverkets författningssamling</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Bindande föreskrifter som Arbetsmiljöverket utfärdar med stöd av arbetsmiljölagen. AFS-paketet täcker allt från systematiskt arbetsmiljöarbete (AFS 2001:1) till smittrisker (AFS 2018:4). Övervakas dagligen i <a href="#" class="term-link">laglig.se's lagbevakning</a>.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">AI-förordningen (EU AI Act)</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">EU-förordning (2024/1689) som klassificerar AI-system efter risk och ställer krav på utvecklare och användare. För high-risk-system gäller transparens, dokumentation och tillsyn. Träder i kraft stegvis 2025–2027.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Aktivitetslogg</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Immutabelt register över alla ändringar i ett system. I compliance-sammanhang en förutsättning för att en revisor ska kunna spåra vem som gjorde vad och när. Se <a href="#" class="term-link">Aktivitetslogg</a> i produkten.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Arbetsmiljöplan</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Krav enligt AFS 1999:3 i bygg- och anläggningsprojekt. Ska beskriva risker, skyddsåtgärder, ansvar och rutiner för respektive projekt. BAS-P ansvarar under planering, BAS-U under utförande.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Avvikelse</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">När en faktisk situation inte uppfyller ett krav. I <a href="produkt-lagefterlevnadskontroll.html" class="term-link">lagefterlevnadskontrollen</a> spawnar varje avvikelse automatiskt en åtgärds-uppgift med ansvarig och tidsfrist.</p>
+              </article>
+            </div>
+          </div>
+
+          <!-- B -->
+          <div id="b" class="mt-14 scroll-mt-20">
+            <h2 class="display sticky top-16 z-10 -mx-6 border-b border-stone-200/80 bg-white/90 px-6 py-3 text-3xl font-semibold text-amber-800 backdrop-blur">B</h2>
+            <div class="mt-6 space-y-6">
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">BAS-P / BAS-U</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Byggarbetsmiljösamordnare för planering (BAS-P) respektive utförande (BAS-U). Krav enligt AFS 1999:3. Måste utses skriftligt av byggherren och ha dokumenterad utbildning.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Byggherreansvar</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Det yttersta ansvaret för att arbetsmiljökrav uppfylls i ett byggprojekt. Kan inte avtalas bort, även om delegering till BAS-P/BAS-U är möjlig.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Bevis (i compliance)</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Dokumentation som styrker att ett krav är uppfyllt: intyg, certifikat, signerade protokoll, rutindokument, utbildningsbevis. I <a href="#" class="term-link">laglig.se</a> länkas bevis direkt till respektive kravpunkt.</p>
+              </article>
+            </div>
+          </div>
+
+          <!-- C -->
+          <div id="c" class="mt-14 scroll-mt-20">
+            <h2 class="display sticky top-16 z-10 -mx-6 border-b border-stone-200/80 bg-white/90 px-6 py-3 text-3xl font-semibold text-amber-800 backdrop-blur">C</h2>
+            <div class="mt-6 space-y-6">
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">CSRD — Corporate Sustainability Reporting Directive</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">EU-direktiv (2022/2464) som kräver omfattande hållbarhetsrapportering. Träder i kraft stegvis från räkenskapsår 2024 för stora företag. Tröskelvärden: 250+ anställda, 40 MEUR omsättning, 20 MEUR balansomslutning (två av tre).</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">CLP — Classification, Labelling and Packaging</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">EU-förordning (1272/2008) om klassificering, märkning och förpackning av kemiska produkter. Komplement till REACH för kemikalietillverkare och importörer.</p>
+              </article>
+            </div>
+          </div>
+
+          <!-- D -->
+          <div id="d" class="mt-14 scroll-mt-20">
+            <h2 class="display sticky top-16 z-10 -mx-6 border-b border-stone-200/80 bg-white/90 px-6 py-3 text-3xl font-semibold text-amber-800 backdrop-blur">D</h2>
+            <div class="mt-6 space-y-6">
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">DPIA — Data Protection Impact Assessment</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Konsekvensbedömning för dataskydd enligt GDPR art. 35. Krävs vid behandling som innebär hög risk för registrerades rättigheter (t.ex. profilering, känsliga uppgifter, storskalig övervakning).</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">DSA — Digital Services Act</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">EU-förordning (2022/2065) om digitala tjänster. Reglerar plattformars ansvar för användargenererat innehåll, transparenskrav och rapporteringsplikt. Olika nivåer beroende på plattformens storlek.</p>
+              </article>
+            </div>
+          </div>
+
+          <!-- E -->
+          <div id="e" class="mt-14 scroll-mt-20">
+            <h2 class="display sticky top-16 z-10 -mx-6 border-b border-stone-200/80 bg-white/90 px-6 py-3 text-3xl font-semibold text-amber-800 backdrop-blur">E</h2>
+            <div class="mt-6 space-y-6">
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Egenkontroll</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Verksamhetsutövares ansvar att själv kontrollera att man uppfyller lagar och föreskrifter. Krav inom flera områden — egenkontrollprogram inom livsmedel (Livsmedelsverkets föreskrifter), egenkontroll enligt miljöbalken, egenkontroll inom hälso- och sjukvård.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">ESRS — European Sustainability Reporting Standards</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">De konkreta rapporteringsstandarderna under CSRD. Fastställda av EFRAG. Indelade i ESRS 1–2 (allmänna), E1–E5 (miljö), S1–S4 (sociala) och G1 (governance).</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Efterlevnadsbedömning</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Granskarens utvärdering av om ett enskilt krav är uppfyllt. I laglig.se används skalan Uppfylld / Delvis / Ej uppfylld / Ej tillämplig — alltid med motivering.</p>
+              </article>
+            </div>
+          </div>
+
+          <!-- G -->
+          <div id="g" class="mt-14 scroll-mt-20">
+            <h2 class="display sticky top-16 z-10 -mx-6 border-b border-stone-200/80 bg-white/90 px-6 py-3 text-3xl font-semibold text-amber-800 backdrop-blur">G</h2>
+            <div class="mt-6 space-y-6">
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">GDPR — General Data Protection Regulation</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">EU-förordning (2016/679) om dataskydd. Direkt tillämplig i Sverige sedan 2018. Krav på laglig grund, ändamålsbegränsning, dataminimering, transparens och rättigheter för registrerade.</p>
+              </article>
+            </div>
+          </div>
+
+          <!-- H -->
+          <div id="h" class="mt-14 scroll-mt-20">
+            <h2 class="display sticky top-16 z-10 -mx-6 border-b border-stone-200/80 bg-white/90 px-6 py-3 text-3xl font-semibold text-amber-800 backdrop-blur">H</h2>
+            <div class="mt-6 space-y-6">
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">HACCP — Hazard Analysis and Critical Control Points</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Riskbaserad metod för livsmedelssäkerhet. Krav i EU-förordning 852/2004. Identifierar kritiska kontrollpunkter där risker kan elimineras eller minskas.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">HSL — Hälso- och sjukvårdslagen (2017:30)</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Övergripande ramverk för hälso- och sjukvården i Sverige. Definierar mål, krav på vården och ansvarsfördelning mellan stat, region och kommun.</p>
+              </article>
+            </div>
+          </div>
+
+          <!-- I -->
+          <div id="i" class="mt-14 scroll-mt-20">
+            <h2 class="display sticky top-16 z-10 -mx-6 border-b border-stone-200/80 bg-white/90 px-6 py-3 text-3xl font-semibold text-amber-800 backdrop-blur">I</h2>
+            <div class="mt-6 space-y-6">
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">ID06</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Branschstandard för identifikation och närvarokontroll på byggarbetsplatser. Hanteras av separata leverantörer; laglig.se bevakar lagkraven runt personalliggare (Skatteförfarandelagen 39 kap) men hanterar inte själva loggen.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">ISO 14001 — Miljöledningssystem</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Internationell standard för miljöledningssystem. § 9.1.2 kräver periodisk lagefterlevnadskontroll — som <a href="produkt-lagefterlevnadskontroll.html" class="term-link">vår produkt</a> är byggd kring.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">ISO 45001 — Arbetsmiljöledning</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Systerstandard till ISO 14001 men för arbetsmiljö. § 9.1.2 är identisk till struktur. Ofta certifierat parallellt med ISO 14001 i bygg- och industribolag.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">ISO 19011 — Riktlinjer för revision av ledningssystem</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Vägledning för revision av ledningssystem. Definierar struktur, principer och rapportformat. Vår sigillerade revisionsrapport följer ISO 19011-stilen.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">IVO — Inspektionen för vård och omsorg</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Statlig myndighet som utför tillsyn över hälso- och sjukvård och socialtjänst. Kan granska journaler, rutindokument och ledningssystem. Lex Maria och Lex Sarah-anmälningar går till IVO.</p>
+              </article>
+            </div>
+          </div>
+
+          <!-- K -->
+          <div id="k" class="mt-14 scroll-mt-20">
+            <h2 class="display sticky top-16 z-10 -mx-6 border-b border-stone-200/80 bg-white/90 px-6 py-3 text-3xl font-semibold text-amber-800 backdrop-blur">K</h2>
+            <div class="mt-6 space-y-6">
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Kollektivavtal</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Avtal mellan arbetsgivar- och arbetstagarorganisationer som reglerar löne- och anställningsvillkor i en bransch. Inte lag, men lika bindande för parter som tillträtt avtalet.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Kravpunkt</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Atomär compliance-uppgift inom en lag. Exempel: "Skyddsombud ska utses när antalet anställda är minst fem" är en kravpunkt under SFS 1977:1160. I laglig.se länkas varje kravpunkt till bevis och ansvarig — kärnan i <a href="#" class="term-link">Krav & Kravpunkter-funktionen</a>.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">KMA — Kvalitet, Miljö, Arbetsmiljö</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Sammanfattande beteckning för de tre ledningsdomäner som typiskt certifieras tillsammans (ISO 9001, 14001, 45001). KMA-ansvarig är en vanlig roll i bygg- och industribolag.</p>
+              </article>
+            </div>
+          </div>
+
+          <!-- L -->
+          <div id="l" class="mt-14 scroll-mt-20">
+            <h2 class="display sticky top-16 z-10 -mx-6 border-b border-stone-200/80 bg-white/90 px-6 py-3 text-3xl font-semibold text-amber-800 backdrop-blur">L</h2>
+            <div class="mt-6 space-y-6">
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Laglista</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Sammanställning av lagar och föreskrifter som är tillämpliga på en viss verksamhet. Grundkrav i ISO 14001/45001. Ska hållas uppdaterad — vilket är just det <a href="#" class="term-link">laglig.se's Laglistor</a> automatiserar.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Lagefterlevnadskontroll</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Periodisk granskning av att verksamheten faktiskt uppfyller tillämpliga lagkrav. Krav enligt ISO 14001/45001 § 9.1.2. Resultatet dokumenteras i en revisionsrapport. Se <a href="produkt-lagefterlevnadskontroll.html" class="term-link">vår produkt</a>.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Lagboken</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Vardagsbeteckning på Sveriges rikes lag, den årligen utgivna sammanställningen av centrala svenska författningar. Inte officiell — den officiella SFS-databasen finns på Riksdagen.se.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Lex Maria</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Anmälningsplikt enligt patientsäkerhetslagen 3 kap 5 §. Vårdgivare ska anmäla händelser som medfört eller kunnat medföra allvarlig vårdskada till IVO.</p>
+              </article>
+            </div>
+          </div>
+
+          <!-- M -->
+          <div id="m" class="mt-14 scroll-mt-20">
+            <h2 class="display sticky top-16 z-10 -mx-6 border-b border-stone-200/80 bg-white/90 px-6 py-3 text-3xl font-semibold text-amber-800 backdrop-blur">M</h2>
+            <div class="mt-6 space-y-6">
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Miljöbalken (1998:808)</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Sveriges övergripande miljölagstiftning. Reglerar allt från utsläpp till skydd av natur och arter. Kompletteras av föreskrifter från Naturvårdsverket (NFS) och Havs- och vattenmyndigheten.</p>
+              </article>
+            </div>
+          </div>
+
+          <!-- N -->
+          <div id="n" class="mt-14 scroll-mt-20">
+            <h2 class="display sticky top-16 z-10 -mx-6 border-b border-stone-200/80 bg-white/90 px-6 py-3 text-3xl font-semibold text-amber-800 backdrop-blur">N</h2>
+            <div class="mt-6 space-y-6">
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">NIS2 — Direktivet om åtgärder för en hög gemensam cybersäkerhetsnivå</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">EU-direktiv (2022/2555) som ersätter NIS-direktivet. Vidgar omfånget kraftigt — nu omfattas även medelstora bolag i 18 sektorer (energi, transport, hälsa, finans, IKT, m.fl.). Implementeras i Sverige via cybersäkerhetslagen.</p>
+              </article>
+            </div>
+          </div>
+
+          <!-- P -->
+          <div id="p" class="mt-14 scroll-mt-20">
+            <h2 class="display sticky top-16 z-10 -mx-6 border-b border-stone-200/80 bg-white/90 px-6 py-3 text-3xl font-semibold text-amber-800 backdrop-blur">P</h2>
+            <div class="mt-6 space-y-6">
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Patientsäkerhetslagen (2010:659)</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Reglerar vårdgivares och hälso- och sjukvårdspersonalens ansvar för patientsäkerhet. Innehåller bland annat anmälningsplikt enligt Lex Maria och kraven på systematiskt patientsäkerhetsarbete.</p>
+              </article>
+            </div>
+          </div>
+
+          <!-- R -->
+          <div id="r" class="mt-14 scroll-mt-20">
+            <h2 class="display sticky top-16 z-10 -mx-6 border-b border-stone-200/80 bg-white/90 px-6 py-3 text-3xl font-semibold text-amber-800 backdrop-blur">R</h2>
+            <div class="mt-6 space-y-6">
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">REACH — Registration, Evaluation, Authorisation and Restriction of Chemicals</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">EU-förordning (1907/2006) om kemikalier. Registreringsplikt för tillverkare och importörer av kemikalier över 1 ton/år. Förvaltas av ECHA i Helsingfors.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Revisionsrapport</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Den dokumenterade slutprodukten av en revision. Ska följa en strukturerad mall (ofta ISO 19011-stil) och innehålla scope, metod, observationer, avvikelser, slutsatser och rekommendationer.</p>
+              </article>
+            </div>
+          </div>
+
+          <!-- S -->
+          <div id="s" class="mt-14 scroll-mt-20">
+            <h2 class="display sticky top-16 z-10 -mx-6 border-b border-stone-200/80 bg-white/90 px-6 py-3 text-3xl font-semibold text-amber-800 backdrop-blur">S</h2>
+            <div class="mt-6 space-y-6">
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Seveso III</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">EU-direktiv (2012/18) om allvarliga olyckshändelser med farliga kemikalier. Genomfört i Sverige genom lagen om åtgärder för att förebygga och begränsa följderna av allvarliga kemikalieolyckor.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">SFS — Svensk författningssamling</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Den officiella publiceringen av svenska författningar (lagar och förordningar). Underhålls av Riksdagsförvaltningen. Numreringen följer "år:nummer", t.ex. SFS 2010:659. Allt finns offentligt på Riksdagen.se.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">SoL — Socialtjänstlagen (2001:453)</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Ramlag för kommunal socialtjänst. Reglerar ekonomiskt bistånd, vård av barn och unga, äldreomsorg och stöd till funktionshindrade. Kompletteras av LSS för specifika grupper.</p>
+              </article>
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Styrdokument</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Interna policys, rutinbeskrivningar och processdokument som styr hur en verksamhet bedrivs. I laglig.se versionshanteras de och kan länkas som bevis i kravpunkter.</p>
+              </article>
+            </div>
+          </div>
+
+          <!-- Ö -->
+          <div id="o" class="mt-14 scroll-mt-20">
+            <h2 class="display sticky top-16 z-10 -mx-6 border-b border-stone-200/80 bg-white/90 px-6 py-3 text-3xl font-semibold text-amber-800 backdrop-blur">Ö</h2>
+            <div class="mt-6 space-y-6">
+              <article>
+                <h3 class="text-base font-semibold text-stone-900">Översyn (av laglistan)</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-stone-700">Återkommande genomgång av laglistan för att säkerställa att den är aktuell. Krav enligt ISO 14001/45001. I laglig.se sker det automatiskt via daglig <a href="#" class="term-link">lagbevakning</a> — manuell översyn behövs typiskt bara vid större verksamhetsförändringar.</p>
+              </article>
+            </div>
+          </div>
+
+          <!-- Stub note -->
+          <div class="mt-16 rounded-xl border border-dashed border-stone-300 bg-stone-50/40 p-6 text-center text-sm text-stone-600">
+            <i data-lucide="more-horizontal" class="mx-auto mb-2 h-5 w-5 text-stone-400"></i>
+            ~120 fler termer i den fulla versionen — DORA, Förvaltningslagen, Konsekvensbedömning, LOU, OSL, Riskbedömning, Skyddsombud, Smittskydd, Utstationeringslagen, Visselblåsarlagen, m.fl.
+          </div>
+        </div>
+      </section>
+
+      <!-- Closing CTA strip -->
+      <section class="relative overflow-hidden border-t border-stone-200/70 bg-stone-900 text-stone-50">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(125,211,252,0.16),transparent_60%)]"></div>
+        <div class="relative mx-auto flex max-w-7xl flex-col items-start gap-6 px-6 py-14 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 class="display text-3xl font-semibold leading-tight md:text-4xl">
+              Termerna är begripliga.<br />
+              <span class="text-stone-400">Compliance behöver inte vara det.</span>
+            </h2>
+            <p class="mt-3 max-w-xl text-stone-300">Skriv in ert organisationsnummer så bygger vi er första laglista — gratis i 14 dagar.</p>
+          </div>
+          <a href="#" class="inline-flex items-center gap-2 rounded-md bg-amber-500 px-6 py-3 text-base font-semibold text-stone-900 shadow-lg transition hover:bg-amber-400">
+            Kom igång gratis
+            <i data-lucide="arrow-right" class="h-4 w-4"></i>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <div id="site-footer"></div>
+    <script src="_layout.js"></script>
+  </body>
+</html>
