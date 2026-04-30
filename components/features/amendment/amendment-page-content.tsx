@@ -311,6 +311,7 @@ export function AmendmentPageContent({
       {/* Base law reference — accordion item, matches modal grammar */}
       {baseLaw && (
         <DocumentIntroAccordion
+          defaultValue={[]}
           items={[
             {
               value: 'metadata',
@@ -321,27 +322,29 @@ export function AmendmentPageContent({
                 </>
               ),
               children: (
-                <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
-                  <div className="flex gap-2">
-                    <dt className="shrink-0 text-muted-foreground">
+                <dl className="space-y-2 text-sm">
+                  <div className="flex gap-3">
+                    <dt className="w-40 shrink-0 text-muted-foreground">
                       Grundförfattning:
                     </dt>
-                    <dd className="font-medium">
+                    <dd className="min-w-0 flex-1 font-medium">
                       <Link
                         href={`${basePath}/${baseLaw.slug}`}
-                        className="inline-flex items-center gap-1 text-primary hover:underline"
+                        className="inline-flex items-baseline gap-1.5 text-primary hover:underline"
                       >
-                        <BookOpen className="h-3.5 w-3.5" />
-                        {baseLaw.title}
+                        <BookOpen className="h-3.5 w-3.5 shrink-0 translate-y-0.5" />
+                        <span>{baseLaw.title}</span>
                       </Link>
                     </dd>
                   </div>
                   {details?.effective_date && (
-                    <div className="flex gap-2">
-                      <dt className="shrink-0 text-muted-foreground">
+                    <div className="flex gap-3">
+                      <dt className="w-40 shrink-0 text-muted-foreground">
                         Träder i kraft:
                       </dt>
-                      <dd className="font-medium">{formattedEffectiveDate}</dd>
+                      <dd className="min-w-0 flex-1 font-medium">
+                        {formattedEffectiveDate}
+                      </dd>
                     </div>
                   )}
                 </dl>
