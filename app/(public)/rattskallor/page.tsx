@@ -24,11 +24,10 @@ interface RattskallolPageProps {
 export const metadata: Metadata = {
   title: 'Bläddra i svensk lagstiftning | Laglig.se',
   description:
-    'Utforska över 170 000 svenska lagar, rättsfall och EU-lagstiftning. Filtrera och bläddra i vår omfattande juridiska databas.',
+    'Utforska över 170 000 svenska lagar och EU-lagstiftning. Filtrera och bläddra i vår omfattande juridiska databas.',
   openGraph: {
     title: 'Bläddra i svensk lagstiftning | Laglig.se',
-    description:
-      'Utforska över 170 000 svenska lagar, rättsfall och EU-lagstiftning.',
+    description: 'Utforska över 170 000 svenska lagar och EU-lagstiftning.',
     type: 'website',
     locale: 'sv_SE',
   },
@@ -62,8 +61,7 @@ export default async function RattskallolPage({
           Regelverk
         </h1>
         <p className="mb-4 text-muted-foreground">
-          Bläddra bland svenska lagar, föreskrifter, rättsfall och
-          EU-lagstiftning
+          Bläddra bland svenska lagar, föreskrifter och EU-lagstiftning
         </p>
         <CatalogueSearchBar initialQuery={query} basePath="/rattskallor" />
       </div>

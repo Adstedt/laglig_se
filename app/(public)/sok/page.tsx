@@ -21,8 +21,7 @@ interface SearchPageProps {
 
 export const metadata: Metadata = {
   title: 'Sök i svensk lagstiftning | Laglig.se',
-  description:
-    'Sök bland 100 000+ svenska lagar, rättsfall och EU-lagstiftning.',
+  description: 'Sök bland 100 000+ svenska lagar och EU-lagstiftning.',
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {

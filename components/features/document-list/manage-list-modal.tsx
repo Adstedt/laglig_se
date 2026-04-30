@@ -196,7 +196,7 @@ export function ManageListModal({
     if (mode === 'edit') return 'Uppdatera listans namn och inställningar.'
     if (step === 'choose') return 'Välj hur du vill börja.'
     if (step === 'from-template') return undefined
-    return 'Skapa en ny dokumentlista för att organisera relevanta lagar och rättsfall.'
+    return 'Skapa en ny dokumentlista för att organisera relevanta lagar och föreskrifter.'
   }
 
   // Render the blank form (shared between create-blank and edit)

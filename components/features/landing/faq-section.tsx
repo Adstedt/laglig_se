@@ -36,7 +36,7 @@ const faqs = [
   {
     question: 'Vilka lagar täcker ni?',
     answer:
-      '10 000+ svenska lagar och förordningar från Riksdagen, relevanta EU-direktiv och rättsfall. Systemet uppdateras dagligen.',
+      '10 000+ svenska lagar och förordningar från Riksdagen samt relevanta EU-direktiv. Systemet uppdateras dagligen.',
   },
 ]
 

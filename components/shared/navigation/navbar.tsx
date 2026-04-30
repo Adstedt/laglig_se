@@ -157,39 +157,38 @@ export function Navbar() {
         {mounted ? (
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
-              {/* Lagar dropdown */}
+              {/* Regelverk dropdown */}
               <NavigationMenuItem>
                 <NavigationMenuTrigger className="h-9 rounded-full bg-transparent px-4 text-sm text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground data-[state=open]:bg-foreground/[0.04]">
-                  Lagar
+                  Regelverk
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-1 p-3">
                     <ListItem
                       href="/rattskallor"
-                      title="Regelverk"
+                      title="Bläddra alla"
                       icon={<Library className="h-4 w-4" />}
                     >
-                      Bläddra bland alla rättskällor
+                      Bläddra bland alla regelverk
                     </ListItem>
                     <ListItem
-                      href="/lagar"
+                      href="/rattskallor?types=SFS_LAW"
                       title="Svenska lagar"
                       icon={<BookOpen className="h-4 w-4" />}
                     >
                       Utforska alla svenska lagar och förordningar
                     </ListItem>
                     <ListItem
-                      href="/eu"
+                      href="/rattskallor?types=EU_REGULATION,EU_DIRECTIVE"
                       title="EU-lagstiftning"
                       icon={<Globe className="h-4 w-4" />}
                     >
                       EU-förordningar och EU-direktiv
                     </ListItem>
                     <ListItem
-                      href="/foreskrifter"
+                      href="/rattskallor?types=AGENCY_REGULATION"
                       title="Föreskrifter"
                       icon={<FileText className="h-4 w-4" />}
-                      disabled
                     >
                       Myndigheters föreskrifter och allmänna råd
                     </ListItem>
@@ -321,28 +320,34 @@ export function Navbar() {
                 </SheetTitle>
               </SheetHeader>
               <div className="mt-8 flex flex-col">
-                {/* Lagar */}
+                {/* Regelverk */}
                 <MobileNavSection
-                  title="Lagar"
+                  title="Regelverk"
                   onNavigate={() => setIsOpen(false)}
                 >
                   <Link
                     href="/rattskallor"
                     className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
                   >
-                    Regelverk
+                    Bläddra alla
                   </Link>
                   <Link
-                    href="/lagar"
+                    href="/rattskallor?types=SFS_LAW"
                     className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
                   >
                     Svenska lagar
                   </Link>
                   <Link
-                    href="/eu"
+                    href="/rattskallor?types=EU_REGULATION,EU_DIRECTIVE"
                     className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
                   >
                     EU-lagstiftning
+                  </Link>
+                  <Link
+                    href="/rattskallor?types=AGENCY_REGULATION"
+                    className="block rounded-lg px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Föreskrifter
                   </Link>
                 </MobileNavSection>
 
