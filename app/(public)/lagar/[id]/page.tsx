@@ -17,25 +17,21 @@ import {
   Building2,
   ExternalLink,
   Info,
-  Link2,
   FileText,
 } from 'lucide-react'
 import { BackToTopButton } from './toc-client'
-import { FloatingReferencesWrapper } from './floating-references-wrapper'
 import {
   LawDocumentContent,
   NotYetInForceBanner,
   RelatedDocsPrefetcher,
   TimelinePrefetcher,
 } from '@/components/features/law'
-import { VersionSelector } from '@/components/features/law-versions'
 import {
   DocumentHero,
   type DocumentStatusBadge,
 } from '@/components/features/document-hero'
 import { DocumentPageLayout } from '@/components/features/document-page-layout'
 import { DocumentIntroAccordion } from '@/components/features/document-intro'
-import { RelatedDocumentsSummary } from '@/components/features/cross-references'
 import { getImplementedEuDirectives } from '@/app/actions/cross-references'
 import { cleanLawHtml } from '@/lib/sfs/clean-law-html'
 import { getLatestAmendmentSfs } from '@/lib/sfs/latest-amendment'
@@ -72,9 +68,8 @@ export async function generateStaticParams() {
   }
 
   try {
-    const { getTopLawsForStaticGeneration } = await import(
-      '@/lib/cache/cached-queries'
-    )
+    const { getTopLawsForStaticGeneration } =
+      await import('@/lib/cache/cached-queries')
     const topLaws = await getTopLawsForStaticGeneration(50)
     return topLaws.map((law) => ({ id: law.slug }))
   } catch (error) {
@@ -451,15 +446,7 @@ export default async function LawPage({ params }: PageProps) {
           }
         />
 
-        {/* Version selector (client-only control — rendered below hero) */}
-        <div className="flex justify-end">
-          <VersionSelector
-            lawSlug={law.slug}
-            lawSfs={law.document_number.replace(/^SFS\s*/, '')}
-          />
-        </div>
-
-        {/* Intro accordion — Sammanfattning, Detaljer, Relaterade dokument */}
+        {/* Intro accordion — Sammanfattning, Detaljer */}
         <DocumentIntroAccordion
           defaultValue={[]}
           items={[
@@ -570,42 +557,6 @@ export default async function LawPage({ params }: PageProps) {
                   },
                 ]
               : []),
-            ...(implementedDirectives.length > 0 ||
-            law.base_amendments.length > 0
-              ? [
-                  {
-                    value: 'related',
-                    label: (
-                      <>
-                        <Link2 className="h-4 w-4 text-muted-foreground" />
-                        Relaterade dokument
-                      </>
-                    ),
-                    hint:
-                      law.base_amendments.length > 0
-                        ? `${law.base_amendments.length} ändringar`
-                        : undefined,
-                    children: (
-                      <RelatedDocumentsSummary
-                        implementedDirectives={implementedDirectives}
-                        amendments={law.base_amendments.map((a) => ({
-                          id: a.id,
-                          title: a.amending_law_title,
-                          slug: a.amending_document?.slug ?? null,
-                          effectiveDate: a.effective_date
-                            ? typeof a.effective_date === 'string'
-                              ? a.effective_date
-                              : a.effective_date.toISOString()
-                            : null,
-                        }))}
-                        lawTitle={law.title}
-                        lawSlug={law.slug}
-                        embedded
-                      />
-                    ),
-                  },
-                ]
-              : []),
           ]}
         />
 
@@ -634,11 +585,6 @@ export default async function LawPage({ params }: PageProps) {
 
         {/* Back to top button */}
         <BackToTopButton />
-
-        {/* Floating references button */}
-        <FloatingReferencesWrapper
-          directiveCount={implementedDirectives.length}
-        />
 
         {/* Prefetch related documents */}
         <RelatedDocsPrefetcher
