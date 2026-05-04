@@ -87,14 +87,14 @@ describe('MobileSidebar', () => {
       )
       expect(screen.getByText('Svenska lagar').closest('a')).toHaveAttribute(
         'href',
-        '/browse/lagar'
+        '/browse/rattskallor?types=SFS_LAW'
       )
       expect(
         screen.getByText('Myndighetsföreskrifter').closest('a')
-      ).toHaveAttribute('href', '/browse/foreskrifter')
+      ).toHaveAttribute('href', '/browse/rattskallor?types=AGENCY_REGULATION')
       expect(screen.getByText('EU-rätt').closest('a')).toHaveAttribute(
         'href',
-        '/browse/eu'
+        '/browse/rattskallor?types=EU_REGULATION,EU_DIRECTIVE'
       )
     })
 

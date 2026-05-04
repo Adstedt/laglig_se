@@ -122,8 +122,11 @@ describe('FilterChip', () => {
       </FilterChip>
     )
     let btn = screen.getByRole('button')
+    // Story 22.9 re-theme: unpressed uses border-border + bg-background +
+    // text-foreground (full strength) — replaces the prior muted styling.
     expect(btn).toHaveClass('border-border')
-    expect(btn).toHaveClass('text-muted-foreground')
+    expect(btn).toHaveClass('bg-background')
+    expect(btn).toHaveClass('text-foreground')
 
     rerender(
       <FilterChip pressed={true} onPressedChange={() => {}}>
@@ -131,8 +134,11 @@ describe('FilterChip', () => {
       </FilterChip>
     )
     btn = screen.getByRole('button')
-    expect(btn).toHaveClass('bg-foreground')
-    expect(btn).toHaveClass('text-background')
+    // Story 22.9 re-theme: pressed uses border-primary + bg-primary +
+    // text-primary-foreground.
+    expect(btn).toHaveClass('border-primary')
+    expect(btn).toHaveClass('bg-primary')
+    expect(btn).toHaveClass('text-primary-foreground')
   })
 
   it('accepts and forwards a caller className', () => {

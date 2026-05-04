@@ -98,7 +98,9 @@ beforeEach(() => {
 describe('LinkedArtifactsPanel', () => {
   it('shows empty state when no artifacts linked', async () => {
     mockData([])
-    renderFresh(<LinkedArtifactsPanel listItemId={LIST_ITEM_ID} />)
+    renderFresh(
+      <LinkedArtifactsPanel entity={{ type: 'list_item', id: LIST_ITEM_ID }} />
+    )
     await waitFor(() =>
       expect(
         screen.getByText('Inga länkade filer eller dokument')
@@ -108,7 +110,9 @@ describe('LinkedArtifactsPanel', () => {
 
   it('renders the total count in the accordion header', async () => {
     mockData([mkFile(), mkDoc({ id: 'd-1' })])
-    renderFresh(<LinkedArtifactsPanel listItemId={LIST_ITEM_ID} />)
+    renderFresh(
+      <LinkedArtifactsPanel entity={{ type: 'list_item', id: LIST_ITEM_ID }} />
+    )
     await waitFor(() => {
       expect(screen.getByText('Länkade filer & dokument')).toBeInTheDocument()
       expect(screen.getByText('2')).toBeInTheDocument()
@@ -120,7 +124,9 @@ describe('LinkedArtifactsPanel', () => {
       mkFile({ id: 'f-1', filename: 'foto.jpg' }),
       mkDoc({ id: 'd-1', title: 'Arbetsmiljöpolicy' }),
     ])
-    renderFresh(<LinkedArtifactsPanel listItemId={LIST_ITEM_ID} />)
+    renderFresh(
+      <LinkedArtifactsPanel entity={{ type: 'list_item', id: LIST_ITEM_ID }} />
+    )
 
     await waitFor(() =>
       expect(screen.getByText('foto.jpg')).toBeInTheDocument()
@@ -139,7 +145,9 @@ describe('LinkedArtifactsPanel', () => {
         tasks: [{ id: 't-1', title: 'Årlig kontroll' }],
       }),
     ])
-    renderFresh(<LinkedArtifactsPanel listItemId={LIST_ITEM_ID} />)
+    renderFresh(
+      <LinkedArtifactsPanel entity={{ type: 'list_item', id: LIST_ITEM_ID }} />
+    )
 
     await waitFor(() =>
       expect(screen.getByLabelText('Direktlänkad')).toBeInTheDocument()
@@ -161,7 +169,9 @@ describe('LinkedArtifactsPanel', () => {
         tasks: [{ id: 't-1', title: 'Uppgift A' }],
       }),
     ])
-    renderFresh(<LinkedArtifactsPanel listItemId={LIST_ITEM_ID} />)
+    renderFresh(
+      <LinkedArtifactsPanel entity={{ type: 'list_item', id: LIST_ITEM_ID }} />
+    )
 
     await waitFor(() =>
       expect(screen.getByLabelText('Direktlänkad')).toBeInTheDocument()
@@ -187,7 +197,9 @@ describe('LinkedArtifactsPanel', () => {
       }),
     ])
     const user = userEvent.setup()
-    renderFresh(<LinkedArtifactsPanel listItemId={LIST_ITEM_ID} />)
+    renderFresh(
+      <LinkedArtifactsPanel entity={{ type: 'list_item', id: LIST_ITEM_ID }} />
+    )
 
     await waitFor(() =>
       expect(screen.getByText('direct.pdf')).toBeInTheDocument()
@@ -206,7 +218,9 @@ describe('LinkedArtifactsPanel', () => {
       mkDoc({ id: 'd-1', title: 'Some Policy' }),
     ])
     const user = userEvent.setup()
-    renderFresh(<LinkedArtifactsPanel listItemId={LIST_ITEM_ID} />)
+    renderFresh(
+      <LinkedArtifactsPanel entity={{ type: 'list_item', id: LIST_ITEM_ID }} />
+    )
 
     await waitFor(() =>
       expect(screen.getByText('just-a-file.pdf')).toBeInTheDocument()
@@ -224,7 +238,9 @@ describe('LinkedArtifactsPanel', () => {
       mkFile({ id: 'f-1', directLink: true, requirements: [], tasks: [] }),
     ])
     const user = userEvent.setup()
-    renderFresh(<LinkedArtifactsPanel listItemId={LIST_ITEM_ID} />)
+    renderFresh(
+      <LinkedArtifactsPanel entity={{ type: 'list_item', id: LIST_ITEM_ID }} />
+    )
 
     await waitFor(() =>
       expect(screen.getByText('receipt.pdf')).toBeInTheDocument()
@@ -238,7 +254,12 @@ describe('LinkedArtifactsPanel', () => {
 
   it('read-only mode hides upload/link/unlink actions', async () => {
     mockData([mkFile({ directLink: true })])
-    renderFresh(<LinkedArtifactsPanel listItemId={LIST_ITEM_ID} readOnly />)
+    renderFresh(
+      <LinkedArtifactsPanel
+        entity={{ type: 'list_item', id: LIST_ITEM_ID }}
+        readOnly
+      />
+    )
 
     await waitFor(() =>
       expect(screen.getByText('receipt.pdf')).toBeInTheDocument()
@@ -267,7 +288,9 @@ describe('LinkedArtifactsPanel', () => {
         requirements: [{ id: 'r-1', text: 'Krav' }],
       }),
     ])
-    renderFresh(<LinkedArtifactsPanel listItemId={LIST_ITEM_ID} />)
+    renderFresh(
+      <LinkedArtifactsPanel entity={{ type: 'list_item', id: LIST_ITEM_ID }} />
+    )
 
     await waitFor(() =>
       expect(screen.getByText('indirect.pdf')).toBeInTheDocument()

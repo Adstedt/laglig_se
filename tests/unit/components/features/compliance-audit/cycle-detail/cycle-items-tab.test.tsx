@@ -63,14 +63,16 @@ vi.mock(
     const React = await import('react')
     return {
       LinkedArtifactsPanel: (props: {
-        listItemId: string
+        entity: { type: 'list_item' | 'task'; id: string }
         readOnly?: boolean
       }) =>
         React.createElement(
           'div',
           {
             'data-testid': 'linked-artifacts-panel',
-            'data-list-item-id': props.listItemId,
+            'data-entity-type': props.entity.type,
+            'data-list-item-id':
+              props.entity.type === 'list_item' ? props.entity.id : undefined,
             'data-read-only': props.readOnly ? 'true' : 'false',
           },
           'mocked-linked-artifacts'

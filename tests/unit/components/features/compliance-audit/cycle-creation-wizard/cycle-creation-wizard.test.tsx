@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AuditType } from '@prisma/client'
 import type {
@@ -35,6 +35,36 @@ vi.mock('@/app/actions/compliance-audit-cycle', () => ({
     materialiseCycleItemsMock(...args),
   softDeleteCycle: (...args: unknown[]) => softDeleteCycleMock(...args),
 }))
+
+// Stub DatePicker — Story 22.6 swapped native <input type="date"> for a popover
+// + Calendar trigger, which can't be driven by user.type. Mock with a plain
+// date input so fillStep1 can fireEvent.change the ISO string directly.
+vi.mock('@/components/ui/date-picker', async () => {
+  const React = await import('react')
+  function MockDatePicker(props: {
+    id?: string
+    value: Date | null
+    onChange: (_d: Date | null) => void
+    invalid?: boolean
+  }) {
+    return React.createElement('input', {
+      type: 'date',
+      id: props.id,
+      'aria-invalid': props.invalid ? 'true' : 'false',
+      value: props.value ? props.value.toISOString().slice(0, 10) : '',
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+        const v = e.target.value
+        props.onChange(v ? new Date(`${v}T00:00:00`) : null)
+      },
+    })
+  }
+  return {
+    DatePicker: MockDatePicker,
+    parseISODate: (s: string | null | undefined) =>
+      s ? new Date(`${s}T00:00:00`) : null,
+    toISODate: (d: Date | null) => (d ? d.toISOString().slice(0, 10) : ''),
+  }
+})
 
 // Stub ScopeSelector — wizard test only cares about the orchestration flow.
 vi.mock('@/components/features/compliance-audit/scope-selector', async () => {
@@ -105,9 +135,9 @@ async function fillStep1(user: ReturnType<typeof userEvent.setup>) {
   const startInput = screen.getByLabelText('Startdatum')
   const endInput = screen.getByLabelText('Slutdatum')
   const cutoffInput = screen.getByLabelText(/Brytdatum/i)
-  await user.type(startInput, '2026-05-01')
-  await user.type(endInput, '2026-05-31')
-  await user.type(cutoffInput, '2026-04-30')
+  fireEvent.change(startInput, { target: { value: '2026-05-01' } })
+  fireEvent.change(endInput, { target: { value: '2026-05-31' } })
+  fireEvent.change(cutoffInput, { target: { value: '2026-04-30' } })
 
   await user.click(screen.getByRole('combobox', { name: /Ansvarig revisor/i }))
   await user.click(screen.getByRole('option', { name: /Anna Andersson/i }))
