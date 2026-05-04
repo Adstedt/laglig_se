@@ -32,6 +32,11 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { TaskEvidence } from '@/app/actions/task-modal'
+import {
+  uploadFileAndLinkToTask,
+  unlinkFile,
+  getFileDownloadUrl,
+} from '@/app/actions/files'
 import { toast } from 'sonner'
 
 interface EvidenceAccordionProps {
@@ -75,9 +80,9 @@ function formatFileSize(bytes: number | null): string {
 }
 
 export function EvidenceAccordion({
-  taskId: _taskId,
+  taskId,
   evidence,
-  onUpdate: _onUpdate,
+  onUpdate,
   embedded = false,
 }: EvidenceAccordionProps) {
   const [isDragging, setIsDragging] = useState(false)
@@ -131,22 +136,69 @@ export function EvidenceAccordion({
     }
 
     setIsUploading(true)
+    let successCount = 0
+    let failCount = 0
 
-    // TODO: Implement actual file upload to Supabase Storage
-    toast.info('Filuppladdning kommer snart', {
-      description: 'Denna funktion implementeras i en kommande version',
-    })
+    // Upload sequentially so the user gets per-file feedback if one fails.
+    // Parallel would be faster but obscures which file errored.
+    for (const file of files) {
+      const formData = new FormData()
+      formData.append('file', file)
+      const result = await uploadFileAndLinkToTask(formData, taskId)
+      if (result.success) {
+        successCount++
+      } else {
+        failCount++
+        toast.error(`Kunde inte ladda upp ${file.name}`, {
+          description: result.error,
+        })
+      }
+    }
+
+    if (successCount > 0) {
+      toast.success(
+        successCount === 1
+          ? 'Bilaga uppladdad'
+          : `${successCount} bilagor uppladdade`
+      )
+      await onUpdate()
+    }
 
     setIsUploading(false)
+    void failCount // silence unused — already surfaced per-file above
   }
 
   const handleDelete = async (evidenceId: string) => {
-    setDeletingId(evidenceId)
+    const file = evidence.find((e) => e.id === evidenceId)
+    if (!file) return
 
-    // TODO: Implement delete via server action
-    toast.info('Raderingsfunktion kommer snart')
+    setDeletingId(evidenceId)
+    const result = await unlinkFile(file.file_id, 'task', taskId)
+
+    if (result.success) {
+      toast.success('Bilaga borttagen')
+      await onUpdate()
+    } else {
+      toast.error('Kunde inte ta bort bilagan', { description: result.error })
+    }
 
     setDeletingId(null)
+  }
+
+  const handleDownload = async (evidenceId: string) => {
+    const file = evidence.find((e) => e.id === evidenceId)
+    if (!file) return
+
+    const result = await getFileDownloadUrl(file.file_id)
+    if (result.success && result.data) {
+      // Open in a new tab — Supabase signed URLs are short-lived but enough
+      // to trigger the browser's native download/preview flow.
+      window.open(result.data.url, '_blank', 'noopener,noreferrer')
+    } else {
+      toast.error('Kunde inte hämta nedladdningslänk', {
+        description: result.error,
+      })
+    }
   }
 
   // Content that's shared between embedded and standalone modes
@@ -228,7 +280,7 @@ export function EvidenceAccordion({
                   variant="ghost"
                   size="sm"
                   className="h-7 w-7 p-0"
-                  onClick={() => toast.info('Nedladdning kommer snart')}
+                  onClick={() => handleDownload(file.id)}
                 >
                   <Download className="h-3.5 w-3.5" />
                 </Button>

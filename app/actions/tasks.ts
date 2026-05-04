@@ -2188,3 +2188,77 @@ export async function searchLawListItemsForLinking(
     }
   }
 }
+
+/**
+ * Promote task-attached files to first-class direct links on linked law list
+ * items. Called from the task-completion confirmation dialog (Option C UX).
+ *
+ * Pre-promotion the files are visible on the list item only transitively (via
+ * task→file traversal in `getLinkedArtifactsForListItem` Pathway 4); after
+ * promotion they have explicit `FileListItemLink` rows that survive task
+ * deletion / unlinking. Idempotent via the unique `(file_id, list_item_id)`
+ * constraint on `FileListItemLink` + `skipDuplicates`.
+ *
+ * Workspace-scopes both files and list items before insert. Returns count of
+ * actually-created rows (skipped duplicates are NOT counted).
+ */
+export async function promoteTaskFilesToListItems(
+  pairs: Array<{ fileId: string; listItemId: string }>
+): Promise<
+  | { success: true; data: { linked: number } }
+  | { success: false; error: string }
+> {
+  if (pairs.length === 0) return { success: true, data: { linked: 0 } }
+
+  try {
+    return await withWorkspace(async ({ workspaceId, userId }) => {
+      const fileIds = Array.from(new Set(pairs.map((p) => p.fileId)))
+      const listItemIds = Array.from(new Set(pairs.map((p) => p.listItemId)))
+
+      const [validFiles, validItems] = await Promise.all([
+        prisma.workspaceFile.findMany({
+          where: { id: { in: fileIds }, workspace_id: workspaceId },
+          select: { id: true },
+        }),
+        prisma.lawListItem.findMany({
+          where: {
+            id: { in: listItemIds },
+            law_list: { workspace_id: workspaceId },
+          },
+          select: { id: true },
+        }),
+      ])
+
+      const validFileSet = new Set(validFiles.map((f) => f.id))
+      const validItemSet = new Set(validItems.map((i) => i.id))
+      const validPairs = pairs.filter(
+        (p) => validFileSet.has(p.fileId) && validItemSet.has(p.listItemId)
+      )
+
+      if (validPairs.length === 0) {
+        return { success: false, error: 'Inga giltiga kopplingar' }
+      }
+
+      const result = await prisma.fileListItemLink.createMany({
+        data: validPairs.map((p) => ({
+          file_id: p.fileId,
+          list_item_id: p.listItemId,
+          linked_by: userId,
+        })),
+        skipDuplicates: true,
+      })
+
+      revalidatePath('/laglistor')
+      revalidatePath('/tasks')
+      revalidatePath('/filer')
+
+      return { success: true, data: { linked: result.count } }
+    })
+  } catch (error) {
+    console.error('promoteTaskFilesToListItems error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Ett fel uppstod',
+    }
+  }
+}
