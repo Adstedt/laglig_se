@@ -107,6 +107,13 @@ model Workspace {
   paused_at         DateTime?
   deleted_at        DateTime?
 
+  // Story 5.4: Stripe billing
+  stripe_customer_id           String?   @unique
+  stripe_subscription_id       String?
+  subscription_status          String? // Stripe status: active | past_due | canceled | unpaid
+  current_period_end           DateTime?
+  payment_grace_period_ends_at DateTime?
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -2067,4 +2074,20 @@ model ComplianceAuditReport {
   @@unique([cycle_id, report_kind])
   @@index([cycle_id, report_kind])
   @@map("compliance_audit_reports")
+}
+
+// ============================================================================
+// STRIPE BILLING - Story 5.4
+// ============================================================================
+
+// Webhook idempotency: every Stripe event.id is recorded here before we mutate
+// workspace state, so retries from Stripe never double-apply.
+model StripeWebhookEvent {
+  id              String   @id @default(uuid())
+  stripe_event_id String   @unique
+  event_type      String
+  processed_at    DateTime @default(now())
+
+  @@index([processed_at])
+  @@map("stripe_webhook_events")
 }

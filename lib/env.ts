@@ -18,6 +18,12 @@ export const env = createEnv({
     ADMIN_EMAILS: z.string().min(1).optional(),
     ADMIN_JWT_SECRET: z.string().min(32).optional(),
     BOLAGSAPI_API_KEY: z.string().min(1).optional(),
+    // Story 5.4: Stripe billing
+    STRIPE_SECRET_KEY: z.string().min(1),
+    STRIPE_WEBHOOK_SECRET: z.string().min(1),
+    STRIPE_SOLO_PRICE_ID: z.string().min(1),
+    STRIPE_TEAM_PRICE_ID: z.string().min(1),
+    STRIPE_ENTERPRISE_PRICE_ID: z.string().min(1),
   },
 
   /**
@@ -28,6 +34,8 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
     NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
+    // Story 5.4: needed by billing page + Checkout success/cancel URLs
+    NEXT_PUBLIC_APP_URL: z.string().url(),
   },
 
   /**
@@ -46,6 +54,12 @@ export const env = createEnv({
     ADMIN_EMAILS: process.env.ADMIN_EMAILS,
     ADMIN_JWT_SECRET: process.env.ADMIN_JWT_SECRET,
     BOLAGSAPI_API_KEY: process.env.BOLAGSAPI_API_KEY,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    STRIPE_SOLO_PRICE_ID: process.env.STRIPE_SOLO_PRICE_ID,
+    STRIPE_TEAM_PRICE_ID: process.env.STRIPE_TEAM_PRICE_ID,
+    STRIPE_ENTERPRISE_PRICE_ID: process.env.STRIPE_ENTERPRISE_PRICE_ID,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

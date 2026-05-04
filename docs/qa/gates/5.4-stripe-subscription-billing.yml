@@ -1,0 +1,61 @@
+schema: 1
+story: '5.4'
+story_title: 'Integrate Stripe for Subscription Billing'
+gate: PASS
+status_reason: 'All originally-flagged HIGH and MEDIUM issues now closed and regression-locked. BILLING-003 (introduced by the BILLING-001 fix) closed via UI symmetry — when an active subscription exists, ALL non-current tier tiles route through Customer Portal, mirroring the server-side guard. New UI test file with 5 scenarios locks the regression in. 20/20 Stripe + billing tests pass; 4,217/4,217 unit tests pass. Dev work is complete and production-ready. Operator items (Stripe provisioning, env vars, Dashboard webhook, AC 12 lifecycle in Test Mode) remain orthogonal blockers but are outside dev scope. OBS-001 + OBS-002 explicitly deferred per user direction.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-04T20:20:08Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 92
+expires: '2026-06-04T00:00:00Z'
+
+evidence:
+  tests_reviewed: 20
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 4, 5, 6, 7, 8, 9, 10, 11]
+    ac_partial: [12]  # lifecycle covered by unit tests; full Trial→Cancel→Resume in Stripe Test mode pending operator
+    ac_gaps: [3]  # operator-applied — Stripe products + EUR prices not yet provisioned
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Webhook signature verification uses real stripe.webhooks.constructEvent. RLS-on-tables with zero CREATE POLICY = service-role-only writes. workspace:billing permission gate maps to OWNER. PAYMENT_PAST_DUE → 402 wired in all 3 require-permission handlers. No new attack surface across all three dev passes.'
+  performance:
+    status: PASS
+    notes: 'Server guard is O(1) per Checkout request. Cached workspace context extended with paymentGracePeriodEndsAt so cache-hit branch re-checks expiry without an extra DB query. Invoice list capped at limit:24. UI test file runs in 75ms.'
+  reliability:
+    status: PASS
+    notes: 'BILLING-001 server guard prevents duplicate-subscription data corruption even if UI bypassed. BILLING-002 idempotencyKey closes the create-create race. BILLING-003 UI symmetry means user-facing flow now matches server enforcement. Webhook idempotency rollback on handler failure tested. Three orthogonal layers of protection against the original double-billing risk.'
+  maintainability:
+    status: PASS
+    notes: 'TIER_RANK + hasActiveSub abstractions are small and self-explanatory. Three rounds of fix comments inline reference the gate IDs (BILLING-001/002/003) so future readers can trace WHY. New UI test file follows the existing testing-library + vitest pattern. The regression-locking test asserts both positive (Portal buttons present) and negative (no bare "Uppgradera" button) — robust against accidental reverts.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'OBS-001 (carry-over): decide cache-invalidation strategy for past-due grace flag — document the 5-min lag as expected, or call invalidateUserCache from invoice.payment_failed/succeeded webhook handlers.'
+      refs: ['app/api/webhooks/stripe/route.ts']
+    - action: 'OBS-002 (carry-over): resolve the BillingTab placeholder duplication — either remove the tab in components/features/settings/billing-tab.tsx or have it link to /settings/billing.'
+      refs: ['components/features/settings/billing-tab.tsx']
+    - action: 'Owner-email handling: workspace ownership transfer does not propagate to Stripe customer.email (still set at customer-create time). Future story.'
+      refs: ['lib/stripe/customer.ts:25-30']
+    - action: 'Document idempotency-key edge case: keys expire after 24h. If a workspace.stripe_customer_id is ever cleared in DB while the keyed Stripe customer was deleted in <24h, the next createCustomer call will replay an invalid customer ID. Doc-only.'
+      refs: ['lib/stripe/customer.ts:31-40']
+    - action: 'AC 12 lifecycle in Stripe Test Mode (operator-pending). Run Trial → Checkout → "Uppgradera via portal" → "Nedgradera via portal" → Cancel → Resume in Stripe Test Mode and confirm webhook events sync workspace state correctly.'
+      refs: []
+
+history:
+  - at: '2026-05-04T19:49:27Z'
+    gate: CONCERNS
+    note: 'Initial review — BILLING-001 (HIGH double-billing), BILLING-002 (medium race), TEST-001/002 missing, OBS-001/002 deferred. Quality 70.'
+  - at: '2026-05-04T20:02:48Z'
+    gate: CONCERNS
+    note: 'Re-review after dev fix pass. BILLING-001 server guard + UI Nedgradera button correct. BILLING-002 idempotencyKey added. TEST-001 + TEST-002 added (15/15 Stripe tests pass). Net positive — but the BILLING-001 fix introduced BILLING-003: paid-tier UPGRADES are now also rejected by the server guard (correctly, since Checkout always creates a duplicate sub) but the UI still tries to send them through Checkout. Quality up to 85; one small UI follow-up before PASS.'
+  - at: '2026-05-04T20:20:08Z'
+    gate: PASS
+    note: 'Third pass. BILLING-003 closed via UI symmetry — when hasActiveSub, all non-current tiles route through Portal. New tests/unit/components/features/billing/billing-dashboard.test.tsx locks the regression in (5 scenarios, including TEAM-active asserting zero bare "Uppgradera" buttons and ENTERPRISE shows Portal upgrade button). 20/20 Stripe + billing tests pass; 4,217/4,217 unit tests pass. All originally-flagged issues + the introduced regression now closed. Quality 92. Operator-pending items are orthogonal and outside dev scope; gate reflects code quality, not deployment readiness.'
