@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="sv" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Task completion → link files to law list items · Prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              border: 'hsl(0 0% 18%)',
+              background: 'hsl(0 0% 9%)',
+              foreground: 'hsl(0 0% 95%)',
+              card: 'hsl(0 0% 11%)',
+              muted: 'hsl(0 0% 16%)',
+              'muted-foreground': 'hsl(0 0% 60%)',
+              primary: 'hsl(142 71% 45%)',
+              'primary-foreground': 'hsl(0 0% 9%)',
+              destructive: 'hsl(0 84% 60%)',
+              amber: { DEFAULT: 'hsl(45 93% 47%)', soft: 'hsl(45 93% 47% / 0.15)' },
+              orange: 'hsl(24 95% 53%)',
+              purple: 'hsl(270 70% 60%)',
+              teal: 'hsl(180 65% 45%)',
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; }
+      .panel { background: hsl(0 0% 11%); border: 1px solid hsl(0 0% 18%); border-radius: 12px; }
+      .surface { background: hsl(0 0% 9%); border: 1px solid hsl(0 0% 18%); border-radius: 8px; }
+      .chip-state {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.125rem 0.625rem;
+        border-radius: 999px;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .chip-trigger { background: hsl(217 91% 60% / 0.15); color: hsl(217 91% 75%); }
+      .chip-decision { background: hsl(45 93% 47% / 0.15); color: hsl(45 93% 65%); }
+      .chip-effect { background: hsl(142 71% 45% / 0.15); color: hsl(142 71% 65%); }
+      .chip-edge { background: hsl(0 0% 25% / 0.5); color: hsl(0 0% 75%); }
+      .arrow-down {
+        width: 1px; height: 32px; background: hsl(0 0% 30%);
+        margin: 0 auto; position: relative;
+      }
+      .arrow-down::after {
+        content: ''; position: absolute; bottom: 0; left: 50%;
+        transform: translateX(-50%) rotate(45deg);
+        width: 8px; height: 8px;
+        border-right: 1px solid hsl(0 0% 30%);
+        border-bottom: 1px solid hsl(0 0% 30%);
+      }
+      kbd {
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        font-size: 0.6875rem;
+        background: hsl(0 0% 18%);
+        border: 1px solid hsl(0 0% 25%);
+        border-radius: 4px;
+        padding: 0.0625rem 0.375rem;
+      }
+      .badge-amber { background: hsl(45 93% 47% / 0.15); color: hsl(45 93% 65%); border: 1px solid hsl(45 93% 47% / 0.3); }
+      .badge-orange { background: hsl(24 95% 53% / 0.15); color: hsl(24 95% 65%); border: 1px solid hsl(24 95% 53% / 0.3); }
+      .badge-purple { background: hsl(270 70% 60% / 0.15); color: hsl(270 70% 75%); border: 1px solid hsl(270 70% 60% / 0.3); }
+      .badge-teal { background: hsl(180 65% 45% / 0.15); color: hsl(180 65% 65%); border: 1px solid hsl(180 65% 45% / 0.3); }
+      .badge-status-done { background: hsl(142 71% 45% / 0.15); color: hsl(142 71% 65%); border: 1px solid hsl(142 71% 45% / 0.3); }
+      /* Mock checkbox */
+      .mock-cb {
+        width: 16px; height: 16px;
+        border: 1px solid hsl(0 0% 35%);
+        border-radius: 3px;
+        display: inline-flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+      }
+      .mock-cb.checked {
+        background: hsl(142 71% 45%);
+        border-color: hsl(142 71% 45%);
+        color: hsl(0 0% 9%);
+      }
+      .mock-cb.checked::after {
+        content: '✓'; font-size: 11px; font-weight: 700; line-height: 1;
+      }
+    </style>
+  </head>
+  <body class="bg-background text-foreground">
+    <div class="mx-auto max-w-[1100px] px-6 py-10">
+      <header class="mb-10">
+        <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Story 6.7c · UX prototype</p>
+        <h1 class="mt-1 text-2xl font-bold">Task completion → link files to law list items</h1>
+        <p class="mt-3 text-sm text-muted-foreground max-w-2xl">
+          The law list item modal already aggregates files via the
+          <strong>Länkade filer &amp; dokument</strong> section — task attachments
+          show up there transitively (filter chip <em>Via uppgifter</em>). Today
+          those files only stay visible while the task→list-item link exists; if
+          the task is later deleted or unlinked, the file disappears from the
+          law list item. <strong>This feature promotes them to first-class
+          direct attachments at task completion</strong> — the file gains a 🔗
+          icon (Direktlänkad) while keeping its 📋 task-provenance, so it
+          survives the task lifecycle. Pattern is pre-checked confirmation
+          (Option C) — friction is one button click; consent is explicit.
+        </p>
+        <div class="mt-4 flex flex-wrap gap-2 text-xs">
+          <span class="chip-state chip-trigger">Trigger</span>
+          <span class="text-muted-foreground">User changes status to a <kbd>is_done</kbd> column</span>
+          <span class="chip-state chip-decision ml-3">Decision</span>
+          <span class="text-muted-foreground">Pre-checked dialog</span>
+          <span class="chip-state chip-effect ml-3">Effect</span>
+          <span class="text-muted-foreground">Files gain 🔗 icon → also appear under "Direktlänkade"</span>
+          <span class="chip-state chip-edge ml-3">Edge</span>
+          <span class="text-muted-foreground">Skipped when no files OR no list items</span>
+        </div>
+      </header>
+
+      <!-- ============================================================== -->
+      <!-- STRATEGIC CONTEXT — why this feature exists -->
+      <!-- ============================================================== -->
+      <section class="mb-12">
+        <div class="panel p-6" style="background: linear-gradient(180deg, hsl(217 91% 60% / 0.08) 0%, hsl(0 0% 11%) 100%); border-color: hsl(217 91% 60% / 0.25);">
+          <div class="flex items-baseline gap-3 mb-3">
+            <span class="chip-state" style="background: hsl(217 91% 60% / 0.2); color: hsl(217 91% 75%);">Strategic context</span>
+            <h2 class="text-lg font-semibold">Why we're building this — preserving compliance history for agent reasoning</h2>
+          </div>
+          <p class="text-sm text-muted-foreground leading-relaxed mb-4">
+            This feature is one mechanism in a broader pattern: <strong>convert
+            ephemeral compliance work into durable, queryable history owned by
+            the law list item.</strong> The end goal is that our AI agent can
+            answer "what does this obligation actually mean for this specific
+            customer?" by reasoning over a complete timeline — not just the
+            current state.
+          </p>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="surface p-4">
+              <p class="font-semibold mb-2 text-foreground">The structural problem</p>
+              <p class="text-muted-foreground leading-relaxed">
+                Today, much of a list item's "story" is borrowed from related
+                entities (tasks, audit cycles, kravpunkter, change events). When
+                those entities are deleted, archived, or unlinked, the list
+                item's history thins out. The agent loses signal — and the
+                customer loses their audit trail.
+              </p>
+            </div>
+            <div class="surface p-4">
+              <p class="font-semibold mb-2 text-foreground">The pattern</p>
+              <p class="text-muted-foreground leading-relaxed">
+                At natural commit moments — task completion, finding closure,
+                kravpunkt review — <strong>promote borrowed history to owned
+                history</strong>. The list item accumulates first-class
+                evidence over its lifetime, surviving the lifecycle of any
+                particular task or cycle.
+              </p>
+            </div>
+          </div>
+          <div class="mt-4 surface p-4">
+            <p class="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Other instances of this pattern (not in this story — listed for context)</p>
+            <ul class="text-sm text-muted-foreground space-y-1.5">
+              <li>• <strong>Task completion → file promotion</strong> (this prototype)</li>
+              <li>• <strong>Audit cycle close</strong> → durable assessment record on each assessed list item</li>
+              <li>• <strong>Legal change event</strong> → permanent "reviewed on date X, outcome Y" pin per list item</li>
+              <li>• <strong>Workspace document version snapshot</strong> at link time → "v3 linked when task T was completed on D"</li>
+              <li>• <strong>Task comments referencing list items</strong> → snapshot to list item's activity log on task closure</li>
+            </ul>
+            <p class="text-xs text-muted-foreground/70 mt-3 italic">
+              Each is independently small. Together they make the law list item
+              the canonical timeline for everything that has ever happened to
+              this obligation in this workspace — exactly the foundation the
+              agent needs.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- STATE 1 — Trigger -->
+      <!-- ============================================================== -->
+      <section class="mb-12">
+        <div class="mb-4 flex items-baseline gap-3">
+          <span class="chip-state chip-trigger">State 1 · Trigger</span>
+          <h2 class="text-lg font-semibold">User picks the "Klar" status from the task modal</h2>
+        </div>
+
+        <div class="panel p-5">
+          <p class="mb-4 text-sm text-muted-foreground">
+            Existing UI — nothing new here. Status dropdown in the task modal's
+            Detaljer card (<code>components/features/tasks/task-modal/details-box.tsx</code>).
+            The intercept happens inside <code>handleStatusChange</code> when the
+            target column has <code>is_done = true</code> AND the task has files +
+            list items.
+          </p>
+
+          <div class="surface max-w-md p-5">
+            <p class="text-base font-semibold mb-4">Detaljer</p>
+
+            <div class="space-y-3 text-sm">
+              <div class="flex items-center justify-between">
+                <span class="text-muted-foreground">Status</span>
+                <div class="flex items-center gap-2 text-foreground">
+                  <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+                  <span>Pågående</span>
+                  <span class="text-muted-foreground/60">▾</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-muted-foreground">Ansvarig</span>
+                <div class="flex items-center gap-2">
+                  <div class="h-5 w-5 rounded-full bg-amber-soft border border-amber/30 text-amber text-[10px] font-bold flex items-center justify-center">AA</div>
+                  <span>Alexander Adstedt</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-muted-foreground">Förfallodatum</span>
+                <span class="text-foreground">15 maj 2026</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-muted-foreground">Prioritet</span>
+                <span class="badge-orange px-2 py-0.5 rounded-full text-xs">▶ Hög</span>
+              </div>
+            </div>
+
+            <!-- The dropdown opened, "Klar" highlighted -->
+            <div class="mt-5 surface p-2 max-w-[180px] ml-auto" style="border-color: hsl(217 91% 60% / 0.5)">
+              <div class="text-[11px] uppercase tracking-wider text-muted-foreground px-2 py-1">Status</div>
+              <div class="space-y-0.5">
+                <div class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted">
+                  <span class="h-2 w-2 rounded-full bg-zinc-500"></span>
+                  <span>Att göra</span>
+                </div>
+                <div class="flex items-center gap-2 px-2 py-1.5 rounded text-sm hover:bg-muted">
+                  <span class="h-2 w-2 rounded-full bg-blue-500"></span>
+                  <span>Pågående</span>
+                </div>
+                <div class="flex items-center gap-2 px-2 py-1.5 rounded text-sm bg-primary/10" style="border-left: 2px solid hsl(142 71% 45%); padding-left: calc(0.5rem - 2px);">
+                  <span class="h-2 w-2 rounded-full bg-primary"></span>
+                  <span class="text-primary font-medium">Klar</span>
+                  <span class="ml-auto text-[10px] text-muted-foreground">is_done</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="arrow-down mt-6"></div>
+          <p class="text-center text-xs text-muted-foreground mt-3">
+            Decision branch fires only when <code>!wasDone &amp;&amp; willBeDone &amp;&amp; files.length &gt; 0 &amp;&amp; listItems.length &gt; 0</code>
+          </p>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- STATE 2 — Decision (multi list item, multi file) -->
+      <!-- ============================================================== -->
+      <section class="mb-12">
+        <div class="mb-4 flex items-baseline gap-3">
+          <span class="chip-state chip-decision">State 2 · Decision (common case)</span>
+          <h2 class="text-lg font-semibold">Pre-checked confirmation dialog</h2>
+        </div>
+
+        <div class="panel p-5">
+          <p class="mb-4 text-sm text-muted-foreground">
+            All (file × list-item) checkboxes default to checked. User can uncheck
+            specific pairs, then click <strong>Länka N & markera klar</strong>.
+            Three exits: Avbryt (status doesn't change), Hoppa över (mark complete
+            but link nothing), or Confirm (link selected pairs + mark complete).
+          </p>
+
+          <!-- Dialog mock -->
+          <div class="surface max-w-2xl mx-auto">
+            <div class="p-6 border-b border-border">
+              <div class="flex items-start gap-3">
+                <div class="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <svg class="h-5 w-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <div class="flex-1">
+                  <h3 class="text-base font-semibold">Markera "Granska och uppdatera samtyckesformulär" som klar?</h3>
+                  <p class="mt-1.5 text-sm text-muted-foreground">
+                    Vill du behålla uppgiftens bilagor som <strong>direktlänkade</strong> till de 2 dokumenten?
+                    Filerna visas redan via uppgiften, men direktlänkning gör att de finns kvar
+                    på dokumenten även om uppgiften senare tas bort eller arkiveras.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-6 space-y-3 max-h-[420px] overflow-y-auto">
+              <!-- List item 1 -->
+              <div class="surface p-4">
+                <div class="flex items-start gap-2 mb-3">
+                  <svg class="h-4 w-4 text-muted-foreground/70 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2">
+                      <span class="badge-amber px-2 py-0.5 rounded-full text-[11px] font-medium">Lag</span>
+                      <p class="text-sm font-medium truncate">Dataskyddslag (2018:218)</p>
+                    </div>
+                    <p class="text-[11px] text-muted-foreground mt-0.5">SFS 2018:218 · Dataskydd & GDPR</p>
+                  </div>
+                </div>
+                <div class="space-y-1.5 ml-6">
+                  <label class="flex items-center gap-2.5 cursor-pointer text-sm py-1 px-1.5 rounded hover:bg-muted/40">
+                    <span class="mock-cb checked"></span>
+                    <svg class="h-4 w-4 text-muted-foreground/70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <span class="truncate">Samtyckesformulär 2026 — godkänd version.pdf</span>
+                    <span class="ml-auto text-[10px] text-muted-foreground">182 KB</span>
+                  </label>
+                  <label class="flex items-center gap-2.5 cursor-pointer text-sm py-1 px-1.5 rounded hover:bg-muted/40">
+                    <span class="mock-cb checked"></span>
+                    <svg class="h-4 w-4 text-muted-foreground/70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
+                    <span class="truncate">Skärmdump — implementerad checkbox.png</span>
+                    <span class="ml-auto text-[10px] text-muted-foreground">94 KB</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- List item 2 -->
+              <div class="surface p-4">
+                <div class="flex items-start gap-2 mb-3">
+                  <svg class="h-4 w-4 text-muted-foreground/70 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2">
+                      <span class="badge-purple px-2 py-0.5 rounded-full text-[11px] font-medium">EU-förordning</span>
+                      <p class="text-sm font-medium truncate">Dataskyddsförordningen (GDPR) 2016/679</p>
+                    </div>
+                    <p class="text-[11px] text-muted-foreground mt-0.5">CELEX 32016R0679 · Dataskydd & GDPR</p>
+                  </div>
+                </div>
+                <div class="space-y-1.5 ml-6">
+                  <label class="flex items-center gap-2.5 cursor-pointer text-sm py-1 px-1.5 rounded hover:bg-muted/40">
+                    <span class="mock-cb checked"></span>
+                    <svg class="h-4 w-4 text-muted-foreground/70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <span class="truncate">Samtyckesformulär 2026 — godkänd version.pdf</span>
+                    <span class="ml-auto text-[10px] text-muted-foreground">182 KB</span>
+                  </label>
+                  <!-- Unchecked example -->
+                  <label class="flex items-center gap-2.5 cursor-pointer text-sm py-1 px-1.5 rounded hover:bg-muted/40 opacity-70">
+                    <span class="mock-cb"></span>
+                    <svg class="h-4 w-4 text-muted-foreground/50 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
+                    <span class="truncate text-muted-foreground/70">Skärmdump — implementerad checkbox.png</span>
+                    <span class="ml-auto text-[10px] text-muted-foreground/50">94 KB · ej relevant för EU-text</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-4 border-t border-border flex items-center justify-between gap-2">
+              <button class="text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">Avbryt</button>
+              <div class="flex items-center gap-2">
+                <button class="text-sm border border-border rounded-md px-3 py-1.5 hover:bg-muted">
+                  Hoppa över &amp; markera klar
+                </button>
+                <button class="text-sm bg-primary text-primary-foreground rounded-md px-3.5 py-1.5 font-medium flex items-center gap-1.5">
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                  Direktlänka 3/4 &amp; markera klar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 grid grid-cols-3 gap-4">
+            <div class="surface p-3">
+              <p class="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Default state</p>
+              <p class="text-sm">All pairs pre-checked. One click commits everything.</p>
+            </div>
+            <div class="surface p-3">
+              <p class="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Selective state</p>
+              <p class="text-sm">User can uncheck per (file × list-item) pair. Counter updates.</p>
+            </div>
+            <div class="surface p-3">
+              <p class="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">Skip state</p>
+              <p class="text-sm">"Hoppa över" still completes the task — just creates 0 file links.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- STATE 3 — Simplified (single list item) -->
+      <!-- ============================================================== -->
+      <section class="mb-12">
+        <div class="mb-4 flex items-baseline gap-3">
+          <span class="chip-state chip-decision">State 3 · Simplified (1 list item)</span>
+          <h2 class="text-lg font-semibold">Single linked dokument → flat list, no per-doc grouping</h2>
+        </div>
+
+        <div class="panel p-5">
+          <p class="mb-4 text-sm text-muted-foreground">
+            When the task is linked to exactly one law list item, drop the grouping
+            and just show the file list with the dokument header at the top of the
+            dialog. Cleaner for the most common case.
+          </p>
+
+          <div class="surface max-w-2xl mx-auto">
+            <div class="p-6 border-b border-border">
+              <h3 class="text-base font-semibold">Markera "Uppdatera ABL-årsstämmoprotokoll" som klar?</h3>
+              <p class="mt-1.5 text-sm text-muted-foreground">
+                Vill du behålla uppgiftens bilaga som <strong>direktlänkad</strong> till
+                <span class="badge-amber px-1.5 py-0.5 rounded text-[11px] mx-0.5">Lag</span>
+                <strong>Aktiebolagslag (1975:1385)</strong>?
+                Filen finns redan tillgänglig via uppgiften — direktlänkning gör att
+                den ligger kvar på dokumentet även om uppgiften tas bort.
+              </p>
+            </div>
+
+            <div class="p-6">
+              <div class="space-y-1.5">
+                <label class="flex items-center gap-2.5 cursor-pointer text-sm py-1.5 px-2 rounded hover:bg-muted/40">
+                  <span class="mock-cb checked"></span>
+                  <svg class="h-4 w-4 text-muted-foreground/70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span class="truncate">Årsstämmoprotokoll 2026.docx</span>
+                  <span class="ml-auto text-[10px] text-muted-foreground">312 KB</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="p-4 border-t border-border flex items-center justify-end gap-2">
+              <button class="text-sm text-muted-foreground hover:text-foreground px-3 py-1.5">Avbryt</button>
+              <button class="text-sm border border-border rounded-md px-3 py-1.5 hover:bg-muted">
+                Hoppa över
+              </button>
+              <button class="text-sm bg-primary text-primary-foreground rounded-md px-3.5 py-1.5 font-medium flex items-center gap-1.5">
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                Direktlänka &amp; markera klar
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- STATE 4 — Effect -->
+      <!-- ============================================================== -->
+      <section class="mb-12">
+        <div class="mb-4 flex items-baseline gap-3">
+          <span class="chip-state chip-effect">State 4 · Effect</span>
+          <h2 class="text-lg font-semibold">File gains 🔗 (Direktlänkad) — appears in both filter chip groups</h2>
+        </div>
+
+        <div class="panel p-5">
+          <p class="mb-4 text-sm text-muted-foreground">
+            Toast confirms task closure + count. The actual visible change happens
+            inside the existing <strong>Länkade filer &amp; dokument</strong>
+            section on the law list item modal — files that previously had only
+            the 📋 (Via uppgifter) icon now also have the 🔗 (Direktlänkad) icon.
+            They show up in the <em>Direktlänkade</em> filter chip while still
+            counting under <em>Via uppgifter</em>. No new UI primitive needed.
+          </p>
+
+          <div class="grid grid-cols-2 gap-5">
+            <!-- Toast + status pill -->
+            <div>
+              <p class="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Toast feedback</p>
+              <div class="surface p-4 border-l-4" style="border-left-color: hsl(142 71% 45%);">
+                <div class="flex items-start gap-3">
+                  <svg class="h-5 w-5 text-primary mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <div>
+                    <p class="text-sm font-medium">Uppgift klar</p>
+                    <p class="text-[12px] text-muted-foreground mt-0.5">3 bilagor direktlänkade till 2 dokument</p>
+                  </div>
+                </div>
+              </div>
+
+              <p class="text-[11px] uppercase tracking-wider text-muted-foreground mb-2 mt-5">Task modal — status pill</p>
+              <div class="surface p-4">
+                <div class="flex items-center gap-2 mb-3">
+                  <span class="badge-status-done px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    Klar
+                  </span>
+                  <span class="badge-orange px-2 py-0.5 rounded-full text-xs">▶ Hög</span>
+                </div>
+                <p class="text-sm font-semibold">Granska och uppdatera samtyckesformulär</p>
+                <p class="text-[12px] text-muted-foreground mt-1">Slutförd just nu av Alexander Adstedt</p>
+              </div>
+            </div>
+
+            <!-- Law list item modal — actual section as it exists today -->
+            <div>
+              <p class="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">
+                On the linked law list item — existing section (no new UI)
+              </p>
+              <div class="surface p-4">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center gap-2">
+                    <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                    <p class="text-sm font-semibold">Länkade filer &amp; dokument</p>
+                  </div>
+                  <span class="text-xs text-muted-foreground">7</span>
+                </div>
+
+                <!-- Filter chips -->
+                <div class="flex items-center gap-1 mb-3 text-xs">
+                  <button class="px-2 py-1 rounded bg-muted text-foreground">Alla</button>
+                  <button class="px-2 py-1 rounded text-muted-foreground hover:bg-muted/60">Bevis</button>
+                  <button class="px-2 py-1 rounded text-muted-foreground hover:bg-muted/60">Direktlänkade</button>
+                  <button class="px-2 py-1 rounded text-muted-foreground hover:bg-muted/60">Via uppgifter</button>
+                </div>
+
+                <div class="space-y-1">
+                  <!-- Newly promoted: BOTH icons -->
+                  <div class="flex items-center gap-2 p-2 rounded hover:bg-muted/40 group" style="background: hsl(142 71% 45% / 0.05); border-left: 2px solid hsl(142 71% 45%); padding-left: calc(0.5rem - 2px);">
+                    <svg class="h-4 w-4 text-muted-foreground/70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                    <span class="text-sm flex-1 truncate">Samtyckesformulär 2026 — godkänd version.pdf</span>
+                    <div class="flex items-center gap-1 shrink-0">
+                      <span class="inline-flex items-center justify-center h-5 w-5 rounded bg-muted text-muted-foreground" title="Direktlänkad (precis tillagd)">
+                        <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                      </span>
+                      <span class="inline-flex items-center gap-1 h-5 px-1.5 rounded bg-muted text-muted-foreground text-[11px]" title="Länkad via 1 uppgift">
+                        <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                        1
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Another newly promoted -->
+                  <div class="flex items-center gap-2 p-2 rounded hover:bg-muted/40 group" style="background: hsl(142 71% 45% / 0.05); border-left: 2px solid hsl(142 71% 45%); padding-left: calc(0.5rem - 2px);">
+                    <svg class="h-4 w-4 text-muted-foreground/70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                    <span class="text-sm flex-1 truncate">Skärmdump — implementerad checkbox.png</span>
+                    <div class="flex items-center gap-1 shrink-0">
+                      <span class="inline-flex items-center justify-center h-5 w-5 rounded bg-muted text-muted-foreground" title="Direktlänkad (precis tillagd)">
+                        <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                      </span>
+                      <span class="inline-flex items-center gap-1 h-5 px-1.5 rounded bg-muted text-muted-foreground text-[11px]" title="Länkad via 1 uppgift">
+                        <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                        1
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Pre-existing direct link (unchanged) -->
+                  <div class="flex items-center gap-2 p-2 rounded hover:bg-muted/40">
+                    <svg class="h-4 w-4 text-muted-foreground/70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                    <span class="text-sm flex-1 truncate text-muted-foreground/80">Change history report (1).csv.xlsx</span>
+                    <div class="flex items-center gap-1 shrink-0">
+                      <span class="inline-flex items-center justify-center h-5 w-5 rounded bg-muted text-muted-foreground/70" title="Direktlänkad">
+                        <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Pre-existing transitive-only (unchanged — counter-example) -->
+                  <div class="flex items-center gap-2 p-2 rounded hover:bg-muted/40">
+                    <svg class="h-4 w-4 text-muted-foreground/70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                    <span class="text-sm flex-1 truncate text-muted-foreground/80">contentideer-spar2.xlsx</span>
+                    <div class="flex items-center gap-1 shrink-0">
+                      <span class="inline-flex items-center gap-1 h-5 px-1.5 rounded bg-muted text-muted-foreground/70 text-[11px]" title="Endast länkad via 1 uppgift">
+                        <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                        1
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <p class="text-[11px] text-muted-foreground mt-3 leading-relaxed">
+                Green-tinted rows = newly promoted by the task completion confirmation.
+                The two pre-existing items below show the contrast: a direct-only file
+                (link icon only) and a still-transitive file (clipboard icon only).
+                After promotion, files have <strong>both</strong> icons — they show
+                up under both <em>Direktlänkade</em> and <em>Via uppgifter</em>
+                filters. No new UI element needed; the green tint is a brief
+                "what just changed" highlight that fades after a few seconds.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- STATE 5 — Edge cases -->
+      <!-- ============================================================== -->
+      <section class="mb-12">
+        <div class="mb-4 flex items-baseline gap-3">
+          <span class="chip-state chip-edge">State 5 · Edge cases (no dialog)</span>
+          <h2 class="text-lg font-semibold">When the prompt is silently skipped</h2>
+        </div>
+
+        <div class="panel p-5">
+          <p class="mb-4 text-sm text-muted-foreground">
+            The dialog should never get in the user's way when there's nothing
+            actionable to confirm. Three skip conditions:
+          </p>
+
+          <div class="grid grid-cols-3 gap-4">
+            <div class="surface p-4">
+              <p class="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">A · No files</p>
+              <p class="text-sm">Task has 0 bilagor. Nothing to link → existing
+                behavior. Status changes silently.</p>
+            </div>
+            <div class="surface p-4">
+              <p class="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">B · No linked dokument</p>
+              <p class="text-sm">Task is not linked to any law list item. Nowhere
+                to link to → existing behavior. Status changes silently.</p>
+            </div>
+            <div class="surface p-4">
+              <p class="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">C · Re-opening</p>
+              <p class="text-sm">Transition is is_done → not-is_done (un-completing).
+                Don't prompt — files stay where they are. Existing FileListItemLinks
+                are not removed.</p>
+            </div>
+          </div>
+
+          <div class="mt-5 surface p-4 border-l-4" style="border-left-color: hsl(45 93% 47%);">
+            <p class="text-[12px] uppercase tracking-wider text-amber mb-1">Open question</p>
+            <p class="text-sm text-muted-foreground">
+              Should we also prompt on the inverse — when files are added to a task
+              that's <em>already</em> completed and linked? Probably no (the
+              completion moment is the natural commit point), but worth flagging
+              for the spec.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- Implementation summary -->
+      <!-- ============================================================== -->
+      <section class="mb-12">
+        <div class="mb-4 flex items-baseline gap-3">
+          <span class="chip-state" style="background: hsl(0 0% 25% / 0.5); color: hsl(0 0% 75%);">Implementation</span>
+          <h2 class="text-lg font-semibold">What ships if you approve</h2>
+        </div>
+
+        <div class="panel p-5">
+          <div class="grid grid-cols-2 gap-5 text-sm">
+            <div>
+              <p class="font-semibold mb-2">Schema</p>
+              <p class="text-muted-foreground">
+                No changes. Uses existing <code>FileListItemLink</code> join with its
+                <code>(file_id, list_item_id)</code> unique constraint.
+              </p>
+            </div>
+            <div>
+              <p class="font-semibold mb-2">Backend</p>
+              <p class="text-muted-foreground">
+                One new server action <code>linkTaskFilesToListItems(pairs)</code> in
+                <code>app/actions/tasks.ts</code>. Workspace-scopes file & list-item
+                IDs, then <code>createMany({ skipDuplicates: true })</code>. ~40 LOC.
+              </p>
+            </div>
+            <div>
+              <p class="font-semibold mb-2">Frontend (new)</p>
+              <p class="text-muted-foreground">
+                <code>completion-confirm-dialog.tsx</code> in
+                <code>components/features/tasks/task-modal/</code>. Pre-checked
+                checkbox grid. ~120 LOC.
+              </p>
+            </div>
+            <div>
+              <p class="font-semibold mb-2">Frontend (modified)</p>
+              <p class="text-muted-foreground">
+                <code>details-box.tsx</code> intercept inside
+                <code>handleStatusChange</code>. ~20 LOC delta.
+              </p>
+            </div>
+            <div>
+              <p class="font-semibold mb-2">Provenance UI</p>
+              <p class="text-muted-foreground">
+                <strong>Already exists.</strong> The
+                <code>LinkedArtifactsPanel</code> in
+                <code>components/features/document-list/legal-document-modal/</code>
+                already renders both 🔗 (Direktlänkad) and 📋 (Via uppgifter)
+                icons on each artifact row. After promotion, the file naturally
+                shows both. No new chip needed. <em>Optional</em>: a brief
+                green-row highlight on freshly-promoted files.
+              </p>
+            </div>
+            <div>
+              <p class="font-semibold mb-2">Effort</p>
+              <p class="text-muted-foreground">
+                ~3-4 hours for the core flow. No migration. No test refactor.
+                No new visual primitives — re-uses the existing
+                <code>LinkedArtifactsPanel</code> rendering.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="mt-16 pt-6 border-t border-border text-xs text-muted-foreground">
+        <p>Prototype · 2026-05-04 · UX validation pass before implementation</p>
+      </footer>
+    </div>
+  </body>
+</html>
