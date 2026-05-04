@@ -255,26 +255,32 @@ export function DocSearchBar({
               'w-full pl-6 pr-2 py-1 rounded-md text-xs',
               'bg-background border border-border',
               'text-foreground placeholder:text-muted-foreground/40',
-              'focus:outline-none focus:ring-1 focus:ring-primary/30'
+              // ring-inset prevents the focus ring from being clipped by the
+              // parent nav's overflow:auto when the search bar is at y=0.
+              'focus:outline-none focus:ring-1 focus:ring-inset focus:ring-primary/30'
             )}
           />
         </div>
-        <button
-          onClick={() => navigateToMatch(currentIndex - 1)}
-          disabled={matches.length === 0}
-          title="Föregående (Shift+Enter)"
-          className="p-0.5 rounded hover:bg-primary/10 disabled:opacity-30 text-muted-foreground"
-        >
-          <ChevronUp className="h-3.5 w-3.5" />
-        </button>
-        <button
-          onClick={() => navigateToMatch(currentIndex + 1)}
-          disabled={matches.length === 0}
-          title="Nästa (Enter)"
-          className="p-0.5 rounded hover:bg-primary/10 disabled:opacity-30 text-muted-foreground"
-        >
-          <ChevronDown className="h-3.5 w-3.5" />
-        </button>
+        {query.trim() && (
+          <>
+            <button
+              onClick={() => navigateToMatch(currentIndex - 1)}
+              disabled={matches.length === 0}
+              title="Föregående (Shift+Enter)"
+              className="p-0.5 rounded hover:bg-primary/10 disabled:opacity-30 text-muted-foreground"
+            >
+              <ChevronUp className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => navigateToMatch(currentIndex + 1)}
+              disabled={matches.length === 0}
+              title="Nästa (Enter)"
+              className="p-0.5 rounded hover:bg-primary/10 disabled:opacity-30 text-muted-foreground"
+            >
+              <ChevronDown className="h-3.5 w-3.5" />
+            </button>
+          </>
+        )}
         <button
           onClick={handleClose}
           title="Stäng (Escape)"
