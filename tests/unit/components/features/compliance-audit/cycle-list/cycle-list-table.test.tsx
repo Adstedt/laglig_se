@@ -92,7 +92,7 @@ describe('CycleListTable', () => {
   it('clicking "Slutförda" chip filters to AVSLUTAD only', () => {
     render(<CycleListTable cycles={FIXTURE_CYCLES} canCreate />)
 
-    fireEvent.click(screen.getByRole('tab', { name: /Slutförda/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Slutförda/ }))
 
     expect(screen.queryByText('Planerad A')).toBeNull()
     expect(screen.queryByText('Pågående B')).toBeNull()
@@ -102,7 +102,7 @@ describe('CycleListTable', () => {
   it('clicking "Alla" chip shows every cycle regardless of status', () => {
     render(<CycleListTable cycles={FIXTURE_CYCLES} canCreate />)
 
-    fireEvent.click(screen.getByRole('tab', { name: /^Alla/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^Alla/ }))
 
     expect(screen.getByText('Planerad A')).toBeInTheDocument()
     expect(screen.getByText('Pågående B')).toBeInTheDocument()
@@ -115,13 +115,13 @@ describe('CycleListTable', () => {
     // Story 21.26 — Fastställda chip removed alongside the SEAL collapse.
     // Story 21.27 — Arkiverade chip removed alongside the ARKIVERAD collapse.
     // Aktiva = 2 (PLANERAD + PAGAENDE); Slutförda = 1 (AVSLUTAD); Alla = 3.
-    const aktivaTab = screen.getByRole('tab', { name: /Aktiva/ })
+    const aktivaTab = screen.getByRole('button', { name: /Aktiva/ })
     expect(within(aktivaTab).getByText('2')).toBeInTheDocument()
 
-    const slutfordaTab = screen.getByRole('tab', { name: /Slutförda/ })
+    const slutfordaTab = screen.getByRole('button', { name: /Slutförda/ })
     expect(within(slutfordaTab).getByText('1')).toBeInTheDocument()
 
-    const allaTab = screen.getByRole('tab', { name: /^Alla/ })
+    const allaTab = screen.getByRole('button', { name: /^Alla/ })
     expect(within(allaTab).getByText('3')).toBeInTheDocument()
   })
 
@@ -166,7 +166,7 @@ describe('CycleListTable', () => {
     render(<CycleListTable cycles={onlyPagaende} canCreate />)
 
     // Switch to Slutförda → zero rows match.
-    fireEvent.click(screen.getByRole('tab', { name: /Slutförda/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Slutförda/ }))
 
     expect(
       screen.getByText('Inga kontroller matchar det valda filtret.')

@@ -35,7 +35,7 @@ describe('CatalogueSearchBar', () => {
   it('renders search input', () => {
     render(<CatalogueSearchBar initialQuery="" basePath="/rattskallor" />)
     expect(
-      screen.getByPlaceholderText('Sök lagar, rättsfall, EU-lagstiftning...')
+      screen.getByPlaceholderText('Sök lagar, föreskrifter, EU-lagstiftning...')
     ).toBeInTheDocument()
   })
 
@@ -55,7 +55,7 @@ describe('CatalogueSearchBar', () => {
     render(<CatalogueSearchBar initialQuery="" basePath="/rattskallor" />)
 
     const input = screen.getByPlaceholderText(
-      'Sök lagar, rättsfall, EU-lagstiftning...'
+      'Sök lagar, föreskrifter, EU-lagstiftning...'
     )
     await userEvent.type(input, 'test')
 
@@ -70,7 +70,7 @@ describe('CatalogueSearchBar', () => {
     render(<CatalogueSearchBar initialQuery="" basePath="/rattskallor" />)
 
     const input = screen.getByPlaceholderText(
-      'Sök lagar, rättsfall, EU-lagstiftning...'
+      'Sök lagar, föreskrifter, EU-lagstiftning...'
     )
     await userEvent.type(input, 'arbetsmiljö')
 
@@ -98,7 +98,7 @@ describe('CatalogueSearchBar', () => {
     render(<CatalogueSearchBar initialQuery="" basePath="/rattskallor/lagar" />)
 
     const input = screen.getByPlaceholderText(
-      'Sök lagar, rättsfall, EU-lagstiftning...'
+      'Sök lagar, föreskrifter, EU-lagstiftning...'
     )
     await userEvent.type(input, 'test')
 

@@ -252,7 +252,9 @@ describe('StickyDocNav', () => {
       })
 
       const nav = getNav()!
-      expect(nav.className).toContain('opacity-0')
+      // Visibility is controlled by inline style on the wrapper div
+      // (commit cf8c41d moved from `opacity-0` class to style.opacity).
+      expect((nav.parentElement as HTMLElement).style.opacity).toBe('0')
     })
 
     it('hides when article has not scrolled into view', async () => {
@@ -270,7 +272,9 @@ describe('StickyDocNav', () => {
       })
 
       const nav = getNav()!
-      expect(nav.className).toContain('opacity-0')
+      // Visibility is controlled by inline style on the wrapper div
+      // (commit cf8c41d moved from `opacity-0` class to style.opacity).
+      expect((nav.parentElement as HTMLElement).style.opacity).toBe('0')
     })
 
     it('hides when article has scrolled past viewport', async () => {
@@ -287,7 +291,9 @@ describe('StickyDocNav', () => {
       })
 
       const nav = getNav()!
-      expect(nav.className).toContain('opacity-0')
+      // Visibility is controlled by inline style on the wrapper div
+      // (commit cf8c41d moved from `opacity-0` class to style.opacity).
+      expect((nav.parentElement as HTMLElement).style.opacity).toBe('0')
     })
 
     it('shows when article is visible with sufficient margin', async () => {
@@ -396,14 +402,18 @@ describe('StickyDocNav', () => {
       render(<TestHarness html={`<h3 id="only">Only One</h3>`} />)
       await waitForScan()
       const nav = getNav()!
-      expect(nav.className).toContain('opacity-0')
+      // Visibility is controlled by inline style on the wrapper div
+      // (commit cf8c41d moved from `opacity-0` class to style.opacity).
+      expect((nav.parentElement as HTMLElement).style.opacity).toBe('0')
     })
 
     it('renders nothing for empty container', async () => {
       render(<TestHarness html={`<p>No headings here</p>`} />)
       await waitForScan()
       const nav = getNav()!
-      expect(nav.className).toContain('opacity-0')
+      // Visibility is controlled by inline style on the wrapper div
+      // (commit cf8c41d moved from `opacity-0` class to style.opacity).
+      expect((nav.parentElement as HTMLElement).style.opacity).toBe('0')
     })
 
     it('handles headings with name attribute instead of id', async () => {
