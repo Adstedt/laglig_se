@@ -43,6 +43,9 @@ export function StickyDocNav({
   const [visible, setVisible] = useState(false)
   const [left, setLeft] = useState(0)
   const [topBound, setTopBound] = useState(0)
+  /** Available vertical space within the article container — caps nav height so it
+   *  doesn't bleed into the footer when the user scrolls past the document body. */
+  const [availableHeight, setAvailableHeight] = useState<number>(0)
   const rafRef = useRef<number>(0)
   const activatedRef = useRef(false)
   const elementMapRef = useRef<Map<string, Element>>(new Map())
@@ -126,10 +129,20 @@ export function StickyDocNav({
         return
       }
 
+      // Compute the nav's anchor top, then the height available before the article
+      // ends (so the nav can never bleed into the footer below the article).
+      const nextTopBound = Math.max(containerRect.top, scrollRect.top + 24, 96)
+      const heightBudget = containerRect.bottom - nextTopBound
+      // Hide entirely when there's no meaningful space left within the article.
+      if (heightBudget < 120) {
+        setVisible(false)
+        return
+      }
+
       setVisible(true)
       setLeft(containerRect.right + 24)
-      // Align with the container top, but stick to viewport top once scrolled past
-      setTopBound(Math.max(containerRect.top, scrollRect.top + 24, 96))
+      setTopBound(nextTopBound)
+      setAvailableHeight(heightBudget)
 
       // Scrollspy: find the last heading whose top is above the trigger line
       // Trigger line = 20% from top of the scroll area
@@ -362,86 +375,206 @@ export function StickyDocNav({
     return null
   })()
 
+  /**
+   * Auto-scroll the TOC viewport to keep the active item visible as the user
+   * scrolls the page. Uses `block: 'nearest'` so we only scroll when the active
+   * item is actually outside the nav viewport (most page-scroll ticks no-op).
+   * Honors `prefers-reduced-motion` per WCAG 2.3.3.
+   */
+  useEffect(() => {
+    if (!activeId) return
+    const navEl = navScrollRef.current
+    if (!navEl) return
+    const activeBtn = navEl.querySelector<HTMLElement>(
+      `button[data-toc-id="${CSS.escape(activeId)}"]`
+    )
+    if (!activeBtn) return
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    activeBtn.scrollIntoView({
+      block: 'nearest',
+      behavior: reduceMotion ? 'auto' : 'smooth',
+    })
+  }, [activeId])
+
   const hasChildren = entries.some((e) => e.children && e.children.length > 0)
   const isParagrafPills = entries[0]?.label.includes('§')
   const hasToc = entries.length >= 2
 
+  /**
+   * Cap children display per active chapter so chapters with many sub-sections
+   * (e.g. "Utlämnande till övriga myndigheter" → 25 agency h3s) don't push
+   * subsequent chapters off the visible fold of the sticky nav.
+   */
+  const CHILDREN_VISIBLE_CAP = 5
+  const [chaptersWithAllChildren, setChaptersWithAllChildren] = useState<
+    Set<string>
+  >(new Set())
+  const toggleAllChildren = useCallback((chapterId: string) => {
+    setChaptersWithAllChildren((prev) => {
+      const next = new Set(prev)
+      if (next.has(chapterId)) next.delete(chapterId)
+      else next.add(chapterId)
+      return next
+    })
+  }, [])
+
+  /**
+   * Track scroll-overflow state of the nav so we can render fade gradients
+   * at the top/bottom edges as a "more below" affordance. Without this,
+   * users can miss content when chapters expand many children.
+   */
+  const navScrollRef = useRef<HTMLElement | null>(null)
+  const [overflowState, setOverflowState] = useState({
+    atTop: true,
+    atBottom: true,
+  })
+  const updateOverflowState = useCallback(() => {
+    const el = navScrollRef.current
+    if (!el) return
+    const atTop = el.scrollTop <= 1
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 1
+    setOverflowState((prev) =>
+      prev.atTop === atTop && prev.atBottom === atBottom
+        ? prev
+        : { atTop, atBottom }
+    )
+  }, [])
+  useEffect(() => {
+    updateOverflowState()
+  }, [entries, activeParentId, chaptersWithAllChildren, updateOverflowState])
+
   return (
-    <nav
-      aria-label="Dokumentnavigering"
-      className={cn(
-        'flex flex-col gap-0.5 font-sans text-xs transition-opacity duration-200',
-        visible ? 'opacity-100' : 'pointer-events-none opacity-0'
-      )}
+    <div
       style={{
         position: 'fixed',
         top: topBound,
         left,
         width: 180,
-        maxHeight: 'calc(100vh - 8rem)',
-        overflowY: 'auto',
+        // Cap by both the viewport and the article's remaining vertical space
+        // so the nav never bleeds into the footer below the article.
+        maxHeight: `min(calc(100vh - 8rem), ${availableHeight}px)`,
         zIndex: 10,
+        // Fade gradient indicators for scroll overflow
+        WebkitMaskImage:
+          overflowState.atTop && overflowState.atBottom
+            ? undefined
+            : `linear-gradient(to bottom, ${overflowState.atTop ? 'black' : 'transparent'} 0%, black 18px, black calc(100% - 18px), ${overflowState.atBottom ? 'black' : 'transparent'} 100%)`,
+        maskImage:
+          overflowState.atTop && overflowState.atBottom
+            ? undefined
+            : `linear-gradient(to bottom, ${overflowState.atTop ? 'black' : 'transparent'} 0%, black 18px, black calc(100% - 18px), ${overflowState.atBottom ? 'black' : 'transparent'} 100%)`,
+        opacity: visible ? 1 : 0,
+        pointerEvents: visible ? 'auto' : 'none',
+        transition: 'opacity 200ms',
       }}
     >
-      <DocSearchBar containerRef={containerRef} />
-      {hasToc && (
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-1 px-2">
-          Innehåll
-        </span>
-      )}
-      {hasToc &&
-        entries.map((entry) => {
-          const isActiveParent = activeParentId === entry.id
-          const isExpanded = isActiveParent && hasChildren
-          const isDirectlyActive = activeId === entry.id
+      <nav
+        ref={(el) => {
+          navScrollRef.current = el
+        }}
+        onScroll={updateOverflowState}
+        aria-label="Dokumentnavigering"
+        className="flex flex-col gap-0.5 font-sans text-xs"
+        style={{
+          maxHeight: `min(calc(100vh - 8rem), ${availableHeight}px)`,
+          overflowY: 'auto',
+        }}
+      >
+        <DocSearchBar containerRef={containerRef} />
+        {hasToc && (
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-1 px-2">
+            Innehåll
+          </span>
+        )}
+        {hasToc &&
+          entries.map((entry) => {
+            const isActiveParent = activeParentId === entry.id
+            const isExpanded = isActiveParent && hasChildren
+            const isDirectlyActive = activeId === entry.id
+            const allChildren = entry.children ?? []
+            const showAll = chaptersWithAllChildren.has(entry.id)
+            const visibleChildren =
+              showAll || allChildren.length <= CHILDREN_VISIBLE_CAP
+                ? allChildren
+                : allChildren.slice(0, CHILDREN_VISIBLE_CAP)
+            const hiddenChildCount = allChildren.length - visibleChildren.length
 
-          return (
-            <div key={entry.id}>
-              <button
-                onClick={() => handleClick(entry.id)}
-                aria-current={
-                  isDirectlyActive || isActiveParent ? 'true' : undefined
-                }
-                className={cn(
-                  'w-full text-left px-2 py-1 rounded-md transition-colors leading-tight',
-                  'hover:bg-primary/10 hover:text-primary',
-                  isParagrafPills ? 'font-mono' : 'font-medium',
-                  isDirectlyActive
-                    ? 'bg-primary/10 text-primary border-l-2 border-primary rounded-l-none'
-                    : isActiveParent
-                      ? 'text-primary border-l-2 border-primary rounded-l-none'
-                      : 'text-muted-foreground'
+            return (
+              <div key={entry.id}>
+                <button
+                  data-toc-id={entry.id}
+                  onClick={() => handleClick(entry.id)}
+                  aria-current={
+                    isDirectlyActive || isActiveParent ? 'true' : undefined
+                  }
+                  className={cn(
+                    'w-full text-left px-2 py-1 rounded-md transition-colors leading-tight',
+                    'hover:bg-primary/10 hover:text-primary',
+                    isParagrafPills ? 'font-mono' : 'font-medium',
+                    isDirectlyActive
+                      ? 'bg-primary/10 text-primary border-l-2 border-primary rounded-l-none'
+                      : isActiveParent
+                        ? 'text-primary border-l-2 border-primary rounded-l-none'
+                        : 'text-muted-foreground'
+                  )}
+                  title={entry.label}
+                >
+                  <span className="line-clamp-2">{entry.label}</span>
+                </button>
+
+                {/* Nested children — only show when this chapter is active */}
+                {allChildren.length > 0 && isExpanded && (
+                  <div className="flex flex-col gap-0.5 mt-0.5">
+                    {visibleChildren.map((child) => (
+                      <button
+                        key={child.id}
+                        data-toc-id={child.id}
+                        onClick={() => handleClick(child.id)}
+                        aria-current={
+                          activeId === child.id ? 'true' : undefined
+                        }
+                        className={cn(
+                          'w-full text-left pl-4 pr-2 py-0.5 rounded-md transition-colors leading-tight text-[11px]',
+                          'hover:bg-primary/10 hover:text-primary',
+                          activeId === child.id
+                            ? 'text-primary font-medium'
+                            : 'text-muted-foreground/70'
+                        )}
+                        title={child.label}
+                      >
+                        <span className="line-clamp-2">{child.label}</span>
+                      </button>
+                    ))}
+                    {hiddenChildCount > 0 && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleAllChildren(entry.id)
+                        }}
+                        className="w-full text-left pl-4 pr-2 py-0.5 rounded-md text-[11px] text-muted-foreground/60 hover:bg-primary/10 hover:text-primary transition-colors italic"
+                      >
+                        + {hiddenChildCount} fler
+                      </button>
+                    )}
+                    {showAll && allChildren.length > CHILDREN_VISIBLE_CAP && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleAllChildren(entry.id)
+                        }}
+                        className="w-full text-left pl-4 pr-2 py-0.5 rounded-md text-[11px] text-muted-foreground/60 hover:bg-primary/10 hover:text-primary transition-colors italic"
+                      >
+                        Visa färre
+                      </button>
+                    )}
+                  </div>
                 )}
-                title={entry.label}
-              >
-                <span className="line-clamp-2">{entry.label}</span>
-              </button>
-
-              {/* Nested children — only show when this chapter is active */}
-              {entry.children && entry.children.length > 0 && isExpanded && (
-                <div className="flex flex-col gap-0.5 mt-0.5">
-                  {entry.children.map((child) => (
-                    <button
-                      key={child.id}
-                      onClick={() => handleClick(child.id)}
-                      aria-current={activeId === child.id ? 'true' : undefined}
-                      className={cn(
-                        'w-full text-left pl-4 pr-2 py-0.5 rounded-md transition-colors leading-tight text-[11px]',
-                        'hover:bg-primary/10 hover:text-primary',
-                        activeId === child.id
-                          ? 'text-primary font-medium'
-                          : 'text-muted-foreground/70'
-                      )}
-                      title={child.label}
-                    >
-                      <span className="line-clamp-2">{child.label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )
-        })}
-    </nav>
+              </div>
+            )
+          })}
+      </nav>
+    </div>
   )
 }
