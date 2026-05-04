@@ -39,9 +39,10 @@ export interface PageHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   secondaryActions?: React.ReactNode
 }
 
-interface PageHeaderComponent extends React.ForwardRefExoticComponent<
-  PageHeaderProps & React.RefAttributes<HTMLDivElement>
-> {
+interface PageHeaderComponent
+  extends React.ForwardRefExoticComponent<
+    PageHeaderProps & React.RefAttributes<HTMLDivElement>
+  > {
   Meta: typeof PageHeaderMeta
 }
 
@@ -117,7 +118,8 @@ export interface PageHeaderMetaItem {
   label: string
 }
 
-export interface PageHeaderMetaProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface PageHeaderMetaProps
+  extends React.HTMLAttributes<HTMLDivElement> {
   items: Array<string | PageHeaderMetaItem>
 }
 
