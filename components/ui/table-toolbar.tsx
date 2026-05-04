@@ -27,7 +27,8 @@ import { cn } from '@/lib/utils'
  * Responsive: wraps onto multiple rows on narrow viewports.
  */
 
-export interface TableToolbarProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface TableToolbarProps
+  extends React.HTMLAttributes<HTMLDivElement> {
   /** Optional Row-1 above the main toolbar. Mutually exclusive with `views`. */
   tabs?: React.ReactNode
   views?: React.ReactNode

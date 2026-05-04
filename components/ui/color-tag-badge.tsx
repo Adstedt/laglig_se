@@ -1,10 +1,8 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
 
-export interface ColorTagBadgeProps extends Omit<
-  React.HTMLAttributes<HTMLSpanElement>,
-  'color'
-> {
+export interface ColorTagBadgeProps
+  extends Omit<React.HTMLAttributes<HTMLSpanElement>, 'color'> {
   name: string
   color: string
   size?: 'sm' | 'md' | undefined

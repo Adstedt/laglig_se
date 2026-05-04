@@ -68,8 +68,9 @@ export async function generateStaticParams() {
   }
 
   try {
-    const { getTopLawsForStaticGeneration } =
-      await import('@/lib/cache/cached-queries')
+    const { getTopLawsForStaticGeneration } = await import(
+      '@/lib/cache/cached-queries'
+    )
     const topLaws = await getTopLawsForStaticGeneration(50)
     return topLaws.map((law) => ({ id: law.slug }))
   } catch (error) {

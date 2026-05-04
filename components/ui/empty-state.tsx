@@ -1,19 +1,18 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
 
-export interface EmptyStateProps extends Omit<
-  React.HTMLAttributes<HTMLDivElement>,
-  'title'
-> {
+export interface EmptyStateProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   icon?: React.ReactNode
   title?: string | undefined
   description?: string | undefined
   action?: React.ReactNode
 }
 
-interface EmptyStateComponent extends React.ForwardRefExoticComponent<
-  EmptyStateProps & React.RefAttributes<HTMLDivElement>
-> {
+interface EmptyStateComponent
+  extends React.ForwardRefExoticComponent<
+    EmptyStateProps & React.RefAttributes<HTMLDivElement>
+  > {
   Icon: typeof EmptyStateIcon
 }
 

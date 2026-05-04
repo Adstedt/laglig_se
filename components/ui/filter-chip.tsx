@@ -34,8 +34,7 @@ const filterChipVariants = cva(
 )
 
 export interface FilterChipProps
-  extends
-    Omit<
+  extends Omit<
       React.ButtonHTMLAttributes<HTMLButtonElement>,
       'onChange' | 'children'
     >,
@@ -99,10 +98,8 @@ const FilterChip = React.forwardRef<HTMLButtonElement, FilterChipProps>(
   }
 )
 
-export interface FilterChipGroupProps extends Omit<
-  React.HTMLAttributes<HTMLDivElement>,
-  'aria-label'
-> {
+export interface FilterChipGroupProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'aria-label'> {
   /**
    * REQUIRED. Describes what's being filtered (e.g.,
    * "Filtrera kontroller efter status"). Read by screen readers when
