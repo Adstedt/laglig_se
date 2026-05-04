@@ -30,6 +30,7 @@ import { archiveDocumentVersion } from '../lib/sync/version-archive'
 import { detectChanges } from '../lib/sync/change-detection'
 import { parseUndertitel } from '../lib/sync/section-parser'
 import { createAmendmentFromChange } from '../lib/sync/amendment-creator'
+import { inferSfsInstrument } from '../lib/sfs/instrument'
 
 // ============================================================================
 // Configuration
@@ -302,6 +303,7 @@ async function syncSFS() {
                 data: {
                   full_text: newFullText,
                   html_content: newHtml,
+                  sfs_instrument: inferSfsInstrument(doc.titel), // Story 2.32: heal stale OTHER values on resync
                   updated_at: new Date(),
                   metadata: {
                     ...((existing.metadata as object) || {}),
@@ -363,6 +365,7 @@ async function syncSFS() {
                   title: doc.titel,
                   slug,
                   content_type: ContentType.SFS_LAW,
+                  sfs_instrument: inferSfsInstrument(doc.titel), // Story 2.32
                   full_text: fullText,
                   html_content: htmlContent,
                   publication_date: doc.datum ? new Date(doc.datum) : null,

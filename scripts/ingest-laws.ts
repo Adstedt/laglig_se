@@ -12,6 +12,7 @@
  */
 
 import { PrismaClient, ContentType, DocumentStatus } from '@prisma/client'
+import { inferSfsInstrument } from '../lib/sfs/instrument'
 import {
   fetchSFSLaws,
   fetchLawFullText,
@@ -70,6 +71,7 @@ async function ingestLaw(
     update: {
       title: law.title,
       slug,
+      sfs_instrument: inferSfsInstrument(law.title), // Story 2.32: heal stale OTHER on resync
       full_text: fullText,
       summary,
       publication_date: law.publicationDate,
@@ -85,6 +87,7 @@ async function ingestLaw(
       title: law.title,
       slug,
       content_type: ContentType.SFS_LAW,
+      sfs_instrument: inferSfsInstrument(law.title), // Story 2.32
       full_text: fullText,
       summary,
       publication_date: law.publicationDate,

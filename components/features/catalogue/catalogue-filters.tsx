@@ -16,7 +16,7 @@ import type { BrowseInput } from '@/app/actions/browse'
 const ALL_CONTENT_TYPES = [
   {
     value: 'SFS_LAW',
-    label: 'Lagar (SFS)',
+    label: 'Författningar (SFS)',
     color:
       'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300',
   },
@@ -68,6 +68,13 @@ const STATUS_OPTIONS = [
   { value: 'ARCHIVED', label: 'Arkiverad' },
 ]
 
+// Story 2.32: SFS instrument subtype — only shown when SFS docs are in scope
+const SFS_INSTRUMENT_OPTIONS = [
+  { value: 'LAG', label: 'Lag' },
+  { value: 'FORORDNING', label: 'Förordning' },
+  { value: 'KUNGORELSE', label: 'Kungörelse' },
+]
+
 // Målgrupp + Kategori filters are hidden until documents are classified
 // (no ingestion populates metadata.businessType or DocumentSubject today).
 const CLASSIFICATION_FILTERS_ENABLED = false
@@ -96,6 +103,8 @@ interface CatalogueFiltersProps {
   selectedStatus: string[]
   selectedBusinessType: string | undefined
   selectedCategories: string[]
+  /** Story 2.32: lag/förordning/kungörelse subtype filter — optional for backward compat with non-rattskallor callers */
+  selectedSfsInstruments?: string[]
   dateFrom: string | undefined
   dateTo: string | undefined
   basePath: string
@@ -109,6 +118,7 @@ export function CatalogueFilters({
   selectedStatus,
   selectedBusinessType,
   selectedCategories,
+  selectedSfsInstruments = [],
   dateFrom,
   dateTo,
   basePath,
@@ -188,8 +198,16 @@ export function CatalogueFilters({
     selectedStatus.length > 0 ||
     selectedBusinessType ||
     selectedCategories.length > 0 ||
+    selectedSfsInstruments.length > 0 ||
     dateFrom ||
     dateTo
+
+  // Story 2.32: instrument filter is meaningful only when SFS docs are in scope.
+  // Show when selected types is empty (= all types) OR includes an SFS type.
+  const sfsInScope =
+    selectedTypes.length === 0 ||
+    selectedTypes.includes('SFS_LAW') ||
+    selectedTypes.includes('SFS_AMENDMENT')
 
   // Build anticipated BrowseInput for prefetching on hover
   const buildPrefetchInput = useCallback(
@@ -198,6 +216,7 @@ export function CatalogueFilters({
       status?: string[]
       business?: string | undefined
       categories?: string[]
+      sfsInstruments?: string[] // Story 2.32
     }): BrowseInput => {
       const query = searchParams.get('q') || undefined
       const sortBy =
@@ -225,6 +244,11 @@ export function CatalogueFilters({
           (changes.categories ?? selectedCategories).length > 0
             ? (changes.categories ?? selectedCategories)
             : undefined,
+        sfsInstruments:
+          (changes.sfsInstruments ?? selectedSfsInstruments).length > 0
+            ? ((changes.sfsInstruments ??
+                selectedSfsInstruments) as BrowseInput['sfsInstruments'])
+            : undefined,
         dateFrom,
         dateTo,
         page: 1, // Always page 1 when filters change
@@ -238,6 +262,7 @@ export function CatalogueFilters({
       selectedStatus,
       selectedBusinessType,
       selectedCategories,
+      selectedSfsInstruments,
       dateFrom,
       dateTo,
     ]
@@ -280,6 +305,17 @@ export function CatalogueFilters({
       prefetchBrowse(buildPrefetchInput({ categories: newCategories }))
     },
     [selectedCategories, buildPrefetchInput]
+  )
+
+  // Story 2.32: prefetch instrument filter toggle
+  const prefetchInstrumentToggle = useCallback(
+    (value: string) => {
+      const newInstruments = selectedSfsInstruments.includes(value)
+        ? selectedSfsInstruments.filter((v) => v !== value)
+        : [...selectedSfsInstruments, value]
+      prefetchBrowse(buildPrefetchInput({ sfsInstruments: newInstruments }))
+    },
+    [selectedSfsInstruments, buildPrefetchInput]
   )
 
   return (
@@ -337,6 +373,37 @@ export function CatalogueFilters({
                   )}
                 >
                   {type.label}
+                </span>
+              </label>
+            ))}
+          </div>
+        </FilterSection>
+      )}
+
+      {/* Story 2.32: SFS Instrument Filter — only when SFS docs are in scope */}
+      {sfsInScope && (
+        <FilterSection title="Författningstyp">
+          <div className="space-y-2">
+            {SFS_INSTRUMENT_OPTIONS.map((instrument) => (
+              <label
+                key={instrument.value}
+                className="flex cursor-pointer items-center gap-2"
+                onMouseEnter={() => prefetchInstrumentToggle(instrument.value)}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedSfsInstruments.includes(instrument.value)}
+                  onChange={() =>
+                    toggleArrayFilter(
+                      'instrument',
+                      instrument.value,
+                      selectedSfsInstruments
+                    )
+                  }
+                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                />
+                <span className="text-sm text-foreground">
+                  {instrument.label}
                 </span>
               </label>
             ))}

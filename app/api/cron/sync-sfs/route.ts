@@ -44,6 +44,7 @@ import { normalizeSfsLaw } from '@/lib/transforms/normalizers/sfs-law-normalizer
 import { linkifyHtmlContent, type SlugMap } from '@/lib/linkify'
 import { parseCanonicalHtml } from '@/lib/transforms/canonical-html-parser'
 import { htmlToMarkdown } from '@/lib/transforms/html-to-markdown'
+import { inferSfsInstrument } from '@/lib/sfs/instrument'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
@@ -392,6 +393,7 @@ export async function GET(request: Request) {
                 title: doc.titel,
                 slug,
                 content_type: ContentType.SFS_LAW,
+                sfs_instrument: inferSfsInstrument(doc.titel), // Story 2.32
                 full_text: fullText,
                 html_content: linkifiedHtml,
                 json_content: jsonContent

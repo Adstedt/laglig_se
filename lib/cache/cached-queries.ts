@@ -38,6 +38,7 @@ export const getCachedLaw = unstable_cache(
           document_number: true,
           slug: true,
           status: true,
+          sfs_instrument: true, // Story 2.32
           source_url: true,
           publication_date: true,
           effective_date: true,

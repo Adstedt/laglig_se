@@ -26,6 +26,7 @@ import { normalizeSfsLaw } from '@/lib/transforms/normalizers/sfs-law-normalizer
 import { parseCanonicalHtml } from '@/lib/transforms/canonical-html-parser'
 import { htmlToMarkdown } from '@/lib/transforms/html-to-markdown'
 import { ensureSfsPrefix } from '@/lib/sfs/ensure-prefix'
+import { inferSfsInstrument } from '@/lib/sfs/instrument'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
@@ -286,6 +287,7 @@ export async function GET(request: Request) {
               data: {
                 full_text: newFullText,
                 html_content: normalizedHtml,
+                sfs_instrument: inferSfsInstrument(doc.titel), // Story 2.32: heal stale OTHER on resync
                 json_content: jsonContent
                   ? JSON.parse(JSON.stringify(jsonContent))
                   : undefined,

@@ -13,6 +13,7 @@ interface RattskallolPageProps {
     status?: string
     business?: string
     categories?: string
+    instrument?: string // Story 2.32
     from?: string
     to?: string
     page?: string
@@ -42,6 +43,7 @@ export default async function RattskallolPage({
   const statusFilter = params.status?.split(',').filter(Boolean) ?? []
   const businessType = params.business as 'B2B' | 'PRIVATE' | 'BOTH' | undefined
   const categories = params.categories?.split(',').filter(Boolean) ?? []
+  const sfsInstruments = params.instrument?.split(',').filter(Boolean) ?? [] // Story 2.32
   const dateFrom = params.from
   const dateTo = params.to
   const page = parseInt(params.page ?? '1', 10)
@@ -75,6 +77,7 @@ export default async function RattskallolPage({
               selectedStatus={statusFilter}
               selectedBusinessType={businessType}
               selectedCategories={categories}
+              selectedSfsInstruments={sfsInstruments}
               dateFrom={dateFrom}
               dateTo={dateTo}
               basePath="/rattskallor"
@@ -92,6 +95,7 @@ export default async function RattskallolPage({
               selectedStatus={statusFilter}
               selectedBusinessType={businessType}
               selectedCategories={categories}
+              selectedSfsInstruments={sfsInstruments}
               dateFrom={dateFrom}
               dateTo={dateTo}
               basePath="/rattskallor"
@@ -106,6 +110,7 @@ export default async function RattskallolPage({
               status={statusFilter}
               businessType={businessType}
               categories={categories}
+              sfsInstruments={sfsInstruments}
               dateFrom={dateFrom}
               dateTo={dateTo}
               page={page}

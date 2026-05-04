@@ -18,6 +18,8 @@ interface MobileFilterDrawerProps {
   selectedStatus: string[]
   selectedBusinessType: string | undefined
   selectedCategories: string[]
+  /** Story 2.32: lag/förordning/kungörelse subtype filter — optional */
+  selectedSfsInstruments?: string[]
   dateFrom: string | undefined
   dateTo: string | undefined
   basePath: string
@@ -35,6 +37,7 @@ export function MobileFilterDrawer(props: MobileFilterDrawerProps) {
     props.selectedStatus.length > 0,
     props.selectedBusinessType !== undefined,
     props.selectedCategories.length > 0,
+    (props.selectedSfsInstruments?.length ?? 0) > 0, // Story 2.32
     props.dateFrom !== undefined,
     props.dateTo !== undefined,
   ].filter(Boolean).length

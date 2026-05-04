@@ -53,6 +53,8 @@ export interface SearchResult {
   title: string
   documentNumber: string
   contentType: string
+  /** Story 2.32: lag/förordning/kungörelse subtype within SFS_LAW/SFS_AMENDMENT */
+  sfsInstrument: string | null
   category: string | null
   summary: string | null
   effectiveDate: string | null
@@ -213,6 +215,7 @@ export async function searchDocumentsAction(
         ld.title,
         ld.document_number,
         ld.content_type::text as content_type,
+        ld.sfs_instrument::text as sfs_instrument,
         ld.summary,
         ld.effective_date,
         ld.status::text as status,
@@ -248,6 +251,7 @@ export async function searchDocumentsAction(
       title: string
       document_number: string
       content_type: string
+      sfs_instrument: string | null // Story 2.32
       summary: string | null
       effective_date: Date | null
       status: string
@@ -274,6 +278,7 @@ export async function searchDocumentsAction(
         title: r.title,
         documentNumber: r.document_number,
         contentType: r.content_type,
+        sfsInstrument: r.sfs_instrument, // Story 2.32
         category: r.category,
         summary: r.summary,
         effectiveDate: r.effective_date?.toISOString() ?? null,
@@ -341,6 +346,7 @@ async function getRecentDocuments(
           title: true,
           document_number: true,
           content_type: true,
+          sfs_instrument: true, // Story 2.32
           summary: true,
           effective_date: true,
           status: true,
@@ -361,6 +367,7 @@ async function getRecentDocuments(
         title: r.title,
         documentNumber: r.document_number,
         contentType: r.content_type,
+        sfsInstrument: r.sfs_instrument, // Story 2.32
         category: r.subjects[0]?.subject_name ?? null,
         summary: r.summary,
         effectiveDate: r.effective_date?.toISOString() ?? null,

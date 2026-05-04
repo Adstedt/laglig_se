@@ -19,6 +19,7 @@ import {
   generateSlug,
 } from '../lib/external/riksdagen'
 import { ContentType, DocumentStatus } from '@prisma/client'
+import { inferSfsInstrument } from '../lib/sfs/instrument'
 
 // ============================================================================
 // Configuration
@@ -825,6 +826,7 @@ async function ingestMissingByID() {
           title,
           slug,
           content_type: ContentType.SFS_LAW,
+          sfs_instrument: inferSfsInstrument(title), // Story 2.32
           full_text: fullText,
           html_content: htmlContent,
           publication_date: publicationDate,

@@ -414,6 +414,7 @@ export default async function LawPage({ params }: PageProps) {
           title={law.title}
           documentNumber={law.document_number}
           contentType="SFS_LAW"
+          sfsInstrument={law.sfs_instrument}
           status={statusBadge}
           extraBadges={
             amendedThroughSfs ? (

@@ -453,6 +453,10 @@ model LegalDocument {
   effective_date         DateTime?
   publication_date       DateTime?
   status                 DocumentStatus               @default(ACTIVE)
+  // Story 2.32: Subtype within SFS_LAW / SFS_AMENDMENT — distinguishes lag, förordning,
+  // kungörelse. Populated at ingest via lib/sfs/instrument.ts (title classifier).
+  // Defaults to OTHER for non-SFS rows and ambiguous SFS titles.
+  sfs_instrument         SfsInstrument                @default(OTHER)
   source_url             String
   metadata               Json? // Type-specific metadata storage (includes filbilaga if present)
   search_vector          Unsupported("tsvector")? // Full-text search
@@ -491,6 +495,7 @@ model LegalDocument {
   @@index([content_type, effective_date(sort: Desc)], name: "idx_browse_content_date")
   @@index([publication_date(sort: Desc)], name: "idx_publication_date")
   @@index([last_change_type], name: "idx_last_change_type") // Story 8.16: Filter/sort by change type
+  @@index([sfs_instrument], name: "idx_sfs_instrument") // Story 2.32: Lag vs förordning filter
   @@map("legal_documents")
 }
 
@@ -532,6 +537,17 @@ enum DocumentStatus {
   REPEALED
   DRAFT
   ARCHIVED
+}
+
+// Story 2.32: SFS instrument subtype — distinguishes lag (parliament), förordning
+// (government regulation), and kungörelse from each other within SFS_LAW/SFS_AMENDMENT.
+// Populated at ingest by lib/sfs/instrument.ts; OTHER covers non-SFS rows and
+// low-confidence title matches.
+enum SfsInstrument {
+  LAG
+  FORORDNING
+  KUNGORELSE
+  OTHER
 }
 
 // Story 2.29: Legislative reference types (prop, bet, rskr, etc.)
