@@ -226,3 +226,46 @@ Story 22.2 (FilterChip)                  ────┘
 - Source artefacts: `docs/ui-consistency-audit-2026-04-23.md` (current-state class strings) and `_prototypes/ui-alignment-prototype.html` (target-state visual reference + JSX API stubs)
 
 The epic should deliver a coherent visual language across the workspace's six tabular surfaces while preserving system integrity."
+
+---
+
+## Actual Delivery Scope (Addendum — PR #60)
+
+The original Epic 22 was scoped at four stories (22.1–22.4). In flight, a follow-on audit ran across **every** workspace surface and identified additional drift the four-story plan didn't cover. PR #60 shipped the original four plus five additional waves (22.5–22.9), expanding the epic from "four primitives + six-surface migration" to "primitive layer + total cross-workspace alignment." Stories 22.5–22.9 are documented at `docs/stories/completed/22.5*.md` through `22.9*.md`.
+
+### Completed stories beyond original scope
+
+| Story | Title | Outcome |
+|---|---|---|
+| 22.5 | PageHeader sweep (Mallar / Krav / Settings / Activity) | Hand-rolled `<h1>+<p>` headers replaced with canonical `<PageHeader>` on the four remaining workspace surfaces the original 22.3 didn't cover. |
+| 22.6 | `<DatePicker>` primitive + native-input sweep | New `components/ui/date-picker.tsx` (Popover + Calendar + outline Button trigger). Cycle wizard, search filters, catalogue filters, error filters all migrated off native `<input type="date">`. ISO ↔ Date helpers (`parseISODate`, `toISODate`) co-located on the primitive. |
+| 22.7 | Tasks 5-tab atom alignment | New `<ColorTagBadge>` (workspace-color-driven pill), new `<EmptyState>` + `<EmptyState.Icon>`, new `lib/utils/task-utils.ts` with `isTaskOverdue` helper. `TableToolbar` evolved with optional `tabs` slot for two-row layout (Tasks adopts it, drops `<UnifiedToolbar>`). Atom migrations across Lista / Aktiva / Alla; per-card priority badge on Kanban; per-column "Inget i denna kolumn ännu" placeholder; Calendar month-empty `<EmptyState>` early-return; unified overdue treatment (red `border-l-2` + red title + `<AlertCircle>` prefix); "Ny uppgift" → `PageHeader.primaryAction`. |
+| 22.8 | Law list table chrome alignment + column-sizing clamps | `DocumentListTable` and `ComplianceDetailTable` brought to 1:1 parity with Tasks Lista: chrome columns 40/40/60 → 56/56/72, pin type column, center icons, padding overrides, `minSize`/`maxSize` on every column, `liveTotalWidth` + spacer cell so chrome holds widths under `table-fixed`, `COLUMN_SIZE_BOUNDS` + `clampColumnSizing` (clamp on commit AND read — fixes "drag to infinite width" because TanStack onEnd commits unclamped). `document-list-store` v3→v4 migration wipes persisted `columnSizing` so existing users pick up new defaults. `group-table-section` outer wrapper drops horizontal padding for 1:1 chrome alignment between flat + grouped law list. |
+| 22.9 | Filter-chip canonicalization | `content-type-filter.tsx`, `krav-filter-chips.tsx`, `template-catalog-client.tsx` switched from bespoke chip implementations to canonical `<FilterChip>` + `<FilterChipGroup>`. `FilterChip` re-themed: `bg-primary` active state, `py-1.5 text-sm` density, `text-foreground` on inactive (matches Laglistor's "loose" feel; was canonical-tight before). |
+
+### Cumulative delivery metrics
+
+- **PR**: [#60](https://github.com/Adstedt/laglig_se/pull/60), branch `feat/epic-22-ui-primitives-alignment` → `main`
+- **Branch delta**: 176 files changed, +14,740 / −2,877 (across 37 commits)
+- **New primitives** (under `components/ui/`): `page-header`, `table-toolbar`, `workspace-view-tabs`, `filter-chip`, `color-tag-badge`, `empty-state`, `date-picker` (7 new files)
+- **New utilities**: `lib/utils/task-utils.ts` (`isTaskOverdue`), `lib/ui/badge-tones.ts` (already shipped in 22.1)
+- **Component specs added**: `docs/components/{color-tag-badge,empty-state,date-picker,filter-chip,table-toolbar}-spec.md`
+
+### Surfaces touched (post-22.4)
+
+Beyond the original six, PR #60 touched: Mallar (`/laglistor/mallar`), Krav (`/krav`), Settings (`/settings`), Activity (`/workspace/activity`), Tasks all five tabs, Laglistor (compliance + table viewmode + grouped view), Cycle creation wizard, Search results filters, Catalogue filters (`/browse/*`), Admin error filters, Admin tables (User/Workspace/Template overflow-x-auto). Plus `<TableToolbar>` evolution affects Kontroller and Styrdokument (single-row mode unchanged, but they now share the same primitive that Tasks two-row mode uses).
+
+### Audit prototypes (visual references, in repo)
+
+- `_prototypes/epic-22-consistency-audit.html` — six-section audit (filter chips, search, dropdowns, tables, empty states, admin overflow) with current-vs-proposed panels and a decision summary
+- `_prototypes/epic-22-tasks-tabs-alignment.html` — five-section Tasks-tabs deep-dive (status, priority, overdue, empty states, toolbar layout) with three scope options (atoms only / +empty states / +toolbar restructure)
+
+### Out-of-scope (deferred follow-ups)
+
+These were considered during the audit and explicitly deferred:
+
+- `<UnifiedToolbar>` retirement — still in use on Laglistor flat + grouped views. Eventual consolidation to `<TableToolbar>` (now that it has the `tabs` slot) is a future cleanup.
+- Migrating `KravTable`'s raw `<table>` to shadcn `<Table>` primitives — Krav's TanStack base is intentionally aligned with Laglistor's gold-standard pattern (per memory). Deferred.
+- Active sweep of all hand-rolled empty states in the codebase. Four were migrated in 22.7; remaining 8+ adopt `<EmptyState>` next time they're touched.
+- `<AssigneeChip>` extraction (Tasks alignment original Scope C item — dropped in favour of toolbar restructure).
+
