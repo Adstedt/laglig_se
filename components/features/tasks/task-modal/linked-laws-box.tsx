@@ -175,7 +175,7 @@ export function LinkedLawsBox({
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base font-semibold text-foreground">
-              Länkade författningar
+              Länkade dokument
             </CardTitle>
             <Button
               variant="ghost"
@@ -194,7 +194,7 @@ export function LinkedLawsBox({
                 <Scale className="h-5 w-5 text-muted-foreground/50" />
               </div>
               <p className="text-sm text-muted-foreground">
-                Inga länkade författningar
+                Inga länkade dokument
               </p>
               <Button
                 variant="link"
