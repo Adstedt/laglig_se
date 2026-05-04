@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="sv" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Task modal — reuse LinkedArtifactsPanel · Prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              border: 'hsl(0 0% 18%)',
+              background: 'hsl(0 0% 9%)',
+              foreground: 'hsl(0 0% 95%)',
+              card: 'hsl(0 0% 11%)',
+              muted: 'hsl(0 0% 16%)',
+              'muted-foreground': 'hsl(0 0% 60%)',
+              primary: 'hsl(142 71% 45%)',
+              'primary-foreground': 'hsl(0 0% 9%)',
+              destructive: 'hsl(0 84% 60%)',
+              accent: 'hsl(0 0% 16%)',
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; }
+      .panel { background: hsl(0 0% 11%); border: 1px solid hsl(0 0% 18%); border-radius: 12px; }
+      .surface { background: hsl(0 0% 9%); border: 1px solid hsl(0 0% 18%); border-radius: 8px; }
+      .chip-state {
+        display: inline-flex; align-items: center; gap: 0.375rem;
+        padding: 0.125rem 0.625rem; border-radius: 999px;
+        font-size: 0.6875rem; font-weight: 600;
+        text-transform: uppercase; letter-spacing: 0.05em;
+      }
+      .chip-keep { background: hsl(142 71% 45% / 0.18); color: hsl(142 71% 65%); }
+      .chip-hide { background: hsl(0 84% 60% / 0.15); color: hsl(0 84% 65%); }
+      .chip-new { background: hsl(217 91% 60% / 0.15); color: hsl(217 91% 75%); }
+      .chip-info { background: hsl(45 93% 47% / 0.15); color: hsl(45 93% 65%); }
+      .filter-chip {
+        padding: 0.375rem 0.75rem; border-radius: 6px;
+        font-size: 0.75rem; cursor: pointer;
+      }
+      .filter-chip-active { background: hsl(0 0% 18%); color: hsl(0 0% 95%); }
+      .filter-chip-inactive { color: hsl(0 0% 60%); }
+      .filter-chip-disabled {
+        opacity: 0.35; text-decoration: line-through;
+        cursor: not-allowed;
+      }
+      .icon-badge {
+        display: inline-flex; align-items: center; justify-content: center;
+        height: 20px; padding: 0 0.375rem; min-width: 20px;
+        border-radius: 4px; background: hsl(0 0% 18%);
+        color: hsl(0 0% 70%); font-size: 11px;
+        gap: 0.25rem;
+      }
+      .badge-amber { background: hsl(45 93% 47% / 0.15); color: hsl(45 93% 65%); border: 1px solid hsl(45 93% 47% / 0.3); }
+      .badge-purple { background: hsl(270 70% 60% / 0.15); color: hsl(270 70% 75%); border: 1px solid hsl(270 70% 60% / 0.3); }
+      .badge-green { background: hsl(142 71% 45% / 0.15); color: hsl(142 71% 65%); border: 1px solid hsl(142 71% 45% / 0.3); }
+      .badge-zinc { background: hsl(0 0% 25% / 0.5); color: hsl(0 0% 75%); border: 1px solid hsl(0 0% 25%); }
+      .annotation {
+        position: relative; display: inline-block;
+      }
+      .strike-through {
+        position: relative;
+      }
+      .strike-through::after {
+        content: ''; position: absolute;
+        left: -4px; right: -4px; top: 50%;
+        height: 1px; background: hsl(0 84% 60% / 0.6);
+      }
+    </style>
+  </head>
+  <body class="bg-background text-foreground">
+    <div class="mx-auto max-w-[1280px] px-6 py-10">
+      <header class="mb-10">
+        <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">UX prototype · Option A</p>
+        <h1 class="mt-1 text-2xl font-bold">Task modal: reuse <code class="text-base">LinkedArtifactsPanel</code> instead of standalone <code class="text-base">EvidenceAccordion</code></h1>
+        <p class="mt-3 text-sm text-muted-foreground max-w-3xl">
+          Goal: single canonical "things linked to this entity" component shared
+          between the law list item modal and the task modal. Same visual
+          vocabulary, same affordances (upload, link, filter, toggle), same
+          filter chip language — minus the chips that don't apply to tasks.
+          The data model already supports it (<code>FileTaskLink</code> +
+          <code>WorkspaceDocumentTaskLink</code> both exist), the task modal
+          just doesn't surface the document side today.
+        </p>
+        <div class="mt-4 flex flex-wrap gap-2 text-xs items-baseline">
+          <span class="chip-state chip-keep">Same</span>
+          <span class="text-muted-foreground">Header, dropzone, file rows, link buttons</span>
+          <span class="chip-state chip-hide ml-3">Hidden on task</span>
+          <span class="text-muted-foreground"><code>Bevis</code>, <code>Via uppgifter</code> chips</span>
+          <span class="chip-state chip-new ml-3">New on task</span>
+          <span class="text-muted-foreground">Styrdokument-toggle, "Länka styrdokument" button</span>
+        </div>
+      </header>
+
+      <!-- ============================================================== -->
+      <!-- STRATEGIC CONTEXT -->
+      <!-- ============================================================== -->
+      <section class="mb-12">
+        <div class="panel p-6" style="background: linear-gradient(180deg, hsl(217 91% 60% / 0.08) 0%, hsl(0 0% 11%) 100%); border-color: hsl(217 91% 60% / 0.25);">
+          <div class="flex items-baseline gap-3 mb-3">
+            <span class="chip-state" style="background: hsl(217 91% 60% / 0.2); color: hsl(217 91% 75%);">Why</span>
+            <h2 class="text-lg font-semibold">Tasks accumulate compliance evidence too</h2>
+          </div>
+          <p class="text-sm text-muted-foreground leading-relaxed">
+            Same thesis as the file-promotion feature: a task with attached
+            bilagor and linked styrdokument is itself a piece of audit history.
+            Right now the task modal artificially limits itself to "Bilagor" —
+            no surface for linking workspace documents (e.g. "this task implements
+            <em>Policy för mobiltelefoner</em>") even though
+            <code>WorkspaceDocumentTaskLink</code> already exists in the schema.
+            Reusing the law list item's panel (a) closes that surface gap, (b) gives
+            users one mental model for "linked artifacts on entity X", and (c)
+            shrinks the maintenance surface from two components to one.
+          </p>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- BEFORE vs AFTER -->
+      <!-- ============================================================== -->
+      <section class="mb-12">
+        <div class="mb-4 flex items-baseline gap-3">
+          <span class="chip-state chip-keep">Comparison</span>
+          <h2 class="text-lg font-semibold">Today vs proposed (side by side)</h2>
+        </div>
+
+        <div class="grid grid-cols-2 gap-5">
+          <!-- BEFORE: EvidenceAccordion -->
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-[11px] uppercase tracking-wider text-muted-foreground">Today</span>
+              <code class="text-[11px] text-muted-foreground/70">EvidenceAccordion</code>
+            </div>
+            <div class="panel p-5">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                  <p class="text-base font-semibold">Bilagor</p>
+                </div>
+                <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+              </div>
+
+              <!-- Dropzone -->
+              <div class="surface p-5 text-center" style="border-style: dashed;">
+                <svg class="h-6 w-6 text-muted-foreground/50 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                <p class="text-sm text-muted-foreground">Dra och släpp filer här</p>
+                <p class="text-xs text-foreground font-medium mt-0.5">eller välj fil</p>
+                <p class="text-[11px] text-muted-foreground/70 mt-1.5">Max 25MB. PDF, bilder, Office-dokument.</p>
+              </div>
+
+              <!-- Empty state -->
+              <div class="flex items-center justify-center gap-2 text-xs text-muted-foreground py-3 border-t border-border/40 mt-3">
+                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                Inga bifogade filer
+              </div>
+
+              <!-- Add footer -->
+              <div class="border-t border-border/40 pt-3 mt-2">
+                <button class="w-full surface py-2 text-sm text-muted-foreground flex items-center justify-center gap-1.5 hover:bg-muted/60">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  Lägg till bilaga
+                </button>
+              </div>
+            </div>
+
+            <div class="mt-3 surface p-3 text-xs text-muted-foreground">
+              <p class="font-semibold text-foreground mb-1">What's missing</p>
+              <ul class="space-y-1">
+                <li>• No way to link existing files (must re-upload)</li>
+                <li>• No way to link styrdokument at all</li>
+                <li>• No filter — flat list only, awkward when many bilagor</li>
+                <li>• No grouping or type-toggle</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- AFTER: LinkedArtifactsPanel -->
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-[11px] uppercase tracking-wider text-muted-foreground">Proposed</span>
+              <code class="text-[11px] text-muted-foreground/70">LinkedArtifactsPanel</code>
+              <span class="text-[10px] text-muted-foreground/50">(same component as on law list item modal)</span>
+            </div>
+            <div class="panel p-5">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                  <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                  <p class="text-base font-semibold">Länkade filer &amp; dokument</p>
+                </div>
+                <span class="text-xs text-muted-foreground">3</span>
+              </div>
+
+              <!-- Filter chips -->
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-1">
+                  <button class="filter-chip filter-chip-active">Alla</button>
+                  <button class="filter-chip filter-chip-inactive">Direktlänkade</button>
+                  <button class="filter-chip filter-chip-disabled" title="Saknar mening på en uppgift" disabled>Bevis</button>
+                  <button class="filter-chip filter-chip-disabled" title="Saknar mening på en uppgift" disabled>Via uppgifter</button>
+                </div>
+                <div class="flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <label class="flex items-center gap-1">
+                    <input type="checkbox" checked class="h-3 w-3" />
+                    Filer
+                  </label>
+                  <label class="flex items-center gap-1">
+                    <input type="checkbox" checked class="h-3 w-3" />
+                    Styrdokument
+                  </label>
+                </div>
+              </div>
+
+              <!-- File / document rows -->
+              <div class="space-y-1">
+                <div class="flex items-center gap-2 p-2 rounded hover:bg-muted/40">
+                  <svg class="h-4 w-4 text-muted-foreground/70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                  <span class="text-sm flex-1 truncate">Samtyckesformulär 2026 — godkänd version.pdf</span>
+                  <span class="icon-badge" title="Direktlänkad">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                  </span>
+                </div>
+
+                <div class="flex items-center gap-2 p-2 rounded hover:bg-muted/40">
+                  <svg class="h-4 w-4 text-muted-foreground/70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span class="text-sm flex-1 truncate">Policy för mobiltelefoner</span>
+                  <span class="badge-zinc px-1.5 py-0.5 rounded text-[10px]">Övrigt</span>
+                  <span class="badge-green px-1.5 py-0.5 rounded text-[10px]">Godkänd</span>
+                  <span class="text-[11px] text-muted-foreground/60">v2</span>
+                  <span class="icon-badge" title="Direktlänkad">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                  </span>
+                </div>
+
+                <div class="flex items-center gap-2 p-2 rounded hover:bg-muted/40">
+                  <svg class="h-4 w-4 text-muted-foreground/70 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
+                  <span class="text-sm flex-1 truncate">Skärmdump — implementerad checkbox.png</span>
+                  <span class="icon-badge" title="Direktlänkad">
+                    <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Footer: 3 buttons -->
+              <div class="border-t border-border/40 pt-3 mt-3 grid grid-cols-3 gap-2">
+                <button class="surface py-2 text-xs text-muted-foreground flex items-center justify-center gap-1 hover:bg-muted/60">
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                  Ladda upp fil
+                </button>
+                <button class="surface py-2 text-xs text-muted-foreground flex items-center justify-center gap-1 hover:bg-muted/60">
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  Länka fil
+                </button>
+                <button class="surface py-2 text-xs text-muted-foreground flex items-center justify-center gap-1 hover:bg-muted/60">
+                  <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                  Länka styrdokument
+                </button>
+              </div>
+            </div>
+
+            <div class="mt-3 surface p-3 text-xs text-muted-foreground">
+              <p class="font-semibold text-foreground mb-1">What's gained</p>
+              <ul class="space-y-1">
+                <li>• ✅ Link existing workspace files (no re-upload)</li>
+                <li>• ✅ Link styrdokument (closes the surface gap)</li>
+                <li>• ✅ Filter when there are many items</li>
+                <li>• ✅ Same UI vocabulary as law list item modal</li>
+                <li>• ✅ Provenance icons (🔗 Direktlänkad)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- FILTER CHIP HANDLING -->
+      <!-- ============================================================== -->
+      <section class="mb-12">
+        <div class="mb-4 flex items-baseline gap-3">
+          <span class="chip-state chip-hide">Filter chips</span>
+          <h2 class="text-lg font-semibold">Which filter chips apply per entity</h2>
+        </div>
+
+        <div class="panel p-5">
+          <p class="text-sm text-muted-foreground mb-4">
+            The component is parameterized by entity type. Filter chips that
+            don't apply to the given entity are hidden entirely (not greyed-out
+            disabled — that's noise). The strikethrough versions in the
+            comparison above are illustrative only; in production those chips
+            simply wouldn't render on a task.
+          </p>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="surface p-4">
+              <p class="text-[11px] uppercase tracking-wider text-muted-foreground mb-3">On law list item</p>
+              <div class="flex flex-wrap gap-1">
+                <span class="filter-chip filter-chip-active">Alla</span>
+                <span class="filter-chip filter-chip-inactive">Bevis</span>
+                <span class="filter-chip filter-chip-inactive">Direktlänkade</span>
+                <span class="filter-chip filter-chip-inactive">Via uppgifter</span>
+              </div>
+              <p class="text-[11px] text-muted-foreground/80 mt-3">All four — the law list item is the convergence point of multiple pathways.</p>
+            </div>
+
+            <div class="surface p-4">
+              <p class="text-[11px] uppercase tracking-wider text-muted-foreground mb-3">On task</p>
+              <div class="flex flex-wrap gap-1">
+                <span class="filter-chip filter-chip-active">Alla</span>
+                <span class="filter-chip filter-chip-inactive">Direktlänkade</span>
+              </div>
+              <p class="text-[11px] text-muted-foreground/80 mt-3">Only two — tasks have a single direct-link pathway. Or hide the row entirely if there are no items to filter (≤2 items renders the chips uselessly).</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- EMPTY STATE -->
+      <!-- ============================================================== -->
+      <section class="mb-12">
+        <div class="mb-4 flex items-baseline gap-3">
+          <span class="chip-state chip-keep">Empty state</span>
+          <h2 class="text-lg font-semibold">When the task has nothing linked yet</h2>
+        </div>
+
+        <div class="panel p-5">
+          <p class="text-sm text-muted-foreground mb-4">
+            Filter chips suppressed (nothing to filter). Dropzone front-and-center.
+            Same affordances as today's <code>EvidenceAccordion</code> — no
+            regression in the empty case.
+          </p>
+
+          <div class="surface p-5 max-w-2xl mx-auto">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2">
+                <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                <p class="text-base font-semibold">Länkade filer &amp; dokument</p>
+              </div>
+              <span class="text-xs text-muted-foreground">0</span>
+            </div>
+
+            <div class="surface p-6 text-center" style="border-style: dashed;">
+              <svg class="h-7 w-7 text-muted-foreground/50 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+              <p class="text-sm text-foreground font-medium">Dra och släpp filer här</p>
+              <p class="text-xs text-muted-foreground mt-1">eller <span class="text-foreground underline">välj fil</span></p>
+              <p class="text-[11px] text-muted-foreground/70 mt-2">Max 25MB. PDF, bilder, Office-dokument.</p>
+            </div>
+
+            <div class="border-t border-border/40 pt-3 mt-4 grid grid-cols-3 gap-2">
+              <button class="surface py-2 text-xs text-muted-foreground flex items-center justify-center gap-1 hover:bg-muted/60">
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                Ladda upp fil
+              </button>
+              <button class="surface py-2 text-xs text-muted-foreground flex items-center justify-center gap-1 hover:bg-muted/60">
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Länka fil
+              </button>
+              <button class="surface py-2 text-xs text-muted-foreground flex items-center justify-center gap-1 hover:bg-muted/60">
+                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Länka styrdokument
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- WHERE IT LIVES IN THE TASK MODAL -->
+      <!-- ============================================================== -->
+      <section class="mb-12">
+        <div class="mb-4 flex items-baseline gap-3">
+          <span class="chip-state chip-info">Placement</span>
+          <h2 class="text-lg font-semibold">Where it sits in the task modal</h2>
+        </div>
+
+        <div class="panel p-5">
+          <p class="text-sm text-muted-foreground mb-4">
+            Replaces today's <code>EvidenceAccordion</code> (Bilagor) inside the
+            task modal's left panel. Same accordion slot, different (richer) content.
+            <code>LinkedLawsBox</code> ("Länkade dokument" — task→list-item) stays
+            separate as it's a different relationship (task addresses a compliance
+            obligation), not a linked-artifact relation.
+          </p>
+
+          <div class="surface p-5 max-w-3xl mx-auto space-y-2">
+            <!-- Beskrivning collapsed -->
+            <div class="surface p-3 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <p class="text-sm font-medium">Beskrivning</p>
+              </div>
+              <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+
+            <!-- Linked artifacts panel (NEW — was EvidenceAccordion) — highlighted -->
+            <div class="surface p-3" style="border-color: hsl(217 91% 60% / 0.5); background: hsl(217 91% 60% / 0.05);">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                  <p class="text-sm font-medium">Länkade filer &amp; dokument</p>
+                  <span class="chip-state chip-new">Replaces "Bilagor"</span>
+                </div>
+                <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </div>
+              <p class="text-[11px] text-muted-foreground/70 ml-6">Same slot in left panel · same accordion behavior · richer content</p>
+            </div>
+
+            <!-- Aktivitet collapsed -->
+            <div class="surface p-3 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <p class="text-sm font-medium">Aktivitet</p>
+              </div>
+              <svg class="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+          </div>
+
+          <p class="text-xs text-muted-foreground mt-4 text-center">
+            Right panel (Detaljer · Snabblänkar · Länkade dokument) unchanged.
+            <code>LinkedLawsBox</code> stays where it is — it's a different
+            kind of link.
+          </p>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- IMPLEMENTATION SUMMARY -->
+      <!-- ============================================================== -->
+      <section class="mb-12">
+        <div class="mb-4 flex items-baseline gap-3">
+          <span class="chip-state" style="background: hsl(0 0% 25% / 0.5); color: hsl(0 0% 75%);">Implementation</span>
+          <h2 class="text-lg font-semibold">What ships if you approve</h2>
+        </div>
+
+        <div class="panel p-5">
+          <div class="grid grid-cols-2 gap-5 text-sm">
+            <div>
+              <p class="font-semibold mb-2">Schema</p>
+              <p class="text-muted-foreground">
+                No changes. <code>FileTaskLink</code> + <code>WorkspaceDocumentTaskLink</code>
+                already exist (schema lines 1276 + 1857).
+              </p>
+            </div>
+            <div>
+              <p class="font-semibold mb-2">Action layer</p>
+              <p class="text-muted-foreground">
+                Refactor <code>getLinkedArtifactsForListItem</code> →
+                <code>getLinkedArtifactsForEntity({ type, id })</code>
+                with branched data fetch. Single function, two pathways.
+                ~80 LOC of refactor + new branch.
+              </p>
+            </div>
+            <div>
+              <p class="font-semibold mb-2">Component refactor</p>
+              <p class="text-muted-foreground">
+                <code>LinkedArtifactsPanel</code> takes a new
+                <code>entity: { type, id }</code> prop + <code>chips: FilterChip[]</code>
+                config (which chips to show). All callers updated to pass these.
+                ~100 LOC delta.
+              </p>
+            </div>
+            <div>
+              <p class="font-semibold mb-2">Task modal swap</p>
+              <p class="text-muted-foreground">
+                Replace <code>&lt;EvidenceAccordion&gt;</code> with
+                <code>&lt;LinkedArtifactsPanel entity={{ type: 'task', id: task.id }} ...&gt;</code>
+                in <code>left-panel.tsx</code>. Delete
+                <code>evidence-accordion.tsx</code> + <code>evidence-box.tsx</code>
+                once nothing references them.
+              </p>
+            </div>
+            <div>
+              <p class="font-semibold mb-2">Server actions touched</p>
+              <p class="text-muted-foreground">
+                Existing actions <code>uploadFileAndLinkToTask</code>,
+                <code>linkFileToTask</code>, <code>unlinkFile</code>,
+                <code>getFileDownloadUrl</code> all stay. New: a
+                <code>linkDocumentToTask</code> + matching unlink (mirrors
+                the existing list-item versions).
+              </p>
+            </div>
+            <div>
+              <p class="font-semibold mb-2">Effort</p>
+              <p class="text-muted-foreground">
+                ~6-8 hours. No migration. No new visual primitives. Existing
+                file picker / document picker dialogs reused as-is.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- SEQUENCING -->
+      <!-- ============================================================== -->
+      <section class="mb-12">
+        <div class="mb-4 flex items-baseline gap-3">
+          <span class="chip-state chip-info">Sequencing</span>
+          <h2 class="text-lg font-semibold">How this lands relative to the file-promotion feature</h2>
+        </div>
+
+        <div class="panel p-5">
+          <div class="space-y-4">
+            <div class="flex items-start gap-4">
+              <div class="surface flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold shrink-0">1</div>
+              <div class="flex-1">
+                <p class="font-semibold text-sm">Story 6.7c — File promotion at task completion (already implemented)</p>
+                <p class="text-[12px] text-muted-foreground mt-1">
+                  Wire <code>uploadFileAndLinkToTask</code> in current
+                  <code>EvidenceAccordion</code>; promote files at completion via
+                  <code>promoteTaskFilesToListItems</code>. Lands as one commit.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-4">
+              <div class="surface flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold shrink-0">2</div>
+              <div class="flex-1">
+                <p class="font-semibold text-sm">Option A refactor — this prototype</p>
+                <p class="text-[12px] text-muted-foreground mt-1">
+                  Replace <code>EvidenceAccordion</code> with
+                  <code>LinkedArtifactsPanel</code> on tasks. Promotion flow
+                  (Story 6.7c) keeps working unchanged — it operates on
+                  <code>FileListItemLink</code> rows, not on the task UI.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-5 surface p-4">
+            <p class="font-semibold text-sm mb-1">Why this order is fine</p>
+            <p class="text-[12px] text-muted-foreground">
+              The promotion feature operates at the data layer (server action
+              + dialog modal). The component swap operates at the UI layer
+              (which presentation primitive renders the file list). They're
+              orthogonal — promotion will continue to work after the
+              <code>LinkedArtifactsPanel</code> swap because the data shape
+              <code>FileTaskLink</code> hasn't changed.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <footer class="mt-16 pt-6 border-t border-border text-xs text-muted-foreground">
+        <p>Prototype · 2026-05-04 · UX validation pass for Option A (refactor LinkedArtifactsPanel to be entity-agnostic)</p>
+      </footer>
+    </div>
+  </body>
+</html>

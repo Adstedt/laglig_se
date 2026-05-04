@@ -174,6 +174,7 @@ function initialDataToTaskDetails(
     })),
     comments: extraData?.comments ?? [],
     evidence: extraData?.evidence ?? [],
+    workspaceDocumentLinkCount: extraData?.workspaceDocumentLinkCount ?? 0,
     _count: {
       comments: initial._count?.comments ?? 0,
       evidence: extraData?._count?.evidence ?? 0,

@@ -295,3 +295,104 @@ export async function getLinkedArtifactsForListItem(
     return { success: false, error: 'Kunde inte hämta länkade artefakter' }
   }
 }
+
+/**
+ * Story 6.7d (Option A): task-side variant of the linked-artifacts query.
+ *
+ * Same `LinkedArtifactsResult` shape as `getLinkedArtifactsForListItem` so the
+ * shared `LinkedArtifactsPanel` component can render either entity. Simpler
+ * internals (only 2 pathways): a task accumulates direct file attachments and
+ * direct workspace document links; there is no transitive concept (the entity
+ * IS the task).
+ *
+ * `directLink` is always true; `requirements` and `tasks` back-references are
+ * always empty — those are list-item-only concepts.
+ */
+export async function getLinkedArtifactsForTask(
+  taskId: string
+): Promise<ActionResult<LinkedArtifactsResult>> {
+  if (!z.string().uuid().safeParse(taskId).success) {
+    return { success: false, error: 'Ogiltigt ID' }
+  }
+
+  try {
+    return await withWorkspace(async (ctx) => {
+      const task = await prisma.task.findFirst({
+        where: { id: taskId, workspace_id: ctx.workspaceId },
+        include: {
+          file_links: {
+            include: {
+              file: {
+                select: {
+                  id: true,
+                  filename: true,
+                  mime_type: true,
+                  file_size: true,
+                },
+              },
+            },
+          },
+          workspace_document_links: {
+            include: {
+              document: {
+                select: {
+                  id: true,
+                  title: true,
+                  document_type: true,
+                  status: true,
+                  current_version_number: true,
+                },
+              },
+            },
+          },
+        },
+      })
+
+      if (!task) {
+        return { success: false, error: 'Uppgift hittades inte' }
+      }
+
+      const byKey = new Map<string, LinkedArtifact>()
+
+      // Pathway A: direct file links on this task
+      for (const link of task.file_links) {
+        byKey.set(`file:${link.file.id}`, {
+          kind: 'file',
+          id: link.file.id,
+          filename: link.file.filename,
+          mimeType: link.file.mime_type,
+          fileSize: link.file.file_size,
+          directLink: true,
+          requirements: [],
+          tasks: [],
+        })
+      }
+
+      // Pathway B: direct workspace-document links on this task
+      for (const link of task.workspace_document_links) {
+        byKey.set(`document:${link.document.id}`, {
+          kind: 'document',
+          id: link.document.id,
+          title: link.document.title,
+          documentType: link.document.document_type,
+          status: link.document.status,
+          versionNumber: link.document.current_version_number,
+          directLink: true,
+          requirements: [],
+          tasks: [],
+        })
+      }
+
+      return {
+        success: true,
+        data: {
+          artifacts: Array.from(byKey.values()),
+          tasksWithoutAttachmentCount: 0, // not applicable on a task
+        },
+      }
+    }, 'read')
+  } catch (error) {
+    console.error('getLinkedArtifactsForTask error:', error)
+    return { success: false, error: 'Kunde inte hämta länkade artefakter' }
+  }
+}

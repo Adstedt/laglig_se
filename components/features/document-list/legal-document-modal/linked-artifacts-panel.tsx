@@ -41,18 +41,23 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { cn } from '@/lib/utils'
 import {
   getLinkedArtifactsForListItem,
+  getLinkedArtifactsForTask,
   type LinkedArtifact,
   type LinkedArtifactsResult,
 } from '@/app/actions/linked-artifacts'
 import {
   uploadFileAndLinkToListItem,
+  uploadFileAndLinkToTask,
   linkFilesToListItem,
+  linkFilesToTask,
   unlinkFile,
   getFileDownloadUrl,
 } from '@/app/actions/files'
 import {
   linkDocumentToListItem,
   unlinkDocumentFromListItem,
+  linkDocumentToTask,
+  unlinkDocumentFromTask,
 } from '@/app/actions/documents'
 import { FilePickerModal } from '@/components/features/files/file-picker-modal'
 import { DocumentPickerModal } from '@/components/features/documents/document-picker-modal'
@@ -69,10 +74,25 @@ import {
 
 type FilterValue = 'all' | 'bevis' | 'direct' | 'tasks'
 
+/**
+ * Story 6.7d: entity discriminator. Used by both list-item and task surfaces.
+ * The set of pathways and which filter chips are meaningful differs per
+ * entity type — see `availableChips` prop and `getLinkedArtifactsFor*` actions.
+ */
+export type ArtifactEntity =
+  | { type: 'list_item'; id: string }
+  | { type: 'task'; id: string }
+
 interface LinkedArtifactsPanelProps {
-  listItemId: string
+  entity: ArtifactEntity
   readOnly?: boolean | undefined
+  /** Which filter chips to render. Default = all four (list-item context).
+   *  Tasks should pass `['all', 'direct']` since `bevis` (kravpunkt evidence)
+   *  and `tasks` (transitive via task) don't apply on a task. */
+  availableChips?: FilterValue[] | undefined
 }
+
+const ALL_CHIPS: FilterValue[] = ['all', 'bevis', 'direct', 'tasks']
 
 // ============================================================================
 // Helpers
@@ -105,14 +125,26 @@ function applyFilter(
 // ============================================================================
 
 export function LinkedArtifactsPanel({
-  listItemId,
+  entity,
   readOnly = false,
+  availableChips,
 }: LinkedArtifactsPanelProps) {
-  const swrKey = `linked-artifacts:${listItemId}`
+  // SWR key: list-item path keeps the legacy key (`linked-artifacts:${id}`)
+  // so the 3 sibling consumers (kravpunkter-snapshot-list, cycle-item-modal
+  // right-panel, compliance-health-box) continue sharing the same cache
+  // entry without any code change. Task path uses a distinct key prefix.
+  const swrKey =
+    entity.type === 'task'
+      ? `linked-artifacts:task:${entity.id}`
+      : `linked-artifacts:${entity.id}`
+
   const { data, isLoading } = useSWR<LinkedArtifactsResult>(
     swrKey,
     async () => {
-      const result = await getLinkedArtifactsForListItem(listItemId)
+      const result =
+        entity.type === 'task'
+          ? await getLinkedArtifactsForTask(entity.id)
+          : await getLinkedArtifactsForListItem(entity.id)
       if (!result.success || !result.data) {
         throw new Error(result.error ?? 'Kunde inte hämta länkade artefakter')
       }
@@ -120,6 +152,8 @@ export function LinkedArtifactsPanel({
     },
     { revalidateOnFocus: false, dedupingInterval: 30000 }
   )
+
+  const chips = availableChips ?? ALL_CHIPS
 
   const artifacts = useMemo(() => data?.artifacts ?? [], [data])
   const totalCount = artifacts.length
@@ -176,7 +210,10 @@ export function LinkedArtifactsPanel({
       const formData = new FormData()
       formData.append('file', file)
       formData.append('category', 'BEVIS')
-      const result = await uploadFileAndLinkToListItem(formData, listItemId)
+      const result =
+        entity.type === 'task'
+          ? await uploadFileAndLinkToTask(formData, entity.id)
+          : await uploadFileAndLinkToListItem(formData, entity.id)
       if (result.success) uploaded++
       else toast.error(`Kunde inte ladda upp ${file.name}: ${result.error}`)
     }
@@ -190,7 +227,10 @@ export function LinkedArtifactsPanel({
 
   const handlePickFiles = async (fileIds: string[]) => {
     if (!fileIds.length) return
-    const result = await linkFilesToListItem(fileIds, listItemId)
+    const result =
+      entity.type === 'task'
+        ? await linkFilesToTask(fileIds, entity.id)
+        : await linkFilesToListItem(fileIds, entity.id)
     if (result.success) {
       toast.success(
         fileIds.length === 1
@@ -207,7 +247,10 @@ export function LinkedArtifactsPanel({
     if (!docIds.length) return
     let linked = 0
     for (const id of docIds) {
-      const result = await linkDocumentToListItem(id, listItemId)
+      const result =
+        entity.type === 'task'
+          ? await linkDocumentToTask(id, entity.id)
+          : await linkDocumentToListItem(id, entity.id)
       if (result.success) linked++
     }
     if (linked > 0) {
@@ -221,7 +264,7 @@ export function LinkedArtifactsPanel({
   }
 
   const handleUnlinkFile = async (fileId: string) => {
-    const result = await unlinkFile(fileId, 'list_item', listItemId)
+    const result = await unlinkFile(fileId, entity.type, entity.id)
     if (result.success) {
       toast.success('Länken togs bort')
       refresh()
@@ -231,7 +274,10 @@ export function LinkedArtifactsPanel({
   }
 
   const handleUnlinkDocument = async (docId: string) => {
-    const result = await unlinkDocumentFromListItem(docId, listItemId)
+    const result =
+      entity.type === 'task'
+        ? await unlinkDocumentFromTask(docId, entity.id)
+        : await unlinkDocumentFromListItem(docId, entity.id)
     if (result.success) {
       toast.success('Länken togs bort')
       refresh()
@@ -294,18 +340,26 @@ export function LinkedArtifactsPanel({
               size="sm"
               className="bg-muted/40 p-0.5 rounded-md"
             >
-              <ToggleGroupItem value="all" className="text-xs h-7 px-2.5">
-                Alla
-              </ToggleGroupItem>
-              <ToggleGroupItem value="bevis" className="text-xs h-7 px-2.5">
-                Bevis
-              </ToggleGroupItem>
-              <ToggleGroupItem value="direct" className="text-xs h-7 px-2.5">
-                Direktlänkade
-              </ToggleGroupItem>
-              <ToggleGroupItem value="tasks" className="text-xs h-7 px-2.5">
-                Via uppgifter
-              </ToggleGroupItem>
+              {chips.includes('all') && (
+                <ToggleGroupItem value="all" className="text-xs h-7 px-2.5">
+                  Alla
+                </ToggleGroupItem>
+              )}
+              {chips.includes('bevis') && (
+                <ToggleGroupItem value="bevis" className="text-xs h-7 px-2.5">
+                  Bevis
+                </ToggleGroupItem>
+              )}
+              {chips.includes('direct') && (
+                <ToggleGroupItem value="direct" className="text-xs h-7 px-2.5">
+                  Direktlänkade
+                </ToggleGroupItem>
+              )}
+              {chips.includes('tasks') && (
+                <ToggleGroupItem value="tasks" className="text-xs h-7 px-2.5">
+                  Via uppgifter
+                </ToggleGroupItem>
+              )}
             </ToggleGroup>
 
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
