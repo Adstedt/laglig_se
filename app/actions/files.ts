@@ -288,9 +288,15 @@ export async function uploadFile(
         }
       }
 
-      // Generate unique file ID
       const fileId = crypto.randomUUID()
-      const storagePath = `${workspaceId}/files/${fileId}/${file.name}`
+      // Supabase Storage rejects spaces and most non-ASCII chars in keys —
+      // sanitize the filename portion while keeping the original on the row.
+      const safeFileName = file.name
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-zA-Z0-9._-]/g, '_')
+        .replace(/_+/g, '_')
+      const storagePath = `${workspaceId}/files/${fileId}/${safeFileName}`
 
       // Convert File to Buffer for upload
       const arrayBuffer = await file.arrayBuffer()
