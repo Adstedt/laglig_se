@@ -85,9 +85,11 @@ interface KanbanTabProps {
 // Priority Config
 // ============================================================================
 
+// Aligned with priority-badge tones in lib/ui/badge-tones.ts so the card's
+// left border matches its priority pill (amber Medel, red Hög/Kritisk, etc.).
 const PRIORITY_COLORS = {
   LOW: 'border-l-gray-400',
-  MEDIUM: 'border-l-blue-500',
+  MEDIUM: 'border-l-amber-500',
   HIGH: 'border-l-orange-500',
   CRITICAL: 'border-l-red-500',
 } as const
