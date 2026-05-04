@@ -43,6 +43,7 @@ import { normalizeSfsLaw } from '../lib/transforms/normalizers/sfs-law-normalize
 import { classifyLawType, classificationToMetadata } from '../lib/sfs'
 import { linkifyHtmlContent, buildSlugMap, type SlugMap } from '../lib/linkify'
 import { parseUndertitel } from '../lib/sync/section-parser'
+import { inferSfsInstrument } from '../lib/sfs/instrument'
 
 const prisma = new PrismaClient()
 
@@ -273,6 +274,7 @@ async function main() {
             title: info.titel,
             slug,
             content_type: ContentType.SFS_LAW,
+            sfs_instrument: inferSfsInstrument(info.titel), // Story 2.32
             full_text: fullText,
             html_content: processedHtml,
             publication_date: info.datum ? new Date(info.datum) : null,

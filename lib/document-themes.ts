@@ -87,3 +87,29 @@ export function getDocumentTheme(contentType: string): DocumentTheme {
     }
   )
 }
+
+/**
+ * Story 2.32: Resolve a display label for a document badge.
+ *
+ * For SFS_LAW / SFS_AMENDMENT, the label is refined by the `sfsInstrument`
+ * subtype field (LAG → "Lag", FORORDNING → "Förordning", KUNGORELSE →
+ * "Kungörelse"). For all other content types, or when the instrument is
+ * OTHER / null / undefined, falls back to the static theme label.
+ *
+ * Theme color/icon continue to come from `getDocumentTheme(contentType)`;
+ * only the label text is instrument-aware.
+ */
+export function getDocumentLabel(
+  contentType: string,
+  sfsInstrument?: string | null
+): string {
+  if (
+    (contentType === 'SFS_LAW' || contentType === 'SFS_AMENDMENT') &&
+    sfsInstrument
+  ) {
+    if (sfsInstrument === 'LAG') return 'Lag'
+    if (sfsInstrument === 'FORORDNING') return 'Förordning'
+    if (sfsInstrument === 'KUNGORELSE') return 'Kungörelse'
+  }
+  return getDocumentTheme(contentType).label
+}

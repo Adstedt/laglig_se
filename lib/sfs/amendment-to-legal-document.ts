@@ -8,6 +8,7 @@
 import { PrismaClient, ContentType, DocumentStatus } from '@prisma/client'
 import { generateAmendmentSlug, generateAmendmentTitle } from './amendment-slug'
 import { ensureSfsPrefix } from './ensure-prefix'
+import { inferSfsInstrument } from './instrument'
 
 type PrismaTransaction = Omit<
   PrismaClient,
@@ -91,6 +92,7 @@ export async function createLegalDocumentFromAmendment(
 
   const data = {
     content_type: ContentType.SFS_AMENDMENT,
+    sfs_instrument: inferSfsInstrument(title), // Story 2.32
     document_number: documentNumber,
     title,
     slug,
@@ -112,6 +114,7 @@ export async function createLegalDocumentFromAmendment(
       data: {
         title: data.title,
         slug: data.slug,
+        sfs_instrument: data.sfs_instrument, // Story 2.32: keep in sync if title changes
         full_text: data.full_text,
         html_content: data.html_content,
         markdown_content: data.markdown_content,

@@ -21,6 +21,7 @@ import {
   generateSlug,
 } from '../lib/external/riksdagen'
 import { ContentType, DocumentStatus } from '@prisma/client'
+import { inferSfsInstrument } from '../lib/sfs/instrument'
 
 // ============================================================================
 // Configuration
@@ -247,6 +248,7 @@ async function ingestByYear() {
               title: doc.titel,
               slug,
               content_type: ContentType.SFS_LAW,
+              sfs_instrument: inferSfsInstrument(doc.titel), // Story 2.32
               full_text: fullText,
               html_content: htmlContent,
               publication_date: doc.datum ? new Date(doc.datum) : null,

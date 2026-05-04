@@ -20,6 +20,7 @@ import {
   type ParsedLaw,
 } from '../lib/external/riksdagen'
 import { ContentType, DocumentStatus, Prisma } from '@prisma/client'
+import { inferSfsInstrument } from '../lib/sfs/instrument'
 
 // ============================================================================
 // Configuration
@@ -234,6 +235,7 @@ async function processLaw(law: ParsedLaw, stats: IngestionStats) {
       title: law.title,
       slug,
       content_type: ContentType.SFS_LAW,
+      sfs_instrument: inferSfsInstrument(law.title), // Story 2.32
       full_text: fullText,
       html_content: htmlContent,
       publication_date: law.publicationDate,

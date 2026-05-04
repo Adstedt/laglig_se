@@ -1,6 +1,6 @@
 import type { ComponentType, ReactNode } from 'react'
 import { cn } from '@/lib/utils'
-import { getDocumentTheme } from '@/lib/document-themes'
+import { getDocumentTheme, getDocumentLabel } from '@/lib/document-themes'
 import type { LucideIcon } from 'lucide-react'
 
 /**
@@ -57,6 +57,12 @@ export interface DocumentHeroProps {
    * differs from theme (e.g. "EU-förordning" vs theme.label).
    */
   typeLabel?: string | undefined
+  /**
+   * Story 2.32: For SFS_LAW / SFS_AMENDMENT, refines the label between
+   * Lag / Förordning / Kungörelse. Ignored when `typeLabel` is set or for
+   * non-SFS content types.
+   */
+  sfsInstrument?: string | null | undefined
   /** Status pill — omitted when undefined */
   status?: DocumentStatusBadge | undefined
   /**
@@ -90,6 +96,7 @@ export function DocumentHero({
   documentNumber,
   contentType,
   typeLabel,
+  sfsInstrument,
   status,
   extraBadges,
   quickInfoItems,
@@ -99,7 +106,8 @@ export function DocumentHero({
 }: DocumentHeroProps) {
   const theme = getDocumentTheme(contentType)
   const ThemeIcon = theme.icon
-  const displayLabel = typeLabel ?? theme.label
+  // Story 2.32: prefer explicit typeLabel, then instrument-aware helper, then theme default
+  const displayLabel = typeLabel ?? getDocumentLabel(contentType, sfsInstrument)
 
   const hasQuickInfo =
     (quickInfoItems && quickInfoItems.length > 0) ||

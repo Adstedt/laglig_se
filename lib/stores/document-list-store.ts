@@ -538,6 +538,7 @@ export const useDocumentListStore = create<DocumentListState>()(
             title: documentInfo.title,
             documentNumber: documentInfo.documentNumber,
             contentType: documentInfo.contentType,
+            sfsInstrument: null, // Story 2.32: optimistic add — populated on server-side refresh
             slug: documentInfo.slug,
             summary: documentInfo.summary ?? null,
             effectiveDate: null,

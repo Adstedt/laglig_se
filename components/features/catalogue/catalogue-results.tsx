@@ -7,6 +7,8 @@ interface CatalogueResultsProps {
   status: string[]
   businessType: string | undefined
   categories: string[]
+  /** Story 2.32: lag/förordning/kungörelse subtype filter */
+  sfsInstruments?: string[]
   dateFrom: string | undefined
   dateTo: string | undefined
   page: number
@@ -36,6 +38,7 @@ export async function CatalogueResults({
   status,
   businessType,
   categories,
+  sfsInstruments = [],
   dateFrom,
   dateTo,
   page,
@@ -63,6 +66,10 @@ export async function CatalogueResults({
         : undefined,
     businessType: businessType as 'B2B' | 'PRIVATE' | 'BOTH' | undefined,
     subjectCodes: categories.length > 0 ? categories : undefined,
+    sfsInstruments:
+      sfsInstruments.length > 0
+        ? (sfsInstruments as ('LAG' | 'FORORDNING' | 'KUNGORELSE' | 'OTHER')[])
+        : undefined, // Story 2.32
     dateFrom,
     dateTo,
     page,

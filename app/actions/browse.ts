@@ -24,12 +24,16 @@ const BusinessTypeEnum = z.enum(['B2B', 'PRIVATE', 'BOTH'])
 
 const SortByEnum = z.enum(['date_desc', 'date_asc', 'title', 'relevance'])
 
+// Story 2.32: SFS instrument subtype filter (lag / förordning / kungörelse)
+const SfsInstrumentEnum = z.enum(['LAG', 'FORORDNING', 'KUNGORELSE', 'OTHER'])
+
 const BrowseInputSchema = z.object({
   query: z.string().max(200).optional(),
   contentTypes: z.array(ContentTypeEnum).optional(),
   status: z.array(DocumentStatusEnum).optional(),
   businessType: BusinessTypeEnum.optional(),
   subjectCodes: z.array(z.string()).optional(),
+  sfsInstruments: z.array(SfsInstrumentEnum).optional(), // Story 2.32
   dateFrom: z.string().optional(),
   dateTo: z.string().optional(),
   page: z.number().int().min(1).default(1),
@@ -44,6 +48,7 @@ export interface BrowseResult {
   title: string
   documentNumber: string
   contentType: string
+  sfsInstrument: string | null // Story 2.32: lag/förordning/kungörelse subtype within SFS_LAW/SFS_AMENDMENT
   category: string | null
   summary: string | null
   effectiveDate: string | null // Publication date (for display)
@@ -96,13 +101,14 @@ export async function browseDocumentsAction(
     dateFrom,
     dateTo,
     subjectCodes,
+    sfsInstruments,
     page,
     limit,
     sortBy,
   } = parsed.data
 
   // Build cache key
-  const cacheKey = `browse:${JSON.stringify({ query, contentTypes, status, businessType, subjectCodes, dateFrom, dateTo, page, limit, sortBy })}`
+  const cacheKey = `browse:${JSON.stringify({ query, contentTypes, status, businessType, subjectCodes, sfsInstruments, dateFrom, dateTo, page, limit, sortBy })}`
 
   // Check cache
   if (isRedisConfigured()) {
@@ -131,6 +137,7 @@ export async function browseDocumentsAction(
       status,
       businessType,
       subjectCodes,
+      sfsInstruments,
       dateFrom,
       dateTo,
       page,
@@ -148,6 +155,7 @@ export async function browseDocumentsAction(
     status,
     businessType,
     subjectCodes,
+    sfsInstruments,
     dateFrom,
     dateTo,
     page,
@@ -165,6 +173,7 @@ async function searchWithQuery(
   _status: z.infer<typeof DocumentStatusEnum>[] | undefined,
   _businessType: z.infer<typeof BusinessTypeEnum> | undefined,
   _subjectCodes: string[] | undefined,
+  sfsInstruments: z.infer<typeof SfsInstrumentEnum>[] | undefined, // Story 2.32
   _dateFrom: string | undefined,
   _dateTo: string | undefined,
   page: number,
@@ -211,13 +220,20 @@ async function searchWithQuery(
     }
 
     // Fetch full document details from database
+    // Story 2.32: apply sfs_instrument filter post-ES (ES doesn't index it)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dbWhere: any = { id: { in: docIds } }
+    if (sfsInstruments && sfsInstruments.length > 0) {
+      dbWhere.sfs_instrument = { in: sfsInstruments }
+    }
     const docs = await prisma.legalDocument.findMany({
-      where: { id: { in: docIds } },
+      where: dbWhere,
       select: {
         id: true,
         title: true,
         document_number: true,
         content_type: true,
+        sfs_instrument: true, // Story 2.32
         summary: true,
         publication_date: true,
         effective_date: true,
@@ -252,6 +268,7 @@ async function searchWithQuery(
         title: dbDoc.title,
         documentNumber: dbDoc.document_number,
         contentType: dbDoc.content_type,
+        sfsInstrument: dbDoc.sfs_instrument, // Story 2.32
         category: dbDoc.subjects[0]?.subject_name ?? null,
         summary: dbDoc.summary,
         effectiveDate: dbDoc.publication_date?.toISOString() ?? null,
@@ -317,6 +334,7 @@ function isDefaultBrowseView(
   status: z.infer<typeof DocumentStatusEnum>[] | undefined,
   businessType: z.infer<typeof BusinessTypeEnum> | undefined,
   subjectCodes: string[] | undefined,
+  sfsInstruments: z.infer<typeof SfsInstrumentEnum>[] | undefined, // Story 2.32
   dateFrom: string | undefined,
   dateTo: string | undefined,
   page: number,
@@ -328,6 +346,7 @@ function isDefaultBrowseView(
     (!status || status.length === 0) &&
     !businessType &&
     (!subjectCodes || subjectCodes.length === 0) &&
+    (!sfsInstruments || sfsInstruments.length === 0) &&
     !dateFrom &&
     !dateTo &&
     sortBy === 'date_desc'
@@ -343,6 +362,7 @@ async function executeBrowseQuery(
   status: z.infer<typeof DocumentStatusEnum>[] | undefined,
   businessType: z.infer<typeof BusinessTypeEnum> | undefined,
   subjectCodes: string[] | undefined,
+  sfsInstruments: z.infer<typeof SfsInstrumentEnum>[] | undefined, // Story 2.32
   dateFrom: string | undefined,
   dateTo: string | undefined,
   page: number,
@@ -368,6 +388,11 @@ async function executeBrowseQuery(
 
   if (status && status.length > 0) {
     where.status = { in: status }
+  }
+
+  // Story 2.32: lag/förordning/kungörelse subtype filter
+  if (sfsInstruments && sfsInstruments.length > 0) {
+    where.sfs_instrument = { in: sfsInstruments }
   }
 
   if (businessType && businessType !== 'BOTH') {
@@ -431,6 +456,7 @@ async function executeBrowseQuery(
         title: true,
         document_number: true,
         content_type: true,
+        sfs_instrument: true, // Story 2.32
         summary: true,
         publication_date: true,
         effective_date: true,
@@ -453,6 +479,7 @@ async function executeBrowseQuery(
       title: r.title,
       documentNumber: r.document_number,
       contentType: r.content_type,
+      sfsInstrument: r.sfs_instrument, // Story 2.32
       category: r.subjects[0]?.subject_name ?? null,
       summary: r.summary,
       effectiveDate: r.publication_date?.toISOString() ?? null,
@@ -483,6 +510,7 @@ const getCachedDefaultBrowse = unstable_cache(
       undefined, // status
       undefined, // businessType
       undefined, // subjectCodes
+      undefined, // sfsInstruments (Story 2.32)
       undefined, // dateFrom
       undefined, // dateTo
       1, // page
@@ -508,6 +536,7 @@ const getCachedFilteredBrowse = unstable_cache(
     status: string[] | undefined,
     businessType: string | undefined,
     subjectCodes: string[] | undefined,
+    sfsInstruments: string[] | undefined, // Story 2.32
     dateFrom: string | undefined,
     dateTo: string | undefined,
     page: number,
@@ -519,6 +548,7 @@ const getCachedFilteredBrowse = unstable_cache(
       status as z.infer<typeof DocumentStatusEnum>[] | undefined,
       businessType as z.infer<typeof BusinessTypeEnum> | undefined,
       subjectCodes,
+      sfsInstruments as z.infer<typeof SfsInstrumentEnum>[] | undefined,
       dateFrom,
       dateTo,
       page,
@@ -539,6 +569,7 @@ async function browseWithoutQuery(
   status: z.infer<typeof DocumentStatusEnum>[] | undefined,
   businessType: z.infer<typeof BusinessTypeEnum> | undefined,
   subjectCodes: string[] | undefined,
+  sfsInstruments: z.infer<typeof SfsInstrumentEnum>[] | undefined, // Story 2.32
   dateFrom: string | undefined,
   dateTo: string | undefined,
   page: number,
@@ -553,6 +584,7 @@ async function browseWithoutQuery(
     status,
     businessType,
     subjectCodes,
+    sfsInstruments,
     dateFrom,
     dateTo,
     page,
@@ -597,6 +629,7 @@ async function browseWithoutQuery(
         status,
         businessType,
         subjectCodes,
+        sfsInstruments, // Story 2.32
         dateFrom,
         dateTo,
         page,

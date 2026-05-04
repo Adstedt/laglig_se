@@ -16,7 +16,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { GripVertical, Trash2 } from 'lucide-react'
-import { getDocumentTheme } from '@/lib/document-themes'
+import { getDocumentTheme, getDocumentLabel } from '@/lib/document-themes'
 import { getDocumentUrl } from '@/lib/utils/content-type'
 import { ChangeIndicator } from '@/components/features/changes/change-indicator'
 import type { DocumentListItem } from '@/app/actions/document-list'
@@ -152,7 +152,10 @@ export const DocumentListCard = forwardRef<
           className={cn('gap-1 text-xs py-0 px-1.5 shrink-0', theme.badge)}
         >
           <ThemeIcon className="h-3 w-3" />
-          {theme.label}
+          {getDocumentLabel(
+            item.document.contentType,
+            item.document.sfsInstrument
+          )}
         </Badge>
         <span className="text-muted-foreground truncate">
           {item.document.documentNumber}

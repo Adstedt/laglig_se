@@ -12,6 +12,7 @@
 
 import { prisma } from '../lib/prisma'
 import { ContentType, DocumentStatus } from '@prisma/client'
+import { inferSfsInstrument } from '../lib/sfs/instrument'
 import {
   fetchSFSLaws,
   fetchLawFullText,
@@ -256,6 +257,7 @@ async function main() {
           title: lawData.title,
           slug,
           content_type: ContentType.SFS_LAW,
+          sfs_instrument: inferSfsInstrument(lawData.title), // Story 2.32
           full_text: lawData.fullText,
           html_content: lawData.htmlContent,
           publication_date: lawData.publicationDate,

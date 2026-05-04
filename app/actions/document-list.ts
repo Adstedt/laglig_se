@@ -107,6 +107,8 @@ export interface DocumentListItem {
     title: string
     documentNumber: string
     contentType: ContentType
+    /** Story 2.32: lag/förordning/kungörelse subtype within SFS_LAW/SFS_AMENDMENT */
+    sfsInstrument: string | null
     slug: string
     summary: string | null
     effectiveDate: Date | null
@@ -401,6 +403,7 @@ export async function getDocumentListItems(
                 title: true,
                 document_number: true,
                 content_type: true,
+                sfs_instrument: true, // Story 2.32
                 slug: true,
                 summary: true,
                 effective_date: true,
@@ -525,6 +528,7 @@ export async function getDocumentListItems(
               title: item.document.title,
               documentNumber: item.document.document_number,
               contentType: item.document.content_type,
+              sfsInstrument: item.document.sfs_instrument, // Story 2.32
               slug: item.document.slug,
               summary: item.document.summary,
               effectiveDate: item.document.effective_date,

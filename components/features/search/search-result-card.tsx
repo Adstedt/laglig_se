@@ -5,7 +5,7 @@ import { Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { trackSearchClickAction, type SearchResult } from '@/app/actions/search'
-import { getDocumentTheme } from '@/lib/document-themes'
+import { getDocumentTheme, getDocumentLabel } from '@/lib/document-themes'
 
 interface SearchResultCardProps {
   document: SearchResult
@@ -59,7 +59,7 @@ export function SearchResultCard({
       <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
         <Badge className={cn('gap-1', theme.badge)}>
           <ThemeIcon className="h-3.5 w-3.5" />
-          {theme.label}
+          {getDocumentLabel(document.contentType, document.sfsInstrument)}
         </Badge>
         <span className="text-muted-foreground">{document.documentNumber}</span>
         {document.effectiveDate && (

@@ -15,6 +15,7 @@
 import { prisma } from '../lib/prisma'
 import { fetchLawFullText, fetchLawHTML } from '../lib/external/riksdagen'
 import { ContentType, DocumentStatus } from '@prisma/client'
+import { inferSfsInstrument } from '../lib/sfs/instrument'
 
 const DRY_RUN = process.argv.includes('--dry-run')
 
@@ -910,6 +911,7 @@ async function main() {
           title: doc.title,
           slug: generateSlug(doc.title, doc.dok_id),
           content_type: ContentType.SFS_LAW,
+          sfs_instrument: inferSfsInstrument(doc.title), // Story 2.32
           status: DocumentStatus.REPEALED, // These are all historical/repealed
           effective_date: new Date(doc.date),
           full_text: content.text,
