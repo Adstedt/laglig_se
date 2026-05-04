@@ -22,9 +22,16 @@ import {
 import { sv } from 'date-fns/locale'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react'
+import { EmptyState } from '@/components/ui/empty-state'
+import {
+  ChevronLeft,
+  ChevronRight,
+  AlertCircle,
+  Calendar as CalendarIcon,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { TaskWithRelations } from '@/app/actions/tasks'
+import { isTaskOverdue } from '@/lib/utils/task-utils'
 import type { WorkspaceMember } from './index'
 
 // ============================================================================
@@ -71,6 +78,21 @@ export function CalendarTab({ filteredTasks, onTaskClick }: CalendarTabProps) {
   const goToPreviousMonth = () => setCurrentDate((d) => subMonths(d, 1))
   const goToNextMonth = () => setCurrentDate((d) => addMonths(d, 1))
   const goToToday = () => setCurrentDate(new Date())
+
+  // Empty state — render after all hooks have run (rules-of-hooks).
+  if (tasksWithDueDates.length === 0) {
+    return (
+      <EmptyState
+        icon={
+          <EmptyState.Icon>
+            <CalendarIcon className="h-8 w-8 text-muted-foreground" />
+          </EmptyState.Icon>
+        }
+        title="Inga uppgifter med förfallodatum"
+        description="Lägg till ett förfallodatum på en uppgift för att se den i kalendern."
+      />
+    )
+  }
 
   return (
     <div className="space-y-4">
@@ -199,10 +221,7 @@ function CalendarTask({
   task: TaskWithRelations
   onClick?: () => void
 }) {
-  const isOverdue =
-    !task.column.is_done &&
-    task.due_date &&
-    new Date(task.due_date) < new Date()
+  const isOverdue = isTaskOverdue(task)
 
   return (
     <div

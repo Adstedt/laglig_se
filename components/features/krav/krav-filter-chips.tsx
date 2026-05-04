@@ -3,13 +3,11 @@
 /**
  * Story 20.3: Four-preset filter chip row for the /krav page.
  * Pure component — receives state via props, fires callbacks back.
- * Visual tokens lifted verbatim from `content-type-filter.tsx` so the
- * chip family is consistent with the document-list surface.
  */
 
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { FilterChip, FilterChipGroup } from '@/components/ui/filter-chip'
 import type { WorkspaceRequirementsFilter } from '@/app/actions/workspace-requirements'
 
 interface ChipDescriptor {
@@ -48,41 +46,21 @@ export function KravFilterChips({
   const showClear = adjustments > 0
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <FilterChipGroup aria-label="Filtrera kravpunkter" className="items-center">
       {CHIPS.map((chip) => {
         const isActive = chip.value === active
-        const count = counts?.[chip.value]
         return (
-          <button
+          <FilterChip
             key={chip.value}
-            type="button"
-            aria-pressed={isActive}
-            onClick={() => {
+            pressed={isActive}
+            count={counts?.[chip.value]}
+            onPressedChange={() => {
               // Clicking the already-active chip is a no-op (AC 13).
               if (!isActive) onChange(chip.value)
             }}
-            className={cn(
-              'px-3 py-1.5 text-sm rounded-full border transition-colors inline-flex items-center gap-2',
-              isActive
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-background hover:bg-muted border-border text-foreground'
-            )}
           >
-            <span>{chip.label}</span>
-            {count !== undefined && (
-              <span
-                className={cn(
-                  'inline-flex items-center justify-center rounded-full text-[10px] font-medium px-1.5 min-w-[1.25rem] h-5',
-                  isActive
-                    ? 'bg-primary-foreground/20 text-primary-foreground'
-                    : 'bg-muted text-muted-foreground'
-                )}
-                aria-label={`${count} kravpunkter`}
-              >
-                {count}
-              </span>
-            )}
-          </button>
+            {chip.label}
+          </FilterChip>
         )
       })}
       {showClear && (
@@ -97,6 +75,6 @@ export function KravFilterChips({
           Rensa ({adjustments})
         </Button>
       )}
-    </div>
+    </FilterChipGroup>
   )
 }

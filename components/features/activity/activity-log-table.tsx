@@ -16,6 +16,7 @@ import { ChevronDown, ChevronRight, History } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Table,
   TableBody,
@@ -74,12 +75,14 @@ export function ActivityLogTable({ activities }: ActivityLogTableProps) {
 
   if (activities.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="rounded-full bg-muted p-3 mb-3">
-          <History className="h-6 w-6 text-muted-foreground" />
-        </div>
-        <p className="text-sm text-muted-foreground">Ingen aktivitet ännu</p>
-      </div>
+      <EmptyState
+        icon={
+          <EmptyState.Icon>
+            <History className="h-8 w-8 text-muted-foreground" />
+          </EmptyState.Icon>
+        }
+        description="Ingen aktivitet ännu"
+      />
     )
   }
 

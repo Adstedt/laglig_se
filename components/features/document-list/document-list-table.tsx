@@ -50,6 +50,7 @@ import {
 } from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   GripVertical,
   Eye,
@@ -148,9 +149,49 @@ const VIRTUAL_TABLE_MAX_HEIGHT = 600
 const PINNED_COLUMN_IDS = new Set([
   'select',
   'dragHandle',
+  'type',
   'actions',
   'highRiskWarning',
 ])
+
+/**
+ * Hardcoded width bounds for every column. Mirrors the size/minSize/maxSize
+ * declared on each column def below. Used by `handleColumnSizingChange` to
+ * clamp values BEFORE they're persisted to the Zustand store, so localStorage
+ * can never hold an out-of-bounds width — fixes "drag to infinite width"
+ * because TanStack's onEnd-mode commit doesn't always honor min/maxSize.
+ */
+const COLUMN_SIZE_BOUNDS: Record<string, { min: number; max: number }> = {
+  select: { min: 56, max: 56 },
+  dragHandle: { min: 56, max: 56 },
+  type: { min: 72, max: 72 },
+  title: { min: 150, max: 600 },
+  complianceStatus: { min: 150, max: 250 },
+  priority: { min: 120, max: 220 },
+  dueDate: { min: 120, max: 200 },
+  assignee: { min: 110, max: 110 },
+  responsiblePerson: { min: 110, max: 110 },
+  taskProgress: { min: 160, max: 160 },
+  lastActivity: { min: 120, max: 200 },
+  notes: { min: 50, max: 50 },
+  group: { min: 100, max: 250 },
+  addedAt: { min: 80, max: 150 },
+  actions: { min: 80, max: 80 },
+  highRiskWarning: { min: 40, max: 40 },
+}
+
+function clampColumnSizing(
+  sizing: Record<string, number>
+): Record<string, number> {
+  const clamped: Record<string, number> = {}
+  for (const [id, size] of Object.entries(sizing)) {
+    const bounds = COLUMN_SIZE_BOUNDS[id]
+    clamped[id] = bounds
+      ? Math.max(bounds.min, Math.min(bounds.max, size))
+      : size
+  }
+  return clamped
+}
 
 interface DocumentListTableProps {
   items: DocumentListItem[]
@@ -292,10 +333,15 @@ export function DocumentListTable({
     ) => {
       const newSizing =
         typeof updater === 'function' ? updater(columnSizing) : updater
+      // Clamp every column to its declared bounds before persisting. TanStack's
+      // `onEnd` resize mode commits `startSize + deltaOffset` directly, which
+      // can fall outside columnDef.minSize/maxSize on extreme drags. Clamping
+      // here is the source of truth — the persisted store is always valid.
+      const clampedSizing = clampColumnSizing(newSizing)
       if (onColumnSizingChange) {
-        onColumnSizingChange(newSizing)
+        onColumnSizingChange(clampedSizing)
       } else {
-        setInternalColumnSizing(newSizing)
+        setInternalColumnSizing(clampedSizing)
       }
     },
     [columnSizing, onColumnSizingChange]
@@ -388,7 +434,9 @@ export function DocumentListTable({
         ),
         enableSorting: false,
         enableResizing: false,
-        size: 40,
+        size: 56,
+        minSize: 56,
+        maxSize: 56,
       },
       // Drag handle
       {
@@ -397,7 +445,9 @@ export function DocumentListTable({
         cell: () => null, // Rendered by SortableRow
         enableSorting: false,
         enableResizing: false,
-        size: 40,
+        size: 56,
+        minSize: 56,
+        maxSize: 56,
       },
       // Content type icon - fixed size, consistent across views
       {
@@ -408,19 +458,23 @@ export function DocumentListTable({
           const contentType = row.original.document.contentType
           const Icon = getContentTypeIcon(contentType)
           return (
-            <div
-              className={cn(
-                'inline-flex items-center justify-center w-8 h-8 rounded',
-                getContentTypeBadgeColor(contentType)
-              )}
-              title={getContentTypeLabel(contentType)}
-            >
-              <Icon className="h-4 w-4" />
+            <div className="flex items-center justify-center">
+              <div
+                className={cn(
+                  'flex items-center justify-center w-8 h-8 rounded',
+                  getContentTypeBadgeColor(contentType)
+                )}
+                title={getContentTypeLabel(contentType)}
+              >
+                <Icon className="h-4 w-4" />
+              </div>
             </div>
           )
         },
         enableResizing: false,
-        size: 60,
+        size: 72,
+        minSize: 72,
+        maxSize: 72,
       },
       // Document (combined title + document number) - fixed size, consistent across views
       {
@@ -451,6 +505,8 @@ export function DocumentListTable({
           </div>
         ),
         size: 300,
+        minSize: 150,
+        maxSize: 600,
       },
       // Story 6.2: Compliance Status (inline editable)
       // Story 6.16: Added column header tooltip
@@ -478,8 +534,8 @@ export function DocumentListTable({
             />
           </CellErrorBoundary>
         ),
-        size: 150,
-        minSize: 200,
+        size: 200,
+        minSize: 150,
         maxSize: 250,
         enableResizing: true,
       },
@@ -505,8 +561,8 @@ export function DocumentListTable({
             }}
           />
         ),
-        size: 120,
-        minSize: 170,
+        size: 170,
+        minSize: 120,
         maxSize: 220,
         enableResizing: true,
       },
@@ -560,6 +616,8 @@ export function DocumentListTable({
         enableSorting: false,
         enableResizing: false,
         size: 110,
+        minSize: 110,
+        maxSize: 110,
       },
       // Story 6.2: Responsible Person (inline editable) - avatar only
       {
@@ -594,6 +652,8 @@ export function DocumentListTable({
         enableSorting: false,
         enableResizing: false,
         size: 110,
+        minSize: 110,
+        maxSize: 110,
       },
       // Story 6.2: Task Progress
       {
@@ -613,6 +673,8 @@ export function DocumentListTable({
         enableSorting: false,
         enableResizing: false,
         size: 160,
+        minSize: 160,
+        maxSize: 160,
       },
       // Story 6.2: Last Activity
       {
@@ -628,8 +690,8 @@ export function DocumentListTable({
             </CellErrorBoundary>
           )
         },
-        size: 120,
-        minSize: 145,
+        size: 145,
+        minSize: 120,
         maxSize: 200,
         enableResizing: true,
       },
@@ -647,6 +709,8 @@ export function DocumentListTable({
         enableSorting: false,
         enableResizing: false,
         size: 50,
+        minSize: 50,
+        maxSize: 50,
       },
       // Story 4.13: Group column (inline editable)
       {
@@ -715,6 +779,8 @@ export function DocumentListTable({
         enableSorting: false,
         enableResizing: false,
         size: 80,
+        minSize: 80,
+        maxSize: 80,
       },
       // Story 6.16: High-Risk Warning Indicator (far right of row)
       // Shows warning icon when HIGH priority + EJ_UPPFYLLD compliance status
@@ -746,6 +812,8 @@ export function DocumentListTable({
         enableSorting: false,
         enableResizing: false,
         size: 40,
+        minSize: 40,
+        maxSize: 40,
       },
     ],
     [
@@ -820,17 +888,29 @@ export function DocumentListTable({
   // Respects minSize/maxSize constraints for visual feedback
   const { columnSizingInfo } = table.getState()
   const getColumnWidth = (headerId: string, defaultSize: number) => {
+    const column = table.getColumn(headerId)
+    const minSize = column?.columnDef.minSize ?? 0
+    const maxSize = column?.columnDef.maxSize ?? Infinity
     if (columnSizingInfo.isResizingColumn === headerId) {
-      const column = table.getColumn(headerId)
-      const minSize = column?.columnDef.minSize ?? 0
-      const maxSize = column?.columnDef.maxSize ?? Infinity
       const newSize =
         (columnSizingInfo.startSize ?? defaultSize) +
         (columnSizingInfo.deltaOffset ?? 0)
       return Math.max(minSize, Math.min(maxSize, newSize))
     }
-    return defaultSize
+    // Clamp the persisted/default size too — TanStack commits resize values
+    // unclamped on `onEnd` mode, and stale localStorage from before
+    // minSize/maxSize were added can otherwise render columns outside their
+    // declared bounds.
+    return Math.max(minSize, Math.min(maxSize, defaultSize))
   }
+
+  // Sum of all visible column widths (live-aware during a resize). Combined
+  // with a spacer cell at the end of each row, this lets chrome columns hold
+  // their declared widths instead of inflating proportionally under
+  // `table-fixed` when the column-sum is less than the container width.
+  const liveTotalWidth = table
+    .getVisibleLeafColumns()
+    .reduce((sum, col) => sum + getColumnWidth(col.id, col.getSize()), 0)
 
   // Story P.4: Row virtualizer for large datasets
   const rows = table.getRowModel().rows
@@ -920,7 +1000,10 @@ export function DocumentListTable({
                   }}
                   className={cn(
                     'relative',
-                    header.id === 'title' && 'sticky left-0 bg-background z-10'
+                    header.id === 'title' && 'sticky left-0 bg-background z-10',
+                    header.id === 'select' && 'pl-6 pr-2',
+                    header.id === 'dragHandle' && 'px-2',
+                    header.id === 'type' && 'pl-5 pr-2'
                   )}
                 >
                   {headerContent}
@@ -945,6 +1028,8 @@ export function DocumentListTable({
               </DraggableColumnHeader>
             )
           })}
+          {/* Spacer absorbs leftover width so chrome columns don't inflate */}
+          <TableHead aria-hidden="true" className="p-0" />
         </TableRow>
       ))}
     </TableHeader>
@@ -953,12 +1038,14 @@ export function DocumentListTable({
   // Empty state
   if (items.length === 0 && !isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
-        <div className="rounded-full bg-muted p-4">
-          <FileText className="h-8 w-8 text-muted-foreground" />
-        </div>
-        <p className="text-muted-foreground max-w-md">{emptyMessage}</p>
-      </div>
+      <EmptyState
+        icon={
+          <EmptyState.Icon>
+            <FileText className="h-8 w-8 text-muted-foreground" />
+          </EmptyState.Icon>
+        }
+        description={emptyMessage}
+      />
     )
   }
 
@@ -989,7 +1076,7 @@ export function DocumentListTable({
       >
         {disableDndContext ? (
           // Story 6.14: When nested, skip DndContext wrapper for rows (parent provides it)
-          <Table className="table-fixed">
+          <Table className="table-fixed" style={{ minWidth: liveTotalWidth }}>
             {renderTableHeader()}
             <TableBody
               style={
@@ -1033,7 +1120,7 @@ export function DocumentListTable({
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={columns.length}
+                      colSpan={columns.length + 1}
                       className="h-24 text-center"
                     >
                       {isLoading ? 'Laddar...' : 'Inga resultat.'}
@@ -1051,7 +1138,7 @@ export function DocumentListTable({
             onDragEnd={handleDragEnd}
             modifiers={[restrictToVerticalAxis]}
           >
-            <Table className="table-fixed">
+            <Table className="table-fixed" style={{ minWidth: liveTotalWidth }}>
               {renderTableHeader()}
               <TableBody
                 style={
@@ -1097,7 +1184,7 @@ export function DocumentListTable({
                   ) : (
                     <TableRow>
                       <TableCell
-                        colSpan={columns.length}
+                        colSpan={columns.length + 1}
                         className="h-24 text-center"
                       >
                         {isLoading ? 'Laddar...' : 'Inga resultat.'}
@@ -1271,14 +1358,17 @@ const SortableRow = memo(function SortableRow({
         <TableCell
           key={cell.id}
           className={cn(
-            cell.column.id === 'title' && 'sticky left-0 bg-background z-10'
+            cell.column.id === 'title' && 'sticky left-0 bg-background z-10',
+            cell.column.id === 'select' && 'pl-6 pr-2',
+            (cell.column.id === 'dragHandle' || cell.column.id === 'type') &&
+              'px-2'
           )}
         >
           {cell.column.id === 'dragHandle' ? (
             <button
               {...attributes}
               {...listeners}
-              className="cursor-grab active:cursor-grabbing p-1 text-muted-foreground hover:text-foreground"
+              className="flex w-full items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
               aria-label="Dra för att flytta"
             >
               <GripVertical className="h-4 w-4" />
@@ -1288,6 +1378,7 @@ const SortableRow = memo(function SortableRow({
           )}
         </TableCell>
       ))}
+      <TableCell aria-hidden="true" className="p-0" />
     </TableRow>
   )
 })
@@ -1361,14 +1452,17 @@ const VirtualSortableRow = memo(function VirtualSortableRow({
         <TableCell
           key={cell.id}
           className={cn(
-            cell.column.id === 'title' && 'sticky left-0 bg-background z-10'
+            cell.column.id === 'title' && 'sticky left-0 bg-background z-10',
+            cell.column.id === 'select' && 'pl-6 pr-2',
+            (cell.column.id === 'dragHandle' || cell.column.id === 'type') &&
+              'px-2'
           )}
         >
           {cell.column.id === 'dragHandle' ? (
             <button
               {...attributes}
               {...listeners}
-              className="cursor-grab active:cursor-grabbing p-1 text-muted-foreground hover:text-foreground"
+              className="flex w-full items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
               aria-label="Dra för att flytta"
             >
               <GripVertical className="h-4 w-4" />
@@ -1378,6 +1472,7 @@ const VirtualSortableRow = memo(function VirtualSortableRow({
           )}
         </TableCell>
       ))}
+      <TableCell aria-hidden="true" className="p-0" />
     </TableRow>
   )
 })

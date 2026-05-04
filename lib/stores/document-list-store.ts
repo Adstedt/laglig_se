@@ -1249,7 +1249,7 @@ export const useDocumentListStore = create<DocumentListState>()(
       name: 'document-list-storage',
       // Bump when changing defaults that are also persisted so existing users
       // pick up the new behavior on next load.
-      version: 2,
+      version: 4,
       migrate: (persistedState, version) => {
         let next = persistedState as Record<string, unknown> | null
         if (!next || typeof next !== 'object') return persistedState
@@ -1265,6 +1265,45 @@ export const useDocumentListStore = create<DocumentListState>()(
         // keep it. Users already on 'compliance' keep it.
         if (version < 2 && next.viewMode === 'card') {
           next = { ...next, viewMode: 'compliance' }
+        }
+
+        // v2 → v3: chrome column widths bumped (select 40→56, dragHandle
+        // 40→56, type 60→72) and the type column was pinned. Strip any
+        // persisted chrome sizes so existing users pick up the new defaults.
+        if (version < 3) {
+          const stripChromeSizes = (sizing: unknown): unknown => {
+            if (!sizing || typeof sizing !== 'object') return sizing
+            const filtered: Record<string, number> = {}
+            for (const [key, value] of Object.entries(
+              sizing as Record<string, number>
+            )) {
+              if (key !== 'select' && key !== 'dragHandle' && key !== 'type') {
+                filtered[key] = value
+              }
+            }
+            return filtered
+          }
+          next = {
+            ...next,
+            columnSizing: stripChromeSizes(next.columnSizing),
+            complianceColumnSizing: stripChromeSizes(
+              next.complianceColumnSizing
+            ),
+          }
+        }
+
+        // v3 → v4: minSize/maxSize added to every resizable column (title,
+        // complianceStatus, priority, dueDate, etc.) and several columns'
+        // size values were normalized. Reset ALL persisted column sizing
+        // so users start from the new declared defaults — runtime clamps
+        // already handle stale state defensively, but a clean wipe avoids
+        // any visual oddness on first paint.
+        if (version < 4) {
+          next = {
+            ...next,
+            columnSizing: {},
+            complianceColumnSizing: {},
+          }
         }
 
         return next

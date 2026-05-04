@@ -53,7 +53,10 @@ import {
   Flag,
   GripVertical,
   SquareCheckBig,
+  AlertCircle,
 } from 'lucide-react'
+import { EmptyState } from '@/components/ui/empty-state'
+import { isTaskOverdue } from '@/lib/utils/task-utils'
 import { SortableHeader } from '@/components/ui/sortable-header'
 import {
   Tooltip,
@@ -122,7 +125,7 @@ const TASK_PRIORITY_OPTIONS: PriorityOption[] = [
 // ============================================================================
 
 /** Column IDs that cannot be reordered (pinned to edges) */
-const PINNED_COLUMN_IDS = new Set(['select', 'dragHandle', 'actions'])
+const PINNED_COLUMN_IDS = new Set(['select', 'dragHandle', 'type', 'actions'])
 
 interface ListTabProps {
   filteredTasks: TaskWithRelations[]
@@ -166,11 +169,12 @@ export function ListTab({
   // Story P.4: Virtualization state
   const tableContainerRef = useRef<HTMLDivElement>(null)
 
-  // Check if task is overdue
-  const isOverdue = useCallback((task: TaskWithRelations) => {
-    if (!task.due_date || task.column.is_done) return false
-    return new Date(task.due_date) < new Date()
-  }, [])
+  // Local alias so the existing column-cell + memo deps continue to work
+  // without renaming every reference in this large file.
+  const isOverdue = useCallback(
+    (task: TaskWithRelations) => isTaskOverdue(task),
+    []
+  )
 
   // Map workspace members to WorkspaceMemberOption shape for AssigneeEditor
   const memberOptions = useMemo(
@@ -334,42 +338,44 @@ export function ListTab({
         ),
         enableSorting: false,
         enableResizing: false,
-        size: 40,
-        minSize: 40,
-        maxSize: 40,
+        size: 56,
+        minSize: 56,
+        maxSize: 56,
       },
       // Drag handle (visual placeholder — reorder not yet implemented)
       {
         id: 'dragHandle',
         header: '',
         cell: () => (
-          <div className="p-1 text-muted-foreground">
+          <div className="flex items-center justify-center text-muted-foreground">
             <GripVertical className="h-4 w-4" />
           </div>
         ),
         enableSorting: false,
         enableResizing: false,
-        size: 40,
-        minSize: 40,
-        maxSize: 40,
+        size: 56,
+        minSize: 56,
+        maxSize: 56,
       },
       // Type icon
       {
         id: 'type',
         header: 'Typ',
         cell: () => (
-          <div
-            className="inline-flex items-center justify-center w-8 h-8 rounded bg-blue-50 text-blue-600"
-            title="Uppgift"
-          >
-            <SquareCheckBig className="h-4 w-4" />
+          <div className="flex items-center justify-center">
+            <div
+              className="flex items-center justify-center w-8 h-8 rounded bg-blue-50 text-blue-600"
+              title="Uppgift"
+            >
+              <SquareCheckBig className="h-4 w-4" />
+            </div>
           </div>
         ),
         enableSorting: false,
         enableResizing: false,
-        size: 60,
-        minSize: 60,
-        maxSize: 60,
+        size: 72,
+        minSize: 72,
+        maxSize: 72,
       },
       // Title
       {
@@ -386,9 +392,15 @@ export function ListTab({
               <span
                 className={cn(
                   'text-sm font-medium block truncate',
-                  overdue && 'text-destructive'
+                  overdue && 'text-destructive inline-flex items-center gap-1.5'
                 )}
               >
+                {overdue && (
+                  <AlertCircle
+                    className="h-3.5 w-3.5 shrink-0 text-destructive"
+                    aria-hidden="true"
+                  />
+                )}
                 {task.title}
               </span>
               {task.list_item_links.length > 0 && (
@@ -670,20 +682,34 @@ export function ListTab({
     columnResizeMode: 'onEnd',
   })
 
-  // Helper to get column width with live resize preview
+  // Helper to get column width with live resize preview + min/max clamp on
+  // read. The clamp on read covers two cases: TanStack commits resize values
+  // unclamped on `onEnd` mode, and stale localStorage state from before
+  // min/max were declared can otherwise render columns outside bounds.
   const { columnSizingInfo } = table.getState()
   const getColumnWidth = (headerId: string, defaultSize: number) => {
+    const column = table.getColumn(headerId)
+    const minSize = column?.columnDef.minSize ?? 0
+    const maxSize = column?.columnDef.maxSize ?? Infinity
     if (columnSizingInfo.isResizingColumn === headerId) {
-      const column = table.getColumn(headerId)
-      const minSize = column?.columnDef.minSize ?? 0
-      const maxSize = column?.columnDef.maxSize ?? Infinity
       const newSize =
         (columnSizingInfo.startSize ?? defaultSize) +
         (columnSizingInfo.deltaOffset ?? 0)
       return Math.max(minSize, Math.min(maxSize, newSize))
     }
-    return defaultSize
+    return Math.max(minSize, Math.min(maxSize, defaultSize))
   }
+
+  // Sum of all visible column widths (live-aware during a resize). The Table
+  // primitive ships with `w-full` which combined with `table-fixed` forces
+  // columns to share the container width — meaning resizing one column
+  // proportionally squashes the others. Setting an explicit table width that
+  // matches the column sum lets the chrome columns stay rock-steady; the
+  // wrapping `overflow-x-auto` handles horizontal scroll when the total
+  // exceeds the viewport.
+  const liveTotalWidth = table
+    .getVisibleLeafColumns()
+    .reduce((sum, col) => sum + getColumnWidth(col.id, col.getSize()), 0)
 
   // Stable key to bust memo when column order changes
   const columnOrderKey = useMemo(() => columnOrder.join(','), [columnOrder])
@@ -792,17 +818,15 @@ export function ListTab({
   // Empty state
   if (filteredTasks.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
-        <div className="rounded-full bg-muted p-4">
-          <ListTodo className="h-8 w-8 text-muted-foreground" />
-        </div>
-        <div>
-          <h3 className="font-medium">Inga uppgifter matchar</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Justera dina filter eller skapa en ny uppgift
-          </p>
-        </div>
-      </div>
+      <EmptyState
+        icon={
+          <EmptyState.Icon>
+            <ListTodo className="h-8 w-8 text-muted-foreground" />
+          </EmptyState.Icon>
+        }
+        title="Inga uppgifter matchar"
+        description="Justera dina filter eller skapa en ny uppgift"
+      />
     )
   }
 
@@ -831,7 +855,7 @@ export function ListTab({
           shouldVirtualize ? { maxHeight: VIRTUAL_TABLE_MAX_HEIGHT } : undefined
         }
       >
-        <Table className="table-fixed">
+        <Table className="table-fixed" style={{ minWidth: liveTotalWidth }}>
           <TableHeader
             className={
               shouldVirtualize ? 'sticky top-0 z-20 bg-background' : undefined
@@ -839,6 +863,10 @@ export function ListTab({
           >
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
+                {/* Spacer cells without explicit width absorb the leftover
+                    space when the column-sum < container, so chrome columns
+                    keep their declared widths instead of inflating
+                    proportionally under table-fixed. */}
                 {headerGroup.headers.map((header) => {
                   const isPinned = PINNED_COLUMN_IDS.has(header.id)
                   const headerContent = (
@@ -884,7 +912,10 @@ export function ListTab({
                         }}
                         className={cn(
                           'relative',
-                          header.id === 'title' && 'bg-background'
+                          header.id === 'title' && 'bg-background',
+                          header.id === 'select' && 'pl-6 pr-2',
+                          header.id === 'dragHandle' && 'px-2',
+                          header.id === 'type' && 'pl-5 pr-2'
                         )}
                       >
                         {headerContent}
@@ -909,6 +940,7 @@ export function ListTab({
                     </DraggableColumnHeader>
                   )
                 })}
+                <TableHead aria-hidden="true" className="p-0" />
               </TableRow>
             ))}
           </TableHeader>
@@ -1063,7 +1095,7 @@ const TaskRow = memo(function TaskRow({
       data-state={row.getIsSelected() && 'selected'}
       className={cn(
         'group cursor-pointer hover:bg-muted/50',
-        isOverdue && 'bg-destructive/5'
+        isOverdue && 'border-l-2 border-l-destructive'
       )}
       onClick={(e) => {
         // Only trigger click if not clicking interactive elements
@@ -1079,11 +1111,17 @@ const TaskRow = memo(function TaskRow({
       {row.getVisibleCells().map((cell) => (
         <TableCell
           key={cell.id}
-          className={cn(cell.column.id === 'title' && 'bg-background')}
+          className={cn(
+            cell.column.id === 'title' && 'bg-background',
+            cell.column.id === 'select' && 'pl-6 pr-2',
+            (cell.column.id === 'dragHandle' || cell.column.id === 'type') &&
+              'px-2'
+          )}
         >
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
         </TableCell>
       ))}
+      <TableCell aria-hidden="true" className="p-0" />
     </TableRow>
   )
 })
@@ -1116,7 +1154,7 @@ const VirtualTaskRow = memo(function VirtualTaskRow({
       data-state={row.getIsSelected() && 'selected'}
       className={cn(
         'group cursor-pointer hover:bg-muted/50',
-        isOverdue && 'bg-destructive/5'
+        isOverdue && 'border-l-2 border-l-destructive'
       )}
       onClick={(e) => {
         if (
@@ -1131,11 +1169,17 @@ const VirtualTaskRow = memo(function VirtualTaskRow({
       {row.getVisibleCells().map((cell) => (
         <TableCell
           key={cell.id}
-          className={cn(cell.column.id === 'title' && 'bg-background')}
+          className={cn(
+            cell.column.id === 'title' && 'bg-background',
+            cell.column.id === 'select' && 'pl-6 pr-2',
+            (cell.column.id === 'dragHandle' || cell.column.id === 'type') &&
+              'px-2'
+          )}
         >
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
         </TableCell>
       ))}
+      <TableCell aria-hidden="true" className="p-0" />
     </TableRow>
   )
 })

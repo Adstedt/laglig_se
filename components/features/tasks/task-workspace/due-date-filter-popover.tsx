@@ -45,12 +45,7 @@ export function DueDateFilterPopover({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8"
-          aria-label="Förfallodatum"
-        >
+        <Button variant="outline" size="sm" aria-label="Förfallodatum">
           <Calendar className="mr-1 h-4 w-4" />
           Förfallodatum
           {activePreset && (

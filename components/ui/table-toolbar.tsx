@@ -4,21 +4,32 @@ import { cn } from '@/lib/utils'
 /**
  * Story 22.3 — `TableToolbar` primitive.
  *
- * Workspace tabular surface toolbar with named slots:
+ * Two render modes:
  *
- *   ┌────────── views (tabs) ──────────┐  ┌─ search ─ filters ─ rightSlot ─┐
+ * 1. Single-row (default — when `tabs` is omitted):
+ *      ┌─ views ─┐  ┌─ search ─ filters ─ rightSlot ─┐
  *
- *   `views` left-aligned (typically shadcn `<Tabs>` for view-switching).
- *   `search + filters + rightSlot` right-aligned. When `views` omitted, the
- *   right-side group left-aligns (no empty left slot taking flex space).
+ *    `views` left-aligned (typically shadcn `<Tabs>` for view-switching or a
+ *    `<FilterChipGroup>`). `search + filters + rightSlot` right-aligned. When
+ *    `views` omitted, the right-side group left-aligns.
+ *
+ * 2. Two-row (when `tabs` is provided — Wave 3):
+ *      ┌──────────────── tabs ────────────────┐
+ *      ┌─ search ─ filters ─┐    ┌ rightSlot ─┐
+ *
+ *    `tabs` is a full-width Row 1. The remaining slots render on Row 2 with
+ *    the filter cluster (`search + filters`) left-aligned and `rightSlot`
+ *    pinned right via `justify-between` — so an action like a column-settings
+ *    button stays grouped with the filter row when it wraps.
+ *
+ *    `tabs` and `views` are mutually exclusive.
  *
  * Responsive: wraps onto multiple rows on narrow viewports.
- *
- * Slot positioning is enforced by the render tree; devs cannot accidentally
- * reorder by re-arranging props (mirrors PageHeader's enforcement).
  */
 
 export interface TableToolbarProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Optional Row-1 above the main toolbar. Mutually exclusive with `views`. */
+  tabs?: React.ReactNode
   views?: React.ReactNode
   search?: React.ReactNode
   filters?: React.ReactNode
@@ -27,11 +38,47 @@ export interface TableToolbarProps extends React.HTMLAttributes<HTMLDivElement> 
 
 const TableToolbar = React.forwardRef<HTMLDivElement, TableToolbarProps>(
   function TableToolbar(
-    { views, search, filters, rightSlot, className, ...rest },
+    { tabs, views, search, filters, rightSlot, className, ...rest },
     ref
   ) {
-    const hasRightContent =
+    const hasMainRowContent =
       Boolean(search) || Boolean(filters) || Boolean(rightSlot)
+
+    // Two-row mode — tabs row above, filter row below.
+    if (tabs) {
+      return (
+        <div
+          ref={ref}
+          className={cn('flex flex-col gap-3', className)}
+          {...rest}
+        >
+          <div className="min-w-0">{tabs}</div>
+          {hasMainRowContent ? (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                {search ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {search}
+                  </div>
+                ) : null}
+                {filters ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {filters}
+                  </div>
+                ) : null}
+              </div>
+              {rightSlot ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  {rightSlot}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      )
+    }
+
+    // Single-row mode (existing behavior).
     return (
       <div
         ref={ref}
@@ -42,7 +89,7 @@ const TableToolbar = React.forwardRef<HTMLDivElement, TableToolbarProps>(
         {...rest}
       >
         {views ? <div className="min-w-0">{views}</div> : null}
-        {hasRightContent ? (
+        {hasMainRowContent ? (
           <div
             className={cn(
               'flex flex-wrap items-center gap-3',

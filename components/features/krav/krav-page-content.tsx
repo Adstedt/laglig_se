@@ -23,14 +23,12 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { mutate as globalMutate } from 'swr'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/ui/page-header'
 import { LegalDocumentModal } from '@/components/features/document-list/legal-document-modal'
+import { SearchInput } from '@/components/features/document-list/search-input'
 import { updateRequirement } from '@/app/actions/law-list-item-requirements'
-import { useDebounce } from '@/lib/hooks/use-debounce'
 import {
   getWorkspaceRequirements,
   type GetWorkspaceRequirementsInput,
@@ -142,30 +140,20 @@ export function KravPageContent({
     [urlSortField, urlSortDirection]
   )
 
-  // Local search input buffer — debounced 300ms before committing to the URL.
-  const [searchInput, setSearchInput] = useState(urlSearch)
-  const debouncedSearch = useDebounce(searchInput, 300)
-
-  // Keep the input in sync if the URL changes out-of-band (back button,
-  // Rensa click elsewhere, deep-link nav).
-  useEffect(() => {
-    setSearchInput(urlSearch)
-    // Only re-sync when the URL-side search actually changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [urlSearch])
-
-  // Write to URL whenever the user types (after debounce). Compare to the
-  // current URL value so we don't fire redundant router.replace calls.
-  useEffect(() => {
-    if (debouncedSearch === urlSearch) return
-    const next = buildUrlParams({
-      filter: urlFilter,
-      search: debouncedSearch,
-      sort,
-    })
-    router.replace(next, { scroll: false })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch])
+  // Search → URL. SearchInput owns its own debounced buffer; we just push
+  // the post-debounce value into the URL via this callback.
+  const handleSearchChange = useCallback(
+    (next: string) => {
+      if (next === urlSearch) return
+      const url = buildUrlParams({
+        filter: urlFilter,
+        search: next,
+        sort,
+      })
+      router.replace(url, { scroll: false })
+    },
+    [router, urlSearch, urlFilter, sort]
+  )
 
   // Malformed URL params were coerced on read; on first render strip the
   // invalid values from the URL so subsequent shares stay clean.
@@ -215,7 +203,6 @@ export function KravPageContent({
   )
 
   const handleClear = useCallback(() => {
-    setSearchInput('')
     router.replace('/krav', { scroll: false })
   }, [router])
 
@@ -406,17 +393,11 @@ export function KravPageContent({
           onClear={handleClear}
         />
         <div className="ml-auto w-full sm:w-72">
-          <Label htmlFor="krav-search" className="sr-only">
-            Sök kravpunkter
-          </Label>
-          <Input
-            id="krav-search"
-            type="search"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
+          <SearchInput
+            initialValue={urlSearch}
+            onSearch={handleSearchChange}
             placeholder="Sök kravpunkter..."
-            aria-label="Sök kravpunkter"
-            maxLength={200}
+            className="w-full"
           />
         </div>
       </div>

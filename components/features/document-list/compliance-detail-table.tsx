@@ -139,7 +139,44 @@ const KRAVPUNKTER_TOOLTIP_CONTENT = {
 // ============================================================================
 
 /** Column IDs that cannot be reordered (pinned to edges) */
-const PINNED_COLUMN_IDS = new Set(['select', 'dragHandle', 'expand'])
+const PINNED_COLUMN_IDS = new Set([
+  'select',
+  'dragHandle',
+  'contentType',
+  'expand',
+])
+
+/**
+ * Hardcoded width bounds for every column. Used by `handleColumnSizingChange`
+ * to clamp values BEFORE they're persisted, so localStorage can never hold
+ * an out-of-bounds width — fixes "drag to infinite width" because TanStack's
+ * onEnd-mode commit doesn't always honor min/maxSize.
+ */
+const COLUMN_SIZE_BOUNDS: Record<string, { min: number; max: number }> = {
+  select: { min: 56, max: 56 },
+  dragHandle: { min: 56, max: 56 },
+  contentType: { min: 72, max: 72 },
+  title: { min: 150, max: 600 },
+  businessContext: { min: 240, max: 500 },
+  kravpunkter: { min: 215, max: 500 },
+  complianceStatus: { min: 200, max: 250 },
+  priority: { min: 170, max: 220 },
+  responsiblePerson: { min: 110, max: 110 },
+  expand: { min: 50, max: 50 },
+}
+
+function clampColumnSizing(
+  sizing: Record<string, number>
+): Record<string, number> {
+  const clamped: Record<string, number> = {}
+  for (const [id, size] of Object.entries(sizing)) {
+    const bounds = COLUMN_SIZE_BOUNDS[id]
+    clamped[id] = bounds
+      ? Math.max(bounds.min, Math.min(bounds.max, size))
+      : size
+  }
+  return clamped
+}
 
 interface ComplianceDetailTableProps {
   items: DocumentListItem[]
@@ -357,7 +394,7 @@ function ExpandedRowContent({
 
   if (isNotApplicable) {
     return (
-      <TableCell colSpan={visibleCells.length} className={outerCellClass}>
+      <TableCell colSpan={visibleCells.length + 1} className={outerCellClass}>
         <div className="px-6 py-6 lg:px-8">
           <div className={cn(cardShellClass, 'px-6 py-5')}>
             <p className="text-sm text-muted-foreground italic">
@@ -637,10 +674,14 @@ export function ComplianceDetailTable({
     ) => {
       const newSizing =
         typeof updater === 'function' ? updater(columnSizing) : updater
+      // Clamp every column to its declared bounds before persisting. TanStack's
+      // `onEnd` resize mode commits unclamped — clamping here is the source
+      // of truth so the persisted store is always valid.
+      const clampedSizing = clampColumnSizing(newSizing)
       if (onColumnSizingChange) {
-        onColumnSizingChange(newSizing)
+        onColumnSizingChange(clampedSizing)
       } else {
-        setInternalColumnSizing(newSizing)
+        setInternalColumnSizing(clampedSizing)
       }
     },
     [columnSizing, onColumnSizingChange]
@@ -735,7 +776,9 @@ export function ComplianceDetailTable({
         ),
         enableSorting: false,
         enableResizing: false,
-        size: 40,
+        size: 56,
+        minSize: 56,
+        maxSize: 56,
       },
       // Drag handle
       {
@@ -744,7 +787,9 @@ export function ComplianceDetailTable({
         cell: () => null, // Rendered by SortableRow
         enableSorting: false,
         enableResizing: false,
-        size: 40,
+        size: 56,
+        minSize: 56,
+        maxSize: 56,
       },
       // Content Type icon (Typ) - fixed size, consistent across views
       {
@@ -755,20 +800,24 @@ export function ComplianceDetailTable({
           const contentType = row.original.document.contentType
           const Icon = getContentTypeIcon(contentType)
           return (
-            <div
-              className={cn(
-                'inline-flex items-center justify-center w-8 h-8 rounded',
-                getContentTypeBadgeColor(contentType)
-              )}
-              title={getContentTypeLabel(contentType)}
-            >
-              <Icon className="h-4 w-4" />
+            <div className="flex items-center justify-center">
+              <div
+                className={cn(
+                  'flex items-center justify-center w-8 h-8 rounded',
+                  getContentTypeBadgeColor(contentType)
+                )}
+                title={getContentTypeLabel(contentType)}
+              >
+                <Icon className="h-4 w-4" />
+              </div>
             </div>
           )
         },
         enableSorting: false,
         enableResizing: false,
-        size: 60,
+        size: 72,
+        minSize: 72,
+        maxSize: 72,
       },
       // Document title - fixed size, consistent across views
       {
@@ -802,6 +851,8 @@ export function ComplianceDetailTable({
           </div>
         ),
         size: 300,
+        minSize: 150,
+        maxSize: 600,
       },
       // Business Context (truncated)
       {
@@ -933,6 +984,8 @@ export function ComplianceDetailTable({
         enableSorting: false,
         enableResizing: false,
         size: 110,
+        minSize: 110,
+        maxSize: 110,
       },
       // Expand chevron
       {
@@ -961,6 +1014,8 @@ export function ComplianceDetailTable({
         enableSorting: false,
         enableResizing: false,
         size: 50,
+        minSize: 50,
+        maxSize: 50,
       },
     ],
     [
@@ -1024,17 +1079,27 @@ export function ComplianceDetailTable({
   // Respects minSize/maxSize constraints for visual feedback
   const { columnSizingInfo } = table.getState()
   const getColumnWidth = (headerId: string, defaultSize: number) => {
+    const column = table.getColumn(headerId)
+    const minSize = column?.columnDef.minSize ?? 0
+    const maxSize = column?.columnDef.maxSize ?? Infinity
     if (columnSizingInfo.isResizingColumn === headerId) {
-      const column = table.getColumn(headerId)
-      const minSize = column?.columnDef.minSize ?? 0
-      const maxSize = column?.columnDef.maxSize ?? Infinity
       const newSize =
         (columnSizingInfo.startSize ?? defaultSize) +
         (columnSizingInfo.deltaOffset ?? 0)
       return Math.max(minSize, Math.min(maxSize, newSize))
     }
-    return defaultSize
+    // Clamp persisted/default size — TanStack onEnd commits unclamped, and
+    // stale localStorage from before bounds existed can render outside.
+    return Math.max(minSize, Math.min(maxSize, defaultSize))
   }
+
+  // Sum of all visible column widths (live-aware during resize). Combined
+  // with a spacer cell at the end of each row, this lets chrome columns
+  // hold their declared widths instead of inflating proportionally under
+  // `table-fixed` when the column-sum is less than the container width.
+  const liveTotalWidth = table
+    .getVisibleLeafColumns()
+    .reduce((sum, col) => sum + getColumnWidth(col.id, col.getSize()), 0)
 
   const rows = table.getRowModel().rows
   const columnOrderKey = useMemo(() => columnOrder.join(','), [columnOrder])
@@ -1073,7 +1138,7 @@ export function ComplianceDetailTable({
   }
 
   const renderTableContent = () => (
-    <Table className="table-fixed">
+    <Table className="table-fixed" style={{ minWidth: liveTotalWidth }}>
       <TableHeader
         className={
           shouldVirtualize ? 'sticky top-0 z-20 bg-background' : undefined
@@ -1127,7 +1192,10 @@ export function ComplianceDetailTable({
                     className={cn(
                       'relative',
                       header.id === 'title' &&
-                        'sticky left-0 bg-background z-10'
+                        'sticky left-0 bg-background z-10',
+                      header.id === 'select' && 'pl-6 pr-2',
+                      header.id === 'dragHandle' && 'px-2',
+                      header.id === 'contentType' && 'pl-5 pr-2'
                     )}
                   >
                     {headerContent}
@@ -1152,6 +1220,8 @@ export function ComplianceDetailTable({
                 </DraggableColumnHeader>
               )
             })}
+            {/* Spacer absorbs leftover width so chrome columns don't inflate */}
+            <TableHead aria-hidden="true" className="p-0" />
           </TableRow>
         ))}
       </TableHeader>
@@ -1202,7 +1272,10 @@ export function ComplianceDetailTable({
             )
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
+              <TableCell
+                colSpan={columns.length + 1}
+                className="h-24 text-center"
+              >
                 {isLoading ? 'Laddar...' : 'Inga resultat.'}
               </TableCell>
             </TableRow>
@@ -1423,14 +1496,18 @@ const ComplianceRow = memo(function ComplianceRow({
           <TableCell
             key={cell.id}
             className={cn(
-              cell.column.id === 'title' && 'sticky left-0 bg-background z-10'
+              cell.column.id === 'title' && 'sticky left-0 bg-background z-10',
+              cell.column.id === 'select' && 'pl-6 pr-2',
+              (cell.column.id === 'dragHandle' ||
+                cell.column.id === 'contentType') &&
+                'px-2'
             )}
           >
             {cell.column.id === 'dragHandle' ? (
               <button
                 {...attributes}
                 {...listeners}
-                className="cursor-grab active:cursor-grabbing p-1 text-muted-foreground hover:text-foreground"
+                className="flex w-full items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
                 aria-label="Dra för att flytta"
               >
                 <GripVertical className="h-4 w-4" />
@@ -1440,6 +1517,7 @@ const ComplianceRow = memo(function ComplianceRow({
             )}
           </TableCell>
         ))}
+        <TableCell aria-hidden="true" className="p-0" />
       </TableRow>
       {/* Expanded content */}
       {isExpanded && (
@@ -1537,14 +1615,18 @@ const VirtualComplianceRow = memo(function VirtualComplianceRow({
           <TableCell
             key={cell.id}
             className={cn(
-              cell.column.id === 'title' && 'sticky left-0 bg-background z-10'
+              cell.column.id === 'title' && 'sticky left-0 bg-background z-10',
+              cell.column.id === 'select' && 'pl-6 pr-2',
+              (cell.column.id === 'dragHandle' ||
+                cell.column.id === 'contentType') &&
+                'px-2'
             )}
           >
             {cell.column.id === 'dragHandle' ? (
               <button
                 {...attributes}
                 {...listeners}
-                className="cursor-grab active:cursor-grabbing p-1 text-muted-foreground hover:text-foreground"
+                className="flex w-full items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
                 aria-label="Dra för att flytta"
               >
                 <GripVertical className="h-4 w-4" />
@@ -1554,6 +1636,7 @@ const VirtualComplianceRow = memo(function VirtualComplianceRow({
             )}
           </TableCell>
         ))}
+        <TableCell aria-hidden="true" className="p-0" />
       </TableRow>
       {/* Expanded content */}
       {isExpanded && (

@@ -63,6 +63,8 @@ import {
 import { Input } from '@/components/ui/input'
 import type { WorkspaceMember } from './index'
 import { TaskDeleteDialog } from '../task-delete-dialog'
+import { isTaskOverdue } from '@/lib/utils/task-utils'
+import { getPriorityBadgeProps } from '@/lib/ui/badge-tones'
 import { toast } from 'sonner'
 
 // ============================================================================
@@ -389,14 +391,20 @@ function KanbanColumn({
             id={column.id}
           >
             <div ref={setDroppableRef} className="space-y-2 min-h-[100px]">
-              {tasks.map((task) => (
-                <SortableTaskCard
-                  key={task.id}
-                  task={task}
-                  onTaskClick={onTaskClick}
-                  onTaskDelete={onTaskDelete}
-                />
-              ))}
+              {tasks.length === 0 && !isAddingTask ? (
+                <div className="flex flex-col items-center justify-center py-6 text-xs text-muted-foreground">
+                  <span>Inget i denna kolumn ännu</span>
+                </div>
+              ) : (
+                tasks.map((task) => (
+                  <SortableTaskCard
+                    key={task.id}
+                    task={task}
+                    onTaskClick={onTaskClick}
+                    onTaskDelete={onTaskDelete}
+                  />
+                ))
+              )}
             </div>
           </SortableContext>
         </CardContent>
@@ -474,10 +482,8 @@ function TaskCard({ task, isDragging, onClick, onTaskDelete }: TaskCardProps) {
     setDeleteDialogOpen(false)
   }
 
-  const isOverdue =
-    task.due_date &&
-    !task.column.is_done &&
-    new Date(task.due_date) < new Date()
+  const isOverdue = isTaskOverdue(task)
+  const priorityProps = getPriorityBadgeProps(task.priority)
 
   return (
     <>
@@ -502,16 +508,31 @@ function TaskCard({ task, isDragging, onClick, onTaskDelete }: TaskCardProps) {
         }}
       >
         <CardContent className="p-3 space-y-2">
-          {/* Title */}
+          {/* Title + priority badge */}
           <div className="flex items-start justify-between gap-2">
             <p
               className={cn(
-                'text-sm font-medium',
-                isOverdue && 'text-destructive'
+                'text-sm font-medium flex-1',
+                isOverdue && 'text-destructive inline-flex items-center gap-1.5'
               )}
             >
+              {isOverdue && (
+                <AlertCircle
+                  className="h-3.5 w-3.5 shrink-0 text-destructive"
+                  aria-hidden="true"
+                />
+              )}
               {task.title}
             </p>
+            {priorityProps && (
+              <Badge
+                tone={priorityProps.tone}
+                variant={priorityProps.variant}
+                className="shrink-0"
+              >
+                {priorityProps.label}
+              </Badge>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button

@@ -2,8 +2,11 @@
 
 /**
  * Law List Toolbar — single-row toolbar for the document list page.
- * Replaces the two-row UnifiedToolbar with a cleaner layout:
- * [List selector] [Search] [Filter toggle] [View menu] [Settings] [+ Add]
+ * Layout: [List selector] [Search] [Filter toggle] [View menu] [Settings]
+ *
+ * Note: The primary "Lägg till dokument" CTA used to live here but was
+ * lifted to the page header (LawListPrimaryAction) to align with the
+ * Tasks / Styrdokument pattern.
  */
 
 import { Button } from '@/components/ui/button'
@@ -19,7 +22,6 @@ interface LawListToolbarProps {
   onToggleFilterBar: () => void
   viewMenu: React.ReactNode
   settingsAction: React.ReactNode
-  primaryAction: React.ReactNode
   itemCount?: React.ReactNode
 }
 
@@ -31,7 +33,6 @@ export function LawListToolbar({
   onToggleFilterBar,
   viewMenu,
   settingsAction,
-  primaryAction,
   itemCount,
 }: LawListToolbarProps) {
   return (
@@ -67,12 +68,6 @@ export function LawListToolbar({
 
         {/* Settings */}
         <div className="shrink-0">{settingsAction}</div>
-
-        {/* Spacer pushes CTA to far right */}
-        <div className="flex-1" />
-
-        {/* Primary CTA */}
-        <div className="shrink-0">{primaryAction}</div>
       </div>
 
       {/* Item count (subtle, below toolbar row) */}

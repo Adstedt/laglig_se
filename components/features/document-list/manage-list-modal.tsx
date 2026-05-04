@@ -29,13 +29,14 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { ArrowLeft, Loader2, Trash2 } from 'lucide-react'
+import { ArrowLeft, Loader2, RefreshCw, Trash2 } from 'lucide-react'
 import {
   createDocumentList,
   updateDocumentList,
   deleteDocumentList,
   type DocumentListSummary,
 } from '@/app/actions/document-list'
+import { regenerateLawList } from '@/app/actions/workspace'
 import { CreateListChooser } from './create-list-chooser'
 import { CreateListFromTemplate } from './create-list-from-template'
 import type { PublishedTemplate } from '@/lib/db/queries/template-catalog'
@@ -79,6 +80,8 @@ export function ManageListModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isRegenerating, setIsRegenerating] = useState(false)
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Reset state when modal opens/closes or mode changes
@@ -182,6 +185,28 @@ export function ManageListModal({
     }
   }
 
+  const handleRegenerate = async () => {
+    setIsRegenerating(true)
+    setError(null)
+
+    try {
+      const result = await regenerateLawList()
+      if (result.success) {
+        setShowRegenerateConfirm(false)
+        onOpenChange(false)
+      } else {
+        setError(result.error ?? 'Kunde inte generera om laglistan')
+        setShowRegenerateConfirm(false)
+      }
+    } catch (err) {
+      console.error('Regenerate error:', err)
+      setError('Något gick fel')
+      setShowRegenerateConfirm(false)
+    } finally {
+      setIsRegenerating(false)
+    }
+  }
+
   const isValid = name.trim().length > 0
 
   // Title and description per step
@@ -257,17 +282,29 @@ export function ManageListModal({
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
-        {mode === 'edit' && list && !list.isDefault && (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => setShowDeleteConfirm(true)}
-            className="text-destructive hover:text-destructive mr-auto"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Ta bort lista
-          </Button>
-        )}
+        {mode === 'edit' &&
+          list &&
+          (list.isDefault ? (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setShowRegenerateConfirm(true)}
+              className="text-destructive hover:text-destructive mr-auto"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Generera om laglista
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="text-destructive hover:text-destructive mr-auto"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Ta bort lista
+            </Button>
+          ))}
         <div className="flex gap-2 ml-auto">
           <Button
             type="button"
@@ -353,6 +390,35 @@ export function ManageListModal({
             >
               {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Ta bort
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Regenerate confirmation */}
+      <AlertDialog
+        open={showRegenerateConfirm}
+        onOpenChange={setShowRegenerateConfirm}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Generera om laglista?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Detta ersätter din nuvarande laglista. Ändringar du gjort behålls
+              inte. Den befintliga listan arkiveras.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRegenerate}
+              disabled={isRegenerating}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isRegenerating && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Generera om
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

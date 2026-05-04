@@ -28,12 +28,14 @@ import { DraggableColumnHeader } from '@/components/ui/draggable-column-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { ColorTagBadge } from '@/components/ui/color-tag-badge'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
   CheckCircle2,
-  Clock,
+  AlertCircle,
   Circle,
   Archive,
   Download,
@@ -45,6 +47,8 @@ import {
   type TaskWithRelations,
   type TaskColumnWithCount,
 } from '@/app/actions/tasks'
+import { isTaskOverdue } from '@/lib/utils/task-utils'
+import { getPriorityBadgeProps } from '@/lib/ui/badge-tones'
 import { toast } from 'sonner'
 import type { WorkspaceMember } from './index'
 
@@ -61,17 +65,6 @@ interface AllWorkTabProps {
 }
 
 // ============================================================================
-// Priority Config
-// ============================================================================
-
-const PRIORITY_CONFIG = {
-  LOW: { label: 'Låg', color: 'bg-gray-100 text-gray-700' },
-  MEDIUM: { label: 'Medel', color: 'bg-blue-100 text-blue-700' },
-  HIGH: { label: 'Hög', color: 'bg-orange-100 text-orange-700' },
-  CRITICAL: { label: 'Kritisk', color: 'bg-red-100 text-red-700' },
-} as const
-
-// ============================================================================
 // Status Icon
 // ============================================================================
 
@@ -86,7 +79,7 @@ function StatusIcon({
     return <CheckCircle2 className="h-4 w-4 text-green-500" />
   }
   if (isOverdue) {
-    return <Clock className="h-4 w-4 text-red-500" />
+    return <AlertCircle className="h-4 w-4 text-destructive" />
   }
   return <Circle className="h-4 w-4 text-gray-400" />
 }
@@ -139,12 +132,6 @@ export function AllWorkTab({
     }
   }
 
-  // Check if task is overdue
-  const isOverdue = useCallback((task: TaskWithRelations) => {
-    if (!task.due_date || task.column.is_done) return false
-    return new Date(task.due_date) < new Date()
-  }, [])
-
   // Column definitions
   const columns: ColumnDef<TaskWithRelations>[] = useMemo(
     () => [
@@ -155,7 +142,7 @@ export function AllWorkTab({
         cell: ({ row }) => (
           <StatusIcon
             isDone={row.original.column.is_done}
-            isOverdue={isOverdue(row.original)}
+            isOverdue={isTaskOverdue(row.original)}
           />
         ),
         size: 40,
@@ -167,17 +154,21 @@ export function AllWorkTab({
         header: ({ column }) => (
           <SortableHeader column={column} label="Uppgift" />
         ),
-        cell: ({ row }) => (
-          <span
-            className={cn(
-              'font-medium',
-              row.original.column.is_done &&
-                'line-through text-muted-foreground'
-            )}
-          >
-            {row.original.title}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const overdue = isTaskOverdue(row.original)
+          return (
+            <span
+              className={cn(
+                'font-medium',
+                row.original.column.is_done &&
+                  'line-through text-muted-foreground',
+                overdue && !row.original.column.is_done && 'text-destructive'
+              )}
+            >
+              {row.original.title}
+            </span>
+          )
+        },
         size: 300,
       },
       // Status column
@@ -188,15 +179,10 @@ export function AllWorkTab({
           <SortableHeader column={column} label="Status" />
         ),
         cell: ({ row }) => (
-          <span
-            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
-            style={{
-              backgroundColor: `${row.original.column.color}1A`,
-              color: row.original.column.color,
-            }}
-          >
-            {row.original.column.name}
-          </span>
+          <ColorTagBadge
+            name={row.original.column.name}
+            color={row.original.column.color}
+          />
         ),
         size: 120,
       },
@@ -236,15 +222,12 @@ export function AllWorkTab({
           <SortableHeader column={column} label="Prioritet" />
         ),
         cell: ({ row }) => {
-          const config =
-            PRIORITY_CONFIG[
-              row.original.priority as keyof typeof PRIORITY_CONFIG
-            ] ?? PRIORITY_CONFIG.MEDIUM
-          return (
-            <Badge variant="secondary" className={cn('text-xs', config.color)}>
-              {config.label}
+          const props = getPriorityBadgeProps(row.original.priority)
+          return props ? (
+            <Badge tone={props.tone} variant={props.variant}>
+              {props.label}
             </Badge>
-          )
+          ) : null
         },
         size: 100,
       },
@@ -258,7 +241,7 @@ export function AllWorkTab({
         cell: ({ row }) => {
           const dueDate = row.original.due_date
           if (!dueDate) return <span className="text-muted-foreground">-</span>
-          const overdue = isOverdue(row.original)
+          const overdue = isTaskOverdue(row.original)
           return (
             <span
               className={cn(
@@ -306,7 +289,7 @@ export function AllWorkTab({
         size: 100,
       },
     ],
-    [isOverdue]
+    []
   )
 
   // Column reorder handler
@@ -381,64 +364,69 @@ export function AllWorkTab({
         </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-md border overflow-x-auto">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <DraggableColumnHeader
-                    key={header.id}
-                    id={header.id}
-                    onReorder={handleColumnReorder}
-                    style={{ width: header.getSize() }}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </DraggableColumnHeader>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className={cn(
-                    'cursor-pointer hover:bg-muted/50',
-                    row.original.column.is_done && 'opacity-60'
-                  )}
-                  onClick={() => onTaskClick?.(row.original.id)}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
+      {/* Table or empty state */}
+      {filteredTasks.length === 0 ? (
+        <EmptyState
+          icon={
+            <EmptyState.Icon>
+              <Archive className="h-8 w-8 text-muted-foreground" />
+            </EmptyState.Icon>
+          }
+          title="Inga uppgifter matchar"
+          description="Inga uppgifter hittades med dessa filter."
+        />
+      ) : (
+        <div className="rounded-md border overflow-x-auto">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <DraggableColumnHeader
+                      key={header.id}
+                      id={header.id}
+                      onReorder={handleColumnReorder}
+                      style={{ width: header.getSize() }}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </DraggableColumnHeader>
                   ))}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  Inga uppgifter hittades
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.map((row) => {
+                const overdue = isTaskOverdue(row.original)
+                return (
+                  <TableRow
+                    key={row.id}
+                    className={cn(
+                      'cursor-pointer hover:bg-muted/50',
+                      row.original.column.is_done && 'opacity-60',
+                      overdue && 'border-l-2 border-l-destructive'
+                    )}
+                    onClick={() => onTaskClick?.(row.original.id)}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
   )
 }
