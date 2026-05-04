@@ -92,7 +92,14 @@ export async function requirePermission(
     return null // All permissions granted
   } catch (error) {
     if (error instanceof WorkspaceAccessError) {
-      const statusCode = error.code === 'UNAUTHORIZED' ? 401 : 403
+      // Story 5.4: PAYMENT_PAST_DUE → 402 with a redirect hint so client
+      // wrappers can route the user to /settings/billing?reason=past_due.
+      const statusCode =
+        error.code === 'UNAUTHORIZED'
+          ? 401
+          : error.code === 'PAYMENT_PAST_DUE'
+            ? 402
+            : 403
       return NextResponse.json(
         {
           error: error.message,
@@ -100,7 +107,12 @@ export async function requirePermission(
           message:
             error.code === 'UNAUTHORIZED'
               ? 'Autentisering krävs'
-              : 'Åtkomst nekad',
+              : error.code === 'PAYMENT_PAST_DUE'
+                ? 'Betalning krävs'
+                : 'Åtkomst nekad',
+          ...(error.code === 'PAYMENT_PAST_DUE'
+            ? { redirectTo: '/settings/billing?reason=past_due' }
+            : {}),
         },
         { status: statusCode }
       )
@@ -145,7 +157,14 @@ export async function requireAnyPermission(
     return null // At least one permission granted
   } catch (error) {
     if (error instanceof WorkspaceAccessError) {
-      const statusCode = error.code === 'UNAUTHORIZED' ? 401 : 403
+      // Story 5.4: PAYMENT_PAST_DUE → 402 with a redirect hint so client
+      // wrappers can route the user to /settings/billing?reason=past_due.
+      const statusCode =
+        error.code === 'UNAUTHORIZED'
+          ? 401
+          : error.code === 'PAYMENT_PAST_DUE'
+            ? 402
+            : 403
       return NextResponse.json(
         {
           error: error.message,
@@ -153,7 +172,12 @@ export async function requireAnyPermission(
           message:
             error.code === 'UNAUTHORIZED'
               ? 'Autentisering krävs'
-              : 'Åtkomst nekad',
+              : error.code === 'PAYMENT_PAST_DUE'
+                ? 'Betalning krävs'
+                : 'Åtkomst nekad',
+          ...(error.code === 'PAYMENT_PAST_DUE'
+            ? { redirectTo: '/settings/billing?reason=past_due' }
+            : {}),
         },
         { status: statusCode }
       )
@@ -202,7 +226,13 @@ export async function requirePermissionWithContext(
     return { granted: true, context }
   } catch (error) {
     if (error instanceof WorkspaceAccessError) {
-      const statusCode = error.code === 'UNAUTHORIZED' ? 401 : 403
+      // Story 5.4: PAYMENT_PAST_DUE → 402 with a redirect hint.
+      const statusCode =
+        error.code === 'UNAUTHORIZED'
+          ? 401
+          : error.code === 'PAYMENT_PAST_DUE'
+            ? 402
+            : 403
       return {
         granted: false,
         response: NextResponse.json(
@@ -212,7 +242,12 @@ export async function requirePermissionWithContext(
             message:
               error.code === 'UNAUTHORIZED'
                 ? 'Autentisering krävs'
-                : 'Åtkomst nekad',
+                : error.code === 'PAYMENT_PAST_DUE'
+                  ? 'Betalning krävs'
+                  : 'Åtkomst nekad',
+            ...(error.code === 'PAYMENT_PAST_DUE'
+              ? { redirectTo: '/settings/billing?reason=past_due' }
+              : {}),
           },
           { status: statusCode }
         ),

@@ -30,6 +30,9 @@ export type WorkspaceErrorCode =
   | 'NO_WORKSPACE'
   | 'WORKSPACE_DELETED'
   | 'ACCESS_DENIED'
+  // Story 5.4: Stripe past-due grace period expired — block access until
+  // payment is recovered (invoice.payment_succeeded webhook clears the flag).
+  | 'PAYMENT_PAST_DUE'
 
 export class WorkspaceAccessError extends Error {
   public readonly code: WorkspaceErrorCode
@@ -38,6 +41,21 @@ export class WorkspaceAccessError extends Error {
     super(message)
     this.name = 'WorkspaceAccessError'
     this.code = code
+  }
+}
+
+/**
+ * Story 5.4: assert the workspace's grace period (if any) hasn't expired.
+ * Throws PAYMENT_PAST_DUE if `payment_grace_period_ends_at` is in the past.
+ * The 3-day window itself is set on `invoice.payment_failed` and cleared on
+ * `invoice.payment_succeeded`; only post-window access is blocked.
+ */
+function assertNotPastDue(gracePeriodEndsAt: Date | null | undefined): void {
+  if (gracePeriodEndsAt && gracePeriodEndsAt < new Date()) {
+    throw new WorkspaceAccessError(
+      'Workspace access blocked: payment past due',
+      'PAYMENT_PAST_DUE'
+    )
   }
 }
 
@@ -69,15 +87,25 @@ async function getWorkspaceContextInternal(): Promise<WorkspaceContext> {
       const cached = await redis.get(cacheKey)
       if (cached) {
         const context = typeof cached === 'string' ? JSON.parse(cached) : cached
-        // Recreate the hasPermission function
+        // Story 5.4: even on cache hit, check if the cached grace-period
+        // deadline has passed since we wrote the entry. The cache is keyed
+        // by user+workspace and refreshed every 5 min — well inside the
+        // 3-day grace window so a freshly-set deadline can't be missed.
+        const grace = context.paymentGracePeriodEndsAt
+          ? new Date(context.paymentGracePeriodEndsAt)
+          : null
+        assertNotPastDue(grace)
+        // Recreate the hasPermission function (functions don't survive JSON)
         return {
           ...context,
           hasPermission: (permission: Permission) =>
             hasPermission(context.role, permission),
         }
       }
-    } catch {
-      // Redis error - fall back to DB
+    } catch (err) {
+      // Re-throw payment-past-due errors so callers can redirect; only
+      // swallow Redis-level errors (network, parse) and fall back to DB.
+      if (err instanceof WorkspaceAccessError) throw err
     }
   }
 
@@ -138,6 +166,12 @@ async function getWorkspaceContextInternal(): Promise<WorkspaceContext> {
     member = activeMember
   }
 
+  // Story 5.4: enforce billing past-due gate before returning the context.
+  // The webhook sets payment_grace_period_ends_at to (now + 3 days) on
+  // invoice.payment_failed; once that timestamp is in the past, all access
+  // is denied until invoice.payment_succeeded clears it.
+  assertNotPastDue(member.workspace.payment_grace_period_ends_at)
+
   const role = member.role
 
   const context = {
@@ -160,6 +194,10 @@ async function getWorkspaceContextInternal(): Promise<WorkspaceContext> {
       workspaceSlug: context.workspaceSlug,
       workspaceStatus: context.workspaceStatus,
       role: context.role,
+      // Story 5.4: persist the grace deadline so the cache-hit branch can
+      // re-check expiry without an extra DB round-trip.
+      paymentGracePeriodEndsAt:
+        member.workspace.payment_grace_period_ends_at?.toISOString() ?? null,
     }
 
     try {

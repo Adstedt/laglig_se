@@ -64,6 +64,30 @@ pnpm dev
 
 The application will be available at [http://localhost:3000](http://localhost:3000).
 
+### 5. Stripe Webhooks (local dev)
+
+For Story 5.4 billing flows, forward Stripe events into the local dev server with the Stripe CLI:
+
+```bash
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+```
+
+The CLI prints a one-off signing secret on first run — copy it into `.env.local` as `STRIPE_WEBHOOK_SECRET` so signature verification accepts the forwarded events. You'll also need:
+
+```bash
+STRIPE_SECRET_KEY=sk_test_...           # from Stripe Dashboard (test mode)
+STRIPE_SOLO_PRICE_ID=price_...
+STRIPE_TEAM_PRICE_ID=price_...
+STRIPE_ENTERPRISE_PRICE_ID=price_...
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+Trigger a test event in another terminal:
+
+```bash
+stripe trigger checkout.session.completed
+```
+
 ## Available Scripts
 
 - `pnpm dev` - Start development server with Turbopack
