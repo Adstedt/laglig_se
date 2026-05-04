@@ -85,15 +85,12 @@ interface KanbanTabProps {
 // Priority Config
 // ============================================================================
 
-// Aligned with priority-badge tones in lib/ui/badge-tones.ts so the card's
-// left border matches its priority pill — both Hög (soft danger) and Kritisk
-// (solid danger) are red; the border weight mirrors that intensity gradient.
-const PRIORITY_COLORS = {
-  LOW: 'border-l-gray-400',
-  MEDIUM: 'border-l-amber-500',
-  HIGH: 'border-l-red-400',
-  CRITICAL: 'border-l-red-600',
-} as const
+// Critical-only chrome: Låg/Medel/Hög rely on the priority pill alone so the
+// board reads calm by default. Only Kritisk earns a soft red ring + glow on
+// the card itself, so a noisy board genuinely means something. Overdue has
+// its own orthogonal treatment (red title + AlertCircle) on the title row.
+const CRITICAL_CHROME =
+  'border-red-500/45 ring-1 ring-inset ring-red-500/20 shadow-[0_0_22px_-10px_rgba(239,68,68,0.55)] dark:border-red-500/55 dark:ring-red-500/25'
 
 // ============================================================================
 // Main Component
@@ -492,10 +489,9 @@ function TaskCard({ task, isDragging, onClick, onTaskDelete }: TaskCardProps) {
     <>
       <Card
         className={cn(
-          'cursor-grab border-l-4 transition-shadow',
-          PRIORITY_COLORS[task.priority as keyof typeof PRIORITY_COLORS],
+          'cursor-grab transition-shadow',
           isDragging && 'opacity-50 shadow-lg',
-          isOverdue && 'border-l-red-500',
+          task.priority === 'CRITICAL' && CRITICAL_CHROME,
           onClick && 'cursor-pointer hover:shadow-md'
         )}
         onClick={(e) => {
