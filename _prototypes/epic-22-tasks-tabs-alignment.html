@@ -1,0 +1,1991 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tasks Tabs Alignment · Prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              border: '#363636',
+              input: '#3f3f46',
+              background: '#212121',
+              foreground: '#ededed',
+              muted: { DEFAULT: '#363636', foreground: '#a3a3a3' },
+              card: { DEFAULT: '#1a1a1a', foreground: '#ededed' },
+              destructive: { DEFAULT: '#ef4444', foreground: '#fafafa' },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        font-family:
+          ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial;
+      }
+      .surface {
+        background: #1a1a1a;
+        border: 1px solid #363636;
+        border-radius: 12px;
+      }
+      .panel {
+        background: #212121;
+        border: 1px solid #363636;
+        border-radius: 8px;
+      }
+      .label-tag {
+        display: inline-flex;
+        align-items: center;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      .label-current {
+        background: rgba(244, 63, 94, 0.15);
+        color: #fda4af;
+      }
+      .label-proposed {
+        background: rgba(34, 197, 94, 0.15);
+        color: #86efac;
+      }
+      .label-decision {
+        background: rgba(234, 179, 8, 0.15);
+        color: #fde68a;
+      }
+      .label-skipped {
+        background: rgba(161, 161, 170, 0.15);
+        color: #d4d4d8;
+      }
+      .anno {
+        font-size: 11px;
+        color: #71717a;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      .file-ref {
+        color: #a3a3a3;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+        background: #1a1a1a;
+        padding: 1px 6px;
+        border-radius: 4px;
+        border: 1px solid #363636;
+      }
+      .ring-current {
+        position: relative;
+      }
+      .ring-current::after {
+        content: '';
+        position: absolute;
+        inset: -6px;
+        border: 1px dashed rgba(244, 63, 94, 0.4);
+        border-radius: 8px;
+        pointer-events: none;
+      }
+      .ring-proposed {
+        position: relative;
+      }
+      .ring-proposed::after {
+        content: '';
+        position: absolute;
+        inset: -6px;
+        border: 1px dashed rgba(34, 197, 94, 0.45);
+        border-radius: 8px;
+        pointer-events: none;
+      }
+
+      /* ──────────────────────────────────────────────────────────────
+         Status & priority badges (current variants vs proposed primitive)
+         ────────────────────────────────────────────────────────────── */
+
+      /* Proposed unified TaskStatusBadge / TaskPriorityBadge */
+      .badge-soft {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 10px;
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 9999px;
+        border: 1px solid;
+        line-height: 1.4;
+      }
+      /* "Att göra" — gray */
+      .badge-todo {
+        color: #d4d4d8;
+        background: rgba(161, 161, 170, 0.12);
+        border-color: rgba(161, 161, 170, 0.28);
+      }
+      /* "Pågående" — blue */
+      .badge-progress {
+        color: #93c5fd;
+        background: rgba(59, 130, 246, 0.14);
+        border-color: rgba(59, 130, 246, 0.35);
+      }
+      /* "Klar" — green */
+      .badge-done {
+        color: #86efac;
+        background: rgba(34, 197, 94, 0.14);
+        border-color: rgba(34, 197, 94, 0.35);
+      }
+      /* "Blockerad" — red */
+      .badge-blocked {
+        color: #fca5a5;
+        background: rgba(239, 68, 68, 0.14);
+        border-color: rgba(239, 68, 68, 0.35);
+      }
+      /* Priority */
+      .badge-prio-low {
+        color: #a3a3a3;
+        background: rgba(163, 163, 163, 0.12);
+        border-color: rgba(163, 163, 163, 0.28);
+      }
+      .badge-prio-med {
+        color: #93c5fd;
+        background: rgba(59, 130, 246, 0.14);
+        border-color: rgba(59, 130, 246, 0.35);
+      }
+      .badge-prio-high {
+        color: #fdba74;
+        background: rgba(249, 115, 22, 0.14);
+        border-color: rgba(249, 115, 22, 0.35);
+      }
+      .badge-prio-crit {
+        color: #fca5a5;
+        background: rgba(239, 68, 68, 0.14);
+        border-color: rgba(239, 68, 68, 0.35);
+      }
+      .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 9999px;
+      }
+      .dot-todo { background: #a1a1aa; }
+      .dot-progress { background: #3b82f6; }
+      .dot-done { background: #16a34a; }
+      .dot-blocked { background: #ef4444; }
+
+      /* ──────────────────────────────────────────────────────────────
+         Current-state mocks: per-tab variants
+         ────────────────────────────────────────────────────────────── */
+
+      /* Sammanfattning bar */
+      .summary-bar-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+        color: #a3a3a3;
+      }
+      .summary-bar-track {
+        flex: 1;
+        height: 6px;
+        background: #363636;
+        border-radius: 9999px;
+        overflow: hidden;
+      }
+      .summary-bar-fill {
+        height: 100%;
+        border-radius: 9999px;
+      }
+
+      /* Kanban card */
+      .kanban-card {
+        background: #1a1a1a;
+        border: 1px solid #363636;
+        border-left: 4px solid;
+        border-radius: 8px;
+        padding: 10px 12px;
+      }
+      .kanban-card .title {
+        font-size: 13px;
+        font-weight: 500;
+        color: #ededed;
+        line-height: 1.35;
+      }
+      .kanban-card .meta {
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        color: #a3a3a3;
+      }
+      .kanban-card.overdue {
+        border-left-color: #ef4444 !important;
+      }
+      .kanban-card.overdue .title {
+        color: #fca5a5;
+      }
+      .kanban-column-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .kanban-column-count {
+        background: #363636;
+        color: #d4d4d8;
+        padding: 1px 8px;
+        border-radius: 9999px;
+        font-size: 11px;
+      }
+
+      /* Lista row */
+      .lista-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      .lista-table th {
+        text-align: left;
+        padding: 10px 12px;
+        color: #a3a3a3;
+        border-bottom: 1px solid #363636;
+        font-weight: 500;
+        font-size: 12px;
+      }
+      .lista-table td {
+        padding: 12px;
+        border-bottom: 1px solid #363636;
+        color: #ededed;
+      }
+      .lista-table tr:last-child td {
+        border-bottom: 0;
+      }
+      .lista-row-overdue {
+        background: rgba(239, 68, 68, 0.05);
+      }
+      .lista-row-overdue .title {
+        color: #fca5a5;
+      }
+
+      /* Calendar */
+      .cal-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 4px;
+      }
+      .cal-day {
+        background: #1a1a1a;
+        border: 1px solid #363636;
+        border-radius: 6px;
+        padding: 6px;
+        min-height: 84px;
+        font-size: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .cal-day-number {
+        font-size: 12px;
+        font-weight: 500;
+        color: #ededed;
+      }
+      .cal-day-other-month {
+        color: #525252;
+      }
+      .cal-pill {
+        font-size: 10.5px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      /* Current Calendar status colors (hardcoded) */
+      .cal-pill-current-active {
+        background: rgba(59, 130, 246, 0.22);
+        color: #bfdbfe;
+      }
+      .cal-pill-current-done {
+        background: rgba(34, 197, 94, 0.22);
+        color: #bbf7d0;
+      }
+      .cal-pill-current-overdue {
+        background: rgba(239, 68, 68, 0.22);
+        color: #fecaca;
+      }
+
+      /* Avatar mock */
+      .avatar {
+        width: 22px;
+        height: 22px;
+        border-radius: 9999px;
+        background: #525252;
+        color: #ededed;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 600;
+      }
+      .avatar-sm {
+        width: 18px;
+        height: 18px;
+        font-size: 9px;
+      }
+
+      .ic {
+        width: 14px;
+        height: 14px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .ic-12 { width: 12px; height: 12px; }
+      .ic-16 { width: 16px; height: 16px; }
+      .ic-24 { width: 24px; height: 24px; }
+      .ic-32 { width: 32px; height: 32px; }
+
+      /* Toolbar mockup styles for §5 */
+      .tab-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #a3a3a3;
+        background: transparent;
+        border-radius: 6px;
+      }
+      .tab-button.active {
+        background: #363636;
+        color: #ededed;
+      }
+      .tab-button:hover:not(.active) {
+        color: #ededed;
+      }
+      .toolbar-search {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 12px;
+        height: 36px;
+        background: transparent;
+        border: 1px solid #3f3f46;
+        border-radius: 6px;
+        color: #a3a3a3;
+        font-size: 13px;
+        width: 220px;
+      }
+      .toolbar-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 36px;
+        padding: 0 12px;
+        background: transparent;
+        border: 1px solid #3f3f46;
+        border-radius: 6px;
+        color: #ededed;
+        font-size: 13px;
+      }
+      .toolbar-trigger.compact { padding: 0 10px; }
+
+      .scope-card {
+        background: #1a1a1a;
+        border: 1px solid #363636;
+        border-radius: 8px;
+        padding: 18px;
+        transition: border-color 0.15s;
+      }
+      .scope-card.recommended {
+        border-color: rgba(34, 197, 94, 0.45);
+        background: rgba(34, 197, 94, 0.05);
+      }
+    </style>
+  </head>
+  <body class="bg-[#212121] text-[#ededed]">
+    <div class="mx-auto max-w-7xl px-6 py-10">
+      <!-- ═════════════ HEADER ═════════════ -->
+      <header class="mb-12">
+        <p class="text-xs uppercase tracking-wider text-zinc-500">
+          Epic 22 · Tasks tabs alignment · Prototype
+        </p>
+        <h1 class="mt-1 text-3xl font-semibold tracking-tight">
+          Aligning the five Uppgifter tabs without flattening their personalities
+        </h1>
+        <p class="mt-3 max-w-3xl text-zinc-400 leading-relaxed">
+          Each tab serves a different job (dashboard, kanban, list, calendar,
+          archive) — that's correct. What's drifting are the
+          <em>shared atoms</em>: status pill, priority pill, overdue
+          indicator, empty state. Same data, five different visual languages.
+          This prototype proposes three small primitives + an empty-state
+          migration so every task atom looks the same wherever it appears.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-2 text-xs">
+          <a
+            href="#status"
+            class="rounded-full border border-zinc-700 px-3 py-1 text-zinc-300 hover:bg-zinc-800"
+            >§1 · Status badge</a
+          >
+          <a
+            href="#priority"
+            class="rounded-full border border-zinc-700 px-3 py-1 text-zinc-300 hover:bg-zinc-800"
+            >§2 · Priority badge</a
+          >
+          <a
+            href="#overdue"
+            class="rounded-full border border-zinc-700 px-3 py-1 text-zinc-300 hover:bg-zinc-800"
+            >§3 · Overdue indicator</a
+          >
+          <a
+            href="#empty"
+            class="rounded-full border border-zinc-700 px-3 py-1 text-zinc-300 hover:bg-zinc-800"
+            >§4 · Empty states</a
+          >
+          <a
+            href="#toolbar"
+            class="rounded-full border border-zinc-700 px-3 py-1 text-zinc-300 hover:bg-zinc-800"
+            >§5 · Toolbar layout</a
+          >
+          <a
+            href="#scope"
+            class="rounded-full border border-emerald-700 bg-emerald-900/30 px-3 py-1 text-emerald-300 hover:bg-emerald-900/50"
+            >→ Scope &amp; rollout</a
+          >
+        </div>
+      </header>
+
+      <!-- ════════════════ §1 STATUS BADGE ════════════════ -->
+      <section id="status" class="mb-20">
+        <div class="mb-6">
+          <p class="text-xs uppercase tracking-wider text-zinc-500">§1</p>
+          <h2 class="text-2xl font-semibold tracking-tight">
+            Status — five renderings of the same data
+          </h2>
+          <p class="mt-2 max-w-3xl text-zinc-400">
+            "Pågående" looks like five different things across the tabs. None
+            of them are wrong; none of them agree.
+          </p>
+        </div>
+
+        <!-- CURRENT -->
+        <div class="surface p-6 mb-6">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="label-tag label-current">current</span>
+            <h3 class="text-base font-semibold">
+              Five different status visuals running in production today
+            </h3>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <!-- Sammanfattning -->
+            <div class="panel p-5">
+              <div class="anno mb-3">A · Sammanfattning</div>
+              <div class="ring-current">
+                <div class="space-y-2">
+                  <div class="summary-bar-row">
+                    <span class="w-20">Att göra</span>
+                    <div class="summary-bar-track">
+                      <div
+                        class="summary-bar-fill"
+                        style="width: 65%; background: #71717a"
+                      ></div>
+                    </div>
+                    <span class="text-zinc-300">9</span>
+                  </div>
+                  <div class="summary-bar-row">
+                    <span class="w-20">Pågående</span>
+                    <div class="summary-bar-track">
+                      <div
+                        class="summary-bar-fill"
+                        style="width: 30%; background: #3b82f6"
+                      ></div>
+                    </div>
+                    <span class="text-zinc-300">4</span>
+                  </div>
+                  <div class="summary-bar-row">
+                    <span class="w-20">Klar</span>
+                    <div class="summary-bar-track">
+                      <div
+                        class="summary-bar-fill"
+                        style="width: 10%; background: #16a34a"
+                      ></div>
+                    </div>
+                    <span class="text-zinc-300">2</span>
+                  </div>
+                </div>
+              </div>
+              <p class="anno mt-4">
+                horizontal bar chart · color via Tailwind class<br />
+                <span class="file-ref">summary-tab.tsx:142-189</span>
+              </p>
+            </div>
+
+            <!-- Aktiva (Kanban) -->
+            <div class="panel p-5">
+              <div class="anno mb-3">B · Aktiva (Kanban)</div>
+              <div class="ring-current">
+                <div class="kanban-column-header">
+                  <span class="dot dot-progress"></span>
+                  <span>Pågående</span>
+                  <span class="kanban-column-count">4</span>
+                </div>
+                <div class="mt-2 space-y-2">
+                  <div
+                    class="kanban-card"
+                    style="border-left-color: #f97316"
+                  >
+                    <div class="title">Skriv miljöpolicy</div>
+                    <div class="meta">
+                      <span class="avatar avatar-sm">AA</span>
+                      <span>·</span>
+                      <span>2 maj</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p class="anno mt-4">
+                column header has dot + count;<br />
+                cards have NO status indicator (column itself signals)<br />
+                <span class="file-ref">kanban-tab.tsx:323-335</span>
+              </p>
+            </div>
+
+            <!-- Lista -->
+            <div class="panel p-5">
+              <div class="anno mb-3">C · Lista</div>
+              <div class="ring-current">
+                <table class="lista-table">
+                  <tbody>
+                    <tr>
+                      <td>Skriv miljöpolicy</td>
+                      <td>
+                        <span
+                          class="inline-flex items-center gap-1 rounded-md border border-zinc-700 px-2 py-0.5 text-xs cursor-pointer hover:bg-zinc-800"
+                        >
+                          <span class="dot dot-progress"></span>
+                          Pågående
+                          <svg
+                            class="ic ic-12"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="m6 9 6 6 6-6" />
+                          </svg>
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="anno mt-4">
+                inline editor (Popover trigger). <br />
+                Editing chrome on top of display.<br />
+                <span class="file-ref"
+                  >TaskStatusEditor in list-tab.tsx:459</span
+                >
+              </p>
+            </div>
+
+            <!-- Kalender -->
+            <div class="panel p-5">
+              <div class="anno mb-3">D · Kalender</div>
+              <div class="ring-current">
+                <div class="cal-day">
+                  <span class="cal-day-number">2</span>
+                  <span class="cal-pill cal-pill-current-active"
+                    >Skriv miljöpolicy</span
+                  >
+                  <span class="cal-pill cal-pill-current-done"
+                    >Granska Q1-revisionsrapport</span
+                  >
+                </div>
+              </div>
+              <p class="anno mt-4">
+                hardcoded green/blue/red palette<br />
+                <span class="file-ref"
+                  >calendar-tab.tsx:213-215</span
+                >
+              </p>
+            </div>
+
+            <!-- Alla uppgifter -->
+            <div class="panel p-5">
+              <div class="anno mb-3">E · Alla uppgifter</div>
+              <div class="ring-current">
+                <table class="lista-table">
+                  <tbody>
+                    <tr>
+                      <td>Skriv miljöpolicy</td>
+                      <td>
+                        <span
+                          class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                          style="background:#3b82f61A;color:#3b82f6"
+                          >Pågående</span
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="anno mt-4">
+                color-tinted badge (color + "1A" alpha)<br />
+                <span class="file-ref"
+                  >all-work-tab.tsx:190-200</span
+                >
+              </p>
+            </div>
+
+            <!-- Empty slot -->
+            <div
+              class="panel p-5 flex items-center justify-center text-center text-xs text-zinc-600"
+            >
+              <p>
+                Same task<br />
+                <span class="text-zinc-300">"Skriv miljöpolicy"</span><br />
+                rendered five ways<br />depending on which tab<br />you're
+                looking at.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROPOSED -->
+        <div class="surface p-6">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="label-tag label-proposed">proposed</span>
+            <h3 class="text-base font-semibold">
+              <code>&lt;TaskStatusBadge&gt;</code> — single primitive,
+              workspace color drives tone
+            </h3>
+          </div>
+
+          <p class="text-sm text-zinc-400 mb-5">
+            Tone-aware soft fill (color at 14% alpha bg + 35% alpha border +
+            full-strength text). Source-of-truth for status across Lista,
+            Alla, and Kalender. <strong>Sammanfattning keeps its bar
+            chart</strong> (it's a chart, not a status display) and
+            <strong>Kanban keeps the column-as-signal pattern</strong> — no
+            redundant per-card badge.
+          </p>
+
+          <div class="ring-proposed">
+            <div
+              class="panel p-5 grid grid-cols-2 md:grid-cols-4 gap-4 items-start"
+            >
+              <div class="space-y-3">
+                <div class="anno">Att göra</div>
+                <span class="badge-soft badge-todo">
+                  <span class="dot dot-todo"></span>
+                  Att göra
+                </span>
+              </div>
+              <div class="space-y-3">
+                <div class="anno">Pågående</div>
+                <span class="badge-soft badge-progress">
+                  <span class="dot dot-progress"></span>
+                  Pågående
+                </span>
+              </div>
+              <div class="space-y-3">
+                <div class="anno">Klar</div>
+                <span class="badge-soft badge-done">
+                  <span class="dot dot-done"></span>
+                  Klar
+                </span>
+              </div>
+              <div class="space-y-3">
+                <div class="anno">Blockerad</div>
+                <span class="badge-soft badge-blocked">
+                  <span class="dot dot-blocked"></span>
+                  Blockerad
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <h4 class="mt-8 mb-4 text-sm font-semibold text-zinc-300">
+            …rendered in each tab's context
+          </h4>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <!-- Lista -->
+            <div class="panel p-5">
+              <div class="anno mb-3">Lista (read mode)</div>
+              <table class="lista-table">
+                <tbody>
+                  <tr>
+                    <td>Skriv miljöpolicy</td>
+                    <td>
+                      <span class="badge-soft badge-progress">
+                        <span class="dot dot-progress"></span>
+                        Pågående
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="anno mt-3">
+                editor still wraps the badge in edit mode (no API change)
+              </p>
+            </div>
+
+            <!-- Alla -->
+            <div class="panel p-5">
+              <div class="anno mb-3">Alla uppgifter</div>
+              <table class="lista-table">
+                <tbody>
+                  <tr>
+                    <td>Skriv miljöpolicy</td>
+                    <td>
+                      <span class="badge-soft badge-progress">
+                        <span class="dot dot-progress"></span>
+                        Pågående
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="anno mt-3">
+                replaces the
+                <code>${color}1A</code> alpha hack
+              </p>
+            </div>
+
+            <!-- Kalender -->
+            <div class="panel p-5">
+              <div class="anno mb-3">Kalender (slim variant)</div>
+              <div class="cal-day">
+                <span class="cal-day-number">2</span>
+                <span
+                  class="cal-pill"
+                  style="
+                    background: rgba(59, 130, 246, 0.16);
+                    color: #bfdbfe;
+                    border: 1px solid rgba(59, 130, 246, 0.32);
+                  "
+                  >Skriv miljöpolicy</span
+                >
+                <span
+                  class="cal-pill"
+                  style="
+                    background: rgba(34, 197, 94, 0.16);
+                    color: #bbf7d0;
+                    border: 1px solid rgba(34, 197, 94, 0.32);
+                  "
+                  >Granska revisionsrapport</span
+                >
+              </div>
+              <p class="anno mt-3">
+                same color tokens, calendar-density variant
+                (<code>size="sm"</code>) — no dot, tighter padding
+              </p>
+            </div>
+          </div>
+
+          <pre
+            class="mt-6 rounded-md border border-zinc-800 bg-zinc-900 p-4 text-xs overflow-x-auto"
+          ><code class="text-zinc-300">// components/ui/task-status-badge.tsx
+export function TaskStatusBadge({
+  label,         // column.name from workspace
+  color,         // column.color (hex from Prisma)
+  size = 'md',   // 'sm' for calendar-pill density
+  showDot = true,
+}) {
+  return (
+    &lt;span
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded-full border font-medium',
+        size === 'sm' ? 'px-2 py-0.5 text-[10.5px]' : 'px-2.5 py-0.5 text-xs'
+      )}
+      style={{
+        backgroundColor: `${color}24`,    // ~14% alpha
+        borderColor: `${color}59`,        // ~35% alpha
+        color: color,
+      }}
+    &gt;
+      {showDot &amp;&amp; &lt;span className="h-2 w-2 rounded-full" style={{ background: color }} /&gt;}
+      {label}
+    &lt;/span&gt;
+  )
+}</code></pre>
+        </div>
+      </section>
+
+      <!-- ════════════════ §2 PRIORITY BADGE ════════════════ -->
+      <section id="priority" class="mb-20">
+        <div class="mb-6">
+          <p class="text-xs uppercase tracking-wider text-zinc-500">§2</p>
+          <h2 class="text-2xl font-semibold tracking-tight">
+            Priority — visible in some tabs, invisible in others
+          </h2>
+          <p class="mt-2 max-w-3xl text-zinc-400">
+            On Aktiva (kanban), priority is signaled <em>only</em> by a 4px
+            left border on the card — easy to miss, especially CRITICAL.
+            Lista and Alla use editor pills with different shapes. Same
+            priority value, completely different prominence.
+          </p>
+        </div>
+
+        <!-- CURRENT -->
+        <div class="surface p-6 mb-6">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="label-tag label-current">current</span>
+            <h3 class="text-base font-semibold">
+              Three+ priority renderings for the same data
+            </h3>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <!-- Kanban -->
+            <div class="panel p-5">
+              <div class="anno mb-3">Aktiva (Kanban)</div>
+              <div class="ring-current space-y-2">
+                <div class="kanban-card" style="border-left-color: #f97316">
+                  <div class="title">Skriv miljöpolicy</div>
+                  <div class="meta">
+                    <span class="avatar avatar-sm">AA</span>
+                  </div>
+                </div>
+                <div class="kanban-card" style="border-left-color: #ef4444">
+                  <div class="title">Säkerhetsincident — uppdatera plan</div>
+                  <div class="meta">
+                    <span class="avatar avatar-sm">MA</span>
+                  </div>
+                </div>
+                <div class="kanban-card" style="border-left-color: #a3a3a3">
+                  <div class="title">Förnya elavtal</div>
+                  <div class="meta">
+                    <span class="avatar avatar-sm">CH</span>
+                  </div>
+                </div>
+              </div>
+              <p class="anno mt-4">
+                priority = 4px left border only<br />
+                no badge → which is HIGH? CRITICAL? LOW?
+              </p>
+            </div>
+
+            <!-- Lista -->
+            <div class="panel p-5">
+              <div class="anno mb-3">Lista</div>
+              <div class="ring-current">
+                <table class="lista-table">
+                  <tbody>
+                    <tr>
+                      <td>Skriv miljöpolicy</td>
+                      <td>
+                        <span
+                          class="inline-flex items-center gap-1 rounded-md border border-zinc-700 px-2 py-0.5 text-xs cursor-pointer hover:bg-zinc-800"
+                          style="background: rgba(249, 115, 22, 0.12); border-color: rgba(249, 115, 22, 0.3); color: #fdba74"
+                        >
+                          Hög
+                          <svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+                        </span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Säkerhetsincident</td>
+                      <td>
+                        <span
+                          class="inline-flex items-center gap-1 rounded-md border border-zinc-700 px-2 py-0.5 text-xs cursor-pointer hover:bg-zinc-800"
+                          style="background: rgba(239, 68, 68, 0.12); border-color: rgba(239, 68, 68, 0.3); color: #fca5a5"
+                        >
+                          Kritisk
+                          <svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="anno mt-4">
+                inline editor (PriorityEditor) — rectangular, with chevron
+              </p>
+            </div>
+
+            <!-- Alla -->
+            <div class="panel p-5">
+              <div class="anno mb-3">Alla uppgifter</div>
+              <div class="ring-current">
+                <table class="lista-table">
+                  <tbody>
+                    <tr>
+                      <td>Skriv miljöpolicy</td>
+                      <td>
+                        <span
+                          class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                          style="background: rgba(249, 115, 22, 0.16); color: #fdba74"
+                          >Hög</span
+                        >
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Säkerhetsincident</td>
+                      <td>
+                        <span
+                          class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                          style="background: rgba(239, 68, 68, 0.16); color: #fca5a5"
+                          >Kritisk</span
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="anno mt-4">
+                read-only Badge variant="secondary" with config color
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROPOSED -->
+        <div class="surface p-6">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="label-tag label-proposed">proposed</span>
+            <h3 class="text-base font-semibold">
+              <code>&lt;TaskPriorityBadge&gt;</code> — same primitive shape
+              as status, fixed palette
+            </h3>
+          </div>
+
+          <p class="text-sm text-zinc-400 mb-5">
+            Priority palette is fixed (LOW/MEDIUM/HIGH/CRITICAL → gray / blue
+            / orange / red), so colors live inside the primitive — no
+            workspace lookup needed. Add a visible badge to Kanban cards
+            <em>in addition to</em> the left border (border for at-a-glance
+            scan, badge for explicit label).
+          </p>
+
+          <div class="ring-proposed">
+            <div
+              class="panel p-5 grid grid-cols-2 md:grid-cols-4 gap-4 items-start"
+            >
+              <div class="space-y-3">
+                <div class="anno">LOW</div>
+                <span class="badge-soft badge-prio-low">Låg</span>
+              </div>
+              <div class="space-y-3">
+                <div class="anno">MEDIUM</div>
+                <span class="badge-soft badge-prio-med">Medel</span>
+              </div>
+              <div class="space-y-3">
+                <div class="anno">HIGH</div>
+                <span class="badge-soft badge-prio-high">Hög</span>
+              </div>
+              <div class="space-y-3">
+                <div class="anno">CRITICAL</div>
+                <span class="badge-soft badge-prio-crit">Kritisk</span>
+              </div>
+            </div>
+          </div>
+
+          <h4 class="mt-8 mb-4 text-sm font-semibold text-zinc-300">
+            Kanban card with the new badge — priority finally readable
+          </h4>
+          <div class="ring-proposed">
+            <div class="panel p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="kanban-card" style="border-left-color: #f97316">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="title flex-1">Skriv miljöpolicy</div>
+                  <span class="badge-soft badge-prio-high shrink-0"
+                    >Hög</span
+                  >
+                </div>
+                <div class="meta">
+                  <span class="avatar avatar-sm">AA</span>
+                  <span>·</span>
+                  <span>2 maj</span>
+                </div>
+              </div>
+              <div class="kanban-card" style="border-left-color: #ef4444">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="title flex-1">
+                    Säkerhetsincident — uppdatera plan
+                  </div>
+                  <span class="badge-soft badge-prio-crit shrink-0"
+                    >Kritisk</span
+                  >
+                </div>
+                <div class="meta">
+                  <span class="avatar avatar-sm">MA</span>
+                </div>
+              </div>
+              <div class="kanban-card" style="border-left-color: #a3a3a3">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="title flex-1">Förnya elavtal</div>
+                  <span class="badge-soft badge-prio-low shrink-0">Låg</span>
+                </div>
+                <div class="meta">
+                  <span class="avatar avatar-sm">CH</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="anno mt-3">
+            ↑ left border (subtle, for scan) + badge (explicit, for read).
+            Same palette across all tabs.
+          </p>
+        </div>
+      </section>
+
+      <!-- ════════════════ §3 OVERDUE ════════════════ -->
+      <section id="overdue" class="mb-20">
+        <div class="mb-6">
+          <p class="text-xs uppercase tracking-wider text-zinc-500">§3</p>
+          <h2 class="text-2xl font-semibold tracking-tight">
+            Overdue — a safety signal in four costumes
+          </h2>
+          <p class="mt-2 max-w-3xl text-zinc-400">
+            Overdue is the most important visual cue in the whole tasks
+            surface. It currently looks different in every tab. The brain
+            shouldn't have to re-learn "this is overdue" every time you
+            switch views.
+          </p>
+        </div>
+
+        <!-- CURRENT -->
+        <div class="surface p-6 mb-6">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="label-tag label-current">current</span>
+            <h3 class="text-base font-semibold">
+              Four overdue treatments in four tabs
+            </h3>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Kanban -->
+            <div class="panel p-5">
+              <div class="anno mb-3">Aktiva (Kanban) · red left border</div>
+              <div class="ring-current">
+                <div class="kanban-card overdue">
+                  <div class="title">Skriv miljöpolicy</div>
+                  <div class="meta">
+                    <span class="avatar avatar-sm">AA</span>
+                    <span>·</span>
+                    <span class="text-red-400">29 apr (förfallen)</span>
+                  </div>
+                </div>
+              </div>
+              <p class="anno mt-3">
+                left border swaps red, overrides priority color
+              </p>
+            </div>
+
+            <!-- Lista -->
+            <div class="panel p-5">
+              <div class="anno mb-3">Lista · row bg + red title</div>
+              <div class="ring-current">
+                <table class="lista-table">
+                  <tbody>
+                    <tr class="lista-row-overdue">
+                      <td>
+                        <span class="title">Skriv miljöpolicy</span>
+                      </td>
+                      <td>
+                        <span class="badge-soft badge-progress">
+                          <span class="dot dot-progress"></span>
+                          Pågående
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="anno mt-3">
+                full row bg-destructive/5 + red title text
+              </p>
+            </div>
+
+            <!-- Kalender -->
+            <div class="panel p-5">
+              <div class="anno mb-3">Kalender · red pill + alert icon</div>
+              <div class="ring-current">
+                <div class="cal-day">
+                  <div class="flex items-center justify-between">
+                    <span class="cal-day-number">29</span>
+                    <svg
+                      class="ic ic-12 text-red-400"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                  </div>
+                  <span class="cal-pill cal-pill-current-overdue"
+                    >Skriv miljöpolicy</span
+                  >
+                </div>
+              </div>
+              <p class="anno mt-3">
+                red day-cell icon + red pill (different color hue from
+                Kanban's border)
+              </p>
+            </div>
+
+            <!-- Alla -->
+            <div class="panel p-5">
+              <div class="anno mb-3">Alla · red title + clock icon</div>
+              <div class="ring-current">
+                <table class="lista-table">
+                  <tbody>
+                    <tr>
+                      <td>
+                        <div class="flex items-center gap-2">
+                          <svg
+                            class="ic ic-16 text-red-400"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                          </svg>
+                          <span style="color: #fca5a5">Skriv miljöpolicy</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="text-red-400 text-xs">29 apr</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="anno mt-3">
+                clock icon (status column) + red title; no row bg
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROPOSED -->
+        <div class="surface p-6">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="label-tag label-proposed">proposed</span>
+            <h3 class="text-base font-semibold">
+              Single overdue language: <code>border-l red</code> + red title
+              + AlertCircle icon
+            </h3>
+          </div>
+
+          <p class="text-sm text-zinc-400 mb-5">
+            One visual rule: 4px red left border (or red dot if no border
+            slot), red title text, optional AlertCircle. Nothing else
+            changes — priority + status badges keep their colors. Calendar's
+            day-level "this day has overdue items" red icon stays as a
+            <em>separate</em> cue (it's about the day, not a single task).
+          </p>
+
+          <div class="ring-proposed">
+            <div class="panel p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Kanban -->
+              <div>
+                <div class="anno mb-2">Aktiva (Kanban)</div>
+                <div class="kanban-card overdue">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="title flex-1 inline-flex items-center gap-1.5">
+                      <svg
+                        class="ic ic-12 text-red-400 shrink-0"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                      </svg>
+                      Skriv miljöpolicy
+                    </div>
+                    <span class="badge-soft badge-prio-high shrink-0"
+                      >Hög</span
+                    >
+                  </div>
+                  <div class="meta">
+                    <span class="avatar avatar-sm">AA</span>
+                    <span>·</span>
+                    <span class="text-red-400">29 apr (förfallen)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lista (revised: drops the row-bg, keeps title + icon) -->
+              <div>
+                <div class="anno mb-2">Lista</div>
+                <table class="lista-table">
+                  <tbody>
+                    <tr style="border-left: 3px solid #ef4444">
+                      <td>
+                        <span
+                          class="inline-flex items-center gap-1.5"
+                          style="color: #fca5a5"
+                        >
+                          <svg
+                            class="ic ic-12 shrink-0"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                          </svg>
+                          Skriv miljöpolicy
+                        </span>
+                      </td>
+                      <td>
+                        <span class="badge-soft badge-progress">
+                          <span class="dot dot-progress"></span>
+                          Pågående
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p class="anno mt-2">
+                  drop the row-bg tint (too noisy with badges), keep red
+                  border on row + red title + icon
+                </p>
+              </div>
+
+              <!-- Kalender -->
+              <div>
+                <div class="anno mb-2">Kalender (slim variant)</div>
+                <div class="cal-day">
+                  <div class="flex items-center justify-between">
+                    <span class="cal-day-number">29</span>
+                    <svg
+                      class="ic ic-12 text-red-400"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                  </div>
+                  <span
+                    class="cal-pill"
+                    style="
+                      background: rgba(239, 68, 68, 0.16);
+                      color: #fca5a5;
+                      border: 1px solid rgba(239, 68, 68, 0.32);
+                      border-left: 3px solid #ef4444;
+                    "
+                    >Skriv miljöpolicy</span
+                  >
+                </div>
+                <p class="anno mt-2">
+                  pill keeps the slim shape; left border is the unified
+                  language; day-level red icon stays
+                </p>
+              </div>
+
+              <!-- Alla -->
+              <div>
+                <div class="anno mb-2">Alla uppgifter</div>
+                <table class="lista-table">
+                  <tbody>
+                    <tr style="border-left: 3px solid #ef4444">
+                      <td>
+                        <span
+                          class="inline-flex items-center gap-1.5"
+                          style="color: #fca5a5"
+                        >
+                          <svg
+                            class="ic ic-12 shrink-0"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                          </svg>
+                          Skriv miljöpolicy
+                        </span>
+                      </td>
+                      <td>
+                        <span
+                          class="text-red-400 text-xs inline-flex items-center"
+                          >29 apr</span
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p class="anno mt-2">same red border + red title + icon</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════ §4 EMPTY STATES ════════════════ -->
+      <section id="empty" class="mb-20">
+        <div class="mb-6">
+          <p class="text-xs uppercase tracking-wider text-zinc-500">§4</p>
+          <h2 class="text-2xl font-semibold tracking-tight">
+            Empty states — different copy, different layouts, sometimes none
+            at all
+          </h2>
+          <p class="mt-2 max-w-3xl text-zinc-400">
+            Lista says "Inga uppgifter matchar"; Alla says "Inga uppgifter
+            hittades"; Kanban renders empty columns silently; Kalender shows
+            an empty grid with no explanation. We already shipped the
+            <code>&lt;EmptyState&gt;</code> primitive — these tabs just
+            need to use it.
+          </p>
+        </div>
+
+        <!-- CURRENT -->
+        <div class="surface p-6 mb-6">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="label-tag label-current">current</span>
+            <h3 class="text-base font-semibold">
+              Three messages, two silent tabs
+            </h3>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="panel p-5">
+              <div class="anno mb-3">Lista · "Inga uppgifter matchar"</div>
+              <div class="ring-current py-8">
+                <div
+                  class="flex flex-col items-center text-center gap-2"
+                >
+                  <svg
+                    class="ic ic-32 text-zinc-500"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14,2 14,8 20,8" />
+                  </svg>
+                  <p class="text-sm font-medium">Inga uppgifter matchar</p>
+                  <p class="text-xs text-zinc-500">
+                    Justera dina filter eller skapa en ny uppgift
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel p-5">
+              <div class="anno mb-3">Alla · "Inga uppgifter hittades"</div>
+              <div class="ring-current py-8">
+                <p
+                  class="text-sm text-zinc-400 text-center"
+                  style="padding: 16px"
+                >
+                  Inga uppgifter hittades
+                </p>
+              </div>
+              <p class="anno mt-2">
+                rendered as table-cell colSpan; no icon
+              </p>
+            </div>
+
+            <div class="panel p-5">
+              <div class="anno mb-3">Aktiva (Kanban) · silent</div>
+              <div class="ring-current">
+                <div
+                  style="
+                    min-height: 80px;
+                    background: rgba(255, 255, 255, 0.02);
+                    border: 1px dashed #363636;
+                    border-radius: 6px;
+                  "
+                ></div>
+              </div>
+              <p class="anno mt-2">
+                empty columns render as empty space — no message
+              </p>
+            </div>
+
+            <div class="panel p-5">
+              <div class="anno mb-3">Kalender · silent</div>
+              <div class="ring-current">
+                <div class="cal-grid">
+                  <div class="cal-day"><span class="cal-day-number">1</span></div>
+                  <div class="cal-day"><span class="cal-day-number">2</span></div>
+                  <div class="cal-day"><span class="cal-day-number">3</span></div>
+                  <div class="cal-day"><span class="cal-day-number">4</span></div>
+                  <div class="cal-day"><span class="cal-day-number">5</span></div>
+                  <div class="cal-day"><span class="cal-day-number">6</span></div>
+                  <div class="cal-day"><span class="cal-day-number">7</span></div>
+                </div>
+              </div>
+              <p class="anno mt-2">
+                empty calendar — no overlay, no message
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROPOSED -->
+        <div class="surface p-6">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="label-tag label-proposed">proposed</span>
+            <h3 class="text-base font-semibold">
+              Migrate to <code>&lt;EmptyState&gt;</code> + add per-section
+              empties
+            </h3>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Lista (uses primitive) -->
+            <div class="panel p-5">
+              <div class="anno mb-3">Lista (now uses EmptyState)</div>
+              <div class="ring-proposed">
+                <div
+                  class="flex flex-col items-center justify-center gap-4 py-12 text-center"
+                >
+                  <div class="rounded-full bg-zinc-800 p-4">
+                    <svg
+                      class="ic ic-32 text-zinc-400"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14,2 14,8 20,8" />
+                    </svg>
+                  </div>
+                  <div class="space-y-1">
+                    <h2 class="text-lg font-medium">
+                      Inga uppgifter matchar
+                    </h2>
+                    <p class="text-sm text-zinc-400 max-w-md">
+                      Justera dina filter eller skapa en ny uppgift.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Alla (same primitive, similar copy) -->
+            <div class="panel p-5">
+              <div class="anno mb-3">Alla (same primitive, normalized copy)</div>
+              <div class="ring-proposed">
+                <div
+                  class="flex flex-col items-center justify-center gap-4 py-12 text-center"
+                >
+                  <div class="rounded-full bg-zinc-800 p-4">
+                    <svg
+                      class="ic ic-32 text-zinc-400"
+                      viewBox="0 0 24 24"
+                    >
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <line x1="9" y1="9" x2="15" y2="9" />
+                      <line x1="9" y1="13" x2="15" y2="13" />
+                      <line x1="9" y1="17" x2="13" y2="17" />
+                    </svg>
+                  </div>
+                  <div class="space-y-1">
+                    <h2 class="text-lg font-medium">
+                      Inga uppgifter matchar
+                    </h2>
+                    <p class="text-sm text-zinc-400 max-w-md">
+                      Inga uppgifter hittades med dessa filter.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <p class="anno mt-2">
+                same heading copy as Lista — same primitive, same shape
+              </p>
+            </div>
+
+            <!-- Kanban per-column empty -->
+            <div class="panel p-5">
+              <div class="anno mb-3">Aktiva (Kanban) · per-column empty</div>
+              <div class="ring-proposed">
+                <div
+                  style="
+                    border: 1px dashed #363636;
+                    border-radius: 6px;
+                    padding: 24px 12px;
+                    text-align: center;
+                    background: rgba(255, 255, 255, 0.02);
+                  "
+                >
+                  <p class="text-xs text-zinc-500 mb-2">
+                    Inget i Att göra ännu
+                  </p>
+                  <button
+                    class="text-xs text-zinc-400 hover:text-zinc-200 inline-flex items-center gap-1"
+                  >
+                    <svg class="ic ic-12" viewBox="0 0 24 24">
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Lägg till uppgift
+                  </button>
+                </div>
+              </div>
+              <p class="anno mt-2">
+                small inline empty inside each empty column · gives "drop
+                target" context + create CTA
+              </p>
+            </div>
+
+            <!-- Kalender empty -->
+            <div class="panel p-5">
+              <div class="anno mb-3">Kalender · month-empty overlay</div>
+              <div class="ring-proposed">
+                <div style="position: relative">
+                  <div class="cal-grid" style="opacity: 0.4">
+                    <div class="cal-day"><span class="cal-day-number">1</span></div>
+                    <div class="cal-day"><span class="cal-day-number">2</span></div>
+                    <div class="cal-day"><span class="cal-day-number">3</span></div>
+                    <div class="cal-day"><span class="cal-day-number">4</span></div>
+                    <div class="cal-day"><span class="cal-day-number">5</span></div>
+                    <div class="cal-day"><span class="cal-day-number">6</span></div>
+                    <div class="cal-day"><span class="cal-day-number">7</span></div>
+                  </div>
+                  <div
+                    class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  >
+                    <div
+                      class="text-center"
+                      style="background: #1a1a1aE6; padding: 12px 18px; border-radius: 8px; border: 1px solid #363636"
+                    >
+                      <p class="text-sm font-medium">
+                        Inga uppgifter denna månad
+                      </p>
+                      <p class="text-xs text-zinc-500 mt-1">
+                        Skapa en uppgift med ett förfallodatum
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p class="anno mt-2">
+                light overlay so the calendar grid stays recognizable as
+                context · only fires when the entire visible month is empty
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════ §5 TOOLBAR LAYOUT ════════════════ -->
+      <section id="toolbar" class="mb-20">
+        <div class="mb-6">
+          <p class="text-xs uppercase tracking-wider text-zinc-500">§5</p>
+          <h2 class="text-2xl font-semibold tracking-tight">
+            Toolbar layout — tabs and filters fight for one row
+          </h2>
+          <p class="mt-2 max-w-3xl text-zinc-400">
+            Today the tabs, search, four filter dropdowns, and (on Lista)
+            the Kolumner button all share one flex-wrap row with
+            <code>justify-between</code>. On wide viewports the two groups
+            float apart with awkward air between them; on Lista the row
+            wraps unpredictably and Kolumner ends up offset right while
+            filters drop to a new line on the left. Five elements total
+            (tabs, search, 4 dropdowns, sometimes Kolumner) is more than a
+            single row should carry.
+          </p>
+        </div>
+
+        <!-- CURRENT -->
+        <div class="surface p-6 mb-6">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="label-tag label-current">current</span>
+            <h3 class="text-base font-semibold">
+              Single row, <code>justify-between</code> + flex-wrap → two
+              failure modes
+            </h3>
+          </div>
+
+          <!-- Failure mode 1: visible "void" between tabs and filters -->
+          <div class="panel p-5 mb-4">
+            <div class="anno mb-3">
+              Aktiva / Kalender / Alla · single row, but the gap between tabs
+              and filter cluster reads as two disconnected things floating
+            </div>
+            <div class="ring-current">
+              <div
+                class="flex flex-wrap items-center justify-between gap-3"
+              >
+                <!-- tabs (left) -->
+                <div class="flex items-center gap-1">
+                  <button class="tab-button">
+                    <svg class="ic ic-16" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10" /><line x1="18" y1="20" x2="18" y2="4" /><line x1="6" y1="20" x2="6" y2="16" /></svg>
+                    Sammanfattning
+                  </button>
+                  <button class="tab-button active">
+                    <svg class="ic ic-16" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                    Aktiva
+                  </button>
+                  <button class="tab-button">
+                    <svg class="ic ic-16" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+                    Lista
+                  </button>
+                  <button class="tab-button">
+                    <svg class="ic ic-16" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                    Kalender
+                  </button>
+                  <button class="tab-button">
+                    <svg class="ic ic-16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                    Alla uppgifter
+                  </button>
+                </div>
+                <!-- filters (right) -->
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="toolbar-search">
+                    <svg class="ic ic-16" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+                    Sök uppgifter…
+                  </span>
+                  <span class="toolbar-trigger compact">Status<svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></span>
+                  <span class="toolbar-trigger compact">Prioritet<svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></span>
+                  <span class="toolbar-trigger compact">
+                    <svg class="ic ic-12" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                    Förfallodatum
+                    <svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+                  </span>
+                  <span class="toolbar-trigger compact">
+                    <svg class="ic ic-12" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                    Ansvarig
+                    <svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <p class="anno mt-3">
+              ↑ on a 1440px+ viewport, the tabs and filter cluster end up at
+              opposite ends of the row with empty space between. Reads as
+              "two toolbars" not one.
+            </p>
+          </div>
+
+          <!-- Failure mode 2: Lista wrap with offset Kolumner -->
+          <div class="panel p-5">
+            <div class="anno mb-3">
+              Lista · Kolumner sits in the right zone; when the left group
+              wraps it leaves Kolumner stranded
+            </div>
+            <div class="ring-current">
+              <div
+                class="flex flex-wrap items-start justify-between gap-3"
+              >
+                <!-- left wraps -->
+                <div class="flex flex-wrap items-center gap-2">
+                  <div class="flex items-center gap-1">
+                    <button class="tab-button">Sammanfattning</button>
+                    <button class="tab-button">Aktiva</button>
+                    <button class="tab-button active">Lista</button>
+                    <button class="tab-button">Kalender</button>
+                    <button class="tab-button">Alla uppgifter</button>
+                    <span class="toolbar-search">
+                      <svg class="ic ic-16" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+                      Sök uppgifter…
+                    </span>
+                  </div>
+                  <!-- forced wrap → second visual line -->
+                  <div
+                    class="flex items-center gap-2 w-full"
+                    style="margin-top: 8px"
+                  >
+                    <span class="toolbar-trigger compact">Status<svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></span>
+                    <span class="toolbar-trigger compact">Prioritet<svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></span>
+                    <span class="toolbar-trigger compact">Förfallodatum<svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></span>
+                    <span class="toolbar-trigger compact">Ansvarig<svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></span>
+                  </div>
+                </div>
+                <!-- right zone stays right, on its own row -->
+                <span class="toolbar-trigger" style="align-self: flex-start; margin-top: 50px">
+                  <svg class="ic ic-12" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+                  Kolumner
+                </span>
+              </div>
+            </div>
+            <p class="anno mt-3">
+              ↑ Kolumner is in <code>UnifiedToolbar</code>'s right zone, so
+              <code>justify-between</code> pins it to the right. When the
+              left group wraps onto two visual lines, Kolumner doesn't move
+              with the filters — it floats on its own. Reads as "where did
+              Kolumner come from?"
+            </p>
+          </div>
+        </div>
+
+        <!-- PROPOSED -->
+        <div class="surface p-6">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="label-tag label-proposed">proposed</span>
+            <h3 class="text-base font-semibold">
+              Two rows: tabs above, filters (+ Kolumner) below
+            </h3>
+          </div>
+
+          <p class="text-sm text-zinc-400 mb-5">
+            Tabs are about <em>which view of this page</em> (navigation).
+            Filters are about <em>what subset of this view's data</em>
+            (operation). They're conceptually different and should sit on
+            different rows. Tabs always span left to right with no
+            opposing element to fight; the filter row is left-aligned with
+            Kolumner pinned right (so it follows the filters when they wrap,
+            instead of floating on its own line). Adds about 36px of
+            vertical chrome — modest cost, big alignment payoff.
+          </p>
+
+          <!-- Aktiva / Kalender / Alla (no Kolumner) -->
+          <div class="panel p-5 mb-4">
+            <div class="anno mb-3">
+              Aktiva / Kalender / Alla · row 1 = tabs only · row 2 = search +
+              filters (no Kolumner on these tabs)
+            </div>
+            <div class="ring-proposed space-y-3">
+              <!-- Row 1: tabs -->
+              <div class="flex items-center gap-1">
+                <button class="tab-button">
+                  <svg class="ic ic-16" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10" /><line x1="18" y1="20" x2="18" y2="4" /><line x1="6" y1="20" x2="6" y2="16" /></svg>
+                  Sammanfattning
+                </button>
+                <button class="tab-button active">
+                  <svg class="ic ic-16" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                  Aktiva
+                </button>
+                <button class="tab-button">
+                  <svg class="ic ic-16" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+                  Lista
+                </button>
+                <button class="tab-button">
+                  <svg class="ic ic-16" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                  Kalender
+                </button>
+                <button class="tab-button">
+                  <svg class="ic ic-16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                  Alla uppgifter
+                </button>
+              </div>
+              <!-- Row 2: search + filters -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="toolbar-search">
+                  <svg class="ic ic-16" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+                  Sök uppgifter…
+                </span>
+                <span class="toolbar-trigger compact">Status<svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></span>
+                <span class="toolbar-trigger compact">Prioritet<svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></span>
+                <span class="toolbar-trigger compact">Förfallodatum<svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></span>
+                <span class="toolbar-trigger compact">Ansvarig<svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lista (with Kolumner) -->
+          <div class="panel p-5 mb-4">
+            <div class="anno mb-3">
+              Lista · same two rows · Kolumner pins to right of the filter
+              row, follows the filters if they wrap
+            </div>
+            <div class="ring-proposed space-y-3">
+              <!-- Row 1: tabs -->
+              <div class="flex items-center gap-1">
+                <button class="tab-button">Sammanfattning</button>
+                <button class="tab-button">Aktiva</button>
+                <button class="tab-button active">Lista</button>
+                <button class="tab-button">Kalender</button>
+                <button class="tab-button">Alla uppgifter</button>
+              </div>
+              <!-- Row 2: search + filters | Kolumner -->
+              <div class="flex items-center gap-2 flex-wrap justify-between">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="toolbar-search">
+                    <svg class="ic ic-16" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+                    Sök uppgifter…
+                  </span>
+                  <span class="toolbar-trigger compact">Status<svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></span>
+                  <span class="toolbar-trigger compact">Prioritet<svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></span>
+                  <span class="toolbar-trigger compact">Förfallodatum<svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></span>
+                  <span class="toolbar-trigger compact">Ansvarig<svg class="ic ic-12" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></span>
+                </div>
+                <span class="toolbar-trigger compact">
+                  <svg class="ic ic-12" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+                  Kolumner
+                </span>
+              </div>
+            </div>
+            <p class="anno mt-3">
+              ↑ filter row uses
+              <code>flex-wrap justify-between</code> — search/filters wrap as
+              needed; Kolumner stays right and moves down WITH the row when
+              everything wraps. No more orphan Kolumner.
+            </p>
+          </div>
+
+          <!-- Sammanfattning special-case -->
+          <div class="panel p-5">
+            <div class="anno mb-3">
+              Sammanfattning · row 1 only (no filter row, since the dashboard
+              ignores filters)
+            </div>
+            <div class="ring-proposed">
+              <div class="flex items-center gap-1">
+                <button class="tab-button active">
+                  <svg class="ic ic-16" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10" /><line x1="18" y1="20" x2="18" y2="4" /><line x1="6" y1="20" x2="6" y2="16" /></svg>
+                  Sammanfattning
+                </button>
+                <button class="tab-button">Aktiva</button>
+                <button class="tab-button">Lista</button>
+                <button class="tab-button">Kalender</button>
+                <button class="tab-button">Alla uppgifter</button>
+              </div>
+            </div>
+            <p class="anno mt-3">
+              ↑ filter row hides on Sammanfattning (already its behavior in
+              code via <code>showFilters</code>). Visually: tab row sits
+              alone, no awkward empty filter slot.
+            </p>
+          </div>
+
+          <pre
+            class="mt-6 rounded-md border border-zinc-800 bg-zinc-900 p-4 text-xs overflow-x-auto"
+          ><code class="text-zinc-300">// task-workspace/index.tsx — replace UnifiedToolbar with explicit two-row JSX
+return (
+  &lt;div className="flex flex-col gap-6"&gt;
+    &lt;PageHeader title="Uppgifter" ... primaryAction={...} /&gt;
+
+    {/* Row 1 — tabs only */}
+    &lt;TabNavigation currentTab={currentTab} /&gt;
+
+    {/* Row 2 — search + filters + (right) column settings */}
+    {showFilters &amp;&amp; (
+      &lt;div className="flex flex-wrap items-center justify-between gap-2"&gt;
+        &lt;div className="flex flex-wrap items-center gap-2"&gt;
+          &lt;SearchInput initialValue={searchQuery} onSearch={...} className="h-9" /&gt;
+          &lt;TaskFilterBar filters={...} onFiltersChange={...} ... /&gt;
+        &lt;/div&gt;
+        {isListTab &amp;&amp; (
+          &lt;ColumnSettings columnOptions={...} ... /&gt;
+        )}
+      &lt;/div&gt;
+    )}
+
+    &lt;ToolbarItemCount showing={...} total={...} label="uppgifter" /&gt;
+
+    {/* tab content */}
+  &lt;/div&gt;
+)</code></pre>
+
+          <p class="anno mt-3">
+            Tasks stops using <code>UnifiedToolbar</code> entirely (it was
+            doing too much for this case) and inlines the two-row layout.
+            <code>UnifiedToolbar</code> stays for Laglistor where it
+            actually carries its weight.
+          </p>
+        </div>
+      </section>
+
+      <!-- ════════════════ SCOPE & ROLLOUT ════════════════ -->
+      <section id="scope" class="mb-12">
+        <div class="mb-6">
+          <p class="text-xs uppercase tracking-wider text-zinc-500">
+            What I'd ship
+          </p>
+          <h2 class="text-2xl font-semibold tracking-tight">
+            Scope &amp; rollout
+          </h2>
+        </div>
+
+        <div class="surface p-6 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="scope-card">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="label-tag label-skipped">scope A</span>
+                <span class="text-sm font-semibold">Atoms only</span>
+              </div>
+              <p class="text-sm text-zinc-400 mb-3">
+                Three primitives + migrate the obvious call sites.
+              </p>
+              <ul class="text-xs text-zinc-400 space-y-1 list-disc pl-4">
+                <li>TaskStatusBadge</li>
+                <li>TaskPriorityBadge</li>
+                <li>Overdue helper</li>
+              </ul>
+              <p class="anno mt-3">~1 day</p>
+            </div>
+
+            <div class="scope-card">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="label-tag label-skipped">scope B</span>
+                <span class="text-sm font-semibold"
+                  >Atoms + empty states</span
+                >
+              </div>
+              <p class="text-sm text-zinc-400 mb-3">
+                Above, plus migrate Lista &amp; Alla to
+                <code>&lt;EmptyState&gt;</code>; add per-column empty to
+                Kanban; add month-empty overlay to Kalender.
+              </p>
+              <ul class="text-xs text-zinc-400 space-y-1 list-disc pl-4">
+                <li>3 primitives + ~6 callers</li>
+                <li>2 empty-state migrations</li>
+                <li>2 new section-level empties</li>
+              </ul>
+              <p class="anno mt-3">~1.5 days</p>
+            </div>
+
+            <div class="scope-card recommended">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="label-tag label-proposed">scope C · rec</span>
+                <span class="text-sm font-semibold"
+                  >+ toolbar restructure</span
+                >
+              </div>
+              <p class="text-sm text-zinc-400 mb-3">
+                B plus the §5 two-row toolbar layout (drop
+                <code>UnifiedToolbar</code> on Tasks, inline a tabs row +
+                filter row).
+              </p>
+              <ul class="text-xs text-zinc-400 space-y-1 list-disc pl-4">
+                <li>1 file (<code>task-workspace/index.tsx</code>)</li>
+                <li>~30-line JSX swap</li>
+                <li>fixes Lista wrap + tab/filter air gap</li>
+              </ul>
+              <p class="anno mt-3">~2 days total</p>
+            </div>
+          </div>
+
+          <div
+            class="rounded-md border border-emerald-800 bg-emerald-900/20 p-4 text-sm text-emerald-100"
+          >
+            <strong>Rollout order for Scope C:</strong>
+            <ol class="list-decimal pl-5 mt-2 space-y-1">
+              <li>
+                <strong>Day 1</strong> — Ship the three atom primitives
+                (TaskStatusBadge, TaskPriorityBadge, overdue helper).
+                Migrate Lista row + Alla row + Kalender pill.
+              </li>
+              <li>
+                <strong>Day 1.5</strong> — Add Kanban per-card priority
+                badge; tighten Kanban overdue treatment.
+              </li>
+              <li>
+                <strong>Day 1.5</strong> — Migrate Lista + Alla empty
+                states to <code>&lt;EmptyState&gt;</code>. Add Kanban
+                per-column empty + Kalender month-empty overlay.
+              </li>
+              <li>
+                <strong>Day 2</strong> — Restructure
+                <code>task-workspace/index.tsx</code> to the two-row
+                toolbar (§5). Drop the <code>UnifiedToolbar</code> wrapper
+                on Tasks (it stays in use on Laglistor).
+              </li>
+            </ol>
+          </div>
+
+          <div
+            class="rounded-md border border-zinc-800 bg-zinc-900/30 p-4 text-xs text-zinc-400"
+          >
+            <strong class="text-zinc-200">What stays as-is:</strong> the
+            tab structures themselves (Sammanfattning's stats grid,
+            Kanban's drag-and-drop, Lista's TanStack table, Kalender's
+            month grid, Alla's read-only archive). This work is purely
+            atom-level alignment — no structural rewrites.
+          </div>
+        </div>
+      </section>
+
+      <footer class="mt-16 pb-8 text-center text-xs text-zinc-600">
+        Generated 2026-05-03 · prototype only — no production code touched
+        yet.
+      </footer>
+    </div>
+  </body>
+</html>

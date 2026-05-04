@@ -1,0 +1,1425 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Epic 22 · Consistency Audit Prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              border: '#27272a',
+              input: '#3f3f46',
+              ring: '#a1a1aa',
+              background: '#09090b',
+              foreground: '#fafafa',
+              primary: { DEFAULT: '#fafafa', foreground: '#18181b' },
+              secondary: { DEFAULT: '#27272a', foreground: '#fafafa' },
+              muted: { DEFAULT: '#27272a', foreground: '#a1a1aa' },
+              accent: { DEFAULT: '#27272a', foreground: '#fafafa' },
+              destructive: { DEFAULT: '#7f1d1d', foreground: '#fafafa' },
+              card: { DEFAULT: '#0a0a0a', foreground: '#fafafa' },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        font-family:
+          ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial;
+      }
+      .surface {
+        background: #0a0a0a;
+        border: 1px solid #27272a;
+        border-radius: 12px;
+      }
+      .panel {
+        background: #18181b;
+        border: 1px solid #27272a;
+        border-radius: 8px;
+      }
+      .label-tag {
+        display: inline-flex;
+        align-items: center;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+      .label-current {
+        background: rgba(244, 63, 94, 0.15);
+        color: #fda4af;
+      }
+      .label-proposed {
+        background: rgba(34, 197, 94, 0.15);
+        color: #86efac;
+      }
+      .label-option {
+        background: rgba(59, 130, 246, 0.15);
+        color: #93c5fd;
+      }
+      .label-decision {
+        background: rgba(234, 179, 8, 0.15);
+        color: #fde68a;
+      }
+      .anno {
+        font-size: 11px;
+        color: #71717a;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      .file-ref {
+        color: #a1a1aa;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+        background: #18181b;
+        padding: 1px 6px;
+        border-radius: 4px;
+        border: 1px solid #27272a;
+      }
+      details > summary {
+        list-style: none;
+        cursor: pointer;
+      }
+      details > summary::-webkit-details-marker {
+        display: none;
+      }
+      .ring-current {
+        position: relative;
+      }
+      .ring-current::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border: 1px dashed rgba(244, 63, 94, 0.4);
+        border-radius: 8px;
+        pointer-events: none;
+      }
+      .ring-proposed {
+        position: relative;
+      }
+      .ring-proposed::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border: 1px dashed rgba(34, 197, 94, 0.45);
+        border-radius: 8px;
+        pointer-events: none;
+      }
+
+      /* shadcn-ish primitives */
+      .btn-outline {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 36px;
+        padding: 0 12px;
+        border-radius: 6px;
+        border: 1px solid #3f3f46;
+        background: transparent;
+        color: #fafafa;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background 0.15s;
+      }
+      .btn-outline:hover {
+        background: #18181b;
+      }
+      .btn-outline.h8 {
+        height: 32px;
+      }
+      .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 36px;
+        padding: 0 12px;
+        border-radius: 6px;
+        background: #fafafa;
+        color: #18181b;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .btn-ghost {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 36px;
+        padding: 0 12px;
+        border-radius: 6px;
+        background: transparent;
+        color: #a1a1aa;
+        font-size: 14px;
+      }
+      .btn-ghost:hover {
+        color: #fafafa;
+        background: #18181b;
+      }
+
+      /* the two filter-chip variants for §1 — same final color, different density + unpressed treatment */
+      .chip-base {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 9999px;
+        border: 1px solid;
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          background 0.15s,
+          color 0.15s;
+      }
+
+      /* canonical (Kontroller / Findings) — tight, quiet inactive, brighten-on-hover */
+      .chip-canon {
+        padding: 4px 12px;
+        font-size: 12px;
+        font-weight: 500;
+        border-color: #27272a;
+        color: #a1a1aa; /* text-muted-foreground */
+        background: transparent;
+      }
+      .chip-canon:hover {
+        border-color: rgba(237, 237, 237, 0.4);
+        color: #ededed; /* hover:text-foreground */
+      }
+      .chip-canon-active {
+        border-color: #ededed;
+        background: #ededed; /* bg-foreground (= near-white in dark mode) */
+        color: #212121; /* text-background */
+      }
+
+      /* bespoke (Laglistor / Mallar / Krav) — looser, full-strength inactive, fill-on-hover */
+      .chip-bespoke {
+        padding: 6px 12px;
+        font-size: 14px;
+        font-weight: 500;
+        border-color: #27272a;
+        color: #ededed; /* text-foreground (full strength even when inactive) */
+        background: transparent; /* bg-background */
+      }
+      .chip-bespoke:hover {
+        background: #27272a; /* hover:bg-muted */
+      }
+      .chip-bespoke-active {
+        border-color: #ededed;
+        background: #ededed; /* bg-primary — SAME color as canonical's bg-foreground */
+        color: #212121; /* text-primary-foreground */
+      }
+
+      .chip-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        font-weight: 600;
+      }
+      /* canonical count: inline, tiny */
+      .chip-canon .chip-count {
+        padding: 0 6px;
+        font-size: 10px;
+      }
+      .chip-canon .chip-count {
+        background: #27272a;
+        color: #a1a1aa;
+      }
+      .chip-canon-active .chip-count {
+        background: rgba(33, 33, 33, 0.2);
+        color: #212121;
+      }
+      /* bespoke count: explicit h-5, slightly bigger */
+      .chip-bespoke .chip-count {
+        height: 20px;
+        min-width: 20px;
+        padding: 0 6px;
+        font-size: 10px;
+      }
+      .chip-bespoke .chip-count {
+        background: #27272a;
+        color: #a1a1aa;
+      }
+      .chip-bespoke-active .chip-count {
+        background: rgba(33, 33, 33, 0.2);
+        color: #212121;
+      }
+
+      /* search input variants */
+      .search-bare {
+        height: 36px;
+        width: 256px;
+        padding: 0 12px;
+        background: transparent;
+        border: 1px solid #3f3f46;
+        border-radius: 6px;
+        color: #fafafa;
+        font-size: 14px;
+      }
+      .search-bare::placeholder {
+        color: #71717a;
+      }
+      .search-icon {
+        position: relative;
+        display: inline-block;
+      }
+      .search-icon input {
+        height: 36px;
+        width: 256px;
+        padding: 0 32px 0 32px;
+        background: transparent;
+        border: 1px solid #3f3f46;
+        border-radius: 6px;
+        color: #fafafa;
+        font-size: 14px;
+      }
+      .search-icon input::placeholder {
+        color: #71717a;
+      }
+      .search-icon .ico-left {
+        position: absolute;
+        top: 50%;
+        left: 10px;
+        transform: translateY(-50%);
+        color: #71717a;
+        pointer-events: none;
+      }
+      .search-icon .ico-right {
+        position: absolute;
+        top: 50%;
+        right: 8px;
+        transform: translateY(-50%);
+        color: #71717a;
+        cursor: pointer;
+        height: 18px;
+        width: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+      }
+      .search-icon .ico-right:hover {
+        color: #fafafa;
+        background: #18181b;
+      }
+
+      /* select variants */
+      .select-native {
+        appearance: auto;
+        height: 36px;
+        padding: 0 28px 0 12px;
+        background: #09090b;
+        border: 1px solid #27272a;
+        border-radius: 6px;
+        color: #fafafa;
+        font-size: 14px;
+      }
+      .select-shadcn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        height: 36px;
+        padding: 0 12px;
+        background: transparent;
+        border: 1px solid #3f3f46;
+        border-radius: 6px;
+        color: #fafafa;
+        font-size: 14px;
+        min-width: 180px;
+      }
+      .select-shadcn .placeholder {
+        color: #a1a1aa;
+      }
+
+      /* mock table */
+      table.mock {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      table.mock thead th {
+        text-align: left;
+        font-weight: 500;
+        font-size: 13px;
+        color: #a1a1aa;
+        padding: 12px 16px;
+        height: 48px;
+        border-bottom: 1px solid #27272a;
+      }
+      table.mock tbody td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #27272a;
+        color: #fafafa;
+      }
+      table.mock tbody tr:hover td {
+        background: rgba(255, 255, 255, 0.04);
+      }
+      table.mock tbody tr:last-child td {
+        border-bottom: 0;
+      }
+
+      /* svg helpers */
+      .ic {
+        width: 14px;
+        height: 14px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .ic-16 {
+        width: 16px;
+        height: 16px;
+      }
+      .ic-20 {
+        width: 20px;
+        height: 20px;
+      }
+      .ic-24 {
+        width: 24px;
+        height: 24px;
+      }
+      .ic-32 {
+        width: 32px;
+        height: 32px;
+      }
+    </style>
+  </head>
+  <body class="bg-zinc-950 text-zinc-100">
+    <div class="mx-auto max-w-7xl px-6 py-10">
+      <!-- ═════════════ HEADER ═════════════ -->
+      <header class="mb-12">
+        <p class="text-xs uppercase tracking-wider text-zinc-500">
+          Epic 22 · Consistency Audit · Side-by-side prototype
+        </p>
+        <h1 class="mt-1 text-3xl font-semibold tracking-tight">
+          Filter chips, search, dropdowns, tables — what's drifting and what to
+          align
+        </h1>
+        <p class="mt-3 max-w-3xl text-zinc-400 leading-relaxed">
+          A visual companion to the audit findings. Each section shows
+          <span class="label-tag label-current">current</span> patterns running
+          in production today, alongside
+          <span class="label-tag label-proposed">proposed</span> alignment.
+          Where there's a real product decision to make, both
+          <span class="label-tag label-option">options</span> are mocked.
+          <span class="label-tag label-decision">decision</span> markers flag
+          what needs your input before any code changes ship.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-2 text-xs">
+          <a
+            href="#chips"
+            class="rounded-full border border-zinc-700 px-3 py-1 text-zinc-300 hover:bg-zinc-800"
+            >§1 · Filter-chip color (the headline decision)</a
+          >
+          <a
+            href="#search"
+            class="rounded-full border border-zinc-700 px-3 py-1 text-zinc-300 hover:bg-zinc-800"
+            >§2 · Search bar outlier</a
+          >
+          <a
+            href="#density"
+            class="rounded-full border border-zinc-700 px-3 py-1 text-zinc-300 hover:bg-zinc-800"
+            >§3 · Tasks toolbar density</a
+          >
+          <a
+            href="#select"
+            class="rounded-full border border-zinc-700 px-3 py-1 text-zinc-300 hover:bg-zinc-800"
+            >§4 · Native select outlier</a
+          >
+          <a
+            href="#empty"
+            class="rounded-full border border-zinc-700 px-3 py-1 text-zinc-300 hover:bg-zinc-800"
+            >§5 · Empty-state divergence</a
+          >
+          <a
+            href="#tables"
+            class="rounded-full border border-zinc-700 px-3 py-1 text-zinc-300 hover:bg-zinc-800"
+            >§6 · Admin table wrapper</a
+          >
+          <a
+            href="#decisions"
+            class="rounded-full border border-emerald-700 bg-emerald-900/30 px-3 py-1 text-emerald-300 hover:bg-emerald-900/50"
+            >→ Decision summary</a
+          >
+        </div>
+      </header>
+
+      <!-- ════════════════ §1 FILTER CHIPS ════════════════ -->
+      <section id="chips" class="mb-20">
+        <div class="mb-6">
+          <p class="text-xs uppercase tracking-wider text-zinc-500">§1</p>
+          <h2 class="text-2xl font-semibold tracking-tight">
+            Filter-chip density &amp; inactive state — two systems live in
+            production
+          </h2>
+          <p class="mt-2 max-w-3xl text-zinc-400">
+            Two chip implementations coexist. <strong>The active color is
+            actually identical</strong> in this theme — both <code>bg-foreground</code>
+            and <code>bg-primary</code> resolve to the same near-white. The
+            real divergence is size (<code>py-1 text-xs</code> vs.
+            <code>py-1.5 text-sm</code>) and how the inactive state behaves
+            (muted-and-subtle vs. full-strength-and-prominent).
+          </p>
+        </div>
+
+        <!-- CURRENT STATE -->
+        <div class="surface p-6 mb-6">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="label-tag label-current">current</span>
+            <h3 class="text-base font-semibold">
+              Two chip families running side-by-side today
+            </h3>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <!-- A: Canonical — tight + muted -->
+            <div class="panel p-5">
+              <div class="anno mb-3">A · Kontroller / Compliance findings</div>
+              <p class="text-xs text-zinc-500 mb-4">
+                Canonical <code>FilterChip</code> primitive
+                <span class="file-ref">components/ui/filter-chip.tsx:21-35</span>.
+                Tight padding, small text, dimmed when inactive.
+              </p>
+              <div class="ring-current">
+                <div
+                  role="group"
+                  aria-label="Filter"
+                  class="flex flex-wrap gap-2"
+                >
+                  <button class="chip-base chip-canon chip-canon-active">
+                    Aktiva <span class="chip-count">12</span>
+                  </button>
+                  <button class="chip-base chip-canon">
+                    Slutförda <span class="chip-count">3</span>
+                  </button>
+                  <button class="chip-base chip-canon">
+                    Alla <span class="chip-count">15</span>
+                  </button>
+                </div>
+              </div>
+              <div class="mt-4 anno">
+                size: <code>px-3 py-1 text-xs</code> (tight)<br />
+                active: <code>bg-foreground text-background</code><br />
+                inactive: <code>text-muted-foreground</code> (dim) ·
+                hover brightens border + text
+              </div>
+            </div>
+
+            <!-- B: Bespoke — looser + full-strength -->
+            <div class="panel p-5">
+              <div class="anno mb-3">B · Laglistor / Mallar / Krav</div>
+              <p class="text-xs text-zinc-500 mb-4">
+                Hand-rolled in three separate components.
+                <span class="file-ref">content-type-filter.tsx:43-66</span>
+                <span class="file-ref">krav-filter-chips.tsx:64-69</span>
+                <span class="file-ref">template-catalog-client.tsx:90+</span>
+              </p>
+              <div class="ring-current">
+                <div class="flex flex-wrap gap-2">
+                  <button class="chip-base chip-bespoke chip-bespoke-active">
+                    Med luckor <span class="chip-count">8</span>
+                  </button>
+                  <button class="chip-base chip-bespoke">
+                    Mina krav <span class="chip-count">4</span>
+                  </button>
+                  <button class="chip-base chip-bespoke">
+                    Saknar bevis <span class="chip-count">11</span>
+                  </button>
+                </div>
+              </div>
+              <div class="mt-4 anno">
+                size: <code>px-3 py-1.5 text-sm</code> (looser)<br />
+                active: <code>bg-primary text-primary-foreground</code>
+                — visually identical to A's active<br />
+                inactive: <code>text-foreground</code> (full strength) ·
+                hover darkens background
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="mt-5 rounded-md border border-zinc-800 bg-zinc-900/30 p-3 text-xs text-zinc-400"
+          >
+            <strong class="text-zinc-200">Where the inconsistency shows:</strong>
+            navigating from <code>/laglistor/kontroller</code> to
+            <code>/krav</code>, chips get visibly bigger and the inactive labels
+            get more prominent. Side by side above you can see canonical chips
+            "recede" while bespoke chips "stay forward."
+          </div>
+        </div>
+
+        <!-- DECISION -->
+        <div class="surface p-6 mb-6">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="label-tag label-decision">decision</span>
+            <h3 class="text-base font-semibold">
+              Pick the canonical density &amp; inactive treatment — every chip
+              follows
+            </h3>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <!-- OPTION A: keep canonical tight + muted -->
+            <div class="panel p-5">
+              <div class="mb-3 flex items-center gap-2">
+                <span class="label-tag label-option">option A</span>
+                <span class="text-sm font-semibold"
+                  >Keep canonical (tight + muted inactive)</span
+                >
+              </div>
+              <p class="text-xs text-zinc-500 mb-4">
+                Migrate Laglistor / Mallar / Krav onto the canonical
+                <code>FilterChip</code>. Inactive chips recede; active chip
+                pops by contrast. Reads more like a filter strip in a dense
+                table.
+              </p>
+              <div class="ring-proposed mb-4">
+                <div class="flex flex-wrap gap-2">
+                  <button class="chip-base chip-canon chip-canon-active">
+                    Med luckor <span class="chip-count">8</span>
+                  </button>
+                  <button class="chip-base chip-canon">
+                    Mina krav <span class="chip-count">4</span>
+                  </button>
+                  <button class="chip-base chip-canon">
+                    Saknar bevis <span class="chip-count">11</span>
+                  </button>
+                </div>
+              </div>
+              <ul class="text-xs text-zinc-400 space-y-1.5 list-disc pl-4">
+                <li>
+                  Migration: replace 3 bespoke chip implementations with the
+                  canonical primitive.
+                </li>
+                <li>
+                  Wins: smaller chips leave more room on the toolbar; inactive
+                  state visibly defers to the active one.
+                </li>
+                <li>
+                  Risk: existing Laglistor users may perceive the chips as
+                  "shrunk."
+                </li>
+              </ul>
+            </div>
+
+            <!-- OPTION B: adopt bespoke loose + full-strength -->
+            <div class="panel p-5">
+              <div class="mb-3 flex items-center gap-2">
+                <span class="label-tag label-option">option B</span>
+                <span class="text-sm font-semibold"
+                  >Re-theme canonical to match Laglistor (loose +
+                  full-strength)</span
+                >
+              </div>
+              <p class="text-xs text-zinc-500 mb-4">
+                Update <code>FilterChip</code> primitive: <code>py-1</code> →
+                <code>py-1.5</code>, <code>text-xs</code> →
+                <code>text-sm</code>, <code>text-muted-foreground</code> →
+                <code>text-foreground</code> on inactive. Then migrate the
+                3 bespoke implementations to the (re-themed) primitive too.
+              </p>
+              <div class="ring-proposed mb-4">
+                <div
+                  role="group"
+                  aria-label="Filter"
+                  class="flex flex-wrap gap-2"
+                >
+                  <button class="chip-base chip-bespoke chip-bespoke-active">
+                    Aktiva <span class="chip-count">12</span>
+                  </button>
+                  <button class="chip-base chip-bespoke">
+                    Slutförda <span class="chip-count">3</span>
+                  </button>
+                  <button class="chip-base chip-bespoke">
+                    Alla <span class="chip-count">15</span>
+                  </button>
+                </div>
+              </div>
+              <ul class="text-xs text-zinc-400 space-y-1.5 list-disc pl-4">
+                <li>
+                  Migration: ~5 line className change in the primitive, then
+                  consolidate the 3 bespoke implementations.
+                </li>
+                <li>
+                  Wins: matches the gold-standard surface; chips stay legible
+                  even when inactive.
+                </li>
+                <li>
+                  Risk: takes more horizontal room — narrow toolbars wrap
+                  earlier.
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div
+            class="mt-5 rounded-md border border-emerald-800 bg-emerald-900/20 p-3 text-xs text-emerald-200"
+          >
+            <strong class="text-emerald-100">My recommendation:</strong> Option
+            B. You've named Laglistor the gold standard, and three surfaces
+            (the most-trafficked) already match it. Re-theming the canonical
+            primitive is a five-line className change; consolidating the
+            bespoke implementations comes for free after that. Either way the
+            <em>active</em> color stays the same — the visible difference is
+            density and how the inactive chip behaves.
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════ §2 SEARCH BAR ════════════════ -->
+      <section id="search" class="mb-20">
+        <div class="mb-6">
+          <p class="text-xs uppercase tracking-wider text-zinc-500">§2</p>
+          <h2 class="text-2xl font-semibold tracking-tight">
+            Search bar — Krav is the only outlier
+          </h2>
+          <p class="mt-2 max-w-3xl text-zinc-400">
+            Every search input in the app uses the same shape: leading
+            magnifier, trailing clear button, h-9. Krav uses a bare
+            <code>&lt;Input&gt;</code> instead.
+          </p>
+        </div>
+
+        <div class="surface p-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <!-- CURRENT (Krav) -->
+            <div class="panel p-5">
+              <div class="mb-3 flex items-center gap-2">
+                <span class="label-tag label-current">current</span>
+                <span class="text-sm font-semibold">Krav</span>
+              </div>
+              <p class="text-xs text-zinc-500 mb-4">
+                <span class="file-ref">krav-page-content.tsx ~L170</span> —
+                bare shadcn <code>&lt;Input type="text"&gt;</code>. No
+                magnifier, no clear button, width <code>w-64</code>.
+              </p>
+              <div class="ring-current inline-block">
+                <input class="search-bare" placeholder="Sök lagkrav..." />
+              </div>
+            </div>
+
+            <!-- PROPOSED (SearchInput) -->
+            <div class="panel p-5">
+              <div class="mb-3 flex items-center gap-2">
+                <span class="label-tag label-proposed">proposed</span>
+                <span class="text-sm font-semibold"
+                  >SearchInput (used everywhere else)</span
+                >
+              </div>
+              <p class="text-xs text-zinc-500 mb-4">
+                <span class="file-ref"
+                  >document-list/search-input.tsx</span
+                >
+                — magnifier left, clear × right, debounced 300ms. Same on
+                Laglistor, Styrdokument, Filer.
+              </p>
+              <div class="ring-proposed inline-block">
+                <span class="search-icon">
+                  <svg
+                    class="ic ic-16 ico-left"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m21 21-4.3-4.3" />
+                  </svg>
+                  <input placeholder="Sök lagkrav..." value="ISO 14001" />
+                  <span class="ico-right" title="Rensa">
+                    <svg class="ic ic-16" viewBox="0 0 24 24">
+                      <path d="M18 6 6 18" />
+                      <path d="m6 6 12 12" />
+                    </svg>
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-5 anno">
+            Fix: replace bare <code>&lt;Input&gt;</code> with
+            <code>&lt;SearchInput&gt;</code> in
+            <code>krav-page-content.tsx</code>. Consider lifting
+            <code>SearchInput</code> from
+            <code>features/document-list/</code> to
+            <code>components/ui/</code> while we're touching it. Effort: S.
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════ §3 TASKS TOOLBAR DENSITY ════════════════ -->
+      <section id="density" class="mb-20">
+        <div class="mb-6">
+          <p class="text-xs uppercase tracking-wider text-zinc-500">§3</p>
+          <h2 class="text-2xl font-semibold tracking-tight">
+            Tasks toolbar — h-8 controls inside an h-9 row
+          </h2>
+          <p class="mt-2 max-w-3xl text-zinc-400">
+            The Tasks page mixes button heights inside one row. Easy to miss
+            until you look — then hard to unsee.
+          </p>
+        </div>
+
+        <div class="surface p-6">
+          <!-- CURRENT -->
+          <div class="panel p-5 mb-5">
+            <div class="mb-3 flex items-center gap-2">
+              <span class="label-tag label-current">current</span>
+              <span class="text-sm font-semibold"
+                >Visible misalignment in
+                <code>task-filters-toolbar.tsx</code></span
+              >
+            </div>
+            <p class="text-xs text-zinc-500 mb-4">
+              <span class="file-ref">filter-popover.tsx:63</span>
+              <span class="file-ref">task-filters-toolbar.tsx:168</span>
+              — both <code>h-8</code>; surrounded by <code>h-9</code>
+              siblings.
+            </p>
+            <div class="ring-current">
+              <div class="flex items-center gap-2 flex-wrap">
+                <button class="btn-outline h8">
+                  <svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18" /><path d="M7 12h10" /><path d="M10 18h4" /></svg>
+                  Status
+                  <span
+                    class="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-700 px-1 text-[10px]"
+                    >2</span
+                  >
+                </button>
+                <button class="btn-outline h8">Prioritet</button>
+                <button class="btn-outline h8">Förfaller</button>
+                <button class="select-shadcn" style="height: 32px">
+                  <span class="placeholder">Tilldelad</span>
+                  <svg class="ic" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+                </button>
+                <span class="text-zinc-700">·</span>
+                <button class="btn-outline">+ Ny uppgift</button>
+                <button class="btn-outline">
+                  <svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18" /><path d="M3 12h18" /><path d="M3 18h18" /></svg>
+                  Lista
+                </button>
+              </div>
+            </div>
+            <div class="mt-3 anno">
+              ↑ filter triggers are <code>h-8</code> (32px); action buttons are
+              <code>h-9</code> (36px). The 4px gap reads as a "shorter" set of
+              chips inside a taller toolbar.
+            </div>
+          </div>
+
+          <!-- PROPOSED -->
+          <div class="panel p-5">
+            <div class="mb-3 flex items-center gap-2">
+              <span class="label-tag label-proposed">proposed</span>
+              <span class="text-sm font-semibold"
+                >All triggers <code>h-9</code> — single baseline</span
+              >
+            </div>
+            <p class="text-xs text-zinc-500 mb-4">
+              Change <code>h-8</code> → <code>h-9</code> in the two cited
+              files. No layout change, no behavioral change.
+            </p>
+            <div class="ring-proposed">
+              <div class="flex items-center gap-2 flex-wrap">
+                <button class="btn-outline">
+                  <svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18" /><path d="M7 12h10" /><path d="M10 18h4" /></svg>
+                  Status
+                  <span
+                    class="ml-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-700 px-1 text-[10px]"
+                    >2</span
+                  >
+                </button>
+                <button class="btn-outline">Prioritet</button>
+                <button class="btn-outline">Förfaller</button>
+                <button class="select-shadcn">
+                  <span class="placeholder">Tilldelad</span>
+                  <svg class="ic" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+                </button>
+                <span class="text-zinc-700">·</span>
+                <button class="btn-outline">+ Ny uppgift</button>
+                <button class="btn-outline">
+                  <svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18" /><path d="M3 12h18" /><path d="M3 18h18" /></svg>
+                  Lista
+                </button>
+              </div>
+            </div>
+            <div class="mt-3 anno">
+              Fix: <code>h-8</code> → <code>h-9</code> in
+              <code>filter-popover.tsx:63</code> and
+              <code>task-filters-toolbar.tsx:168</code>. Effort: S.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════ §4 NATIVE SELECT ════════════════ -->
+      <section id="select" class="mb-20">
+        <div class="mb-6">
+          <p class="text-xs uppercase tracking-wider text-zinc-500">§4</p>
+          <h2 class="text-2xl font-semibold tracking-tight">
+            Last unstyled control in the app
+          </h2>
+          <p class="mt-2 max-w-3xl text-zinc-400">
+            One surface still uses a native <code>&lt;select&gt;</code> with
+            hand-rolled classes. It picks up OS chrome (the rectangle, the
+            arrow, the hover) and visibly clashes with shadcn neighbors.
+          </p>
+        </div>
+
+        <div class="surface p-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div class="panel p-5">
+              <div class="mb-3 flex items-center gap-2">
+                <span class="label-tag label-current">current</span>
+                <span class="text-sm font-semibold"
+                  >Admin error filters</span
+                >
+              </div>
+              <p class="text-xs text-zinc-500 mb-4">
+                <span class="file-ref">admin/error-filters.tsx:57-69</span>
+                — native <code>&lt;select&gt;</code> with manual border. Pulls
+                in OS chevron and OS focus ring.
+              </p>
+              <div class="ring-current">
+                <select class="select-native">
+                  <option>Alla jobb</option>
+                  <option>cron-laws</option>
+                  <option>cron-cycles</option>
+                </select>
+              </div>
+              <div class="mt-3 anno">
+                ↑ chevron + popdown styling inherits from the OS, not the
+                design system.
+              </div>
+            </div>
+
+            <div class="panel p-5">
+              <div class="mb-3 flex items-center gap-2">
+                <span class="label-tag label-proposed">proposed</span>
+                <span class="text-sm font-semibold">shadcn Select</span>
+              </div>
+              <p class="text-xs text-zinc-500 mb-4">
+                Same primitive used on Activity, Tasks, every other admin
+                page. Keyboard nav, custom popover, consistent chevron.
+              </p>
+              <div class="ring-proposed">
+                <button class="select-shadcn">
+                  <span class="placeholder">Alla jobb</span>
+                  <svg class="ic" viewBox="0 0 24 24">
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
+              </div>
+              <div class="mt-3 anno">
+                Effort: S. Drop import, swap JSX, delete the manual
+                className. ~8 lines.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════ §5 EMPTY STATES ════════════════ -->
+      <section id="empty" class="mb-20">
+        <div class="mb-6">
+          <p class="text-xs uppercase tracking-wider text-zinc-500">§5</p>
+          <h2 class="text-2xl font-semibold tracking-tight">
+            Empty states — eight implementations of the same shape
+          </h2>
+          <p class="mt-2 max-w-3xl text-zinc-400">
+            Every page that can be empty rolls its own
+            <em>icon + title + description + maybe a CTA</em>. Each one is
+            slightly different — different padding, different icon size,
+            different vertical rhythm. Worth extracting once.
+          </p>
+        </div>
+
+        <!-- CURRENT -->
+        <div class="surface p-6 mb-6">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="label-tag label-current">current</span>
+            <h3 class="text-base font-semibold">
+              Four hand-rolled empties from production
+            </h3>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <!-- Laglistor -->
+            <div class="panel p-5">
+              <div class="anno mb-3">A · Laglistor</div>
+              <div class="flex flex-col items-center justify-center py-10 px-4">
+                <div class="rounded-full bg-zinc-800 p-4 mb-4">
+                  <svg
+                    class="ic ic-32 text-zinc-400"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14,2 14,8 20,8" />
+                  </svg>
+                </div>
+                <p class="text-sm text-zinc-400 text-center max-w-xs">
+                  Inga dokument matchar dina filter.
+                </p>
+              </div>
+              <div class="anno">
+                py-10 · icon 32px in p-4 · text-sm only · no title · no CTA
+              </div>
+            </div>
+
+            <!-- Kontroller -->
+            <div class="panel p-5">
+              <div class="anno mb-3">B · Kontroller</div>
+              <div class="flex flex-col items-center justify-center py-12 px-4">
+                <div class="rounded-full bg-zinc-800 p-3 mb-3">
+                  <svg
+                    class="ic ic-24 text-zinc-400"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                </div>
+                <h3 class="text-base font-medium mb-1">
+                  Inga kontroller än
+                </h3>
+                <p class="text-sm text-zinc-400 text-center max-w-xs mb-4">
+                  Skapa din första kontroll för att börja.
+                </p>
+                <button class="btn-primary">+ Skapa kontroll</button>
+              </div>
+              <div class="anno">
+                py-12 · icon 24px in p-3 · h3 + p · CTA button
+              </div>
+            </div>
+
+            <!-- Activity -->
+            <div class="panel p-5">
+              <div class="anno mb-3">C · Aktivitetslogg</div>
+              <div class="flex flex-col items-center justify-center py-8 px-4">
+                <svg
+                  class="ic ic-32 text-zinc-500 mb-3"
+                  viewBox="0 0 24 24"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <p class="text-base font-medium mb-1">
+                  Ingen aktivitet ännu
+                </p>
+                <p class="text-sm text-zinc-400 text-center max-w-xs">
+                  Aktivitet visas här när teammedlemmar gör ändringar.
+                </p>
+              </div>
+              <div class="anno">
+                py-8 · loose icon (no bg) 32px · text-base + text-sm
+              </div>
+            </div>
+
+            <!-- Mallar -->
+            <div class="panel p-5">
+              <div class="anno mb-3">D · Mallar</div>
+              <div class="flex flex-col items-center justify-center py-16 px-4">
+                <div class="rounded-full bg-zinc-800/50 p-5 mb-5">
+                  <svg
+                    class="ic ic-32 text-zinc-500"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">
+                  Inga mallar för det här filtret
+                </h3>
+                <p class="text-sm text-zinc-400 text-center max-w-md mb-5">
+                  Försök bredda din sökning eller välj ett annat område.
+                </p>
+                <a href="#" class="text-sm text-blue-400 hover:underline"
+                  >Rensa filter →</a
+                >
+              </div>
+              <div class="anno">
+                py-16 · icon 32px in p-5 (different bg opacity) · h3 lg ·
+                link CTA
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="mt-5 rounded-md border border-zinc-800 bg-zinc-900/30 p-3 text-xs text-zinc-400"
+          >
+            Four empties, four different vertical paddings (py-8 / 10 / 12 / 16),
+            three icon-frame styles, three text hierarchies. None is wrong;
+            none agrees with another.
+          </div>
+        </div>
+
+        <!-- PROPOSED -->
+        <div class="surface p-6">
+          <div class="mb-5 flex items-center gap-3">
+            <span class="label-tag label-proposed">proposed</span>
+            <h3 class="text-base font-semibold">
+              Single <code>&lt;EmptyState&gt;</code> primitive
+            </h3>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div class="panel p-5">
+              <div class="ring-proposed">
+                <div
+                  class="flex flex-col items-center justify-center gap-4 py-12 text-center"
+                >
+                  <div class="rounded-full bg-zinc-800 p-4">
+                    <svg
+                      class="ic ic-32 text-zinc-400"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14,2 14,8 20,8" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 class="text-lg font-medium">
+                      Inga dokument matchar
+                    </h2>
+                    <p class="text-sm text-zinc-400 mt-1 max-w-md">
+                      Försök bredda dina filter eller rensa sökfältet.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="anno mt-3">
+                Same primitive, no CTA — Laglistor / Krav variant
+              </div>
+            </div>
+
+            <div class="panel p-5">
+              <div class="ring-proposed">
+                <div
+                  class="flex flex-col items-center justify-center gap-4 py-12 text-center"
+                >
+                  <div class="rounded-full bg-zinc-800 p-4">
+                    <svg
+                      class="ic ic-32 text-zinc-400"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 class="text-lg font-medium">
+                      Inga kontroller än
+                    </h2>
+                    <p class="text-sm text-zinc-400 mt-1 max-w-md">
+                      Skapa din första kontroll för att komma igång.
+                    </p>
+                  </div>
+                  <button class="btn-primary">+ Skapa kontroll</button>
+                </div>
+              </div>
+              <div class="anno mt-3">
+                Same primitive, with CTA — Kontroller variant
+              </div>
+            </div>
+          </div>
+
+          <pre
+            class="mt-5 rounded-md border border-zinc-800 bg-zinc-900 p-4 text-xs overflow-x-auto"
+          ><code class="text-zinc-300">// components/ui/empty-state.tsx
+export function EmptyState({ icon: Icon, title, description, action }) {
+  return (
+    &lt;div className="flex flex-col items-center justify-center gap-4 py-12 text-center"&gt;
+      &lt;div className="rounded-full bg-muted p-4"&gt;
+        &lt;Icon className="h-8 w-8 text-muted-foreground" /&gt;
+      &lt;/div&gt;
+      &lt;div&gt;
+        &lt;h2 className="text-lg font-medium"&gt;{title}&lt;/h2&gt;
+        &lt;p className="text-sm text-muted-foreground mt-1 max-w-md"&gt;{description}&lt;/p&gt;
+      &lt;/div&gt;
+      {action}
+    &lt;/div&gt;
+  )
+}</code></pre>
+
+          <div class="mt-3 anno">
+            Effort: M (~30 min for the primitive + ~10 min × 8 callers).
+            Worth it because every future page picks it up for free.
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════ §6 ADMIN TABLE WRAPPER ════════════════ -->
+      <section id="tables" class="mb-20">
+        <div class="mb-6">
+          <p class="text-xs uppercase tracking-wider text-zinc-500">§6</p>
+          <h2 class="text-2xl font-semibold tracking-tight">
+            Admin tables clip on narrow viewports
+          </h2>
+          <p class="mt-2 max-w-3xl text-zinc-400">
+            Workspace tables wrap their <code>&lt;Table&gt;</code> in
+            <code>rounded-md border overflow-x-auto</code>; admin tables are
+            missing the <code>overflow-x-auto</code>, so wide content pushes
+            past the card edge instead of scrolling.
+          </p>
+        </div>
+
+        <div class="surface p-6">
+          <!-- CURRENT -->
+          <div class="panel p-5 mb-5">
+            <div class="mb-3 flex items-center gap-2">
+              <span class="label-tag label-current">current</span>
+              <span class="text-sm font-semibold"
+                ><code>admin/user-table.tsx:195</code> · workspace-table ·
+                template-table</span
+              >
+            </div>
+            <p class="text-xs text-zinc-500 mb-4">
+              Wrapper: <code>rounded-md border</code> only. Simulating a
+              narrow viewport — note how the wide
+              <em>last_seen_at</em> column gets clipped.
+            </p>
+            <div class="ring-current">
+              <div
+                class="rounded-md border border-zinc-800 overflow-hidden"
+                style="max-width: 540px"
+              >
+                <table class="mock">
+                  <thead>
+                    <tr>
+                      <th>E-post</th>
+                      <th>Roll</th>
+                      <th>Företag</th>
+                      <th>Skapad</th>
+                      <th style="white-space: nowrap">Senast inloggad</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>annika@kontorab.se</td>
+                      <td>Owner</td>
+                      <td>Kontor AB</td>
+                      <td>2025-11-04</td>
+                      <td style="white-space: nowrap">
+                        2026-04-30 14:22 (5 min)
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>marcus@kontorab.se</td>
+                      <td>Member</td>
+                      <td>Kontor AB</td>
+                      <td>2025-12-19</td>
+                      <td style="white-space: nowrap">2026-04-29 09:11</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="mt-3 anno">
+              ↑ rightmost column is clipped at the card border (no horizontal
+              scroll).
+            </div>
+          </div>
+
+          <!-- PROPOSED -->
+          <div class="panel p-5">
+            <div class="mb-3 flex items-center gap-2">
+              <span class="label-tag label-proposed">proposed</span>
+              <span class="text-sm font-semibold"
+                >Add <code>overflow-x-auto</code> — matches Laglistor /
+                Styrdokument / Activity</span
+              >
+            </div>
+            <p class="text-xs text-zinc-500 mb-4">
+              Same narrow viewport — the table now scrolls horizontally
+              within its card.
+            </p>
+            <div class="ring-proposed">
+              <div
+                class="rounded-md border border-zinc-800 overflow-x-auto"
+                style="max-width: 540px"
+              >
+                <table class="mock" style="min-width: 720px">
+                  <thead>
+                    <tr>
+                      <th>E-post</th>
+                      <th>Roll</th>
+                      <th>Företag</th>
+                      <th>Skapad</th>
+                      <th style="white-space: nowrap">Senast inloggad</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>annika@kontorab.se</td>
+                      <td>Owner</td>
+                      <td>Kontor AB</td>
+                      <td>2025-11-04</td>
+                      <td style="white-space: nowrap">
+                        2026-04-30 14:22 (5 min)
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>marcus@kontorab.se</td>
+                      <td>Member</td>
+                      <td>Kontor AB</td>
+                      <td>2025-12-19</td>
+                      <td style="white-space: nowrap">2026-04-29 09:11</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="mt-3 anno">
+              ↑ try scrolling the table horizontally. Three 1-line fixes
+              (one per admin table file). Effort: S.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════ DECISION SUMMARY ════════════════ -->
+      <section id="decisions" class="mb-12">
+        <div class="mb-6">
+          <p class="text-xs uppercase tracking-wider text-zinc-500">
+            What I want from you
+          </p>
+          <h2 class="text-2xl font-semibold tracking-tight">
+            Decision summary
+          </h2>
+        </div>
+
+        <div class="surface p-6 space-y-4">
+          <!-- D1 -->
+          <div
+            class="rounded-lg border border-amber-800 bg-amber-950/30 p-5"
+          >
+            <div class="flex items-center gap-2 mb-2">
+              <span class="label-tag label-decision">decision 1</span>
+              <h3 class="text-base font-semibold">
+                Filter-chip density &amp; inactive treatment — tight (canonical)
+                or loose (Laglistor)?
+              </h3>
+            </div>
+            <p class="text-sm text-zinc-300 mb-3">
+              See §1. <strong>The active color is identical either way</strong>
+              — both <code>bg-foreground</code> and <code>bg-primary</code>
+              resolve to the same near-white token. The real choice is size +
+              how the inactive chip looks.
+            </p>
+            <p class="text-sm text-zinc-300 mb-3">
+              My recommendation: <strong>Option B (Laglistor's pattern as
+              canonical)</strong>. Update the <code>FilterChip</code> primitive
+              to <code>py-1.5 text-sm</code> + <code>text-foreground</code> on
+              inactive, then migrate the 3 bespoke implementations onto it.
+            </p>
+            <p class="anno">
+              Changes inside <code>components/ui/filter-chip.tsx</code>: in the
+              base classes, <code>px-3 py-1 text-xs</code> → <code>px-3 py-1.5
+              text-sm</code>; in the unpressed variant,
+              <code>text-muted-foreground</code> →
+              <code>text-foreground</code>; hover swap from
+              <code>hover:border-foreground/40 hover:text-foreground</code> →
+              <code>hover:bg-muted</code>.
+            </p>
+          </div>
+
+          <!-- D2 -->
+          <div
+            class="rounded-lg border border-zinc-800 bg-zinc-900/30 p-5"
+          >
+            <div class="flex items-center gap-2 mb-2">
+              <span class="label-tag" style="background: rgba(161,161,170,0.15); color: #d4d4d8">no decision needed</span>
+              <h3 class="text-base font-semibold">
+                Two toolbar primitives coexist — and that's fine
+              </h3>
+            </div>
+            <p class="text-sm text-zinc-300 mb-3">
+              <strong>Correction to my earlier audit:</strong> both primitives
+              are alive and used.
+              <code>UnifiedToolbar</code> serves the complex surfaces (Laglistor,
+              Tasks); <code>TableToolbar</code> serves the simpler ones
+              (Kontroller, Styrdokument). Neither is dead code.
+            </p>
+            <p class="text-sm text-zinc-300 mb-3">
+              No user-facing inconsistency: each toolbar is internally
+              coherent on the page it owns. Consolidating to one primitive is
+              a refactor we can defer until a real need shows up.
+            </p>
+            <p class="anno">
+              <code>UnifiedToolbar</code>: Laglistor + Tasks (3 callers).
+              <code>TableToolbar</code>: Kontroller + Styrdokument (2
+              callers).
+            </p>
+          </div>
+
+          <!-- The mechanical fixes -->
+          <div class="rounded-lg border border-zinc-800 bg-zinc-900/30 p-5">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="label-tag label-proposed">no decision needed</span>
+              <h3 class="text-base font-semibold">
+                Mechanical fixes I can ship as soon as you green-light
+              </h3>
+            </div>
+            <ul class="text-sm text-zinc-300 space-y-2">
+              <li class="flex items-start gap-2">
+                <span class="text-emerald-400 mt-0.5">→</span>
+                <span>
+                  <strong>§2:</strong> Krav search → SearchInput. <span class="anno">S</span>
+                </span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-emerald-400 mt-0.5">→</span>
+                <span>
+                  <strong>§3:</strong> Tasks toolbar h-8 → h-9 (2 files).
+                  <span class="anno">S</span>
+                </span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-emerald-400 mt-0.5">→</span>
+                <span>
+                  <strong>§4:</strong> Native &lt;select&gt; → shadcn Select
+                  in admin/error-filters. <span class="anno">S</span>
+                </span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-emerald-400 mt-0.5">→</span>
+                <span>
+                  <strong>§5:</strong> Extract <code>&lt;EmptyState&gt;</code>
+                  + refactor 8 callers. <span class="anno">M</span>
+                </span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-emerald-400 mt-0.5">→</span>
+                <span>
+                  <strong>§6:</strong> Add <code>overflow-x-auto</code> to 3
+                  admin table wrappers. <span class="anno">S</span>
+                </span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-emerald-400 mt-0.5">→</span>
+                <span>
+                  <strong>Bonus:</strong> Wrap KravTable in shadcn
+                  <code>&lt;Table&gt;</code> (TanStack columns kept) so it
+                  inherits the <code>group</code> class + hover.
+                  <span class="anno">M</span>
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <footer class="mt-16 pb-8 text-center text-xs text-zinc-600">
+        Generated 2026-04-30 · prototype only — no production code touched
+        yet.
+      </footer>
+    </div>
+  </body>
+</html>

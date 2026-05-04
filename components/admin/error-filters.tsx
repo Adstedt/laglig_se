@@ -9,6 +9,13 @@ import {
   parseISODate,
   toISODate,
 } from '@/components/ui/date-picker'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface ErrorFiltersProps {
   jobNames: { name: string; displayName: string }[]
@@ -54,19 +61,24 @@ export function ErrorFilters({
         >
           Jobbnamn
         </label>
-        <select
-          id="job-filter"
-          className="h-9 rounded-md border bg-background px-3 text-sm"
-          value={currentJobName ?? ''}
-          onChange={(e) => updateParam('jobName', e.target.value || null)}
+        <Select
+          value={currentJobName ?? '__all'}
+          onValueChange={(v) =>
+            updateParam('jobName', v === '__all' ? null : v)
+          }
         >
-          <option value="">Alla jobb</option>
-          {jobNames.map((j) => (
-            <option key={j.name} value={j.name}>
-              {j.displayName}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger id="job-filter" className="h-9 w-[200px]">
+            <SelectValue placeholder="Alla jobb" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all">Alla jobb</SelectItem>
+            {jobNames.map((j) => (
+              <SelectItem key={j.name} value={j.name}>
+                {j.displayName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div>
         <label

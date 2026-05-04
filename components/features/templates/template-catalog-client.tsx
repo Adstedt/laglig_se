@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { Library, Users } from 'lucide-react'
 import Link from 'next/link'
 import { TemplateCard } from '@/components/features/templates/template-card'
+import { EmptyState } from '@/components/ui/empty-state'
+import { FilterChip, FilterChipGroup } from '@/components/ui/filter-chip'
 import type { PublishedTemplate } from '@/lib/db/queries/template-catalog'
 import { DOMAIN_LABELS } from '@/lib/constants/template-domains'
 import { cn } from '@/lib/utils'
@@ -29,19 +31,19 @@ export function TemplateCatalogClient({
   // Full empty state — no published templates at all
   if (templates.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <Library className="h-12 w-12 text-muted-foreground/50 mb-4" />
-        <h2 className="text-lg font-semibold">Inga mallar just nu</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Mallar publiceras inom kort — kom tillbaka snart!
-        </p>
-        <Link
-          href="/laglistor"
-          className="mt-4 text-sm text-primary hover:underline"
-        >
-          Tillbaka till laglistor
-        </Link>
-      </div>
+      <EmptyState
+        icon={<Library className="h-12 w-12 text-muted-foreground/50" />}
+        title="Inga mallar just nu"
+        description="Mallar publiceras inom kort — kom tillbaka snart!"
+        action={
+          <Link
+            href="/laglistor"
+            className="text-sm text-primary hover:underline"
+          >
+            Tillbaka till laglistor
+          </Link>
+        }
+      />
     )
   }
 
@@ -74,56 +76,35 @@ export function TemplateCatalogClient({
       </div>
 
       {activeSource === 'community' ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Users className="h-12 w-12 text-muted-foreground/50 mb-4" />
-          <h2 className="text-lg font-semibold">
-            Community-mallar kommer snart
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground max-w-md">
-            Här kommer du kunna hitta och dela laglistor skapade av andra
-            företag och compliance-experter.
-          </p>
-        </div>
+        <EmptyState
+          icon={<Users className="h-12 w-12 text-muted-foreground/50" />}
+          title="Community-mallar kommer snart"
+          description="Här kommer du kunna hitta och dela laglistor skapade av andra företag och compliance-experter."
+        />
       ) : (
         <>
           {/* Domain filter */}
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setActiveDomain(null)}
-              className={cn(
-                'px-3 py-1.5 text-sm rounded-full border transition-colors',
-                activeDomain === null
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-background hover:bg-muted border-border text-foreground'
-              )}
+          <FilterChipGroup aria-label="Filtrera mallar efter område">
+            <FilterChip
+              pressed={activeDomain === null}
+              onPressedChange={() => setActiveDomain(null)}
             >
               Alla
-            </button>
+            </FilterChip>
             {domains.map((domain) => (
-              <button
+              <FilterChip
                 key={domain}
-                type="button"
-                onClick={() => setActiveDomain(domain)}
-                className={cn(
-                  'px-3 py-1.5 text-sm rounded-full border transition-colors',
-                  activeDomain === domain
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-background hover:bg-muted border-border text-foreground'
-                )}
+                pressed={activeDomain === domain}
+                onPressedChange={() => setActiveDomain(domain)}
               >
                 {DOMAIN_LABELS[domain] ?? domain}
-              </button>
+              </FilterChip>
             ))}
-          </div>
+          </FilterChipGroup>
 
           {/* Card grid or per-domain empty state */}
           {filteredTemplates.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <p className="text-sm text-muted-foreground">
-                Inga mallar för detta område ännu — kommer snart
-              </p>
-            </div>
+            <EmptyState description="Inga mallar för detta område ännu — kommer snart" />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredTemplates.map((template) => (

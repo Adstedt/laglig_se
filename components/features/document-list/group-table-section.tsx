@@ -245,9 +245,13 @@ export const GroupTableSection = memo(function GroupTableSection({
           </span>
         </div>
 
-        {/* Group content */}
+        {/* Group content. No horizontal padding — keeps the table flush with
+            the group container so the chrome strip sits in the same
+            absolute position as the flat (non-grouped) law list and the
+            task list. The bottom padding stays for visual breathing room
+            below the table before the next group. */}
         <CollapsibleContent>
-          <div className="px-3 sm:px-4 pb-3 sm:pb-4">
+          <div className="pb-3 sm:pb-4">
             {items.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">
                 Inga dokument i denna grupp.

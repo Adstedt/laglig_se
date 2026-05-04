@@ -20,7 +20,7 @@ import {
 import { DocumentListPageContent } from '@/components/features/document-list/document-list-page-content'
 import { DocumentListPageSkeleton } from '@/components/features/document-list/document-list-skeleton'
 import { LawListTabs } from '@/components/features/changes/law-list-tabs'
-import { RegenerateLawListButton } from '@/components/features/document-list/regenerate-law-list-button'
+import { LawListPrimaryAction } from '@/components/features/document-list/law-list-primary-action'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/ui/page-header'
 import { getWorkspaceContext } from '@/lib/auth/workspace-context'
@@ -72,27 +72,20 @@ export default async function DocumentListsPage() {
 
   return (
     <div className="space-y-4">
-      {/* Story 22.3 — PageHeader. Note: "Lägg till dokument" primaryAction
-          stays inside DocumentListPageContent (lifting it would require
-          plumbing the create-document modal state up); Skapa kontroll +
-          Generera om laglista flow into secondaryActions per the
-          prototype's "Mina laglistor — after" mock. */}
       <PageHeader
         title="Laglistor"
         subtitle="Hantera dina listor och håll koll på relevanta rättsliga krav."
         secondaryActions={
-          <div className="flex items-center gap-2">
-            {canCreateCycle ? (
-              <Button asChild variant="outline" size="sm">
-                <Link href="/laglistor/kontroller/skapa">
-                  <ClipboardCheck className="mr-1.5 h-4 w-4" aria-hidden />
-                  Skapa kontroll
-                </Link>
-              </Button>
-            ) : null}
-            <RegenerateLawListButton />
-          </div>
+          canCreateCycle ? (
+            <Button asChild variant="outline" size="sm">
+              <Link href="/laglistor/kontroller/skapa">
+                <ClipboardCheck className="mr-1.5 h-4 w-4" aria-hidden />
+                Skapa kontroll
+              </Link>
+            </Button>
+          ) : null
         }
+        primaryAction={<LawListPrimaryAction />}
       />
 
       <LawListTabs

@@ -14,10 +14,9 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { startOfDay, endOfDay, addDays, endOfMonth } from 'date-fns'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  UnifiedToolbar,
-  ToolbarItemCount,
-} from '@/components/ui/unified-toolbar'
+import { PageHeader } from '@/components/ui/page-header'
+import { TableToolbar } from '@/components/ui/table-toolbar'
+import { ToolbarItemCount } from '@/components/ui/unified-toolbar'
 import { ColumnSettings } from '@/components/ui/column-settings'
 import { SearchInput } from '@/components/features/document-list/search-input'
 import { TabNavigation, type TaskTab } from './tab-navigation'
@@ -321,61 +320,63 @@ export function TaskWorkspace({
   // ===========================================================================
 
   const tabNavigation = <TabNavigation currentTab={currentTab} />
-  const primaryAction = (
-    <Button onClick={() => setCreateTaskModalOpen(true)}>
-      <Plus className="mr-2 h-4 w-4" />
-      Ny uppgift
-    </Button>
-  )
 
   const showFilters = currentTab !== 'sammanfattning'
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Toolbar: complex with filters for all tabs except summary */}
-      {showFilters ? (
-        <UnifiedToolbar
-          layout="complex"
-          contextSelector={tabNavigation}
-          primaryAction={primaryAction}
-          search={
+      <PageHeader
+        title="Uppgifter"
+        subtitle="Hantera och spåra efterlevnadsuppgifter för din organisation."
+        primaryAction={
+          <Button onClick={() => setCreateTaskModalOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Ny uppgift
+          </Button>
+        }
+      />
+
+      {/* Two-row toolbar via TableToolbar primitive — tabs row above,
+          search + filters row below with rightSlot pinned right.
+          Sammanfattning hides the filter row (showFilters=false). */}
+      <TableToolbar
+        tabs={tabNavigation}
+        search={
+          showFilters ? (
             <SearchInput
               initialValue={searchQuery}
               onSearch={handleSearchChange}
               placeholder="Sök uppgifter..."
-              className="h-8"
+              className="h-9"
             />
-          }
-          filterDropdowns={
+          ) : undefined
+        }
+        filters={
+          showFilters ? (
             <TaskFilterBar
               filters={filterState}
               onFiltersChange={handleFiltersChange}
               columns={columns}
               workspaceMembers={workspaceMembers}
             />
-          }
-          columnSettings={
-            isListTab ? (
-              <ColumnSettings
-                columnOptions={TASK_COLUMN_OPTIONS}
-                columnVisibility={columnVisibility}
-                onColumnVisibilityChange={setColumnVisibility}
-              />
-            ) : undefined
-          }
-          betweenRows={
-            <ToolbarItemCount
-              showing={filteredTasks.length}
-              total={tasks.length}
-              label="uppgifter"
+          ) : undefined
+        }
+        rightSlot={
+          showFilters && isListTab ? (
+            <ColumnSettings
+              columnOptions={TASK_COLUMN_OPTIONS}
+              columnVisibility={columnVisibility}
+              onColumnVisibilityChange={setColumnVisibility}
             />
-          }
-        />
-      ) : (
-        <UnifiedToolbar
-          layout="standard"
-          tabs={tabNavigation}
-          primaryAction={primaryAction}
+          ) : undefined
+        }
+      />
+
+      {showFilters && (
+        <ToolbarItemCount
+          showing={filteredTasks.length}
+          total={tasks.length}
+          label="uppgifter"
         />
       )}
 

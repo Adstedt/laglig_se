@@ -29,7 +29,6 @@ import { ComplianceDetailTable } from './compliance-detail-table'
 // Story 6.18: Grouped compliance table (same accordion structure as table view)
 import { GroupedComplianceTable } from './grouped-compliance-table'
 import { GroupManager } from './group-manager'
-import { AddDocumentModal, type DocumentInfoForAdd } from './add-document-modal'
 import { ManageListModal } from './manage-list-modal'
 // Story 6.3: Legal Document Modal
 import { LegalDocumentModal } from './legal-document-modal'
@@ -46,7 +45,7 @@ import { FilterEmptyState } from './filter-empty-state'
 import { SearchInput } from './search-input'
 import { Button } from '@/components/ui/button'
 import { ToolbarItemCount } from '@/components/ui/unified-toolbar'
-import { Plus, Settings } from 'lucide-react'
+import { Settings } from 'lucide-react'
 // Toolbar redesign
 import { LawListToolbar } from './law-list-toolbar'
 import { ViewMenu } from './view-menu'
@@ -79,7 +78,6 @@ export function DocumentListPageContent({
   publishedTemplates,
   complianceReadOnly,
 }: DocumentListPageContentProps) {
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isManageModalOpen, setIsManageModalOpen] = useState(false)
   const [manageModalMode, setManageModalMode] = useState<'create' | 'edit'>(
     'create'
@@ -275,7 +273,6 @@ export function DocumentListPageContent({
     fetchItems,
     loadMoreItems,
     setContentTypeGroupFilter,
-    addItem,
     removeItem,
     reorderItems,
     // Story 4.14: Use store's optimistic update methods
@@ -680,15 +677,6 @@ export function DocumentListPageContent({
     fetchLists()
   }
 
-  // Story 4.14: Accept document info for true optimistic update
-  const handleAddDocument = async (
-    documentId: string,
-    documentInfo: DocumentInfoForAdd
-  ) => {
-    if (!activeListId) return false
-    return addItem(activeListId, documentId, documentInfo)
-  }
-
   // Story 4.12, 4.14 & 6.2: Handle inline item updates using store's optimistic method
   const handleUpdateItem = async (
     itemId: string,
@@ -775,15 +763,6 @@ export function DocumentListPageContent({
             title="Hantera lista"
           >
             <Settings className="h-4 w-4" />
-          </Button>
-        }
-        primaryAction={
-          <Button
-            onClick={() => setIsAddModalOpen(true)}
-            disabled={!activeListId}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Lägg till dokument
           </Button>
         }
         itemCount={
@@ -1036,14 +1015,6 @@ export function DocumentListPageContent({
           }
         />
       )}
-
-      {/* Add document modal */}
-      <AddDocumentModal
-        open={isAddModalOpen}
-        onOpenChange={setIsAddModalOpen}
-        listId={activeListId}
-        onAddDocument={handleAddDocument}
-      />
 
       {/* Manage list modal */}
       <ManageListModal

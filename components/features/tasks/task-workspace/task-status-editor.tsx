@@ -13,6 +13,7 @@ import {
   SelectTrigger,
 } from '@/components/ui/select'
 import { Loader2 } from 'lucide-react'
+import { ColorTagBadge } from '@/components/ui/color-tag-badge'
 import { cn } from '@/lib/utils'
 
 interface TaskStatusOption {
@@ -55,30 +56,17 @@ export function TaskStatusEditor({
       >
         {isLoading ? (
           <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <span
-            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
-            style={{
-              backgroundColor: `${currentColumn?.color}1A`,
-              color: currentColumn?.color,
-            }}
-          >
-            {currentColumn?.name}
-          </span>
-        )}
+        ) : currentColumn ? (
+          <ColorTagBadge
+            name={currentColumn.name}
+            color={currentColumn.color}
+          />
+        ) : null}
       </SelectTrigger>
       <SelectContent>
         {columns.map((col) => (
           <SelectItem key={col.id} value={col.id}>
-            <span
-              className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-              style={{
-                backgroundColor: `${col.color}1A`,
-                color: col.color,
-              }}
-            >
-              {col.name}
-            </span>
+            <ColorTagBadge name={col.name} color={col.color} size="sm" />
           </SelectItem>
         ))}
       </SelectContent>

@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/table'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { EmptyState as SharedEmptyState } from '@/components/ui/empty-state'
 import { CycleStatusBadge } from '@/components/features/compliance-audit/cycle-detail/cycle-status-badge'
 import { FilterChip, FilterChipGroup } from '@/components/ui/filter-chip'
 import { PageHeader } from '@/components/ui/page-header'
@@ -257,22 +258,23 @@ function EmptyState({
 }) {
   const isActiveFilter = filter === 'aktiva'
   return (
-    <div className="rounded-md border p-12 text-center">
-      <p className="text-sm italic text-muted-foreground">
-        {isActiveFilter
+    <SharedEmptyState
+      className="rounded-md border"
+      description={
+        isActiveFilter
           ? 'Du har inga aktiva kontroller just nu.'
-          : 'Inga kontroller matchar det valda filtret.'}
-      </p>
-      {isActiveFilter && canCreate ? (
-        <div className="mt-4">
+          : 'Inga kontroller matchar det valda filtret.'
+      }
+      action={
+        isActiveFilter && canCreate ? (
           <Button asChild>
             <Link href="/laglistor/kontroller/skapa">
               <Plus className="mr-1.5 h-4 w-4" aria-hidden="true" />
               Skapa kontroll
             </Link>
           </Button>
-        </div>
-      ) : null}
-    </div>
+        ) : undefined
+      }
+    />
   )
 }

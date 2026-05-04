@@ -159,43 +159,38 @@ export function TaskFilterBar({
       />
 
       {/* Assignee filter */}
-      <div className="flex items-center gap-1.5">
-        <span className="text-sm text-muted-foreground">Ansvarig:</span>
-        <Select
-          value={filters.assigneeFilter ?? 'all'}
-          onValueChange={handleAssigneeChange}
-        >
-          <SelectTrigger className="w-[120px] h-8">
-            <SelectValue placeholder="Alla" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">
+      <Select
+        value={filters.assigneeFilter ?? 'all'}
+        onValueChange={handleAssigneeChange}
+      >
+        <SelectTrigger className="h-9 w-[140px]" aria-label="Ansvarig">
+          <SelectValue placeholder="Ansvarig" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center">
+                <User className="h-3 w-3 text-muted-foreground" />
+              </div>
+              <span>Alla</span>
+            </div>
+          </SelectItem>
+          <SelectItem value="unassigned">Otilldelade</SelectItem>
+          {workspaceMembers.map((member) => (
+            <SelectItem key={member.id} value={member.id}>
               <div className="flex items-center gap-2">
-                <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center">
-                  <User className="h-3 w-3 text-muted-foreground" />
-                </div>
-                <span>Alla</span>
+                <Avatar className="h-5 w-5">
+                  <AvatarImage src={member.avatarUrl ?? undefined} />
+                  <AvatarFallback className="text-[10px]">
+                    {(member.name ?? member.email).slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="truncate">{member.name ?? member.email}</span>
               </div>
             </SelectItem>
-            <SelectItem value="unassigned">Otilldelade</SelectItem>
-            {workspaceMembers.map((member) => (
-              <SelectItem key={member.id} value={member.id}>
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-5 w-5">
-                    <AvatarImage src={member.avatarUrl ?? undefined} />
-                    <AvatarFallback className="text-[10px]">
-                      {(member.name ?? member.email).slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="truncate">
-                    {member.name ?? member.email}
-                  </span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+          ))}
+        </SelectContent>
+      </Select>
 
       {/* Clear all filters */}
       {hasActiveFilters && (

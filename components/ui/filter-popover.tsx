@@ -60,7 +60,7 @@ export function FilterPopover({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8" aria-label={label}>
+        <Button variant="outline" size="sm" aria-label={label}>
           {label}
           {selected.length > 0 && (
             <Badge variant="secondary" className="ml-1 h-5 px-1.5">
