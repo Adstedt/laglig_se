@@ -189,7 +189,15 @@ export function LinkedArtifactsPanel({
   const hasFilterResults = filtered.length > 0
   const filtersActive = filter !== 'all' || !showFiles || !showDocuments
 
-  const refresh = () => globalMutate(swrKey)
+  // Also bust the parent entity's SWR cache so consumers reading
+  // task.evidence / task.list_item_links (e.g. the completion-confirm gate
+  // in details-box.tsx) see the new links without waiting for revalidation.
+  const parentSwrKey =
+    entity.type === 'task' ? `task:${entity.id}` : `list-item:${entity.id}`
+  const refresh = () => {
+    globalMutate(swrKey)
+    globalMutate(parentSwrKey)
+  }
 
   // ---------------- Mutations ----------------
 
