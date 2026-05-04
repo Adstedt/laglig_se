@@ -25,16 +25,14 @@ import { StatusPriorityBadges } from './status-priority-badges'
 import { DescriptionEditor } from './description-editor'
 import { LinkedArtifactsPanel } from '@/components/features/document-list/legal-document-modal/linked-artifacts-panel'
 import { ActivityTabs } from './activity-tabs'
-import {
-  FileText,
-  Paperclip,
-  ChevronsDownUp,
-  ChevronsUpDown,
-} from 'lucide-react'
+import { FileText, ChevronsDownUp, ChevronsUpDown } from 'lucide-react'
 import type { TaskDetails } from '@/app/actions/task-modal'
 import type { WorkspaceMember } from '../task-workspace'
 
-const ACCORDION_ITEMS = ['description', 'attachments'] as const
+// Story 6.7d: 'linked-artifacts' is the value owned by LinkedArtifactsPanel
+// itself (it renders its own AccordionItem) — keep this list in sync if the
+// panel ever changes its `value` prop.
+const ACCORDION_ITEMS = ['description', 'linked-artifacts'] as const
 
 interface LeftPanelProps {
   task: TaskDetails
@@ -53,8 +51,8 @@ export function LeftPanel({
   onOptimisticTitleChange,
   onOptimisticDescriptionChange,
 }: LeftPanelProps) {
-  // Story 6.7d: count files + workspace documents (both surface in the panel)
-  const attachmentCount = task.evidence.length + task.workspaceDocumentLinkCount
+  // Story 6.7d: count badge moved into LinkedArtifactsPanel's own header.
+  // Field still exists on TaskDetails for any future surface that wants it.
   const [openItems, setOpenItems] = useState<string[]>(['description'])
   const allOpen = openItems.length === ACCORDION_ITEMS.length
   const toggleAll = () => setOpenItems(allOpen ? [] : [...ACCORDION_ITEMS])
@@ -132,29 +130,14 @@ export function LeftPanel({
           </AccordionContent>
         </AccordionItem>
 
-        {/* Attachments Accordion - defaults to closed */}
-        <AccordionItem
-          value="attachments"
-          className="border rounded-lg border-border/60"
-        >
-          <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
-            <div className="flex items-center gap-2 text-base font-semibold text-foreground flex-1">
-              <Paperclip className="h-4 w-4" />
-              <span>Länkade filer &amp; dokument</span>
-              {attachmentCount > 0 && (
-                <span className="ml-auto mr-2 text-xs text-muted-foreground tabular-nums font-normal">
-                  {attachmentCount}
-                </span>
-              )}
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-4 pb-4 space-y-3">
-            <LinkedArtifactsPanel
-              entity={{ type: 'task', id: task.id }}
-              availableChips={['all', 'direct']}
-            />
-          </AccordionContent>
-        </AccordionItem>
+        {/* Story 6.7d: LinkedArtifactsPanel renders its own AccordionItem
+            (value="linked-artifacts") with header "Länkade filer & dokument"
+            and the chevron — so it sits directly inside the parent <Accordion>
+            as a sibling of "description", not wrapped in another AccordionItem. */}
+        <LinkedArtifactsPanel
+          entity={{ type: 'task', id: task.id }}
+          availableChips={['all', 'direct']}
+        />
       </Accordion>
 
       {/* Activity Section with Tabs */}
