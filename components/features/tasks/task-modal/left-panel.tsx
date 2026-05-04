@@ -23,7 +23,7 @@ import {
 import { TaskTitleEditor } from './task-title-editor'
 import { StatusPriorityBadges } from './status-priority-badges'
 import { DescriptionEditor } from './description-editor'
-import { EvidenceAccordion } from './evidence-accordion'
+import { LinkedArtifactsPanel } from '@/components/features/document-list/legal-document-modal/linked-artifacts-panel'
 import { ActivityTabs } from './activity-tabs'
 import {
   FileText,
@@ -53,7 +53,8 @@ export function LeftPanel({
   onOptimisticTitleChange,
   onOptimisticDescriptionChange,
 }: LeftPanelProps) {
-  const attachmentCount = task.evidence.length
+  // Story 6.7d: count files + workspace documents (both surface in the panel)
+  const attachmentCount = task.evidence.length + task.workspaceDocumentLinkCount
   const [openItems, setOpenItems] = useState<string[]>(['description'])
   const allOpen = openItems.length === ACCORDION_ITEMS.length
   const toggleAll = () => setOpenItems(allOpen ? [] : [...ACCORDION_ITEMS])
@@ -139,7 +140,7 @@ export function LeftPanel({
           <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
             <div className="flex items-center gap-2 text-base font-semibold text-foreground flex-1">
               <Paperclip className="h-4 w-4" />
-              <span>Bilagor</span>
+              <span>Länkade filer &amp; dokument</span>
               {attachmentCount > 0 && (
                 <span className="ml-auto mr-2 text-xs text-muted-foreground tabular-nums font-normal">
                   {attachmentCount}
@@ -148,11 +149,9 @@ export function LeftPanel({
             </div>
           </AccordionTrigger>
           <AccordionContent className="px-4 pb-4 space-y-3">
-            <EvidenceAccordion
-              taskId={task.id}
-              evidence={task.evidence}
-              onUpdate={onUpdate}
-              embedded
+            <LinkedArtifactsPanel
+              entity={{ type: 'task', id: task.id }}
+              availableChips={['all', 'direct']}
             />
           </AccordionContent>
         </AccordionItem>

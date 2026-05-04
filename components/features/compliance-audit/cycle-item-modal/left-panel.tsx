@@ -287,7 +287,7 @@ export function CycleItemModalLeftPanel({
                 className="w-full"
               >
                 <LinkedArtifactsPanel
-                  listItemId={item.lawListItemId}
+                  entity={{ type: 'list_item', id: item.lawListItemId }}
                   readOnly
                 />
               </Accordion>

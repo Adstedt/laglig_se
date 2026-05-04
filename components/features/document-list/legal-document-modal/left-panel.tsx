@@ -233,7 +233,7 @@ export function LeftPanel({
 
         {/* Story 17.18: Consolidated linked artifacts panel */}
         <LinkedArtifactsPanel
-          listItemId={listItem.id}
+          entity={{ type: 'list_item', id: listItem.id }}
           readOnly={complianceReadOnly}
         />
       </Accordion>

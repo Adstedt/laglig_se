@@ -85,6 +85,10 @@ export interface TaskDetails {
   }>
   comments: TaskComment[]
   evidence: TaskEvidence[] // Story 6.7a: Now sourced from file_links
+  /** Story 6.7d: workspace document link count for the Bilagor accordion header.
+   *  We only need the count here, not the full document data (the panel fetches
+   *  its own data via `getLinkedArtifactsForTask`). */
+  workspaceDocumentLinkCount: number
   _count: {
     comments: number
     evidence: number // Story 6.7a: Now counts file_links
@@ -380,6 +384,7 @@ export async function getTaskDetails(
             select: {
               comments: true,
               file_links: true,
+              workspace_document_links: true, // Story 6.7d: header count for Bilagor accordion
             },
           },
         },
@@ -433,6 +438,7 @@ export async function getTaskDetails(
         labels: [], // TODO: Add labels field to Task model if needed
         comments: task.comments as unknown as TaskComment[],
         evidence,
+        workspaceDocumentLinkCount: task._count.workspace_document_links,
         _count: {
           comments: task._count.comments,
           evidence: task._count.file_links,
