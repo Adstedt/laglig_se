@@ -27,6 +27,9 @@ export const env = createEnv({
     // a Price ID isn't required for boot. The /api/billing/checkout route
     // rejects tier: 'ENTERPRISE' before reaching this value.
     STRIPE_ENTERPRISE_PRICE_ID: z.string().min(1).optional(),
+    // Story 5.12: destination for Enterprise-inquiry sales notifications
+    // sent when a user picks Enterprise during onboarding. Server-only.
+    SALES_NOTIFICATION_EMAIL: z.string().email().default('sales@laglig.se'),
   },
 
   /**
@@ -62,6 +65,7 @@ export const env = createEnv({
     STRIPE_SOLO_PRICE_ID: process.env.STRIPE_SOLO_PRICE_ID,
     STRIPE_TEAM_PRICE_ID: process.env.STRIPE_TEAM_PRICE_ID,
     STRIPE_ENTERPRISE_PRICE_ID: process.env.STRIPE_ENTERPRISE_PRICE_ID,
+    SALES_NOTIFICATION_EMAIL: process.env.SALES_NOTIFICATION_EMAIL,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
   /**

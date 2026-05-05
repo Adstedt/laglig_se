@@ -20,6 +20,9 @@ export interface OnboardingData {
   taxStatus?: string
   foreignOwned?: boolean
   activeStatus?: string
+  // Story 5.12: tier pre-pick from marketing CTA `?plan=solo|team|enterprise`.
+  // Wizard reads this on mount to pre-select a tile in TierPickerStep.
+  pickedTier?: 'SOLO' | 'TEAM' | 'ENTERPRISE'
 }
 
 interface StoredData {
@@ -77,6 +80,25 @@ export function parseFlags(
   if (flags.length === 0) return undefined
 
   return Object.fromEntries(flags.map((f) => [f, true]))
+}
+
+/**
+ * Story 5.12: parse the `?plan=` marketing query param into a SubscriptionTier.
+ * Case-insensitive; rejects values outside the SOLO|TEAM|ENTERPRISE union.
+ */
+export function parsePickedTier(
+  planParam: string | null
+): 'SOLO' | 'TEAM' | 'ENTERPRISE' | undefined {
+  if (!planParam) return undefined
+  const normalized = planParam.trim().toUpperCase()
+  if (
+    normalized === 'SOLO' ||
+    normalized === 'TEAM' ||
+    normalized === 'ENTERPRISE'
+  ) {
+    return normalized
+  }
+  return undefined
 }
 
 function readRaw(): StoredData | null {

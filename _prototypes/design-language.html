@@ -1,0 +1,1839 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Laglig — Design Language Reference</title>
+
+  <!-- Brand fonts (loaded from the project's /public/fonts directory via relative path). -->
+  <style>
+    @font-face {
+      font-family: 'Safiro';
+      src:
+        url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'),
+        url('../public/fonts/safiro-medium-webfont.woff') format('woff');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Google Sans Flex';
+      src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* ----------------------------------------------------------------------
+       Tokens — mirrored from app/globals.css :root.
+       This file is the visual SOURCE OF TRUTH. If a token here drifts from
+       globals.css, fix globals.css and re-run the audit.
+       ---------------------------------------------------------------------- */
+    :root {
+      --background: 40 20% 98%;
+      --foreground: 30 10% 10%;
+      --card: 40 15% 99%;
+      --card-foreground: 30 10% 10%;
+      --primary: 30 15% 12%;
+      --primary-foreground: 40 20% 98%;
+      --secondary: 40 15% 95%;
+      --muted: 40 12% 94%;
+      --muted-foreground: 30 8% 45%;
+      --accent: 40 15% 93%;
+      --destructive: 0 84.2% 60.2%;
+      --border: 35 10% 88%;
+      --input: 35 10% 88%;
+      --ring: 30 15% 12%;
+      --radius: 0.5rem;
+
+      --chart-1: 45 70% 55%;
+      --chart-2: 140 35% 45%;
+      --chart-3: 30 50% 45%;
+      --chart-4: 85 40% 50%;
+      --chart-5: 25 75% 55%;
+
+      --section-warm: 45 30% 96%;
+      --section-sage: 140 25% 95%;
+      --section-cream: 35 40% 97%;
+
+      /* Tone palette (Tailwind keys) — mirrors lib/ui/badge-tones.ts */
+      --tone-neutral-soft-bg: #f1f5f9;
+      --tone-neutral-soft-fg: #334155;
+      --tone-neutral-solid: #64748b;
+      --tone-info-soft-bg: #dbeafe;
+      --tone-info-soft-fg: #1d4ed8;
+      --tone-info-solid: #3b82f6;
+      --tone-success-soft-bg: #d1fae5;
+      --tone-success-soft-fg: #047857;
+      --tone-success-solid: #10b981;
+      --tone-warning-soft-bg: #fef3c7;
+      --tone-warning-soft-fg: #b45309;
+      --tone-warning-solid: #f59e0b;
+      --tone-danger-soft-bg: #ffe4e6;
+      --tone-danger-soft-fg: #be123c;
+      --tone-danger-solid: #f43f5e;
+    }
+
+    /* ----------------------------------------------------------------------
+       Page chrome
+       ---------------------------------------------------------------------- */
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: 'Google Sans Flex', system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.55;
+      color: hsl(var(--foreground));
+      background: hsl(var(--background));
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-safiro { font-family: 'Safiro', system-ui, sans-serif; }
+
+    /* Layout grid */
+    .shell {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+    .nav {
+      position: sticky;
+      top: 0;
+      align-self: start;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 22px;
+      border-right: 1px solid hsl(var(--border));
+      background: hsl(var(--background));
+    }
+    .nav__brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+    .nav__brand .mark {
+      width: 24px; height: 24px;
+      border-radius: 6px;
+      background: hsl(var(--primary));
+      display: grid; place-items: center;
+      color: hsl(var(--primary-foreground));
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-size: 14px;
+    }
+    .nav__brand .word {
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+    }
+    .nav__brand .tag {
+      margin-left: auto;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: hsl(var(--muted-foreground));
+    }
+    .nav__group {
+      margin-bottom: 20px;
+    }
+    .nav__heading {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 8px;
+    }
+    .nav__link {
+      display: block;
+      padding: 6px 10px;
+      border-radius: 6px;
+      color: hsl(var(--foreground));
+      text-decoration: none;
+      font-size: 13.5px;
+    }
+    .nav__link:hover { background: hsl(var(--muted)); }
+
+    main {
+      padding: 56px clamp(24px, 5vw, 64px) 120px;
+      max-width: 1280px;
+    }
+
+    /* Section primitive */
+    .section {
+      margin-bottom: 80px;
+    }
+    .section + .section { padding-top: 32px; }
+    .section__eyebrow {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: hsl(var(--muted-foreground));
+      margin: 0 0 8px;
+    }
+    .section__title {
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 36px;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      margin: 0 0 12px;
+    }
+    .section__lede {
+      font-size: 16px;
+      color: hsl(var(--muted-foreground));
+      max-width: 64ch;
+      margin: 0 0 36px;
+    }
+    h3.subhead {
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 22px;
+      letter-spacing: -0.005em;
+      margin: 32px 0 16px;
+    }
+    h4.minor {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: hsl(var(--muted-foreground));
+      margin: 24px 0 12px;
+    }
+
+    /* Cover */
+    .cover {
+      padding: 48px;
+      border-radius: 16px;
+      background:
+        radial-gradient(at 10% 0%, hsl(var(--section-warm)) 0px, transparent 55%),
+        radial-gradient(at 90% 90%, hsl(var(--section-cream)) 0px, transparent 50%),
+        hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      margin-bottom: 80px;
+    }
+    .cover__kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 16px;
+    }
+    .cover__kicker::before {
+      content: '';
+      width: 6px; height: 6px; border-radius: 999px;
+      background: hsl(var(--chart-2));
+    }
+    .cover__title {
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 56px;
+      line-height: 1.05;
+      letter-spacing: -0.015em;
+      margin: 0 0 16px;
+    }
+    .cover__lede {
+      font-size: 18px;
+      color: hsl(var(--muted-foreground));
+      max-width: 70ch;
+      margin: 0 0 32px;
+    }
+    .cover__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 32px;
+      font-size: 13px;
+      color: hsl(var(--muted-foreground));
+    }
+    .cover__meta dt { font-weight: 500; color: hsl(var(--foreground)); margin-right: 6px; }
+    .cover__meta div { display: inline-flex; gap: 6px; }
+
+    /* Token grid */
+    .token-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .token {
+      border: 1px solid hsl(var(--border));
+      border-radius: 10px;
+      overflow: hidden;
+      background: hsl(var(--card));
+    }
+    .token__swatch {
+      height: 88px;
+      display: flex;
+      align-items: flex-end;
+      padding: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+    .token__meta {
+      padding: 12px 14px;
+      border-top: 1px solid hsl(var(--border));
+      font-size: 12px;
+      display: grid;
+      gap: 4px;
+    }
+    .token__name { font-weight: 600; font-size: 13px; }
+    .token__var { color: hsl(var(--muted-foreground)); font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace; font-size: 11.5px; }
+    .token__value { color: hsl(var(--muted-foreground)); font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace; font-size: 11.5px; }
+
+    /* Type specimen */
+    .type-row {
+      display: grid;
+      grid-template-columns: 100px minmax(0, 1fr) 200px;
+      align-items: center;
+      gap: 24px;
+      padding: 16px 0;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+    .type-row__label { font-size: 12px; color: hsl(var(--muted-foreground)); font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace; }
+    .type-row__sample { line-height: 1.1; }
+    .type-row__meta { font-size: 12px; color: hsl(var(--muted-foreground)); font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace; text-align: right; }
+
+    /* Component preview frame */
+    .preview {
+      border: 1px solid hsl(var(--border));
+      border-radius: 12px;
+      background: hsl(var(--card));
+      overflow: hidden;
+    }
+    .preview__bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      border-bottom: 1px solid hsl(var(--border));
+      background: hsl(var(--muted) / 0.4);
+      font-size: 12px;
+      color: hsl(var(--muted-foreground));
+    }
+    .preview__bar code { font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace; font-size: 11.5px; }
+    .preview__body {
+      padding: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+    }
+    .preview__body--column { flex-direction: column; align-items: stretch; }
+
+    /* Buttons (mirroring components/ui/button.tsx) */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      white-space: nowrap;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 0 16px;
+      height: 40px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color .15s, color .15s, border-color .15s;
+      font-family: inherit;
+    }
+    .btn--default { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+    .btn--default:hover { background: hsl(var(--primary) / 0.9); }
+    .btn--destructive { background: hsl(var(--destructive)); color: white; }
+    .btn--outline { background: hsl(var(--background)); border-color: hsl(var(--input)); }
+    .btn--outline:hover { background: hsl(var(--accent)); }
+    .btn--secondary { background: hsl(var(--secondary)); color: hsl(var(--foreground)); }
+    .btn--ghost { background: transparent; color: hsl(var(--foreground)); }
+    .btn--ghost:hover { background: hsl(var(--accent)); }
+    .btn--link { background: transparent; color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 4px; }
+    .btn--sm { height: 36px; padding: 0 12px; font-size: 13px; }
+    .btn--lg { height: 44px; padding: 0 32px; }
+    .btn--icon { width: 40px; height: 40px; padding: 0; }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 9999px;
+      padding: 2px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.5;
+      border: 1px solid transparent;
+    }
+    .badge--neutral-soft { background: var(--tone-neutral-soft-bg); color: var(--tone-neutral-soft-fg); }
+    .badge--neutral-solid { background: var(--tone-neutral-solid); color: white; }
+    .badge--neutral-outline { background: transparent; color: var(--tone-neutral-soft-fg); border-color: #cbd5e1; }
+    .badge--info-soft { background: var(--tone-info-soft-bg); color: var(--tone-info-soft-fg); }
+    .badge--info-solid { background: var(--tone-info-solid); color: white; }
+    .badge--info-outline { background: transparent; color: var(--tone-info-soft-fg); border-color: #93c5fd; }
+    .badge--success-soft { background: var(--tone-success-soft-bg); color: var(--tone-success-soft-fg); }
+    .badge--success-solid { background: var(--tone-success-solid); color: white; }
+    .badge--success-outline { background: transparent; color: var(--tone-success-soft-fg); border-color: #6ee7b7; }
+    .badge--warning-soft { background: var(--tone-warning-soft-bg); color: var(--tone-warning-soft-fg); }
+    .badge--warning-solid { background: var(--tone-warning-solid); color: #451a03; }
+    .badge--warning-outline { background: transparent; color: var(--tone-warning-soft-fg); border-color: #fcd34d; }
+    .badge--danger-soft { background: var(--tone-danger-soft-bg); color: var(--tone-danger-soft-fg); }
+    .badge--danger-solid { background: var(--tone-danger-solid); color: white; }
+    .badge--danger-outline { background: transparent; color: var(--tone-danger-soft-fg); border-color: #fda4af; }
+
+    .tone-grid {
+      display: grid;
+      grid-template-columns: 100px repeat(3, 1fr);
+      gap: 12px;
+      align-items: center;
+    }
+    .tone-grid__label { font-size: 12px; font-weight: 500; color: hsl(var(--muted-foreground)); }
+    .tone-grid__head { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(var(--muted-foreground)); padding-bottom: 6px; }
+
+    /* Filter chip */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid hsl(var(--border));
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+      border-radius: 9999px;
+      padding: 6px 12px;
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .chip:hover { background: hsl(var(--muted)); }
+    .chip--pressed { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border-color: hsl(var(--primary)); }
+    .chip--pressed-soft { background: hsl(var(--primary) / 0.08); color: hsl(var(--primary)); border-color: hsl(var(--primary) / 0.25); }
+    .chip__count {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 20px; height: 20px;
+      padding: 0 6px;
+      border-radius: 9999px;
+      font-size: 10.5px;
+      font-variant-numeric: tabular-nums;
+      background: hsl(var(--muted));
+      color: hsl(var(--muted-foreground));
+    }
+    .chip--pressed .chip__count { background: hsl(var(--primary-foreground) / 0.2); color: hsl(var(--primary-foreground)); }
+    .chip--pressed-soft .chip__count { background: hsl(var(--primary) / 0.15); color: hsl(var(--primary)); }
+
+    /* Card primitive */
+    .card-shadcn {
+      border: 1px solid hsl(var(--border));
+      border-radius: 8px;
+      background: hsl(var(--card));
+      box-shadow: 0 1px 2px 0 rgba(0,0,0,.05);
+      padding: 24px;
+    }
+    .card-shadcn h5 {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.005em;
+      margin: 0 0 6px;
+    }
+    .card-shadcn p { margin: 0; color: hsl(var(--muted-foreground)); font-size: 14px; }
+
+    /* Input primitive */
+    .input {
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid hsl(var(--input));
+      border-radius: 6px;
+      background: hsl(var(--background));
+      font-size: 14px;
+      color: hsl(var(--foreground));
+      font-family: inherit;
+    }
+    .input:focus { outline: none; box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring)); }
+
+    /* Page-archetype mockups */
+    .archetype {
+      border: 1px solid hsl(var(--border));
+      border-radius: 12px;
+      overflow: hidden;
+      background: hsl(var(--card));
+      margin-bottom: 32px;
+    }
+    .archetype__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: hsl(var(--muted) / 0.5);
+      border-bottom: 1px solid hsl(var(--border));
+    }
+    .archetype__title-row {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .archetype__route {
+      font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+      font-size: 11.5px;
+      color: hsl(var(--muted-foreground));
+    }
+    .archetype__body {
+      padding: 28px 32px 36px;
+    }
+    .archetype__pageheader {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid hsl(var(--border));
+      margin-bottom: 20px;
+    }
+    .archetype__breadcrumb {
+      font-size: 12px;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 8px;
+    }
+    .archetype__h1 {
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 30px;
+      letter-spacing: -0.005em;
+      margin: 0 0 4px;
+    }
+    .archetype__h1--hero {
+      font-size: 36px;
+    }
+    .archetype__subtitle {
+      color: hsl(var(--muted-foreground));
+      font-size: 14px;
+      margin: 0;
+    }
+    .archetype__actions {
+      display: flex; gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* Table */
+    .tbl {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1px solid hsl(var(--border));
+      border-radius: 6px;
+      overflow: hidden;
+      font-size: 14px;
+    }
+    .tbl th {
+      text-align: left;
+      padding: 10px 14px;
+      background: hsl(var(--muted) / 0.5);
+      font-size: 12px;
+      font-weight: 500;
+      color: hsl(var(--muted-foreground));
+      border-bottom: 1px solid hsl(var(--border));
+    }
+    .tbl td {
+      padding: 12px 14px;
+      border-bottom: 1px solid hsl(var(--border) / 0.6);
+    }
+    .tbl tr:last-child td { border-bottom: none; }
+
+    /* Suggestions */
+    .suggestion {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border: 1px solid hsl(var(--border));
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      background: hsl(var(--card));
+    }
+    .suggestion__col {
+      padding: 24px;
+    }
+    .suggestion__col + .suggestion__col {
+      border-left: 1px solid hsl(var(--border));
+      background:
+        linear-gradient(180deg, hsl(var(--section-cream)) 0%, hsl(var(--card)) 100%);
+    }
+    .suggestion__label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 12px;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .suggestion__label::before {
+      content: '';
+      width: 6px; height: 6px; border-radius: 999px;
+      background: hsl(var(--muted-foreground));
+    }
+    .suggestion__col + .suggestion__col .suggestion__label::before {
+      background: hsl(var(--chart-2));
+    }
+    .suggestion__heading {
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 18px;
+      margin: 0 0 12px;
+    }
+    .suggestion__notes {
+      font-size: 13.5px;
+      color: hsl(var(--muted-foreground));
+      margin: 16px 0 0;
+      line-height: 1.55;
+    }
+    .suggestion__notes strong { color: hsl(var(--foreground)); }
+
+    /* Status chips for suggestions */
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 2px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+    .status-pill--shipped { background: var(--tone-success-soft-bg); color: var(--tone-success-soft-fg); }
+    .status-pill--proposed { background: var(--tone-info-soft-bg); color: var(--tone-info-soft-fg); }
+    .status-pill--idea { background: var(--tone-neutral-soft-bg); color: var(--tone-neutral-soft-fg); }
+
+    /* Misc */
+    code.inline {
+      font-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+      font-size: 12.5px;
+      background: hsl(var(--muted));
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+    .callout {
+      border-left: 3px solid hsl(var(--chart-3));
+      padding: 14px 18px;
+      background: hsl(var(--section-cream));
+      border-radius: 0 8px 8px 0;
+      font-size: 13.5px;
+      margin: 16px 0;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+    .row--start { align-items: flex-start; }
+    .stack { display: flex; flex-direction: column; gap: 12px; }
+
+    /* Mock empty state */
+    .empty {
+      display: grid;
+      place-items: center;
+      gap: 8px;
+      padding: 48px 24px;
+      text-align: center;
+    }
+    .empty__icon {
+      width: 56px; height: 56px;
+      border-radius: 12px;
+      background: hsl(var(--muted));
+      display: grid; place-items: center;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 8px;
+    }
+    .empty__title { font-size: 16px; font-weight: 500; }
+    .empty__body { color: hsl(var(--muted-foreground)); font-size: 13.5px; max-width: 38ch; }
+
+    .empty--branded {
+      background: linear-gradient(180deg, hsl(var(--section-warm)) 0%, transparent 100%);
+      border-radius: 12px;
+    }
+    .empty--branded .empty__title {
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 22px;
+    }
+    .empty--branded .empty__icon {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      width: 64px; height: 64px;
+    }
+
+    /* Sidebar split-shell preview */
+    .split {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      border: 1px solid hsl(var(--border));
+      border-radius: 12px;
+      overflow: hidden;
+      min-height: 320px;
+    }
+    .split__nav {
+      padding: 18px 16px;
+      font-size: 13px;
+    }
+    .split__nav .nav__brand { margin-bottom: 18px; }
+    .split__nav .nav__link { padding: 5px 8px; font-size: 12.5px; }
+
+    .split--current .split__nav { background: hsl(var(--background)); border-right: 1px solid hsl(var(--border)); }
+    .split--proposed .split__nav { background: hsl(35 14% 96%); border-right: 1px solid hsl(var(--border)); }
+
+    .split__main { padding: 24px; background: hsl(var(--background)); }
+    .split__h1 { font-family: 'Safiro', system-ui, sans-serif; font-weight: 500; font-size: 22px; margin: 0 0 6px; }
+    .split__sub { font-size: 12px; color: hsl(var(--muted-foreground)); margin: 0; }
+
+    /* Tabs */
+    .tabs-row {
+      display: flex; gap: 0;
+      border-bottom: 1px solid hsl(var(--border));
+      margin-bottom: 16px;
+    }
+    .tabs-row button {
+      background: transparent;
+      border: none;
+      padding: 10px 16px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: hsl(var(--muted-foreground));
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      font-family: inherit;
+    }
+    .tabs-row button[aria-selected="true"] {
+      color: hsl(var(--foreground));
+      border-bottom-color: hsl(var(--primary));
+    }
+
+    /* Print/long-doc helpers */
+    .anchor { scroll-margin-top: 24px; }
+    .toc-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; color: hsl(var(--muted-foreground));
+      text-decoration: none;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: hsl(var(--muted) / 0.5);
+    }
+    .toc-back:hover { background: hsl(var(--muted)); }
+  </style>
+</head>
+<body>
+
+  <div class="shell">
+    <!-- Sidebar TOC -->
+    <aside class="nav">
+      <div class="nav__brand">
+        <span class="mark">L</span>
+        <span class="word">Laglig</span>
+        <span class="tag">Design</span>
+      </div>
+
+      <div class="nav__group">
+        <div class="nav__heading">Foundations</div>
+        <a class="nav__link" href="#tokens">Color tokens</a>
+        <a class="nav__link" href="#typography">Typography</a>
+        <a class="nav__link" href="#spacing">Spacing &amp; radii</a>
+        <a class="nav__link" href="#charts">Chart palette</a>
+      </div>
+
+      <div class="nav__group">
+        <div class="nav__heading">Primitives</div>
+        <a class="nav__link" href="#buttons">Button</a>
+        <a class="nav__link" href="#badges">Badge</a>
+        <a class="nav__link" href="#chips">FilterChip</a>
+        <a class="nav__link" href="#cards">Card</a>
+        <a class="nav__link" href="#inputs">Input</a>
+        <a class="nav__link" href="#pageheader">PageHeader</a>
+      </div>
+
+      <div class="nav__group">
+        <div class="nav__heading">Page archetypes</div>
+        <a class="nav__link" href="#hem">Hem</a>
+        <a class="nav__link" href="#hub">Workspace hub</a>
+        <a class="nav__link" href="#detail">Detail (cycle)</a>
+        <a class="nav__link" href="#browse">Browse</a>
+        <a class="nav__link" href="#settings">Settings</a>
+      </div>
+
+      <div class="nav__group">
+        <div class="nav__heading">Suggestions</div>
+        <a class="nav__link" href="#sugg-shipped">Shipped</a>
+        <a class="nav__link" href="#sugg-proposed">Proposed</a>
+        <a class="nav__link" href="#sugg-ideas">Ideas</a>
+      </div>
+    </aside>
+
+    <main>
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <!-- Cover                                                            -->
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <section class="cover">
+        <div class="cover__kicker">Internal · v0.1 · 2026-05-05</div>
+        <h1 class="cover__title">Laglig Design Language</h1>
+        <p class="cover__lede">
+          A living reference for the Laglig product surface — what we ship today, why,
+          and a small list of brand-polish moves that would make the workspace feel as
+          considered as the marketing site. Built by walking the running app and
+          reading the source.
+        </p>
+        <dl class="cover__meta">
+          <div><dt>Source of truth:</dt><span><code class="inline">app/globals.css</code></span></div>
+          <div><dt>Primitive home:</dt><span><code class="inline">components/ui/*</code></span></div>
+          <div><dt>Brand fonts:</dt><span>Safiro (display) · Google Sans Flex (UI)</span></div>
+          <div><dt>Theme:</dt><span>Light + Dark (ChatGPT-aligned charcoal)</span></div>
+        </dl>
+      </section>
+
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <!-- Foundations / Tokens                                             -->
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <section class="section anchor" id="tokens">
+        <p class="section__eyebrow">Foundations · 01</p>
+        <h2 class="section__title">Color tokens</h2>
+        <p class="section__lede">
+          Defined as HSL triplets on <code class="inline">:root</code>. Tailwind consumes them via
+          <code class="inline">hsl(var(--token))</code>. The palette leans warm — cream backgrounds,
+          earth-dark primary — which differentiates Laglig from the cooler/bluer
+          enterprise SaaS norm. Three "section" tints exist for atmospheric backgrounds.
+        </p>
+
+        <h3 class="subhead">Core surfaces</h3>
+        <div class="token-grid">
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--background)); color: hsl(var(--foreground));">Aa</div>
+            <div class="token__meta">
+              <span class="token__name">Background</span>
+              <span class="token__var">--background</span>
+              <span class="token__value">40 20% 98% · #FBFAF8</span>
+            </div>
+          </div>
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--card)); color: hsl(var(--foreground));">Aa</div>
+            <div class="token__meta">
+              <span class="token__name">Card</span>
+              <span class="token__var">--card</span>
+              <span class="token__value">40 15% 99% · #FCFBFA</span>
+            </div>
+          </div>
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--muted));">Aa</div>
+            <div class="token__meta">
+              <span class="token__name">Muted</span>
+              <span class="token__var">--muted</span>
+              <span class="token__value">40 12% 94% · #F0EEEA</span>
+            </div>
+          </div>
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--accent));">Aa</div>
+            <div class="token__meta">
+              <span class="token__name">Accent</span>
+              <span class="token__var">--accent</span>
+              <span class="token__value">40 15% 93% · #EEEAE3</span>
+            </div>
+          </div>
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--secondary));">Aa</div>
+            <div class="token__meta">
+              <span class="token__name">Secondary</span>
+              <span class="token__var">--secondary</span>
+              <span class="token__value">40 15% 95% · #F1EEE9</span>
+            </div>
+          </div>
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--border));"></div>
+            <div class="token__meta">
+              <span class="token__name">Border</span>
+              <span class="token__var">--border / --input</span>
+              <span class="token__value">35 10% 88% · #E3E1DD</span>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="subhead">Foreground</h3>
+        <div class="token-grid">
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--foreground)); color: hsl(var(--background));">Aa</div>
+            <div class="token__meta">
+              <span class="token__name">Foreground</span>
+              <span class="token__var">--foreground</span>
+              <span class="token__value">30 10% 10% · #1C1A18</span>
+            </div>
+          </div>
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--primary)); color: hsl(var(--primary-foreground));">Aa</div>
+            <div class="token__meta">
+              <span class="token__name">Primary (warm dark)</span>
+              <span class="token__var">--primary</span>
+              <span class="token__value">30 15% 12% · #231F1A</span>
+            </div>
+          </div>
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--muted-foreground)); color: hsl(var(--background));">Aa</div>
+            <div class="token__meta">
+              <span class="token__name">Muted foreground</span>
+              <span class="token__var">--muted-foreground</span>
+              <span class="token__value">30 8% 45% · #786F65</span>
+            </div>
+          </div>
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--destructive)); color: white;">Aa</div>
+            <div class="token__meta">
+              <span class="token__name">Destructive</span>
+              <span class="token__var">--destructive</span>
+              <span class="token__value">0 84% 60% · #EF4444</span>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="subhead">Section tints (atmosphere)</h3>
+        <p class="section__lede" style="margin-bottom: 16px;">
+          Reserved for hero/empty/marketing moments. Currently almost only used on the public landing — there's
+          headroom to bring these into Hem and empty states for warmth without competing with content.
+        </p>
+        <div class="token-grid">
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--section-warm));">Aa</div>
+            <div class="token__meta">
+              <span class="token__name">Warm</span>
+              <span class="token__var">--section-warm</span>
+              <span class="token__value">45 30% 96%</span>
+            </div>
+          </div>
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--section-sage));">Aa</div>
+            <div class="token__meta">
+              <span class="token__name">Sage</span>
+              <span class="token__var">--section-sage</span>
+              <span class="token__value">140 25% 95%</span>
+            </div>
+          </div>
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--section-cream));">Aa</div>
+            <div class="token__meta">
+              <span class="token__name">Cream</span>
+              <span class="token__var">--section-cream</span>
+              <span class="token__value">35 40% 97%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout">
+          <strong>Dark mode:</strong> ChatGPT-aligned charcoals — main bg ~<code class="inline">#212121</code>,
+          sidebar ~<code class="inline">#171717</code>. Same token names; values swap inside <code class="inline">.dark</code>.
+          The warm light palette has no dark-mode counterpart for the section tints — those degrade to neutral muted backgrounds.
+        </div>
+      </section>
+
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <!-- Typography                                                       -->
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <section class="section anchor" id="typography">
+        <p class="section__eyebrow">Foundations · 02</p>
+        <h2 class="section__title">Typography</h2>
+        <p class="section__lede">
+          Two families. <strong>Safiro</strong> carries the brand — display moments, page H1s,
+          marketing headers. <strong>Google Sans Flex</strong> handles all UI body copy — labels, tables,
+          form inputs, paragraph text. Reserve Safiro for moments that announce; never use it
+          for content density.
+        </p>
+
+        <h4 class="minor">Safiro · brand voice (font-family)</h4>
+        <div class="type-row">
+          <span class="type-row__label">36 / 500</span>
+          <span class="type-row__sample font-safiro" style="font-size: 36px; font-weight: 500;">Hur kan jag hjälpa dig idag?</span>
+          <span class="type-row__meta">text-4xl · Hem hero</span>
+        </div>
+        <div class="type-row">
+          <span class="type-row__label">30 / 500</span>
+          <span class="type-row__sample font-safiro" style="font-size: 30px; font-weight: 500;">Laglistor</span>
+          <span class="type-row__meta">text-3xl · PageHeader H1</span>
+        </div>
+        <div class="type-row">
+          <span class="type-row__label">22 / 500</span>
+          <span class="type-row__sample font-safiro" style="font-size: 22px; font-weight: 500;">Skapa kontroll</span>
+          <span class="type-row__meta">card-as-page section</span>
+        </div>
+        <div class="type-row">
+          <span class="type-row__label">18 / 500</span>
+          <span class="type-row__sample font-safiro" style="font-size: 18px; font-weight: 500;">Laglig</span>
+          <span class="type-row__meta">sidebar wordmark</span>
+        </div>
+
+        <h4 class="minor">Google Sans Flex · everything else</h4>
+        <div class="type-row">
+          <span class="type-row__label">16 / 400</span>
+          <span class="type-row__sample" style="font-size: 16px;">Hantera dina listor och håll koll på relevanta rättsliga krav.</span>
+          <span class="type-row__meta">body / page subtitle</span>
+        </div>
+        <div class="type-row">
+          <span class="type-row__label">14 / 400</span>
+          <span class="type-row__sample" style="font-size: 14px;">Den här laglistan har 68 lagar, varav 21 saknar bevis.</span>
+          <span class="type-row__meta">table cell · form control</span>
+        </div>
+        <div class="type-row">
+          <span class="type-row__label">14 / 500</span>
+          <span class="type-row__sample" style="font-size: 14px; font-weight: 500;">Lägg till dokument</span>
+          <span class="type-row__meta">button label</span>
+        </div>
+        <div class="type-row">
+          <span class="type-row__label">13 / 400</span>
+          <span class="type-row__sample" style="font-size: 13px;">Ändrad 2026-04-22 av Alexander Adstedt</span>
+          <span class="type-row__meta">meta · activity log</span>
+        </div>
+        <div class="type-row">
+          <span class="type-row__label">12 / 500</span>
+          <span class="type-row__sample" style="font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em;">Status</span>
+          <span class="type-row__meta">table header (uppercase)</span>
+        </div>
+        <div class="type-row">
+          <span class="type-row__label">12 / 500</span>
+          <span class="type-row__sample" style="font-size: 12px; font-weight: 500;">Pågående</span>
+          <span class="type-row__meta">badge / pill</span>
+        </div>
+
+        <div class="callout">
+          <strong>Recently shipped:</strong> H1s in <code class="inline">PageHeader</code> +
+          6 outlier pages now use <code class="inline">font-safiro text-3xl font-medium tracking-tight</code>.
+          Change made 2026-05-05. Brings the workspace into typographic alignment with the landing/auth surfaces.
+        </div>
+      </section>
+
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <!-- Spacing & radii                                                  -->
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <section class="section anchor" id="spacing">
+        <p class="section__eyebrow">Foundations · 03</p>
+        <h2 class="section__title">Spacing &amp; radii</h2>
+        <p class="section__lede">
+          Tailwind's default 4-pt scale. Radii carry semantics: chip/badge are pill (full),
+          buttons + cards are 6px (md), the page-level Card primitive jumps to 8px (lg).
+          That last gap is a small inconsistency worth knowing about — see Suggestions.
+        </p>
+
+        <h4 class="minor">Radius scale</h4>
+        <div class="row">
+          <div class="stack" style="text-align: center;">
+            <div style="width: 80px; height: 80px; background: hsl(var(--primary)); border-radius: 4px;"></div>
+            <span style="font-size: 12px;">4 · sm · subtle</span>
+          </div>
+          <div class="stack" style="text-align: center;">
+            <div style="width: 80px; height: 80px; background: hsl(var(--primary)); border-radius: 6px;"></div>
+            <span style="font-size: 12px;">6 · md · button</span>
+          </div>
+          <div class="stack" style="text-align: center;">
+            <div style="width: 80px; height: 80px; background: hsl(var(--primary)); border-radius: 8px;"></div>
+            <span style="font-size: 12px;">8 · lg · Card</span>
+          </div>
+          <div class="stack" style="text-align: center;">
+            <div style="width: 80px; height: 80px; background: hsl(var(--primary)); border-radius: 12px;"></div>
+            <span style="font-size: 12px;">12 · xl · panels</span>
+          </div>
+          <div class="stack" style="text-align: center;">
+            <div style="width: 80px; height: 80px; background: hsl(var(--primary)); border-radius: 9999px;"></div>
+            <span style="font-size: 12px;">∞ · pill · badge/chip</span>
+          </div>
+        </div>
+
+        <h4 class="minor">Elevation</h4>
+        <div class="row">
+          <div class="stack" style="text-align: center;">
+            <div style="width: 160px; height: 80px; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 8px;"></div>
+            <span style="font-size: 12px;">flat (border-only) — main pattern</span>
+          </div>
+          <div class="stack" style="text-align: center;">
+            <div style="width: 160px; height: 80px; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,.05);"></div>
+            <span style="font-size: 12px;">sm — Card default</span>
+          </div>
+          <div class="stack" style="text-align: center;">
+            <div style="width: 160px; height: 80px; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.08);"></div>
+            <span style="font-size: 12px;">md — popover/dropdown</span>
+          </div>
+          <div class="stack" style="text-align: center;">
+            <div style="width: 160px; height: 80px; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 8px; box-shadow: 0 20px 40px -15px rgba(0,0,0,.10);"></div>
+            <span style="font-size: 12px;">card-hover — translateY(-2px)</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <!-- Chart palette                                                    -->
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <section class="section anchor" id="charts">
+        <p class="section__eyebrow">Foundations · 04</p>
+        <h2 class="section__title">Chart palette</h2>
+        <p class="section__lede">
+          Five warm/earth-toned chart colors defined as <code class="inline">--chart-1</code>…<code class="inline">--chart-5</code>.
+          Sage, moss, terracotta, amber — deliberately not the standard blue/green/red Tailwind defaults.
+          When building dashboards, reach for these tokens (not <code class="inline">bg-blue-500</code> / <code class="inline">stroke-emerald-500</code>).
+        </p>
+        <div class="token-grid">
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--chart-1)); color: #1f1500;">Aa</div>
+            <div class="token__meta">
+              <span class="token__name">Amber</span>
+              <span class="token__var">--chart-1</span>
+              <span class="token__value">45 70% 55%</span>
+            </div>
+          </div>
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--chart-2)); color: white;">Aa</div>
+            <div class="token__meta">
+              <span class="token__name">Sage</span>
+              <span class="token__var">--chart-2</span>
+              <span class="token__value">140 35% 45%</span>
+            </div>
+          </div>
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--chart-3)); color: white;">Aa</div>
+            <div class="token__meta">
+              <span class="token__name">Terracotta</span>
+              <span class="token__var">--chart-3</span>
+              <span class="token__value">30 50% 45%</span>
+            </div>
+          </div>
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--chart-4)); color: white;">Aa</div>
+            <div class="token__meta">
+              <span class="token__name">Moss</span>
+              <span class="token__var">--chart-4</span>
+              <span class="token__value">85 40% 50%</span>
+            </div>
+          </div>
+          <div class="token">
+            <div class="token__swatch" style="background: hsl(var(--chart-5)); color: white;">Aa</div>
+            <div class="token__meta">
+              <span class="token__name">Orange</span>
+              <span class="token__var">--chart-5</span>
+              <span class="token__value">25 75% 55%</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <!-- Buttons                                                           -->
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <section class="section anchor" id="buttons">
+        <p class="section__eyebrow">Primitives · 01</p>
+        <h2 class="section__title">Button</h2>
+        <p class="section__lede">
+          Six variants × four sizes. <code class="inline">default</code> = warm-dark primary;
+          <code class="inline">outline</code> + <code class="inline">ghost</code> are the workhorses
+          for secondary actions in toolbars.
+        </p>
+
+        <div class="preview">
+          <div class="preview__bar"><span>Variants</span><code>components/ui/button.tsx</code></div>
+          <div class="preview__body">
+            <button class="btn btn--default">Skapa kontroll</button>
+            <button class="btn btn--secondary">Sekundär</button>
+            <button class="btn btn--outline">Avbryt</button>
+            <button class="btn btn--ghost">Ghost</button>
+            <button class="btn btn--destructive">Ta bort</button>
+            <button class="btn btn--link">Läs mer</button>
+          </div>
+        </div>
+
+        <div class="preview" style="margin-top: 16px;">
+          <div class="preview__bar"><span>Sizes</span><code>sm · default · lg · icon</code></div>
+          <div class="preview__body">
+            <button class="btn btn--default btn--sm">Liten</button>
+            <button class="btn btn--default">Standard</button>
+            <button class="btn btn--default btn--lg">Stor</button>
+            <button class="btn btn--default btn--icon">＋</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <!-- Badges                                                            -->
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <section class="section anchor" id="badges">
+        <p class="section__eyebrow">Primitives · 02</p>
+        <h2 class="section__title">Badge — tone × variant matrix</h2>
+        <p class="section__lede">
+          Single source of truth for status / priority / severity / type pills (Story 22.1).
+          Five tones × three variants. Domain mappers in <code class="inline">lib/ui/badge-tones.ts</code>
+          translate Prisma enums to <code class="inline">{ tone, variant, label }</code> — never hand-roll
+          the tuple at the call site.
+        </p>
+
+        <div class="preview">
+          <div class="preview__bar"><span>Tone × variant</span><code>BADGE_TONES[tone][variant]</code></div>
+          <div class="preview__body preview__body--column">
+            <div class="tone-grid">
+              <div></div>
+              <div class="tone-grid__head">soft (default)</div>
+              <div class="tone-grid__head">solid</div>
+              <div class="tone-grid__head">outline</div>
+
+              <div class="tone-grid__label">neutral</div>
+              <div><span class="badge badge--neutral-soft">Ej påbörjad</span></div>
+              <div><span class="badge badge--neutral-solid">Arkiverad</span></div>
+              <div><span class="badge badge--neutral-outline">Ej tillämplig</span></div>
+
+              <div class="tone-grid__label">info</div>
+              <div><span class="badge badge--info-soft">Pågående</span></div>
+              <div><span class="badge badge--info-solid">Aktiv</span></div>
+              <div><span class="badge badge--info-outline">Förslag</span></div>
+
+              <div class="tone-grid__label">success</div>
+              <div><span class="badge badge--success-soft">Uppfylld</span></div>
+              <div><span class="badge badge--success-solid">Fastställd</span></div>
+              <div><span class="badge badge--success-outline">Godkänd</span></div>
+
+              <div class="tone-grid__label">warning</div>
+              <div><span class="badge badge--warning-soft">Mindre</span></div>
+              <div><span class="badge badge--warning-solid">Saknar bevis</span></div>
+              <div><span class="badge badge--warning-outline">Observation</span></div>
+
+              <div class="tone-grid__label">danger</div>
+              <div><span class="badge badge--danger-soft">Ej uppfylld</span></div>
+              <div><span class="badge badge--danger-solid">Kritisk</span></div>
+              <div><span class="badge badge--danger-outline">Avvikelse</span></div>
+            </div>
+          </div>
+        </div>
+
+        <h4 class="minor">Domain mappers (live in app)</h4>
+        <table class="tbl" style="margin-bottom: 16px;">
+          <thead><tr><th>Domain</th><th>Enum</th><th>Mapping</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">compliance-status</code></td><td>EJ_PABORJAD</td><td>neutral · soft · "Ej påbörjad"</td></tr>
+            <tr><td></td><td>PAGAENDE</td><td>info · soft · "Delvis uppfylld"</td></tr>
+            <tr><td></td><td>UPPFYLLD</td><td>success · soft · "Uppfylld"</td></tr>
+            <tr><td></td><td>EJ_UPPFYLLD</td><td>danger · soft · "Ej uppfylld"</td></tr>
+            <tr><td></td><td>EJ_TILLAMPLIG</td><td>neutral · outline · "Ej tillämplig"</td></tr>
+            <tr><td><code class="inline">cycle-status</code></td><td>PLANERAD / PAGAENDE / AVSLUTAD</td><td>neutral / info / success · soft</td></tr>
+            <tr><td><code class="inline">finding-severity</code></td><td>MAJOR / MINOR</td><td>danger / warning · soft</td></tr>
+            <tr><td><code class="inline">priority</code></td><td>LOW / MEDIUM / HIGH / CRITICAL</td><td>neutral / warning / danger soft → <strong>danger solid</strong> for CRITICAL</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <!-- FilterChip                                                        -->
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <section class="section anchor" id="chips">
+        <p class="section__eyebrow">Primitives · 03</p>
+        <h2 class="section__title">FilterChip</h2>
+        <p class="section__lede">
+          Toggle filters — distinct from view tabs. Renders <code class="inline">aria-pressed</code> not
+          <code class="inline">role="tab"</code>. Always wrap in <code class="inline">FilterChipGroup</code>
+          for screen-reader scoping.
+        </p>
+
+        <div class="preview">
+          <div class="preview__bar"><span>States</span><code>components/ui/filter-chip.tsx</code></div>
+          <div class="preview__body">
+            <button class="chip chip--pressed">Alla <span class="chip__count">14</span></button>
+            <button class="chip">Luckor <span class="chip__count">7</span></button>
+            <button class="chip">Mina krav <span class="chip__count">7</span></button>
+            <button class="chip">Saknar bevis <span class="chip__count">4</span></button>
+          </div>
+        </div>
+
+        <div class="callout">
+          The pressed state currently fills with <code class="inline">--primary</code> (warm dark) — visually loud in
+          dense filter rows. A "soft pressed" treatment is a candidate refinement; see
+          <a href="#sugg-proposed">Suggestions → Soft pressed FilterChip</a>.
+        </div>
+      </section>
+
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <!-- Card                                                              -->
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <section class="section anchor" id="cards">
+        <p class="section__eyebrow">Primitives · 04</p>
+        <h2 class="section__title">Card</h2>
+        <p class="section__lede">
+          Surface for grouped content. <code class="inline">CardTitle</code> currently renders as
+          <code class="inline">text-2xl font-semibold</code> Google Sans Flex — same recipe as the old PageHeader
+          before the Safiro switch. When a Card stands in as a "page-equivalent" moment (billing summary, hero stat),
+          its title competes with the actual H1 above it — see Suggestions.
+        </p>
+
+        <div class="preview">
+          <div class="preview__bar"><span>Default Card</span><code>rounded-lg · border · shadow-sm</code></div>
+          <div class="preview__body">
+            <div class="card-shadcn" style="max-width: 480px;">
+              <h5>Företagsuppgifter</h5>
+              <p>Hantera namn, organisationsnummer och bransch för ditt företag.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <!-- Inputs                                                            -->
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <section class="section anchor" id="inputs">
+        <p class="section__eyebrow">Primitives · 05</p>
+        <h2 class="section__title">Input</h2>
+        <p class="section__lede">
+          Standard 40px height. Borders use <code class="inline">--input</code> (warm beige, not pure gray).
+          Focus ring is the warm-dark primary at 2px offset.
+        </p>
+        <div class="preview">
+          <div class="preview__bar"><span>States</span><code>components/ui/input.tsx</code></div>
+          <div class="preview__body preview__body--column">
+            <input class="input" placeholder="Sök dokument…" />
+            <input class="input" value="Test Team WS" />
+            <input class="input" disabled value="Inaktiverat fält" />
+          </div>
+        </div>
+      </section>
+
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <!-- PageHeader                                                        -->
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <section class="section anchor" id="pageheader">
+        <p class="section__eyebrow">Primitives · 06</p>
+        <h2 class="section__title">PageHeader</h2>
+        <p class="section__lede">
+          The single most important brand surface inside the app. As of 2026-05-05 the H1 renders in
+          Safiro at 30px / weight 500 / tracking-tight. Subtitle in Google Sans Flex provides hierarchy.
+          Slot order is enforced — devs cannot reorder by re-arranging props.
+        </p>
+
+        <div class="preview">
+          <div class="preview__bar"><span>PageHeader · current</span><code>components/ui/page-header.tsx</code></div>
+          <div class="preview__body preview__body--column" style="padding: 0;">
+            <div class="archetype__body" style="padding-bottom: 24px;">
+              <div class="archetype__breadcrumb">Test Team WS &nbsp;›&nbsp; Laglistor</div>
+              <div class="archetype__pageheader">
+                <div>
+                  <h1 class="archetype__h1">Laglistor</h1>
+                  <p class="archetype__subtitle">Hantera dina listor och håll koll på relevanta rättsliga krav.</p>
+                </div>
+                <div class="archetype__actions">
+                  <button class="btn btn--outline btn--sm">Skapa kontroll</button>
+                  <button class="btn btn--default btn--sm">＋ Lägg till dokument</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <!-- Page archetypes                                                  -->
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <section class="section anchor" id="hem">
+        <p class="section__eyebrow">Page archetypes · 01</p>
+        <h2 class="section__title">Hem (chat-first)</h2>
+        <p class="section__lede">
+          The dashboard is a conversational hero. The greeting is the only H1 in the app larger than 30px —
+          Safiro 36px establishes "this is the front door." Below: domain prompt chips, then signal cards
+          (lawchanges, overdue tasks, compliance %). Story 14.11.
+        </p>
+        <div class="archetype">
+          <div class="archetype__header">
+            <span class="archetype__title-row">Hem</span>
+            <span class="archetype__route">/dashboard</span>
+          </div>
+          <div class="archetype__body">
+            <div class="empty empty--branded" style="padding: 32px 24px 40px;">
+              <h1 class="archetype__h1 archetype__h1--hero" style="margin-bottom: 12px;">Hur kan jag hjälpa dig idag, Alexander?</h1>
+              <div class="row" style="justify-content: center; max-width: 540px; margin: 16px auto 0;">
+                <button class="chip">Efterlevnad</button>
+                <button class="chip">Regelverk</button>
+                <button class="chip">Skapa uppgift</button>
+                <button class="chip">Sammanfatta vecka</button>
+              </div>
+            </div>
+            <div class="row" style="margin-top: 24px;">
+              <div class="card-shadcn" style="flex: 1; min-width: 240px;">
+                <h5 style="font-size: 14px; color: hsl(var(--muted-foreground)); font-weight: 500;">Efterlevnad</h5>
+                <p style="font-size: 24px; font-weight: 600; color: hsl(var(--foreground)); margin-top: 4px;">0 / 68</p>
+                <p style="font-size: 12px;">Visa efterlevnadsöversikt →</p>
+              </div>
+              <div class="card-shadcn" style="flex: 1; min-width: 240px;">
+                <h5 style="font-size: 14px; color: hsl(var(--muted-foreground)); font-weight: 500;">Lagändringar</h5>
+                <p style="font-size: 24px; font-weight: 600; margin-top: 4px;">Inga nya</p>
+                <p style="font-size: 12px;">Allt uppdaterat</p>
+              </div>
+              <div class="card-shadcn" style="flex: 1; min-width: 240px;">
+                <h5 style="font-size: 14px; color: hsl(var(--muted-foreground)); font-weight: 500;">Förfallna uppgifter</h5>
+                <p style="font-size: 24px; font-weight: 600; margin-top: 4px; color: hsl(var(--destructive));">5</p>
+                <p style="font-size: 12px;">Kräver din åtgärd</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section anchor" id="hub">
+        <p class="section__eyebrow">Page archetypes · 02</p>
+        <h2 class="section__title">Workspace hub (PageHeader + table)</h2>
+        <p class="section__lede">
+          The dominant pattern: Laglistor, Uppgifter, Krav, Kontroller, Styrdokument all share this shape.
+          Header → optional view tabs → filter row (FilterChips or popover) → table.
+        </p>
+        <div class="archetype">
+          <div class="archetype__header">
+            <span class="archetype__title-row">Krav</span>
+            <span class="archetype__route">/krav</span>
+          </div>
+          <div class="archetype__body">
+            <div class="archetype__breadcrumb">Test Team WS &nbsp;›&nbsp; Krav</div>
+            <div class="archetype__pageheader">
+              <div>
+                <h1 class="archetype__h1">Krav</h1>
+                <p class="archetype__subtitle">Översikt över alla kravpunkter och deras efterlevnadsstatus.</p>
+              </div>
+              <div class="archetype__actions">
+                <button class="btn btn--outline btn--sm">Exportera</button>
+              </div>
+            </div>
+
+            <div class="row" style="margin-bottom: 16px;">
+              <button class="chip chip--pressed">Alla <span class="chip__count">14</span></button>
+              <button class="chip">Luckor <span class="chip__count">7</span></button>
+              <button class="chip">Mina krav <span class="chip__count">7</span></button>
+              <button class="chip">Saknar bevis <span class="chip__count">4</span></button>
+            </div>
+
+            <table class="tbl">
+              <thead>
+                <tr><th>Kravpunkt</th><th>Lag</th><th>Status</th><th>Bevis</th><th>Ansvarig</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Riskbedömning av kemikalier</td>
+                  <td>AFS 2011:19 1§</td>
+                  <td><span class="badge badge--success-soft">Uppfylld</span></td>
+                  <td><span style="font-size: 12px; color: hsl(var(--muted-foreground));">3 bevis</span></td>
+                  <td>Alexander A.</td>
+                </tr>
+                <tr>
+                  <td>Skyddsutrustning för säkerhetsdatablad</td>
+                  <td>AFS 2011:19 7§</td>
+                  <td><span class="badge badge--info-soft">Delvis uppfylld</span></td>
+                  <td><span class="badge badge--warning-soft">Saknar bevis</span></td>
+                  <td>—</td>
+                </tr>
+                <tr>
+                  <td>Brandfarliga varor — förvaring</td>
+                  <td>SFS 2010:1011</td>
+                  <td><span class="badge badge--danger-soft">Ej uppfylld</span></td>
+                  <td><span style="font-size: 12px; color: hsl(var(--muted-foreground));">0 bevis</span></td>
+                  <td>Lisa K.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section anchor" id="detail">
+        <p class="section__eyebrow">Page archetypes · 03</p>
+        <h2 class="section__title">Detail (compliance audit cycle)</h2>
+        <p class="section__lede">
+          The cycle-detail page uses a custom <code class="inline">CycleDetailHeader</code> that pairs
+          the H1 with a status badge and a meta strip. Same Safiro 30px H1 — a recent natural alignment.
+          Tabs sit below the header separator. Epic 21.
+        </p>
+        <div class="archetype">
+          <div class="archetype__header">
+            <span class="archetype__title-row">Kontroll · detalj</span>
+            <span class="archetype__route">/laglistor/kontroller/[cycleId]</span>
+          </div>
+          <div class="archetype__body">
+            <div class="archetype__breadcrumb">Test Team WS &nbsp;›&nbsp; Kontroller &nbsp;›&nbsp; Testkontroll</div>
+            <div class="archetype__pageheader">
+              <div>
+                <div class="row" style="margin-bottom: 6px;">
+                  <h1 class="archetype__h1" style="margin: 0;">Testkontroll</h1>
+                  <span class="badge badge--info-soft">Pågående</span>
+                </div>
+                <div class="row" style="font-size: 13px; color: hsl(var(--muted-foreground)); gap: 12px;">
+                  <span>Huvudlistan</span><span>·</span>
+                  <span>2026-04-22 — 2026-05-22</span><span>·</span>
+                  <span>Alexander A.</span>
+                </div>
+              </div>
+              <div class="archetype__actions">
+                <div style="text-align: right; font-size: 12px; color: hsl(var(--muted-foreground));">Signerade</div>
+                <div style="font-weight: 600; font-size: 18px;">12 / 68</div>
+                <button class="btn btn--default btn--sm">Slutför kontroll</button>
+              </div>
+            </div>
+
+            <div class="tabs-row">
+              <button aria-selected="true">Dokument</button>
+              <button>Anmärkningar</button>
+              <button>Rapport</button>
+              <button>Aktivitet</button>
+            </div>
+
+            <table class="tbl">
+              <thead><tr><th>Dokument</th><th>Bedömning</th><th>Motivering</th><th>Signerad</th></tr></thead>
+              <tbody>
+                <tr><td>AFS 2011:19 — Kemiska arbetsmiljörisker</td><td><span class="badge badge--success-soft">Uppfylld</span></td><td>Riskbedömning genomförd 2026-04-15.</td><td>Alexander A.</td></tr>
+                <tr><td>SFS 2010:1011 — Brandfarliga varor</td><td><span class="badge badge--info-soft">Delvis</span></td><td>Genomgång pågår.</td><td>—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section anchor" id="browse">
+        <p class="section__eyebrow">Page archetypes · 04</p>
+        <h2 class="section__title">Browse (catalogue)</h2>
+        <p class="section__lede">
+          Public reading surfaces — Regelverk, Svenska lagar, EU-rätt, Föreskrifter. Sidebar filter rail on
+          the left, search bar + result cards on the right. The H1 is the only brand moment; everything else
+          is information density.
+        </p>
+        <div class="archetype">
+          <div class="archetype__header">
+            <span class="archetype__title-row">Regelverk</span>
+            <span class="archetype__route">/browse/rattskallor</span>
+          </div>
+          <div class="archetype__body">
+            <div class="archetype__pageheader" style="border-bottom: 1px solid hsl(var(--border));">
+              <div>
+                <h1 class="archetype__h1">Regelverk</h1>
+                <p class="archetype__subtitle">Bläddra bland svenska lagar, föreskrifter och EU-lagstiftning.</p>
+              </div>
+            </div>
+            <input class="input" placeholder="Sök bland 8 200 dokument…" style="margin-bottom: 16px;" />
+            <div style="display: grid; grid-template-columns: 200px 1fr; gap: 24px; align-items: flex-start;">
+              <div class="stack" style="font-size: 13px;">
+                <h4 class="minor" style="margin-top: 0;">Typ</h4>
+                <label style="display: flex; gap: 8px;"><input type="checkbox" /> Författningar (SFS)</label>
+                <label style="display: flex; gap: 8px;"><input type="checkbox" /> EU-förordningar</label>
+                <label style="display: flex; gap: 8px;"><input type="checkbox" /> Myndighetsföreskrifter</label>
+              </div>
+              <div class="stack">
+                <div class="card-shadcn">
+                  <span class="badge badge--neutral-soft" style="margin-bottom: 6px;">SFS · Lag</span>
+                  <h5 style="font-size: 16px;">Arbetsmiljölag (1977:1160)</h5>
+                  <p style="font-size: 13px;">Reglerar arbetsgivares ansvar för arbetsmiljö och säkerhet på arbetsplatsen.</p>
+                </div>
+                <div class="card-shadcn">
+                  <span class="badge badge--info-soft" style="margin-bottom: 6px;">EU · Förordning</span>
+                  <h5 style="font-size: 16px;">GDPR (2016/679)</h5>
+                  <p style="font-size: 13px;">Allmän dataskyddsförordning.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section anchor" id="settings">
+        <p class="section__eyebrow">Page archetypes · 05</p>
+        <h2 class="section__title">Settings</h2>
+        <p class="section__lede">
+          PageHeader + tab strip. Each tab is a stack of Cards. The CardTitle inside each section is currently
+          the same recipe as the page H1 was before the Safiro switch — there's a visual hierarchy gap to close.
+        </p>
+        <div class="archetype">
+          <div class="archetype__header">
+            <span class="archetype__title-row">Inställningar</span>
+            <span class="archetype__route">/settings</span>
+          </div>
+          <div class="archetype__body">
+            <div class="archetype__pageheader" style="border-bottom: none; padding-bottom: 0; margin-bottom: 16px;">
+              <div>
+                <h1 class="archetype__h1">Inställningar</h1>
+                <p class="archetype__subtitle">Konfigurera arbetsyta, team och fakturering.</p>
+              </div>
+            </div>
+            <div class="tabs-row">
+              <button aria-selected="true">Profil</button>
+              <button>Företag</button>
+              <button>Team</button>
+              <button>Roller</button>
+              <button>Fakturering</button>
+            </div>
+            <div class="stack">
+              <div class="card-shadcn">
+                <h5 style="font-size: 18px;">Företagsuppgifter</h5>
+                <p style="font-size: 13px; margin-bottom: 16px;">Visas på rapporter och fakturor.</p>
+                <input class="input" value="Almåsa Havshotell AB" />
+              </div>
+              <div class="card-shadcn">
+                <h5 style="font-size: 18px;">Verksamhetsbeskrivning</h5>
+                <p style="font-size: 13px;">Påverkar vilka regelverk och kravpunkter som föreslås.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <!-- Suggestions                                                       -->
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <section class="section anchor" id="sugg-shipped">
+        <p class="section__eyebrow">Suggestions · shipped</p>
+        <h2 class="section__title">Recently shipped</h2>
+        <p class="section__lede">Things we changed in the last session that already raised brand polish.</p>
+
+        <div class="suggestion">
+          <div class="suggestion__col">
+            <span class="suggestion__label">Before · 2026-05-04</span>
+            <h3 class="suggestion__heading" style="font-family: 'Google Sans Flex'; font-weight: 600;">Laglistor</h3>
+            <p class="suggestion__notes" style="font-size: 12px;">Google Sans Flex · text-2xl · font-semibold</p>
+          </div>
+          <div class="suggestion__col">
+            <span class="suggestion__label">After · 2026-05-05 <span class="status-pill status-pill--shipped" style="margin-left: 8px;">shipped</span></span>
+            <h3 class="suggestion__heading" style="font-size: 30px;">Laglistor</h3>
+            <p class="suggestion__notes" style="font-size: 12px;">Safiro · text-3xl · font-medium · tracking-tight</p>
+            <p class="suggestion__notes">
+              <strong>Why it works:</strong> the H1 now shares its letterforms with the
+              <em>Laglig</em> wordmark in the sidebar. The brand thread extends from
+              landing → auth → onboarding → workspace, instead of stopping at the rail.
+              Single-line change in <code class="inline">PageHeader</code> covered 9 pages; 6 outliers swept individually.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section anchor" id="sugg-proposed">
+        <p class="section__eyebrow">Suggestions · proposed</p>
+        <h2 class="section__title">Proposed (small wins)</h2>
+        <p class="section__lede">
+          Single-file changes in the same spirit as the Safiro H1 — high brand lift, low risk, no architectural debate.
+        </p>
+
+        <!-- Suggestion: Soft pressed FilterChip -->
+        <div class="suggestion">
+          <div class="suggestion__col">
+            <span class="suggestion__label">Current</span>
+            <h3 class="suggestion__heading">FilterChip — pressed = warm-dark fill</h3>
+            <div class="row" style="margin: 12px 0;">
+              <button class="chip chip--pressed">Alla <span class="chip__count">14</span></button>
+              <button class="chip">Luckor <span class="chip__count">7</span></button>
+              <button class="chip">Mina krav <span class="chip__count">7</span></button>
+            </div>
+            <p class="suggestion__notes" style="font-size: 12.5px;">Strong contrast, but heavy in dense rows. Reads more like a primary button than a filter toggle.</p>
+          </div>
+          <div class="suggestion__col">
+            <span class="suggestion__label">Proposed <span class="status-pill status-pill--proposed" style="margin-left: 8px;">small</span></span>
+            <h3 class="suggestion__heading">Soft pressed — primary at 8% + border 25%</h3>
+            <div class="row" style="margin: 12px 0;">
+              <button class="chip chip--pressed-soft">Alla <span class="chip__count">14</span></button>
+              <button class="chip">Luckor <span class="chip__count">7</span></button>
+              <button class="chip">Mina krav <span class="chip__count">7</span></button>
+            </div>
+            <p class="suggestion__notes">
+              <strong>Why:</strong> matches the visual register of <code class="inline">soft</code> badges,
+              treats filters as non-destructive selections, lets the table beneath stay the protagonist.
+              <br /><strong>Tradeoff:</strong> less obvious which chip is active — counter with a thicker
+              border or a leading dot if the contrast loss matters.
+              <br /><strong>Where:</strong> <code class="inline">components/ui/filter-chip.tsx:25-28</code>
+            </p>
+          </div>
+        </div>
+
+        <!-- Suggestion: Sidebar contrast -->
+        <div class="suggestion">
+          <div class="suggestion__col">
+            <span class="suggestion__label">Current</span>
+            <h3 class="suggestion__heading">Sidebar = body bg (zero contrast)</h3>
+            <div class="split split--current">
+              <div class="split__nav">
+                <div class="nav__brand"><span class="mark">L</span><span class="word">Laglig</span></div>
+                <a class="nav__link" href="#">Hem</a>
+                <a class="nav__link" href="#">Efterlevnad</a>
+                <a class="nav__link" href="#">Kontroller</a>
+              </div>
+              <div class="split__main">
+                <h4 class="split__h1">Laglistor</h4>
+                <p class="split__sub">Hantera dina listor.</p>
+              </div>
+            </div>
+            <p class="suggestion__notes" style="font-size: 12.5px;">Both surfaces use <code class="inline">--background</code>. The sidebar visually merges with the canvas — fine, but the workspace shell loses architecture.</p>
+          </div>
+          <div class="suggestion__col">
+            <span class="suggestion__label">Proposed <span class="status-pill status-pill--proposed" style="margin-left: 8px;">small</span></span>
+            <h3 class="suggestion__heading">Sidebar = warm-tinted (-2% lightness)</h3>
+            <div class="split split--proposed">
+              <div class="split__nav">
+                <div class="nav__brand"><span class="mark">L</span><span class="word">Laglig</span></div>
+                <a class="nav__link" href="#">Hem</a>
+                <a class="nav__link" href="#">Efterlevnad</a>
+                <a class="nav__link" href="#">Kontroller</a>
+              </div>
+              <div class="split__main">
+                <h4 class="split__h1">Laglistor</h4>
+                <p class="split__sub">Hantera dina listor.</p>
+              </div>
+            </div>
+            <p class="suggestion__notes">
+              <strong>Why:</strong> a 2% darker tone in the warm family separates the rail from the canvas without
+              shouting. Mirrors how Linear, Notion, and Granola treat their navigation.
+              <br /><strong>Tradeoff:</strong> dark mode already does this; light mode would gain it. Verify on
+              ChatGPT-style charcoal too.
+              <br /><strong>Where:</strong> <code class="inline">--sidebar-background</code> in <code class="inline">app/globals.css:59</code>
+            </p>
+          </div>
+        </div>
+
+        <!-- Suggestion: Empty states -->
+        <div class="suggestion">
+          <div class="suggestion__col">
+            <span class="suggestion__label">Current</span>
+            <h3 class="suggestion__heading">Empty state — flat &amp; muted</h3>
+            <div class="empty">
+              <div class="empty__icon">📄</div>
+              <div class="empty__title">Inga dokument i denna lista</div>
+              <div class="empty__body">Lägg till dokument för att komma igång.</div>
+            </div>
+          </div>
+          <div class="suggestion__col">
+            <span class="suggestion__label">Proposed <span class="status-pill status-pill--proposed" style="margin-left: 8px;">small</span></span>
+            <h3 class="suggestion__heading">Empty state — branded warm bg + Safiro</h3>
+            <div class="empty empty--branded">
+              <div class="empty__icon">📄</div>
+              <div class="empty__title">Tom laglista</div>
+              <div class="empty__body">Lägg till lagar och regler så börjar Laglig spåra efterlevnad åt dig.</div>
+              <button class="btn btn--default btn--sm" style="margin-top: 8px;">＋ Lägg till dokument</button>
+            </div>
+            <p class="suggestion__notes">
+              <strong>Why:</strong> empty states are seen first on day one. A warm tint + Safiro headline +
+              CTA turns a dead-end into a brand moment. Use <code class="inline">--section-warm</code> /
+              <code class="inline">--section-cream</code> (already defined, currently dormant in the workspace).
+              <br /><strong>Where:</strong> <code class="inline">components/ui/empty-state.tsx</code>
+            </p>
+          </div>
+        </div>
+
+        <!-- Suggestion: Dialog titles -->
+        <div class="suggestion">
+          <div class="suggestion__col">
+            <span class="suggestion__label">Current</span>
+            <h3 class="suggestion__heading" style="font-family: 'Google Sans Flex'; font-weight: 600;">Skapa kontroll</h3>
+            <p class="suggestion__notes" style="font-size: 12.5px;">Dialog titles render as <code class="inline">DialogTitle</code> = Google Sans Flex font-semibold.</p>
+          </div>
+          <div class="suggestion__col">
+            <span class="suggestion__label">Proposed <span class="status-pill status-pill--proposed" style="margin-left: 8px;">small</span></span>
+            <h3 class="suggestion__heading">Safiro for "page-equivalent" dialogs only</h3>
+            <p class="suggestion__notes">
+              <strong>Where:</strong> the wizard / hero dialogs — Skapa kontroll, Bjud in medlem, Skapa lista,
+              Lägg till dokument. <strong>NOT</strong> for confirmation dialogs ("Är du säker?") which should
+              stay system-font and short.
+              <br /><strong>How:</strong> add an <code class="inline">asPage</code> prop to
+              <code class="inline">DialogTitle</code> that toggles <code class="inline">font-safiro text-2xl font-medium</code>.
+              <br /><strong>Tradeoff:</strong> easy to overuse. Treat as opt-in, not default.
+            </p>
+          </div>
+        </div>
+
+        <!-- Suggestion: CardTitle hierarchy -->
+        <div class="suggestion">
+          <div class="suggestion__col">
+            <span class="suggestion__label">Current</span>
+            <h3 class="suggestion__heading" style="font-family: 'Google Sans Flex'; font-size: 24px; font-weight: 600;">Företagsuppgifter</h3>
+            <p class="suggestion__notes" style="font-size: 12.5px;"><code class="inline">CardTitle</code> = <code class="inline">text-2xl font-semibold</code>. Same recipe the old PageHeader used. When stacked under the new Safiro H1, both compete.</p>
+          </div>
+          <div class="suggestion__col">
+            <span class="suggestion__label">Proposed <span class="status-pill status-pill--proposed" style="margin-left: 8px;">small</span></span>
+            <h3 class="suggestion__heading" style="font-size: 18px; font-weight: 600;">Företagsuppgifter</h3>
+            <p class="suggestion__notes">
+              <strong>Why:</strong> drop CardTitle to <code class="inline">text-lg font-semibold</code> so the
+              section header reads as one tier below the page H1. Hierarchy: 30 (H1) → 18 (section) → 14 (body).
+              <br /><strong>Where:</strong> <code class="inline">components/ui/card.tsx:39</code>
+              <br /><strong>Risk:</strong> medium — touches every Card across the app. Worth grepping for explicit
+              size overrides first to avoid surprise downsizes.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section anchor" id="sugg-ideas">
+        <p class="section__eyebrow">Suggestions · ideas</p>
+        <h2 class="section__title">Worth exploring later</h2>
+        <p class="section__lede">Lower confidence, larger blast radius. Do not ship without prototyping.</p>
+
+        <div class="row row--start">
+          <div class="card-shadcn" style="flex: 1; min-width: 280px;">
+            <div class="row" style="margin-bottom: 8px; justify-content: space-between;">
+              <h5 style="font-size: 16px; margin: 0;">Adopt chart tokens app-wide</h5>
+              <span class="status-pill status-pill--idea">idea</span>
+            </div>
+            <p style="font-size: 13.5px; color: hsl(var(--muted-foreground));">
+              Audit Hem signal cards + any future dashboards to use <code class="inline">--chart-1..5</code>
+              instead of Tailwind defaults. Currently the warm chart palette exists but is barely consumed.
+            </p>
+          </div>
+
+          <div class="card-shadcn" style="flex: 1; min-width: 280px;">
+            <div class="row" style="margin-bottom: 8px; justify-content: space-between;">
+              <h5 style="font-size: 16px; margin: 0;">Unify table column-header treatment</h5>
+              <span class="status-pill status-pill--idea">idea</span>
+            </div>
+            <p style="font-size: 13.5px; color: hsl(var(--muted-foreground));">
+              Legal-doc tables use uppercase tracking-wide column headers; main app tables don't.
+              A consolidated <code class="inline">&lt;Th&gt;</code> with <code class="inline">text-xs uppercase tracking-wide text-muted-foreground</code>
+              would feel more polished on hub pages.
+            </p>
+          </div>
+
+          <div class="card-shadcn" style="flex: 1; min-width: 280px;">
+            <div class="row" style="margin-bottom: 8px; justify-content: space-between;">
+              <h5 style="font-size: 16px; margin: 0;">Section-tinted hero cards on Hem</h5>
+              <span class="status-pill status-pill--idea">idea</span>
+            </div>
+            <p style="font-size: 13.5px; color: hsl(var(--muted-foreground));">
+              Use <code class="inline">--section-warm</code> / <code class="inline">--section-sage</code> as the
+              background of signal cards on the Hem dashboard so the page reads more like a brand artifact
+              than a data console. Already defined in tokens — zero new CSS.
+            </p>
+          </div>
+
+          <div class="card-shadcn" style="flex: 1; min-width: 280px;">
+            <div class="row" style="margin-bottom: 8px; justify-content: space-between;">
+              <h5 style="font-size: 16px; margin: 0;">Radius unification (md vs lg)</h5>
+              <span class="status-pill status-pill--idea">idea</span>
+            </div>
+            <p style="font-size: 13.5px; color: hsl(var(--muted-foreground));">
+              Buttons + most surfaces use 6px (md). Card jumps to 8px (lg). Pick one and document it.
+              Most Linear-class apps unify on 6px or 8px and stay there. Verify with Card
+              against Button visual pairing first.
+            </p>
+          </div>
+
+          <div class="card-shadcn" style="flex: 1; min-width: 280px;">
+            <div class="row" style="margin-bottom: 8px; justify-content: space-between;">
+              <h5 style="font-size: 16px; margin: 0;">Density toggle (sm-input filter rows)</h5>
+              <span class="status-pill status-pill--idea">idea</span>
+            </div>
+            <p style="font-size: 13.5px; color: hsl(var(--muted-foreground));">
+              Inputs at 40px feel tall paired with 36px secondary buttons (size sm). Adding a 36px
+              <code class="inline">size="sm"</code> variant for filter/toolbar contexts would let dense
+              hub pages breathe without sacrificing form-screen comfort.
+            </p>
+          </div>
+
+          <div class="card-shadcn" style="flex: 1; min-width: 280px;">
+            <div class="row" style="margin-bottom: 8px; justify-content: space-between;">
+              <h5 style="font-size: 16px; margin: 0;">Dark-mode section tints</h5>
+              <span class="status-pill status-pill--idea">idea</span>
+            </div>
+            <p style="font-size: 13.5px; color: hsl(var(--muted-foreground));">
+              Currently <code class="inline">--section-warm/sage/cream</code> are light-only. If the empty-state
+              + Hem-card proposals land, dark-mode counterparts (e.g., 5% warm tint) need defining or those
+              surfaces fall back to neutral muted in dark.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <!-- Footer                                                            -->
+      <!-- ────────────────────────────────────────────────────────────── -->
+      <section class="section">
+        <hr style="border: none; border-top: 1px solid hsl(var(--border)); margin: 48px 0 24px;" />
+        <p style="font-size: 12.5px; color: hsl(var(--muted-foreground));">
+          Generated 2026-05-05 by walking the running app at <code class="inline">localhost:3000</code> and reading
+          <code class="inline">app/globals.css</code>, <code class="inline">components/ui/*</code>, and
+          <code class="inline">lib/ui/badge-tones.ts</code>.<br />
+          When tokens or primitives change, update <strong>this file</strong> and the source in lockstep.
+          Re-run a fresh tour anytime a major surface ships.
+        </p>
+        <p style="font-size: 12.5px; color: hsl(var(--muted-foreground)); margin-top: 12px;">
+          <a class="toc-back" href="#">↑ Back to top</a>
+        </p>
+      </section>
+    </main>
+  </div>
+
+</body>
+</html>

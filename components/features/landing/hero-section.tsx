@@ -27,7 +27,7 @@ export function HeroSection() {
 
             {/* Headline - Large, asymmetric, editorial style */}
             <h1
-              className="font-safiro animate-fade-up-delay-1 mb-8 text-[2.75rem] font-bold leading-[1.1] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
+              className="font-safiro animate-fade-up-delay-1 mb-8 text-[2.75rem] font-medium leading-[1.1] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
               style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
             >
               <span className="block">Ha koll på lagarna.</span>

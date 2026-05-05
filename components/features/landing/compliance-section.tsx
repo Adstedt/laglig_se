@@ -24,7 +24,7 @@ export function ComplianceSection() {
                 Alltid redo att visa upp
               </Badge>
               <h2
-                className="font-safiro mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
+                className="font-safiro mb-4 text-3xl font-medium tracking-tight sm:text-4xl"
                 style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
               >
                 När någon frågar: &quot;Hur gör ni?&quot;

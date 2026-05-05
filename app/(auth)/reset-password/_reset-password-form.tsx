@@ -63,7 +63,7 @@ export function ResetPasswordForm() {
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
           <CheckCircle className="h-6 w-6 text-emerald-600" />
         </div>
-        <h2 className="text-2xl font-bold font-safiro text-foreground">
+        <h2 className="text-2xl font-medium tracking-tight font-safiro text-foreground">
           Kontrollera din e-post
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -84,7 +84,7 @@ export function ResetPasswordForm() {
   return (
     <div className="w-full">
       <div className="text-center">
-        <h2 className="mt-2 text-3xl font-bold tracking-tight font-safiro text-foreground">
+        <h2 className="mt-2 text-3xl font-medium tracking-tight font-safiro text-foreground">
           Återställ ditt lösenord
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">

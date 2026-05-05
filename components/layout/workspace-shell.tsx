@@ -14,6 +14,8 @@ import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useMediaQuery } from '@/lib/hooks/use-media-query'
+import type { WorkspaceRole } from '@prisma/client'
+import type { PublishedTemplate } from '@/lib/db/queries/template-catalog'
 
 interface WorkspaceShellProps {
   user: {
@@ -22,10 +24,17 @@ interface WorkspaceShellProps {
     email?: string | null
     image?: string | null
   }
+  role: WorkspaceRole
+  publishedTemplates: PublishedTemplate[]
   children: React.ReactNode
 }
 
-export function WorkspaceShell({ user, children }: WorkspaceShellProps) {
+export function WorkspaceShell({
+  user,
+  role,
+  publishedTemplates,
+  children,
+}: WorkspaceShellProps) {
   const {
     rightSidebarFolded,
     toggleRightSidebar,
@@ -134,7 +143,12 @@ export function WorkspaceShell({ user, children }: WorkspaceShellProps) {
         {/* Right column: header + content */}
         <div className="flex flex-1 flex-col overflow-hidden">
           {/* Header - starts where sidebar ends */}
-          <Header user={user} onMenuToggle={() => setMobileMenuOpen(true)} />
+          <Header
+            user={user}
+            role={role}
+            publishedTemplates={publishedTemplates}
+            onMenuToggle={() => setMobileMenuOpen(true)}
+          />
 
           {/* Mobile sidebar drawer */}
           <MobileSidebar

@@ -37,6 +37,21 @@ vi.mock('@/lib/cache/workspace-cache', () => ({
   invalidateUserCache: vi.fn().mockResolvedValue(undefined),
 }))
 
+// Story 5.12: mock the Enterprise inquiry email path.
+vi.mock('@/lib/email/email-service', () => ({
+  sendEmail: vi.fn().mockResolvedValue({ success: true }),
+}))
+
+vi.mock('@/emails/enterprise-inquiry', () => ({
+  EnterpriseInquiryEmail: vi.fn(() => null),
+}))
+
+vi.mock('@/lib/env', () => ({
+  env: {
+    SALES_NOTIFICATION_EMAIL: 'sales@laglig.se',
+  },
+}))
+
 import { createWorkspace } from '@/app/actions/workspace'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from '@/lib/auth/session'
@@ -241,6 +256,158 @@ describe('createWorkspace', () => {
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('Något gick fel. Försök igen.')
+    })
+  })
+
+  /**
+   * Story 5.12: tier-picker writes to Workspace.trial_picked_tier.
+   * Enterprise picks downgrade trial limits to TEAM + set
+   * enterprise_inquiry_at for sales follow-up.
+   */
+  describe('Story 5.12: pickedTier mapping', () => {
+    it('pickedTier=SOLO → trial_picked_tier=SOLO, enterprise_inquiry_at unset, no email', async () => {
+      const { sendEmail } = await import('@/lib/email/email-service')
+      const captureBox: { value: Record<string, unknown> } = { value: {} }
+      vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
+        const tx = {
+          workspace: {
+            create: vi.fn().mockImplementation((data) => {
+              captureBox.value = data.data
+              return Promise.resolve(mockWorkspace)
+            }),
+          },
+          workspaceMember: {
+            create: vi.fn().mockResolvedValue({ id: 'member_123' }),
+          },
+        }
+        return callback(tx as never)
+      })
+
+      const formData = new FormData()
+      formData.append('name', 'My Solo Co')
+      formData.append('pickedTier', 'SOLO')
+
+      const result = await createWorkspace(formData)
+
+      expect(result.success).toBe(true)
+      expect(captureBox.value.trial_picked_tier).toBe('SOLO')
+      expect(captureBox.value.enterprise_inquiry_at).toBeUndefined()
+      expect(sendEmail).not.toHaveBeenCalled()
+    })
+
+    it('pickedTier=TEAM → trial_picked_tier=TEAM, enterprise_inquiry_at unset, no email', async () => {
+      const { sendEmail } = await import('@/lib/email/email-service')
+      const captureBox: { value: Record<string, unknown> } = { value: {} }
+      vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
+        const tx = {
+          workspace: {
+            create: vi.fn().mockImplementation((data) => {
+              captureBox.value = data.data
+              return Promise.resolve(mockWorkspace)
+            }),
+          },
+          workspaceMember: {
+            create: vi.fn().mockResolvedValue({ id: 'member_123' }),
+          },
+        }
+        return callback(tx as never)
+      })
+
+      const formData = new FormData()
+      formData.append('name', 'Team Co')
+      formData.append('pickedTier', 'TEAM')
+
+      await createWorkspace(formData)
+
+      expect(captureBox.value.trial_picked_tier).toBe('TEAM')
+      expect(captureBox.value.enterprise_inquiry_at).toBeUndefined()
+      expect(sendEmail).not.toHaveBeenCalled()
+    })
+
+    it('pickedTier=ENTERPRISE → trial_picked_tier=TEAM, enterprise_inquiry_at set, sendEmail fired', async () => {
+      const { sendEmail } = await import('@/lib/email/email-service')
+      const captureBox: { value: Record<string, unknown> } = { value: {} }
+      vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
+        const tx = {
+          workspace: {
+            create: vi.fn().mockImplementation((data) => {
+              captureBox.value = data.data
+              return Promise.resolve(mockWorkspace)
+            }),
+          },
+          workspaceMember: {
+            create: vi.fn().mockResolvedValue({ id: 'member_123' }),
+          },
+        }
+        return callback(tx as never)
+      })
+
+      const formData = new FormData()
+      formData.append('name', 'Big Co')
+      formData.append('pickedTier', 'ENTERPRISE')
+
+      await createWorkspace(formData)
+
+      expect(captureBox.value.trial_picked_tier).toBe('TEAM')
+      expect(captureBox.value.enterprise_inquiry_at).toBeInstanceOf(Date)
+      expect(sendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: 'sales@laglig.se',
+          subject: expect.stringContaining('Big Co'),
+          from: 'notifications',
+        })
+      )
+    })
+
+    it('missing pickedTier defaults to SOLO and emits a console.warn', async () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const captureBox: { value: Record<string, unknown> } = { value: {} }
+      vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
+        const tx = {
+          workspace: {
+            create: vi.fn().mockImplementation((data) => {
+              captureBox.value = data.data
+              return Promise.resolve(mockWorkspace)
+            }),
+          },
+          workspaceMember: {
+            create: vi.fn().mockResolvedValue({ id: 'member_123' }),
+          },
+        }
+        return callback(tx as never)
+      })
+
+      const formData = new FormData()
+      formData.append('name', 'Unspecified Co')
+      // no pickedTier
+
+      await createWorkspace(formData)
+
+      expect(captureBox.value.trial_picked_tier).toBe('SOLO')
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('missing or invalid pickedTier')
+      )
+      warnSpy.mockRestore()
+    })
+
+    it('sendEmail throwing does NOT roll back the workspace; logs [ENTERPRISE_INQUIRY_EMAIL_FAIL]', async () => {
+      const { sendEmail } = await import('@/lib/email/email-service')
+      const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      vi.mocked(sendEmail).mockRejectedValueOnce(new Error('Resend down'))
+
+      const formData = new FormData()
+      formData.append('name', 'Big Co')
+      formData.append('pickedTier', 'ENTERPRISE')
+
+      const result = await createWorkspace(formData)
+
+      // Workspace create still succeeds — email is post-tx fail-safe.
+      expect(result.success).toBe(true)
+      expect(errSpy).toHaveBeenCalledWith(
+        '[ENTERPRISE_INQUIRY_EMAIL_FAIL]',
+        expect.any(Error)
+      )
+      errSpy.mockRestore()
     })
   })
 

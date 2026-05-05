@@ -12,6 +12,7 @@ import {
 import { PausedWorkspaceBanner } from '@/components/features/workspace/paused-workspace-banner'
 import { getImpersonationInfo } from '@/lib/admin/auth'
 import { ImpersonationBanner } from '@/components/admin/impersonation-banner'
+import { getPublishedTemplates } from '@/lib/db/queries/template-catalog'
 
 // Force dynamic rendering for all workspace pages since they require authentication
 export const dynamic = 'force-dynamic'
@@ -75,8 +76,12 @@ export default async function WorkspaceLayout({
     // 0 workspaces falls through to getWorkspaceContextSafe() → NO_WORKSPACE → /onboarding
   }
 
-  const workspaceContext = await getWorkspaceContextSafe()
-  const impersonationInfo = await getImpersonationInfo()
+  const [workspaceContext, impersonationInfo, publishedTemplates] =
+    await Promise.all([
+      getWorkspaceContextSafe(),
+      getImpersonationInfo(),
+      getPublishedTemplates(),
+    ])
 
   // Handle paused workspace: render shell with warning banner
   if (workspaceContext.workspaceStatus === 'PAUSED') {
@@ -90,7 +95,13 @@ export default async function WorkspaceLayout({
           />
         )}
         <PausedWorkspaceBanner isOwner={workspaceContext.role === 'OWNER'} />
-        <WorkspaceShell user={user}>{children}</WorkspaceShell>
+        <WorkspaceShell
+          user={user}
+          role={workspaceContext.role}
+          publishedTemplates={publishedTemplates}
+        >
+          {children}
+        </WorkspaceShell>
       </>
     )
   }
@@ -104,7 +115,13 @@ export default async function WorkspaceLayout({
           userId={user.id}
         />
       )}
-      <WorkspaceShell user={user}>{children}</WorkspaceShell>
+      <WorkspaceShell
+        user={user}
+        role={workspaceContext.role}
+        publishedTemplates={publishedTemplates}
+      >
+        {children}
+      </WorkspaceShell>
     </>
   )
 }

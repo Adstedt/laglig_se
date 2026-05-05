@@ -18,6 +18,7 @@ const routeLabels: Record<string, string> = {
   dashboard: 'Dashboard',
   settings: 'Inställningar',
   workspace: 'Arbetsyta',
+  activity: 'Aktivitetslogg',
   billing: 'Fakturering',
   'ai-chat': 'AI Chat',
   kanban: 'Uppgifter',

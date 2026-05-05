@@ -57,7 +57,7 @@ export function ConfirmPasswordForm() {
   return (
     <div className="w-full">
       <div className="text-center">
-        <h2 className="mt-2 text-3xl font-bold tracking-tight font-safiro text-foreground">
+        <h2 className="mt-2 text-3xl font-medium tracking-tight font-safiro text-foreground">
           Ange nytt lösenord
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">

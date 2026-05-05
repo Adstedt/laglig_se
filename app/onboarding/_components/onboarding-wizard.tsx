@@ -18,16 +18,20 @@ import type { ActivityFlags } from './activity-questions-step'
 import { WizardStepper } from './wizard-stepper'
 import { CompanyInfoStep } from './company-info-step'
 import { ActivityQuestionsStep } from './activity-questions-step'
+import { TierPickerStep } from './tier-picker-step'
 import { ConfirmStep } from './confirm-step'
 import { PendingInvitations } from './pending-invitations'
+
+type PickedTier = 'SOLO' | 'TEAM' | 'ENTERPRISE'
 
 const WIZARD_STEPS = [
   { id: 'company-info' },
   { id: 'activity-questions' },
+  { id: 'tier-picker' },
   { id: 'confirm' },
 ] as const
 
-const STEP_LABELS = ['Företagsinfo', 'Verksamhet', 'Bekräfta']
+const STEP_LABELS = ['Företagsinfo', 'Verksamhet', 'Nivå', 'Bekräfta']
 
 interface OnboardingWizardProps {
   redirect?: string | undefined
@@ -47,17 +51,25 @@ export function OnboardingWizard({
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState<Partial<WorkspaceOnboardingData>>({})
   const [activityFlags, setActivityFlags] = useState<ActivityFlags>({})
+  const [pickedTier, setPickedTier] = useState<PickedTier | undefined>()
+  const [defaultTier, setDefaultTier] = useState<PickedTier | undefined>()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [inferredFlags, setInferredFlags] = useState<
     Record<string, boolean> | undefined
   >()
 
-  // Load inferredFlags from OnboardingStore on mount
+  // Load inferredFlags + pickedTier from OnboardingStore on mount
   useEffect(() => {
     const stored = getOnboardingData()
     if (stored?.inferredFlags) {
       setInferredFlags(stored.inferredFlags)
+    }
+    if (stored?.pickedTier) {
+      // defaultTier feeds the TierPickerStep pre-selection note;
+      // pickedTier is the live wizard state used at submit.
+      setDefaultTier(stored.pickedTier)
+      setPickedTier(stored.pickedTier)
     }
   }, [])
 
@@ -72,12 +84,23 @@ export function OnboardingWizard({
     setCurrentStep((prev) => prev + 1)
   }
 
+  const handleTierPickerNext = (tier: PickedTier) => {
+    setPickedTier(tier)
+    setCurrentStep((prev) => prev + 1)
+  }
+
   const handleBack = () => {
     setCurrentStep((prev) => Math.max(0, prev - 1))
   }
 
   const handleGoBackToEdit = () => {
     setCurrentStep(0)
+  }
+
+  // Story 5.12: jump back to the tier-picker step from ConfirmStep
+  // ("Ändra plan" link). Index of 'tier-picker' in WIZARD_STEPS = 2.
+  const handleChangeTier = () => {
+    setCurrentStep(2)
   }
 
   const handleSubmit = async () => {
@@ -127,6 +150,12 @@ export function OnboardingWizard({
         if (has_collective_agreement !== undefined) {
           fd.append('hasCollectiveAgreement', String(has_collective_agreement))
         }
+      }
+
+      // Story 5.12: tier pick written to Workspace.trial_picked_tier
+      // (or for Enterprise → trial_picked_tier='TEAM' + enterprise_inquiry_at).
+      if (pickedTier) {
+        fd.append('pickedTier', pickedTier)
       }
 
       const result = await createWorkspace(fd)
@@ -215,14 +244,36 @@ export function OnboardingWizard({
               />
             )}
 
+            {stepId === 'tier-picker' && (
+              <TierPickerStep
+                {...(defaultTier ? { defaultTier } : {})}
+                companyContext={{
+                  ...(formData.employeeCount && formData.employeeCount !== ''
+                    ? { employeeCount: parseInt(formData.employeeCount, 10) }
+                    : {}),
+                  activityFlags,
+                  ...(activityFlags.has_collective_agreement !== undefined
+                    ? {
+                        hasCollectiveAgreement:
+                          activityFlags.has_collective_agreement,
+                      }
+                    : {}),
+                }}
+                onNext={handleTierPickerNext}
+                onBack={handleBack}
+              />
+            )}
+
             {stepId === 'confirm' && (
               <ConfirmStep
                 data={formData as WorkspaceOnboardingData}
+                pickedTier={pickedTier ?? 'SOLO'}
                 onBack={handleBack}
                 onSubmit={handleSubmit}
                 isSubmitting={isSubmitting}
                 submitError={submitError}
                 onGoBackToEdit={handleGoBackToEdit}
+                onChangeTier={handleChangeTier}
               />
             )}
           </>

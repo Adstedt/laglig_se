@@ -17,6 +17,7 @@
  */
 import { NextResponse } from 'next/server'
 import type Stripe from 'stripe'
+import * as Sentry from '@sentry/nextjs'
 import { stripe, tierForPriceId } from '@/lib/stripe/config'
 import { prisma } from '@/lib/prisma'
 import { env } from '@/lib/env'
@@ -54,19 +55,44 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: message }, { status: 400 })
   }
 
-  // Idempotency check — return 200 if we've already processed this event.id
-  const existing = await prisma.stripeWebhookEvent.findUnique({
-    where: { stripe_event_id: event.id },
-  })
-  if (existing) {
-    return NextResponse.json({ received: true, duplicate: true })
-  }
-
+  // Idempotency: claim the event_id by inserting the row. Treat the unique
+  // constraint as the idempotency primitive — race-safe vs the previous
+  // findUnique → create pattern (which had a TOCTOU bug where two concurrent
+  // deliveries of the same event would both pass the findUnique check, both
+  // attempt create, the loser would 500, and its catch block would delete
+  // the winner's row — breaking at-most-once processing).
+  //
+  // P2002 here means "another concurrent delivery already claimed this
+  // event" — we return 200 duplicate without running the switch handler.
   try {
     await prisma.stripeWebhookEvent.create({
       data: { stripe_event_id: event.id, event_type: event.type },
     })
+  } catch (err) {
+    if (
+      err instanceof Error &&
+      'code' in err &&
+      (err as { code: unknown }).code === 'P2002'
+    ) {
+      return NextResponse.json({ received: true, duplicate: true })
+    }
+    // Some other DB issue (connection, schema, etc) — surface to Sentry and
+    // return 500 so Stripe retries.
+    Sentry.captureException(err, {
+      tags: {
+        area: 'stripe-webhook',
+        event: 'idempotency_claim_failed',
+        stripe_event_type: event.type,
+        stripe_event_id: event.id,
+      },
+    })
+    return NextResponse.json(
+      { error: 'Failed to claim event' },
+      { status: 500 }
+    )
+  }
 
+  try {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
@@ -264,6 +290,17 @@ export async function POST(request: Request) {
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('[STRIPE-WEBHOOK] handler error:', error)
+    // Surface to Sentry so silent webhook failures don't accumulate. The
+    // chat route gets the same treatment via Story 5.5c TOKEN-002 — webhook
+    // billing path is at least as critical.
+    Sentry.captureException(error, {
+      tags: {
+        area: 'stripe-webhook',
+        event: 'webhook_handler_failed',
+        stripe_event_type: event.type,
+        stripe_event_id: event.id,
+      },
+    })
     // Roll back the idempotency row so Stripe's retry can re-process this event.
     await prisma.stripeWebhookEvent
       .delete({ where: { stripe_event_id: event.id } })

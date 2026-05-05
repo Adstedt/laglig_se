@@ -113,6 +113,12 @@ model Workspace {
   // Cleared on trial→paid conversion (subscription_tier flips to picked tier).
   trial_picked_tier SubscriptionTier?
 
+  // Story 5.12: signals user requested Enterprise during onboarding.
+  // Trial limits are still capped at Team (trial_picked_tier='TEAM') to bound
+  // COGS during the wait-for-sales window. Sales rep clears this column
+  // when the Enterprise contract is signed and tier is flipped manually.
+  enterprise_inquiry_at DateTime?
+
   // Story 5.4: Stripe billing
   stripe_customer_id           String?   @unique
   stripe_subscription_id       String?
