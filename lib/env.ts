@@ -23,7 +23,10 @@ export const env = createEnv({
     STRIPE_WEBHOOK_SECRET: z.string().min(1),
     STRIPE_SOLO_PRICE_ID: z.string().min(1),
     STRIPE_TEAM_PRICE_ID: z.string().min(1),
-    STRIPE_ENTERPRISE_PRICE_ID: z.string().min(1),
+    // Enterprise is sales-led — never goes through self-serve Checkout, so
+    // a Price ID isn't required for boot. The /api/billing/checkout route
+    // rejects tier: 'ENTERPRISE' before reaching this value.
+    STRIPE_ENTERPRISE_PRICE_ID: z.string().min(1).optional(),
   },
 
   /**

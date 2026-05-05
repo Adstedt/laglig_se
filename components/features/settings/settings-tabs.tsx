@@ -6,6 +6,7 @@
  * Permission-gated: Billing tab only visible to OWNER role.
  */
 
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useWorkspace } from '@/hooks/use-workspace'
 import { hasPermission } from '@/lib/auth/permissions'
@@ -22,7 +23,7 @@ import {
 import type { WorkspaceRole, SubscriptionTier } from '@prisma/client'
 import { GeneralTab } from './general-tab'
 import { TeamTab } from './team-tab'
-import { BillingTab } from './billing-tab'
+import { BillingDashboard } from '@/components/features/billing/billing-dashboard'
 import { NotificationsTab } from './notifications-tab'
 import { IntegrationsTab } from './integrations-tab'
 import { WorkflowTab } from './workflow-tab'
@@ -37,6 +38,14 @@ export interface WorkspaceData {
   company_logo: string | null
   subscription_tier: SubscriptionTier
   trial_ends_at: Date | null
+}
+
+export interface BillingData {
+  subscriptionStatus: string | null
+  stripeCustomerId: string | null
+  stripeSubscriptionId: string | null
+  currentPeriodEnd: string | null
+  paymentGracePeriodEndsAt: string | null
 }
 
 export interface MemberData {
@@ -56,6 +65,10 @@ interface SettingsTabsProps {
   members: MemberData[]
   columns: TaskColumnWithCount[]
   companyProfile: CompanyProfile
+  billing: BillingData
+  initialTab: string
+  showPastDueBanner: boolean
+  showCheckoutSuccess: boolean
 }
 
 export function SettingsTabs({
@@ -63,8 +76,20 @@ export function SettingsTabs({
   members,
   columns,
   companyProfile,
+  billing,
+  initialTab,
+  showPastDueBanner,
+  showCheckoutSuccess,
 }: SettingsTabsProps) {
   const { role, isLoading } = useWorkspace()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const handleTabChange = (newTab: string) => {
+    const next = new URLSearchParams(searchParams.toString())
+    next.set('tab', newTab)
+    router.replace(`?${next.toString()}`, { scroll: false })
+  }
 
   // Show loading skeleton while checking permissions
   if (isLoading) {
@@ -81,7 +106,11 @@ export function SettingsTabs({
   const canAccessSettings = hasPermission(typedRole, 'workspace:settings')
 
   return (
-    <Tabs defaultValue="general" className="space-y-6">
+    <Tabs
+      value={initialTab}
+      onValueChange={handleTabChange}
+      className="space-y-6"
+    >
       <TabsList className="inline-flex h-auto flex-wrap gap-1 bg-muted p-1">
         <TabsTrigger value="general" className="gap-2">
           <Settings className="h-4 w-4" />
@@ -134,7 +163,21 @@ export function SettingsTabs({
 
       {canAccessBilling && (
         <TabsContent value="billing">
-          <BillingTab workspace={workspace} />
+          <BillingDashboard
+            workspace={{
+              id: workspace.id,
+              name: workspace.name,
+              subscriptionTier: workspace.subscription_tier,
+              subscriptionStatus: billing.subscriptionStatus,
+              stripeCustomerId: billing.stripeCustomerId,
+              stripeSubscriptionId: billing.stripeSubscriptionId,
+              currentPeriodEnd: billing.currentPeriodEnd,
+              trialEndsAt: workspace.trial_ends_at?.toISOString() ?? null,
+              paymentGracePeriodEndsAt: billing.paymentGracePeriodEndsAt,
+            }}
+            showPastDueBanner={showPastDueBanner}
+            showCheckoutSuccess={showCheckoutSuccess}
+          />
         </TabsContent>
       )}
 

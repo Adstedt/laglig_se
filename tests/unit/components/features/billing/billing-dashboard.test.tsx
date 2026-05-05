@@ -36,7 +36,7 @@ const baseWorkspace = {
 }
 
 describe('BillingDashboard tier tile routing', () => {
-  it('TRIAL workspace: every tier tile shows the Checkout button ("Välj plan")', () => {
+  it('TRIAL workspace: SOLO + TEAM tiles show Checkout, ENTERPRISE shows the booking link', () => {
     render(
       <BillingDashboard
         workspace={{
@@ -50,8 +50,11 @@ describe('BillingDashboard tier tile routing', () => {
       />
     )
 
-    // 3 paid-tier tiles, each with a "Välj plan" Checkout button.
-    expect(screen.getAllByRole('button', { name: /Välj plan/ })).toHaveLength(3)
+    // 2 self-serve tiles get "Välj plan" Checkout buttons; ENTERPRISE is sales-led.
+    expect(screen.getAllByRole('button', { name: /Välj nivå/ })).toHaveLength(2)
+    expect(
+      screen.getByRole('link', { name: /Boka samtal/ })
+    ).toBeInTheDocument()
     // Negative assertions: NO Portal-routed buttons should appear in trial.
     expect(
       screen.queryByRole('button', { name: /Uppgradera via portal/ })
@@ -61,10 +64,11 @@ describe('BillingDashboard tier tile routing', () => {
     ).toBeNull()
   })
 
-  it('TEAM workspace (active sub): SOLO routes to Portal (downgrade), ENTERPRISE routes to Portal (upgrade), TEAM is "Aktiv"', () => {
+  it('TEAM workspace (active sub): SOLO routes to Portal (downgrade), ENTERPRISE shows the booking link, TEAM is "Aktiv"', () => {
     // BILLING-003 regression guard: this is the exact case Quinn flagged.
     // Pre-fix, ENTERPRISE would have shown a Checkout "Uppgradera" button
-    // that hits the server-side 409 SUBSCRIPTION_EXISTS guard.
+    // that hits the server-side 409 SUBSCRIPTION_EXISTS guard. Post-cleanup,
+    // ENTERPRISE is sales-led — its tile always renders the booking link.
     render(
       <BillingDashboard
         workspace={{
@@ -82,10 +86,13 @@ describe('BillingDashboard tier tile routing', () => {
     expect(
       screen.getByRole('button', { name: /Nedgradera via portal/ })
     ).toBeInTheDocument()
-    // Upgrade path (ENTERPRISE): Portal button labelled "Uppgradera via portal" — NOT a Checkout button.
+    // Enterprise tile: booking link, not a Checkout/Portal button.
     expect(
-      screen.getByRole('button', { name: /Uppgradera via portal/ })
+      screen.getByRole('link', { name: /Boka samtal/ })
     ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /Uppgradera via portal/ })
+    ).toBeNull()
     // Current tier tile: disabled "Aktiv" button.
     const aktiv = screen.getByRole('button', { name: /^Aktiv$/ })
     expect(aktiv).toBeDisabled()
@@ -93,7 +100,7 @@ describe('BillingDashboard tier tile routing', () => {
     expect(screen.queryByRole('button', { name: /^Uppgradera$/ })).toBeNull()
   })
 
-  it('SOLO workspace (active sub): TEAM and ENTERPRISE both route to Portal as upgrades', () => {
+  it('SOLO workspace (active sub): TEAM routes to Portal as upgrade, ENTERPRISE shows the booking link', () => {
     render(
       <BillingDashboard
         workspace={{
@@ -107,10 +114,13 @@ describe('BillingDashboard tier tile routing', () => {
       />
     )
 
-    // TEAM and ENTERPRISE are both upgrades from SOLO → both labelled "Uppgradera via portal".
+    // TEAM is an upgrade → Portal. ENTERPRISE → booking link (sales-led, not metered).
     expect(
       screen.getAllByRole('button', { name: /Uppgradera via portal/ })
-    ).toHaveLength(2)
+    ).toHaveLength(1)
+    expect(
+      screen.getByRole('link', { name: /Boka samtal/ })
+    ).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^Uppgradera$/ })).toBeNull()
   })
 
@@ -131,12 +141,16 @@ describe('BillingDashboard tier tile routing', () => {
     )
 
     expect(screen.queryByRole('button', { name: /^Uppgradera$/ })).toBeNull()
-    expect(screen.queryByRole('button', { name: /^Välj plan$/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: /^Välj nivå$/ })).toBeNull()
+    // Enterprise booking link is unconditional — should still render here.
+    expect(
+      screen.getByRole('link', { name: /Boka samtal/ })
+    ).toBeInTheDocument()
   })
 
-  it('Canceled subscription is NOT treated as active — Checkout buttons reappear', () => {
+  it('Canceled subscription is NOT treated as active — Checkout buttons reappear on self-serve tiers', () => {
     // After cancellation the workspace can re-subscribe via Checkout (no
-    // existing sub to dup). This codifies the "escape hatch" semantics.
+    // existing sub to dup). ENTERPRISE remains sales-led regardless of state.
     render(
       <BillingDashboard
         workspace={{
@@ -150,6 +164,9 @@ describe('BillingDashboard tier tile routing', () => {
       />
     )
 
-    expect(screen.getAllByRole('button', { name: /Välj plan/ })).toHaveLength(3)
+    expect(screen.getAllByRole('button', { name: /Välj nivå/ })).toHaveLength(2)
+    expect(
+      screen.getByRole('link', { name: /Boka samtal/ })
+    ).toBeInTheDocument()
   })
 })
