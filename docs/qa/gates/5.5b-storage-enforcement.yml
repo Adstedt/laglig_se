@@ -1,0 +1,192 @@
+schema: 1
+story: '5.5b'
+story_title: 'Storage Enforcement'
+gate: PASS
+status_reason: |
+  STORAGE-001 closed by the dev fix-pass. New 4-test path-tests file
+  (storage-upload-paths.test.ts) imports the actual uploadFile server
+  action and verifies: (1) overflow returns STORAGE_QUOTA_EXCEEDED with NO
+  Supabase write + NO DB row create — the critical no-orphan guarantee;
+  (2) success-under-cap proceeds through upload + DB create normally;
+  (3) soft-warn-at-80% returns success with structured warning payload;
+  (4) Enterprise at 100 GB cap blocks (NOT bypassed, per AC 7).
+
+  Both spec-listed test cases from the story Testing section are now
+  covered. The mocking pattern follows seat-enforcement-paths.test.ts (the
+  SEAT-004 fix). 97/97 tests pass (29 5.5b + 46 5.5a + 22 billing
+  regression). Typecheck clean. Story is production-ready.
+
+  Original status_reason (preserved for history):
+  Functional implementation is correct on the happy path. All 10 ACs satisfied at the behavioural level: gate fires BEFORE Supabase Storage write (no orphan-object risk), Enterprise correctly capped at 100 GB (not bypassed), trial_picked_tier resolution works, soft warn payload surfaces on success response, structured `code: 'STORAGE_QUOTA_EXCEEDED'` for client branching. 25/25 new tests pass; 93/93 across all 5.5a + 5.5b + 5.4 work; typecheck clean. Dev applied 5.5a's lessons (structured error code, no external service exposure since no Stripe calls).
+
+  One real concern: path-level integration test gap (STORAGE-001). The story Testing section explicitly lists "File upload action returns JSON 413 with correct shape on quota exceeded" and "File upload action does NOT call Supabase Storage when quota check throws (no orphan)" — neither is actually implemented. The 15 integration tests in storage-enforcement.test.ts cover the `assertWithinStorageQuota` helper directly but no test imports `uploadFile` to verify the gate is wired into the user-facing path. Same pattern as SEAT-004 in 5.5a, which was fixed in v1.3 with 5 dedicated path tests.
+
+  Two future considerations: TOCTOU race in `uploadFile` (bounded impact — max ~25 MB × concurrent uploads = negligible margin cost), and AC 3 shape divergence (error string carries the user-visible info but the structured currentBytes/incomingBytes/limitBytes/tier fields aren't returned — functionally adequate for v1).
+
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-05T12:50:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'STORAGE-001'
+    severity: 'closed'
+    title: 'Path-level integration test gap — gate wiring in uploadFile not directly verified'
+    description: |
+      The story's Testing section explicitly lists two integration test cases:
+
+        - 'File upload action returns JSON 413 with correct shape on quota exceeded'
+        - 'File upload action does NOT call Supabase Storage when quota check throws (no orphan)'
+
+      Neither is implemented. tests/unit/usage/storage-enforcement.test.ts has 15
+      tests but they all hit `assertWithinStorageQuota` and `getStorageUsage`
+      directly — no test imports `uploadFile` from app/actions/files.ts to verify
+      the gate call exists and that Supabase Storage is NOT invoked on a
+      blocked upload.
+
+      A dev could remove the `assertWithinStorageQuota` call from uploadFile
+      and all 25 5.5b tests + the 68 5.5a/5.4 regression tests would still
+      pass. Same exact failure mode as SEAT-004 in 5.5a, which was fixed in
+      Story 5.5a v1.3 by adding 5 path tests.
+
+      Recommend adding tests/unit/usage/storage-upload-paths.test.ts that:
+        - Imports uploadFile from app/actions/files.ts
+        - Mocks prisma + getStorageClient + withWorkspace
+        - Builds a FormData fixture with a fake File
+        - Verifies on overflow: ActionResult { success: false, code: 'STORAGE_QUOTA_EXCEEDED' }
+          AND storageClient.storage.from(...).upload() was NOT called
+        - Verifies on success-with-warning: ActionResult { success: true, warning: { ... } }
+        - Verifies on plain success: ActionResult { success: true, data, no warning }
+
+      Pattern to follow: tests/unit/usage/seat-enforcement-paths.test.ts (the
+      SEAT-004 fix) — uses vi.mock for prisma + stripe + auth, imports the
+      route handler / server action under test directly, asserts on the
+      ActionResult shape.
+    refs:
+      - 'tests/unit/usage/storage-enforcement.test.ts'
+      - 'app/actions/files.ts:304-321 (the gate insertion point)'
+      - 'tests/unit/usage/seat-enforcement-paths.test.ts (SEAT-004 reference fix)'
+
+resolutions:
+  - id: 'STORAGE-001'
+    fixed_in: 'v1.3 (2026-05-05 fix-pass)'
+    fix_summary: |
+      New tests/unit/usage/storage-upload-paths.test.ts with 4 path tests
+      that import the actual uploadFile server action (not just the
+      assertWithinStorageQuota helper). Each test mocks prisma + getStorageClient
+      + withWorkspace, builds a FormData fixture with a fake PDF File, and
+      verifies meaningful side effects (storageFromMock NOT called on overflow,
+      workspaceFile.create NOT called on overflow, etc.).
+
+      The 4 tests:
+      1. Overflow → returns code: 'STORAGE_QUOTA_EXCEEDED' + storage write
+         NOT called + DB create NOT called. Catches the no-orphan invariant.
+      2. Under-cap success → upload + DB create both called, no warning.
+      3. Soft-warn at 80% → success: true + warning field populated, upload
+         still proceeds (non-blocking warning).
+      4. Enterprise 100 GB cap → blocks (NOT bypassed per AC 7).
+
+      Both spec-listed cases from the story Testing section are now covered;
+      the additional 2 tests lock in the soft-warn contract and the AC 7
+      Enterprise framing.
+
+      Mocking pattern matches seat-enforcement-paths.test.ts (the SEAT-004
+      fix). A dev removing the assertWithinStorageQuota call from uploadFile
+      would now fail tests 1, 3, and 4. Gate wiring is regression-locked.
+
+quality_score: 92
+expires: '2026-06-05T00:00:00Z'
+
+evidence:
+  tests_reviewed: 29
+  risks_identified: 0
+  resolved_issues: 1
+  trace:
+    ac_covered: [1, 2, 4, 5, 6, 7, 8, 9, 10]
+    ac_partial: [3]  # error string carries the user-visible info; structured currentBytes/incomingBytes/limitBytes/tier fields not returned (server action context, simpler shape than the HTTP 413 spec describes — accepted as functionally adequate for v1)
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      No new auth/authz attack surface. Upload action already gated by
+      withWorkspace permission boundary; storage gate is additive. No external
+      service calls (no Stripe in this story → no outage handling needed,
+      simpler than 5.5a). Aggregate query is workspace-scoped (workspace_id
+      in WHERE).
+
+  performance:
+    status: PASS
+    notes: |
+      Aggregate query uses existing @@index([workspace_id]) — bounded by
+      per-workspace file count. At 10K files (story-spec ceiling) the SUM
+      is well under 20ms. Upload path is multi-second user-perceived
+      anyway, so the additional <50ms quota check is invisible.
+
+      One DB read added (workspace.findUniqueOrThrow for tier resolution)
+      runs in parallel with the aggregate via Promise.all. Total cost: ~10-20ms
+      added to the upload path. Acceptable.
+
+  reliability:
+    status: PASS
+    notes: |
+      Gate placement is correct — runs BEFORE the Supabase Storage write
+      (verified at app/actions/files.ts:310, with the storage write at
+      line 326+). Blocked upload returns early; no orphan object created.
+
+      Soft-warn-at-cap edge case: when currentBytes + incomingBytes ==
+      limitBytes exactly, the check passes (uses `>` not `>=`) and the warning
+      fires (>= 80% threshold). Reasonable for v1 — upload at exactly cap is
+      allowed but flagged. Document as intentional.
+
+      Race condition: two simultaneous uploads can each pass the check
+      independently and together exceed cap. Bounded by file size (max 25 MB
+      per upload per existing MAX_FILE_SIZE constant). Worst-case overshoot
+      at Solo's 1 GB cap with 4 concurrent 25 MB uploads = ~1.1 GB = 10%
+      over. Not worth fixing for v1 (margin cost is negligible at storage
+      pricing of $0.021/GB).
+
+  maintainability:
+    status: PASS
+    notes: |
+      Code is well-structured. lib/usage/storage.ts has clear separation
+      between pure helpers (bytesToGB, gbToBytes, formatBytesSwedish), the
+      enforcement assertion, and the read-only snapshot. Inline comments
+      reference the schema verification (WorkspaceFile, file_size, is_folder)
+      so future readers understand why the column names differ from typical
+      conventions. ActionResult interface extension is non-breaking — other
+      callers in app/actions/files.ts (uploadFileAndLinkToTask, etc.) ignore
+      the new optional fields cleanly.
+
+      One maintainability risk: STORAGE-001 (path test gap) — the gate could
+      regress silently. Same maintainability concern as SEAT-004.
+
+future_considerations:
+  - 'TOCTOU race between assertWithinStorageQuota and Supabase Storage write — two simultaneous uploads can each pass independently and together exceed cap. Bounded by file size (max 25 MB × concurrent count). At storage pricing of $0.021/GB the overshoot cost is negligible. Defer fix until production observability shows the race firing.'
+  - 'AC 3 shape divergence (low priority): error returns { success, error, code } shape. AC 3 spec describes the fuller { error, message, code, currentBytes, incomingBytes, limitBytes, tier } shape. Functionally adequate for v1 (user-visible info is in the error string). If Epic 17 file-browser needs structured fields for advanced UI, extend the ActionResult error branch.'
+  - 'Workspace.storage_gb_override column for sales-led Enterprise customers needing more than 100 GB — flagged in AC 7. Separate future story.'
+  - 'Storage-meter-on-billing-dashboard widget consumption — getStorageUsage shape ({ usedBytes, limitBytes, percentUsed, tier }) is ready for 5.5c to compose into the unified usage widget.'
+  - 'Upload soft-warn UX — the warning payload is plumbed through ActionResult.warning but no UI surface consumes it yet. Epic 17 should pick it up in the file-browser toast layer.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Consider tightening the `code?: string` typing on ActionResult to a literal union (e.g., `code?: "STORAGE_QUOTA_EXCEEDED"`) once more codes are added. Pure type-safety nice-to-have.'
+      refs: ['app/actions/files.ts:39-50']
+    - action: 'TOCTOU race between assertWithinStorageQuota and Supabase Storage write — bounded by 25 MB MAX_FILE_SIZE × concurrent uploads. Negligible margin cost at $0.021/GB. Defer fix until production observability shows real overshoot.'
+      refs: ['app/actions/files.ts:304-321']
+    - action: 'AC 3 structured field expansion (currentBytes/incomingBytes/limitBytes/tier on the error result) if Epic 17 file-browser needs them for advanced UI. Currently the user-visible info is in the formatted error string — sufficient for v1.'
+      refs: ['app/actions/files.ts:313-318']
+    - action: 'Workspace.storage_gb_override column for sales-led Enterprise customers needing more than 100 GB — separate future story (flagged in AC 7).'
+      refs: ['lib/usage/limits.ts (TIER_LIMITS.ENTERPRISE)']
+    - action: 'E2E Playwright spec for the upload-blocked flow — deferred per workflow note.'
+      refs: ['tests/e2e/storage-enforcement.spec.ts (planned)']
+
+history:
+  - at: '2026-05-05T12:50:00Z'
+    gate: CONCERNS
+    note: 'Initial review. STORAGE-001 (medium): path-level integration tests for uploadFile gate wiring missing. Story Testing section explicitly lists two such tests that aren''t implemented. Same class as SEAT-004 in 5.5a (which was fixed with 5 dedicated path tests). Quality score 82. Implementation otherwise solid — all 10 ACs satisfied, 25 new tests pass, 93/93 regression. AC 3 shape simplification (no currentBytes/limitBytes structured fields) accepted as functionally adequate for v1; user-visible info is carried in the formatted error string.'
+  - at: '2026-05-05T13:00:00Z'
+    gate: PASS
+    note: 'Re-review after dev fix-pass v1.3. STORAGE-001 closed: 4 new path tests in storage-upload-paths.test.ts verify the gate is wired into uploadFile (overflow blocks with no Supabase write + no DB row, under-cap proceeds, soft-warn-at-80% surfaces, Enterprise honors 100 GB cap). Both spec-listed test cases now covered, plus 2 valuable additions. 97/97 tests pass (29 5.5b + 46 5.5a + 22 billing). Typecheck clean. Quality score 92. Story is production-ready; recommend status → Done.'

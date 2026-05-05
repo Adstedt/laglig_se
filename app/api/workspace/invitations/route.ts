@@ -27,6 +27,11 @@ import { WorkspaceInvitationEmail } from '@/emails/workspace-invitation'
 import { ROLE_LABELS } from '@/components/features/settings/role-labels'
 import { getAppUrl } from '@/lib/utils/app-url'
 import { INVITE_TTL_MS } from '@/lib/constants/invitations'
+import {
+  assertSeatAvailable,
+  SeatLimitExceededError,
+  StripeUnavailableError,
+} from '@/lib/usage/seats'
 
 // Per-workspace rate limit: 50 invitations / hour. Bounded by the
 // members:invite permission but a compromised admin account could still
@@ -138,6 +143,50 @@ export async function POST(request: Request) {
       { error: 'En väntande inbjudan finns redan för denna e-postadress' },
       { status: 400 }
     )
+  }
+
+  // Story 5.5a: seat enforcement.
+  // Counts current members + pending invitations against the tier cap so
+  // concurrent invite-creates can't break the cap. The accept path also
+  // re-checks for race protection.
+  try {
+    await assertSeatAvailable(context.workspaceId)
+  } catch (error) {
+    if (error instanceof SeatLimitExceededError) {
+      // Tier-specific upgrade hint. Solo (and untier'd Trial which falls
+      // through to Solo limits) → suggest moving to Team. Team workspaces
+      // already on the highest self-serve tier → point at extra-seat purchase
+      // and Enterprise. Enterprise is unlimited and never reaches this branch.
+      const upgradeHint =
+        error.tier === 'TEAM'
+          ? 'Köp fler platser via faktureringsportalen eller kontakta säljteamet för Enterprise.'
+          : 'Uppgradera till Team eller köp en extra plats.'
+      return NextResponse.json(
+        {
+          error: 'Platsgräns uppnådd',
+          message: `Din plan tillåter ${error.limit} platser. ${upgradeHint}`,
+          code: 'SEAT_LIMIT_REACHED',
+          currentSeats: error.currentSeats,
+          limit: error.limit,
+          tier: error.tier,
+        },
+        { status: 402 }
+      )
+    }
+    // Story 5.5a SEAT-003: fail-closed on Stripe outage with a clean JSON
+    // 503 instead of leaking the underlying StripeError as HTML.
+    if (error instanceof StripeUnavailableError) {
+      return NextResponse.json(
+        {
+          error: 'Tillfälligt tekniskt fel',
+          message:
+            'Det gick inte att verifiera platsbegränsningen just nu. Försök igen om en stund.',
+          code: 'STRIPE_UNAVAILABLE',
+        },
+        { status: 503 }
+      )
+    }
+    throw error
   }
 
   const token = generateToken()

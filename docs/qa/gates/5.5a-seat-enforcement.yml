@@ -1,0 +1,244 @@
+schema: 1
+story: '5.5a'
+story_title: 'Seat Enforcement'
+gate: PASS
+status_reason: 'All four originally-flagged concerns (SEAT-001/002/003/004) closed by the dev fix-pass. Race protection: seat check moved inside prisma.$transaction with structured error rollback. Response shape: acceptInvitation now returns the full AC 9 structured shape with code/currentSeats/limit/tier on overflow. Stripe outage: new StripeUnavailableError class with HTTP 503 / structured action error mapping; fail-closed approach. Test coverage: new path-tests file exercises both routes + outage + happy path with proper mocking. 68/68 tests pass (46 5.5a + 22 billing regression). Typecheck clean. Story is production-ready for dev pickup of 5.5b/5.5c, pending operator-applied DB migration (single ALTER TABLE column add, documented in completion notes).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-05T12:35:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'SEAT-001'
+    severity: 'closed'
+    title: 'TOCTOU race between assertSeatAvailable and member-create transaction in acceptInvitation'
+    description: |
+      In app/actions/invitations.ts, the seat re-check at AC 4 runs OUTSIDE the
+      member-create transaction:
+
+        await assertSeatAvailable(invitation.workspace_id)  // checks count
+        ...
+        await prisma.$transaction([
+          tx.workspaceMember.create(...),                    // writes member
+          tx.workspaceInvitation.update(...),
+        ])
+
+      Two simultaneous accepts on the last seat both pass the check (neither
+      has written yet), then both transactions succeed and the workspace ends
+      up over the cap by one. AC 4 explicitly says "race protection."
+
+      Mitigations (pick one):
+      a. Move the seat check INSIDE the transaction using the tx client:
+         re-count tx.workspaceMember + tx.workspaceInvitation, throw if over.
+         Both concurrent accepts will see the same snapshot and one will fail
+         a uniqueness or count check.
+      b. Add a unique constraint that would catch the violation (less elegant).
+      c. Document the race window as acceptable for v1 given low operation
+         frequency (B2B invite-accepts are rare; the window is milliseconds).
+
+      Recommend option (a) — moves the check into the transactional snapshot
+      so the race window closes entirely.
+    refs:
+      - 'app/actions/invitations.ts:200-215'
+      - 'lib/usage/seats.ts:127-139'
+
+  - id: 'SEAT-002'
+    severity: 'closed'
+    title: 'acceptInvitation overflow response does not match AC 9 shape'
+    description: |
+      AC 9 specifies the JSON shape on BOTH create + accept paths:
+
+        { error, message, code: 'SEAT_LIMIT_REACHED', currentSeats, limit, tier }
+
+      The create path (app/api/workspace/invitations/route.ts:150-161) returns
+      this shape correctly with HTTP 402. The accept path
+      (app/actions/invitations.ts:200-214) returns only:
+
+        { success: false, error: 'Arbetsplatsen har inga lediga platser kvar...' }
+
+      Loses programmatic error code (no `code: 'SEAT_LIMIT_REACHED'`),
+      currentSeats, limit, tier. Client cannot distinguish "this was a seat
+      cap error" from any other accept error and cannot offer the same
+      upgrade CTA programmatically.
+
+      Fix: extend acceptInvitation's return type to optionally include
+      `code` and the seat-state fields. On overflow, populate them from the
+      caught SeatLimitExceededError instance. Clients (the /invite/[token]
+      page) can then branch on `code` for upgrade UI.
+
+      Server actions return plain objects (not HTTP responses) so HTTP 402 as
+      such doesn't apply, but the SHAPE consistency is what AC 9 actually
+      requires for client-side handling parity.
+    refs:
+      - 'app/actions/invitations.ts:208-214'
+      - 'docs/stories/5.5a.seat-enforcement.md AC 9'
+
+  - id: 'SEAT-003'
+    severity: 'closed'
+    title: 'Stripe outage path is unhandled — produces HTTP 500 / unhandled action throw'
+    description: |
+      countActiveAddonSeats() calls stripe.subscriptions.retrieve() with no
+      try/catch. On Stripe outage / network error / API rate-limiting, the
+      thrown StripeError bubbles up through assertSeatAvailable to the
+      caller:
+
+      - Route POST /api/workspace/invitations: only catches
+        SeatLimitExceededError; everything else falls through to Next.js's
+        default 500 HTML response. Client's res.json() then fails to parse.
+        (Same root cause as the bug we fixed in /api/billing/checkout last
+        session — "Unexpected end of JSON input".)
+      - Server action acceptInvitation: throws to client; harder to surface
+        cleanly in UI.
+
+      Decision needed: fail-closed (block invites during Stripe outage,
+      with clean error message) or fail-open (count addonSeats=0 on Stripe
+      error, allow invite). For a low-frequency operation with margin
+      protection as the primary purpose, fail-closed is defensible — but
+      the error response shape needs to be a clean JSON 503/424:
+
+        { error: 'Tillfälligt tekniskt fel', code: 'STRIPE_UNAVAILABLE' }
+
+      Fail-open is also defensible (Solo/non-Team workspaces aren't
+      affected anyway since countActiveAddonSeats short-circuits to 0 for
+      those cases — only a Team workspace adding a 4th seat during a Stripe
+      outage is the corner case).
+
+      Recommend: catch StripeError-shaped errors in countActiveAddonSeats,
+      log via console.error, fail-closed with HTTP 503 + JSON error code.
+      Update integration tests to cover this branch.
+    refs:
+      - 'lib/usage/seats.ts:61-68'
+      - 'app/api/workspace/invitations/route.ts:148-164'
+
+  - id: 'SEAT-004'
+    severity: 'low'
+    title: 'Integration test gap — gate wiring not directly verified'
+    description: |
+      tests/unit/usage/seat-enforcement.test.ts has 15 thorough tests for
+      countActiveAddonSeats and assertSeatAvailable, but no test imports
+      the actual route handler from app/api/workspace/invitations/route.ts
+      or the acceptInvitation server action to verify the gate is wired
+      into the user-facing flow. A dev could remove the assertSeatAvailable
+      call from either path and all 41 tests would still pass.
+
+      Recommend: add 4-6 integration tests at
+      tests/unit/usage/seat-enforcement-paths.test.ts that:
+      - Import POST from app/api/workspace/invitations/route.ts
+      - Mock auth context + prisma + stripe
+      - Send a Request with a JSON body
+      - Assert the 402 response shape on overflow
+      - Assert the 200 response when within cap
+      - Same pattern for acceptInvitation
+
+      Pattern to follow: tests/unit/billing/stripe-integration.test.ts:411
+      (the existing 'rejects an invalid tier with 400' test imports the
+      Stripe checkout route handler).
+    refs:
+      - 'tests/unit/usage/seat-enforcement.test.ts'
+      - 'tests/unit/billing/stripe-integration.test.ts:411'
+
+resolutions:
+  - id: 'SEAT-001'
+    fixed_in: 'v1.3 (2026-05-05 fix-pass)'
+    fix_summary: |
+      Seat re-check moved INSIDE prisma.$transaction (app/actions/invitations.ts:244-289). Three queries via tx client (workspace, member count, pending invitation count) → getEffectiveLimits → throw SeatLimitExceededError if used > limit BEFORE tx.workspaceMember.create. Add-on count fetched OUTSIDE transaction (Stripe network call). Outer try/catch marks invitation EXPIRED on overflow.
+      Residual: at Postgres default READ COMMITTED isolation, two concurrent transactions can still see the same pre-write count snapshot. Window is microseconds and worst-case is +1-2 over-cap. Acceptable for v1 B2B accept frequencies. Documented as future consideration if observed in production.
+  - id: 'SEAT-002'
+    fixed_in: 'v1.3'
+    fix_summary: 'acceptInvitation return type extended with code: SEAT_LIMIT_REACHED | STRIPE_UNAVAILABLE | undefined, currentSeats, limit, tier (all optional). On overflow populated from SeatLimitExceededError instance. Matches AC 9 shape for client-side parity with create-path.'
+  - id: 'SEAT-003'
+    fixed_in: 'v1.3'
+    fix_summary: 'New StripeUnavailableError class in lib/usage/seats.ts:39-44. countActiveAddonSeats wraps stripe.subscriptions.retrieve in try/catch, logs via console.error("[SEATS_STRIPE_ERROR]"), throws StripeUnavailableError. Route returns HTTP 503 + code STRIPE_UNAVAILABLE with clean Swedish retry message. Server action returns same code. Fail-closed approach.'
+  - id: 'SEAT-004'
+    fixed_in: 'v1.3'
+    fix_summary: 'New tests/unit/usage/seat-enforcement-paths.test.ts with 5 path tests: (1) POST returns 402 + SEAT_LIMIT_REACHED on cap; (2) POST returns 503 on Stripe outage; (3) acceptInvitation in-transaction overflow returns SEAT_LIMIT_REACHED structured shape; (4) acceptInvitation Stripe outage returns STRIPE_UNAVAILABLE; (5) happy-path member-create. Tests import actual route handler + server action. Mock setup catches gate-removal regressions.'
+
+future_considerations:
+  - 'SERIALIZABLE isolation level on the acceptInvitation transaction — closes the residual TOCTOU window from "microseconds at READ COMMITTED" to "guaranteed atomic". Add via prisma.$transaction(cb, { isolationLevel: "Serializable" }). Defer until production observability shows the race firing — likely never at B2B accept frequencies.'
+  - 'Redis caching for the addon-seat lookup (5.5c pattern) once observability shows the Stripe call is a noticeable latency contributor on the invite path.'
+  - 'E2E Playwright spec for the invite-modal upgrade-CTA flow — deferred per workflow note, pick up in a dedicated E2E pass.'
+
+quality_score: 92
+expires: '2026-06-05T00:00:00Z'
+
+evidence:
+  tests_reviewed: 68
+  risks_identified: 0
+  resolved_issues: 4
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    ac_partial: []
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      No new auth/authz attack surface. Both paths use existing permission
+      gates (members:invite for create, session ownership check for accept).
+      Migration adds nullable column only, no RLS implications.
+      Trial-picked-tier resolution is read-only.
+      One concern: SEAT-003 (Stripe outage produces unstructured 500 errors
+      that may leak stack traces to the client) — listed as a quality
+      concern, not a security finding, since Sentry/Vercel logs are the
+      primary leak surface and they're already private.
+
+  performance:
+    status: PASS
+    notes: |
+      Each invite-create + accept makes a Stripe API call (~100-200ms) for
+      add-on seat counting on TEAM workspaces with subscriptions. Acceptable
+      for the low-frequency invite path per the spec ("not a hot path").
+
+      The team-tab page render also triggers getSeatUsage() on every visit
+      — also makes the Stripe call. SWR caches client-side but a cold load
+      pays the latency. Minor: 2-3 second page loads when the Stripe API
+      is slow. Fix would be 5.5c-style Redis caching, but that's
+      out-of-scope for this story.
+
+      computeSeatUsage runs four DB queries + one Stripe call in parallel
+      via Promise.all — efficient.
+
+  reliability:
+    status: PASS
+    notes: |
+      All v1 reliability concerns addressed. Stripe outage now fail-closes
+      with structured error (HTTP 503 + STRIPE_UNAVAILABLE / matching server
+      action shape). TOCTOU race narrowed to microsecond window at READ
+      COMMITTED isolation by moving the seat re-check inside the transaction
+      — production-level race risk is negligible at B2B accept frequencies
+      (<1/min/workspace). Pending invitations counted toward seat tally at
+      create time covers the multi-invite-then-accept overflow scenario.
+
+      Documented for future: SERIALIZABLE isolation on the accept transaction
+      would close the residual race window entirely; defer until production
+      observability shows the race firing.
+
+  maintainability:
+    status: PASS
+    notes: |
+      Code is well-structured and well-commented. Single-source-of-truth
+      pattern (lib/usage/limits.ts) is clean and the Story 5.6 cross-ref
+      for add-on shape is properly flagged. Inline comments reference AC
+      numbers (e.g., "Story 5.5a: re-check seat cap..." at
+      app/actions/invitations.ts:239-243). 26-test unit suite locks in the
+      limits semantics; 15-test integration suite locks in the helpers; new
+      5-test path-tests file (SEAT-004 fix) catches gate-removal regressions.
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add isolationLevel: "Serializable" to the acceptInvitation transaction once production observability shows the residual TOCTOU race firing. Likely never triggers at B2B accept frequencies but the fix is one parameter.'
+      refs: ['app/actions/invitations.ts:244']
+    - action: 'Consider Redis caching for the addon-seat lookup (similar to 5.5c pattern) once observability data shows the Stripe call is a noticeable latency contributor on the invite path.'
+      refs: ['lib/usage/seats.ts:58-94']
+    - action: 'E2E Playwright spec deferred per workflow note — pick up in a dedicated E2E pass to lock in the invite-modal upgrade-CTA flow.'
+      refs: ['tests/e2e/seat-enforcement.spec.ts (planned)']
+
+history:
+  - at: '2026-05-05T12:25:00Z'
+    gate: CONCERNS
+    note: 'Initial review. 4 mid-priority issues (SEAT-001 TOCTOU race, SEAT-002 response shape, SEAT-003 Stripe outage, SEAT-004 integration test gap). Quality score 75. Implementation is correct on happy path — 41/41 new tests pass, 22/22 regression tests still pass — but recommended fixes before PASS.'
+  - at: '2026-05-05T12:35:00Z'
+    gate: PASS
+    note: 'Re-review after dev fix-pass v1.3. All 4 issues closed: SEAT-001 in-transaction seat check (residual READ COMMITTED window noted as future consideration), SEAT-002 structured error shape extension, SEAT-003 StripeUnavailableError + 503 mapping, SEAT-004 new 5-test path-tests file. 68/68 tests pass (46 5.5a + 22 billing regression). Typecheck clean. Quality score up to 92. NFR reliability flipped CONCERNS → PASS, performance flipped CONCERNS → PASS. Story is production-ready; recommend status → Done after operator applies the trial_picked_tier migration to Supabase.'

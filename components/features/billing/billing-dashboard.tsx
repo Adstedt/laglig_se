@@ -18,6 +18,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { UsageWidget } from './usage-widget'
 import {
   Table,
   TableBody,
@@ -299,6 +300,9 @@ export function BillingDashboard({
           )}
         </CardContent>
       </Card>
+
+      {/* Story 5.5c: Usage widget — tokens, storage, seats */}
+      <UsageWidget />
 
       {/* Plan tiles — upgrade flows */}
       <Card>

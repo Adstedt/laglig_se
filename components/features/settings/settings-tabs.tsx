@@ -172,7 +172,9 @@ export function SettingsTabs({
               stripeCustomerId: billing.stripeCustomerId,
               stripeSubscriptionId: billing.stripeSubscriptionId,
               currentPeriodEnd: billing.currentPeriodEnd,
-              trialEndsAt: workspace.trial_ends_at?.toISOString() ?? null,
+              trialEndsAt: workspace.trial_ends_at
+                ? new Date(workspace.trial_ends_at).toISOString()
+                : null,
               paymentGracePeriodEndsAt: billing.paymentGracePeriodEndsAt,
             }}
             showPastDueBanner={showPastDueBanner}

@@ -7,7 +7,8 @@
  */
 
 import { useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import Link from 'next/link'
+import { Loader2, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Dialog,
@@ -29,11 +30,14 @@ import {
 } from '@/components/ui/select'
 import type { WorkspaceRole } from '@prisma/client'
 import { ROLE_LABELS, ASSIGNABLE_ROLES } from './role-labels'
+import type { SeatUsage } from '@/lib/usage/seats'
 
 interface InviteMemberModalProps {
   open: boolean
   onOpenChange: (_open: boolean) => void
   onInvited: () => void
+  /** Story 5.5a: seat-usage data to render the X/N counter + upgrade CTA. */
+  seatUsage: SeatUsage | null
 }
 
 const DEFAULT_ROLE: WorkspaceRole = 'MEMBER'
@@ -45,11 +49,19 @@ export function InviteMemberModal({
   open,
   onOpenChange,
   onInvited,
+  seatUsage,
 }: InviteMemberModalProps) {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<WorkspaceRole>(DEFAULT_ROLE)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Story 5.5a: when at the seat cap, replace the submit button with an
+  // upgrade CTA. Enterprise (limit === null) is unlimited so this never fires.
+  const atCap =
+    seatUsage !== null &&
+    seatUsage.limit !== null &&
+    seatUsage.used >= seatUsage.limit
 
   const resetForm = () => {
     setEmail('')
@@ -131,9 +143,14 @@ export function InviteMemberModal({
                   setError(null)
                 }}
                 placeholder="namn@foretag.se"
-                disabled={isSubmitting}
+                disabled={isSubmitting || atCap}
                 required
               />
+              {seatUsage && seatUsage.limit !== null && (
+                <p className="text-xs text-muted-foreground">
+                  {seatUsage.used} / {seatUsage.limit} platser används
+                </p>
+              )}
             </div>
 
             <div className="grid gap-2">
@@ -172,12 +189,21 @@ export function InviteMemberModal({
             >
               Avbryt
             </Button>
-            <Button type="submit" disabled={isSubmitting || !email.trim()}>
-              {isSubmitting && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Skicka inbjudan
-            </Button>
+            {atCap ? (
+              <Button asChild type="button">
+                <Link href="/settings?tab=billing">
+                  Uppgradera plan
+                  <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            ) : (
+              <Button type="submit" disabled={isSubmitting || !email.trim()}>
+                {isSubmitting && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Skicka inbjudan
+              </Button>
+            )}
           </DialogFooter>
         </form>
       </DialogContent>

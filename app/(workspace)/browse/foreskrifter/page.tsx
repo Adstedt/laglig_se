@@ -40,7 +40,9 @@ export default async function WorkspaceForeskrifterPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Myndighetsföreskrifter</h1>
+        <h1 className="font-safiro text-3xl font-medium tracking-tight">
+          Myndighetsföreskrifter
+        </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Bläddra bland föreskrifter från svenska myndigheter
         </p>

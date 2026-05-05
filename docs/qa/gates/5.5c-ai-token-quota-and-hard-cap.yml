@@ -1,0 +1,183 @@
+schema: 1
+story: '5.5c'
+story_title: 'AI Token Quota & Hard Cap'
+gate: PASS
+status_reason: |
+  Re-review after Dev fix-pass on TOKEN-001 + TOKEN-002. Both addressed:
+
+  - **TOKEN-001 RESOLVED**: 4 new chat-route POST tests added to
+    `tests/unit/usage/chat-quota-enforcement.test.ts`. Coverage:
+      1. POST returns 402 + AI_TOKEN_QUOTA_EXCEEDED + correct JSON body
+         (usage/limit/hardCap/tier) when assertWithinTokenQuota throws
+         TokenQuotaExceededError
+      2. POST returns 200 + no X-AI-Usage-Warning header when quota check
+         passes with no warning
+      3. POST attaches X-AI-Usage-Warning header (parsed JSON shape) when
+         quota check returns warning
+      4. POST returns 500 (fails closed) when quota check throws non-quota
+         error (DB outage simulation)
+    Test 1 also asserts `streamText` was NOT called — the gate stops the
+    request before any AI provider invocation. A dev removing line 138 of
+    the chat route now fails 3 of the 4 tests. Same-pattern equivalent of
+    the SEAT-004 / STORAGE-001 fixes from 5.5a / 5.5b.
+
+  - **TOKEN-002 RESOLVED**: `Sentry.captureException` added to the
+    `onFinish` error catch at `app/api/chat/route.ts:386`. Tags include
+    `area: 'chat-usage'`, `event: 'usage_write_failed'`, and the workspace
+    ID for downstream filtering. Semantics unchanged — still fails-safe
+    (catch swallows the throw so chat response isn't disturbed) — but ops
+    now gets paged immediately when the same-transaction telemetry path
+    fails. Closes the silent-counter-failure observability gap.
+
+  117/117 tests pass across 5.5a + 5.5b + 5.5c + 5.4 regression
+  (was 113 — +4 chat-route POST tests). Typecheck clean.
+
+  Future considerations TOKEN-003 (chat fails closed — defer until obs
+  shows DB outage pattern) and TOKEN-004 (latency benchmark — defer per
+  workflow note) remain open but non-blocking. Both are future iteration
+  candidates, not 5.5c-blocking.
+
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-05T13:25:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+resolved_issues:
+  - id: 'TOKEN-001'
+    severity: 'medium'
+    title: 'Chat-route POST path tests missing — gate wiring on the primary user surface not verified'
+    resolution: |
+      Resolved 2026-05-05T13:25:00Z. 4 chat-route POST tests added to
+      tests/unit/usage/chat-quota-enforcement.test.ts. Tests cover 402 hard
+      cap, 200 success, X-AI-Usage-Warning header on soft warn, and 500 on
+      non-quota throw. Test 1 also asserts streamText was NOT invoked when
+      gate fires, locking in the early-exit behaviour. Removing the gate
+      from line 138 of app/api/chat/route.ts now fails 3 of the 4 new
+      tests (the 500 case is independent of gate presence).
+    refs:
+      - 'tests/unit/usage/chat-quota-enforcement.test.ts (POST /api/chat — token quota gate wiring describe block)'
+      - 'app/api/chat/route.ts:131-162'
+
+  - id: 'TOKEN-002'
+    severity: 'medium'
+    title: 'onFinish swallows ALL errors silently — counter can fail to update without alerting'
+    resolution: |
+      Resolved 2026-05-05T13:25:00Z. Sentry.captureException added at
+      app/api/chat/route.ts:386 with tags { area: 'chat-usage', event:
+      'usage_write_failed', workspace_id }. Pure additive — the catch
+      still swallows the exception (preserves Story 14.27 fail-safety
+      contract that telemetry must not break user-facing chat) — but
+      ops now gets immediate alert when the same-transaction telemetry
+      path silently fails during a DB outage. Closes the observability
+      gap; the underlying drift-during-outage residual is bounded by
+      outage duration and tracked as a future-consideration drift
+      reconciliation cron.
+    refs:
+      - 'app/api/chat/route.ts:5 (Sentry import)'
+      - 'app/api/chat/route.ts:386-405 (Sentry.captureException in catch)'
+
+quality_score: 92
+expires: '2026-06-05T00:00:00Z'
+
+evidence:
+  tests_reviewed: 20
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15]
+    ac_partial: [12]  # AC 12 latency budget claimed but not benchmarked (deferred per workflow note → TOKEN-004)
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      No new auth/authz attack surface. Quota check runs after the existing
+      auth + workspace context resolution. HTTP 402 response shape is
+      stable and structured for client-side branching. Migration is
+      additive (new table, new FK) — no RLS implications.
+
+      The X-AI-Usage-Warning header surfaces token usage figures to the
+      client. These aren't sensitive (they're already visible in the
+      billing dashboard) but document if response logging captures them
+      for analytics — would mean per-workspace usage is in observability
+      data alongside chat metadata.
+
+  performance:
+    status: CONCERNS
+    notes: |
+      Latency budget < 30ms p95 cache hit / < 250ms p99 cache miss is
+      claimed in the story spec but NOT benchmarked. Per workflow note,
+      vitest-bench complexity not worth blocking on — but the budget
+      should be verified before promoting to production scale. Cold
+      cache on a Vercel cold-start = 150-200ms Stripe call; if this fires
+      on every cold-started function invocation (likely high under load),
+      the p99 claim could slip.
+
+      Add-on seat cache via Upstash Redis with graceful fallback (good).
+      In-memory Map approach (parent spec original design) was correctly
+      avoided per parent spec S1 fix — Redis gives true shared cache
+      across serverless instances.
+
+      The chat hot path now does: rate limit (Redis) + quota check (DB +
+      Redis) + workspace lookup (DB, only on first turn) + transaction
+      (2 writes) + cache invalidation. Most are <10ms. Net impact
+      probably <50ms added latency on the chat path warmly cached.
+
+  reliability:
+    status: PASS
+    notes: |
+      TOKEN-002 resolved via Sentry alerting — drift-during-outage now
+      observable to ops within seconds of failure. Same-transaction
+      guarantee for ChatUsageEvent + WorkspaceUsage preserved at the DB
+      level (both writes commit together OR both roll back).
+
+      Webhook two-code-paths (use $transaction only on period advance)
+      is correctly implemented. Both branches produce equivalent
+      workspace state; only the counter reset differs.
+
+      Redis cache gracefully falls back to direct Stripe call if Redis
+      is unavailable — chat path doesn't fail catastrophically.
+
+      Webhook reset's cache invalidation (`invalidateSeatCache`) runs
+      AFTER the transaction commits, which is the right ordering — if
+      the transaction fails, cache stays as-is and subsequent reads see
+      consistent data with the (rolled-back) DB state.
+
+  maintainability:
+    status: PASS
+    notes: |
+      Code is well-structured. New module split (lib/usage/check.ts,
+      lib/usage/seat-cache.ts, app/api/cron/reset-usage-safety/route.ts,
+      components/features/billing/usage-widget.tsx) is clean. Inline
+      comments reference parent spec C1/C2 fixes and Story 14.27
+      transaction guarantee rationale. The webhook two-code-paths
+      refactor is well-commented (line 142-145 in route.ts).
+
+      Path test gap (TOKEN-001) closed in this fix-pass — gate wiring
+      now locked in by tests, so future regressions surface immediately.
+
+future_considerations:
+  - 'TOKEN-003 (low): chat route fails CLOSED on quota-check error (DB outage during assertWithinTokenQuota → HTTP 500). Defensible margin protection but during sustained outages users see "Internal server error". Could fail open (let chat through if quota check fails) — bounded by outage duration. Defer the decision until production observability shows the failure mode firing.'
+  - 'TOKEN-004 (low): latency benchmark deferred per workflow note. Add a vitest bench that measures assertWithinTokenQuota p50/p95/p99 under cold + warm cache before scaling production load. Story v1.2 spec mandated this; deferred is acceptable for v1 but should land before significant traffic.'
+  - 'Drift detection cron: a periodic reconciliation between ChatUsageEvent and WorkspaceUsage.tokens_used_this_period would close the silent-counter-failure path entirely. Out of scope for v1 — addresses the residual after TOKEN-002 Sentry alerting.'
+  - 'Stripe Subscription Items add-on shape (Story 5.6 dependency) flows through countActiveAddonSeats unchanged. Cache wrapper is transparent to the underlying shape.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'TOKEN-003 future-consideration: instrument the quota-check failure path. If observability shows DB outages causing user-facing 500s on chat, consider switching to fail-open with a fallback "skip quota check this turn" flag.'
+      refs: ['app/api/chat/route.ts:142-161']
+    - action: 'TOKEN-004 future-consideration: add the latency benchmark (vitest bench) before scaling production load. Per parent spec, must verify < 30ms p95 cache hit / < 250ms p99 cache miss claim.'
+      refs: ['tests/unit/usage/check-quota.bench.ts (planned)']
+    - action: 'E2E Playwright spec for the upgrade-modal flow at hard cap — deferred per workflow note.'
+      refs: ['tests/e2e/chat-quota-hard-cap.spec.ts (planned)']
+
+history:
+  - at: '2026-05-05T13:10:00Z'
+    gate: CONCERNS
+    note: 'Initial review of the meatiest 5.5 sub-story. Implementation is functionally correct: parent spec C1/C2 fixes correctly applied, BigInt consistency clean, Redis cache wired with graceful fallback, webhook two-code-paths refactor preserves correctness, 113/113 regression tests pass. Two real concerns: TOKEN-001 (chat-route path tests missing — same class as SEAT-004 / STORAGE-001 but on the largest blast-radius surface in the family) and TOKEN-002 (onFinish swallows all errors → counter can silently fail under DB outage; mitigatable with Sentry alerting). Quality score 80. Recommended fixes before PASS.'
+  - at: '2026-05-05T13:25:00Z'
+    gate: PASS
+    note: 'Re-review after Dev fix-pass. TOKEN-001 + TOKEN-002 both resolved. 117/117 tests pass (was 113 + 4 new chat-route POST tests). Typecheck clean. Sentry import + captureException added at the onFinish catch. Quality score 92. Future considerations TOKEN-003 / TOKEN-004 remain open but non-blocking.'

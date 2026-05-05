@@ -56,11 +56,6 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
 
-  // Story 6.7a: Increase Server Actions body size limit for file uploads (25MB)
-  serverActions: {
-    bodySizeLimit: '25mb',
-  },
-
   // Story P.2: Image Optimization Configuration (AC: 19-21)
   images: {
     // Enable modern image formats
@@ -138,6 +133,11 @@ const nextConfig = {
   },
 
   experimental: {
+    // Story 6.7a: Increase Server Actions body size limit for file uploads (25MB)
+    // Next.js 16: must live under `experimental.serverActions` (root-level was silently ignored)
+    serverActions: {
+      bodySizeLimit: '25mb',
+    },
     // Story P.2: Enable optimizeCss for smaller CSS bundles
     optimizeCss: true,
     // Router Cache Configuration (Story 2.19, Story 6.0)
