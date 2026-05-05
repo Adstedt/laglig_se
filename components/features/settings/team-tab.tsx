@@ -61,6 +61,7 @@ import {
   changeMemberRole,
   removeMember,
 } from '@/app/actions/workspace-settings'
+import { getSeatUsage } from '@/app/actions/seats'
 import type { MemberData } from './settings-tabs'
 import type { WorkspaceRole, InvitationStatus } from '@prisma/client'
 import { ROLE_LABELS, ROLE_COLORS, ASSIGNABLE_ROLES } from './role-labels'
@@ -121,6 +122,7 @@ interface TeamTabProps {
 }
 
 const INVITATIONS_SWR_KEY = 'workspace-invitations'
+const SEAT_USAGE_SWR_KEY = 'workspace-seat-usage'
 
 export function TeamTab({ members }: TeamTabProps) {
   const [isPending, startTransition] = useTransition()
@@ -135,6 +137,13 @@ export function TeamTab({ members }: TeamTabProps) {
     revalidateOnFocus: false,
   })
   const invitations = data?.invitations ?? []
+
+  // Story 5.5a: seat usage subtitle + invite-modal gate.
+  const { data: seatUsage, mutate: mutateSeatUsage } = useSWR(
+    SEAT_USAGE_SWR_KEY,
+    () => getSeatUsage(),
+    { revalidateOnFocus: false }
+  )
 
   const handleRoleChange = (memberId: string, newRole: string) => {
     setPendingMemberId(memberId)
@@ -220,7 +229,13 @@ export function TeamTab({ members }: TeamTabProps) {
             <div className="flex-1">
               <h2 className="text-base font-semibold">Team</h2>
               <p className="mt-0.5 text-sm text-muted-foreground">
-                Hantera teammedlemmar och roller.
+                {seatUsage
+                  ? seatUsage.limit === null
+                    ? 'Hantera teammedlemmar och roller.'
+                    : seatUsage.used >= seatUsage.limit
+                      ? `Alla ${seatUsage.limit} platser används — uppgradera för fler.`
+                      : `${seatUsage.used} av ${seatUsage.limit} platser används.`
+                  : 'Hantera teammedlemmar och roller.'}
               </p>
             </div>
           </div>
@@ -505,8 +520,10 @@ export function TeamTab({ members }: TeamTabProps) {
       <InviteMemberModal
         open={inviteOpen}
         onOpenChange={setInviteOpen}
+        seatUsage={seatUsage ?? null}
         onInvited={() => {
           void mutate()
+          void mutateSeatUsage()
         }}
       />
     </div>

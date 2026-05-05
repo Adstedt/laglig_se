@@ -14,6 +14,7 @@ import {
 import { openai } from '@ai-sdk/openai'
 import { anthropic } from '@ai-sdk/anthropic'
 import { Ratelimit } from '@upstash/ratelimit'
+import * as Sentry from '@sentry/nextjs'
 import { redis, isRedisConfigured } from '@/lib/cache/redis'
 import { getServerSession } from '@/lib/auth/session'
 import { getWorkspaceContext } from '@/lib/auth/workspace-context'
@@ -30,6 +31,10 @@ import {
   type ChatMessageMetadata,
 } from '@/lib/ai/citations'
 import { estimateCostUsd } from '@/lib/usage/cost-estimator'
+import {
+  assertWithinTokenQuota,
+  TokenQuotaExceededError,
+} from '@/lib/usage/check'
 
 // Rate limiting configuration
 // 10 requests per minute per user, 50 per workspace
@@ -121,6 +126,39 @@ export async function POST(req: Request) {
             headers: { 'Content-Type': 'application/json' },
           }
         )
+      }
+    }
+
+    // Story 5.5c: AI token quota check. Runs after rate limits but before
+    // streamText. On hard-cap overflow returns HTTP 402 with a structured
+    // body so the client can surface an upgrade modal. Soft-warn at 80%
+    // surfaces via X-AI-Usage-Warning response header (non-blocking).
+    let quotaWarningHeader: string | undefined
+    if (workspaceId !== 'default') {
+      try {
+        const quota = await assertWithinTokenQuota(workspaceId)
+        if (quota.warning) {
+          quotaWarningHeader = JSON.stringify(quota.warning)
+        }
+      } catch (error) {
+        if (error instanceof TokenQuotaExceededError) {
+          return new Response(
+            JSON.stringify({
+              error: 'AI-tokenkvot uppnådd',
+              message: `Du har använt ${error.usage.toLocaleString('sv-SE')} av ${error.limit.toLocaleString('sv-SE')} tokens (${Math.round((error.usage / error.limit) * 100)}%) denna månad. Uppgradera planen för att fortsätta.`,
+              code: 'AI_TOKEN_QUOTA_EXCEEDED',
+              usage: error.usage,
+              limit: error.limit,
+              hardCap: error.hardCap,
+              tier: error.tier,
+            }),
+            {
+              status: 402,
+              headers: { 'Content-Type': 'application/json' },
+            }
+          )
+        }
+        throw error
       }
     }
 
@@ -274,25 +312,99 @@ export async function POST(req: Request) {
             | 'LAW'
             | 'CHANGE'
 
-          await prisma.chatUsageEvent.create({
-            data: {
-              workspace_id: workspaceId,
-              user_id: userId,
-              model: modelName,
-              context_type: contextTypeUpper,
-              input_tokens: inputTokens,
-              output_tokens: outputTokens,
-              cache_read_input_tokens: cacheReadInputTokens,
-              cache_write_input_tokens: cacheWriteInputTokens,
-              reasoning_tokens: reasoningTokens,
-              step_count: steps?.length ?? 1,
-              cost_usd_estimate: costUsdEstimate,
-            },
-          })
+          // Story 5.5c: ChatUsageEvent (Story 14.27 audit log) + WorkspaceUsage
+          // (denormalised counter for quota check) MUST commit together so
+          // they cannot drift. The hard cap reads from WorkspaceUsage; if the
+          // counter were updated separately and one of the two writes failed,
+          // the user could be either over-billed (if event missed counter) or
+          // under-counted (if counter missed event).
+          //
+          // For the upsert's `create` branch we anchor period_started_at to
+          // workspace.created_at — trial workspaces' first usage period IS
+          // the trial window, not "from first chat turn". Skip the lookup
+          // for the synthetic 'default' workspace fallback.
+          //
+          // Quota counts user-visible work only — input (conversation history
+          // + tool definitions + new message) + model output. Cache reads /
+          // writes are our infrastructure optimization (Story 14.26 prompt
+          // caching) and shouldn't burn quota — the user didn't ask for them
+          // and a wasted cache_write (e.g., session idles past the 5-min TTL
+          // before the next turn) shouldn't penalise them. Cost-rate signal
+          // for billing-side analysis is preserved separately on
+          // ChatUsageEvent.cache_*_input_tokens columns + cost_usd_estimate.
+          const totalTokens = inputTokens + outputTokens
+
+          if (workspaceId === 'default') {
+            // Synthetic fallback — write the event log only, no counter
+            await prisma.chatUsageEvent.create({
+              data: {
+                workspace_id: workspaceId,
+                user_id: userId,
+                model: modelName,
+                context_type: contextTypeUpper,
+                input_tokens: inputTokens,
+                output_tokens: outputTokens,
+                cache_read_input_tokens: cacheReadInputTokens,
+                cache_write_input_tokens: cacheWriteInputTokens,
+                reasoning_tokens: reasoningTokens,
+                step_count: steps?.length ?? 1,
+                cost_usd_estimate: costUsdEstimate,
+              },
+            })
+          } else {
+            const ws = await prisma.workspace.findUniqueOrThrow({
+              where: { id: workspaceId },
+              select: { created_at: true },
+            })
+
+            await prisma.$transaction([
+              prisma.chatUsageEvent.create({
+                data: {
+                  workspace_id: workspaceId,
+                  user_id: userId,
+                  model: modelName,
+                  context_type: contextTypeUpper,
+                  input_tokens: inputTokens,
+                  output_tokens: outputTokens,
+                  cache_read_input_tokens: cacheReadInputTokens,
+                  cache_write_input_tokens: cacheWriteInputTokens,
+                  reasoning_tokens: reasoningTokens,
+                  step_count: steps?.length ?? 1,
+                  cost_usd_estimate: costUsdEstimate,
+                },
+              }),
+              prisma.workspaceUsage.upsert({
+                where: { workspace_id: workspaceId },
+                create: {
+                  workspace_id: workspaceId,
+                  tokens_used_this_period: BigInt(totalTokens),
+                  period_started_at: ws.created_at,
+                },
+                update: {
+                  tokens_used_this_period: { increment: BigInt(totalTokens) },
+                },
+              }),
+            ])
+          }
         } catch (err) {
           // Fail-safe: log but never re-throw. A failed telemetry write must not
           // affect the user-facing chat response.
+          //
+          // Story 5.5c TOKEN-002: also surface to Sentry. The same-transaction
+          // guarantee for ChatUsageEvent + WorkspaceUsage is preserved at the
+          // DB level (both writes commit together OR both roll back), but any
+          // throw here means the counter never updates — during a sustained
+          // DB outage users could effectively bypass quota for the duration.
+          // Sentry alert lets ops notice immediately instead of waiting for
+          // log-aggregation review.
           console.error('[CHAT_USAGE_EVENT_WRITE_FAIL]', err)
+          Sentry.captureException(err, {
+            tags: {
+              area: 'chat-usage',
+              event: 'usage_write_failed',
+              workspace_id: workspaceId,
+            },
+          })
         }
       },
       ...(providerOptions && { providerOptions }),
@@ -360,6 +472,12 @@ export async function POST(req: Request) {
         }
         return undefined
       },
+      // Story 5.5c: surface the soft-warn payload via response header so
+      // the client can render a non-blocking "approaching limit" toast
+      // without disturbing the streaming protocol.
+      ...(quotaWarningHeader
+        ? { headers: { 'X-AI-Usage-Warning': quotaWarningHeader } }
+        : {}),
     })
   } catch (error) {
     console.error('[CHAT API ERROR]', error)

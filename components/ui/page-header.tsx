@@ -69,7 +69,9 @@ const PageHeaderImpl = React.forwardRef<HTMLDivElement, PageHeaderProps>(
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+              <h1 className="font-safiro text-3xl font-medium tracking-tight">
+                {title}
+              </h1>
               {badge ? <span className="shrink-0">{badge}</span> : null}
             </div>
 

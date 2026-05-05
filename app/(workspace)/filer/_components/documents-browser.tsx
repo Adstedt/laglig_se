@@ -435,7 +435,9 @@ export default function DocumentsBrowser({
       {/* Header - matching tasks page layout */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Filer</h1>
+          <h1 className="font-safiro text-3xl font-medium tracking-tight">
+            Filer
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Hantera och organisera filer för din organisation.
           </p>

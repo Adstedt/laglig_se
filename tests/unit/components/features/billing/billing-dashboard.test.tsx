@@ -15,6 +15,12 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn() }),
 }))
 
+// Story 5.5c: stub the usage widget — it pulls server-only env transitively
+// via lib/stripe/config. Tier-tile tests don't need it; mock to no-op.
+vi.mock('@/components/features/billing/usage-widget', () => ({
+  UsageWidget: () => null,
+}))
+
 // Avoid the invoice fetch firing during render — tests only assert the tier tiles.
 beforeEach(() => {
   vi.stubGlobal(

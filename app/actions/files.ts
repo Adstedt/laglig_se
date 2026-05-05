@@ -11,6 +11,12 @@ import { withWorkspace } from '@/lib/auth/workspace-context'
 import { getStorageClient } from '@/lib/supabase/storage'
 import { z } from 'zod'
 import type { FileCategory } from '@prisma/client'
+import {
+  assertWithinStorageQuota,
+  formatBytesSwedish,
+  StorageQuotaExceededError,
+  type StorageWarning,
+} from '@/lib/usage/storage'
 
 // ============================================================================
 // Constants
@@ -40,6 +46,13 @@ interface ActionResult<T = void> {
   success: boolean
   data?: T
   error?: string
+  // Story 5.5b: structured error code for client-side branching (e.g.,
+  // STORAGE_QUOTA_EXCEEDED → upgrade modal).
+  code?: string
+  // Story 5.5b: soft-warn payload when storage usage crosses 80%. Surfaced
+  // alongside `success: true` results so the client can show a non-blocking
+  // toast without breaking the existing success branch.
+  warning?: StorageWarning
 }
 
 export interface WorkspaceFileWithLinks {
@@ -288,6 +301,25 @@ export async function uploadFile(
         }
       }
 
+      // Story 5.5b: storage quota gate. Runs BEFORE the Supabase Storage
+      // write so a blocked upload doesn't create an orphaned object. Soft
+      // warn at 80% surfaces alongside the success result so the UI can
+      // show a non-blocking toast.
+      let storageWarning: StorageWarning | undefined
+      try {
+        const result = await assertWithinStorageQuota(workspaceId, file.size)
+        storageWarning = result.warning
+      } catch (error) {
+        if (error instanceof StorageQuotaExceededError) {
+          return {
+            success: false,
+            error: `Lagringsgräns uppnådd. Du har använt ${formatBytesSwedish(error.currentBytes)} av ${formatBytesSwedish(error.limitBytes)}. Filen kunde inte laddas upp. Frigör utrymme eller uppgradera planen.`,
+            code: 'STORAGE_QUOTA_EXCEEDED',
+          }
+        }
+        throw error
+      }
+
       const fileId = crypto.randomUUID()
       // Supabase Storage rejects spaces and most non-ASCII chars in keys —
       // sanitize the filename portion while keeping the original on the row.
@@ -380,7 +412,13 @@ export async function uploadFile(
       })
 
       revalidatePath('/filer')
-      return { success: true, data: workspaceFile as WorkspaceFileWithLinks }
+      return {
+        success: true,
+        data: workspaceFile as WorkspaceFileWithLinks,
+        // Story 5.5b: pass the soft-warn payload (if any) up so UI can show
+        // a non-blocking "you're at 80% of your storage" toast.
+        ...(storageWarning ? { warning: storageWarning } : {}),
+      }
     })
   } catch (error) {
     console.error('uploadFile error:', error)

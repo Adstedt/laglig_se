@@ -42,7 +42,9 @@ export default async function WorkspaceLagarPage({
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-semibold">Svenska lagar</h1>
+        <h1 className="font-safiro text-3xl font-medium tracking-tight">
+          Svenska lagar
+        </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Bläddra bland alla lagar från Svensk författningssamling (SFS)
         </p>

@@ -15,6 +15,12 @@ import {
   invalidateUserCache,
   invalidateWorkspaceCache,
 } from '@/lib/cache/workspace-cache'
+import {
+  countActiveAddonSeats,
+  SeatLimitExceededError,
+  StripeUnavailableError,
+} from '@/lib/usage/seats'
+import { getEffectiveLimits } from '@/lib/usage/limits'
 
 // ============================================================================
 // Types
@@ -120,11 +126,31 @@ export async function getPendingInvitations(
 /**
  * Accept a pending invitation.
  * Creates WorkspaceMember, updates invitation status, sets active workspace, invalidates cache.
+ *
+ * Story 5.5a: seat cap is re-checked INSIDE the same prisma.$transaction as
+ * the member create + invitation update so concurrent accepts can't both
+ * pass a stale snapshot of the count. Add-on seat lookup runs OUTSIDE the
+ * transaction (Stripe network call) — the value is captured before the
+ * transaction begins and treated as a stable input. Add-on subscription
+ * changes via webhook are infrequent enough that pre-transaction staleness
+ * is acceptable.
+ *
+ * On overflow returns the structured shape per Story 5.5a AC 9 (matching
+ * the create path):
+ *   { success: false, error, code: 'SEAT_LIMIT_REACHED', currentSeats, limit, tier }
+ *
+ * On Stripe outage during the add-on lookup returns:
+ *   { success: false, error, code: 'STRIPE_UNAVAILABLE' }
  */
 export async function acceptInvitation(invitationId: string): Promise<{
   success: boolean
   error?: string | undefined
   workspaceId?: string | undefined
+  // Story 5.5a — structured error fields (populated only on quota / outage paths)
+  code?: 'SEAT_LIMIT_REACHED' | 'STRIPE_UNAVAILABLE' | undefined
+  currentSeats?: number | undefined
+  limit?: number | undefined
+  tier?: string | undefined
 }> {
   try {
     const session = await getServerSession()
@@ -192,23 +218,96 @@ export async function acceptInvitation(invitationId: string): Promise<{
       }
     }
 
-    // Create member and update invitation in a transaction
-    await prisma.$transaction(async (tx) => {
-      await tx.workspaceMember.create({
-        data: {
-          user_id: user.id,
-          workspace_id: invitation.workspace_id,
-          role: invitation.role,
-          invited_by: invitation.invited_by,
-          invited_at: invitation.created_at,
-        },
-      })
+    // Story 5.5a: fetch add-on seat count from Stripe BEFORE the transaction
+    // (network call — not safe to hold a DB transaction across it). On Stripe
+    // outage, fail-closed with STRIPE_UNAVAILABLE so the user sees a clean
+    // retry message rather than an unstructured 500.
+    let addonSeatCount: number
+    try {
+      addonSeatCount = await countActiveAddonSeats(invitation.workspace_id)
+    } catch (error) {
+      if (error instanceof StripeUnavailableError) {
+        return {
+          success: false,
+          error: 'Tillfälligt tekniskt fel — försök igen om en stund.',
+          code: 'STRIPE_UNAVAILABLE',
+        }
+      }
+      throw error
+    }
 
-      await tx.workspaceInvitation.update({
-        where: { id: invitationId },
-        data: { status: 'ACCEPTED' },
+    // Story 5.5a (SEAT-001): seat re-check + member create + invitation
+    // status update ALL run inside one transaction. Two simultaneous accepts
+    // on the last seat will see the same snapshot of memberCount + pending,
+    // and the second one to commit will throw SeatLimitExceededError before
+    // its create lands — the transaction rolls back atomically.
+    try {
+      await prisma.$transaction(async (tx) => {
+        const [ws, memberCount, pendingCount] = await Promise.all([
+          tx.workspace.findUniqueOrThrow({
+            where: { id: invitation.workspace_id },
+            select: { subscription_tier: true, trial_picked_tier: true },
+          }),
+          tx.workspaceMember.count({
+            where: { workspace_id: invitation.workspace_id },
+          }),
+          tx.workspaceInvitation.count({
+            where: {
+              workspace_id: invitation.workspace_id,
+              status: 'PENDING',
+            },
+          }),
+        ])
+
+        const limits = getEffectiveLimits(ws, addonSeatCount)
+        // Pending count includes THIS invitation (it's still PENDING until
+        // the update below commits), so we compare against `used` directly,
+        // not `used + 1` — accepting consumes one of the pending slots.
+        const used = memberCount + pendingCount
+        if (limits.users !== null && used > limits.users) {
+          throw new SeatLimitExceededError(
+            used,
+            limits.users,
+            ws.trial_picked_tier ?? ws.subscription_tier
+          )
+        }
+
+        await tx.workspaceMember.create({
+          data: {
+            user_id: user.id,
+            workspace_id: invitation.workspace_id,
+            role: invitation.role,
+            invited_by: invitation.invited_by,
+            invited_at: invitation.created_at,
+          },
+        })
+
+        await tx.workspaceInvitation.update({
+          where: { id: invitationId },
+          data: { status: 'ACCEPTED' },
+        })
       })
-    })
+    } catch (error) {
+      // SeatLimitExceededError → invitation is now stale (workspace is full).
+      // Mark it EXPIRED outside the rolled-back transaction so the user can't
+      // re-attempt this same invitation token.
+      if (error instanceof SeatLimitExceededError) {
+        await prisma.workspaceInvitation.update({
+          where: { id: invitationId },
+          data: { status: 'EXPIRED' },
+        })
+        return {
+          success: false,
+          error:
+            'Arbetsplatsen har inga lediga platser kvar. Be ägaren uppgradera planen.',
+          code: 'SEAT_LIMIT_REACHED',
+          currentSeats: error.currentSeats,
+          limit: error.limit,
+          tier: error.tier,
+        }
+      }
+      throw error
+    }
 
     // Set active workspace cookie
     await setActiveWorkspace(invitation.workspace_id)

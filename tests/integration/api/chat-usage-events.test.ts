@@ -27,6 +27,18 @@ let capturedOnFinish:
 
 // Mock prisma
 const mockChatUsageEventCreate = vi.fn().mockResolvedValue({ id: 'event-1' })
+const mockWorkspaceFindUniqueOrThrow = vi
+  .fn()
+  .mockResolvedValue({ created_at: new Date('2026-04-13T00:00:00.000Z') })
+const mockWorkspaceUsageUpsert = vi.fn().mockResolvedValue({})
+// Story 5.5c: onFinish wraps ChatUsageEvent.create + WorkspaceUsage.upsert in
+// prisma.$transaction. The mock executes the array sequentially so that the
+// first element (chatUsageEvent.create) still fires and is observable to the
+// existing assertions.
+const mockTransaction = vi.fn().mockImplementation(async (ops: unknown) => {
+  if (Array.isArray(ops)) return Promise.all(ops as Array<Promise<unknown>>)
+  return ops
+})
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     companyProfile: {
@@ -35,7 +47,29 @@ vi.mock('@/lib/prisma', () => ({
     chatUsageEvent: {
       create: mockChatUsageEventCreate,
     },
+    workspace: {
+      findUniqueOrThrow: mockWorkspaceFindUniqueOrThrow,
+    },
+    workspaceUsage: {
+      upsert: mockWorkspaceUsageUpsert,
+    },
+    $transaction: (arg: unknown) => mockTransaction(arg),
   },
+}))
+
+// Story 5.5c: chat route now imports assertWithinTokenQuota which transitively
+// pulls @/lib/usage/seat-cache → @/lib/usage/seats → @/lib/stripe/config →
+// server-only env. Short-circuit the gate so the test stays focused on the
+// telemetry write path (Story 14.27 scope).
+vi.mock('@/lib/usage/check', () => ({
+  assertWithinTokenQuota: vi.fn().mockResolvedValue({}),
+  TokenQuotaExceededError: class TokenQuotaExceededError extends Error {},
+}))
+
+// Story 5.5c TOKEN-002: chat route imports Sentry for telemetry-write
+// alerting. Stub to a no-op so tests don't try to send real events.
+vi.mock('@sentry/nextjs', () => ({
+  captureException: vi.fn(),
 }))
 
 // Mock auth — return a stub authenticated session

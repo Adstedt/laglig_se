@@ -49,7 +49,9 @@ export default async function WorkspaceEuPage({
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-semibold">EU-lagstiftning</h1>
+        <h1 className="font-safiro text-3xl font-medium tracking-tight">
+          EU-lagstiftning
+        </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Bläddra bland EU-förordningar och EU-direktiv
         </p>

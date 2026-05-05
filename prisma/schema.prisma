@@ -107,6 +107,12 @@ model Workspace {
   paused_at         DateTime?
   deleted_at        DateTime?
 
+  // Story 5.5a: Trial workspaces remember which tier the user picked at signup
+  // so getEffectiveLimits() can apply the right caps during the trial window.
+  // NULL on existing rows; populated by Epic 4 onboarding flow on signup.
+  // Cleared on trial→paid conversion (subscription_tier flips to picked tier).
+  trial_picked_tier SubscriptionTier?
+
   // Story 5.4: Stripe billing
   stripe_customer_id           String?   @unique
   stripe_subscription_id       String?
@@ -137,6 +143,9 @@ model Workspace {
 
   // Story 14.27: Chat usage telemetry
   chat_usage_events ChatUsageEvent[]
+
+  // Story 5.5c: AI token quota counter (one row per workspace)
+  workspace_usage WorkspaceUsage?
 
   // Story 14.10: Change assessments
   change_assessments ChangeAssessment[]
@@ -2090,4 +2099,31 @@ model StripeWebhookEvent {
 
   @@index([processed_at])
   @@map("stripe_webhook_events")
+}
+
+// ============================================================================
+// USAGE TRACKING - Story 5.5c
+// ============================================================================
+
+// Denormalised counter for AI-token quota enforcement on the chat hot path.
+// Updated in the same prisma.$transaction as ChatUsageEvent (Story 14.27) so
+// the per-turn audit log + the running total cannot drift. Reset by the
+// customer.subscription.updated Stripe webhook when current_period_end
+// advances (Pattern A — per-customer billing-cycle-anchored). Defensive
+// weekly safety cron catches missed webhooks.
+//
+// BigInt for tokens: at 18M/month for Team and potential heavy outliers,
+// regular Int (max ~2.1B) is plenty headroom but BigInt is the safer choice
+// once 5.5d's metered overage relaxes the 2× hard cap.
+model WorkspaceUsage {
+  id                      String   @id @default(uuid())
+  workspace_id            String   @unique
+  tokens_used_this_period BigInt   @default(0)
+  storage_bytes           BigInt   @default(0) // recomputed on file upload/delete (5.5b uses live aggregate; this column is reserved for future use)
+  period_started_at       DateTime @default(now())
+  updated_at              DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@map("workspace_usage")
 }

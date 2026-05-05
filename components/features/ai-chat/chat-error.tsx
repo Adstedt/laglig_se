@@ -3,10 +3,16 @@
 /**
  * Story 3.3: Chat Error Component
  * Displays error messages with retry functionality
+ *
+ * Story 5.5c: added `quota_exceeded` branch — when the chat route returns
+ * 402 with code AI_TOKEN_QUOTA_EXCEEDED, the user has hit their AI token
+ * hard cap (2× included quota for the tier). Retry won't help; surface
+ * the upgrade path instead.
  */
 
+import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { AlertCircle, RefreshCw } from 'lucide-react'
+import { AlertCircle, ArrowUpRight, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -24,6 +30,8 @@ const ERROR_MESSAGES = {
   rate_limit: 'För många förfrågningar. Vänta {seconds} sekunder.',
   server_error: 'Något gick fel. Försök igen senare.',
   unauthorized: 'Din session har gått ut. Logga in igen.',
+  quota_exceeded:
+    'Du har använt månadens AI-frågor. Uppgradera planen för att ställa fler.',
   default: 'Ett oväntat fel uppstod. Försök igen.',
 } as const
 
@@ -71,11 +79,12 @@ export function ChatError({
   }
 
   const isRateLimited = errorType === 'rate_limit' && countdown > 0
+  const isQuotaExceeded = errorType === 'quota_exceeded'
 
   return (
     <div
       className={cn(
-        'flex flex-col items-center gap-3 p-4 text-center max-w-[280px]',
+        'flex flex-col items-center gap-3 p-4 text-center max-w-[320px]',
         className
       )}
       role="alert"
@@ -89,6 +98,19 @@ export function ChatError({
 
       {isRateLimited ? (
         <CountdownButton seconds={countdown} />
+      ) : isQuotaExceeded ? (
+        <Button
+          asChild
+          variant="default"
+          size="sm"
+          className="gap-2"
+          data-testid="chat-upgrade-button"
+        >
+          <Link href="/settings?tab=billing">
+            Uppgradera plan
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
+        </Button>
       ) : (
         <Button
           variant="outline"
@@ -119,6 +141,17 @@ function getErrorType(error: Error | null): ErrorType {
 
   const message = (error.message ?? '').toLowerCase()
 
+  // Story 5.5c: 402 + AI_TOKEN_QUOTA_EXCEEDED. The AI SDK can surface this
+  // as the JSON body, statusText, or the raw status — match all common
+  // shapes so we don't fall through to the generic "try again" branch.
+  if (
+    message.includes('ai_token_quota_exceeded') ||
+    message.includes('tokenkvot') ||
+    message.includes('402') ||
+    message.includes('payment required')
+  ) {
+    return 'quota_exceeded'
+  }
   if (message.includes('network') || message.includes('fetch')) {
     return 'network'
   }

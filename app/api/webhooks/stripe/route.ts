@@ -22,6 +22,7 @@ import { prisma } from '@/lib/prisma'
 import { env } from '@/lib/env'
 import { sendEmail } from '@/lib/email/email-service'
 import { PaymentFailedEmail } from '@/emails/payment-failed'
+import { invalidateSeatCache } from '@/lib/usage/seat-cache'
 
 // Stripe needs the raw body bytes to verify the signature — Next.js parses
 // JSON by default, but we read text() ourselves so the bytes match what
@@ -100,25 +101,84 @@ export async function POST(request: Request) {
         const priceId = subscription.items.data[0]?.price.id
         const tier = priceId ? tierForPriceId(priceId) : undefined
 
-        // Stripe API 2024-04-10+ moved current_period_end onto the subscription
-        // item. Older versions keep it on the subscription itself — read item
-        // first, fall back to legacy field.
+        // Stripe API 2024-04-10+ moved current_period_end + current_period_start
+        // onto the subscription item. Older versions keep them on the
+        // subscription itself — read item first, fall back to legacy field.
         const item = subscription.items.data[0] as
-          | (Stripe.SubscriptionItem & { current_period_end?: number })
+          | (Stripe.SubscriptionItem & {
+              current_period_end?: number
+              current_period_start?: number
+            })
           | undefined
         const periodEnd =
           item?.current_period_end ??
           (subscription as unknown as { current_period_end?: number })
             .current_period_end
+        const periodStart =
+          item?.current_period_start ??
+          (subscription as unknown as { current_period_start?: number })
+            .current_period_start
 
-        await prisma.workspace.update({
+        const newPeriodEnd = periodEnd ? new Date(periodEnd * 1000) : null
+        const newPeriodStart = periodStart ? new Date(periodStart * 1000) : null
+
+        // Story 5.5c (Pattern A reset): when current_period_end advances —
+        // either NULL → future date (trial→paid conversion) or future →
+        // later future (monthly anniversary) — reset the WorkspaceUsage
+        // counter in the SAME transaction as the Workspace update so
+        // they cannot drift. Plan upgrade/downgrade mid-period does NOT
+        // advance current_period_end → counter NOT reset.
+        const existing = await prisma.workspace.findUnique({
           where: { id: workspaceId },
-          data: {
-            ...(tier ? { subscription_tier: tier } : {}),
-            subscription_status: subscription.status,
-            current_period_end: periodEnd ? new Date(periodEnd * 1000) : null,
-          },
+          select: { current_period_end: true },
         })
+        const periodAdvanced =
+          !!newPeriodEnd &&
+          (!existing?.current_period_end ||
+            newPeriodEnd > existing.current_period_end)
+
+        // Pattern A reset: when period advances, write workspace + usage in
+        // one transaction. When period unchanged (tier-change-only events),
+        // just update the workspace — avoids requiring $transaction in
+        // unrelated test mocks.
+        if (periodAdvanced && newPeriodStart) {
+          await prisma.$transaction([
+            prisma.workspace.update({
+              where: { id: workspaceId },
+              data: {
+                ...(tier ? { subscription_tier: tier } : {}),
+                subscription_status: subscription.status,
+                current_period_end: newPeriodEnd,
+              },
+            }),
+            prisma.workspaceUsage.upsert({
+              where: { workspace_id: workspaceId },
+              create: {
+                workspace_id: workspaceId,
+                tokens_used_this_period: BigInt(0),
+                period_started_at: newPeriodStart,
+              },
+              update: {
+                tokens_used_this_period: BigInt(0),
+                period_started_at: newPeriodStart,
+              },
+            }),
+          ])
+        } else {
+          await prisma.workspace.update({
+            where: { id: workspaceId },
+            data: {
+              ...(tier ? { subscription_tier: tier } : {}),
+              subscription_status: subscription.status,
+              current_period_end: newPeriodEnd,
+            },
+          })
+        }
+
+        // Story 5.5c: invalidate the cached add-on seat count so add-on
+        // purchases / removals propagate immediately to the chat-route
+        // quota check rather than waiting up to 5 minutes for the TTL.
+        await invalidateSeatCache(workspaceId)
         break
       }
 
