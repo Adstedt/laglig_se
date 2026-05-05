@@ -30,6 +30,22 @@ async function getWorkspaceDataInternal(workspaceId: string) {
   return workspace
 }
 
+// Billing fields are intentionally uncached: webhook-driven state changes
+// (subscription_status flips, current_period_end advancing on renewal) need
+// to be visible immediately, not deferred behind the 300s settings cache.
+async function getWorkspaceBillingData(workspaceId: string) {
+  return prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    select: {
+      subscription_status: true,
+      stripe_customer_id: true,
+      stripe_subscription_id: true,
+      current_period_end: true,
+      payment_grace_period_ends_at: true,
+    },
+  })
+}
+
 async function getWorkspaceMembersInternal(workspaceId: string) {
   const members = await prisma.workspaceMember.findMany({
     where: { workspace_id: workspaceId },
@@ -78,21 +94,32 @@ const getWorkspaceMembers = (workspaceId: string) =>
     }
   )()
 
-export default async function SettingsPage() {
+interface SettingsPageProps {
+  searchParams: Promise<{
+    tab?: string
+    reason?: string
+    success?: string
+  }>
+}
+
+export default async function SettingsPage({
+  searchParams,
+}: SettingsPageProps) {
+  const params = await searchParams
   const context = await getWorkspaceContext()
 
-  const [workspace, members, columnsResult, companyProfile] = await Promise.all(
-    [
+  const [workspace, billing, members, columnsResult, companyProfile] =
+    await Promise.all([
       getWorkspaceData(context.workspaceId),
+      getWorkspaceBillingData(context.workspaceId),
       getWorkspaceMembers(context.workspaceId),
       getTaskColumns(),
       getCompanyProfile(),
-    ]
-  )
+    ])
 
   const columns = columnsResult.success ? (columnsResult.data ?? []) : []
 
-  if (!workspace) {
+  if (!workspace || !billing) {
     return (
       <div className="space-y-6">
         <h1 className="text-3xl font-bold">Inställningar</h1>
@@ -115,6 +142,17 @@ export default async function SettingsPage() {
         members={members}
         columns={columns}
         companyProfile={companyProfile}
+        billing={{
+          subscriptionStatus: billing.subscription_status,
+          stripeCustomerId: billing.stripe_customer_id,
+          stripeSubscriptionId: billing.stripe_subscription_id,
+          currentPeriodEnd: billing.current_period_end?.toISOString() ?? null,
+          paymentGracePeriodEndsAt:
+            billing.payment_grace_period_ends_at?.toISOString() ?? null,
+        }}
+        initialTab={params.tab ?? 'general'}
+        showPastDueBanner={params.reason === 'past_due'}
+        showCheckoutSuccess={params.success === 'true'}
       />
     </div>
   )

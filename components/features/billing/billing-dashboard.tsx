@@ -42,13 +42,50 @@ const TIER_LABELS = {
 
 type Tier = keyof typeof TIER_LABELS
 
+// Stripe subscription_status → user-facing Swedish label + Badge variant.
+// Happy-path states (active/trialing) intentionally absent — no badge means
+// no problem; the past-due alert banner handles the loud cases on its own.
+const SUBSCRIPTION_STATUS_BADGE: Record<
+  string,
+  { label: string; variant: 'destructive' | 'outline' }
+> = {
+  past_due: { label: 'Förfallen betalning', variant: 'destructive' },
+  unpaid: { label: 'Obetald', variant: 'destructive' },
+  canceled: { label: 'Uppsagd', variant: 'outline' },
+  paused: { label: 'Pausad', variant: 'outline' },
+  incomplete: { label: 'Ej slutförd', variant: 'outline' },
+  incomplete_expired: { label: 'Utgången', variant: 'outline' },
+}
+
+// Stripe invoice.status → Swedish label.
+const INVOICE_STATUS_LABELS: Record<string, string> = {
+  draft: 'Utkast',
+  open: 'Öppen',
+  paid: 'Betald',
+  void: 'Makulerad',
+  uncollectible: 'Avskriven',
+}
+
+// Enterprise is sales-led — clicking the tile opens an external booking flow,
+// not Stripe Checkout. TODO: replace with the real scheduling URL once the
+// sales calendar is set up.
+const ENTERPRISE_CONTACT_URL = 'https://cal.com/laglig/sales'
+
 const PAID_TIERS: Array<{
   tier: Exclude<Tier, 'TRIAL'>
   price: string
   description: string
 }> = [
-  { tier: 'SOLO', price: '€399 / mån', description: 'För enskilda firmor' },
-  { tier: 'TEAM', price: '€899 / mån', description: 'För team upp till 10' },
+  {
+    tier: 'SOLO',
+    price: '499 SEK / mån (ex moms)',
+    description: 'För enskilda firmor',
+  },
+  {
+    tier: 'TEAM',
+    price: '1 299 SEK / mån (ex moms)',
+    description: 'För team upp till 10',
+  },
   {
     tier: 'ENTERPRISE',
     price: 'Anpassad',
@@ -202,7 +239,7 @@ export function BillingDashboard({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <CreditCard className="h-4 w-4" />
-            Nuvarande plan
+            Prenumeration
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -210,11 +247,16 @@ export function BillingDashboard({
             <Badge variant={isTrial ? 'secondary' : 'default'}>
               {tierLabel}
             </Badge>
-            {workspace.subscriptionStatus && (
-              <Badge variant="outline" className="text-xs uppercase">
-                {workspace.subscriptionStatus}
-              </Badge>
-            )}
+            {(() => {
+              const statusBadge = workspace.subscriptionStatus
+                ? SUBSCRIPTION_STATUS_BADGE[workspace.subscriptionStatus]
+                : undefined
+              return statusBadge ? (
+                <Badge variant={statusBadge.variant} className="text-xs">
+                  {statusBadge.label}
+                </Badge>
+              ) : null
+            })()}
           </div>
 
           <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
@@ -262,13 +304,14 @@ export function BillingDashboard({
       <Card>
         <CardHeader>
           <CardTitle className="text-base">
-            {isTrial ? 'Välj plan' : 'Byt plan'}
+            {isTrial ? 'Välj nivå' : 'Byt nivå'}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             {PAID_TIERS.map(({ tier, price, description }) => {
               const isCurrent = workspace.subscriptionTier === tier
+              const isEnterprise = tier === 'ENTERPRISE'
               // BILLING-003: when an active sub exists, ALL plan changes (up
               // or down) must go through Portal — Checkout would create a 2nd
               // sub. TIER_RANK still drives the label so users see whether
@@ -300,6 +343,17 @@ export function BillingDashboard({
                     <Button size="sm" variant="outline" disabled>
                       Aktiv
                     </Button>
+                  ) : isEnterprise ? (
+                    <Button asChild size="sm" variant="default">
+                      <a
+                        href={ENTERPRISE_CONTACT_URL}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                      >
+                        Boka samtal
+                        <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                      </a>
+                    </Button>
                   ) : hasActiveSub ? (
                     <Button
                       size="sm"
@@ -318,7 +372,7 @@ export function BillingDashboard({
                       disabled={isPending}
                       onClick={() => handleUpgrade(tier)}
                     >
-                      {isTrial ? 'Välj plan' : 'Uppgradera'}
+                      {isTrial ? 'Välj nivå' : 'Uppgradera'}
                     </Button>
                   )}
                 </div>
@@ -377,8 +431,10 @@ export function BillingDashboard({
                         {formatCurrency(inv.amount_due, inv.currency)}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="text-xs uppercase">
-                          {inv.status ?? 'unknown'}
+                        <Badge variant="outline" className="text-xs">
+                          {(inv.status && INVOICE_STATUS_LABELS[inv.status]) ??
+                            inv.status ??
+                            'Okänd'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">

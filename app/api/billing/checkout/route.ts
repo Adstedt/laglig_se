@@ -32,6 +32,22 @@ export async function POST(request: Request) {
   }
   const tier: StripePaidTier = parsed.tier
 
+  // Enterprise is sales-led — there's no self-serve Checkout path for it.
+  // The UI already routes the Enterprise tile to a booking link; this guard
+  // catches direct API hits (curl, scripts, future code paths) before we
+  // reach STRIPE_PRICE_IDS.ENTERPRISE (which is now optional).
+  if (tier === 'ENTERPRISE') {
+    return NextResponse.json(
+      {
+        error: 'Enterprise är säljledd',
+        message:
+          'Enterprise-prenumerationer hanteras manuellt. Boka ett samtal för att komma igång.',
+        code: 'ENTERPRISE_NOT_SELF_SERVE',
+      },
+      { status: 400 }
+    )
+  }
+
   const workspace = await prisma.workspace.findUniqueOrThrow({
     where: { id: result.context.workspaceId },
     include: { owner: { select: { email: true } } },
@@ -66,28 +82,44 @@ export async function POST(request: Request) {
     workspace.name
   )
 
-  const session = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: 'subscription',
-    line_items: [{ price: STRIPE_PRICE_IDS[tier], quantity: 1 }],
-    automatic_tax: { enabled: true },
-    customer_update: { address: 'auto', name: 'auto' },
-    // Stripe does NOT auto-copy session metadata to the resulting Subscription —
-    // we set it explicitly so customer.subscription.* webhooks resolve workspaceId.
-    subscription_data: { metadata: { workspaceId: workspace.id, tier } },
-    metadata: { workspaceId: workspace.id, tier },
-    success_url: `${env.NEXT_PUBLIC_APP_URL}/settings/billing?success=true&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${env.NEXT_PUBLIC_APP_URL}/settings/billing`,
-    // payment_method_types intentionally omitted — Stripe auto-enables Card,
-    // Klarna, Swish per Dashboard config (per Dev Notes "Swedish payment methods").
-  })
+  // Wrap the Stripe API call: any thrown error (invalid Price ID, network
+  // blip, Stripe outage) must surface as a JSON 500 — without this, Next.js
+  // returns its default HTML error page and the client's `await res.json()`
+  // throws "Unexpected end of JSON input", crashing the React tree.
+  try {
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: 'subscription',
+      line_items: [{ price: STRIPE_PRICE_IDS[tier], quantity: 1 }],
+      automatic_tax: { enabled: true },
+      customer_update: { address: 'auto', name: 'auto' },
+      // Stripe does NOT auto-copy session metadata to the resulting Subscription —
+      // we set it explicitly so customer.subscription.* webhooks resolve workspaceId.
+      subscription_data: { metadata: { workspaceId: workspace.id, tier } },
+      metadata: { workspaceId: workspace.id, tier },
+      success_url: `${env.NEXT_PUBLIC_APP_URL}/settings/billing?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${env.NEXT_PUBLIC_APP_URL}/settings/billing`,
+      // payment_method_types intentionally omitted — Stripe auto-enables Card,
+      // Klarna, Swish per Dashboard config (per Dev Notes "Swedish payment methods").
+    })
 
-  if (!session.url) {
+    if (!session.url) {
+      return NextResponse.json(
+        { error: 'Kunde inte skapa Checkout-session' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ url: session.url })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Okänt fel'
+    console.error('[BILLING_CHECKOUT_ERROR]', err)
     return NextResponse.json(
-      { error: 'Kunde inte skapa Checkout-session' },
+      {
+        error: 'Kunde inte skapa Checkout-session',
+        message,
+      },
       { status: 500 }
     )
   }
-
-  return NextResponse.json({ url: session.url })
 }

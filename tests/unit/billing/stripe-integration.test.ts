@@ -442,6 +442,58 @@ describe('Checkout endpoint', () => {
     // Critical: NO Checkout session was created on the Stripe side.
     expect(stripeMock.checkout.sessions.create).not.toHaveBeenCalled()
   })
+
+  it('rejects ENTERPRISE with 400 ENTERPRISE_NOT_SELF_SERVE — sales-led, no Checkout', async () => {
+    // Enterprise tile in the UI routes to a booking link. This test guards
+    // against direct API hits (curl, scripts) trying to start a self-serve
+    // Enterprise Checkout, which would charge a placeholder Price.
+    const { POST } = await import('@/app/api/billing/checkout/route')
+    const req = new Request('http://localhost:3000/api/billing/checkout', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ tier: 'ENTERPRISE' }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(400)
+    const json = (await res.json()) as { code?: string }
+    expect(json.code).toBe('ENTERPRISE_NOT_SELF_SERVE')
+    expect(stripeMock.checkout.sessions.create).not.toHaveBeenCalled()
+  })
+
+  it('returns JSON 500 (not HTML) when Stripe.checkout.sessions.create throws', async () => {
+    // Robustness guard for the "Unexpected end of JSON input" client crash:
+    // without try/catch, Next.js renders its default HTML error page for an
+    // uncaught throw, the client's `await res.json()` parses HTML, throws,
+    // and crashes the React tree.
+    mockWorkspace.findUniqueOrThrow.mockResolvedValueOnce({
+      id: 'ws_under_test',
+      name: 'Acme AB',
+      owner: { email: 'owner@example.com' },
+      stripe_subscription_id: null,
+      subscription_status: null,
+    })
+    // Short-circuit getOrCreateStripeCustomer to skip the customer-create path
+    // — this test is about how the route handles a Stripe throw on the
+    // session.create call, not how it handles customer creation.
+    mockWorkspace.findUnique.mockResolvedValueOnce({
+      stripe_customer_id: 'cus_existing',
+    })
+    stripeMock.checkout.sessions.create.mockRejectedValueOnce(
+      new Error('No such price: price_typo')
+    )
+    const { POST } = await import('@/app/api/billing/checkout/route')
+    const req = new Request('http://localhost:3000/api/billing/checkout', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ tier: 'SOLO' }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(500)
+    expect(res.headers.get('content-type')).toMatch(/application\/json/)
+    const json = (await res.json()) as { error?: string; message?: string }
+    expect(json.error).toBe('Kunde inte skapa Checkout-session')
+    expect(json.message).toContain('No such price')
+  })
 })
 
 // ---------- TEST-002: workspace-context grace-period block ---------------
