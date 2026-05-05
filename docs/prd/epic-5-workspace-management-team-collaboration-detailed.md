@@ -90,27 +90,11 @@
 
 ## Story 5.5: Implement Usage Limits Per Tier
 
-**As a** system,
-**I want** to enforce usage limits based on subscription tier,
-**so that** users must upgrade when they exceed limits.
+**As a** product owner,
+**I want** the platform to enforce per-tier limits on seats, storage, and AI usage,
+**so that** workspace owners are guided to upgrade when they exceed what they're paying for, and unit economics stay positive even on heavy users.
 
-**Acceptance Criteria:**
-
-1. Usage limits defined per tier:
-   - Solo: 1 user, 5 employees, 50 AI queries/month, 1GB storage
-   - Team: 5 users, 50 employees, 500 AI queries/month, 10GB storage
-   - Enterprise: Unlimited users, unlimited employees, unlimited queries, 100GB storage
-2. Usage tracked in database: `workspace_usage` table with fields: ai_queries_this_month, employee_count, storage_used_mb
-3. Middleware checks usage before allowing actions:
-   - Adding user → Check user limit
-   - Adding employee → Check employee limit
-   - Sending AI query → Check query limit
-   - Uploading file → Check storage limit
-4. 10% overage allowance before hard block
-5. Soft limit warning at 80%: "You've used 40/50 AI queries this month. Upgrade?"
-6. Hard limit at 110%: "You've reached your limit. Upgrade to continue."
-7. Usage resets monthly (1st of month)
-8. Analytics dashboard shows usage trends
+> **⚠️ Acceptance criteria refreshed in v3.0 (2026-05-05) — see `docs/stories/5.5.usage-limits-per-tier.md` for the canonical spec.** The original v1.0/v2.0 ACs in this epic doc described a query-count model with EUR-era assumptions; v3.0 calibrated limits against the SEK pricing plan in `project_tier_pricing_v1.md` and switched the AI quota to a token-based model. Story 5.5 is now a **parent spec** split into four sub-stories: 5.5a (seat enforcement), 5.5b (storage enforcement), 5.5c (AI token quota + hard cap), 5.5d (Stripe metered overage — DEFERRED until 30-60 days of telemetry calibrates the per-token price). Read the parent story file for the calibrated limits table, the trial-tier-resolution model, and the cross-cutting architecture decisions.
 
 ---
 
