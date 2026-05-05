@@ -15,7 +15,6 @@ import {
   FileText,
   FolderOpen,
   Users,
-  Bell,
   Settings,
   ChevronRight,
   Lock,
@@ -161,13 +160,6 @@ const workItems: NavItem[] = [
   {
     title: 'HR',
     icon: Users,
-    href: '#',
-    disabled: true,
-    badge: 'snart',
-  },
-  {
-    title: 'Ändringsbevakning',
-    icon: Bell,
     href: '#',
     disabled: true,
     badge: 'snart',

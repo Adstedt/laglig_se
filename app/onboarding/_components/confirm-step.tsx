@@ -1,39 +1,53 @@
 'use client'
 
-import { LoaderCircle } from 'lucide-react'
+import { LoaderCircle, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   LEGAL_FORM_LABELS,
   type WorkspaceOnboardingData,
 } from '@/lib/validation/workspace'
 
+// Story 5.12: same URL as BillingDashboard.ENTERPRISE_CONTACT_URL.
+const ENTERPRISE_CONTACT_URL = 'https://cal.com/laglig/sales'
+
+const TIER_LABELS: Record<'SOLO' | 'TEAM' | 'ENTERPRISE', string> = {
+  SOLO: 'Solo',
+  TEAM: 'Team',
+  ENTERPRISE: 'Enterprise',
+}
+
 interface ConfirmStepProps {
   data: WorkspaceOnboardingData
+  pickedTier: 'SOLO' | 'TEAM' | 'ENTERPRISE'
   onBack: () => void
   onSubmit: () => void
   isSubmitting: boolean
   submitError: string | null
   onGoBackToEdit: () => void
+  onChangeTier: () => void
 }
 
 export function ConfirmStep({
   data,
+  pickedTier,
   onBack,
   onSubmit,
   isSubmitting,
   submitError,
   onGoBackToEdit,
+  onChangeTier,
 }: ConfirmStepProps) {
   const trialEndDate = new Date()
   trialEndDate.setDate(trialEndDate.getDate() + 14)
   const formattedTrialEnd = trialEndDate.toISOString().split('T')[0]
 
   const hasAddress = data.streetAddress || data.postalCode || data.city
+  const isEnterprise = pickedTier === 'ENTERPRISE'
 
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="font-safiro text-2xl font-semibold tracking-tight">
+        <h2 className="font-safiro text-2xl font-medium tracking-tight">
           Bekräfta &amp; Skapa
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -74,13 +88,59 @@ export function ConfirmStep({
         )}
       </dl>
 
-      {/* Trial info callout */}
-      <div className="rounded-lg bg-emerald-50 p-4 text-sm text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-200">
-        <p className="font-medium">Din 14-dagars provperiod börjar nu</p>
-        <p className="mt-1 text-emerald-700 dark:text-emerald-300">
-          Provperioden löper ut {formattedTrialEnd}
-        </p>
-      </div>
+      {/* Trial info callout — tier-aware */}
+      {isEnterprise ? (
+        <div className="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm dark:border-amber-900/30 dark:bg-amber-950/20">
+          <div>
+            <p className="font-medium text-amber-900 dark:text-amber-200">
+              Vi har bett om kontakt om Enterprise — vi hör av oss inom 24
+              timmar.
+            </p>
+            <p className="mt-1 text-amber-800 dark:text-amber-300">
+              Under tiden får du Team-funktionalitet i 14 dagar så du kan
+              utvärdera plattformen medan vi pratar. Provperioden löper ut{' '}
+              {formattedTrialEnd}.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <a
+              href={ENTERPRISE_CONTACT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-50 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200 dark:hover:bg-amber-900"
+            >
+              Boka samtal
+              <ExternalLink className="h-3 w-3" />
+            </a>
+            <button
+              type="button"
+              onClick={onChangeTier}
+              className="text-xs text-amber-900 underline hover:text-amber-950 dark:text-amber-200"
+            >
+              Ändra nivå
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-2 rounded-lg bg-emerald-50 p-4 text-sm text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-200">
+          <p className="font-medium">
+            Provperiod: {TIER_LABELS[pickedTier]} · 14 dagar gratis · ingen
+            betalning krävs
+          </p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-emerald-700 dark:text-emerald-300">
+              Provperioden löper ut {formattedTrialEnd}
+            </p>
+            <button
+              type="button"
+              onClick={onChangeTier}
+              className="text-xs text-emerald-700 underline hover:text-emerald-800 dark:text-emerald-300"
+            >
+              Ändra nivå
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Duplicate org number error */}
       {submitError && (

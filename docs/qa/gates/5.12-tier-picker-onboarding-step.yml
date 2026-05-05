@@ -1,0 +1,98 @@
+schema: 1
+story: '5.12'
+story_title: 'Tier-Picker Step in Onboarding Wizard'
+gate: CONCERNS
+status_reason: 'All 16 ACs implemented with strong unit + component coverage (54 tests passing, zero regressions). E2E spec deferred per dev — equivalence claim almost-but-not-strictly true; sole medium-severity issue. Email send blocks response (~1s) for Enterprise picks; small refactor recommended. Ship-ready once operator applies migration + completes manual smoke test.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-05T22:00:00Z'
+
+waiver: { active: false }
+
+quality_score: 90
+expires: '2026-05-19T22:00:00Z'
+
+evidence:
+  tests_reviewed: 54
+  risks_identified: 5
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 8, 9, 10, 13, 16]
+    ac_partial: [7, 11, 12, 15] # rendered/transitive coverage but no direct assertion
+    ac_gaps: [14] # E2E explicitly deferred
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No new endpoints. pickedTier validated against literal union with safe default. SALES_NOTIFICATION_EMAIL is server-only. Email goes only to trusted internal alias; React Email escapes content. Migration is operator-applied per project discipline.'
+  performance:
+    status: CONCERNS
+    notes: 'PERF-001: Enterprise email send is awaited, blocking the action response by Resend latency (200ms-1.5s typical). Enterprise picks are rare (~2-5% of signups) so user-facing impact is bounded, but pattern should match the law-list-generation fire-and-forget directly below in the same file.'
+  reliability:
+    status: PASS
+    notes: 'Fail-safe email pattern (try/catch + console.error, no re-throw) mirrors Story 14.27 telemetry idiom. Defensive default for missing pickedTier. Additive nullable column migration. Workspace creation never rolls back on email failure.'
+  maintainability:
+    status: PASS
+    notes: 'TSDoc on all new exports. Single source of truth pattern (tier-display → TIER_LIMITS) prevents marketing/enforcement copy drift. // TODO(yearly): signpost. Minor: TierCard prop precedence (popular > recommended > selected) not in JSDoc — MAINT-001.'
+
+top_issues:
+  - id: 'TEST-001'
+    severity: medium
+    finding: 'E2E (AC 14) deferred — three URL paths (?plan=solo|team|enterprise) untested at integration level. Unit coverage of each link in the chain is strong but doesnt catch FormData encoding drift or middleware regressions.'
+    suggested_action: 'Add Playwright spec at tests/e2e/onboarding-tier-picker.spec.ts per spec AC 14, OR explicitly waive with operator smoke-test sign-off.'
+    suggested_owner: dev
+  - id: 'PERF-001'
+    severity: low
+    finding: 'Enterprise email send is awaited (app/actions/workspace.ts:326), blocking workspace-create response by Resend latency (200ms-1.5s).'
+    suggested_action: 'Drop the await and use fire-and-forget pattern matching app/actions/workspace.ts:347-364. ~5 LOC change.'
+    suggested_owner: dev
+  - id: 'TEST-002'
+    severity: low
+    finding: 'AC 11 / AC 15 invite-bound-signup skip behavior not directly regression-locked. Relies on existing wizard `showWizard` gate behavior.'
+    suggested_action: 'Add tests/unit/components/onboarding/onboarding-wizard-invite-skip.test.tsx with 1 test asserting tier-picker is NOT rendered when invitations.length > 0.'
+    suggested_owner: dev
+  - id: 'TEST-003'
+    severity: low
+    finding: 'AC 12 marketing pricing-section refresh transitively covered by <TierCard> tests but not directly tested as a section.'
+    suggested_action: 'Add small pricing-section.test.tsx asserting (a) 3 tiles render, (b) ctaHrefs match /signup?plan=*, (c) no toggle UI.'
+    suggested_owner: dev
+  - id: 'MAINT-001'
+    severity: low
+    finding: '<TierCard> visual precedence rules (popular > recommended > selected for ring color) not documented in JSDoc.'
+    suggested_action: 'Add 1-line precedence note to TierCard component JSDoc. ~2 LOC.'
+    suggested_owner: dev
+  - id: 'TECH-001'
+    severity: low
+    finding: 'Pass-3 marketing copy positions Lagefterlevnadskontroller / Anmärkningar / versionshantering as Team-tier features, but Epic 21 + Epic 17 do not gate access by subscription_tier. Solo workspaces have access to these surfaces today. Marketing-vs-enforcement drift.'
+    suggested_action: 'Either add per-feature subscription gates as a separate story (similar to 5.5a-c), OR accept the MVP marketing-positioning gap and revisit on conversion data. Recommend the latter — feature-level gating is a bigger product decision than 5.12 scope.'
+    suggested_owner: po
+
+recommendations:
+  immediate: # Must fix before production
+    - action: 'Operator: apply migration via Supabase SQL Editor + register with `npx prisma migrate resolve --applied 20260505192709_add_enterprise_inquiry_at`'
+      refs:
+        ['prisma/migrations/20260505192709_add_enterprise_inquiry_at/migration.sql']
+    - action: 'Operator: set SALES_NOTIFICATION_EMAIL in Vercel env (or accept default `sales@laglig.se`)'
+      refs: ['lib/env.ts']
+    - action: 'Operator: manual smoke test the three URL paths (`?plan=solo|team|enterprise`) before flipping story to Done'
+      refs: ['app/onboarding/_components/tier-picker-step.tsx']
+  future: # Can be addressed later
+    - action: 'Add Playwright E2E spec for the full signup → onboarding → workspace-create flow per AC 14'
+      refs: ['tests/e2e/onboarding-tier-picker.spec.ts']
+    - action: 'Convert Enterprise email send to fire-and-forget'
+      refs: ['app/actions/workspace.ts:326']
+    - action: 'Lock AC 11/15 + AC 12 with direct regression tests'
+      refs:
+        - 'tests/unit/components/onboarding/'
+        - 'tests/unit/components/landing/'
+    - action: 'Pre-existing: lib/usage/seats.ts → lib/stripe/config.ts server-env-on-client leak (out of scope for 5.12; tracking)'
+      refs: ['lib/usage/seats.ts']
+
+history:
+  - at: '2026-05-05T22:00:00Z'
+    gate: CONCERNS
+    note: 'Initial review. CONCERNS driven by TEST-001 (E2E deferred). All other findings are low-severity polish. QA added confirm-step.test.tsx during review (6 cases) to close AC 8/10 gap that dev had missed.'
+  - at: '2026-05-05T22:30:00Z'
+    gate: CONCERNS
+    note: 'Pass 2 refactor following operator screenshot review. Fixed wizard layout (vertical stack instead of 3-col grid — wizard parent is max-w-md, original layout caused mid-word wrapping + price overflow) and copy ("plan" → "nivå" across step label, heading, and confirm-step link). 18/18 component tests pass after refactor; tsc + eslint clean. TEST-001 still open; gate remains CONCERNS pending E2E decision.'
+  - at: '2026-05-05T22:50:00Z'
+    gate: CONCERNS
+    note: 'Pass 3 refactor (operator screenshot v2). (1) Removed HR-modul from Team features (module not built). (2) Added real product USPs — Lagefterlevnadskontroller, Anmärkningar & åtgärdsplaner, Styrdokument med versionshantering — to lead with Laglig differentiators. (3) Tier headers now use font-safiro font-medium per project memory. (4) Recommended tier renders first in wizard ordering (memoized tierOrder). 25/25 component + tier-display tests pass; tsc + eslint clean. New TECH-001 added (low severity): marketing-vs-enforcement drift on the new USP copy — feature-level tier gating is out of scope for 5.12. Gate remains CONCERNS — TEST-001 (E2E) is still the load-bearing concern.'

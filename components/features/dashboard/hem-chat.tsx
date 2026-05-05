@@ -454,7 +454,7 @@ export function HemChat({
 
         {/* Greeting */}
         <h1
-          className="text-center text-3xl font-semibold font-safiro md:text-4xl"
+          className="text-center text-3xl font-medium font-safiro tracking-tight md:text-4xl"
           style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
         >
           {greeting}

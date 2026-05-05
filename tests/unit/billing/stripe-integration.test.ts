@@ -217,9 +217,14 @@ describe('Stripe webhook handler', () => {
   })
 
   it('returns 200 with duplicate=true on replayed event.id', async () => {
-    mockStripeWebhookEvent.findUnique.mockResolvedValueOnce({
-      stripe_event_id: 'evt_dup',
-    })
+    // Idempotency primitive is the unique constraint on stripe_event_id.
+    // Replayed delivery surfaces as P2002 from prisma's create, which the
+    // route translates to 200 + duplicate (race-safe vs the previous
+    // findUnique → create pattern that had a TOCTOU bug under concurrent
+    // duplicate deliveries).
+    mockStripeWebhookEvent.create.mockRejectedValueOnce(
+      Object.assign(new Error('Unique constraint failed'), { code: 'P2002' })
+    )
     const { body, header } = signWebhookPayload({
       id: 'evt_dup',
       type: 'invoice.payment_succeeded',
@@ -230,7 +235,9 @@ describe('Stripe webhook handler', () => {
     expect(res.status).toBe(200)
     const json = (await res.json()) as { duplicate?: boolean }
     expect(json.duplicate).toBe(true)
-    expect(mockStripeWebhookEvent.create).not.toHaveBeenCalled()
+    // create WAS attempted (that's how we detect the dup) but the switch
+    // handler is short-circuited — no workspace mutation.
+    expect(mockStripeWebhookEvent.create).toHaveBeenCalledTimes(1)
     expect(mockWorkspace.update).not.toHaveBeenCalled()
   })
 

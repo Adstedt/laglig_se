@@ -20,6 +20,9 @@ import {
   invalidateWorkspaceCache,
   invalidateUserCache,
 } from '@/lib/cache/workspace-cache'
+import { sendEmail } from '@/lib/email/email-service'
+import { EnterpriseInquiryEmail } from '@/emails/enterprise-inquiry'
+import { env } from '@/lib/env'
 
 // ============================================================================
 // Validation Schemas
@@ -121,6 +124,27 @@ export async function createWorkspace(formData: FormData): Promise<{
     const hasCollectiveAgreementRaw = formData.get('hasCollectiveAgreement') as
       | string
       | null
+    // Story 5.12: tier picked during onboarding wizard.
+    const rawPickedTier = formData.get('pickedTier') as string | null
+    const PICKED_TIERS = ['SOLO', 'TEAM', 'ENTERPRISE'] as const
+    type PickedTier = (typeof PICKED_TIERS)[number]
+    let pickedTier: PickedTier
+    if (
+      rawPickedTier &&
+      (PICKED_TIERS as readonly string[]).includes(rawPickedTier)
+    ) {
+      pickedTier = rawPickedTier as PickedTier
+    } else {
+      console.warn(
+        '[createWorkspace] missing or invalid pickedTier — defaulting to SOLO'
+      )
+      pickedTier = 'SOLO'
+    }
+    // Enterprise picks: trial limits cap at Team to bound COGS during the
+    // wait-for-sales window; enterprise_inquiry_at signals the lead.
+    const trialPickedTier: 'SOLO' | 'TEAM' =
+      pickedTier === 'ENTERPRISE' ? 'TEAM' : pickedTier
+    const enterpriseInquiryAt = pickedTier === 'ENTERPRISE' ? new Date() : null
 
     // Server-side validation of optional company fields
     if (rawOrgNumber && !/^\d{6}-?\d{4}$/.test(rawOrgNumber)) {
@@ -178,6 +202,12 @@ export async function createWorkspace(formData: FormData): Promise<{
           trial_ends_at: trialEndsAt,
           status: 'ACTIVE',
           law_list_generation_status: 'pending',
+          // Story 5.12: trial limits cap at the picked tier (or Team for
+          // Enterprise picks — see enterpriseInquiryAt below).
+          trial_picked_tier: trialPickedTier,
+          ...(enterpriseInquiryAt && {
+            enterprise_inquiry_at: enterpriseInquiryAt,
+          }),
           ...(orgNumber && { org_number: orgNumber }),
           ...(orgNumber && { company_legal_name: result.data.name }),
           ...(sniCode && { sni_code: sniCode }),
@@ -285,6 +315,33 @@ export async function createWorkspace(formData: FormData): Promise<{
 
     // Invalidate user cache to refresh workspace list
     await invalidateUserCache(user.id, ['context'])
+
+    // Story 5.12: Enterprise-pick sales notification.
+    // Fires AFTER the transaction commits — a failed email never rolls back
+    // a successful workspace. Mirrors Story 14.27's [CHAT_USAGE_EVENT_WRITE_FAIL]
+    // fail-safe pattern.
+    if (enterpriseInquiryAt) {
+      try {
+        await sendEmail({
+          to: env.SALES_NOTIFICATION_EMAIL,
+          subject: `Ny Enterprise-intresseanmälan: ${result.data.name}`,
+          react: EnterpriseInquiryEmail({
+            workspaceName: result.data.name,
+            ownerEmail: user.email,
+            ...(orgNumber ? { orgNumber } : {}),
+            ...(employeeCount !== null ? { employeeCount } : {}),
+            ...(sniCode ? { sniCode } : {}),
+            ...(industryLabel ? { industryLabel } : {}),
+            ...(businessDescription ? { businessDescription } : {}),
+            ...(municipality ? { municipality } : {}),
+            ...(websiteUrl ? { websiteUrl } : {}),
+          }),
+          from: 'notifications',
+        })
+      } catch (err) {
+        console.error('[ENTERPRISE_INQUIRY_EMAIL_FAIL]', err)
+      }
+    }
 
     // Story 16.4: Trigger law list generation (fire-and-forget)
     try {

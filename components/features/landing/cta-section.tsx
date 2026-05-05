@@ -25,7 +25,7 @@ export function CtaSection() {
         <div className="mx-auto max-w-2xl text-center">
           {/* Headline */}
           <h2
-            className="font-safiro mb-4 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl"
+            className="font-safiro mb-4 text-3xl font-medium tracking-tight sm:text-4xl md:text-5xl"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
           >
             Slipp bevaka. Börja sova gott.

@@ -15,7 +15,6 @@ import {
   FileText,
   FolderOpen,
   Users,
-  Bell,
   Settings,
   ChevronRight,
   LogOut,
@@ -121,13 +120,6 @@ const workItems = [
   {
     title: 'HR',
     icon: Users,
-    href: '#',
-    disabled: true,
-    badge: 'snart',
-  },
-  {
-    title: 'Ändringsbevakning',
-    icon: Bell,
     href: '#',
     disabled: true,
     badge: 'snart',

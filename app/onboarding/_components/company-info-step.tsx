@@ -220,7 +220,7 @@ export function CompanyInfoStep({
   return (
     <form onSubmit={handleSubmit(onNext)} className="space-y-5" noValidate>
       <div>
-        <h2 className="font-safiro text-2xl font-semibold tracking-tight">
+        <h2 className="font-safiro text-2xl font-medium tracking-tight">
           Företagsinformation
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">

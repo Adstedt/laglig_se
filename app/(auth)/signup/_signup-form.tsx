@@ -17,6 +17,7 @@ import {
   saveOnboardingData,
   getOnboardingData,
   parseFlags,
+  parsePickedTier,
 } from '@/lib/onboarding/onboarding-store'
 import type { z } from 'zod'
 
@@ -43,6 +44,7 @@ export function SignupForm() {
   // Bridge: save query params from landing page CTA to localStorage
   useEffect(() => {
     const org = searchParams.get('org')
+    const pickedTier = parsePickedTier(searchParams.get('plan'))
     if (org) {
       const url = searchParams.get('url')
       const flags = parseFlags(searchParams.get('flags'))
@@ -52,7 +54,13 @@ export function SignupForm() {
         ...(url ? { websiteUrl: url } : {}),
         ...(flags ? { inferredFlags: flags } : {}),
         ...(summary ? { companySummary: summary } : {}),
+        ...(pickedTier ? { pickedTier } : {}),
       })
+    } else if (pickedTier) {
+      // ?plan= can arrive without ?org= (user clicked a marketing tier CTA
+      // without going through the org-lookup landing flow). Persist it alone
+      // so the wizard's TierPickerStep can pre-select.
+      saveOnboardingData({ pickedTier })
     }
     setHasStoredData(getOnboardingData() !== null)
   }, [searchParams])
@@ -164,7 +172,7 @@ export function SignupForm() {
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
           <CheckCircle className="h-6 w-6 text-emerald-600" />
         </div>
-        <h2 className="text-2xl font-bold font-safiro text-foreground">
+        <h2 className="text-2xl font-medium tracking-tight font-safiro text-foreground">
           Kontrollera din e-post
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -196,7 +204,7 @@ export function SignupForm() {
   return (
     <div className="w-full">
       <div className="text-center">
-        <h2 className="mt-2 text-3xl font-bold tracking-tight font-safiro text-foreground">
+        <h2 className="mt-2 text-3xl font-medium tracking-tight font-safiro text-foreground">
           Skapa ditt konto
         </h2>
         <p className="mt-2 text-sm text-muted-foreground">

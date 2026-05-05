@@ -13,7 +13,7 @@ export default function VerifyEmailPage() {
       <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
         <Mail className="h-6 w-6 text-primary" />
       </div>
-      <h2 className="text-2xl font-bold font-safiro text-foreground">
+      <h2 className="text-2xl font-medium tracking-tight font-safiro text-foreground">
         Kontrollera din e-post
       </h2>
       <p className="mt-2 text-sm text-muted-foreground">

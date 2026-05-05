@@ -323,10 +323,28 @@
 
 ---
 
-**Total Stories Tracked:** ~239+ across 22 epics (~166 completed, ~71+ backlog; Epic 18 stories TBD, Epic 19 12 stories scoped, Epic 20 3 stories scoped + completed, Epic 21 14 stories scoped — **13 completed, 1 deferred (21.10)**, 1 in backlog (21.15), Epic 22 4 stories scoped)
+## Epic 23: Anmärkningar som förstklassiga objekt
 
-**Epic Status:** 12 Done (incl. Epic 21 substantially-done as of 2026-04-27, UAT-ready with 1 deferred 21.10 + 1 backlogged 21.15), 4 Partial / Active, 6 Not Started / Planned
+**Status:** Planned (0 completed — 5 stories scoped)
 
-**Last updated:** 2026-04-23
+**Goal:** Lift `ComplianceFinding` out of cycle scope into a first-class workspace object with its own registry page (`/anmärkningar`), shared cross-surface modal, and ad-hoc creation pathway — so avvikelser, observationer and förbättringsförslag exist as continuously-tracked compliance signals, not just artefacts of a closed audit.
+
+**Delivers:** Schema migration making `ComplianceFinding.cycle_id` nullable + `workspace_id`/`created_by_user_id`/`assignee_id` columns + `Comment.finding_id` polymorphic extension + anchor CHECK constraint; new `/anmärkningar` registry page mirroring `/uppgifter` architecture (PageHeader + TableToolbar + shadcn Table + URL-synced filters); shared `<FindingModal>` on the `SplitPanelModal` shell with feature-parity to `<TaskModal>` (activity feed, linked artifacts, status actions); rewire of three entry points (cycle-detail Findings tab, law-list-item modal, registry CTA) onto the shared modal; cross-cycle visibility via cycle wizard "kända vid start" panel + Findings tab "Visa öppna från tidigare kontroller" toggle; sidebar nav entry under Efterlevnad with red-pip count.
+
+**Requirements covered:** Resolves brief Q294 ("findings visible outside the cycle?") and Q295 ("carried-over avvikelser?") from `docs/lagefterlevnadskontroll-brief.md`. Implements ISO 19011 audit-output taxonomy (avvikelse / observation / förbättringsförslag) as continuous-improvement register — core to ISO 9001 §10.2, ISO 14001 §10.2, ISO 45001 §10.2 management-system audits.
+
+**Dependencies:** Epic 21 (Active/UAT-ready — source of `ComplianceFinding`, `FindingEditor`, `FindingCard`, `cycle-findings-tab.tsx`; hard dependency, refactored), Epic 22 (Done PR #60 — consumes `<PageHeader>`, `<TableToolbar>`, `<FilterChip>`, `<Badge tone>`, `<EmptyState>` from day one), Epic 6 (Done — source of `Comment` polymorphic model, `ActivityLog`, threaded comments UX), Epic 17 (Done — source of `LinkedArtifactsPanel` SWR pattern reused for the modal's right rail).
+
+**Note:** Brownfield enhancement. Schema change is additive + backward-compatible (nullable column, denormalised mirrors backfilled). Existing cycle-scoped reads keep working unchanged. Sealed-cycle PDFs remain bit-identical (point-in-time guard in Story 23.5). Source artefacts: `_prototypes/anmarkningar-page-and-modal.html` (visual reference for page + modal + entry-point matrix). See `docs/prd/epic-23-anmarkningar-first-class.md`.
+
+**Priority:** High — unblocks continuous-improvement workflows core to ISO management-system audits, resolves long-standing post-MVP question from the lagefterlevnadskontroll brief, and sequences naturally after Epic 22 (now done) so new surfaces use canonical primitives from day one.
+
+---
+
+**Total Stories Tracked:** ~244+ across 23 epics (~166 completed, ~76+ backlog; Epic 18 stories TBD, Epic 19 12 stories scoped, Epic 20 3 stories scoped + completed, Epic 21 14 stories scoped — **13 completed, 1 deferred (21.10)**, 1 in backlog (21.15), Epic 22 4 stories scoped, Epic 23 5 stories scoped)
+
+**Epic Status:** 12 Done (incl. Epic 21 substantially-done as of 2026-04-27, UAT-ready with 1 deferred 21.10 + 1 backlogged 21.15), 4 Partial / Active, 7 Not Started / Planned (incl. Epic 23)
+
+**Last updated:** 2026-05-05
 
 ---

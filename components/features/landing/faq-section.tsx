@@ -47,7 +47,7 @@ export function FaqSection() {
         <div className="mx-auto max-w-2xl">
           <div className="mb-12 text-center">
             <h2
-              className="font-safiro mb-4 text-3xl font-bold tracking-tight sm:text-4xl"
+              className="font-safiro mb-4 text-3xl font-medium tracking-tight sm:text-4xl"
               style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
             >
               Vanliga frågor
