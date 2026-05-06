@@ -18,15 +18,20 @@ export const env = createEnv({
     ADMIN_EMAILS: z.string().min(1).optional(),
     ADMIN_JWT_SECRET: z.string().min(32).optional(),
     BOLAGSAPI_API_KEY: z.string().min(1).optional(),
-    // Story 5.4: Stripe billing
+    // Story 5.4: Stripe billing.
+    // Price IDs use a strict regex — catches the common "pasted KEY=value"
+    // and trailing-newline mistakes from copying env lines into Vercel.
     STRIPE_SECRET_KEY: z.string().min(1),
     STRIPE_WEBHOOK_SECRET: z.string().min(1),
-    STRIPE_SOLO_PRICE_ID: z.string().min(1),
-    STRIPE_TEAM_PRICE_ID: z.string().min(1),
+    STRIPE_SOLO_PRICE_ID: z.string().regex(/^price_[A-Za-z0-9_]+$/),
+    STRIPE_TEAM_PRICE_ID: z.string().regex(/^price_[A-Za-z0-9_]+$/),
     // Enterprise is sales-led — never goes through self-serve Checkout, so
     // a Price ID isn't required for boot. The /api/billing/checkout route
     // rejects tier: 'ENTERPRISE' before reaching this value.
-    STRIPE_ENTERPRISE_PRICE_ID: z.string().min(1).optional(),
+    STRIPE_ENTERPRISE_PRICE_ID: z
+      .string()
+      .regex(/^price_[A-Za-z0-9_]+$/)
+      .optional(),
     // Story 5.12: destination for Enterprise-inquiry sales notifications
     // sent when a user picks Enterprise during onboarding. Server-only.
     SALES_NOTIFICATION_EMAIL: z.string().email().default('sales@laglig.se'),

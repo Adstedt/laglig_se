@@ -196,12 +196,17 @@ export function BillingDashboard({
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ tier }),
       })
-      const data = (await res.json()) as { url?: string; error?: string }
+      const data = (await res.json()) as {
+        url?: string
+        error?: string
+        message?: string
+      }
       if (data.url) {
         window.location.href = data.url
       } else {
+        const heading = data.error ?? 'Kunde inte starta Checkout'
         // eslint-disable-next-line no-alert
-        alert(data.error ?? 'Kunde inte starta Checkout')
+        alert(data.message ? `${heading}\n\n${data.message}` : heading)
       }
     })
   }

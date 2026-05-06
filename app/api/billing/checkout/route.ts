@@ -101,6 +101,15 @@ export async function POST(request: Request) {
       metadata: { workspaceId: workspace.id, tier },
       success_url: `${env.NEXT_PUBLIC_APP_URL}/settings/billing?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${env.NEXT_PUBLIC_APP_URL}/settings/billing`,
+      custom_text: {
+        submit: {
+          message:
+            'Du kan avsluta din prenumeration när som helst i kundportalen.',
+        },
+        after_submit: {
+          message: 'Tack! Vi skickar kvittot till din e-post.',
+        },
+      },
       // payment_method_types intentionally omitted — Stripe auto-enables Card,
       // Klarna, Swish per Dashboard config (per Dev Notes "Swedish payment methods").
     })

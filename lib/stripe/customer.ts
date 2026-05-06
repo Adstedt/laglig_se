@@ -20,7 +20,26 @@ export async function getOrCreateStripeCustomer(
   })
 
   if (workspace?.stripe_customer_id) {
-    return workspace.stripe_customer_id
+    // Verify the cached ID still exists in the current Stripe account/mode.
+    // A workspace can outlive a Stripe-account-or-mode switch (rotating keys,
+    // moving Preview from live→test, etc.), leaving a stale cus_… that 404s
+    // mid-checkout. On resource_missing, fall through to create a fresh one
+    // and overwrite the cache.
+    try {
+      const existing = await stripe.customers.retrieve(
+        workspace.stripe_customer_id
+      )
+      if (!existing.deleted) {
+        return workspace.stripe_customer_id
+      }
+    } catch (err) {
+      const isMissing =
+        err instanceof Error &&
+        'code' in err &&
+        (err as { code?: string }).code === 'resource_missing'
+      if (!isMissing) throw err
+      // fall through to create
+    }
   }
 
   // BILLING-002 (QA gate 5.4): protect against the create-create race when
