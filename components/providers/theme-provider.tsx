@@ -10,17 +10,22 @@ import type { ThemeProviderProps } from 'next-themes'
 // surfaces in particular need a consistent light look.
 const PUBLIC_ROUTE_PREFIXES = [
   '/alla-lagar',
+  '/cookiepolicy',
   '/eu',
   '/foreskrifter',
+  '/integritetspolicy',
   '/lagar',
   '/login',
   '/onboarding',
+  '/personuppgiftsbitradesavtal',
   '/rattskallor',
   '/reset-password',
   '/signup',
   '/sok',
+  '/underbitraden',
   '/unsubscribe',
   '/verify-email',
+  '/villkor',
 ]
 
 function isPublicRoute(pathname: string | null): boolean {
