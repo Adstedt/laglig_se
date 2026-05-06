@@ -34,6 +34,7 @@ export {
 // PDF fetching and storage
 export {
   fetchAndStorePdf,
+  resolvePdfUrl,
   createErrorMetadata,
   shouldRetryPdf,
   resetRateLimiter,

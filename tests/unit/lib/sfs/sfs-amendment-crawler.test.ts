@@ -387,4 +387,26 @@ describe('parseDocumentPage', () => {
     const html = '<html><title></title><body></body></html>'
     expect(parseDocumentPage(html, '2026:1')).toBeNull()
   })
+
+  it('builds htmlUrl correctly when given an "SFS "-prefixed sfsNumber', () => {
+    const html = `
+      <html>
+        <title>Lag om ändring i lagen (2013:283) | svenskforfattningssamling.se</title>
+        <body>
+          <a href="../sites/default/files/sfs/2026-04/SFS2026-422.pdf">PDF</a>
+        </body>
+      </html>
+    `
+    const prefixed = parseDocumentPage(html, 'SFS 2026:422')
+    const unprefixed = parseDocumentPage(html, '2026:422')
+
+    expect(prefixed).not.toBeNull()
+    expect(unprefixed).not.toBeNull()
+    // Both inputs must produce the same canonical /doc/2026422.html — no literal "SFS " in the URL
+    expect(prefixed!.htmlUrl).toBe(unprefixed!.htmlUrl)
+    expect(prefixed!.htmlUrl).toBe(
+      'https://svenskforfattningssamling.se/doc/2026422.html'
+    )
+    expect(prefixed!.htmlUrl).not.toContain(' ')
+  })
 })

@@ -7,7 +7,7 @@
  * Extracted from scripts/crawl-sfs-index.ts with incremental watermark support.
  */
 
-import { constructPdfUrls } from './pdf-urls'
+import { constructPdfUrls, parseSfsNumber } from './pdf-urls'
 
 // =============================================================================
 // Types
@@ -401,8 +401,11 @@ export function parseDocumentPage(
     ? `${BASE_URL}${pdfPath.startsWith('/') ? '' : '/'}${pdfPath}`
     : ''
 
+  const parsed = parseSfsNumber(sfsNumber)
+  if (!parsed) return null
+
   // Extract publication date from PDF path
-  let publishedDate = `${sfsNumber.split(':')[0]}-01-01`
+  let publishedDate = `${parsed.year}-01-01`
   if (pdfPath) {
     const monthMatch = pdfPath.match(/\/sfs\/(\d{4}-\d{2})\//)
     if (monthMatch) {
@@ -416,15 +419,13 @@ export function parseDocumentPage(
       ? extractBaseLawSfs(title)
       : null
 
-  const [sfsYear, sfsNum] = sfsNumber.split(':')
-
   return {
     title,
     publishedDate,
     documentType,
     baseLawSfs,
     pdfUrl,
-    htmlUrl: `${BASE_URL}/doc/${sfsYear}${sfsNum}.html`,
+    htmlUrl: `${BASE_URL}/doc/${parsed.year}${parsed.number}.html`,
   }
 }
 
@@ -532,10 +533,10 @@ export async function crawlDocumentPage(
 ): Promise<CrawledDocument | null> {
   const { fetchFn = fetch } = options
 
-  const [year, num] = sfsNumber.split(':')
-  if (!year || !num) return null
+  const parsedSfs = parseSfsNumber(sfsNumber)
+  if (!parsedSfs) return null
 
-  const docUrl = `${BASE_URL}/doc/${year}${num}.html`
+  const docUrl = `${BASE_URL}/doc/${parsedSfs.year}${parsedSfs.number}.html`
 
   const html = await fetchPage(docUrl, fetchFn)
   if (!html) return null
