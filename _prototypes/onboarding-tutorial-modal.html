@@ -1,0 +1,3060 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Onboarding tutorial modal — high-fidelity prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+      /* ----------------------------------------------------------------------
+         Brand fonts — loaded from the project's /public/fonts directory.
+         Safiro is the only registered display weight (500); never bold.
+         ---------------------------------------------------------------------- */
+      @font-face {
+        font-family: 'Safiro';
+        src:
+          url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'),
+          url('../public/fonts/safiro-medium-webfont.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Google Sans Flex';
+        src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype');
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      /* ----------------------------------------------------------------------
+         Tokens — mirrored from app/globals.css :root.
+         ---------------------------------------------------------------------- */
+      :root {
+        --background: 40 20% 98%;
+        --foreground: 30 10% 10%;
+        --card: 40 15% 99%;
+        --card-foreground: 30 10% 10%;
+        --primary: 30 15% 12%;
+        --primary-foreground: 40 20% 98%;
+        --secondary: 40 15% 95%;
+        --muted: 40 12% 94%;
+        --muted-foreground: 30 8% 45%;
+        --accent: 40 15% 93%;
+        --border: 35 10% 88%;
+        --ring: 30 15% 12%;
+
+        --section-warm: 45 30% 96%;
+        --section-sage: 140 25% 95%;
+        --section-cream: 35 40% 97%;
+
+        --tone-success-soft-bg: #d1fae5;
+        --tone-success-soft-fg: #047857;
+        --tone-success-solid: #10b981;
+        --tone-warning-soft-bg: #fef3c7;
+        --tone-warning-soft-fg: #b45309;
+        --tone-warning-solid: #f59e0b;
+        --tone-danger-soft-bg: #ffe4e6;
+        --tone-danger-soft-fg: #be123c;
+        --tone-info-soft-bg: #dbeafe;
+        --tone-info-soft-fg: #1d4ed8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        font-family:
+          'Google Sans Flex', ui-sans-serif, system-ui, -apple-system, sans-serif;
+        font-size: 15px;
+        line-height: 1.55;
+        color: hsl(var(--foreground));
+        background: hsl(var(--background));
+        -webkit-font-smoothing: antialiased;
+      }
+      .font-safiro {
+        font-family: 'Safiro', system-ui, sans-serif;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+      }
+
+      /* ----------------------------------------------------------------------
+         Tailwind config bridge — expose tokens as utility classes.
+         ---------------------------------------------------------------------- */
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              background: 'hsl(var(--background))',
+              foreground: 'hsl(var(--foreground))',
+              card: 'hsl(var(--card))',
+              border: 'hsl(var(--border))',
+              muted: {
+                DEFAULT: 'hsl(var(--muted))',
+                foreground: 'hsl(var(--muted-foreground))',
+              },
+              accent: 'hsl(var(--accent))',
+              primary: {
+                DEFAULT: 'hsl(var(--primary))',
+                foreground: 'hsl(var(--primary-foreground))',
+              },
+              warm: 'hsl(var(--section-warm))',
+              sage: 'hsl(var(--section-sage))',
+              cream: 'hsl(var(--section-cream))',
+            },
+            boxShadow: {
+              modal:
+                '0 32px 64px -24px rgba(15, 12, 8, 0.18), 0 8px 24px -12px rgba(15, 12, 8, 0.08)',
+              soft:
+                '0 8px 24px -12px rgba(15, 12, 8, 0.08), 0 2px 6px -2px rgba(15, 12, 8, 0.04)',
+            },
+            fontFamily: {
+              safiro: ['Safiro', 'system-ui', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      /* ----------------------------------------------------------------------
+         Backdrop — mocks the chat-first dashboard, then dims & blurs.
+         ---------------------------------------------------------------------- */
+      .dashboard-backdrop {
+        background:
+          radial-gradient(
+            ellipse 60% 40% at 30% 20%,
+            hsl(var(--section-warm)) 0%,
+            transparent 70%
+          ),
+          radial-gradient(
+            ellipse 50% 40% at 80% 75%,
+            hsl(var(--section-cream)) 0%,
+            transparent 70%
+          ),
+          hsl(var(--background));
+      }
+      .dimmed::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(28, 25, 23, 0.18);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        pointer-events: none;
+      }
+
+      /* Frame label */
+      .frame-label {
+        position: absolute;
+        top: -34px;
+        left: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+      }
+      .frame-label .num {
+        display: inline-flex;
+        width: 1.375rem;
+        height: 1.375rem;
+        align-items: center;
+        justify-content: center;
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+        border-radius: 999px;
+        font-size: 0.6875rem;
+        font-family: 'Safiro', system-ui, sans-serif;
+        font-weight: 500;
+      }
+      .frame-label .arrow {
+        color: hsl(var(--muted-foreground));
+      }
+
+      /* Subtle indeterminate progress shimmer for the "matchar..." strip */
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(300%);
+        }
+      }
+      .shimmer-track {
+        position: relative;
+        overflow: hidden;
+        background: hsl(var(--muted));
+      }
+      .shimmer-track .fill {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          hsl(var(--primary)) 30%,
+          hsl(var(--primary)) 70%,
+          transparent
+        );
+        opacity: 0.85;
+        animation: shimmer 2.4s ease-in-out infinite;
+      }
+
+      /* Pulse on active step dot */
+      @keyframes pulseDot {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.55;
+          transform: scale(0.85);
+        }
+      }
+      .pulse-dot {
+        animation: pulseDot 1.6s ease-in-out infinite;
+      }
+
+      /* Spinner */
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .spin {
+        animation: spin 1.4s linear infinite;
+      }
+
+      /* Hairline divider */
+      .hairline {
+        border-top: 1px solid hsl(var(--border));
+      }
+
+      /* Soft "section header" eyebrow */
+      .eyebrow {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: hsl(var(--muted-foreground));
+      }
+
+      /* Realistic table-row mock styling */
+      .law-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.5rem;
+        padding: 0.625rem 0.875rem;
+        background: hsl(var(--card));
+        border: 1px solid hsl(var(--border));
+        border-radius: 0.5rem;
+        font-size: 0.8125rem;
+        line-height: 1.4;
+      }
+
+      /* Tone pills */
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.125rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.6875rem;
+        font-weight: 500;
+        line-height: 1.4;
+      }
+      .pill--success {
+        background: var(--tone-success-soft-bg);
+        color: var(--tone-success-soft-fg);
+      }
+      .pill--warning {
+        background: var(--tone-warning-soft-bg);
+        color: var(--tone-warning-soft-fg);
+      }
+      .pill--danger {
+        background: var(--tone-danger-soft-bg);
+        color: var(--tone-danger-soft-fg);
+      }
+      .pill--info {
+        background: var(--tone-info-soft-bg);
+        color: var(--tone-info-soft-fg);
+      }
+      .pill--neutral {
+        background: hsl(var(--muted));
+        color: hsl(var(--muted-foreground));
+      }
+
+      /* Fine grain noise on cards (very subtle) */
+      .grain {
+        background-image: radial-gradient(
+          rgba(28, 25, 23, 0.03) 1px,
+          transparent 1px
+        );
+        background-size: 3px 3px;
+      }
+
+      /* Avatar circle */
+      .avatar {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 999px;
+        font-size: 0.625rem;
+        font-weight: 600;
+        background: hsl(var(--accent));
+        color: hsl(var(--foreground));
+      }
+
+      /* Card hover lift */
+      .lift {
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease,
+          border-color 0.18s ease;
+      }
+      .lift:hover {
+        transform: translateY(-1px);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="mx-auto max-w-[1500px] px-8 py-12">
+      <!-- Page header ------------------------------------------------------ -->
+      <header class="mb-10 max-w-3xl">
+        <div class="eyebrow mb-2">
+          High-fidelity prototype · Post-signup onboarding
+        </div>
+        <h1 class="font-safiro text-4xl leading-tight">
+          Den första minuten i Laglig
+        </h1>
+        <p class="mt-4 text-[15px] text-muted-foreground leading-relaxed">
+          Modal som öppnas vid första
+          <code class="rounded bg-muted px-1 py-0.5 text-[13px]">/dashboard</code>-besöket
+          efter signup. Ersätter den tysta auto-genereringen. Tre tydliga
+          ögonblick: <em>val</em> →
+          <em>tutorial-medan-vi-jobbar</em> → <em>reveal</em>. Allt på
+          varumärkets palett, Safiro för rubriker, Google Sans Flex för text.
+        </p>
+      </header>
+
+      <!-- Flow strip ------------------------------------------------------- -->
+      <section
+        class="mb-14 rounded-xl border border-border bg-card shadow-soft p-5"
+      >
+        <div class="eyebrow mb-3">Flöde</div>
+        <div class="flex flex-wrap items-center gap-2 text-[12.5px]">
+          <span
+            class="rounded-md border border-border bg-warm px-2.5 py-1 font-medium"
+            >Workspace skapas</span
+          >
+          <i data-lucide="chevron-right" class="h-3.5 w-3.5 text-muted-foreground"></i>
+          <span
+            class="rounded-md bg-primary text-primary-foreground px-2.5 py-1 font-medium"
+            >① Vägval</span
+          >
+          <i data-lucide="chevron-right" class="h-3.5 w-3.5 text-muted-foreground"></i>
+          <span class="rounded-md border border-border bg-card px-2.5 py-1"
+            >②a Generera (bekräfta)</span
+          >
+          <span class="text-muted-foreground/60 px-1">/</span>
+          <span class="rounded-md border border-border bg-card px-2.5 py-1"
+            >②b Importera (ladda upp)</span
+          >
+          <i data-lucide="chevron-right" class="h-3.5 w-3.5 text-muted-foreground"></i>
+          <span
+            class="rounded-md bg-primary text-primary-foreground px-2.5 py-1 font-medium"
+            >③ Tutorial medan vi jobbar</span
+          >
+          <i data-lucide="chevron-right" class="h-3.5 w-3.5 text-muted-foreground"></i>
+          <span class="rounded-md border border-border bg-card px-2.5 py-1"
+            >④a Klar — visa lista</span
+          >
+          <span class="text-muted-foreground/60 px-1">/</span>
+          <span class="rounded-md border border-border bg-card px-2.5 py-1"
+            >④b Klar — granska matchningar</span
+          >
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- FRAME 1: Path choice                                            -->
+      <!-- ============================================================== -->
+      <section class="mb-24">
+        <div class="relative">
+          <div class="frame-label">
+            <span class="num">1</span>
+            Vägval — modalen öppnas vid första /dashboard-besöket
+          </div>
+
+          <div
+            class="dashboard-backdrop relative dimmed rounded-2xl border border-border overflow-hidden shadow-soft"
+            style="height: 760px"
+          >
+            <!-- Backdrop: mock chat-first dashboard ------------------- -->
+            <div class="absolute inset-0 z-0">
+              <!-- Top header strip -->
+              <div
+                class="flex items-center justify-between px-6 h-14 border-b border-border/60"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="h-7 w-7 rounded-md bg-primary text-primary-foreground flex items-center justify-center font-safiro text-sm"
+                  >
+                    L
+                  </div>
+                  <span class="font-safiro text-sm">Laglig</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="h-7 w-7 rounded-full bg-muted"></div>
+                </div>
+              </div>
+              <!-- Greeting + cards + chat input -->
+              <div class="flex flex-col items-center justify-center pt-20">
+                <div
+                  class="h-12 w-12 rounded-md bg-primary text-primary-foreground flex items-center justify-center font-safiro text-lg mb-6"
+                >
+                  L
+                </div>
+                <h2 class="font-safiro text-3xl mb-8 text-center">
+                  Hur kan jag hjälpa dig idag, Alexander?
+                </h2>
+                <div class="flex gap-2 mb-8">
+                  <div class="h-20 w-44 rounded-xl bg-card border border-border"></div>
+                  <div class="h-20 w-44 rounded-xl bg-card border border-border"></div>
+                  <div class="h-20 w-44 rounded-xl bg-card border border-border"></div>
+                  <div class="h-20 w-44 rounded-xl bg-card border border-border"></div>
+                </div>
+                <div
+                  class="h-14 w-[640px] rounded-2xl bg-card border border-border"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Modal ------------------------------------------------- -->
+            <div class="absolute inset-0 z-10 flex items-center justify-center p-8">
+              <div
+                class="w-full max-w-[600px] bg-card rounded-2xl border border-border shadow-modal overflow-hidden"
+              >
+                <!-- Top brand bar -->
+                <div class="flex items-center gap-2 px-7 pt-6">
+                  <div
+                    class="h-7 w-7 rounded-md bg-primary text-primary-foreground flex items-center justify-center font-safiro text-sm"
+                  >
+                    L
+                  </div>
+                  <span class="font-safiro text-[15px]">Laglig</span>
+                  <span class="ml-auto eyebrow">Kom igång · Steg 1 av 2</span>
+                </div>
+
+                <!-- Body -->
+                <div class="px-7 pt-6 pb-7">
+                  <h2 class="font-safiro text-[28px] leading-tight mb-2">
+                    Välkommen, Alexander
+                  </h2>
+                  <p class="text-[14px] text-muted-foreground mb-7 max-w-md">
+                    Vi sätter upp er laglista — välj hur. Båda vägarna tar
+                    några minuter, och du kan följa arbetet i realtid.
+                  </p>
+
+                  <!-- Path cards -->
+                  <div class="grid grid-cols-2 gap-3 mb-6">
+                    <!-- Generate (recommended) -->
+                    <button
+                      class="lift group relative text-left rounded-xl border-2 border-primary bg-primary text-primary-foreground p-5 hover:shadow-modal"
+                    >
+                      <span
+                        class="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-primary-foreground/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+                      >
+                        <i data-lucide="sparkles" class="h-3 w-3"></i>
+                        Rekommenderas
+                      </span>
+                      <div
+                        class="h-9 w-9 rounded-lg bg-primary-foreground/10 flex items-center justify-center mb-4"
+                      >
+                        <i
+                          data-lucide="wand-sparkles"
+                          class="h-[18px] w-[18px]"
+                        ></i>
+                      </div>
+                      <div class="font-safiro text-[17px] mb-1.5">
+                        Generera ny lista
+                      </div>
+                      <p class="text-[12.5px] opacity-75 leading-relaxed">
+                        Vi tar fram en personlig laglista baserat på er
+                        bransch och verksamhet. Tar 2–5 minuter.
+                      </p>
+                      <div
+                        class="mt-4 flex items-center gap-1.5 text-[12px] opacity-80"
+                      >
+                        <span>Använd er profil</span>
+                        <i data-lucide="arrow-right" class="h-3.5 w-3.5"></i>
+                      </div>
+                    </button>
+
+                    <!-- Import -->
+                    <button
+                      class="lift group relative text-left rounded-xl border border-border bg-background p-5 hover:border-foreground/40 hover:shadow-soft"
+                    >
+                      <div
+                        class="h-9 w-9 rounded-lg bg-warm border border-border flex items-center justify-center mb-4"
+                      >
+                        <i
+                          data-lucide="file-up"
+                          class="h-[18px] w-[18px]"
+                        ></i>
+                      </div>
+                      <div class="font-safiro text-[17px] mb-1.5">
+                        Importera befintlig
+                      </div>
+                      <p
+                        class="text-[12.5px] text-muted-foreground leading-relaxed"
+                      >
+                        Har du en lista i Excel eller från Notisum, Lex.nu
+                        eller en konsult? Vi matchar raderna mot vår katalog.
+                      </p>
+                      <div
+                        class="mt-4 flex items-center gap-1.5 text-[12px] text-muted-foreground"
+                      >
+                        <span>.xlsx · .csv · klistra in</span>
+                        <i data-lucide="arrow-right" class="h-3.5 w-3.5"></i>
+                      </div>
+                    </button>
+                  </div>
+
+                  <!-- Soft footnote -->
+                  <div
+                    class="hairline pt-4 flex items-center justify-between text-[12.5px] text-muted-foreground"
+                  >
+                    <span class="inline-flex items-center gap-1.5">
+                      <i data-lucide="lock" class="h-3.5 w-3.5"></i>
+                      Allt sparas i ert workspace, ingen delning utåt.
+                    </span>
+                    <button
+                      class="hover:text-foreground underline-offset-4 hover:underline"
+                    >
+                      Hoppa över — bygg manuellt
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Two-column: 2a vs 2b -------------------------------------------- -->
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-12 mb-24">
+        <!-- ============================================================== -->
+        <!-- FRAME 2a: Generate confirm                                      -->
+        <!-- ============================================================== -->
+        <section>
+          <div class="relative">
+            <div class="frame-label">
+              <span class="num">2a</span>Generera-vägen — bekräfta input
+            </div>
+            <div
+              class="dashboard-backdrop relative dimmed rounded-2xl border border-border overflow-hidden shadow-soft"
+              style="height: 560px"
+            >
+              <div class="absolute inset-0 z-10 flex items-center justify-center p-6">
+                <div
+                  class="w-full max-w-[500px] bg-card rounded-2xl border border-border shadow-modal overflow-hidden"
+                >
+                  <div class="flex items-center gap-2 px-6 pt-5">
+                    <button
+                      class="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-[13px]"
+                    >
+                      <i data-lucide="arrow-left" class="h-4 w-4"></i>
+                      Tillbaka
+                    </button>
+                    <span class="ml-auto eyebrow">Steg 2 av 2</span>
+                  </div>
+                  <div class="px-6 pt-4 pb-6">
+                    <h3 class="font-safiro text-[22px] leading-tight mb-1.5">
+                      Vi använder följande för att ta fram er lista
+                    </h3>
+                    <p class="text-[13px] text-muted-foreground mb-5">
+                      Om något inte stämmer kan du justera det senare i
+                      inställningarna.
+                    </p>
+
+                    <!-- Summary list -->
+                    <ul
+                      class="rounded-xl border border-border bg-warm/40 divide-y divide-border overflow-hidden mb-5"
+                    >
+                      <li class="flex items-center gap-3 px-4 py-3">
+                        <i
+                          data-lucide="building-2"
+                          class="h-4 w-4 text-muted-foreground"
+                        ></i>
+                        <span class="text-[12.5px] text-muted-foreground"
+                          >Bransch</span
+                        >
+                        <span class="ml-auto text-[13px] font-medium"
+                          >Bygg & anläggning</span
+                        >
+                      </li>
+                      <li class="flex items-center gap-3 px-4 py-3">
+                        <i
+                          data-lucide="users"
+                          class="h-4 w-4 text-muted-foreground"
+                        ></i>
+                        <span class="text-[12.5px] text-muted-foreground"
+                          >Storlek</span
+                        >
+                        <span class="ml-auto text-[13px] font-medium"
+                          >10–49 anställda</span
+                        >
+                      </li>
+                      <li class="flex items-center gap-3 px-4 py-3">
+                        <i
+                          data-lucide="activity"
+                          class="h-4 w-4 text-muted-foreground"
+                        ></i>
+                        <span class="text-[12.5px] text-muted-foreground"
+                          >Verksamhet</span
+                        >
+                        <span class="ml-auto text-[13px] font-medium text-right"
+                          >Farligt avfall · Transporter</span
+                        >
+                      </li>
+                    </ul>
+
+                    <!-- ETA hint -->
+                    <div
+                      class="flex items-center gap-2 text-[12.5px] text-muted-foreground mb-5"
+                    >
+                      <i data-lucide="clock" class="h-3.5 w-3.5"></i>
+                      Beräknad tid: 2–5 minuter. Du kan fortsätta använda
+                      Laglig medan vi jobbar.
+                    </div>
+
+                    <button
+                      class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-primary-foreground px-4 py-2.5 text-[13.5px] font-medium hover:bg-primary/95"
+                    >
+                      <i
+                        data-lucide="wand-sparkles"
+                        class="h-4 w-4"
+                      ></i>
+                      Starta generering
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- FRAME 2b: Import upload                                         -->
+        <!-- ============================================================== -->
+        <section>
+          <div class="relative">
+            <div class="frame-label">
+              <span class="num">2b</span>Importera-vägen — ladda upp
+            </div>
+            <div
+              class="dashboard-backdrop relative dimmed rounded-2xl border border-border overflow-hidden shadow-soft"
+              style="height: 560px"
+            >
+              <div class="absolute inset-0 z-10 flex items-center justify-center p-6">
+                <div
+                  class="w-full max-w-[520px] bg-card rounded-2xl border border-border shadow-modal overflow-hidden"
+                >
+                  <div class="flex items-center gap-2 px-6 pt-5">
+                    <button
+                      class="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-[13px]"
+                    >
+                      <i data-lucide="arrow-left" class="h-4 w-4"></i>
+                      Tillbaka
+                    </button>
+                    <span class="ml-auto eyebrow">Steg 2 av 2</span>
+                  </div>
+                  <div class="px-6 pt-4 pb-6">
+                    <h3 class="font-safiro text-[22px] leading-tight mb-1.5">
+                      Ladda upp er befintliga lista
+                    </h3>
+                    <p class="text-[13px] text-muted-foreground mb-4">
+                      Excel, CSV eller klistra in raderna. Vi matchar mot
+                      katalogen av lagar och föreskrifter.
+                    </p>
+
+                    <!-- Tab toggle: Fil / Klistra in -->
+                    <div
+                      class="inline-flex items-center gap-1 rounded-lg border border-border bg-background p-1 mb-4 text-[12.5px]"
+                    >
+                      <button
+                        class="rounded-md bg-foreground text-background px-3 py-1 font-medium"
+                      >
+                        Fil
+                      </button>
+                      <button
+                        class="rounded-md text-muted-foreground hover:text-foreground px-3 py-1"
+                      >
+                        Klistra in
+                      </button>
+                    </div>
+
+                    <!-- Dropzone -->
+                    <div
+                      class="rounded-xl border-2 border-dashed border-border bg-warm/30 p-6 text-center mb-4 grain"
+                    >
+                      <div
+                        class="mx-auto mb-3 h-10 w-10 rounded-full bg-card border border-border flex items-center justify-center"
+                      >
+                        <i
+                          data-lucide="cloud-upload"
+                          class="h-[18px] w-[18px]"
+                        ></i>
+                      </div>
+                      <p class="text-[13px] font-medium mb-0.5">
+                        Dra & släpp eller
+                        <span class="underline">välj från dator</span>
+                      </p>
+                      <p class="text-[11.5px] text-muted-foreground">
+                        .xlsx, .xls, .csv — max 5 MB
+                      </p>
+                    </div>
+
+                    <!-- Recognized columns hint -->
+                    <div
+                      class="rounded-lg border border-border bg-card px-4 py-3 mb-4"
+                    >
+                      <div
+                        class="text-[11.5px] font-medium text-muted-foreground mb-2"
+                      >
+                        Vi känner igen dessa kolumner
+                      </div>
+                      <div class="flex flex-wrap gap-1.5">
+                        <span class="pill pill--neutral">Lag / Titel</span>
+                        <span class="pill pill--neutral">SFS-nummer</span>
+                        <span class="pill pill--neutral">Område</span>
+                        <span class="pill pill--neutral">Lagansvarig</span>
+                        <span class="pill pill--neutral">Kommentar</span>
+                      </div>
+                    </div>
+
+                    <a
+                      class="inline-flex items-center gap-1.5 text-[12.5px] text-muted-foreground hover:text-foreground"
+                      href="#"
+                    >
+                      <i data-lucide="download" class="h-3.5 w-3.5"></i>
+                      Ladda ner mall (.xlsx)
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- FRAME 3: Tutorial-while-working                                 -->
+      <!-- ============================================================== -->
+      <section class="mb-24">
+        <div class="relative">
+          <div class="frame-label">
+            <span class="num">3</span>Tutorial medan vi jobbar — delas av båda
+            vägarna
+          </div>
+          <div
+            class="dashboard-backdrop relative dimmed rounded-2xl border border-border overflow-hidden shadow-soft"
+            style="height: 800px"
+          >
+            <div class="absolute inset-0 z-10 flex items-center justify-center p-6">
+              <div
+                class="w-full max-w-[920px] bg-card rounded-2xl border border-border shadow-modal overflow-hidden"
+              >
+                <!-- Progress strip ----------------------------------------- -->
+                <div class="px-8 pt-6 pb-5 bg-warm border-b border-border">
+                  <div class="flex items-start justify-between gap-6">
+                    <div class="min-w-0 flex-1">
+                      <div class="flex items-center gap-2 mb-1.5">
+                        <i
+                          data-lucide="loader-2"
+                          class="h-4 w-4 spin"
+                        ></i>
+                        <span class="font-safiro text-[15px]"
+                          >Vi skapar er personliga laglista</span
+                        >
+                      </div>
+                      <p class="text-[12.5px] text-muted-foreground mb-3">
+                        Du kan stänga rutan — vi fortsätter i bakgrunden och
+                        notifierar när det är klart.
+                      </p>
+
+                      <!-- Step list -->
+                      <div
+                        class="flex items-center gap-1 text-[11.5px] mb-3 text-muted-foreground"
+                      >
+                        <span
+                          class="inline-flex items-center gap-1.5 px-2 py-0.5"
+                        >
+                          <i
+                            data-lucide="check"
+                            class="h-3 w-3 text-foreground"
+                          ></i>
+                          <span class="text-foreground">Profil</span>
+                        </span>
+                        <i
+                          data-lucide="chevron-right"
+                          class="h-3 w-3"
+                        ></i>
+                        <span
+                          class="inline-flex items-center gap-1.5 px-2 py-0.5"
+                        >
+                          <i
+                            data-lucide="check"
+                            class="h-3 w-3 text-foreground"
+                          ></i>
+                          <span class="text-foreground">Område-mapping</span>
+                        </span>
+                        <i
+                          data-lucide="chevron-right"
+                          class="h-3 w-3"
+                        ></i>
+                        <span
+                          class="inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground px-2 py-0.5 font-medium"
+                        >
+                          <span
+                            class="h-1.5 w-1.5 rounded-full bg-primary-foreground pulse-dot"
+                          ></span>
+                          Matchar mot SFS-katalog
+                        </span>
+                        <i
+                          data-lucide="chevron-right"
+                          class="h-3 w-3"
+                        ></i>
+                        <span class="px-2 py-0.5">Kravpunkter</span>
+                        <i
+                          data-lucide="chevron-right"
+                          class="h-3 w-3"
+                        ></i>
+                        <span class="px-2 py-0.5">Slutför</span>
+                      </div>
+
+                      <!-- Bar -->
+                      <div
+                        class="h-1 w-full rounded-full shimmer-track"
+                      >
+                        <div class="fill"></div>
+                      </div>
+                      <div
+                        class="mt-2 flex items-center justify-between text-[11.5px] text-muted-foreground font-mono"
+                      >
+                        <span>Steg 3 av 5</span>
+                        <span>47 / 120 rader</span>
+                      </div>
+                    </div>
+
+                    <button
+                      class="shrink-0 inline-flex items-center gap-1.5 rounded-md border border-border bg-background hover:bg-accent px-3 py-1.5 text-[12px] text-muted-foreground hover:text-foreground"
+                    >
+                      <i data-lucide="minimize-2" class="h-3.5 w-3.5"></i>
+                      Minimera
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Tabs --------------------------------------------------- -->
+                <div
+                  class="px-8 pt-2 border-b border-border flex items-center gap-0.5 overflow-x-auto"
+                >
+                  <button
+                    class="relative shrink-0 px-3 py-3 text-[13.5px] font-medium text-foreground"
+                  >
+                    Vad är en laglista?
+                    <span
+                      class="absolute left-3 right-3 -bottom-px h-0.5 bg-foreground rounded-full"
+                    ></span>
+                  </button>
+                  <button
+                    class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground hover:text-foreground"
+                  >
+                    Kravpunkter & bevis
+                  </button>
+                  <button
+                    class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground hover:text-foreground"
+                  >
+                    Uppgifter
+                  </button>
+                  <button
+                    class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground hover:text-foreground"
+                  >
+                    Kontroller
+                  </button>
+                  <button
+                    class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground hover:text-foreground"
+                  >
+                    Lagändringar
+                  </button>
+                  <button
+                    class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5"
+                  >
+                    AI-agenten
+                    <span
+                      class="inline-flex items-center rounded-full px-1.5 py-0 text-[9px] font-semibold uppercase tracking-wider"
+                      style="background: var(--tone-info-soft-bg); color: var(--tone-info-soft-fg);"
+                      >Ny</span
+                    >
+                  </button>
+                  <span class="ml-auto shrink-0 eyebrow pl-3">1 av 6</span>
+                </div>
+
+                <!-- Tab body ----------------------------------------------- -->
+                <div class="grid grid-cols-5 gap-10 px-8 pt-7 pb-7">
+                  <!-- Copy -->
+                  <div class="col-span-2">
+                    <div class="eyebrow mb-3">Översikt</div>
+                    <h3 class="font-safiro text-[24px] leading-snug mb-3">
+                      Den lagstiftning som faktiskt rör er
+                    </h3>
+                    <p
+                      class="text-[14px] text-muted-foreground leading-relaxed mb-5"
+                    >
+                      Listan innehåller bara de lagar och föreskrifter som
+                      gäller er verksamhet. Vi håller den uppdaterad
+                      automatiskt — när en paragraf ändras får ni en avi och
+                      kan göra en bedömning av påverkan.
+                    </p>
+
+                    <ul class="space-y-3 mb-6">
+                      <li class="flex gap-3 text-[13.5px]">
+                        <span
+                          class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                        >
+                          <i
+                            data-lucide="layers"
+                            class="h-3 w-3"
+                            style="color: var(--tone-success-soft-fg)"
+                          ></i>
+                        </span>
+                        <span>
+                          <span class="font-medium">Grupperas i områden</span>
+                          <span class="block text-muted-foreground">
+                            Miljö, arbetsmiljö, kemikalier, brand och fler —
+                            alltid samma struktur, oavsett bransch.
+                          </span>
+                        </span>
+                      </li>
+                      <li class="flex gap-3 text-[13.5px]">
+                        <span
+                          class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                        >
+                          <i
+                            data-lucide="user-round-cog"
+                            class="h-3 w-3"
+                            style="color: var(--tone-success-soft-fg)"
+                          ></i>
+                        </span>
+                        <span>
+                          <span class="font-medium"
+                            >Lagansvarig per rad</span
+                          >
+                          <span class="block text-muted-foreground">
+                            Tilldela ansvar till rätt person — alla blir
+                            notifierade om ändringar i sina lagar.
+                          </span>
+                        </span>
+                      </li>
+                      <li class="flex gap-3 text-[13.5px]">
+                        <span
+                          class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                        >
+                          <i
+                            data-lucide="circle-check-big"
+                            class="h-3 w-3"
+                            style="color: var(--tone-success-soft-fg)"
+                          ></i>
+                        </span>
+                        <span>
+                          <span class="font-medium"
+                            >Statusbedömning per rad</span
+                          >
+                          <span class="block text-muted-foreground">
+                            Efterlevs / avviker / ej relevant — utgångspunkt
+                            för revisioner.
+                          </span>
+                        </span>
+                      </li>
+                    </ul>
+
+                    <a
+                      class="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-foreground hover:underline underline-offset-4"
+                      href="#"
+                    >
+                      Läs mer i hjälpcentret
+                      <i
+                        data-lucide="arrow-up-right"
+                        class="h-3.5 w-3.5"
+                      ></i>
+                    </a>
+                  </div>
+
+                  <!-- Realistic mock — looks like the actual laglistor table -->
+                  <div class="col-span-3">
+                    <div class="eyebrow mb-3">Förhandsvisning · /laglistor</div>
+                    <div
+                      class="rounded-xl border border-border bg-background overflow-hidden shadow-soft"
+                    >
+                      <!-- Toolbar -->
+                      <div
+                        class="flex items-center gap-2 px-3 py-2 border-b border-border bg-card"
+                      >
+                        <div
+                          class="flex items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 text-[11.5px] text-muted-foreground w-44"
+                        >
+                          <i data-lucide="search" class="h-3 w-3"></i>
+                          Sök i laglistan…
+                        </div>
+                        <span class="pill pill--info"
+                          >128 lagar</span
+                        >
+                        <span class="pill pill--neutral">6 områden</span>
+                        <button
+                          class="ml-auto inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11.5px] text-muted-foreground"
+                        >
+                          <i data-lucide="filter" class="h-3 w-3"></i>
+                          Filter
+                        </button>
+                      </div>
+
+                      <!-- Group header -->
+                      <div
+                        class="flex items-center gap-2 px-3 py-2 bg-warm/60 border-b border-border"
+                      >
+                        <i
+                          data-lucide="chevron-down"
+                          class="h-3.5 w-3.5"
+                        ></i>
+                        <span class="font-safiro text-[13px]">Miljö</span>
+                        <span class="text-[11.5px] text-muted-foreground"
+                          >· 12 lagar · 4 avvikelser</span
+                        >
+                      </div>
+
+                      <!-- Rows -->
+                      <ul class="divide-y divide-border">
+                        <li class="grid grid-cols-[1fr_auto] gap-3 px-3 py-2.5 items-center">
+                          <div class="min-w-0">
+                            <div class="text-[13px] font-medium truncate">
+                              Miljöbalk (1998:808)
+                            </div>
+                            <div
+                              class="text-[11.5px] text-muted-foreground truncate"
+                            >
+                              4 kravpunkter · senast granskad 2 mars
+                            </div>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <span class="avatar" title="Alexander Adstedt"
+                              >AA</span
+                            >
+                            <span class="pill pill--success"
+                              ><i
+                                data-lucide="check"
+                                class="h-2.5 w-2.5"
+                              ></i>
+                              Efterlevs</span
+                            >
+                          </div>
+                        </li>
+                        <li class="grid grid-cols-[1fr_auto] gap-3 px-3 py-2.5 items-center">
+                          <div class="min-w-0">
+                            <div class="text-[13px] font-medium truncate">
+                              Avfallsförordning (2020:614)
+                            </div>
+                            <div
+                              class="text-[11.5px] text-muted-foreground truncate"
+                            >
+                              3 kravpunkter · saknar bevis på 1
+                            </div>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <span class="avatar" title="Maria Lind"
+                              >ML</span
+                            >
+                            <span class="pill pill--warning"
+                              ><i
+                                data-lucide="triangle-alert"
+                                class="h-2.5 w-2.5"
+                              ></i>
+                              Saknar bevis</span
+                            >
+                          </div>
+                        </li>
+                        <li class="grid grid-cols-[1fr_auto] gap-3 px-3 py-2.5 items-center">
+                          <div class="min-w-0">
+                            <div class="text-[13px] font-medium truncate">
+                              Förordning (2008:245) om kemiska produkter
+                            </div>
+                            <div
+                              class="text-[11.5px] text-muted-foreground truncate"
+                            >
+                              7 kravpunkter · senast granskad 18 feb
+                            </div>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <span
+                              class="avatar"
+                              style="background: hsl(var(--muted))"
+                              title="Ej tilldelad"
+                              >+</span
+                            >
+                            <span class="pill pill--neutral">Ej granskad</span>
+                          </div>
+                        </li>
+                        <li
+                          class="grid grid-cols-[1fr_auto] gap-3 px-3 py-2.5 items-center"
+                        >
+                          <div class="min-w-0">
+                            <div class="text-[13px] font-medium truncate">
+                              AFS 2020:1 — Arbetsplatsens utformning
+                            </div>
+                            <div
+                              class="text-[11.5px] text-muted-foreground truncate"
+                            >
+                              7 kravpunkter · pågående uppgift
+                            </div>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <span class="avatar" title="Erik Holm">EH</span>
+                            <span class="pill pill--info"
+                              ><i
+                                data-lucide="circle-dot"
+                                class="h-2.5 w-2.5"
+                              ></i>
+                              Pågår</span
+                            >
+                          </div>
+                        </li>
+                      </ul>
+
+                      <div
+                        class="px-3 py-2 text-[11.5px] text-muted-foreground border-t border-border bg-card"
+                      >
+                        + 124 till — sortera, filtrera och tilldela när vi är
+                        klara
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Footer ------------------------------------------------- -->
+                <div
+                  class="px-8 py-4 border-t border-border flex items-center justify-between"
+                >
+                  <div class="flex items-center gap-1.5 text-[12px] text-muted-foreground">
+                    <span
+                      class="h-1.5 w-1.5 rounded-full pulse-dot"
+                      style="background: var(--tone-success-solid)"
+                    ></span>
+                    Vi fortsätter i bakgrunden — du kan stänga utan att
+                    avbryta.
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button
+                      class="text-[12.5px] text-muted-foreground hover:text-foreground"
+                    >
+                      Tidigare
+                    </button>
+                    <button
+                      class="inline-flex items-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-4 py-2 text-[12.5px] font-medium hover:bg-primary/95"
+                    >
+                      Nästa
+                      <i data-lucide="arrow-right" class="h-3.5 w-3.5"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TAB CONTENT PANELS — every tab in detail                        -->
+      <!-- ============================================================== -->
+      <section class="mb-24">
+        <header class="mb-8 max-w-3xl">
+          <div class="eyebrow mb-2">De 6 flikarna i detalj</div>
+          <h2 class="font-safiro text-[28px] leading-tight">
+            Vad användaren ser på varje flik
+          </h2>
+          <p class="mt-3 text-[14px] text-muted-foreground leading-relaxed">
+            Tutorial-innehållet är bekanta produktytor i miniatyr — rader,
+            chips och avatarer som matchar det de strax landar i.
+            Pedagogiken bygger upp: laglistan (objektet), kravpunkter (innehåll),
+            uppgifter (handling), kontroller (rytm), lagändringar (proaktivitet),
+            AI-agenten (kapseln runt allt).
+          </p>
+        </header>
+
+        <div class="space-y-10">
+          <!-- ========================================================== -->
+          <!-- PANEL 2: Kravpunkter & bevis                                -->
+          <!-- ========================================================== -->
+          <article
+            class="rounded-2xl border border-border bg-card shadow-modal overflow-hidden"
+          >
+            <!-- Tab strip -->
+            <div
+              class="px-8 pt-2 border-b border-border flex items-center gap-0.5 overflow-x-auto"
+            >
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Vad är en laglista?
+              </button>
+              <button
+                class="relative shrink-0 px-3 py-3 text-[13.5px] font-medium text-foreground"
+              >
+                Kravpunkter & bevis
+                <span
+                  class="absolute left-3 right-3 -bottom-px h-0.5 bg-foreground rounded-full"
+                ></span>
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Uppgifter
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Kontroller
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Lagändringar
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground inline-flex items-center gap-1.5"
+              >
+                AI-agenten
+                <span
+                  class="inline-flex items-center rounded-full px-1.5 py-0 text-[9px] font-semibold uppercase tracking-wider"
+                  style="background: var(--tone-info-soft-bg); color: var(--tone-info-soft-fg);"
+                  >Ny</span
+                >
+              </button>
+              <span class="ml-auto shrink-0 eyebrow pl-3">2 av 6</span>
+            </div>
+
+            <!-- Tab body -->
+            <div class="grid grid-cols-5 gap-10 px-8 pt-7 pb-7">
+              <!-- Copy -->
+              <div class="col-span-2">
+                <div class="eyebrow mb-3">Per rad</div>
+                <h3 class="font-safiro text-[24px] leading-snug mb-3">
+                  Bryt ner lagen i kravpunkter — knyt bevis till varje krav
+                </h3>
+                <p
+                  class="text-[14px] text-muted-foreground leading-relaxed mb-5"
+                >
+                  Varje rad i laglistan bryts ner i konkreta krav: "Skriftlig
+                  riskbedömning ska finnas", "Kemikalier ska förvaras
+                  upplåst". Knyt bevis — filer eller styrdokument — direkt
+                  till kravpunkten så att efterlevnaden blir påvisbar.
+                </p>
+                <ul class="space-y-3 mb-6">
+                  <li class="flex gap-3 text-[13.5px]">
+                    <span
+                      class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                    >
+                      <i
+                        data-lucide="shield-check"
+                        class="h-3 w-3"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                    </span>
+                    <span>
+                      <span class="font-medium">"Kräver bevis"-flagga</span>
+                      <span class="block text-muted-foreground">
+                        Markera krav där bevis är obligatoriskt — saknad
+                        evidens visas som varning.
+                      </span>
+                    </span>
+                  </li>
+                  <li class="flex gap-3 text-[13.5px]">
+                    <span
+                      class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                    >
+                      <i
+                        data-lucide="paperclip"
+                        class="h-3 w-3"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                    </span>
+                    <span>
+                      <span class="font-medium">Bevis som länkar</span>
+                      <span class="block text-muted-foreground">
+                        Filer, styrdokument och uppgifters bilagor — samma
+                        bevis kan kopplas till flera kravpunkter.
+                      </span>
+                    </span>
+                  </li>
+                  <li class="flex gap-3 text-[13.5px]">
+                    <span
+                      class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                    >
+                      <i
+                        data-lucide="history"
+                        class="h-3 w-3"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                    </span>
+                    <span>
+                      <span class="font-medium">Historik per krav</span>
+                      <span class="block text-muted-foreground">
+                        Vem ändrade status, när, varför — full audit-trail för
+                        revisionen.
+                      </span>
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Visual mock: kravpunkter checklist -->
+              <div class="col-span-3">
+                <div class="eyebrow mb-3">Förhandsvisning · Kravpunkter</div>
+                <div
+                  class="rounded-xl border border-border bg-background overflow-hidden shadow-soft"
+                >
+                  <!-- Source row header -->
+                  <div
+                    class="px-3 py-2.5 border-b border-border bg-warm/60 flex items-center gap-2"
+                  >
+                    <i
+                      data-lucide="scale"
+                      class="h-3.5 w-3.5 text-muted-foreground"
+                    ></i>
+                    <span class="text-[12.5px] font-medium"
+                      >AFS 2014:43 — Kemiska arbetsmiljörisker</span
+                    >
+                    <span class="ml-auto pill pill--neutral">3 krav</span>
+                  </div>
+
+                  <!-- Krav 1 (efterlevs) -->
+                  <div class="px-3 py-3 border-b border-border">
+                    <div class="flex items-start gap-3">
+                      <div
+                        class="mt-0.5 h-4 w-4 rounded border-2 border-foreground bg-foreground flex items-center justify-center shrink-0"
+                      >
+                        <i
+                          data-lucide="check"
+                          class="h-2.5 w-2.5 text-background"
+                        ></i>
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <div class="text-[13px] font-medium leading-snug">
+                          Skriftlig riskbedömning av kemiska
+                          arbetsmiljörisker ska finnas
+                        </div>
+                        <div
+                          class="mt-2 flex items-center flex-wrap gap-1.5"
+                        >
+                          <span
+                            class="inline-flex items-center gap-1 rounded-md border border-border bg-card px-1.5 py-0.5 text-[11px]"
+                          >
+                            <i
+                              data-lucide="file-text"
+                              class="h-3 w-3 text-muted-foreground"
+                            ></i>
+                            riskbedomning-2024.pdf
+                          </span>
+                          <span
+                            class="inline-flex items-center gap-1 rounded-md border border-border bg-card px-1.5 py-0.5 text-[11px]"
+                          >
+                            <i
+                              data-lucide="file-text"
+                              class="h-3 w-3 text-muted-foreground"
+                            ></i>
+                            sds-katalog.xlsx
+                          </span>
+                          <span class="pill pill--success">
+                            <i data-lucide="check" class="h-2.5 w-2.5"></i>
+                            Efterlevs
+                          </span>
+                        </div>
+                      </div>
+                      <!-- Toggle -->
+                      <div class="shrink-0 flex items-center gap-1.5">
+                        <span class="text-[10.5px] text-muted-foreground"
+                          >Kräver bevis</span
+                        >
+                        <span
+                          class="relative inline-block h-4 w-7 rounded-full bg-foreground"
+                        >
+                          <span
+                            class="absolute right-0.5 top-0.5 h-3 w-3 rounded-full bg-background"
+                          ></span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Krav 2 (saknar bevis) -->
+                  <div
+                    class="px-3 py-3 border-b border-border bg-amber-50/40"
+                    style="background: hsla(45, 80%, 88%, 0.25)"
+                  >
+                    <div class="flex items-start gap-3">
+                      <div
+                        class="mt-0.5 h-4 w-4 rounded border-2 border-border bg-card shrink-0"
+                      ></div>
+                      <div class="min-w-0 flex-1">
+                        <div class="text-[13px] font-medium leading-snug">
+                          Kemikalier ska förvaras i upplåst rum med rätt
+                          ventilation
+                        </div>
+                        <div
+                          class="mt-2 flex items-center flex-wrap gap-1.5"
+                        >
+                          <span
+                            class="inline-flex items-center gap-1 text-[11px] text-muted-foreground italic"
+                          >
+                            <i data-lucide="file-x" class="h-3 w-3"></i>
+                            0 bevis kopplade
+                          </span>
+                          <span class="pill pill--warning">
+                            <i
+                              data-lucide="triangle-alert"
+                              class="h-2.5 w-2.5"
+                            ></i>
+                            Saknar bevis
+                          </span>
+                        </div>
+                      </div>
+                      <div class="shrink-0 flex items-center gap-1.5">
+                        <span class="text-[10.5px] text-muted-foreground"
+                          >Kräver bevis</span
+                        >
+                        <span
+                          class="relative inline-block h-4 w-7 rounded-full bg-foreground"
+                        >
+                          <span
+                            class="absolute right-0.5 top-0.5 h-3 w-3 rounded-full bg-background"
+                          ></span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Krav 3 -->
+                  <div class="px-3 py-3">
+                    <div class="flex items-start gap-3">
+                      <div
+                        class="mt-0.5 h-4 w-4 rounded border-2 border-foreground bg-foreground flex items-center justify-center shrink-0"
+                      >
+                        <i
+                          data-lucide="check"
+                          class="h-2.5 w-2.5 text-background"
+                        ></i>
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <div class="text-[13px] font-medium leading-snug">
+                          Skyltning av riskområden enligt 7 §
+                        </div>
+                        <div
+                          class="mt-2 flex items-center flex-wrap gap-1.5"
+                        >
+                          <span
+                            class="inline-flex items-center gap-1 rounded-md border border-border bg-card px-1.5 py-0.5 text-[11px]"
+                          >
+                            <i
+                              data-lucide="file-text"
+                              class="h-3 w-3 text-muted-foreground"
+                            ></i>
+                            skyltplan-anlaggning-3.pdf
+                          </span>
+                          <span class="pill pill--success">
+                            <i data-lucide="check" class="h-2.5 w-2.5"></i>
+                            Efterlevs
+                          </span>
+                        </div>
+                      </div>
+                      <div class="shrink-0 flex items-center gap-1.5">
+                        <span class="text-[10.5px] text-muted-foreground"
+                          >Kräver bevis</span
+                        >
+                        <span
+                          class="relative inline-block h-4 w-7 rounded-full bg-muted border border-border"
+                        >
+                          <span
+                            class="absolute left-0.5 top-0.5 h-3 w-3 rounded-full bg-card border border-border"
+                          ></span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- ========================================================== -->
+          <!-- PANEL 3: Uppgifter                                          -->
+          <!-- ========================================================== -->
+          <article
+            class="rounded-2xl border border-border bg-card shadow-modal overflow-hidden"
+          >
+            <div
+              class="px-8 pt-2 border-b border-border flex items-center gap-0.5 overflow-x-auto"
+            >
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Vad är en laglista?
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Kravpunkter & bevis
+              </button>
+              <button
+                class="relative shrink-0 px-3 py-3 text-[13.5px] font-medium text-foreground"
+              >
+                Uppgifter
+                <span
+                  class="absolute left-3 right-3 -bottom-px h-0.5 bg-foreground rounded-full"
+                ></span>
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Kontroller
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Lagändringar
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground inline-flex items-center gap-1.5"
+              >
+                AI-agenten
+                <span
+                  class="inline-flex items-center rounded-full px-1.5 py-0 text-[9px] font-semibold uppercase tracking-wider"
+                  style="background: var(--tone-info-soft-bg); color: var(--tone-info-soft-fg);"
+                  >Ny</span
+                >
+              </button>
+              <span class="ml-auto shrink-0 eyebrow pl-3">3 av 6</span>
+            </div>
+
+            <div class="grid grid-cols-5 gap-10 px-8 pt-7 pb-7">
+              <div class="col-span-2">
+                <div class="eyebrow mb-3">Aktion</div>
+                <h3 class="font-safiro text-[24px] leading-snug mb-3">
+                  Verksamheten flyttar framåt med uppgifter
+                </h3>
+                <p
+                  class="text-[14px] text-muted-foreground leading-relaxed mb-5"
+                >
+                  Skapa uppgifter direkt från en lag, en kravpunkt eller en
+                  lagändring. Tilldela, sätt deadlines, bifoga filer som
+                  bevis. Allt knytet tillbaka till källraden så ni kan visa
+                  vad som gjordes — och varför.
+                </p>
+                <ul class="space-y-3 mb-6">
+                  <li class="flex gap-3 text-[13.5px]">
+                    <span
+                      class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                    >
+                      <i
+                        data-lucide="user-plus"
+                        class="h-3 w-3"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                    </span>
+                    <span>
+                      <span class="font-medium">Tilldela kollega</span>
+                      <span class="block text-muted-foreground">
+                        Eller be AI-agenten skapa uppgiften med rätt
+                        beskrivning, ansvarig och deadline.
+                      </span>
+                    </span>
+                  </li>
+                  <li class="flex gap-3 text-[13.5px]">
+                    <span
+                      class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                    >
+                      <i
+                        data-lucide="paperclip"
+                        class="h-3 w-3"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                    </span>
+                    <span>
+                      <span class="font-medium">Bilagor blir bevis</span>
+                      <span class="block text-muted-foreground">
+                        Det som laddas upp på en uppgift kan kopplas direkt
+                        som bevis till kravpunkter när uppgiften är klar.
+                      </span>
+                    </span>
+                  </li>
+                  <li class="flex gap-3 text-[13.5px]">
+                    <span
+                      class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                    >
+                      <i
+                        data-lucide="link-2"
+                        class="h-3 w-3"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                    </span>
+                    <span>
+                      <span class="font-medium">Spårbar härkomst</span>
+                      <span class="block text-muted-foreground">
+                        Varje uppgift visar vilken lag, kravpunkt eller
+                        kontroll den kom från — alltid synligt i högerspalten.
+                      </span>
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Mini Kanban -->
+              <div class="col-span-3">
+                <div class="eyebrow mb-3">Förhandsvisning · /tasks</div>
+                <div
+                  class="rounded-xl border border-border bg-background p-3 shadow-soft"
+                >
+                  <div class="grid grid-cols-3 gap-2">
+                    <!-- Att göra -->
+                    <div>
+                      <div
+                        class="flex items-center justify-between px-1 mb-2"
+                      >
+                        <span
+                          class="text-[11.5px] font-semibold uppercase tracking-wider"
+                          >Att göra</span
+                        >
+                        <span class="pill pill--neutral">3</span>
+                      </div>
+                      <div class="space-y-2">
+                        <div
+                          class="rounded-lg border border-border bg-card p-2.5 shadow-soft"
+                        >
+                          <div class="text-[12.5px] font-medium leading-snug mb-1.5">
+                            Förvarings­ventilation kemikalierum
+                          </div>
+                          <div
+                            class="flex items-center justify-between text-[10.5px] text-muted-foreground"
+                          >
+                            <span class="inline-flex items-center gap-1">
+                              <span class="avatar" style="height: 18px; width: 18px; font-size: 9px;">EH</span>
+                              <span>15 maj</span>
+                            </span>
+                            <span class="pill pill--danger">
+                              <i
+                                data-lucide="flame"
+                                class="h-2.5 w-2.5"
+                              ></i>
+                              Hög
+                            </span>
+                          </div>
+                          <div
+                            class="mt-2 pt-2 border-t border-border text-[10.5px] text-muted-foreground inline-flex items-center gap-1"
+                          >
+                            <i
+                              data-lucide="link-2"
+                              class="h-2.5 w-2.5"
+                            ></i>
+                            AFS 2014:43
+                          </div>
+                        </div>
+                        <div
+                          class="rounded-lg border border-border bg-card p-2.5 shadow-soft"
+                        >
+                          <div class="text-[12.5px] font-medium leading-snug mb-1.5">
+                            Skyltning brand­utgångar
+                          </div>
+                          <div
+                            class="flex items-center justify-between text-[10.5px] text-muted-foreground"
+                          >
+                            <span class="inline-flex items-center gap-1">
+                              <span class="avatar" style="height: 18px; width: 18px; font-size: 9px;">ML</span>
+                              <span>22 maj</span>
+                            </span>
+                            <span class="pill pill--warning">
+                              <i
+                                data-lucide="circle-dot"
+                                class="h-2.5 w-2.5"
+                              ></i>
+                              Med
+                            </span>
+                          </div>
+                        </div>
+                        <div
+                          class="rounded-lg border border-border bg-card p-2.5 shadow-soft"
+                        >
+                          <div class="text-[12.5px] font-medium leading-snug mb-1.5">
+                            Riskbedömning maskinsäkerhet
+                          </div>
+                          <div
+                            class="flex items-center justify-between text-[10.5px] text-muted-foreground"
+                          >
+                            <span class="inline-flex items-center gap-1">
+                              <span class="avatar" style="height: 18px; width: 18px; font-size: 9px;">AA</span>
+                              <span>30 maj</span>
+                            </span>
+                            <span class="pill pill--neutral">Låg</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Pågår -->
+                    <div>
+                      <div
+                        class="flex items-center justify-between px-1 mb-2"
+                      >
+                        <span
+                          class="text-[11.5px] font-semibold uppercase tracking-wider"
+                          >Pågår</span
+                        >
+                        <span class="pill pill--neutral">2</span>
+                      </div>
+                      <div class="space-y-2">
+                        <div
+                          class="rounded-lg border border-border bg-card p-2.5 shadow-soft"
+                          style="border-left: 3px solid hsl(var(--primary))"
+                        >
+                          <div class="text-[12.5px] font-medium leading-snug mb-1.5">
+                            Uppdatera SDS-katalog Q2
+                          </div>
+                          <div
+                            class="flex items-center justify-between text-[10.5px] text-muted-foreground"
+                          >
+                            <span class="inline-flex items-center gap-1">
+                              <span class="avatar" style="height: 18px; width: 18px; font-size: 9px;">AA</span>
+                              <span>idag</span>
+                            </span>
+                            <span class="pill pill--info">
+                              <i
+                                data-lucide="circle-dot"
+                                class="h-2.5 w-2.5"
+                              ></i>
+                              Pågår
+                            </span>
+                          </div>
+                        </div>
+                        <div
+                          class="rounded-lg border border-border bg-card p-2.5 shadow-soft"
+                          style="border-left: 3px solid hsl(var(--primary))"
+                        >
+                          <div class="text-[12.5px] font-medium leading-snug mb-1.5">
+                            Granska AFS 2023:8 belastnings­ergonomi
+                          </div>
+                          <div
+                            class="flex items-center justify-between text-[10.5px] text-muted-foreground"
+                          >
+                            <span class="inline-flex items-center gap-1">
+                              <span class="avatar" style="height: 18px; width: 18px; font-size: 9px;">EH</span>
+                              <span>imorgon</span>
+                            </span>
+                            <span
+                              class="inline-flex items-center gap-1 rounded-md px-1.5 py-0 text-[9px] font-medium"
+                              style="background: var(--tone-info-soft-bg); color: var(--tone-info-soft-fg);"
+                            >
+                              <i
+                                data-lucide="sparkles"
+                                class="h-2.5 w-2.5"
+                              ></i>
+                              AI
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Klart -->
+                    <div>
+                      <div
+                        class="flex items-center justify-between px-1 mb-2"
+                      >
+                        <span
+                          class="text-[11.5px] font-semibold uppercase tracking-wider text-muted-foreground"
+                          >Klart</span
+                        >
+                        <span class="pill pill--neutral">5</span>
+                      </div>
+                      <div class="space-y-2 opacity-70">
+                        <div
+                          class="rounded-lg border border-border bg-muted/40 p-2.5"
+                        >
+                          <div class="text-[12.5px] leading-snug line-through text-muted-foreground">
+                            Internutbildning kemi­hantering
+                          </div>
+                          <div
+                            class="flex items-center justify-between text-[10.5px] text-muted-foreground mt-1"
+                          >
+                            <span>3 maj</span>
+                            <i
+                              data-lucide="check"
+                              class="h-3 w-3"
+                              style="color: var(--tone-success-soft-fg)"
+                            ></i>
+                          </div>
+                        </div>
+                        <div
+                          class="rounded-lg border border-border bg-muted/40 p-2.5"
+                        >
+                          <div class="text-[12.5px] leading-snug line-through text-muted-foreground">
+                            Avfallsrapport Q1
+                          </div>
+                          <div
+                            class="flex items-center justify-between text-[10.5px] text-muted-foreground mt-1"
+                          >
+                            <span>28 apr</span>
+                            <i
+                              data-lucide="check"
+                              class="h-3 w-3"
+                              style="color: var(--tone-success-soft-fg)"
+                            ></i>
+                          </div>
+                        </div>
+                        <div
+                          class="text-[10.5px] text-muted-foreground text-center pt-1"
+                        >
+                          + 3 till
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- ========================================================== -->
+          <!-- PANEL 4: Kontroller                                         -->
+          <!-- ========================================================== -->
+          <article
+            class="rounded-2xl border border-border bg-card shadow-modal overflow-hidden"
+          >
+            <div
+              class="px-8 pt-2 border-b border-border flex items-center gap-0.5 overflow-x-auto"
+            >
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Vad är en laglista?
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Kravpunkter & bevis
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Uppgifter
+              </button>
+              <button
+                class="relative shrink-0 px-3 py-3 text-[13.5px] font-medium text-foreground"
+              >
+                Kontroller
+                <span
+                  class="absolute left-3 right-3 -bottom-px h-0.5 bg-foreground rounded-full"
+                ></span>
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Lagändringar
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground inline-flex items-center gap-1.5"
+              >
+                AI-agenten
+                <span
+                  class="inline-flex items-center rounded-full px-1.5 py-0 text-[9px] font-semibold uppercase tracking-wider"
+                  style="background: var(--tone-info-soft-bg); color: var(--tone-info-soft-fg);"
+                  >Ny</span
+                >
+              </button>
+              <span class="ml-auto shrink-0 eyebrow pl-3">4 av 6</span>
+            </div>
+
+            <div class="grid grid-cols-5 gap-10 px-8 pt-7 pb-7">
+              <div class="col-span-2">
+                <div class="eyebrow mb-3">Revision</div>
+                <h3 class="font-safiro text-[24px] leading-snug mb-3">
+                  Återkommande revisions­cykler — utan paniken före revisorn
+                </h3>
+                <p
+                  class="text-[14px] text-muted-foreground leading-relaxed mb-5"
+                >
+                  Skapa en kontroll, sätt scope (vilka områden, vilka lagar),
+                  utse en lead-auditor, kör. Per rad signerar ansvariga,
+                  anmärkningar genererar uppgifter automatiskt, och
+                  revisionsrapporten genereras direkt när kontrollen
+                  avslutas.
+                </p>
+                <ul class="space-y-3 mb-6">
+                  <li class="flex gap-3 text-[13.5px]">
+                    <span
+                      class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                    >
+                      <i
+                        data-lucide="list-checks"
+                        class="h-3 w-3"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                    </span>
+                    <span>
+                      <span class="font-medium"
+                        >Materialiserar valda lagrader</span
+                      >
+                      <span class="block text-muted-foreground">
+                        Ett klick → varje rad i scope blir en revideringspunkt
+                        med signatur-rad och kommentar­fält.
+                      </span>
+                    </span>
+                  </li>
+                  <li class="flex gap-3 text-[13.5px]">
+                    <span
+                      class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                    >
+                      <i
+                        data-lucide="git-branch"
+                        class="h-3 w-3"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                    </span>
+                    <span>
+                      <span class="font-medium">Anmärkningar → uppgifter</span>
+                      <span class="block text-muted-foreground">
+                        Avvikelser spawnar HIGH-priority uppgifter
+                        automatiskt — tilldelas ansvarig, kopplas tillbaka
+                        till anmärkningen.
+                      </span>
+                    </span>
+                  </li>
+                  <li class="flex gap-3 text-[13.5px]">
+                    <span
+                      class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                    >
+                      <i
+                        data-lucide="file-lock-2"
+                        class="h-3 w-3"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                    </span>
+                    <span>
+                      <span class="font-medium">Färdig revisionsrapport</span>
+                      <span class="block text-muted-foreground">
+                        När kontrollen avslutas genereras en
+                        revisions­rapport (PDF) — färdig att skicka till
+                        revisorn.
+                      </span>
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Cycle detail mock -->
+              <div class="col-span-3">
+                <div class="eyebrow mb-3">
+                  Förhandsvisning · /laglistor/kontroller
+                </div>
+                <div
+                  class="rounded-xl border border-border bg-background overflow-hidden shadow-soft"
+                >
+                  <!-- Cycle header -->
+                  <div class="px-4 py-3 border-b border-border bg-card">
+                    <div class="flex items-start justify-between gap-3 mb-2">
+                      <div class="min-w-0">
+                        <div
+                          class="font-safiro text-[15px] leading-tight mb-1"
+                        >
+                          Q2 2026 — Miljö och avfall
+                        </div>
+                        <div
+                          class="text-[11.5px] text-muted-foreground inline-flex items-center gap-2"
+                        >
+                          <i data-lucide="calendar" class="h-3 w-3"></i>
+                          1 apr – 30 jun
+                          <span class="text-muted-foreground/60">·</span>
+                          <span class="inline-flex items-center gap-1">
+                            <span class="avatar" style="height: 16px; width: 16px; font-size: 8px;">AA</span>
+                            Lead: Alexander Adstedt
+                          </span>
+                        </div>
+                      </div>
+                      <span
+                        class="pill pill--info"
+                        style="background: hsl(var(--accent)); color: hsl(var(--foreground))"
+                      >
+                        <i data-lucide="circle-dot" class="h-2.5 w-2.5"></i>
+                        Pågående
+                      </span>
+                    </div>
+                    <!-- Progress -->
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="flex-1 h-1.5 rounded-full bg-muted overflow-hidden"
+                      >
+                        <div
+                          class="h-full bg-foreground rounded-full"
+                          style="width: 50%"
+                        ></div>
+                      </div>
+                      <span
+                        class="text-[11px] font-mono text-muted-foreground"
+                        >12 / 24 signerade</span
+                      >
+                    </div>
+                  </div>
+
+                  <!-- Mini tabs -->
+                  <div
+                    class="flex items-center gap-0.5 px-3 pt-1.5 border-b border-border"
+                  >
+                    <button
+                      class="relative px-2.5 py-2 text-[12px] font-medium text-foreground"
+                    >
+                      Items
+                      <span
+                        class="absolute left-2.5 right-2.5 -bottom-px h-0.5 bg-foreground"
+                      ></span>
+                    </button>
+                    <button
+                      class="px-2.5 py-2 text-[12px] text-muted-foreground"
+                    >
+                      Findings
+                      <span class="pill pill--danger ml-1">3</span>
+                    </button>
+                    <button
+                      class="px-2.5 py-2 text-[12px] text-muted-foreground"
+                    >
+                      Rapport
+                    </button>
+                    <button
+                      class="px-2.5 py-2 text-[12px] text-muted-foreground"
+                    >
+                      Aktivitet
+                    </button>
+                  </div>
+
+                  <!-- Item rows -->
+                  <ul class="divide-y divide-border">
+                    <li class="grid grid-cols-[auto_1fr_auto] gap-3 items-center px-3 py-2.5">
+                      <i
+                        data-lucide="circle-check"
+                        class="h-4 w-4"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                      <div class="min-w-0">
+                        <div class="text-[12.5px] font-medium truncate">
+                          Miljöbalk (1998:808)
+                        </div>
+                        <div class="text-[10.5px] text-muted-foreground">
+                          Bedömning: Efterlevs · Signerad av AA · 4 maj
+                        </div>
+                      </div>
+                      <span class="avatar" style="height: 18px; width: 18px; font-size: 9px;">AA</span>
+                    </li>
+                    <li class="grid grid-cols-[auto_1fr_auto] gap-3 items-center px-3 py-2.5">
+                      <i
+                        data-lucide="circle-check"
+                        class="h-4 w-4"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                      <div class="min-w-0">
+                        <div class="text-[12.5px] font-medium truncate">
+                          Avfallsförordning (2020:614)
+                        </div>
+                        <div class="text-[10.5px] text-muted-foreground">
+                          Bedömning: Avvikelse · 1 anmärkning · 1 uppgift skapad
+                        </div>
+                      </div>
+                      <span class="avatar" style="height: 18px; width: 18px; font-size: 9px;">ML</span>
+                    </li>
+                    <li
+                      class="grid grid-cols-[auto_1fr_auto] gap-3 items-center px-3 py-2.5"
+                      style="background: hsla(45, 80%, 88%, 0.2)"
+                    >
+                      <i
+                        data-lucide="circle-dot"
+                        class="h-4 w-4 text-muted-foreground"
+                      ></i>
+                      <div class="min-w-0">
+                        <div class="text-[12.5px] font-medium truncate">
+                          Förordning (2008:245) om kemiska produkter
+                        </div>
+                        <div class="text-[10.5px] text-muted-foreground">
+                          Pågår — väntar på bedömning
+                        </div>
+                      </div>
+                      <span
+                        class="avatar"
+                        style="height: 18px; width: 18px; font-size: 9px; background: hsl(var(--muted))"
+                        >EH</span
+                      >
+                    </li>
+                    <li class="grid grid-cols-[auto_1fr_auto] gap-3 items-center px-3 py-2.5">
+                      <i
+                        data-lucide="circle"
+                        class="h-4 w-4 text-muted-foreground/40"
+                      ></i>
+                      <div class="min-w-0">
+                        <div class="text-[12.5px] font-medium truncate text-muted-foreground">
+                          Förordning (2013:413) om kosmetika
+                        </div>
+                        <div class="text-[10.5px] text-muted-foreground">
+                          Inte påbörjad
+                        </div>
+                      </div>
+                      <span
+                        class="avatar"
+                        style="height: 18px; width: 18px; font-size: 9px; background: hsl(var(--muted))"
+                        >+</span
+                      >
+                    </li>
+                  </ul>
+                  <div
+                    class="px-3 py-2 text-[10.5px] text-muted-foreground border-t border-border bg-card"
+                  >
+                    + 20 till — sortera efter bedömning, ansvarig eller
+                    område
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- ========================================================== -->
+          <!-- PANEL 5: Lagändringar                                       -->
+          <!-- ========================================================== -->
+          <article
+            class="rounded-2xl border border-border bg-card shadow-modal overflow-hidden"
+          >
+            <div
+              class="px-8 pt-2 border-b border-border flex items-center gap-0.5 overflow-x-auto"
+            >
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Vad är en laglista?
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Kravpunkter & bevis
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Uppgifter
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Kontroller
+              </button>
+              <button
+                class="relative shrink-0 px-3 py-3 text-[13.5px] font-medium text-foreground"
+              >
+                Lagändringar
+                <span
+                  class="absolute left-3 right-3 -bottom-px h-0.5 bg-foreground rounded-full"
+                ></span>
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground inline-flex items-center gap-1.5"
+              >
+                AI-agenten
+                <span
+                  class="inline-flex items-center rounded-full px-1.5 py-0 text-[9px] font-semibold uppercase tracking-wider"
+                  style="background: var(--tone-info-soft-bg); color: var(--tone-info-soft-fg);"
+                  >Ny</span
+                >
+              </button>
+              <span class="ml-auto shrink-0 eyebrow pl-3">5 av 6</span>
+            </div>
+
+            <div class="grid grid-cols-5 gap-10 px-8 pt-7 pb-7">
+              <div class="col-span-2">
+                <div class="eyebrow mb-3">Bevakning</div>
+                <h3 class="font-safiro text-[24px] leading-snug mb-3">
+                  När lagar ändras vet ni det innan ni behöver agera
+                </h3>
+                <p
+                  class="text-[14px] text-muted-foreground leading-relaxed mb-5"
+                >
+                  Vi bevakar varje lag, föreskrift och rättskälla i er
+                  laglista — varje natt. När en paragraf ni omfattas av
+                  ändras får ni en avi, en sammanfattning på svenska och en
+                  knapp för att bedöma påverkan på er verksamhet.
+                </p>
+                <ul class="space-y-3 mb-6">
+                  <li class="flex gap-3 text-[13.5px]">
+                    <span
+                      class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                    >
+                      <i
+                        data-lucide="git-compare"
+                        class="h-3 w-3"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                    </span>
+                    <span>
+                      <span class="font-medium">Per-paragraf diff</span>
+                      <span class="block text-muted-foreground">
+                        Strikt before/after — ni ser exakt vilka ord som
+                        försvann, vad som lades till.
+                      </span>
+                    </span>
+                  </li>
+                  <li class="flex gap-3 text-[13.5px]">
+                    <span
+                      class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                    >
+                      <i
+                        data-lucide="brain-circuit"
+                        class="h-3 w-3"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                    </span>
+                    <span>
+                      <span class="font-medium"
+                        >AI-bedömning av påverkan</span
+                      >
+                      <span class="block text-muted-foreground">
+                        Givet er bransch, era kravpunkter och era uppgifter:
+                        påverkar detta er? Och hur?
+                      </span>
+                    </span>
+                  </li>
+                  <li class="flex gap-3 text-[13.5px]">
+                    <span
+                      class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                    >
+                      <i
+                        data-lucide="archive"
+                        class="h-3 w-3"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                    </span>
+                    <span>
+                      <span class="font-medium">Bedömningar arkiveras</span>
+                      <span class="block text-muted-foreground">
+                        Varje "påverkar / påverkar inte"-beslut sparas med
+                        motivering — bevisar att ni faktiskt utvärderade.
+                      </span>
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Change card mock -->
+              <div class="col-span-3">
+                <div class="eyebrow mb-3">Förhandsvisning · Lagändring</div>
+                <div
+                  class="rounded-xl border border-border bg-background overflow-hidden shadow-soft"
+                >
+                  <!-- Header -->
+                  <div
+                    class="px-4 py-3 border-b border-border bg-warm/40 flex items-start gap-3"
+                  >
+                    <div
+                      class="h-9 w-9 rounded-lg bg-card border border-border flex items-center justify-center shrink-0"
+                    >
+                      <i
+                        data-lucide="bell-ring"
+                        class="h-4 w-4"
+                        style="color: var(--tone-warning-soft-fg)"
+                      ></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <div
+                        class="text-[10.5px] uppercase tracking-wider text-muted-foreground font-semibold mb-0.5"
+                      >
+                        Lagändring · 2 dagar sedan
+                      </div>
+                      <div class="font-safiro text-[15px] leading-tight">
+                        Miljöbalk (1998:808) · 5 kap 2 §
+                      </div>
+                      <div
+                        class="text-[11.5px] text-muted-foreground mt-0.5"
+                      >
+                        Träder i kraft 1 juli 2026
+                      </div>
+                    </div>
+                    <span class="pill pill--warning shrink-0">
+                      <i data-lucide="zap" class="h-2.5 w-2.5"></i>
+                      Hög påverkan
+                    </span>
+                  </div>
+
+                  <!-- Diff -->
+                  <div class="p-4">
+                    <div class="eyebrow mb-2">Ändring i paragrafen</div>
+                    <div
+                      class="rounded-lg border border-border bg-card overflow-hidden font-mono text-[12px] leading-relaxed"
+                    >
+                      <div
+                        class="px-3 py-2 border-b border-border"
+                        style="background: hsla(0, 75%, 95%, 0.5)"
+                      >
+                        <span
+                          class="inline-block w-4 text-center mr-2"
+                          style="color: hsl(0 60% 45%)"
+                          >−</span
+                        >
+                        <span
+                          style="text-decoration: line-through; color: hsl(0 60% 45%); opacity: 0.85;"
+                        >
+                          ...verksamhetsutövare ska minst en gång per år
+                          rapportera utsläpp av...
+                        </span>
+                      </div>
+                      <div
+                        class="px-3 py-2"
+                        style="background: hsla(140, 50%, 92%, 0.5)"
+                      >
+                        <span
+                          class="inline-block w-4 text-center mr-2"
+                          style="color: var(--tone-success-soft-fg)"
+                          >+</span
+                        >
+                        <span style="color: var(--tone-success-soft-fg)">
+                          ...verksamhets­utövare ska
+                          <strong>minst kvartalsvis</strong> rapportera
+                          utsläpp av <strong>och anslutas till SMP-portalen</strong>...
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- AI assessment -->
+                    <div
+                      class="mt-4 rounded-lg border p-3"
+                      style="
+                        background: var(--tone-info-soft-bg);
+                        border-color: hsla(217, 91%, 60%, 0.25);
+                      "
+                    >
+                      <div
+                        class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider mb-1.5"
+                        style="color: var(--tone-info-soft-fg)"
+                      >
+                        <i data-lucide="sparkles" class="h-3 w-3"></i>
+                        AI-bedömning
+                      </div>
+                      <p
+                        class="text-[12.5px] leading-relaxed"
+                        style="color: var(--tone-info-soft-fg)"
+                      >
+                        Påverkar er — ni rapporterar idag årsvis. Behöver
+                        sätta upp kvartals-rytm och registrera anläggning hos
+                        SMP. Estimerad arbetstid: 4h initialt, 1h per kvartal.
+                      </p>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="flex items-center gap-2 mt-4">
+                      <button
+                        class="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-4 py-2 text-[12.5px] font-medium hover:bg-primary/95"
+                      >
+                        Bedöm påverkan
+                        <i data-lucide="arrow-right" class="h-3.5 w-3.5"></i>
+                      </button>
+                      <button
+                        class="rounded-lg border border-border bg-background px-4 py-2 text-[12.5px] hover:bg-accent"
+                      >
+                        Ej relevant
+                      </button>
+                      <button
+                        class="rounded-lg border border-border bg-background px-3 py-2 text-[12.5px] hover:bg-accent"
+                        title="Skapa uppgift"
+                      >
+                        <i
+                          data-lucide="circle-plus"
+                          class="h-3.5 w-3.5"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- ========================================================== -->
+          <!-- PANEL 6: AI-agenten                                         -->
+          <!-- ========================================================== -->
+          <article
+            class="rounded-2xl border border-border bg-card shadow-modal overflow-hidden"
+          >
+            <div
+              class="px-8 pt-2 border-b border-border flex items-center gap-0.5 overflow-x-auto"
+            >
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Vad är en laglista?
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Kravpunkter & bevis
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Uppgifter
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Kontroller
+              </button>
+              <button
+                class="shrink-0 px-3 py-3 text-[13.5px] text-muted-foreground"
+              >
+                Lagändringar
+              </button>
+              <button
+                class="relative shrink-0 px-3 py-3 text-[13.5px] font-medium text-foreground inline-flex items-center gap-1.5"
+              >
+                AI-agenten
+                <span
+                  class="inline-flex items-center rounded-full px-1.5 py-0 text-[9px] font-semibold uppercase tracking-wider"
+                  style="background: var(--tone-info-soft-bg); color: var(--tone-info-soft-fg);"
+                  >Ny</span
+                >
+                <span
+                  class="absolute left-3 right-12 -bottom-px h-0.5 bg-foreground rounded-full"
+                ></span>
+              </button>
+              <span class="ml-auto shrink-0 eyebrow pl-3">6 av 6</span>
+            </div>
+
+            <div class="grid grid-cols-5 gap-10 px-8 pt-7 pb-7">
+              <div class="col-span-2">
+                <div class="eyebrow mb-3">Co-pilot</div>
+                <h3 class="font-safiro text-[24px] leading-snug mb-3">
+                  En AI-agent som faktiskt förstår er lagstiftning
+                </h3>
+                <p
+                  class="text-[14px] text-muted-foreground leading-relaxed mb-5"
+                >
+                  Ställ frågor i klartext. Be om en sammanfattning av
+                  Miljöbalken, hjälp att bedöma en lagändring, eller en
+                  granskning av era kravpunkter. Agenten har full kontext om
+                  er laglista, era kravpunkter och era pågående uppgifter —
+                  och kan agera tillsammans med er.
+                </p>
+                <ul class="space-y-3 mb-6">
+                  <li class="flex gap-3 text-[13.5px]">
+                    <span
+                      class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                    >
+                      <i
+                        data-lucide="quote"
+                        class="h-3 w-3"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                    </span>
+                    <span>
+                      <span class="font-medium">Citerar er laglista</span>
+                      <span class="block text-muted-foreground">
+                        Riktiga §-länkar — inga hallucinerade paragrafer. Klicka
+                        för att hoppa till källan.
+                      </span>
+                    </span>
+                  </li>
+                  <li class="flex gap-3 text-[13.5px]">
+                    <span
+                      class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                    >
+                      <i
+                        data-lucide="brain"
+                        class="h-3 w-3"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                    </span>
+                    <span>
+                      <span class="font-medium">Visar resoneringen</span>
+                      <span class="block text-muted-foreground">
+                        Tankebanan är synlig och granskbar — inte bara svaret.
+                        Bedömningar blir spårbara.
+                      </span>
+                    </span>
+                  </li>
+                  <li class="flex gap-3 text-[13.5px]">
+                    <span
+                      class="mt-1 h-5 w-5 shrink-0 rounded-md bg-sage flex items-center justify-center"
+                    >
+                      <i
+                        data-lucide="zap"
+                        class="h-3 w-3"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                    </span>
+                    <span>
+                      <span class="font-medium">Kan agera, inte bara svara</span>
+                      <span class="block text-muted-foreground">
+                        Skapar uppgifter, söker i laglistan, bedömer ändringar
+                        — alltid med er bekräftelse.
+                      </span>
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Chat conversation mock -->
+              <div class="col-span-3">
+                <div class="eyebrow mb-3">Förhandsvisning · Chatt</div>
+                <div
+                  class="rounded-xl border border-border bg-background overflow-hidden shadow-soft flex flex-col"
+                  style="height: 540px"
+                >
+                  <!-- Conversation -->
+                  <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                    <!-- User message -->
+                    <div class="flex justify-end">
+                      <div
+                        class="max-w-[80%] rounded-2xl rounded-br-sm bg-foreground text-background px-3.5 py-2.5 text-[13px] leading-relaxed"
+                      >
+                        Hjälp mig bedöma den nya AFS 2023:8 om
+                        belastningsergonomi — hur påverkar den oss?
+                      </div>
+                    </div>
+
+                    <!-- Assistant — reasoning block -->
+                    <div class="space-y-2.5">
+                      <details
+                        class="group rounded-lg border border-border bg-warm/40"
+                        open
+                      >
+                        <summary
+                          class="cursor-pointer list-none px-3 py-2 flex items-center gap-2 text-[11.5px] text-muted-foreground"
+                        >
+                          <i
+                            data-lucide="brain"
+                            class="h-3.5 w-3.5"
+                          ></i>
+                          <span class="font-medium">Tankar</span>
+                          <span>· 8 sek</span>
+                          <i
+                            data-lucide="chevron-up"
+                            class="h-3 w-3 ml-auto"
+                          ></i>
+                        </summary>
+                        <div
+                          class="px-3 pb-3 text-[12px] text-muted-foreground leading-relaxed border-t border-border/60 pt-2 italic"
+                        >
+                          Användaren frågar om AFS 2023:8 belastningsergonomi.
+                          Företaget är inom Bygg & anläggning, 25 anställda.
+                          Letar i laglistan efter befintliga relaterade
+                          AFS:er… Hittade AFS 2012:2 (belastningsergonomi,
+                          ersätts), AFS 1998:1 (gravida arbetstagare). Behöver
+                          jämföra övergångs­regler och kolla om
+                          riskbedömnings-uppgifter behöver uppdateras…
+                        </div>
+                      </details>
+
+                      <!-- Tool call -->
+                      <div
+                        class="rounded-lg border border-border bg-card px-3 py-2 flex items-center gap-2.5 text-[12px]"
+                      >
+                        <i
+                          data-lucide="search"
+                          class="h-3.5 w-3.5"
+                          style="color: var(--tone-info-soft-fg)"
+                        ></i>
+                        <span class="font-medium">Söker i laglistan</span>
+                        <span class="text-muted-foreground"
+                          >belastnings­ergonomi, AFS 2012:2</span
+                        >
+                        <i
+                          data-lucide="check"
+                          class="ml-auto h-3.5 w-3.5"
+                          style="color: var(--tone-success-soft-fg)"
+                        ></i>
+                      </div>
+
+                      <!-- Text response -->
+                      <div
+                        class="rounded-2xl rounded-tl-sm bg-card border border-border px-3.5 py-3 text-[13px] leading-relaxed space-y-2.5"
+                      >
+                        <p>
+                          AFS 2023:8 ersätter
+                          <a
+                            class="inline-flex items-center gap-0.5 rounded px-1 py-0 font-medium underline-offset-2 hover:underline"
+                            style="
+                              background: var(--tone-info-soft-bg);
+                              color: var(--tone-info-soft-fg);
+                            "
+                          >
+                            AFS 2012:2
+                            <i
+                              data-lucide="external-link"
+                              class="h-2.5 w-2.5"
+                            ></i>
+                          </a>
+                          som ni har i laglistan idag. För er gäller tre
+                          väsentliga skillnader:
+                        </p>
+                        <ol class="list-decimal pl-5 space-y-1">
+                          <li>
+                            Riskbedömning ska göras
+                            <strong>per arbetsstation</strong>, inte per
+                            avdelning som tidigare.
+                          </li>
+                          <li>
+                            Ny gräns för manuell hantering: 25 kg
+                            (tidigare 30 kg) — ni ligger redan under, men
+                            ska dokumentera det.
+                          </li>
+                          <li>
+                            Övergångs­period till
+                            <strong>30 september 2026</strong> — ni har 5
+                            månader på er.
+                          </li>
+                        </ol>
+                        <p>
+                          Kravpunkterna under
+                          <a
+                            class="inline-flex items-center gap-0.5 rounded px-1 py-0 font-medium underline-offset-2 hover:underline"
+                            style="
+                              background: var(--tone-info-soft-bg);
+                              color: var(--tone-info-soft-fg);
+                            "
+                          >
+                            AFS 2012:2 §4
+                            <i
+                              data-lucide="external-link"
+                              class="h-2.5 w-2.5"
+                            ></i>
+                          </a>
+                          behöver uppdateras. Vill du att jag skapar uppgiften?
+                        </p>
+                      </div>
+
+                      <!-- Tool call: create task (suggested action) -->
+                      <div
+                        class="rounded-lg border-2 border-dashed border-foreground/30 bg-card px-3 py-2.5 flex items-center gap-2.5"
+                      >
+                        <i
+                          data-lucide="circle-plus"
+                          class="h-4 w-4"
+                        ></i>
+                        <div class="min-w-0 flex-1 text-[12.5px]">
+                          <div class="font-medium">
+                            Föreslagen uppgift: Granska arbetsplatser för AFS
+                            2023:8
+                          </div>
+                          <div class="text-[11px] text-muted-foreground">
+                            Tilldelas EH · Deadline 30 sep · HIGH
+                          </div>
+                        </div>
+                        <button
+                          class="rounded-md bg-primary text-primary-foreground px-2.5 py-1 text-[11.5px] font-medium hover:bg-primary/95"
+                        >
+                          Skapa
+                        </button>
+                        <button
+                          class="rounded-md border border-border bg-background px-2.5 py-1 text-[11.5px] text-muted-foreground hover:bg-accent"
+                        >
+                          Avstå
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Input bar -->
+                  <div
+                    class="border-t border-border bg-card p-2.5 flex items-center gap-2"
+                  >
+                    <div
+                      class="flex-1 flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2 text-[12.5px] text-muted-foreground"
+                    >
+                      <span>Följdfråga eller begäran…</span>
+                      <span class="ml-auto inline-flex items-center gap-1.5 text-[10.5px]">
+                        <i data-lucide="paperclip" class="h-3 w-3"></i>
+                        <i data-lucide="at-sign" class="h-3 w-3"></i>
+                      </span>
+                    </div>
+                    <button
+                      class="rounded-lg bg-primary text-primary-foreground p-2 hover:bg-primary/95"
+                    >
+                      <i
+                        data-lucide="arrow-up"
+                        class="h-4 w-4"
+                      ></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Two-column: 4a vs 4b -------------------------------------------- -->
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-12 mb-20">
+        <!-- ============================================================== -->
+        <!-- FRAME 4a: Generate done                                         -->
+        <!-- ============================================================== -->
+        <section>
+          <div class="relative">
+            <div class="frame-label">
+              <span class="num">4a</span>Generera klar — fira & avslöja
+            </div>
+            <div
+              class="dashboard-backdrop relative dimmed rounded-2xl border border-border overflow-hidden shadow-soft"
+              style="height: 560px"
+            >
+              <div class="absolute inset-0 z-10 flex items-center justify-center p-6">
+                <div
+                  class="w-full max-w-[480px] bg-card rounded-2xl border border-border shadow-modal overflow-hidden"
+                >
+                  <div class="px-7 pt-7 pb-7 text-center">
+                    <div
+                      class="mx-auto mb-5 h-14 w-14 rounded-full bg-sage flex items-center justify-center"
+                    >
+                      <i
+                        data-lucide="sparkles"
+                        class="h-6 w-6"
+                        style="color: var(--tone-success-soft-fg)"
+                      ></i>
+                    </div>
+                    <h3 class="font-safiro text-[26px] leading-tight mb-2">
+                      Er laglista är klar
+                    </h3>
+                    <p class="text-[13.5px] text-muted-foreground mb-5">
+                      <span class="font-medium text-foreground"
+                        >128 lagar</span
+                      >
+                      grupperade i 6 områden, baserat på er bransch och
+                      verksamhet.
+                    </p>
+
+                    <!-- Group breakdown chips -->
+                    <div class="flex flex-wrap justify-center gap-1.5 mb-7">
+                      <span class="pill pill--neutral">42 Miljö</span>
+                      <span class="pill pill--neutral">31 Arbetsmiljö</span>
+                      <span class="pill pill--neutral">18 Kemikalier</span>
+                      <span class="pill pill--neutral">14 Avfall</span>
+                      <span class="pill pill--neutral">12 Brand</span>
+                      <span class="pill pill--neutral">11 Övrigt</span>
+                    </div>
+
+                    <div class="flex gap-2">
+                      <button
+                        class="flex-1 rounded-lg border border-border bg-background px-4 py-2.5 text-[13px] hover:bg-accent"
+                      >
+                        Stäng
+                      </button>
+                      <button
+                        class="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-4 py-2.5 text-[13px] font-medium hover:bg-primary/95"
+                      >
+                        Visa min laglista
+                        <i data-lucide="arrow-right" class="h-3.5 w-3.5"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- FRAME 4b: Import done                                           -->
+        <!-- ============================================================== -->
+        <section>
+          <div class="relative">
+            <div class="frame-label">
+              <span class="num">4b</span>Import klar — överlämna till granskning
+            </div>
+            <div
+              class="dashboard-backdrop relative dimmed rounded-2xl border border-border overflow-hidden shadow-soft"
+              style="height: 560px"
+            >
+              <div class="absolute inset-0 z-10 flex items-center justify-center p-6">
+                <div
+                  class="w-full max-w-[520px] bg-card rounded-2xl border border-border shadow-modal overflow-hidden"
+                >
+                  <div class="px-7 pt-7 pb-7">
+                    <div class="flex items-center gap-3 mb-5">
+                      <div
+                        class="h-10 w-10 rounded-full bg-sage flex items-center justify-center"
+                      >
+                        <i
+                          data-lucide="check"
+                          class="h-5 w-5"
+                          style="color: var(--tone-success-soft-fg)"
+                        ></i>
+                      </div>
+                      <div class="min-w-0">
+                        <h3 class="font-safiro text-[20px] leading-tight">
+                          112 av 120 rader matchade
+                        </h3>
+                        <p class="text-[12.5px] text-muted-foreground">
+                          Granska matchningarna innan listan tas i bruk.
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Confidence breakdown -->
+                    <div
+                      class="rounded-xl border border-border bg-warm/30 divide-y divide-border overflow-hidden mb-5"
+                    >
+                      <div
+                        class="flex items-center justify-between px-4 py-3"
+                      >
+                        <span class="inline-flex items-center gap-2 text-[13px]">
+                          <span
+                            class="h-2 w-2 rounded-full"
+                            style="background: var(--tone-success-solid)"
+                          ></span>
+                          Hög träffsäkerhet
+                          <span class="text-[11.5px] text-muted-foreground"
+                            >· kan accepteras direkt</span
+                          >
+                        </span>
+                        <span class="font-mono text-[12.5px]">98 rader</span>
+                      </div>
+                      <div
+                        class="flex items-center justify-between px-4 py-3"
+                      >
+                        <span class="inline-flex items-center gap-2 text-[13px]">
+                          <span
+                            class="h-2 w-2 rounded-full"
+                            style="background: var(--tone-warning-solid)"
+                          ></span>
+                          Behöver bekräftelse
+                          <span class="text-[11.5px] text-muted-foreground"
+                            >· du väljer bland kandidater</span
+                          >
+                        </span>
+                        <span class="font-mono text-[12.5px]">14 rader</span>
+                      </div>
+                      <div
+                        class="flex items-center justify-between px-4 py-3"
+                      >
+                        <span class="inline-flex items-center gap-2 text-[13px]">
+                          <span
+                            class="h-2 w-2 rounded-full"
+                            style="background: hsl(0 60% 55%)"
+                          ></span>
+                          Saknas i katalogen
+                          <span class="text-[11.5px] text-muted-foreground"
+                            >· vi lägger till inom 24h</span
+                          >
+                        </span>
+                        <span class="font-mono text-[12.5px]">8 rader</span>
+                      </div>
+                    </div>
+
+                    <button
+                      class="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary text-primary-foreground px-4 py-2.5 text-[13px] font-medium hover:bg-primary/95"
+                    >
+                      Granska matchningar
+                      <i data-lucide="arrow-right" class="h-3.5 w-3.5"></i>
+                    </button>
+                    <p
+                      class="text-[11.5px] text-muted-foreground text-center mt-3"
+                    >
+                      Lämnar guiden — granskningen sker på en egen sida.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Design notes ---------------------------------------------------- -->
+      <section
+        class="rounded-xl border border-border bg-card shadow-soft p-7 mb-12 max-w-3xl"
+      >
+        <div class="eyebrow mb-3">Designprinciper i den här prototypen</div>
+        <ul class="space-y-3 text-[13.5px] leading-relaxed">
+          <li class="flex gap-3">
+            <i
+              data-lucide="type"
+              class="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground"
+            ></i>
+            <span>
+              <span class="font-medium">Typografin gör jobbet.</span>
+              Safiro 500 för rubriker (aldrig bold — fonten har bara medium
+              registrerad), Google Sans Flex för text. Eyebrow-rubriker i caps
+              ger pacing utan att lägga till färg.
+            </span>
+          </li>
+          <li class="flex gap-3">
+            <i
+              data-lucide="palette"
+              class="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground"
+            ></i>
+            <span>
+              <span class="font-medium">Varma neutrala tonpaletter.</span>
+              Off-white bakgrund, sage som success-ton, warm/cream som
+              sektions-backdrop. Inga pure-blacks, inga pure-whites — håller
+              modal-känslan mjuk även med tunga UI-block.
+            </span>
+          </li>
+          <li class="flex gap-3">
+            <i
+              data-lucide="layout-template"
+              class="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground"
+            ></i>
+            <span>
+              <span class="font-medium">Tutorial = produktförhandsvisning.</span>
+              Höger spalt i ③ är en mini-version av
+              <code class="rounded bg-muted px-1 py-0.5 text-[12px]"
+                >/laglistor</code
+              >
+              med riktiga SFS-nummer, avatarer och tone-pills. Användaren ser
+              det de strax landar i, inte abstrakta former.
+            </span>
+          </li>
+          <li class="flex gap-3">
+            <i
+              data-lucide="activity"
+              class="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground"
+            ></i>
+            <span>
+              <span class="font-medium">Progress alltid i topp.</span>
+              Step-trail med pulse-dot på aktivt steg + räknare (47/120) +
+              shimmer-bar. Sätter förväntan på två sätt parallellt — strukturellt
+              ("vi är på steg 3 av 5") och kvantitativt ("47 av 120 rader").
+            </span>
+          </li>
+          <li class="flex gap-3">
+            <i
+              data-lucide="x"
+              class="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground"
+            ></i>
+            <span>
+              <span class="font-medium">Stänga avbryter inte.</span>
+              "Vi fortsätter i bakgrunden" upprepas tre gånger i kopia + en
+              dedikerad Minimera-knapp. Om användaren stänger faller vi
+              tillbaka på den befintliga
+              <code class="rounded bg-muted px-1 py-0.5 text-[12px]"
+                >LawListGenerationProgress</code
+              >
+              banner-komponenten.
+            </span>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Open questions -------------------------------------------------- -->
+      <section class="max-w-3xl mb-12">
+        <div class="eyebrow mb-3">Öppna frågor</div>
+        <ul class="space-y-3 text-[13.5px] leading-relaxed">
+          <li class="flex gap-3">
+            <span
+              class="mt-2 h-1.5 w-1.5 rounded-full bg-foreground shrink-0"
+            ></span>
+            <span>
+              <span class="font-medium">②a — behövs den?</span> Wizarden har
+              redan samlat in företagsinfo. Bekräfta-före-start tar bort
+              "valde jag rätt bransch?"-oro under väntan, men adderar
+              friktion. Default: hoppa över. Promota om support ser
+              upprepade frågor.
+            </span>
+          </li>
+          <li class="flex gap-3">
+            <span
+              class="mt-2 h-1.5 w-1.5 rounded-full bg-foreground shrink-0"
+            ></span>
+            <span>
+              <span class="font-medium">6 flikar — narrativ båge.</span>
+              Laglista (objektet) → Kravpunkter (innehåll) → Uppgifter
+              (handling) → Kontroller (rytm) → Lagändringar (proaktivitet) →
+              AI-agenten (kapseln). Pedagogiskt ordnat så att nya användare
+              bygger upp förståelsen istället för att kastas in i
+              spjutspets-features. Tutorial-tiden har spelrum: en typisk
+              generering tar 2–5 min, vilket räcker för ~3–4 flikar i
+              läsfart. Resterande flikar är opt-in via "Hjälp"-meny.
+            </span>
+          </li>
+          <li class="flex gap-3">
+            <span
+              class="mt-2 h-1.5 w-1.5 rounded-full bg-foreground shrink-0"
+            ></span>
+            <span>
+              <span class="font-medium">AI-agenten flaggas som "Ny".</span>
+              Differentierad chip i flikraden — den absoluta
+              spjutspets-funktionen ska inte gömmas bakom andra flikar. Vi vill
+              att användaren märker den även om de inte klickar in.
+            </span>
+          </li>
+          <li class="flex gap-3">
+            <span
+              class="mt-2 h-1.5 w-1.5 rounded-full bg-foreground shrink-0"
+            ></span>
+            <span>
+              <span class="font-medium">"Hoppa över" på ①.</span>
+              Måste sätta
+              <code class="rounded bg-muted px-1 py-0.5 text-[12px]"
+                >law_list_generation_status = 'skipped'</code
+              >
+              så vi inte autostartar generering nästa besök. Nytt enum-värde
+              eller flag på workspace.
+            </span>
+          </li>
+          <li class="flex gap-3">
+            <span
+              class="mt-2 h-1.5 w-1.5 rounded-full bg-foreground shrink-0"
+            ></span>
+            <span>
+              <span class="font-medium">Re-entry.</span> När användaren
+              stängt — öppna inte igen. Visa istället den befintliga banner-
+              komponenten på dashboard. Tutorial blir opt-in via Hjälp-meny.
+            </span>
+          </li>
+        </ul>
+      </section>
+
+      <footer
+        class="text-[11.5px] text-muted-foreground border-t border-border pt-5"
+      >
+        Prototyp endast — ingen riktig komponentimport. Production-build
+        komponerar
+        <code class="rounded bg-muted px-1 py-0.5 text-[11px]">Dialog</code>,
+        <code class="rounded bg-muted px-1 py-0.5 text-[11px]">Tabs</code>,
+        <code class="rounded bg-muted px-1 py-0.5 text-[11px]">Card</code> från
+        <code class="rounded bg-muted px-1 py-0.5 text-[11px]"
+          >components/ui</code
+        >
+        och återanvänder
+        <code class="rounded bg-muted px-1 py-0.5 text-[11px]"
+          >LawListGenerationProgress</code
+        >
+        som progress-strip-substrat.
+      </footer>
+    </div>
+
+    <script>
+      // Render Lucide icons
+      lucide.createIcons()
+    </script>
+  </body>
+</html>
