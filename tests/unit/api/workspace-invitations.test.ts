@@ -95,6 +95,35 @@ vi.mock('@/lib/cache/redis', () => ({
   isRedisConfigured: () => true,
 }))
 
+// Story 5.5a: route now calls assertSeatAvailable (which dives into
+// countActiveAddonSeats → Stripe + prisma.workspace.findUniqueOrThrow).
+// Stub the seat module so the route reaches the create path. SEAT_LIMIT /
+// STRIPE_UNAVAILABLE branches aren't covered by these tests; if added later,
+// override mockAssertSeatAvailable per-test.
+const mockAssertSeatAvailable = vi.fn().mockResolvedValue({
+  used: 1,
+  limit: null,
+  tier: 'TRIAL',
+  addonSeatCount: 0,
+})
+// Error stubs — production classes carry currentSeats/limit/tier and cause
+// fields, but these tests don't exercise the throw branches so a bare class
+// is enough for the `instanceof` checks in the route.
+class MockSeatLimitExceededError extends Error {}
+class MockStripeUnavailableError extends Error {}
+vi.mock('@/lib/usage/seats', () => ({
+  assertSeatAvailable: (...args: unknown[]) => mockAssertSeatAvailable(...args),
+  countActiveAddonSeats: vi.fn().mockResolvedValue(0),
+  computeSeatUsage: vi.fn().mockResolvedValue({
+    used: 1,
+    limit: null,
+    tier: 'TRIAL',
+    addonSeatCount: 0,
+  }),
+  SeatLimitExceededError: MockSeatLimitExceededError,
+  StripeUnavailableError: MockStripeUnavailableError,
+}))
+
 // Import routes after mocks.
 const { POST, GET } = await import('@/app/api/workspace/invitations/route')
 const { DELETE } = await import('@/app/api/workspace/invitations/[id]/route')

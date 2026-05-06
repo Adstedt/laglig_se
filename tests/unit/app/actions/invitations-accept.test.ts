@@ -60,6 +60,28 @@ vi.mock('@/lib/cache/redis', () => ({
   isRedisConfigured: () => mockIsRedisConfigured(),
 }))
 
+// Story 5.5a: acceptInvitation now calls countActiveAddonSeats (Stripe lookup)
+// before the transaction. Mock it to a no-op so the function reaches the
+// cache-invalidation block that these tests assert on. Errors are kept as the
+// real classes so an instanceof check would still match if production paths
+// change later.
+const mockCountActiveAddonSeats = vi.fn().mockResolvedValue(0)
+// Error stubs — production classes carry currentSeats/limit/tier and cause
+// fields, but these tests don't exercise the throw branches so a bare class
+// is enough for the `instanceof` checks in the action.
+class MockSeatLimitExceededError extends Error {}
+class MockStripeUnavailableError extends Error {}
+vi.mock('@/lib/usage/seats', () => ({
+  countActiveAddonSeats: (...args: unknown[]) =>
+    mockCountActiveAddonSeats(...args),
+  SeatLimitExceededError: MockSeatLimitExceededError,
+  StripeUnavailableError: MockStripeUnavailableError,
+}))
+
+vi.mock('@/lib/usage/limits', () => ({
+  getEffectiveLimits: () => ({ users: null, documents: null }),
+}))
+
 const { acceptInvitation } = await import('@/app/actions/invitations')
 
 beforeEach(() => {
