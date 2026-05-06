@@ -4,12 +4,17 @@ import { usePathname } from 'next/navigation'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
 import type { ThemeProviderProps } from 'next-themes'
 
+// Routes that force light theme regardless of user's system/OS preference.
+// All pre-login + onboarding surfaces — users haven't reached the workspace
+// shell yet, so the dashboard's dark-mode toggle doesn't apply. Marketing
+// surfaces in particular need a consistent light look.
 const PUBLIC_ROUTE_PREFIXES = [
   '/alla-lagar',
   '/eu',
   '/foreskrifter',
   '/lagar',
   '/login',
+  '/onboarding',
   '/rattskallor',
   '/reset-password',
   '/signup',
