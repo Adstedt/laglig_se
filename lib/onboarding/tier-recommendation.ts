@@ -120,7 +120,7 @@ export function recommendTier(input: RecommendationInput): Recommendation {
       'Team passar växande verksamheter med flera användare och behov av samarbete.'
   } else {
     const head = reasonParts.join(' och ')
-    reason = `${head.charAt(0).toUpperCase() + head.slice(1)} — Team inkluderar HR-modulen och fler AI-frågor.`
+    reason = `${head.charAt(0).toUpperCase() + head.slice(1)} — Team inkluderar fler AI-frågor och samarbete för flera användare.`
   }
 
   return {
