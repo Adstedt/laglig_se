@@ -110,7 +110,15 @@ vi.mock('@/lib/email/email-service', () => ({
 // run for real.
 const realStripe = new Stripe(TEST_STRIPE_KEY)
 const stripeMock = {
-  customers: { create: vi.fn() },
+  // BILLING hardening: getOrCreateStripeCustomer calls retrieve() to verify
+  // a cached cus_… is still valid in the current Stripe account/mode before
+  // reusing it. Default mock returns a non-deleted customer so the existing-
+  // id path short-circuits; tests that need the resource_missing fallback
+  // override per-call with mockRejectedValueOnce.
+  customers: {
+    create: vi.fn(),
+    retrieve: vi.fn().mockResolvedValue({ id: 'cus_existing', deleted: false }),
+  },
   checkout: { sessions: { create: vi.fn() } },
   billingPortal: { sessions: { create: vi.fn() } },
   invoices: { list: vi.fn() },
@@ -160,7 +168,7 @@ afterEach(() => {
 // ---------- Tests ----------------------------------------------------------
 
 describe('getOrCreateStripeCustomer', () => {
-  it('returns the existing stripe_customer_id without calling Stripe', async () => {
+  it('returns the existing stripe_customer_id when retrieve confirms it is valid', async () => {
     mockWorkspace.findUnique.mockResolvedValueOnce({
       stripe_customer_id: 'cus_existing',
     })
@@ -173,8 +181,37 @@ describe('getOrCreateStripeCustomer', () => {
     )
 
     expect(id).toBe('cus_existing')
+    expect(stripeMock.customers.retrieve).toHaveBeenCalledWith('cus_existing')
     expect(stripeMock.customers.create).not.toHaveBeenCalled()
     expect(mockWorkspace.update).not.toHaveBeenCalled()
+  })
+
+  it('falls through to create when retrieve returns resource_missing', async () => {
+    mockWorkspace.findUnique.mockResolvedValueOnce({
+      stripe_customer_id: 'cus_stale',
+    })
+    const missingErr = Object.assign(new Error('No such customer: cus_stale'), {
+      code: 'resource_missing',
+    })
+    stripeMock.customers.retrieve.mockRejectedValueOnce(missingErr)
+    stripeMock.customers.create.mockResolvedValueOnce({
+      id: 'cus_fresh',
+    } as unknown as Stripe.Customer)
+    mockWorkspace.update.mockResolvedValueOnce({})
+
+    const { getOrCreateStripeCustomer } = await import('@/lib/stripe/customer')
+    const id = await getOrCreateStripeCustomer(
+      'ws_1',
+      'owner@example.com',
+      'Acme AB'
+    )
+
+    expect(id).toBe('cus_fresh')
+    expect(stripeMock.customers.create).toHaveBeenCalledTimes(1)
+    expect(mockWorkspace.update).toHaveBeenCalledWith({
+      where: { id: 'ws_1' },
+      data: { stripe_customer_id: 'cus_fresh' },
+    })
   })
 
   it('creates a new Stripe customer and persists the id when missing', async () => {
