@@ -761,6 +761,7 @@ export function DocumentListPageContent({
             onClick={handleEditList}
             disabled={!activeListId}
             title="Hantera lista"
+            className="h-9 w-9"
           >
             <Settings className="h-4 w-4" />
           </Button>

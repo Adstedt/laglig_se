@@ -43,6 +43,7 @@ export function DocumentListSwitcher({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
+          size="sm"
           className="w-full sm:w-auto justify-between min-w-[232px]"
           role="combobox"
         >
