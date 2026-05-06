@@ -25,6 +25,34 @@ reinitializeRedis()
 
 // Now import other modules
 import '@testing-library/jest-dom'
+import { vi } from 'vitest'
+
+// Global mock for @/lib/stripe/config — happy-dom (used by component tests)
+// defines `window`, which trips t3-env-nextjs's client-context check when
+// any source file transitively imports lib/stripe/config (which reads
+// `env.STRIPE_SECRET_KEY` at module load). Component tests that render
+// settings/billing/onboarding surfaces pull this in via the import chain
+// and would otherwise crash before the test body runs.
+//
+// Tests that legitimately exercise Stripe (tests/unit/billing/*,
+// tests/unit/webhooks/stripe-*) define their own per-file vi.mock for
+// '@/lib/stripe/config' which overrides this global stub.
+vi.mock('@/lib/stripe/config', () => ({
+  stripe: {
+    customers: { create: vi.fn(), retrieve: vi.fn(), update: vi.fn() },
+    subscriptions: { retrieve: vi.fn(), update: vi.fn(), cancel: vi.fn() },
+    checkout: { sessions: { create: vi.fn() } },
+    invoices: { list: vi.fn() },
+    webhooks: { constructEvent: vi.fn() },
+    billingPortal: { sessions: { create: vi.fn() } },
+  },
+  STRIPE_PRICE_IDS: {
+    SOLO: 'price_solo_test',
+    TEAM: 'price_team_test',
+    ENTERPRISE: 'price_enterprise_test',
+  },
+  tierForPriceId: vi.fn(() => undefined),
+}))
 
 // Mock pointer capture methods for Radix UI components (Select, Popover, etc.)
 // These are not implemented in happy-dom/jsdom

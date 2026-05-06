@@ -17,9 +17,23 @@ vi.mock('@/lib/prisma', () => ({
       delete: vi.fn(),
       deleteMany: vi.fn(),
       updateMany: vi.fn(),
+      // Story 5.5b — assertWithinStorageQuota sums file_size via aggregate.
+      // Default to 0 bytes so quota checks pass for tests that don't
+      // explicitly exercise storage limits.
+      aggregate: vi.fn().mockResolvedValue({ _sum: { file_size: 0 } }),
     },
     workspaceMember: {
       findFirst: vi.fn(),
+    },
+    // Story 5.5b — assertWithinStorageQuota loads workspace.subscription_tier
+    // + trial_picked_tier to derive the storage cap. Default to TRIAL with
+    // no picked tier so the cap resolves to the TRIAL default (well above
+    // the 0-byte usage, so quota checks pass for upload tests).
+    workspace: {
+      findUniqueOrThrow: vi.fn().mockResolvedValue({
+        subscription_tier: 'TRIAL',
+        trial_picked_tier: null,
+      }),
     },
     task: {
       findFirst: vi.fn(),
