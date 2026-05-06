@@ -40,8 +40,18 @@ jobs:
       NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder
       SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.placeholder
       DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
-      NEXTAUTH_SECRET: ci-test-secret
+      DIRECT_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
+      NEXTAUTH_SECRET: ci-test-secret-with-at-least-32-characters
       NEXTAUTH_URL: http://localhost:3000
+      # Story 5.4 Stripe billing — placeholders satisfy lib/env.ts validation
+      # at unit-test boot (lib/stripe/config imports the env module). Real
+      # Stripe interaction is mocked in tests; no live API calls.
+      STRIPE_SECRET_KEY: sk_test_placeholder
+      STRIPE_WEBHOOK_SECRET: whsec_test_placeholder
+      STRIPE_SOLO_PRICE_ID: price_solo_placeholder
+      STRIPE_TEAM_PRICE_ID: price_team_placeholder
+      STRIPE_ENTERPRISE_PRICE_ID: price_enterprise_placeholder
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
 

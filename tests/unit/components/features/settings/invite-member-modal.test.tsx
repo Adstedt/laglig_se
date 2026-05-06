@@ -57,6 +57,7 @@ describe('InviteMemberModal', () => {
         open={true}
         onOpenChange={onOpenChange}
         onInvited={onInvited}
+        seatUsage={null}
       />
     )
     return { onInvited, onOpenChange }
