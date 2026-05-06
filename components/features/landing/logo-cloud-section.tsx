@@ -1,10 +1,6 @@
 export function LogoCloudSection() {
   // Real trust indicators - social proof that builds credibility
-  const trustPoints = [
-    'Används av 1 000+ svenska företag',
-    'Från 1 anställd till 500+',
-    'Alla branscher',
-  ]
+  const trustPoints = ['Från 1 anställd till 500+', 'Alla branscher']
 
   return (
     <section className="border-y bg-muted/30 py-6">
