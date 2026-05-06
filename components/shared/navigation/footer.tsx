@@ -3,7 +3,8 @@
 import * as React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Mail } from 'lucide-react'
+import { Cookie, Mail } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,9 +18,14 @@ const menuLinks = [
 ]
 
 const legalLinks = [
+  { href: '/villkor', label: 'Användarvillkor' },
   { href: '/integritetspolicy', label: 'Integritetspolicy' },
-  { href: '/anvandarvillkor', label: 'Användarvillkor' },
-  { href: '/ansvarsfriskrivning', label: 'Ansvarsfriskrivning' },
+  { href: '/cookiepolicy', label: 'Cookiepolicy' },
+  {
+    href: '/personuppgiftsbitradesavtal',
+    label: 'Personuppgiftsbiträdesavtal',
+  },
+  { href: '/underbitraden', label: 'Underbiträden' },
 ]
 
 export function Footer() {
@@ -71,7 +77,7 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h3 className="mb-4 font-semibold">Juridiskt</h3>
+            <h3 className="mb-4 font-semibold">Juridiskt &amp; dataskydd</h3>
             <ul className="space-y-2">
               {legalLinks.map((link) => (
                 <li key={link.href}>
@@ -83,6 +89,21 @@ export function Footer() {
                   </Link>
                 </li>
               ))}
+              <li className="pt-1">
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                  onClick={() => {
+                    console.warn('[CONSENT_STUB_CLICKED]')
+                    toast('Cookie-bannern är inte aktiverad än', {
+                      description: 'Vi rullar ut samtyckeshantering inom kort.',
+                    })
+                  }}
+                >
+                  <Cookie className="h-3.5 w-3.5" />
+                  Cookieinställningar
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -118,10 +139,7 @@ export function Footer() {
             tillhandahåller AI-assisterad juridisk information. Detta är inte
             juridisk rådgivning. Kontakta en kvalificerad jurist för specifik
             vägledning.{' '}
-            <Link
-              href="/ansvarsfriskrivning"
-              className="underline hover:text-foreground"
-            >
+            <Link href="/villkor" className="underline hover:text-foreground">
               Läs mer
             </Link>
           </p>

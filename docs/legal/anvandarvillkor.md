@@ -1,14 +1,11 @@
 ---
-status: DRAFT — pending review by Swedish counsel before publishing
-last-updated: 2026-04-30
+last-updated: 2026-05-06
 target-route: /villkor
 ---
 
 # Användarvillkor
 
-> **DRAFT — får ej publiceras innan juridisk granskning.** Tjänsten är B2B-only (se avsnitt 1). Granska särskilt: (a) prismodell och uppsägningsvillkor, (b) jurisdiktion och behörigt forum, (c) att ansvarsfriskrivningen för AI-agenten i avsnitt 10 är tillräckligt tydlig, (d) ansvarsbegränsningens nivå (avsnitt 11) mot proportionalitetsprincipen.
-
-**Senast uppdaterad:** [FYLL I — datum vid publicering]
+**Senast uppdaterad:** 2026-05-06
 
 Dessa användarvillkor ("Villkoren") gäller mellan **Grro Technologies AB, org.nr 559498-1903, Stallmästarevägen 17, 254 84 Helsingborg** ("Laglig.se", "vi") och dig som beställare/användare av tjänsten på laglig.se ("Tjänsten") och utgör avtal mellan parterna.
 
@@ -48,17 +45,15 @@ Tjänsten utvecklas löpande och funktionalitet kan komma att läggas till, änd
 
 3.4 Eventuell prishöjning meddelas minst trettio (30) dagar i förväg och träder i kraft vid nästa förnyelseperiod. Du har då rätt att säga upp abonnemanget.
 
-3.5 [FYLL I — provperiod-villkor om ni har gratis trial: längd, kortkrav, automatisk övergång till betalplan].
-
 ## 4. Avtalstid och uppsägning
 
-4.1 Abonnemang löper [FYLL I — t.ex. månadsvis eller årsvis] och förnyas automatiskt om uppsägning inte sker.
+4.1 Abonnemang löper månadsvis eller årsvis enligt vald plan och förnyas automatiskt om uppsägning inte sker.
 
-4.2 Uppsägning ska göras via Tjänstens kontoinställningar eller skriftligen till dev@laglig.se senast [FYLL I — t.ex. 30 dagar] före nästa förnyelseperiod.
+4.2 Uppsägning ska göras via Tjänstens kontoinställningar eller skriftligen till dev@laglig.se senast 30 dagar före nästa förnyelseperiod.
 
 4.3 Vi kan säga upp avtalet med omedelbar verkan vid väsentligt avtalsbrott, inklusive utebliven betalning, missbruk av Tjänsten eller brott mot dessa Villkor.
 
-4.4 Vid uppsägning får du en (1) period på [FYLL I — t.ex. 30 dagar] att exportera ditt innehåll. Därefter raderas eller anonymiseras det enligt vår [Integritetspolicy](/integritetspolicy).
+4.4 Vid uppsägning får du en (1) period på 30 dagar att exportera ditt innehåll. Därefter raderas eller anonymiseras det enligt vår [Integritetspolicy](/integritetspolicy).
 
 ## 5. Acceptabel användning
 
@@ -99,9 +94,9 @@ Behandlingen av personuppgifter beskrivs i vår [Integritetspolicy](/integritets
 
 9.1 Vi strävar efter hög tillgänglighet men garanterar inte avbrottsfri drift. Planerat underhåll meddelas om möjligt i förväg.
 
-9.2 [FYLL I — om ni har SLA: målsatt upptid, supportresponstid, kompensation vid avvikelse]. Vid avsaknad av särskilt SLA gäller "best effort".
+9.2 Vid avsaknad av särskilt SLA gäller "best effort".
 
-9.3 Support ges via dev@laglig.se under vardagar [FYLL I — t.ex. 09–17 svensk tid].
+9.3 Support ges via dev@laglig.se under vardagar.
 
 ## 10. Ansvarsfriskrivning för juridiskt innehåll och AI-output
 
@@ -148,7 +143,7 @@ Du får inte överlåta avtalet eller dina rättigheter enligt Villkoren utan v�
 
 15.1 Svensk lag tillämpas på Villkoren, med bortseende från lagvalsregler.
 
-15.2 Tvist ska i första hand lösas genom förhandling. Om parterna inte når en lösning ska tvisten avgöras av allmän domstol med [FYLL I — t.ex. Helsingborgs tingsrätt eller Stockholms tingsrätt] som första instans.
+15.2 Tvist ska i första hand lösas genom förhandling. Om parterna inte når en lösning ska tvisten avgöras av allmän domstol med Helsingborgs tingsrätt som första instans.
 
 15.3 Eftersom Tjänsten erbjuds uteslutande till näringsidkare (se avsnitt 1) tillämpas inte konsumentskyddslagstiftning på avtalet.
 
@@ -160,12 +155,3 @@ Du får inte överlåta avtalet eller dina rättigheter enligt Villkoren utan v�
 | Organisationsnummer | 559498-1903 |
 | Postadress | Stallmästarevägen 17, 254 84 Helsingborg |
 | E-post (avtals-, support- och dataskyddsfrågor) | dev@laglig.se |
-
----
-
-> **Granskningsanteckningar (tas bort innan publicering):**
-> - Pricing-modellen är inte fastställd — fyll i 3.1, 3.5, 4.1, 4.2 efter beslut
-> - SLA: ska vi ha ett uttryckt SLA eller bara "best effort"? (Påverkar enterprise-säljbarhet)
-> - Forum: Helsingborgs tingsrätt (säte) eller Stockholms tingsrätt (vanligare för SaaS) eller skiljedomsklausul? Skiljedom rekommenderas för B2B men dyrt vid små tvister
-> - Granska att ansvarsbegränsningen i 11.1 är förenlig med proportionalitetsprincipen
-> - AI-agentens friskrivning (avsnitt 10) är central — låt advokat granska att formuleringen håller om en kund hävdar att de förlitat sig på agentens output

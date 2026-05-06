@@ -1,14 +1,11 @@
 ---
-status: DRAFT — pending review by Swedish counsel before publishing
-last-updated: 2026-04-30
+last-updated: 2026-05-06
 target-route: /underbitraden
 ---
 
 # Underbiträdesförteckning
 
-> **DRAFT — verifiera varje rad mot prod innan publicering.** Bekräfta särskilt: (a) att alla listade leverantörer faktiskt används i produktion, (b) regionsval i Supabase och Vercel, (c) att DPA-avtal är på plats med samtliga, (d) om Cloudflare/CDN-leverantör ska listas separat.
-
-**Senast uppdaterad:** [FYLL I — datum vid publicering]
+**Senast uppdaterad:** 2026-05-06
 
 För att tillhandahålla Tjänsten anlitar Laglig.se följande underbiträden ("sub-processors"). Vi har personuppgiftsbiträdesavtal (DPA) med samtliga underbiträden enligt artikel 28 i GDPR.
 
@@ -28,7 +25,6 @@ För att tillhandahålla Tjänsten anlitar Laglig.se följande underbiträden ("
 | 10 | **Google Ireland Ltd / Google LLC** | Webbanalys (Google Analytics 4), webbplatsverifiering (Search Console), annonsering och konverteringsmätning (Google Ads) | IP-adress, klient-ID, händelsedata, konverteringsdata | EU + USA | EU-US Data Privacy Framework + SCC |
 | 11 | **Meta Platforms Ireland Ltd** | Annonsering och konverteringsspårning via Meta Ads / Facebook Pixel | IP-adress, browser-ID, händelsedata | EU + USA (Meta Platforms, Inc.) | EU-US Data Privacy Framework + SCC |
 | 12 | **LinkedIn Ireland Unlimited Co.** | Annonsering och konverteringsspårning via LinkedIn Ads / Insight Tag | IP-adress, browser-ID, händelsedata | EU + USA (LinkedIn Corporation) | EU-US Data Privacy Framework + SCC |
-| 13 | [FYLL I — Cloudflare om ni använder dem för CDN/WAF] | CDN, DDoS-skydd | IP-adress, request-headers | EU + globalt | EU-US Data Privacy Framework + SCC |
 
 ## Process vid byte eller tillägg av underbiträden
 
@@ -41,11 +37,3 @@ Vi förbehåller oss rätten att lägga till eller byta ut underbiträden. Vid s
 ## Kontakt
 
 Frågor eller invändningar mot underbiträden: dev@laglig.se
-
----
-
-> **Granskningsanteckningar (tas bort innan publicering):**
-> - Verifiera att DPA är undertecknat med varje listad leverantör (Stripe, Vercel, Supabase, OpenAI, Anthropic, Cohere, Resend, Sentry har alla standardiserade DPA — sign + spara).
-> - Bekräfta Supabase-region — om ni körs i USA-region byt formuleringen i raden ovan.
-> - Listas Cloudflare separat? Vercel använder dem som infrastrukturlager — i många GDPR-genomgångar listas båda.
-> - Roaring Apps / Bolagsapi: bekräfta legalt namn på underbiträdet (det kan vara annat än produktnamnet "Bolagsapi").

@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next'
 import { prisma } from '@/lib/prisma'
 import { ContentType } from '@prisma/client'
+import { LEGAL_DOCS } from '@/components/features/legal/legal-doc-registry'
 
 // Map ContentType to URL path
 function getUrlPath(contentType: ContentType, slug: string): string | null {
@@ -82,6 +83,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.8,
     },
+    // Legal pages — read directly from the LEGAL_DOCS registry
+    ...LEGAL_DOCS.map((doc) => ({
+      url: `${baseUrl}/${doc.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly' as const,
+      priority: 0.4,
+    })),
   ]
 
   return [...staticPages, ...documentUrls]

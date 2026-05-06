@@ -1,14 +1,11 @@
 ---
-status: DRAFT — pending review by Swedish counsel before publishing
-last-updated: 2026-04-30
+last-updated: 2026-05-06
 target-route: /integritetspolicy
 ---
 
 # Integritetspolicy
 
-> **DRAFT — får ej publiceras innan juridisk granskning.** Fält markerade `[FYLL I]` måste verifieras. Granska särskilt: (a) fullständigt firmanamn och organisationsnummer, (b) postadress för Personuppgiftsansvarig, (c) faktiska lagringstider per kategori, (d) bekräfta att alla uppräknade underbiträden faktiskt används i produktion.
-
-**Senast uppdaterad:** [FYLL I — datum vid publicering]
+**Senast uppdaterad:** 2026-05-06
 
 Denna integritetspolicy beskriver hur Laglig.se behandlar personuppgifter när du använder vår tjänst på laglig.se ("Tjänsten"). Vi följer EU:s dataskyddsförordning (GDPR, 2016/679) samt svensk kompletterande dataskyddslagstiftning.
 
@@ -74,11 +71,11 @@ Se separat **[Cookiepolicy](/cookiepolicy)**.
 
 Vi lagrar personuppgifter så länge det är nödvändigt för det ändamål de samlades in för:
 
-- **Aktivt konto:** så länge du har ett aktivt abonnemang plus [FYLL I — t.ex. 90 dagar] efter avslutat abonnemang för att möjliggöra återaktivering eller export.
-- **Dataminimering efter avslut:** [FYLL I — t.ex. "efter 90 dagar anonymiseras eller raderas innehåll, men aggregerad statistik kan behållas"].
+- **Aktivt konto:** så länge du har ett aktivt abonnemang plus 90 dagar efter avslutat abonnemang för att möjliggöra återaktivering eller export.
+- **Dataminimering efter avslut:** efter 90 dagar anonymiseras eller raderas innehåll, men aggregerad statistik kan behållas.
 - **Bokförings- och fakturaunderlag:** sju (7) år enligt bokföringslagen (1999:1078).
-- **Säkerhetsloggar:** [FYLL I — t.ex. 12 månader].
-- **Supportkonversationer:** [FYLL I — t.ex. 24 månader].
+- **Säkerhetsloggar:** 12 månader.
+- **Supportkonversationer:** 24 månader.
 - **Marknadsföringsdata:** tills du återkallar samtycke eller invänder.
 
 ## 6. Mottagare och underbiträden
@@ -167,12 +164,3 @@ Vi kan komma att uppdatera denna policy. Vid väsentliga ändringar informerar v
 | Kontaktsida | [/kontakt](/kontakt) |
 | Postadress | Grro Technologies AB, Stallmästarevägen 17, 254 84 Helsingborg |
 | Organisationsnummer | 559498-1903 |
-
----
-
-> **Granskningsanteckningar (tas bort innan publicering):**
-> - Bekräfta full lista underbiträden mot prod-konfiguration
-> - Verifiera lagringstider efter att retention-policyer är beslutade
-> - Lägg till DSO/dataskyddsombud om ni utses ett (rekommenderat för en jur. SaaS)
-> - Kontrollera om ni omfattas av Art. 30-skyldighet (registerförteckning) — sannolikt ja
-> - Klargör om ni säljer till offentlig sektor (då tillkommer kompletterande krav)

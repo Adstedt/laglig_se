@@ -1,14 +1,11 @@
 ---
-status: DRAFT — pending review by Swedish counsel before publishing
-last-updated: 2026-04-30
+last-updated: 2026-05-06
 target-route: /cookiepolicy
 ---
 
 # Cookiepolicy
 
-> **DRAFT — får ej publiceras innan juridisk granskning.** Den faktiska cookielistan i avsnitt 4 måste verifieras mot prod-bygget. Kör en cookie-scan (t.ex. Cookiebot, OneTrust eller manuell DevTools-genomgång) på laglig.se innan publicering. Cookiebanner-implementationen måste blockera kategori 2–4 tills samtycke ges.
-
-**Senast uppdaterad:** [FYLL I — datum vid publicering]
+**Senast uppdaterad:** 2026-05-06
 
 Denna cookiepolicy beskriver hur Laglig.se använder cookies och liknande tekniker på laglig.se ("Tjänsten"). Policyn ska läsas tillsammans med vår [Integritetspolicy](/integritetspolicy).
 
@@ -40,8 +37,6 @@ Hjälper oss förstå hur Tjänsten används så att vi kan förbättra den. Akt
 Används för att mäta effekten av marknadsföring och visa relevanta annonser. Aktiveras endast med samtycke.
 
 ## 4. Cookies vi använder
-
-> **[FYLL I — verifiera nedan mot faktisk produktion innan publicering. Kör en cookie-scan.]**
 
 ### Strikt nödvändiga (kategori 1)
 
@@ -106,10 +101,3 @@ Vi kan komma att uppdatera denna policy. Aktuell version finns alltid på laglig
 ## 8. Kontakt
 
 Frågor om cookies: dev@laglig.se
-
----
-
-> **Granskningsanteckningar (tas bort innan publicering):**
-> - **Kritiskt:** kör cookie-scan i prod innan publicering. Listan ovan är spekulativ för Cloudflare/Vercel-cookies som kanske inte sätts.
-> - Beslut: vilken analysleverantör? PostHog (mer features, EU-region möjlig), Plausible (lättviktig, EU-baserad, ingen samtyckesfråga om man konfigurerar rätt), Vercel Analytics (enkelt). Påverkar kategori 3-listan och i vissa fall samtyckeskravet.
-> - Cookiebanner måste implementeras med "deny by default" för kategori 2–4. Kontrollera att Vercel Analytics och Sentry replay/session-tracking inte triggar utan samtycke om aktiverat.

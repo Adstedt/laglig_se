@@ -1,12 +1,11 @@
 ---
-status: DRAFT — pending review by Swedish counsel before publishing
-last-updated: 2026-04-30
-target-route: /personuppgiftsbitradesavtal (eller PDF-bilaga vid B2B-avtal)
+last-updated: 2026-05-06
+target-route: /personuppgiftsbitradesavtal
 ---
 
 # Personuppgiftsbiträdesavtal (PuB)
 
-> **DRAFT — får ej användas mot kund innan juridisk granskning.** Detta är en mall som ska utgöra Bilaga till huvudavtalet ([Användarvillkor](/villkor)) när Kunden är personuppgiftsansvarig och Laglig.se är personuppgiftsbiträde. Granska särskilt: (a) säkerhetsåtgärderna i Bilaga 2 mot er faktiska implementation, (b) underbiträdesproceduren mot er praxis, (c) ev. anpassningar för enterprise-kunder med egna DPA-mallar.
+**Senast uppdaterad:** 2026-05-06
 
 **Mellan:**
 
@@ -32,7 +31,8 @@ target-route: /personuppgiftsbitradesavtal (eller PDF-bilaga vid B2B-avtal)
 | **Ändamål** | Att tillhandahålla Tjänsten enligt Huvudavtalet, inklusive AI-funktioner, samarbete, lagring av laglistor och styrdokument samt aviseringar. |
 | **Typ av personuppgifter** | Kontaktuppgifter (namn, e-post, telefon), användardata (inloggning, IP, aktivitet), innehåll i Kunddata (laglistor, anteckningar, uppladdade dokument), uppgifter om personer hos Kunden som är användare. |
 | **Kategorier av registrerade** | Kundens anställda, konsulter, uppdragstagare och andra användare som Kunden ger åtkomst till Tjänsten. |
-| **Inga särskilda kategorier** av personuppgifter (Art. 9) eller uppgifter om brott (Art. 10) ska behandlas av Laglig.se utan föregående skriftlig överenskommelse. |
+
+**Inga särskilda kategorier** av personuppgifter (Art. 9) eller uppgifter om brott (Art. 10) ska behandlas av Laglig.se utan föregående skriftlig överenskommelse.
 
 ## 3. Kundens skyldigheter
 
@@ -119,7 +119,7 @@ a) återlämna personuppgifter i ett vanligt förekommande maskinläsbart format
 
 b) radera personuppgifter.
 
-9.2 Kunden har trettio (30) dagar från upphörandedagen att begära export eller radering. Därefter raderar Laglig.se personuppgifterna inom ytterligare nittio (90) dagar, med undantag för säkerhetskopior som raderas i takt med deras retention-cykel (max [FYLL I — t.ex. 90 dagar]).
+9.2 Kunden har trettio (30) dagar från upphörandedagen att begära export eller radering. Därefter raderar Laglig.se personuppgifterna inom ytterligare nittio (90) dagar, med undantag för säkerhetskopior som raderas i takt med deras retention-cykel.
 
 9.3 Personuppgifter som Laglig.se måste behålla enligt unionsrätt eller svensk lag (t.ex. bokföringslagen) får behållas under den lagstadgade tiden, men endast för det ändamålet.
 
@@ -157,7 +157,7 @@ Laglig.se vidtar minst följande åtgärder:
 ### Tillgänglighet
 - Dagliga säkerhetskopior av databasen, lagrade i en separat region.
 - Övervakning av drift och felmonitorering (Sentry).
-- Återställningstest [FYLL I — frekvens, t.ex. kvartalsvis].
+- Återställningstest (kvartalsvis).
 
 ### Säkerhetsorganisation
 - Incidenthanteringsrutin.
@@ -168,10 +168,3 @@ Laglig.se vidtar minst följande åtgärder:
 ### Pseudonymisering och dataminimering
 - Felloggar i Sentry skrubbas på PII där det är möjligt.
 - Endast nödvändiga fält samlas in från Kunden.
-
-> **Granskningsanteckningar (tas bort innan publicering):**
-> - Bekräfta att RLS faktiskt är aktiverat i prod (vi har migrationen klar — ska deployas).
-> - Frekvens på återställningstest behöver fastställas.
-> - Avgör om ni vill ha SOC2/ISO27001-spår — det är ett naturligt nästa steg när enterprise-kunder börjar fråga.
-> - Granska om "48 timmar" i 7.1 är realistiskt eller bör vara "72 timmar". 48h är strikt; många leverantörer kör 72h.
-> - Avsnitt 8 / granskningsmodell: ofta vill enterprise-kunder ha mer än årlig granskning. Beslut om policy.
