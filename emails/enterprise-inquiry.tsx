@@ -67,7 +67,7 @@ export function EnterpriseInquiryEmail({
       <EmailHeading>Ny Enterprise-intresseanmälan</EmailHeading>
       <EmailBody>
         <strong>{workspaceName}</strong> har skapat ett konto via onboarding och
-        valt Enterprise. Kontot körs på Team-nivå under provperioden (14 dagar)
+        valt Enterprise. Kontot körs på Team-nivå under provperioden (15 dagar)
         tills ni har stämt av Enterprise-villkoren.
       </EmailBody>
 

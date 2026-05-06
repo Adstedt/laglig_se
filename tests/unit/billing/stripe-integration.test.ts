@@ -77,7 +77,14 @@ vi.mock('next/headers', () => ({
 }))
 
 // TEST-001 needs requirePermissionWithContext for the Checkout endpoint.
+// Story 5.13 swapped the checkout/portal/invoices endpoints to
+// requirePermissionForBilling (bypass version) — mock that too so the
+// pre-existing checkout tests keep passing.
 const mockRequirePermissionWithContext = vi.fn().mockResolvedValue({
+  granted: true,
+  context: { workspaceId: 'ws_under_test', role: 'OWNER' },
+})
+const mockRequirePermissionForBilling = vi.fn().mockResolvedValue({
   granted: true,
   context: { workspaceId: 'ws_under_test', role: 'OWNER' },
 })
@@ -89,6 +96,8 @@ vi.mock('@/lib/api/require-permission', async () => {
     ...actual,
     requirePermissionWithContext: (...args: unknown[]) =>
       mockRequirePermissionWithContext(...args),
+    requirePermissionForBilling: (...args: unknown[]) =>
+      mockRequirePermissionForBilling(...args),
   }
 })
 
@@ -506,7 +515,7 @@ describe('Checkout endpoint', () => {
 // ---------- TEST-002: workspace-context grace-period block ---------------
 
 describe('workspace-context grace-period block', () => {
-  it('throws PAYMENT_PAST_DUE when payment_grace_period_ends_at is past', async () => {
+  it('redirects to /settings?tab=billing&reason=past_due when payment_grace_period_ends_at is past', async () => {
     mockUser.findUnique.mockResolvedValueOnce({
       id: 'user_owner',
       email: 'owner@example.com',
@@ -527,17 +536,17 @@ describe('workspace-context grace-period block', () => {
       },
     })
 
-    const { getWorkspaceContextUncached, WorkspaceAccessError } = await import(
+    // Story 5.13: gate now calls Next.js redirect() instead of throwing
+    // WorkspaceAccessError — the page-level direct callers were racing the
+    // layout-level catch in concurrent rendering. NEXT_REDIRECT is the
+    // framework-level signal that gets intercepted to emit a 307.
+    const { getWorkspaceContextUncached } = await import(
       '@/lib/auth/workspace-context'
     )
     await expect(getWorkspaceContextUncached()).rejects.toMatchObject({
-      name: 'WorkspaceAccessError',
-      code: 'PAYMENT_PAST_DUE',
+      message: 'NEXT_REDIRECT',
+      digest: expect.stringContaining('/settings?tab=billing&reason=past_due'),
     })
-    // Belt-and-suspenders: also assert the error class identity.
-    await expect(getWorkspaceContextUncached()).rejects.toBeInstanceOf(
-      WorkspaceAccessError
-    )
   })
 
   it('returns context normally when payment_grace_period_ends_at is in the future', async () => {

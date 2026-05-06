@@ -54,7 +54,7 @@ export function PricingSection() {
             Enkla, transparenta priser
           </h2>
           <p className="text-lg text-muted-foreground">
-            14 dagars gratis provperiod. Inget betalkort krävs.
+            15 dagars gratis provperiod. Inget betalkort krävs.
           </p>
         </div>
 

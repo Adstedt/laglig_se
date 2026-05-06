@@ -52,7 +52,7 @@ export function CtaSection() {
 
           {/* Trust line */}
           <p className="mt-6 text-sm opacity-70">
-            Gratis i 14 dagar · Ingen bindning · Inget kort
+            Gratis i 15 dagar · Ingen bindning · Inget kort
           </p>
         </div>
       </div>

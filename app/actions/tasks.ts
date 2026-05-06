@@ -8,6 +8,7 @@
  */
 
 import { revalidatePath } from 'next/cache'
+import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import { prisma } from '@/lib/prisma'
 import { withWorkspace } from '@/lib/auth/workspace-context'
 import { z } from 'zod'
@@ -626,6 +627,12 @@ export async function getTaskColumns(): Promise<
       return { success: true, data: existingColumns as TaskColumnWithCount[] }
     })
   } catch (error) {
+    // Story 5.13: Next.js redirect() throws NEXT_REDIRECT — must propagate
+    // so the framework can intercept and emit the 307. Wrapping it in
+    // success/false breaks the redirect chain.
+    if (isRedirectError(error)) {
+      throw error
+    }
     console.error('getTaskColumns error:', error)
     return {
       success: false,

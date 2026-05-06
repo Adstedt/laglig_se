@@ -630,6 +630,40 @@ export function formatActivity(input: FormatInput): SentencePart[] {
         text(' är klar'),
       ]
 
+    // ----------------- Trial expiration lifecycle (Story 5.13) -----------------
+    case 'trial_expired':
+      return [text('Provperioden för '), primary, text(' gick ut')]
+
+    case 'trial_paused':
+      return [
+        text('Workspace '),
+        primary,
+        text(' pausades efter 30 dagar utan aktivering'),
+      ]
+
+    case 'trial_workspace_deleted':
+      return [
+        text('Workspace '),
+        primary,
+        text(' markerades för radering efter 60 dagar utan aktivering'),
+      ]
+
+    case 'trial_converted':
+      return [
+        u,
+        text(' aktiverade prenumeration för '),
+        primary,
+        text(' — provperiod konverterad'),
+      ]
+
+    case 'workspace_reactivated_from_trial_pause':
+      return [
+        u,
+        text(' återaktiverade '),
+        primary,
+        text(' efter trial-pause via Stripe Checkout'),
+      ]
+
     // ----------------- Fallback -----------------
     default:
       return [

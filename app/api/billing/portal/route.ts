@@ -6,13 +6,14 @@
  * the surface for payment-method management, plan changes, invoice download.
  */
 import { NextResponse } from 'next/server'
-import { requirePermissionWithContext } from '@/lib/api/require-permission'
+import { requirePermissionForBilling } from '@/lib/api/require-permission'
 import { prisma } from '@/lib/prisma'
 import { env } from '@/lib/env'
 import { stripe } from '@/lib/stripe/config'
 
 export async function POST() {
-  const result = await requirePermissionWithContext('workspace:billing')
+  // Story 5.13: bypass billing gates — Portal must be reachable for gated users.
+  const result = await requirePermissionForBilling('workspace:billing')
   if (!result.granted) return result.response
 
   const workspace = await prisma.workspace.findUniqueOrThrow({

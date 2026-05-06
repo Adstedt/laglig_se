@@ -6,7 +6,7 @@
  */
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { requirePermissionWithContext } from '@/lib/api/require-permission'
+import { requirePermissionForBilling } from '@/lib/api/require-permission'
 import { prisma } from '@/lib/prisma'
 import { env } from '@/lib/env'
 import {
@@ -21,7 +21,9 @@ const TierSchema = z.object({
 })
 
 export async function POST(request: Request) {
-  const result = await requirePermissionWithContext('workspace:billing')
+  // Story 5.13: bypass billing gates so trial-expired / past-due users CAN
+  // reach Checkout to convert/recover. Only the billing endpoints opt in.
+  const result = await requirePermissionForBilling('workspace:billing')
   if (!result.granted) return result.response
 
   let parsed: z.infer<typeof TierSchema>

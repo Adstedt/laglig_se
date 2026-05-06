@@ -21,7 +21,7 @@ const faqs = [
   {
     question: 'Kan jag testa gratis?',
     answer:
-      'Ja. Du får 14 dagars gratis provperiod med full tillgång utan att ange betalkort.',
+      'Ja. Du får 15 dagars gratis provperiod med full tillgång utan att ange betalkort.',
   },
   {
     question: 'Finns det bindningstid?',

@@ -126,6 +126,13 @@ model Workspace {
   current_period_end           DateTime?
   payment_grace_period_ends_at DateTime?
 
+  // Story 5.13: idempotency lock for the daily expire-trials cron — prevents
+  // re-sending the trial-ended email if the cron retries or runs twice.
+  // Cleared implicitly: once trial converts (subscription_tier flips to
+  // SOLO/TEAM and trial_ends_at goes NULL), the cron's WHERE clause stops
+  // matching this row regardless of the column's value.
+  trial_expired_notified_at DateTime?
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 

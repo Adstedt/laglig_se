@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { UsageWidget } from './usage-widget'
+import { TrialExpiredPanel } from './trial-expired-panel'
 import {
   Table,
   TableBody,
@@ -130,6 +131,11 @@ interface BillingDashboardProps {
   }
   showPastDueBanner: boolean
   showCheckoutSuccess: boolean
+  // Story 5.13: when true, renders the trial-expired conversion panel above
+  // the regular tile grid. Driven by ?reason=trial_expired URL param.
+  showTrialExpiredPanel?: boolean
+  trialPickedTier?: Tier | null
+  enterpriseInquiryAt?: string | null
 }
 
 const formatDate = (iso: string) =>
@@ -146,6 +152,9 @@ export function BillingDashboard({
   workspace,
   showPastDueBanner,
   showCheckoutSuccess,
+  showTrialExpiredPanel = false,
+  trialPickedTier = null,
+  enterpriseInquiryAt = null,
 }: BillingDashboardProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -212,6 +221,21 @@ export function BillingDashboard({
 
   return (
     <div className="space-y-6">
+      {/* Story 5.13: trial-expired conversion panel takes precedence over the
+          standard tile grid. Renders above past-due banner because trial
+          expiry implies the workspace was never paying — past-due wouldn't
+          apply yet. */}
+      {showTrialExpiredPanel && (
+        <TrialExpiredPanel
+          pickedTier={
+            trialPickedTier && trialPickedTier !== 'TRIAL'
+              ? (trialPickedTier as 'SOLO' | 'TEAM' | 'ENTERPRISE')
+              : null
+          }
+          hasEnterpriseInquiry={enterpriseInquiryAt !== null}
+        />
+      )}
+
       {showPastDueBanner && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -302,96 +326,105 @@ export function BillingDashboard({
       </Card>
 
       {/* Story 5.5c: Usage widget — tokens, storage, seats */}
-      <UsageWidget />
+      {/* Story 5.13: hide when trial-expired conversion panel is shown —
+          (a) the widget's data fetch is gated and would render a "Kunde inte
+          hämta" error; (b) the conversion panel above is the only action
+          surface that matters until the user converts. */}
+      {!showTrialExpiredPanel && <UsageWidget />}
 
       {/* Plan tiles — upgrade flows */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
-            {isTrial ? 'Välj nivå' : 'Byt nivå'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {PAID_TIERS.map(({ tier, price, description }) => {
-              const isCurrent = workspace.subscriptionTier === tier
-              const isEnterprise = tier === 'ENTERPRISE'
-              // BILLING-003: when an active sub exists, ALL plan changes (up
-              // or down) must go through Portal — Checkout would create a 2nd
-              // sub. TIER_RANK still drives the label so users see whether
-              // the action is an upgrade or a downgrade.
-              const currentRank = TIER_RANK[workspace.subscriptionTier]
-              const tierRank = TIER_RANK[tier]
-              const isUpgrade = tierRank > currentRank
-              const portalLabel = isUpgrade
-                ? 'Uppgradera via portal'
-                : 'Nedgradera via portal'
-              return (
-                <div
-                  key={tier}
-                  className="rounded-lg border p-4 flex flex-col gap-2"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold">{TIER_LABELS[tier]}</span>
-                    {isCurrent && (
-                      <Badge variant="secondary" className="text-xs">
-                        Nuvarande
-                      </Badge>
+      {/* Story 5.13: hide when conversion panel is shown — the panel above
+          IS the upgrade flow, with picked-tier emphasis + tighter copy.
+          Showing both creates duplicate UI. */}
+      {!showTrialExpiredPanel && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              {isTrial ? 'Välj nivå' : 'Byt nivå'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {PAID_TIERS.map(({ tier, price, description }) => {
+                const isCurrent = workspace.subscriptionTier === tier
+                const isEnterprise = tier === 'ENTERPRISE'
+                // BILLING-003: when an active sub exists, ALL plan changes (up
+                // or down) must go through Portal — Checkout would create a 2nd
+                // sub. TIER_RANK still drives the label so users see whether
+                // the action is an upgrade or a downgrade.
+                const currentRank = TIER_RANK[workspace.subscriptionTier]
+                const tierRank = TIER_RANK[tier]
+                const isUpgrade = tierRank > currentRank
+                const portalLabel = isUpgrade
+                  ? 'Uppgradera via portal'
+                  : 'Nedgradera via portal'
+                return (
+                  <div
+                    key={tier}
+                    className="rounded-lg border p-4 flex flex-col gap-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold">{TIER_LABELS[tier]}</span>
+                      {isCurrent && (
+                        <Badge variant="secondary" className="text-xs">
+                          Nuvarande
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {description}
+                    </div>
+                    <div className="text-lg font-medium">{price}</div>
+                    {isCurrent ? (
+                      <Button size="sm" variant="outline" disabled>
+                        Aktiv
+                      </Button>
+                    ) : isEnterprise ? (
+                      <Button asChild size="sm" variant="default">
+                        <a
+                          href={ENTERPRISE_CONTACT_URL}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                        >
+                          Boka samtal
+                          <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                        </a>
+                      </Button>
+                    ) : hasActiveSub ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={isPending || !hasStripeCustomer}
+                        onClick={handleManagePortal}
+                        title="Planbyten hanteras via Stripe-portalen"
+                      >
+                        {portalLabel}
+                        <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="default"
+                        disabled={isPending}
+                        onClick={() => handleUpgrade(tier)}
+                      >
+                        {isTrial ? 'Välj nivå' : 'Uppgradera'}
+                      </Button>
                     )}
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {description}
-                  </div>
-                  <div className="text-lg font-medium">{price}</div>
-                  {isCurrent ? (
-                    <Button size="sm" variant="outline" disabled>
-                      Aktiv
-                    </Button>
-                  ) : isEnterprise ? (
-                    <Button asChild size="sm" variant="default">
-                      <a
-                        href={ENTERPRISE_CONTACT_URL}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                      >
-                        Boka samtal
-                        <ExternalLink className="ml-2 h-3.5 w-3.5" />
-                      </a>
-                    </Button>
-                  ) : hasActiveSub ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={isPending || !hasStripeCustomer}
-                      onClick={handleManagePortal}
-                      title="Planbyten hanteras via Stripe-portalen"
-                    >
-                      {portalLabel}
-                      <ExternalLink className="ml-2 h-3.5 w-3.5" />
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="default"
-                      disabled={isPending}
-                      onClick={() => handleUpgrade(tier)}
-                    >
-                      {isTrial ? 'Välj nivå' : 'Uppgradera'}
-                    </Button>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-          {hasActiveSub && (
-            <p className="mt-4 text-xs text-muted-foreground">
-              Planbyten, paus och uppsägning hanteras via Stripe&apos;s
-              kundportal — där sker ändringen direkt på din befintliga
-              prenumeration med korrekt proration.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+                )
+              })}
+            </div>
+            {hasActiveSub && (
+              <p className="mt-4 text-xs text-muted-foreground">
+                Planbyten, paus och uppsägning hanteras via Stripe&apos;s
+                kundportal — där sker ändringen direkt på din befintliga
+                prenumeration med korrekt proration.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Invoices */}
       {hasStripeCustomer && (

@@ -39,6 +39,7 @@
 import { NextResponse } from 'next/server'
 import {
   getWorkspaceContext,
+  getWorkspaceContextBypassBillingGates,
   WorkspaceAccessError,
   type WorkspaceContext,
 } from '@/lib/auth/workspace-context'
@@ -94,12 +95,21 @@ export async function requirePermission(
     if (error instanceof WorkspaceAccessError) {
       // Story 5.4: PAYMENT_PAST_DUE → 402 with a redirect hint so client
       // wrappers can route the user to /settings/billing?reason=past_due.
+      // Story 5.13: TRIAL_EXPIRED → 402 with redirect to the conversion
+      // page where the user can complete Stripe Checkout for their picked
+      // tier.
       const statusCode =
         error.code === 'UNAUTHORIZED'
           ? 401
-          : error.code === 'PAYMENT_PAST_DUE'
+          : error.code === 'PAYMENT_PAST_DUE' || error.code === 'TRIAL_EXPIRED'
             ? 402
             : 403
+      const redirectTo =
+        error.code === 'PAYMENT_PAST_DUE'
+          ? '/settings/billing?reason=past_due'
+          : error.code === 'TRIAL_EXPIRED'
+            ? '/settings/billing?reason=trial_expired'
+            : null
       return NextResponse.json(
         {
           error: error.message,
@@ -109,10 +119,10 @@ export async function requirePermission(
               ? 'Autentisering krävs'
               : error.code === 'PAYMENT_PAST_DUE'
                 ? 'Betalning krävs'
-                : 'Åtkomst nekad',
-          ...(error.code === 'PAYMENT_PAST_DUE'
-            ? { redirectTo: '/settings/billing?reason=past_due' }
-            : {}),
+                : error.code === 'TRIAL_EXPIRED'
+                  ? 'Provperiod slut'
+                  : 'Åtkomst nekad',
+          ...(redirectTo ? { redirectTo } : {}),
         },
         { status: statusCode }
       )
@@ -159,12 +169,21 @@ export async function requireAnyPermission(
     if (error instanceof WorkspaceAccessError) {
       // Story 5.4: PAYMENT_PAST_DUE → 402 with a redirect hint so client
       // wrappers can route the user to /settings/billing?reason=past_due.
+      // Story 5.13: TRIAL_EXPIRED → 402 with redirect to the conversion
+      // page where the user can complete Stripe Checkout for their picked
+      // tier.
       const statusCode =
         error.code === 'UNAUTHORIZED'
           ? 401
-          : error.code === 'PAYMENT_PAST_DUE'
+          : error.code === 'PAYMENT_PAST_DUE' || error.code === 'TRIAL_EXPIRED'
             ? 402
             : 403
+      const redirectTo =
+        error.code === 'PAYMENT_PAST_DUE'
+          ? '/settings/billing?reason=past_due'
+          : error.code === 'TRIAL_EXPIRED'
+            ? '/settings/billing?reason=trial_expired'
+            : null
       return NextResponse.json(
         {
           error: error.message,
@@ -174,10 +193,10 @@ export async function requireAnyPermission(
               ? 'Autentisering krävs'
               : error.code === 'PAYMENT_PAST_DUE'
                 ? 'Betalning krävs'
-                : 'Åtkomst nekad',
-          ...(error.code === 'PAYMENT_PAST_DUE'
-            ? { redirectTo: '/settings/billing?reason=past_due' }
-            : {}),
+                : error.code === 'TRIAL_EXPIRED'
+                  ? 'Provperiod slut'
+                  : 'Åtkomst nekad',
+          ...(redirectTo ? { redirectTo } : {}),
         },
         { status: statusCode }
       )
@@ -227,12 +246,19 @@ export async function requirePermissionWithContext(
   } catch (error) {
     if (error instanceof WorkspaceAccessError) {
       // Story 5.4: PAYMENT_PAST_DUE → 402 with a redirect hint.
+      // Story 5.13: TRIAL_EXPIRED → 402 with redirect to conversion page.
       const statusCode =
         error.code === 'UNAUTHORIZED'
           ? 401
-          : error.code === 'PAYMENT_PAST_DUE'
+          : error.code === 'PAYMENT_PAST_DUE' || error.code === 'TRIAL_EXPIRED'
             ? 402
             : 403
+      const redirectTo =
+        error.code === 'PAYMENT_PAST_DUE'
+          ? '/settings/billing?reason=past_due'
+          : error.code === 'TRIAL_EXPIRED'
+            ? '/settings/billing?reason=trial_expired'
+            : null
       return {
         granted: false,
         response: NextResponse.json(
@@ -244,10 +270,66 @@ export async function requirePermissionWithContext(
                 ? 'Autentisering krävs'
                 : error.code === 'PAYMENT_PAST_DUE'
                   ? 'Betalning krävs'
-                  : 'Åtkomst nekad',
-            ...(error.code === 'PAYMENT_PAST_DUE'
-              ? { redirectTo: '/settings/billing?reason=past_due' }
-              : {}),
+                  : error.code === 'TRIAL_EXPIRED'
+                    ? 'Provperiod slut'
+                    : 'Åtkomst nekad',
+            ...(redirectTo ? { redirectTo } : {}),
+          },
+          { status: statusCode }
+        ),
+      }
+    }
+    throw error
+  }
+}
+
+/**
+ * Story 5.13: permission check for billing-conversion endpoints.
+ *
+ * Identical to requirePermissionWithContext but bypasses the billing gates
+ * (PAYMENT_PAST_DUE + TRIAL_EXPIRED). Used by /api/billing/checkout, portal,
+ * invoices — these MUST be reachable when the workspace is gated, otherwise
+ * the user has no path to convert and recover access.
+ */
+export async function requirePermissionForBilling(
+  ...permissions: Permission[]
+): Promise<PermissionCheckResultWithContext> {
+  try {
+    const context = await getWorkspaceContextBypassBillingGates()
+
+    for (const permission of permissions) {
+      if (!hasPermission(context.role, permission)) {
+        return {
+          granted: false,
+          response: NextResponse.json(
+            {
+              error: 'Åtkomst nekad',
+              message: 'Du har inte behörighet att utföra denna åtgärd',
+              required: permission,
+              userRole: context.role,
+            },
+            { status: 403 }
+          ),
+        }
+      }
+    }
+
+    return { granted: true, context }
+  } catch (error) {
+    if (error instanceof WorkspaceAccessError) {
+      // Bypass version still surfaces UNAUTHORIZED + ACCESS_DENIED — only
+      // the billing gates are skipped, not session/membership checks.
+      const statusCode = error.code === 'UNAUTHORIZED' ? 401 : 403
+      return {
+        granted: false,
+        response: NextResponse.json(
+          {
+            error: error.message,
+            code: error.code,
+            message:
+              error.code === 'UNAUTHORIZED'
+                ? 'Autentisering krävs'
+                : 'Åtkomst nekad',
           },
           { status: statusCode }
         ),

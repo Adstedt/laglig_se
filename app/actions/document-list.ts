@@ -8,6 +8,7 @@
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { withWorkspace } from '@/lib/auth/workspace-context'
+import { passthroughRedirect } from '@/lib/auth/passthrough-redirect'
 import {
   CreateDocumentListSchema,
   UpdateDocumentListSchema,
@@ -188,6 +189,7 @@ export async function getDocumentLists(): Promise<
       }
     }, 'read')
   } catch (error) {
+    passthroughRedirect(error)
     console.error('Error fetching document lists:', error)
     return { success: false, error: 'Kunde inte hämta dokumentlistor' }
   }
@@ -1181,6 +1183,7 @@ export async function getOrCreateDefaultList(): Promise<
       }
     }, 'read')
   } catch (error) {
+    passthroughRedirect(error)
     console.error('Error getting default list:', error)
     return { success: false, error: 'Kunde inte hämta standardlista' }
   }

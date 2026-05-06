@@ -78,7 +78,7 @@ describe('CreateWorkspaceModal', () => {
       )
 
       expect(
-        screen.getByText(/14 dagars kostnadsfri provperiod/i)
+        screen.getByText(/15 dagars kostnadsfri provperiod/i)
       ).toBeInTheDocument()
     })
   })

@@ -16,6 +16,7 @@
  *   - invoice.payment_succeeded      → clear any past-due grace
  */
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import type Stripe from 'stripe'
 import * as Sentry from '@sentry/nextjs'
 import { stripe, tierForPriceId } from '@/lib/stripe/config'
@@ -23,7 +24,28 @@ import { prisma } from '@/lib/prisma'
 import { env } from '@/lib/env'
 import { sendEmail } from '@/lib/email/email-service'
 import { PaymentFailedEmail } from '@/emails/payment-failed'
+import { logActivity } from '@/lib/services/activity-logger'
+import { invalidateWorkspaceAuthContextCache } from '@/lib/auth/workspace-context'
 import { invalidateSeatCache } from '@/lib/usage/seat-cache'
+
+/**
+ * Story 5.13: best-effort cache invalidation after a webhook updates DB.
+ * Both calls (Redis auth-context + Next.js data cache) MUST NOT crash a
+ * successful webhook handler — Stripe will retry on non-200 responses,
+ * which would fire the same DB updates again. Swallow + log.
+ */
+async function bestEffortInvalidate(workspaceId: string): Promise<void> {
+  try {
+    await invalidateWorkspaceAuthContextCache(workspaceId)
+  } catch (err) {
+    console.error('[STRIPE_WEBHOOK_CACHE_INVALIDATE_FAIL]', workspaceId, err)
+  }
+  try {
+    revalidatePath('/settings')
+  } catch (err) {
+    console.error('[STRIPE_WEBHOOK_REVALIDATE_PATH_FAIL]', err)
+  }
+}
 
 // Stripe needs the raw body bytes to verify the signature — Next.js parses
 // JSON by default, but we read text() ourselves so the bytes match what
@@ -104,6 +126,28 @@ export async function POST(request: Request) {
           | undefined
         if (!workspaceId || !tier) break
 
+        // Story 5.13 (AC 19): if this conversion is rescuing a workspace
+        // that was previously paused due to trial expiry (Day 45+ cron),
+        // flip status back to ACTIVE + clear paused_at in the same update.
+        // Discriminator: status=PAUSED + paused_at != null + tier=TRIAL.
+        // Other PAUSED reasons (billing failure, explicit user-pause on a
+        // paid plan) keep their PAUSED state — only trial-expiry-pause is
+        // auto-recovered here.
+        const prior = await prisma.workspace.findUnique({
+          where: { id: workspaceId },
+          select: {
+            owner_id: true,
+            status: true,
+            paused_at: true,
+            subscription_tier: true,
+          },
+        })
+
+        const isTrialPauseRecovery =
+          prior?.status === 'PAUSED' &&
+          prior.paused_at !== null &&
+          prior.subscription_tier === 'TRIAL'
+
         await prisma.workspace.update({
           where: { id: workspaceId },
           data: {
@@ -114,8 +158,48 @@ export async function POST(request: Request) {
                 : (session.subscription?.id ?? null),
             subscription_status: 'active',
             trial_ends_at: null,
+            ...(isTrialPauseRecovery && {
+              status: 'ACTIVE',
+              paused_at: null,
+            }),
           },
         })
+
+        // Story 5.13: ActivityLog write for conversion. Cron-fired writes
+        // pass workspace.owner_id as actor since webhooks have no session.
+        if (prior) {
+          try {
+            await logActivity(
+              workspaceId,
+              prior.owner_id,
+              'workspace',
+              workspaceId,
+              'trial_converted',
+              null,
+              { tier }
+            )
+            if (isTrialPauseRecovery) {
+              await logActivity(
+                workspaceId,
+                prior.owner_id,
+                'workspace',
+                workspaceId,
+                'workspace_reactivated_from_trial_pause',
+                { status: 'PAUSED' },
+                { status: 'ACTIVE' }
+              )
+            }
+          } catch (err) {
+            // Activity logging is best-effort — do not block webhook ack.
+            console.error('[STRIPE_WEBHOOK_ACTIVITY_LOG_FAIL]', err)
+          }
+        }
+
+        // Story 5.13: invalidate the auth-context Redis cache so the gate
+        // lifts on the user's NEXT page load instead of waiting up to 5 min
+        // for the cached entry to expire. Without this the user keeps seeing
+        // the conversion panel + paused banner even though they've paid.
+        await bestEffortInvalidate(workspaceId)
         break
       }
 
@@ -205,6 +289,11 @@ export async function POST(request: Request) {
         // purchases / removals propagate immediately to the chat-route
         // quota check rather than waiting up to 5 minutes for the TTL.
         await invalidateSeatCache(workspaceId)
+
+        // Story 5.13: also invalidate auth-context cache so tier upgrade /
+        // downgrade via Customer Portal propagates immediately to gate
+        // checks (5-min TTL would otherwise leave stale role/state).
+        await bestEffortInvalidate(workspaceId)
         break
       }
 
@@ -221,6 +310,10 @@ export async function POST(request: Request) {
             subscription_status: 'canceled',
           },
         })
+
+        // Story 5.13: workspace just got paused — flush cache so the
+        // PausedWorkspaceBanner appears immediately instead of after 5 min.
+        await bestEffortInvalidate(workspaceId)
         break
       }
 
@@ -259,6 +352,11 @@ export async function POST(request: Request) {
           }),
           from: 'no-reply',
         })
+
+        // Story 5.13: grace deadline set — flush cache so the PAYMENT_PAST_DUE
+        // gate evaluates against fresh state on the next page load (relevant
+        // when grace expires while a session is active).
+        await bestEffortInvalidate(workspace.id)
         break
       }
 
@@ -282,6 +380,10 @@ export async function POST(request: Request) {
             subscription_status: 'active',
           },
         })
+
+        // Story 5.13: payment recovered — flush cache so PAYMENT_PAST_DUE
+        // gate stops firing immediately instead of on next 5-min TTL expiry.
+        await bestEffortInvalidate(workspace.id)
         break
       }
     }

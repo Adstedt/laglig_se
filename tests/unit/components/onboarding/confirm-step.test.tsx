@@ -26,10 +26,10 @@ const baseProps = {
 }
 
 describe('ConfirmStep — tier-aware copy', () => {
-  it('SOLO pick → renders "Provperiod: Solo" + 14-day callout, no Enterprise branch', () => {
+  it('SOLO pick → renders "Provperiod: Solo" + 15-day callout, no Enterprise branch', () => {
     render(<ConfirmStep {...baseProps} pickedTier="SOLO" />)
     expect(
-      screen.getByText(/Provperiod: Solo · 14 dagar gratis/)
+      screen.getByText(/Provperiod: Solo · 15 dagar gratis/)
     ).toBeInTheDocument()
     // Enterprise-only copy must not be present
     expect(
@@ -42,7 +42,7 @@ describe('ConfirmStep — tier-aware copy', () => {
   it('TEAM pick → renders "Provperiod: Team" copy', () => {
     render(<ConfirmStep {...baseProps} pickedTier="TEAM" />)
     expect(
-      screen.getByText(/Provperiod: Team · 14 dagar gratis/)
+      screen.getByText(/Provperiod: Team · 15 dagar gratis/)
     ).toBeInTheDocument()
   })
 
@@ -52,7 +52,7 @@ describe('ConfirmStep — tier-aware copy', () => {
       screen.getByText(/Vi har bett om kontakt om Enterprise/)
     ).toBeInTheDocument()
     expect(
-      screen.getByText(/Team-funktionalitet i 14 dagar/)
+      screen.getByText(/Team-funktionalitet i 15 dagar/)
     ).toBeInTheDocument()
     const bookingLink = screen.getByRole('link', { name: /Boka samtal/ })
     expect(bookingLink).toHaveAttribute('href', 'https://cal.com/laglig/sales')

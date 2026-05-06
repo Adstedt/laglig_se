@@ -104,7 +104,7 @@ export function CreateWorkspaceModal({
           </DialogTitle>
           <DialogDescription className="text-center">
             Skapa en ny arbetsplats för att hantera ett annat företag eller
-            projekt. Du får 14 dagars kostnadsfri provperiod.
+            projekt. Du får 15 dagars kostnadsfri provperiod.
           </DialogDescription>
         </DialogHeader>
 

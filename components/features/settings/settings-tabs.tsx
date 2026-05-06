@@ -38,6 +38,10 @@ export interface WorkspaceData {
   company_logo: string | null
   subscription_tier: SubscriptionTier
   trial_ends_at: Date | null
+  // Story 5.13: needed by the trial-expired conversion panel to highlight
+  // the user's picked tier first + acknowledge Enterprise inquiry copy.
+  trial_picked_tier: SubscriptionTier | null
+  enterprise_inquiry_at: Date | null
 }
 
 export interface BillingData {
@@ -64,11 +68,18 @@ interface SettingsTabsProps {
   workspace: WorkspaceData
   members: MemberData[]
   columns: TaskColumnWithCount[]
-  companyProfile: CompanyProfile
+  // Story 5.13: nullable when workspace is gated by TRIAL_EXPIRED /
+  // PAYMENT_PAST_DUE. Settings page falls back to null so the page can render
+  // (the user MUST be able to reach the Fakturering tab to convert) — the
+  // Company tab just shows a placeholder until they do.
+  companyProfile: CompanyProfile | null
   billing: BillingData
   initialTab: string
   showPastDueBanner: boolean
   showCheckoutSuccess: boolean
+  // Story 5.13: when true, BillingDashboard renders the trial-expired
+  // conversion panel above the existing tile grid.
+  showTrialExpiredPanel?: boolean
 }
 
 export function SettingsTabs({
@@ -80,6 +91,7 @@ export function SettingsTabs({
   initialTab,
   showPastDueBanner,
   showCheckoutSuccess,
+  showTrialExpiredPanel = false,
 }: SettingsTabsProps) {
   const { role, isLoading } = useWorkspace()
   const router = useRouter()
@@ -153,7 +165,17 @@ export function SettingsTabs({
 
       {canAccessSettings && (
         <TabsContent value="company-profile">
-          <CompanyProfileTab companyProfile={companyProfile} />
+          {companyProfile ? (
+            <CompanyProfileTab companyProfile={companyProfile} />
+          ) : (
+            // Story 5.13: workspace is gated (trial expired / payment past due);
+            // company profile fetch was skipped via safeWorkspaceFetch fallback.
+            // Direct user to billing tab to recover access.
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+              Företagsuppgifter är inte tillgängliga just nu. Aktivera din
+              prenumeration i Fakturering-fliken för att fortsätta.
+            </div>
+          )}
         </TabsContent>
       )}
 
@@ -179,6 +201,13 @@ export function SettingsTabs({
             }}
             showPastDueBanner={showPastDueBanner}
             showCheckoutSuccess={showCheckoutSuccess}
+            showTrialExpiredPanel={showTrialExpiredPanel}
+            trialPickedTier={workspace.trial_picked_tier ?? null}
+            enterpriseInquiryAt={
+              workspace.enterprise_inquiry_at
+                ? new Date(workspace.enterprise_inquiry_at).toISOString()
+                : null
+            }
           />
         </TabsContent>
       )}

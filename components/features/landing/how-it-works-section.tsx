@@ -88,7 +88,7 @@ export function HowItWorksSection() {
               </Link>
             </Button>
             <p className="mt-3 text-sm text-muted-foreground">
-              Gratis i 14 dagar. Ingen bindning.
+              Gratis i 15 dagar. Ingen bindning.
             </p>
           </div>
         </div>

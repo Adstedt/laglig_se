@@ -23,6 +23,7 @@ import {
 import { sendEmail } from '@/lib/email/email-service'
 import { EnterpriseInquiryEmail } from '@/emails/enterprise-inquiry'
 import { env } from '@/lib/env'
+import { TRIAL_DURATION_DAYS } from '@/lib/billing/trial-config'
 
 // ============================================================================
 // Validation Schemas
@@ -187,9 +188,9 @@ export async function createWorkspace(formData: FormData): Promise<{
     const hasCompanyFields =
       orgNumber || sniCode || legalForm || employeeCount !== null || address
 
-    // Calculate trial end date (14 days from now)
+    // Story 5.13: trial duration sourced from single constant.
     const trialEndsAt = new Date()
-    trialEndsAt.setDate(trialEndsAt.getDate() + 14)
+    trialEndsAt.setDate(trialEndsAt.getDate() + TRIAL_DURATION_DAYS)
 
     // Create workspace and add owner in transaction
     const workspace = await prisma.$transaction(async (tx) => {

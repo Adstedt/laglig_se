@@ -95,7 +95,7 @@ export function TierPickerStep({
       <div className="flex gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-900/30 dark:bg-emerald-950/20 dark:text-emerald-200">
         <Info className="mt-0.5 h-4 w-4 shrink-0" />
         <p>
-          Du provar gratis i 14 dagar med full åtkomst till den nivå du väljer.
+          Du provar gratis i 15 dagar med full åtkomst till den nivå du väljer.
           Ingen betalning krävs nu — du kan ändra eller säga upp när som helst
           innan provperioden slutar.
         </p>

@@ -6,12 +6,14 @@
  * surface a thin slice (id, number, amount, status, hosted/PDF links).
  */
 import { NextResponse } from 'next/server'
-import { requirePermissionWithContext } from '@/lib/api/require-permission'
+import { requirePermissionForBilling } from '@/lib/api/require-permission'
 import { prisma } from '@/lib/prisma'
 import { stripe } from '@/lib/stripe/config'
 
 export async function GET() {
-  const result = await requirePermissionWithContext('workspace:billing')
+  // Story 5.13: bypass billing gates — invoice listing is part of the
+  // billing surface and must be reachable when gated.
+  const result = await requirePermissionForBilling('workspace:billing')
   if (!result.granted) return result.response
 
   const workspace = await prisma.workspace.findUniqueOrThrow({
