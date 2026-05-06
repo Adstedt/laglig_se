@@ -15,5 +15,8 @@
 | 2026-03-25 | 1.9     | Epic 16: Conversion funnel (headless agent skills, pre-auth data bridge) | —                   |
 | 2026-04-05 | 2.0     | Epic 17: Document management system (WorkspaceDocument models, Tiptap editor, document export pipeline) | — |
 | 2026-04-07 | 2.1     | Post-epic-17 documentation alignment: tech stack, data models, API spec, project structure updates | Sarah (PO) |
+| 2026-05-06 | 2.2     | Epic 25 (First-run onboarding modal): new architecture doc at `docs/architecture/first-run-onboarding-modal.md` — schema additions (`Workspace.first_run_dismissed_at`, `tutorial_fab_dismissed_at`, `first_run_tabs_viewed`; new `OnboardingEvent` table), modal component architecture, state machine, re-entry hierarchy (corner FAB + Hjälp menu), server-action surface. Epic 24 (Import) brief at `docs/import-law-list-brief.md`; full architecture doc deferred until epic enters arch phase. | Winston (Architect) / Sarah (PO) |
+
+> **Note:** Architecture changes for Epics 18–23 are not yet reflected in this changelog — out of scope for this update. If reconstructing history, primary sources are `docs/prd/epic-{n}*.md` PRDs and any `docs/architecture/epic-{n}*.md` per-epic architecture addenda (e.g., `epic-21-lagefterlevnadskontroll.md`).
 
 ---

@@ -341,10 +341,46 @@
 
 ---
 
-**Total Stories Tracked:** ~244+ across 23 epics (~166 completed, ~76+ backlog; Epic 18 stories TBD, Epic 19 12 stories scoped, Epic 20 3 stories scoped + completed, Epic 21 14 stories scoped — **13 completed, 1 deferred (21.10)**, 1 in backlog (21.15), Epic 22 4 stories scoped, Epic 23 5 stories scoped)
+## Epic 24: Import Befintlig Laglista
 
-**Epic Status:** 12 Done (incl. Epic 21 substantially-done as of 2026-04-27, UAT-ready with 1 deferred 21.10 + 1 backlogged 21.15), 4 Partial / Active, 7 Not Started / Planned (incl. Epic 23)
+**Status:** Planned (0 completed — 6 stories scoped)
 
-**Last updated:** 2026-05-05
+**Goal:** Add a self-serve import pipeline that lets switchers bring an existing curated law list (Notisum / Lex.nu / JP Infonet / Ramboll / consultant Excel / internal spreadsheet) into Laglig in minutes, using fuzzy + LLM matching against our SFS / AFS / EU catalog with a 24-hour manual-ingest SLA for documents not yet in the catalog. Surfaced both at first-run onboarding (via Epic 25) and via the in-app `/laglistor/skapa` create-list flow for existing users mid-contract.
+
+**Delivers:** Three new Prisma models (`LawListImport` aggregate with `UPLOADED → PARSED → MATCHING → AWAITING_REVIEW → COMMITTED` state machine, `LawListImportRow` per-row staging with confidence scores, `CatalogIngestRequest` queue for unmatched rows with 24h SLA); Excel/CSV/paste parser with column auto-detect; two-stage matching engine (fuzzy retrieval against `LegalDocument` + LLM disambiguation pass via Anthropic Sonnet with prompt caching); full-page review surface at `/laglistor/skapa/[importId]/granska` with confidence-tier grouping and per-row decisions; admin queue at `/admin/catalog-requests` for ops to fulfil unmatched-row requests within 24h SLA; `/laglistor/skapa` rewire to add Generate / Import path-choice fork; email notifications on import completion + catalog-request fulfilment.
+
+**Requirements covered:** Brief at `docs/import-law-list-brief.md` (drafted 2026-04-22). Closes the largest single objection in the switcher conversation.
+
+**Dependencies:** Epic 6 (Compliance Workspace — Done; provides `LawList` + `LawListItem` write targets), Epic 17 (Document Management — Partial; `LegalDocument` is the matching catalog), Epic 4 (Onboarding — Done; `/laglistor/skapa` extension target), Epic 11 (Admin shell — Done; hosts catalog-requests page), Epic 14 (Agent / LLM tooling — Done; Anthropic SDK + prompt caching + cost telemetry reused).
+
+**Note:** Brownfield enhancement. Schema changes are additive only. Sequenced **before** Epic 25 because the import pipeline has standalone value via the in-app create-list page; existing users mid-contract migrating from competitors don't need the onboarding wrapper. Source artefacts: `docs/import-law-list-brief.md` (strategic brief), `_prototypes/onboarding-tutorial-modal.html` (visual reference for upload step + confidence breakdown). See `docs/prd/epic-24-import-existing-law-list.md`.
+
+**Priority:** High — switcher lane is the highest-conversion lane (prospects already have budget allocated). Removes the "I can't easily move my list" objection and turns each import into a catalog-coverage feedback loop.
+
+---
+
+## Epic 25: First-Run Onboarding Modal
+
+**Status:** Planned (0 completed — 7 stories scoped, B.0 ships independently as pre-MVP)
+
+**Goal:** Replace the silent auto-fire of law list generation on first `/dashboard` visit with a path-choice + tutorial-while-waiting modal that gates generation, educates new users on the six core product capabilities (laglista / kravpunkter / uppgifter / kontroller / lagändringar / AI-agenten) via realistic mini-previews, and hands off cleanly to either the laglista (generate path) or the Epic 24 review surface (import path) — with a corner FAB and Hjälp menu providing persistent re-entry, plus a future feedback-loop slot on the same modal substrate.
+
+**Delivers:** Pre-MVP gate (Story B.0 — ships independently in 1.5 days): minimal modal with three buttons (Generera / Importera "kommer snart" / Hoppa över), 3 nullable `Workspace` columns + `OnboardingEvent` telemetry table + `'skipped'` accepted as new value of existing `law_list_generation_status` String field, removal of wizard auto-fire of `POST /api/workspace/generate-law-list`. Full modal (Stories B.1–B.4): brand-chrome Dialog with Safiro fonts, path-choice cards with hover-lift + recommended-chip, generate-kickoff confirm step, import-upload step (Epic 24 dependency), tutorial step with progress strip + 6-tab framework + per-tab realistic mini-previews of actual product surfaces, done states for both paths. Re-entry layers (Story B.5): corner FAB with three visual states (working / done / idle), tiny X to dismiss, Hjälp sidebar entry as fallback, URL-driven deep-link (`?onboarding=tutorial[&tab=ai_agent]`), `tutorial_only` mode for post-completion. Feedback loop slot (Story B.6 — future): `submitOnboardingFeedback` action + 7th-tab/banner placement on existing modal substrate; reuses `OnboardingEvent` `feedback_submitted` event type without schema changes.
+
+**Requirements covered:** Brief at `docs/onboarding-first-run-brief.md` (drafted 2026-05-06). Architecture at `docs/architecture/first-run-onboarding-modal.md` (Winston, 2026-05-06). Closes the activation gap left by Epic 4 (wizard delivered but no post-signup orientation) and the token-cost gap (silent generation auto-fire wastes ~$0.50–$1.50 per import-or-skip signup).
+
+**Dependencies:** Epic 4 (Onboarding — Done; wizard's `confirm-step.tsx` rewire), Epic 6 (Compliance Workspace — Done; powers Tab 3 Uppgifter Kanban preview), Epic 14 (AI Chat — Done; powers Tab 6 AI-agenten preview, plus Stories 14.20/14.26/14.27 for accuracy of the chat preview), Epic 17 (Document Management — Partial; powers Tab 2 Kravpunkter & bevis preview), Epic 21 (Lagefterlevnadskontroll — Substantially Done post 21.26+21.27; powers Tab 4 Kontroller preview, lifecycle is `PLANERAD → PAGAENDE → AVSLUTAD`), Epic 22 (UI Primitives — Done; tab content uses `<Badge tone>` / `<FilterChip>` / `<PageHeader>` / `<TableToolbar>` from day one), **Epic 24 (Import Existing Law List — sequenced first; hard dependency for B.4 import handoff and B.1 import-card un-disable)**, Story 16.4 (`LawListGenerationProgress` — Done; SWR substrate reused as progress-strip data source).
+
+**Note:** Brownfield enhancement. Schema additions are purely additive (3 nullable columns + 1 new table). B.0 is the **pre-MVP wedge** — ships before Epic 24 with import button visibly disabled, stops token waste from auto-fired generation in 1.5 days. Source artefacts: `docs/onboarding-first-run-brief.md` (brief), `docs/architecture/first-run-onboarding-modal.md` (architecture: schema, state machine, re-entry hierarchy, source-tree additions), `_prototypes/onboarding-tutorial-modal.html` (high-fidelity 6-frame visual reference with real Safiro fonts and realistic mini-mockups of every product surface). See `docs/prd/epic-25-first-run-onboarding-modal.md`.
+
+**Priority:** High — token-cost rationale (B.0 wedge) plus activation-conversion rationale (full modal). B.0 is the highest-leverage near-term ship: 1.5 days of work that stops measurable token waste per signup immediately.
+
+---
+
+**Total Stories Tracked:** ~257+ across 25 epics (~166 completed, ~89+ backlog; Epic 18 stories TBD, Epic 19 12 stories scoped, Epic 20 3 stories scoped + completed, Epic 21 14 stories scoped — **13 completed, 1 deferred (21.10)**, 1 in backlog (21.15), Epic 22 4 stories scoped, Epic 23 5 stories scoped, Epic 24 6 stories scoped, Epic 25 7 stories scoped — B.0 pre-MVP)
+
+**Epic Status:** 12 Done (incl. Epic 21 substantially-done as of 2026-04-27, UAT-ready with 1 deferred 21.10 + 1 backlogged 21.15), 4 Partial / Active, 9 Not Started / Planned (incl. Epic 23, Epic 24, Epic 25)
+
+**Last updated:** 2026-05-06
 
 ---
