@@ -106,18 +106,20 @@ describe('discover-sfs-amendments integration', () => {
       expect(result.highestNumericPart).toBe(10)
 
       // Check enrichment
-      const amendment = result.documents.find((d) => d.sfsNumber === '2026:10')!
+      const amendment = result.documents.find(
+        (d) => d.sfsNumber === 'SFS 2026:10'
+      )!
       expect(amendment.documentType).toBe('amendment')
       expect(amendment.baseLawSfs).toBe('2020:100')
       expect(amendment.pdfUrl).toContain('SFS2026-10.pdf')
       expect(amendment.htmlUrl).toContain('202610.html')
       expect(amendment.publishedDate).toBe('2026-02-01')
 
-      const newLaw = result.documents.find((d) => d.sfsNumber === '2026:9')!
+      const newLaw = result.documents.find((d) => d.sfsNumber === 'SFS 2026:9')!
       expect(newLaw.documentType).toBe('new_law')
       expect(newLaw.baseLawSfs).toBeNull()
 
-      const repeal = result.documents.find((d) => d.sfsNumber === '2026:8')!
+      const repeal = result.documents.find((d) => d.sfsNumber === 'SFS 2026:8')!
       expect(repeal.documentType).toBe('repeal')
       expect(repeal.baseLawSfs).toBe('2019:50')
     })
@@ -152,8 +154,8 @@ describe('discover-sfs-amendments integration', () => {
       // Only 9 and 10 should be above watermark of 8
       expect(result.documents).toHaveLength(2)
       expect(result.documents.map((d) => d.sfsNumber)).toEqual([
-        '2026:10',
-        '2026:9',
+        'SFS 2026:10',
+        'SFS 2026:9',
       ])
       expect(result.highestNumericPart).toBe(10)
     })
@@ -372,7 +374,7 @@ describe('discover-sfs-amendments integration', () => {
       // SFS 9 should appear only once despite being on both pages
       expect(result.documents).toHaveLength(3)
       const sfsNumbers = result.documents.map((d) => d.sfsNumber)
-      expect(sfsNumbers).toEqual(['2026:10', '2026:9', '2026:8'])
+      expect(sfsNumbers).toEqual(['SFS 2026:10', 'SFS 2026:9', 'SFS 2026:8'])
     })
   })
 

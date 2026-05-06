@@ -41,7 +41,6 @@ import {
   extractSfsNumericPart,
   extractBaseLawSfs,
   classifyDocument,
-  crawlDocumentPage,
 } from '@/lib/sfs/sfs-amendment-crawler'
 import {
   extractPropositionRef,
@@ -473,28 +472,10 @@ async function processAmendmentRecord(
   let pdfBuffer = await downloadPdfFromStorage(record.sfs_number)
 
   if (!pdfBuffer) {
-    // PDF not in storage yet — fetch and store it
+    // PDF not in storage yet — fetch and store it.
+    // fetchAndStorePdf resolves the canonical URL via the doc page (source of truth).
     stats.pdfsFetched++
-    const pubDate = record.publication_date
-      ? record.publication_date.toISOString().slice(0, 10)
-      : undefined
-
-    let pdfResult = await fetchAndStorePdf(record.sfs_number, pubDate)
-
-    // Fallback: publication date month may not match the PDF folder on the site.
-    // Scrape the actual doc page to get the real PDF URL.
-    if (!pdfResult.success) {
-      console.log(
-        `[DISCOVER-SFS]   Date-based URL failed, scraping doc page for real PDF URL`
-      )
-      const docPage = await crawlDocumentPage(record.sfs_number)
-      if (docPage?.pdfUrl) {
-        // Extract the month from the real PDF URL (e.g. ".../sfs/2026-02/SFS...")
-        const monthMatch = docPage.pdfUrl.match(/\/sfs\/(\d{4}-\d{2})\//)
-        const realDate = monthMatch ? `${monthMatch[1]}-01` : undefined
-        pdfResult = await fetchAndStorePdf(record.sfs_number, realDate)
-      }
-    }
+    const pdfResult = await fetchAndStorePdf(record.sfs_number)
 
     if (!pdfResult.success) {
       stats.pdfsFailed++
@@ -503,7 +484,7 @@ async function processAmendmentRecord(
 
     stats.pdfsStored++
 
-    // Update storage path and original_url if needed
+    // Update storage path and original_url with the resolved values
     if (pdfResult.metadata?.storagePath) {
       await prisma.amendmentDocument.update({
         where: { id: record.id },
