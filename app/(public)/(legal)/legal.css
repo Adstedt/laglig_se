@@ -1,0 +1,392 @@
+/* Legal-page prose + chrome.
+   Ported from _prototypes/marketing-site/legal-pages.html (the design source
+   of truth). Body uses Google Sans Flex (the app's body sans). H2 uses Safiro
+   at weight 500 — never font-bold/font-semibold (only weight 500 is registered;
+   anything else triggers fake-bold or system-ui fallback). */
+
+/* Hash-link / scroll-to-element safety: the site nav is sticky at top, so any
+   element scrolled into view needs to clear it. Scoped to the legal pages so
+   it doesn't change global behavior. */
+html {
+  scroll-padding-top: 5rem;
+}
+
+/* ============================================================
+   Page chrome
+   ============================================================ */
+
+.print-hide {
+  /* utility — hidden when printing */
+}
+
+@media print {
+  body {
+    background: #fff !important;
+  }
+  .print-hide {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .doc-container {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+}
+
+.legal-hero {
+  border-bottom: 1px solid hsl(35 10% 88%);
+  background: hsl(40 30% 97%);
+}
+
+.legal-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 12px;
+  font-weight: 500;
+  color: hsl(30 8% 45%);
+}
+.legal-hero-eyebrow-link {
+  transition: color 120ms ease;
+}
+.legal-hero-eyebrow-link:hover {
+  color: hsl(30 10% 18%);
+}
+
+.legal-hero-title {
+  font-family: 'Safiro', system-ui, sans-serif;
+  font-weight: 500; /* Safiro: 500 only */
+  letter-spacing: -0.02em;
+  font-size: clamp(2.25rem, 4vw, 3.75rem);
+  line-height: 1.1;
+  color: hsl(30 10% 10%);
+  margin-top: 0.75rem;
+}
+.legal-hero-title .muted {
+  color: hsl(30 8% 50%);
+}
+
+.legal-hero-subtitle {
+  margin-top: 1.25rem;
+  max-width: 42rem;
+  font-size: 17px;
+  color: hsl(30 8% 38%);
+}
+
+.legal-breadcrumb {
+  border-bottom: 1px solid hsl(35 10% 88%);
+  background: hsl(40 20% 98%);
+}
+
+/* ============================================================
+   Sidebar
+   ============================================================ */
+
+.legal-sidebar {
+  /* grid cell */
+}
+.legal-sidebar-sticky {
+  position: sticky;
+  top: 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.legal-sidebar-heading {
+  padding: 0 0.75rem 0.75rem;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: hsl(30 8% 45%);
+}
+
+.legal-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.legal-sidebar-divider {
+  margin: 1rem 0;
+  border-top: 1px solid hsl(35 10% 88%);
+}
+
+.legal-nav-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 14px;
+  text-align: left;
+  color: hsl(30 8% 35%);
+  background: transparent;
+  transition: background-color 120ms ease;
+}
+.legal-nav-item:hover {
+  background: hsl(40 15% 95% / 0.7);
+}
+.legal-nav-item[data-active='true'] {
+  background: hsl(40 12% 94%);
+  color: hsl(30 15% 12%);
+}
+
+.legal-nav-icon {
+  display: grid;
+  place-items: center;
+  margin-top: 0.125rem;
+  height: 1.75rem;
+  width: 1.75rem;
+  flex-shrink: 0;
+  border-radius: 0.375rem;
+  background: hsl(30 15% 12% / 0.95);
+  color: hsl(40 20% 98%);
+  transition: background-color 120ms ease;
+}
+.legal-nav-item:hover .legal-nav-icon {
+  background: hsl(30 8% 35%);
+}
+.legal-nav-item[data-active='true'] .legal-nav-icon {
+  background: hsl(30 15% 12%);
+  color: hsl(40 20% 98%);
+}
+
+.legal-nav-title {
+  display: block;
+  font-weight: 600;
+  line-height: 1.25;
+  color: hsl(30 10% 12%);
+}
+.legal-nav-slug {
+  display: block;
+  margin-top: 0.125rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  color: hsl(30 8% 50%);
+}
+.legal-nav-helper {
+  display: block;
+  margin-top: 0.125rem;
+  font-size: 11px;
+  line-height: 1.35;
+  color: hsl(30 8% 50%);
+}
+
+/* ============================================================
+   Document meta + title (above the rendered markdown)
+   ============================================================ */
+
+.doc-meta {
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 12px;
+}
+
+.doc-title {
+  font-family: 'Safiro', system-ui, sans-serif;
+  font-weight: 500; /* Safiro: 500 only */
+  letter-spacing: -0.02em;
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  line-height: 1.1;
+  color: hsl(30 10% 10%);
+}
+
+.doc-subtitle {
+  margin-top: 0.75rem;
+  font-size: 17px;
+  color: hsl(30 8% 38%);
+}
+
+/* ============================================================
+   Rendered markdown body — applied to .doc descendant elements
+   from react-markdown output.
+   Reading-width on text blocks; tables fill the article column.
+   ============================================================ */
+
+.doc {
+  --measure: 68ch;
+  font-family: 'Google Sans Flex', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: hsl(30 10% 22%);
+}
+.doc h1 {
+  display: none;
+}
+
+.doc h2 {
+  font-family: 'Safiro', system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 500; /* Safiro: 500 only */
+  letter-spacing: -0.018em;
+  line-height: 1.25;
+  color: hsl(30 10% 10%);
+  max-width: var(--measure);
+  margin: 3rem 0 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid hsl(35 10% 88%);
+  scroll-margin-top: 5rem;
+}
+.doc h2:first-child {
+  margin-top: 0;
+}
+
+.doc h3 {
+  font-family: 'Google Sans Flex', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: hsl(30 10% 32%);
+  max-width: var(--measure);
+  margin: 2rem 0 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.doc p {
+  max-width: var(--measure);
+  margin: 0 0 1.1rem;
+}
+.doc ul,
+.doc ol {
+  max-width: var(--measure);
+  margin: 0 0 1.25rem;
+  padding-left: 1.4rem;
+}
+.doc ul {
+  list-style: disc;
+}
+.doc ol {
+  list-style: decimal;
+}
+.doc li {
+  margin-bottom: 0.4rem;
+  padding-left: 0.25rem;
+}
+.doc li::marker {
+  color: hsl(30 10% 55%);
+}
+.doc li > p {
+  margin-bottom: 0.4rem;
+}
+
+.doc a {
+  color: hsl(30 15% 22%);
+  text-decoration: underline;
+  text-decoration-color: hsl(30 15% 70%);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+.doc a:hover {
+  color: hsl(30 15% 12%);
+  text-decoration-color: hsl(30 15% 30%);
+}
+.doc strong {
+  font-weight: 600;
+  color: hsl(30 10% 10%);
+}
+.doc code {
+  background: hsl(40 15% 94%);
+  border: 1px solid hsl(35 10% 86%);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.85em;
+  color: hsl(30 10% 22%);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: nowrap;
+}
+
+/* Tables: NOT measure-constrained so wide ones (Underbiträden) fill the
+   article column. Wrapped in horizontal scroll for safety. */
+.doc table {
+  display: block;
+  max-width: 100%;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 1.25rem 0 2rem;
+  font-size: 13.5px;
+  line-height: 1.5;
+  background: hsl(40 15% 99%);
+  border: 1px solid hsl(35 10% 88%);
+  border-radius: 8px;
+}
+.doc table > thead,
+.doc table > tbody,
+.doc table > tfoot {
+  display: table-row-group;
+}
+.doc table > thead {
+  display: table-header-group;
+}
+.doc table tr {
+  display: table-row;
+}
+.doc table th,
+.doc table td {
+  display: table-cell;
+}
+
+.doc thead th {
+  background: hsl(40 12% 95%);
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 10px 14px;
+  border-bottom: 1px solid hsl(35 10% 86%);
+  color: hsl(30 10% 22%);
+  white-space: nowrap;
+}
+.doc tbody td {
+  padding: 11px 14px;
+  border-bottom: 1px solid hsl(35 10% 93%);
+  vertical-align: top;
+  color: hsl(30 10% 22%);
+}
+.doc tbody td:first-child {
+  font-weight: 500;
+  color: hsl(30 10% 12%);
+}
+.doc tbody tr:last-child td {
+  border-bottom: none;
+}
+.doc tbody tr:hover td {
+  background: hsl(40 15% 97%);
+}
+
+/* Two-column "definition" tables (Kontakt block) — empty header row */
+.doc table:has(thead th:empty) thead {
+  display: none;
+}
+.doc table:has(thead th:empty) tbody td:first-child {
+  font-weight: 600;
+  color: hsl(30 10% 22%);
+  width: 40%;
+  background: hsl(40 12% 96%);
+}
+
+.doc blockquote {
+  max-width: var(--measure);
+  margin: 1.5rem 0;
+  padding: 0.85rem 1.1rem;
+  background: hsl(40 15% 96%);
+  border-left: 3px solid hsl(30 15% 35%);
+  border-radius: 0 6px 6px 0;
+  color: hsl(30 10% 22%);
+  font-size: 14.5px;
+}
+.doc hr {
+  border: none;
+  border-top: 1px solid hsl(35 10% 88%);
+  margin: 2.5rem 0;
+  max-width: var(--measure);
+}

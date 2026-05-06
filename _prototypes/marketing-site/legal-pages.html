@@ -1,0 +1,1161 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Juridiskt — laglig.se</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+      // Brand fonts:
+      //  - Safiro (display) — only weight 500 ships; ALWAYS pair with font-medium.
+      //    font-bold/font-semibold triggers browser fake-bold and often falls back to system-ui.
+      //  - Google Sans Flex (body) — variable 100-900.
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Google Sans Flex', 'system-ui', 'sans-serif'],
+              display: ['Safiro', 'system-ui', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      /* Self-hosted brand fonts (copies of public/fonts/*) — keeps the prototype
+         visually identical to the real app whether opened via file:// or a dev server. */
+      @font-face {
+        font-family: 'Safiro';
+        src:
+          url('fonts/safiro-medium-webfont.woff2') format('woff2'),
+          url('fonts/safiro-medium-webfont.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Google Sans Flex';
+        src: url('fonts/GoogleSansFlex.ttf') format('truetype');
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      /* Warm off-white app background (matches globals.css --background: hsl(40 20% 98%)) */
+      body {
+        font-family: 'Google Sans Flex', system-ui, sans-serif;
+        background: hsl(40 20% 98%);
+        color: hsl(30 10% 10%);
+      }
+
+      /* Display = Safiro 500. NEVER override with font-bold/font-semibold. */
+      .display {
+        font-family: 'Safiro', system-ui, sans-serif;
+        font-weight: 500;
+        letter-spacing: -0.02em;
+      }
+
+      /* Long-form legal document styling — manual prose (Tailwind Typography plugin not available in CDN config).
+         Body uses Google Sans Flex. H2 uses Safiro at weight 500 (display).
+         Reading-width is constrained on text-only blocks (--measure ~ 68ch) but tables and
+         their wrappers fill the article column so wide tables don't get crushed. */
+      .doc {
+        --measure: 68ch;
+        font-family: 'Google Sans Flex', system-ui, sans-serif;
+        font-size: 16px;
+        line-height: 1.7;
+        color: hsl(30 10% 22%);
+      }
+      .doc h1 { display: none; } /* page header renders the h1 already */
+
+      .doc h2 {
+        font-family: 'Safiro', system-ui, sans-serif;
+        font-size: 28px;
+        font-weight: 500; /* Safiro: 500 only */
+        letter-spacing: -0.018em;
+        line-height: 1.25;
+        color: hsl(30 10% 10%);
+        max-width: var(--measure);
+        margin: 3rem 0 1rem;
+        padding-bottom: 0.6rem;
+        border-bottom: 1px solid hsl(35 10% 88%);
+        scroll-margin-top: 5rem;
+      }
+      .doc h2:first-child { margin-top: 0; }
+
+      .doc h3 {
+        font-family: 'Google Sans Flex', system-ui, sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        color: hsl(30 10% 32%);
+        max-width: var(--measure);
+        margin: 2rem 0 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+
+      .doc p {
+        max-width: var(--measure);
+        margin: 0 0 1.1rem;
+      }
+      .doc ul, .doc ol {
+        max-width: var(--measure);
+        margin: 0 0 1.25rem;
+        padding-left: 1.4rem;
+      }
+      .doc ul { list-style: disc; }
+      .doc ol { list-style: decimal; }
+      .doc li { margin-bottom: 0.4rem; padding-left: 0.25rem; }
+      .doc li::marker { color: hsl(30 10% 55%); }
+      .doc li > p { margin-bottom: 0.4rem; } /* tight paragraphs inside list items */
+
+      .doc a {
+        color: hsl(30 15% 22%);
+        text-decoration: underline;
+        text-decoration-color: hsl(30 15% 70%);
+        text-underline-offset: 3px;
+        text-decoration-thickness: 1px;
+      }
+      .doc a:hover { color: hsl(30 15% 12%); text-decoration-color: hsl(30 15% 30%); }
+      .doc strong { font-weight: 600; color: hsl(30 10% 10%); }
+      .doc code {
+        background: hsl(40 15% 94%);
+        border: 1px solid hsl(35 10% 86%);
+        border-radius: 4px;
+        padding: 1px 6px;
+        font-size: 0.85em;
+        color: hsl(30 10% 22%);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        white-space: nowrap;
+      }
+      /* Tables: NOT constrained by --measure so wide ones (e.g. underbiträdesförteckning)
+         can use the full article column. Wrapped in horizontal scroll for safety. */
+      .doc table {
+        display: block;
+        max-width: 100%;
+        width: 100%;
+        overflow-x: auto;
+        border-collapse: collapse;
+        margin: 1.25rem 0 2rem;
+        font-size: 13.5px;
+        line-height: 1.5;
+        background: hsl(40 15% 99%);
+        border: 1px solid hsl(35 10% 88%);
+        border-radius: 8px;
+      }
+      /* Restore table semantics inside the scroll container */
+      .doc table > thead,
+      .doc table > tbody,
+      .doc table > tfoot { display: table-row-group; }
+      .doc table > thead { display: table-header-group; }
+      .doc table tr { display: table-row; }
+      .doc table th,
+      .doc table td { display: table-cell; }
+
+      .doc thead th {
+        background: hsl(40 12% 95%);
+        text-align: left;
+        font-weight: 600;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 10px 14px;
+        border-bottom: 1px solid hsl(35 10% 86%);
+        color: hsl(30 10% 22%);
+        white-space: nowrap;
+      }
+      .doc tbody td {
+        padding: 11px 14px;
+        border-bottom: 1px solid hsl(35 10% 93%);
+        vertical-align: top;
+        color: hsl(30 10% 22%);
+      }
+      .doc tbody td:first-child { font-weight: 500; color: hsl(30 10% 12%); }
+      .doc tbody tr:last-child td { border-bottom: none; }
+      .doc tbody tr:hover td { background: hsl(40 15% 97%); }
+
+      /* Two-column "definition" tables (Kontakt-block, etc.) — first col = label */
+      .doc table:has(thead th:empty) thead { display: none; }
+      .doc table:has(thead th:empty) tbody td:first-child {
+        font-weight: 600;
+        color: hsl(30 10% 22%);
+        width: 40%;
+        background: hsl(40 12% 96%);
+      }
+
+      .doc blockquote {
+        max-width: var(--measure);
+        margin: 1.5rem 0;
+        padding: 0.85rem 1.1rem;
+        background: hsl(40 15% 96%);
+        border-left: 3px solid hsl(30 15% 35%);
+        border-radius: 0 6px 6px 0;
+        color: hsl(30 10% 22%);
+        font-size: 14.5px;
+      }
+      .doc hr { border: none; border-top: 1px solid hsl(35 10% 88%); margin: 2.5rem 0; max-width: var(--measure); }
+
+      /* Sidebar active state — warm neutral, no amber pill (matches app's sidebar treatment) */
+      .legal-nav-item[data-active="true"] {
+        background: hsl(40 12% 94%);
+        color: hsl(30 15% 12%);
+      }
+      .legal-nav-item[data-active="true"] .legal-nav-icon {
+        background: hsl(30 15% 12%);
+        color: hsl(40 20% 98%);
+      }
+
+      /* Print: hide chrome, expand content */
+      @media print {
+        body { background: #fff; }
+        header, aside, footer, .print-hide { display: none !important; }
+        main { padding: 0 !important; }
+        .doc-container { max-width: none !important; padding: 0 !important; }
+      }
+    </style>
+  </head>
+  <body data-active="" class="min-h-screen antialiased">
+    <div id="site-nav"></div>
+
+    <!-- Breadcrumb -->
+    <div class="border-b border-stone-200/70 bg-stone-50/80 print-hide">
+      <div class="mx-auto flex max-w-7xl items-center gap-2 px-6 py-3 text-xs text-stone-500">
+        <a href="index.html" class="hover:text-stone-800">Hem</a>
+        <i data-lucide="chevron-right" class="h-3 w-3"></i>
+        <a href="#" class="hover:text-stone-800">Juridiskt</a>
+        <i data-lucide="chevron-right" class="h-3 w-3"></i>
+        <span id="breadcrumb-current" class="text-stone-700">Användarvillkor</span>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <section class="border-b border-stone-200/70 print-hide" style="background: hsl(40 30% 97%);">
+      <div class="mx-auto max-w-7xl px-6 py-12">
+        <div class="flex items-center gap-2 text-xs font-medium text-stone-500">
+          <i data-lucide="scale" class="h-3.5 w-3.5"></i>
+          Juridiskt &amp; dataskydd
+        </div>
+        <h1 class="display mt-3 text-4xl text-stone-900 md:text-5xl lg:text-6xl">
+          Avtal, integritet, säkerhet<br /><span class="text-stone-500">— samlat och granskningsbart.</span>
+        </h1>
+        <p class="mt-5 max-w-2xl text-base text-stone-600 md:text-lg">
+          Allt du behöver för att granska Laglig.se som leverantör: våra villkor, hur vi behandlar
+          personuppgifter, vilka underbiträden vi använder och hur PuB-avtalet ser ut.
+        </p>
+      </div>
+    </section>
+
+    <main>
+      <div class="mx-auto grid max-w-7xl gap-10 px-6 py-10 md:grid-cols-[260px_1fr] md:py-12">
+        <!-- Sidebar -->
+        <aside class="print-hide">
+          <div class="sticky top-20 space-y-1">
+            <div class="px-3 pb-3 text-[11px] font-semibold uppercase tracking-wider text-stone-500">
+              Dokument
+            </div>
+            <nav id="legal-nav" class="space-y-0.5">
+              <!-- populated by JS -->
+            </nav>
+            <div class="my-4 border-t border-stone-200/70"></div>
+            <button
+              type="button"
+              class="group flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-stone-700 transition hover:bg-stone-100/70"
+              onclick="alert('I produkten: öppnar cookie-bannern så användaren kan ändra/återkalla samtycke.')">
+              <span class="legal-nav-icon mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-md bg-stone-900/95 text-stone-50 transition group-hover:bg-stone-700">
+                <i data-lucide="cookie" class="h-3.5 w-3.5"></i>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block font-semibold leading-tight text-stone-900">Cookieinställningar</span>
+                <span class="mt-0.5 block text-xs leading-snug text-stone-500">Ändra eller återkalla samtycke</span>
+              </span>
+            </button>
+            <a
+              href="mailto:dev@laglig.se"
+              class="group mt-1 flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-stone-700 transition hover:bg-stone-100/70">
+              <span class="legal-nav-icon mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-md bg-stone-900/95 text-stone-50 transition group-hover:bg-stone-700">
+                <i data-lucide="mail" class="h-3.5 w-3.5"></i>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block font-semibold leading-tight text-stone-900">Dataskyddskontakt</span>
+                <span class="mt-0.5 block text-xs leading-snug text-stone-500">dev@laglig.se</span>
+              </span>
+            </a>
+            <a
+              href="#"
+              onclick="window.print(); return false;"
+              class="group mt-1 flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-stone-700 transition hover:bg-stone-100/70">
+              <span class="legal-nav-icon mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-md bg-stone-900/95 text-stone-50 transition group-hover:bg-stone-700">
+                <i data-lucide="printer" class="h-3.5 w-3.5"></i>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block font-semibold leading-tight text-stone-900">Skriv ut / Spara PDF</span>
+                <span class="mt-0.5 block text-xs leading-snug text-stone-500">Aktuell sida</span>
+              </span>
+            </a>
+          </div>
+        </aside>
+
+        <!-- Document -->
+        <article class="doc-container min-w-0">
+          <div id="doc-meta" class="mb-3 flex flex-wrap items-center gap-2 text-xs">
+            <span id="doc-status" class="inline-flex items-center gap-1.5 rounded-full border border-amber-300/70 bg-amber-50 px-2.5 py-1 font-medium text-amber-900">
+              <i data-lucide="alert-triangle" class="h-3 w-3"></i>
+              Utkast — pågår juridisk granskning
+            </span>
+            <span class="text-stone-400">·</span>
+            <span class="text-stone-500">Senast uppdaterad <span id="doc-date">2026-04-30</span></span>
+          </div>
+          <h1 id="doc-title" class="display text-4xl leading-[1.1] text-stone-900 md:text-5xl">
+            Användarvillkor
+          </h1>
+          <p id="doc-subtitle" class="mt-3 text-base text-stone-600 md:text-[17px]"></p>
+
+          <div class="doc mt-8" id="doc-content"></div>
+
+          <!-- Doc footer / nav between docs -->
+          <div class="mt-12 flex items-center justify-between border-t border-stone-200/70 pt-6 print-hide">
+            <button
+              id="prev-doc"
+              type="button"
+              class="inline-flex items-center gap-2 text-sm font-medium text-stone-600 hover:text-amber-800 disabled:opacity-30 disabled:hover:text-stone-600">
+              <i data-lucide="arrow-left" class="h-4 w-4"></i>
+              <span id="prev-label">Föregående</span>
+            </button>
+            <a href="#" class="text-xs text-stone-500 hover:text-amber-800">Tillbaka till toppen ↑</a>
+            <button
+              id="next-doc"
+              type="button"
+              class="inline-flex items-center gap-2 text-sm font-medium text-stone-600 hover:text-amber-800 disabled:opacity-30 disabled:hover:text-stone-600">
+              <span id="next-label">Nästa</span>
+              <i data-lucide="arrow-right" class="h-4 w-4"></i>
+            </button>
+          </div>
+        </article>
+      </div>
+    </main>
+
+    <!-- Proposed new footer (NOT injected by _layout.js — this is the recommended replacement) -->
+    <footer class="border-t-2 border-amber-300 bg-stone-100/60 print-hide">
+      <!-- "Proposed" tag so reviewers know this is the change under discussion -->
+      <div class="border-b border-amber-200/60 bg-amber-50/60">
+        <div class="mx-auto flex max-w-7xl items-center gap-2 px-6 py-2 text-xs text-amber-900">
+          <i data-lucide="git-pull-request" class="h-3.5 w-3.5"></i>
+          <strong>Förslag på ny sidfot</strong>
+          <span class="text-amber-800/80">— ersätter nuvarande "Juridiskt"-kolumn (3 länkar) med 5 dokument + cookieinställningar</span>
+        </div>
+      </div>
+      <div class="mx-auto max-w-7xl px-6 py-12">
+        <div class="grid gap-10 md:grid-cols-5">
+          <div class="md:col-span-2">
+            <div class="flex items-center gap-2.5 font-semibold tracking-tight text-stone-900">
+              <span class="grid h-7 w-7 place-items-center rounded-md bg-stone-900 text-stone-50">
+                <i data-lucide="scale" class="h-4 w-4"></i>
+              </span>
+              <span>laglig.se</span>
+            </div>
+            <p class="mt-3 max-w-sm text-sm text-stone-600">
+              AI-driven lagefterlevnad för svenska företag.
+            </p>
+            <div class="mt-4 flex gap-3 text-stone-500">
+              <a href="#" class="hover:text-stone-800"><i data-lucide="linkedin" class="h-4 w-4"></i></a>
+              <a href="#" class="hover:text-stone-800"><i data-lucide="youtube" class="h-4 w-4"></i></a>
+              <a href="#" class="hover:text-stone-800"><i data-lucide="rss" class="h-4 w-4"></i></a>
+            </div>
+          </div>
+          <div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-stone-500">Produkt</div>
+            <ul class="mt-3 space-y-2 text-sm text-stone-700">
+              <li><a href="#" class="hover:text-amber-800">Lagefterlevnadskontroll</a></li>
+              <li><a href="#" class="hover:text-amber-800">Laglistor</a></li>
+              <li><a href="#" class="hover:text-amber-800">AI-assistent</a></li>
+              <li><a href="#" class="hover:text-amber-800">Priser</a></li>
+            </ul>
+          </div>
+          <div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-stone-500">Företag</div>
+            <ul class="mt-3 space-y-2 text-sm text-stone-700">
+              <li><a href="#" class="hover:text-amber-800">Om oss</a></li>
+              <li><a href="#" class="hover:text-amber-800">Blogg</a></li>
+              <li><a href="#" class="hover:text-amber-800">Kontakt</a></li>
+              <li><a href="#" class="hover:text-amber-800">Karriär</a></li>
+            </ul>
+          </div>
+          <!-- THE PROPOSED LEGAL COLUMN -->
+          <div class="rounded-xl border-2 border-dashed border-amber-300 bg-amber-50/30 p-3">
+            <div class="text-xs font-semibold uppercase tracking-wider text-amber-900">Juridiskt &amp; dataskydd</div>
+            <ul class="mt-3 space-y-2 text-sm text-stone-700">
+              <li><a href="#" data-load-doc="villkor" class="hover:text-amber-800">Användarvillkor</a></li>
+              <li><a href="#" data-load-doc="integritetspolicy" class="hover:text-amber-800">Integritetspolicy</a></li>
+              <li><a href="#" data-load-doc="cookiepolicy" class="hover:text-amber-800">Cookiepolicy</a></li>
+              <li><a href="#" data-load-doc="pub" class="hover:text-amber-800">Personuppgiftsbiträdesavtal</a></li>
+              <li><a href="#" data-load-doc="underbitraden" class="hover:text-amber-800">Underbiträden</a></li>
+              <li class="pt-1">
+                <button
+                  type="button"
+                  onclick="alert('I produkten: öppnar cookie-bannern.')"
+                  class="inline-flex items-center gap-1.5 text-stone-600 hover:text-amber-800">
+                  <i data-lucide="cookie" class="h-3.5 w-3.5"></i>
+                  Cookieinställningar
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- AI / juridisk friskrivning — kvar, men pekar nu till /villkor istället för /ansvarsfriskrivning -->
+        <div class="mt-10 rounded-lg border border-stone-200 bg-stone-50 p-4">
+          <p class="text-xs leading-relaxed text-stone-600">
+            <strong class="text-stone-800">Juridisk ansvarsfriskrivning:</strong>
+            Laglig.se är ett tekniskt hjälpmedel för att identifiera och organisera författningar.
+            Innehåll, AI-förslag och utdata utgör <strong>inte juridisk rådgivning</strong>.
+            Slutlig bedömning av tillämplighet och efterlevnad ligger hos kunden.
+            <a href="#" data-load-doc="villkor" class="font-medium text-amber-800 underline">Läs mer i Användarvillkoren §10 →</a>
+          </p>
+        </div>
+
+        <div class="mt-8 flex flex-col gap-3 border-t border-stone-200/70 pt-6 text-xs text-stone-500 md:flex-row md:items-center md:justify-between">
+          <div>© 2026 Grro Technologies AB · Org.nr 559498-1903 · Helsingborg</div>
+          <div class="flex flex-wrap gap-5">
+            <a href="#" data-load-doc="villkor" class="hover:text-stone-700">Villkor</a>
+            <a href="#" data-load-doc="integritetspolicy" class="hover:text-stone-700">Integritet</a>
+            <a href="#" data-load-doc="cookiepolicy" class="hover:text-stone-700">Cookies</a>
+            <a href="#" class="hover:text-stone-700">Säkerhet</a>
+            <a href="#" class="hover:text-stone-700">Status</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ============================================================ -->
+    <!-- DOCUMENT CONTENT — markdown extracted from docs/legal/*.md   -->
+    <!-- (DRAFT-warning blockquotes stripped; content shown as it     -->
+    <!-- would render to a published reader.)                         -->
+    <!-- ============================================================ -->
+
+    <script type="text/markdown" id="doc-villkor">
+## 1. Tjänsten
+
+Laglig.se är en SaaS-plattform där företag kan **konsolidera och arbeta med sin lagefterlevnad** på ett samlat ställe. Tjänsten omfattar bland annat:
+
+- Sökning och bläddring i lagar, förordningar, föreskrifter och EU-rättsakter.
+- Skapande, import och underhåll av laglistor (lagefterlevnadskontroll).
+- En **AI-agent som lär sig om Kundens verksamhet över tid** och hjälper till att identifiera, sammanfatta och prioritera relevant lagstiftning samt föreslå åtgärder.
+- Aviseringar om författningsändringar.
+- Arbetsyte- och samarbetsfunktioner för flera användare hos Kunden.
+
+Agenten kan ge förslag, vägledning och rekommendationer baserat på den information Kunden lämnar och Kundens användning av Tjänsten. Sådan output utgör inte juridisk rådgivning, är inte uttömmande, och fritar inte Kunden från sitt eget ansvar att säkerställa efterlevnad. Se även avsnitt 10.
+
+Tjänsten utvecklas löpande och funktionalitet kan komma att läggas till, ändras eller fasas ut.
+
+**Tjänsten är avsedd uteslutande för näringsidkare (B2B).** Tjänsten erbjuds inte till konsumenter i den mening som avses i konsumentköplagen, distansavtalslagen eller annan svensk konsumentskyddslagstiftning. Genom att acceptera Villkoren intygar du att du tecknar avtalet i tjänsten för en juridisk persons räkning eller i annat näringssyfte.
+
+## 2. Konto och behörighet
+
+2.1 För att använda Tjänsten krävs ett konto. Du ansvarar för att uppgifter du lämnar är korrekta och för att hålla inloggningsuppgifter konfidentiella.
+
+2.2 När du registrerar ett konto för en juridisk persons räkning intygar du att du har behörighet att binda denne till Villkoren.
+
+2.3 Du får inte dela ditt konto med andra. Varje fysisk användare ska ha ett eget konto. Vi kan komma att ta ut tilläggsavgift eller stänga av konton som delas.
+
+## 3. Abonnemang, avgifter och betalning
+
+3.1 Abonnemang faktureras enligt vid var tid gällande prislista på laglig.se/priser, om inte annat avtalats skriftligen.
+
+3.2 Avgifter anges exklusive moms. Mervärdesskatt tillkommer enligt vid var tid gällande svenska skatteregler.
+
+3.3 Betalning sker via Stripe eller faktura, beroende på vald plan. Vid utebliven betalning förbehåller vi oss rätten att stänga av Tjänsten efter skriftlig påminnelse.
+
+3.4 Eventuell prishöjning meddelas minst trettio (30) dagar i förväg och träder i kraft vid nästa förnyelseperiod. Du har då rätt att säga upp abonnemanget.
+
+## 4. Avtalstid och uppsägning
+
+4.1 Abonnemang löper månadsvis eller årsvis enligt vald plan och förnyas automatiskt om uppsägning inte sker.
+
+4.2 Uppsägning ska göras via Tjänstens kontoinställningar eller skriftligen till dev@laglig.se senast 30 dagar före nästa förnyelseperiod.
+
+4.3 Vi kan säga upp avtalet med omedelbar verkan vid väsentligt avtalsbrott, inklusive utebliven betalning, missbruk av Tjänsten eller brott mot dessa Villkor.
+
+4.4 Vid uppsägning får du en (1) period på 30 dagar att exportera ditt innehåll. Därefter raderas eller anonymiseras det enligt vår [Integritetspolicy](#).
+
+## 5. Acceptabel användning
+
+Du får inte:
+
+- Använda Tjänsten i strid med lag eller god sed.
+- Försöka kringgå tekniska säkerhets- eller åtkomstskydd.
+- Skrapa, kopiera eller systematiskt extrahera data från Tjänsten utöver normal användning.
+- Använda Tjänsten för att utveckla en konkurrerande tjänst eller träna AI-modeller.
+- Belasta Tjänsten på ett sätt som kan störa drift eller andra användare.
+- Ladda upp innehåll som är olagligt, kränkande, intrång i tredje mans rätt eller innehåller skadlig kod.
+
+Vi kan stänga av konton som bryter mot dessa regler.
+
+## 6. Kunddata och innehåll
+
+6.1 Du behåller äganderätten till data och innehåll du laddar upp eller skapar i Tjänsten ("Kunddata").
+
+6.2 Du ger oss en icke-exklusiv, royaltyfri licens att behandla Kunddata i den utsträckning som krävs för att tillhandahålla, drifta och säkerhetskopiera Tjänsten.
+
+6.3 Vi använder **inte** din Kunddata för att träna AI-modeller eller dela med tredje part utöver de underbiträden som anges i [Integritetspolicyn](#).
+
+6.4 Du ansvarar för att Kunddata inte gör intrång i tredje mans rätt och att lagring och behandling i Tjänsten är förenlig med tillämplig lag.
+
+## 7. Personuppgifter
+
+Behandlingen av personuppgifter beskrivs i vår [Integritetspolicy](#). När du som personuppgiftsansvarig behandlar personuppgifter via Tjänsten ingår vårt [Personuppgiftsbiträdesavtal](#) som en del av dessa Villkor.
+
+## 8. Immateriella rättigheter
+
+8.1 Vi och våra licensgivare innehar alla rättigheter till Tjänsten, inklusive källkod, design, varumärke, dokumentation och AI-modeller (med undantag för tredjepartsmodeller som ägs av respektive leverantör).
+
+8.2 Du får en begränsad, icke-exklusiv, icke-överlåtbar rätt att använda Tjänsten under abonnemangsperioden.
+
+8.3 Lagtexter, författningar och rättsakter som visas i Tjänsten är offentligt material från Riksdagen, EU-institutioner och berörda myndigheter. Vår sammanställning, struktur, kommentarer och AI-genererade analyser omfattas dock av vårt upphovsskydd.
+
+## 9. Tillgänglighet och support
+
+9.1 Vi strävar efter hög tillgänglighet men garanterar inte avbrottsfri drift. Planerat underhåll meddelas om möjligt i förväg.
+
+9.2 Vid avsaknad av särskilt SLA gäller "best effort".
+
+9.3 Support ges via dev@laglig.se under vardagar.
+
+## 10. Ansvarsfriskrivning för juridiskt innehåll och AI-output
+
+**TJÄNSTEN UTGÖR INTE JURIDISK RÅDGIVNING.** Innehåll, sammanfattningar, laglistor, AI-genererade förslag och utdata från AI-agenten i Tjänsten är ett tekniskt hjälpmedel för att identifiera och organisera författningar. Slutlig bedömning av tillämplighet, efterlevnad och rättslig betydelse måste alltid göras av Kunden eller en kvalificerad juridisk rådgivare.
+
+10.1 **AI-agentens roll.** Tjänstens AI-agent lär sig över tid om Kundens verksamhet baserat på den information Kunden tillhandahåller och Kundens användning av Tjänsten. Agenten kan komma att lämna förslag, vägledning, prioriteringar och rekommendationer. Sådan output:
+
+- är **inte juridisk rådgivning** och får inte behandlas som sådan;
+- ersätter inte granskning av kvalificerad juridisk rådgivare, intern compliance-funktion eller annan sakkunnig;
+- kan vara ofullständig, inaktuell eller felaktig till följd av modellbegränsningar, fördröjda dataflöden eller felaktig indata från Kunden;
+- ska valideras av Kunden innan beslut fattas eller åtgärder vidtas baserat på den.
+
+10.2 **Friskrivning.** Vi friskriver oss, så långt lagen tillåter, från ansvar för:
+
+- Beslut som Kunden eller dess användare fattar baserat på innehåll i Tjänsten eller utdata från AI-agenten.
+- Sanktioner, viten, skadestånd, anmärkningar från myndighet eller annan rättslig påföljd som drabbar Kunden till följd av bristande efterlevnad.
+- Felaktigheter, ofullständigheter eller fördröjningar i författningsdata från externa källor (Riksdagen, EU-institutioner, myndigheter, registerleverantörer).
+- AI-genererade resultat som inte motsvarar Kundens förväntningar eller verksamhet.
+- Fel som beror på felaktig, ofullständig eller missvisande indata från Kunden.
+
+10.3 **Kundens ansvar.** Kunden ansvarar fullt ut för sin egen lagefterlevnad och för att verifiera och bedöma allt material och alla rekommendationer som Tjänsten levererar innan de läggs till grund för beslut.
+
+## 11. Ansvarsbegränsning
+
+11.1 Vårt sammanlagda ansvar för skada under avtalet är, så långt lagen tillåter, begränsat till de avgifter du betalat under de tolv (12) månader som föregått den händelse som gav upphov till anspråket.
+
+11.2 Vi ansvarar inte för indirekt skada, följdskada, utebliven vinst, förlust av data, förlust av goodwill eller andra indirekta förluster.
+
+11.3 Begränsningarna gäller inte vid uppsåt, grov vårdslöshet eller ansvar som inte kan begränsas enligt tvingande lag.
+
+## 12. Force majeure
+
+Ingen part är ansvarig för dröjsmål eller utebliven prestation som beror på omständigheter utanför dennes rimliga kontroll, t.ex. krig, myndighetsåtgärd, strömavbrott, bredare störning hos hostingleverantör eller cyberangrepp.
+
+## 13. Ändring av Villkoren
+
+Vi kan komma att ändra Villkoren. Väsentliga ändringar meddelas senast trettio (30) dagar i förväg via e-post eller i Tjänsten. Du har rätt att säga upp abonnemanget innan ändringen träder i kraft. Fortsatt användning efter ikraftträdandet utgör accept.
+
+## 14. Överlåtelse
+
+Du får inte överlåta avtalet eller dina rättigheter enligt Villkoren utan vårt skriftliga samtycke. Vi får överlåta avtalet i samband med fusion, omorganisation eller verksamhetsöverlåtelse.
+
+## 15. Tillämplig lag och tvister
+
+15.1 Svensk lag tillämpas på Villkoren, med bortseende från lagvalsregler.
+
+15.2 Tvist ska i första hand lösas genom förhandling. Om parterna inte når en lösning ska tvisten avgöras av allmän domstol med Helsingborgs tingsrätt som första instans.
+
+15.3 Eftersom Tjänsten erbjuds uteslutande till näringsidkare (se avsnitt 1) tillämpas inte konsumentskyddslagstiftning på avtalet.
+
+## 16. Kontakt
+
+| | |
+| --- | --- |
+| Företag | Grro Technologies AB |
+| Organisationsnummer | 559498-1903 |
+| Postadress | Stallmästarevägen 17, 254 84 Helsingborg |
+| E-post | dev@laglig.se |
+    </script>
+
+    <script type="text/markdown" id="doc-integritetspolicy">
+Denna integritetspolicy beskriver hur Laglig.se behandlar personuppgifter när du använder vår tjänst på laglig.se ("Tjänsten"). Vi följer EU:s dataskyddsförordning (GDPR, 2016/679) samt svensk kompletterande dataskyddslagstiftning.
+
+## 1. Personuppgiftsansvarig
+
+| | |
+| --- | --- |
+| Företag | Grro Technologies AB |
+| Organisationsnummer | 559498-1903 |
+| Adress | Stallmästarevägen 17, 254 84 Helsingborg |
+| E-post | dev@laglig.se |
+
+`dev@laglig.se` används för både allmänna frågor och frågor som rör dataskydd. Vid frågor om hur vi behandlar dina personuppgifter, eller för att utöva dina rättigheter (avsnitt 8), kontakta oss på e-postadressen ovan.
+
+## 2. Vilka personuppgifter vi behandlar
+
+Vi behandlar följande kategorier av personuppgifter:
+
+### 2.1 Konto- och kontaktuppgifter
+- Namn, e-postadress, lösenord (lagras krypterat).
+- Företagstillhörighet, roll/titel, organisationsnummer för det företag du representerar.
+- Telefonnummer (om angivet).
+
+### 2.2 Användningsdata
+- Inloggningstidpunkter, IP-adress, webbläsare, enhetstyp, sidvisningar inom Tjänsten.
+- Innehåll du skapar i Tjänsten: laglistor, anteckningar, kommentarer, uppladdade filer, styrdokument.
+- Sökfrågor, AI-prompter och resultat från AI-funktioner.
+
+### 2.3 Företagsdata från offentliga register
+När du anger ett organisationsnummer hämtar vi företagsuppgifter via Bolagsapi (vidare till Bolagsverket). Detta kan inkludera namn på styrelseledamöter och firmatecknare som är publikt tillgängliga i Bolagsverkets register.
+
+### 2.4 Faktura- och betaluppgifter
+Faktureringsadress, organisationsnummer, fakturahistorik. Kortuppgifter och bankuppgifter behandlas av Stripe (se avsnitt 6) — vi lagrar dem inte själva.
+
+### 2.5 Supportkommunikation
+Innehåll i e-postkonversationer, supportärenden och feedback du skickar till oss.
+
+### 2.6 Cookies och liknande tekniker
+Se separat **[Cookiepolicy](#)**.
+
+## 3. Varifrån personuppgifterna kommer
+
+- Direkt från dig vid registrering, användning och kommunikation.
+- Från offentliga register (Bolagsverket via Bolagsapi) när du slår upp ett företag.
+- Automatiskt från din enhet (IP, webbläsare, enhetstyp) när du besöker Tjänsten.
+
+## 4. Ändamål och rättslig grund
+
+| Ändamål | Rättslig grund (Art. 6 GDPR) |
+| --- | --- |
+| Tillhandahålla Tjänsten du har tecknat avtal om | Avtal (Art. 6.1.b) |
+| Skapa och underhålla ditt konto | Avtal (Art. 6.1.b) |
+| Fakturering, redovisning och uppfyllande av bokföringslagen | Rättslig förpliktelse (Art. 6.1.c) |
+| Säkerhet, bedrägeribekämpning, loggning | Berättigat intresse (Art. 6.1.f) — att skydda Tjänsten och våra användare |
+| Felsökning och förbättring av Tjänsten | Berättigat intresse (Art. 6.1.f) |
+| Utskick av servicemeddelanden (driftinformation, säkerhetsincidenter) | Avtal (Art. 6.1.b) |
+| Marknadsföring till befintliga kunder om liknande tjänster | Berättigat intresse (Art. 6.1.f), möjlighet att invända i varje utskick |
+| Marknadsföring till icke-kunder | Samtycke (Art. 6.1.a) |
+| Statistik och analys (aggregerat) | Berättigat intresse (Art. 6.1.f) |
+| Cookies som inte är strikt nödvändiga | Samtycke (Art. 6.1.a, ePrivacy) |
+
+## 5. Lagringstid
+
+Vi lagrar personuppgifter så länge det är nödvändigt för det ändamål de samlades in för:
+
+- **Aktivt konto:** så länge du har ett aktivt abonnemang plus 90 dagar efter avslutat abonnemang för att möjliggöra återaktivering eller export.
+- **Dataminimering efter avslut:** efter 90 dagar anonymiseras eller raderas innehåll, men aggregerad statistik kan behållas.
+- **Bokförings- och fakturaunderlag:** sju (7) år enligt bokföringslagen (1999:1078).
+- **Säkerhetsloggar:** 12 månader.
+- **Supportkonversationer:** 24 månader.
+- **Marknadsföringsdata:** tills du återkallar samtycke eller invänder.
+
+## 6. Mottagare och underbiträden
+
+För att leverera Tjänsten anlitar vi noga utvalda underbiträden. En aktuell lista finns på **[Underbiträden](#)**. Vi har personuppgiftsbiträdesavtal med samtliga underbiträden enligt Art. 28 GDPR.
+
+I korthet — våra huvudsakliga underbiträden är:
+
+| Underbiträde | Funktion | Plats för behandling |
+| --- | --- | --- |
+| Vercel Inc. | Webbhosting / edge | EU + USA |
+| Supabase Inc. | Databas, autentisering, lagring | EU (Frankfurt) |
+| OpenAI, L.L.C. | AI-funktioner (LLM) | USA |
+| Anthropic, PBC | AI-funktioner (LLM) | USA |
+| Cohere Inc. | AI-funktioner (embeddings/sökrelevans) | USA / Kanada |
+| Resend Inc. | Transaktionsutskick (e-post) | EU + USA |
+| Functional Software, Inc. (Sentry) | Felmonitorering | EU + USA |
+| Stripe Payments Europe Ltd | Betalhantering | EU (Irland) |
+| Bolagsapi / Roaring Apps AB | Företagsuppslag | EU (Sverige) |
+| Google Ireland Ltd / Google LLC | Webbanalys + annonsering | EU + USA |
+| Meta Platforms Ireland Ltd | Annonsering / konvertering | EU + USA |
+| LinkedIn Ireland Unlimited Co. | Annonsering / konvertering | EU + USA |
+
+## 7. Överföring till tredjeland
+
+Vissa underbiträden behandlar personuppgifter utanför EU/EES. När så sker överförs uppgifterna med stöd av ett av följande:
+
+- EU-kommissionens beslut om adekvat skyddsnivå (t.ex. EU-US Data Privacy Framework där tillämpligt).
+- Standardavtalsklausuler (SCC) godkända av EU-kommissionen, kompletterade med tekniska och organisatoriska skyddsåtgärder.
+
+Du kan begära kopia av tillämpliga skyddsåtgärder via dev@laglig.se.
+
+## 8. Dina rättigheter
+
+Enligt GDPR har du rätt att:
+
+- **Få information** om hur dina personuppgifter behandlas (denna policy).
+- **Få tillgång** till dina personuppgifter (registerutdrag, Art. 15).
+- **Få felaktiga uppgifter rättade** (Art. 16).
+- **Få uppgifter raderade** ("rätt att bli glömd", Art. 17), när det är förenligt med rättsliga förpliktelser.
+- **Begära begränsning** av behandlingen (Art. 18).
+- **Invända mot behandling** baserad på berättigat intresse, inklusive direktmarknadsföring (Art. 21).
+- **Dataportabilitet** — få ut dina uppgifter i ett maskinläsbart format (Art. 20).
+- **Återkalla samtycke** när behandlingen baseras på samtycke (utan att tidigare behandling påverkas).
+
+För att utöva dina rättigheter, kontakta oss på dev@laglig.se. Vi besvarar din begäran inom en (1) månad enligt Art. 12.3 GDPR.
+
+Du har även rätt att lämna klagomål till tillsynsmyndigheten **Integritetsskyddsmyndigheten (IMY)**, imy.se.
+
+## 9. AI-behandling
+
+Tjänsten innehåller AI-funktioner som genererar laglistor, sammanfattningar och rekommendationer baserat på dina indata och företagsuppgifter. Vad du behöver veta:
+
+- Vi använder OpenAI, Anthropic och Cohere som underbiträden för LLM- och embeddings-funktioner.
+- Avtalsenligt får dessa leverantörer **inte** använda din indata för att träna sina allmänna modeller.
+- AI-genererade resultat är tekniska förslag och **utgör inte juridisk rådgivning**. Slutligt beslut om relevans och efterlevnad ligger hos dig.
+- Vi loggar prompter och svar i 30 dagar för felsökning och kvalitetskontroll, därefter raderas de.
+
+## 10. Säkerhet
+
+Vi vidtar tekniska och organisatoriska åtgärder enligt Art. 32 GDPR, bland annat:
+
+- TLS-kryptering för all trafik mellan användare och Tjänsten.
+- Kryptering av databasen i vila (AES-256, hanterad av Supabase).
+- Row Level Security (RLS) i databasen — applikationsdata är åtkomstbegränsad per användare/arbetsyta.
+- Tvåfaktorsautentisering för administrativ åtkomst.
+- Loggning och övervakning av säkerhetshändelser.
+- Personalåtkomst till produktionsdata begränsad enligt principen om minsta behörighet.
+- Underbiträden granskas innan de tas i bruk.
+
+Vid en personuppgiftsincident anmäler vi till IMY inom 72 timmar enligt Art. 33 GDPR. Drabbade användare informeras enligt Art. 34 där det krävs.
+
+## 11. Barn
+
+Tjänsten riktar sig till företag och yrkesverksamma. Vi samlar inte medvetet in personuppgifter om personer under 18 år. Om du blir medveten om sådan behandling, kontakta oss så raderar vi uppgifterna.
+
+## 12. Ändringar i policyn
+
+Vi kan komma att uppdatera denna policy. Vid väsentliga ändringar informerar vi dig via e-post eller i Tjänsten innan ändringen träder i kraft. Aktuell version finns alltid på laglig.se/integritetspolicy.
+
+## 13. Kontakt
+
+| | |
+| --- | --- |
+| E-post (allmän kontakt och dataskyddsfrågor) | dev@laglig.se |
+| Postadress | Grro Technologies AB, Stallmästarevägen 17, 254 84 Helsingborg |
+| Organisationsnummer | 559498-1903 |
+    </script>
+
+    <script type="text/markdown" id="doc-cookiepolicy">
+Denna cookiepolicy beskriver hur Laglig.se använder cookies och liknande tekniker på laglig.se ("Tjänsten"). Policyn ska läsas tillsammans med vår [Integritetspolicy](#).
+
+## 1. Vad är cookies?
+
+En cookie är en liten textfil som sparas på din enhet när du besöker en webbplats. Cookies används bland annat för att webbplatsen ska fungera, för att komma ihåg dina inställningar och för att samla statistik om hur webbplatsen används.
+
+Vi använder även liknande tekniker som **localStorage**, **sessionStorage** och **pixlar** (sammantaget "cookies" i denna policy).
+
+## 2. Rättslig grund för cookies
+
+Enligt 6 kap. 18 § lagen (2022:482) om elektronisk kommunikation (LEK) krävs samtycke för cookies som inte är strikt nödvändiga för att tillhandahålla en tjänst som du uttryckligen begärt.
+
+- **Strikt nödvändiga cookies** (kategori 1): kräver inte samtycke.
+- **Övriga cookies** (kategori 2–4): kräver ditt samtycke. Du kan när som helst återkalla samtycket via cookieinställningarna i sidfoten.
+
+## 3. Cookiekategorier
+
+### Kategori 1 — Strikt nödvändiga
+Krävs för att Tjänsten ska fungera (inloggning, säkerhet, sessionshantering). Kan inte stängas av.
+
+### Kategori 2 — Funktionella
+Möjliggör utökad funktionalitet och personalisering, t.ex. att komma ihåg språk eller layoutval. Aktiveras endast med samtycke.
+
+### Kategori 3 — Statistik / analys
+Hjälper oss förstå hur Tjänsten används så att vi kan förbättra den. Aktiveras endast med samtycke.
+
+### Kategori 4 — Marknadsföring
+Används för att mäta effekten av marknadsföring och visa relevanta annonser. Aktiveras endast med samtycke.
+
+## 4. Cookies vi använder
+
+### Strikt nödvändiga (kategori 1)
+
+| Namn | Leverantör | Syfte | Lagringstid |
+| --- | --- | --- | --- |
+| `next-auth.session-token` | Laglig.se | Inloggningssession | Session / 30 dagar |
+| `next-auth.csrf-token` | Laglig.se | Skydd mot CSRF-angrepp | Session |
+| `next-auth.callback-url` | Laglig.se | Hanterar omdirigering efter inloggning | Session |
+| `cookieconsent` | Laglig.se | Sparar dina cookieinställningar | 12 månader |
+| `__cf_bm` | Cloudflare / Vercel | Bot-skydd | 30 minuter |
+
+### Funktionella (kategori 2)
+
+| Namn | Leverantör | Syfte | Lagringstid |
+| --- | --- | --- | --- |
+| `theme` | Laglig.se | Kommer ihåg ljust/mörkt läge | 12 månader |
+| `sidebar-state` | Laglig.se | Sparar om sidopanelen är öppen | 12 månader |
+
+### Statistik / analys (kategori 3)
+
+| Namn | Leverantör | Syfte | Lagringstid |
+| --- | --- | --- | --- |
+| `_ga` | Google (Google Analytics 4) | Skiljer åt unika besökare | 24 månader |
+| `_ga_<container-id>` | Google (Google Analytics 4) | Sparar sessionsstatus och håller reda på besök | 24 månader |
+
+### Marknadsföring (kategori 4)
+
+| Namn | Leverantör | Syfte | Lagringstid |
+| --- | --- | --- | --- |
+| `_gcl_au` | Google (Google Ads) | Konverteringslänkning för Google Ads | 90 dagar |
+| `IDE` | Google (DoubleClick) | Annonsmätning och remarketing via Google Ads | 13 månader |
+| `_fbp` | Meta (Meta Ads / Facebook Pixel) | Identifierar webbläsaren för annonsleverans | 90 dagar |
+| `fr` | Meta | Annonsleverans och relevansmätning | 90 dagar |
+| `li_sugr` | LinkedIn (Insight Tag) | Browser-identifiering för konverteringsmätning | 3 månader |
+| `lidc` | LinkedIn | Routing av datacenter-trafik | 24 timmar |
+| `bcookie`, `bscookie` | LinkedIn | Browser-ID för annonsering och säkerhet | 12 månader |
+| `UserMatchHistory` | LinkedIn | Synkronisering av annons-ID | 30 dagar |
+
+## 5. Hur du hanterar dina cookieinställningar
+
+- **Vid första besök:** välj inställningar i cookiebannerns dialog.
+- **Senare:** klicka på "Cookieinställningar" i sidfoten.
+- **I webbläsaren:** du kan blockera eller radera cookies via webbläsarens inställningar. Notera att Tjänsten kan fungera sämre om strikt nödvändiga cookies blockeras.
+
+## 6. Tredjepartscookies och dataöverföring
+
+Vissa cookies sätts av tredjepartsleverantörer (t.ex. analysverktyg). Dessa leverantörer kan överföra data utanför EU/EES. Se vår [Integritetspolicy](#) avsnitt 7 för information om skyddsåtgärder.
+
+## 7. Ändringar i policyn
+
+Vi kan komma att uppdatera denna policy. Aktuell version finns alltid på laglig.se/cookiepolicy.
+
+## 8. Kontakt
+
+Frågor om cookies: dev@laglig.se
+    </script>
+
+    <script type="text/markdown" id="doc-pub">
+**Mellan:**
+
+**Personuppgiftsansvarig** ("Kunden"): den juridiska person som har tecknat abonnemang på Tjänsten.
+
+**Personuppgiftsbiträde** ("Laglig.se"): Grro Technologies AB, org.nr 559498-1903, Stallmästarevägen 17, 254 84 Helsingborg. Kontakt: dev@laglig.se.
+
+## 1. Bakgrund och syfte
+
+1.1 Kunden har tecknat avtal med Laglig.se om användning av tjänsten på laglig.se ("Tjänsten") enligt **[Användarvillkoren](#)** ("Huvudavtalet").
+
+1.2 Vid Kundens användning av Tjänsten kommer Laglig.se att behandla personuppgifter för Kundens räkning. Detta personuppgiftsbiträdesavtal ("PuB" eller "Avtalet") reglerar Laglig.ses behandling enligt artikel 28 i Europaparlamentets och rådets förordning (EU) 2016/679 ("GDPR").
+
+1.3 Vid motstridighet mellan PuB och Huvudavtalet har PuB företräde i frågor som rör personuppgiftsbehandling.
+
+## 2. Föremål, varaktighet, art och ändamål
+
+| | |
+| --- | --- |
+| **Föremål för behandlingen** | Personuppgifter som Kunden eller dess användare laddar upp till, skapar i, eller behandlar via Tjänsten. |
+| **Varaktighet** | Så länge Huvudavtalet löper plus den period som krävs för export och radering enligt avsnitt 9. |
+| **Behandlingens art** | Insamling, lagring, strukturering, tillhandahållande, säkerhetskopiering, radering. |
+| **Ändamål** | Att tillhandahålla Tjänsten enligt Huvudavtalet, inklusive AI-funktioner, samarbete, lagring av laglistor och styrdokument samt aviseringar. |
+| **Typ av personuppgifter** | Kontaktuppgifter (namn, e-post, telefon), användardata (inloggning, IP, aktivitet), innehåll i Kunddata, uppgifter om personer hos Kunden som är användare. |
+| **Kategorier av registrerade** | Kundens anställda, konsulter, uppdragstagare och andra användare som Kunden ger åtkomst till Tjänsten. |
+
+**Inga särskilda kategorier** av personuppgifter (Art. 9) eller uppgifter om brott (Art. 10) ska behandlas av Laglig.se utan föregående skriftlig överenskommelse.
+
+## 3. Kundens skyldigheter
+
+3.1 Kunden är personuppgiftsansvarig och svarar för att:
+
+- behandlingen har laglig grund;
+- de registrerade har informerats enligt Art. 13–14 GDPR;
+- instruktioner till Laglig.se är förenliga med GDPR och svensk lag;
+- inga personuppgifter laddas upp som inte ryms inom syftet med Tjänsten.
+
+3.2 Kunden ansvarar för konfigurationen av åtkomst, behörigheter och delning inom Tjänsten.
+
+## 4. Laglig.ses skyldigheter
+
+Laglig.se ska:
+
+a) endast behandla personuppgifter på Kundens dokumenterade instruktioner. Huvudavtalet och denna PuB utgör Kundens initiala instruktion;
+
+b) säkerställa att personer med åtkomst till personuppgifterna har förbundit sig till sekretess eller omfattas av lagstadgad tystnadsplikt;
+
+c) vidta lämpliga tekniska och organisatoriska säkerhetsåtgärder enligt **Bilaga 2**;
+
+d) bistå Kunden, så långt det är möjligt med hänsyn till behandlingens art, med att besvara förfrågningar från registrerade enligt kapitel III i GDPR (Art. 15–22);
+
+e) bistå Kunden i att uppfylla skyldigheterna enligt Art. 32–36 GDPR (säkerhet, incidentanmälan, konsekvensbedömning);
+
+f) på Kundens val radera eller återlämna personuppgifter när tjänsterna upphört enligt avsnitt 9, om inte unionsrätten eller medlemsstats nationell rätt kräver att uppgifterna lagras;
+
+g) ge Kunden tillgång till information som krävs för att visa att skyldigheterna i Art. 28 efterlevs, samt möjliggöra och bidra till granskning enligt avsnitt 8.
+
+## 5. Underbiträden
+
+5.1 Kunden ger Laglig.se ett **allmänt skriftligt förhandstillstånd** att anlita underbiträden. En aktuell förteckning finns på **[Underbiträden](#)**.
+
+5.2 Innan ett nytt underbiträde anlitas, eller ett befintligt byts ut, ska Laglig.se meddela Kunden minst trettio (30) dagar i förväg, antingen via e-post eller via uppdatering av förteckningen i kombination med notifiering i Tjänsten.
+
+5.3 Kunden får inom denna period invända mot det nya underbiträdet av sakliga skäl. Om parterna inte kan nå en lösning får Kunden säga upp Huvudavtalet utan kostnad för innevarande period.
+
+5.4 Laglig.se ska sluta avtal med varje underbiträde som ålägger underbiträdet motsvarande skyldigheter som de som åvilar Laglig.se enligt detta PuB.
+
+5.5 Laglig.se ansvarar gentemot Kunden för underbiträdens fullgörande av sina skyldigheter på samma sätt som för sina egna åtgärder.
+
+## 6. Överföring till tredjeland
+
+6.1 Vid överföring av personuppgifter till land utanför EU/EES ska Laglig.se säkerställa att överföringen sker med stöd av:
+
+a) ett beslut om adekvat skyddsnivå enligt Art. 45 GDPR (t.ex. EU-US Data Privacy Framework där tillämpligt); eller
+
+b) lämpliga skyddsåtgärder enligt Art. 46 GDPR, primärt EU-kommissionens standardavtalsklausuler (Beslut (EU) 2021/914), kompletterade med tekniska och organisatoriska skyddsåtgärder vid behov.
+
+6.2 Laglig.se gör en bedömning av tredjelandets rättsläge ("Transfer Impact Assessment") där så krävs.
+
+## 7. Personuppgiftsincident
+
+7.1 Vid en personuppgiftsincident som Laglig.se får kännedom om ska Laglig.se utan onödigt dröjsmål och senast inom **48 timmar** anmäla incidenten till Kunden via e-post till den adress Kunden angett som incidentkontakt (eller, vid avsaknad, till kontoadministratörens e-post).
+
+7.2 Anmälan ska, så långt möjligt, innehålla:
+
+- Beskrivning av incidentens art, inklusive berörda kategorier och ungefärliga antal registrerade samt personuppgiftsposter.
+- Kontaktuppgifter till Laglig.ses incidentansvarig.
+- Beskrivning av sannolika konsekvenser.
+- Beskrivning av vidtagna eller föreslagna åtgärder.
+
+7.3 Laglig.se bistår Kunden med information som krävs för Kundens anmälan till tillsynsmyndighet enligt Art. 33 GDPR.
+
+## 8. Granskning och revision
+
+8.1 Kunden har rätt att, en gång per kalenderår och med minst trettio (30) dagars varsel, granska Laglig.ses efterlevnad av denna PuB. Granskningen får inte hindra Laglig.ses normala verksamhet eller äventyra andra kunders säkerhet.
+
+8.2 Laglig.se kan uppfylla granskningsskyldigheten genom att tillhandahålla dokumentation såsom:
+
+- Sammanfattning av senaste säkerhetsbedömning eller penetrationstest.
+- Tillämpliga certifieringar (om sådana finns, t.ex. ISO 27001).
+- Underbiträdesförteckning och DPA-bekräftelser.
+- Säkerhetsåtgärder enligt Bilaga 2.
+
+8.3 Om Kunden, eller tillsynsmyndighet, kräver granskning på plats står Kunden för rimliga kostnader för Laglig.ses medverkan, om inte granskningen sker som en följd av ett verifierat avtalsbrott från Laglig.ses sida.
+
+## 9. Återlämnande och radering vid Avtalets upphörande
+
+9.1 Vid Huvudavtalets upphörande ska Laglig.se, enligt Kundens val:
+
+a) återlämna personuppgifter i ett vanligt förekommande maskinläsbart format (export-funktionen i Tjänsten); eller
+
+b) radera personuppgifter.
+
+9.2 Kunden har trettio (30) dagar från upphörandedagen att begära export eller radering. Därefter raderar Laglig.se personuppgifterna inom ytterligare nittio (90) dagar, med undantag för säkerhetskopior som raderas i takt med deras retention-cykel.
+
+9.3 Personuppgifter som Laglig.se måste behålla enligt unionsrätt eller svensk lag (t.ex. bokföringslagen) får behållas under den lagstadgade tiden, men endast för det ändamålet.
+
+## 10. Övrigt
+
+10.1 PuB löper så länge Huvudavtalet är i kraft.
+
+10.2 Ändringar i denna PuB sker genom skriftlig överenskommelse, undantaget uppdatering av underbiträdesförteckningen som sker enligt avsnitt 5.
+
+10.3 Svensk lag tillämpas. Tvist hanteras enligt Huvudavtalet.
+
+---
+
+## Bilaga 2 — Tekniska och organisatoriska säkerhetsåtgärder
+
+Laglig.se vidtar minst följande åtgärder:
+
+### Konfidentialitet
+- TLS 1.2+ för all trafik mellan användare och Tjänsten samt mellan Tjänstens komponenter.
+- Kryptering i vila av databas (AES-256, hanterad av Supabase).
+- Lösenord lagras hashade med branschstandard (bcrypt eller motsvarande).
+- Row Level Security (RLS) i databasen — kunddata åtkomstbegränsad per arbetsyta.
+- Access Control: rollbaserad behörighet inom Tjänsten, princip om minsta behörighet för intern personal.
+- Tvåfaktorsautentisering för administrativ åtkomst.
+
+### Integritet
+- Versionshanterad källkod, kodgranskning innan ändringar driftsätts.
+- Migrationer i databas körs med separata privilegier.
+- Loggning av administrativa åtgärder.
+
+### Tillgänglighet
+- Dagliga säkerhetskopior av databasen, lagrade i en separat region.
+- Övervakning av drift och felmonitorering (Sentry).
+- Återställningstest (kvartalsvis).
+
+### Säkerhetsorganisation
+- Incidenthanteringsrutin.
+- Personalåtagande om sekretess.
+- Underbiträden granskas innan de tas i bruk.
+- Säkerhetspatchning av beroenden enligt rutin.
+
+### Pseudonymisering och dataminimering
+- Felloggar i Sentry skrubbas på PII där det är möjligt.
+- Endast nödvändiga fält samlas in från Kunden.
+    </script>
+
+    <script type="text/markdown" id="doc-underbitraden">
+För att tillhandahålla Tjänsten anlitar Laglig.se följande underbiträden ("sub-processors"). Vi har personuppgiftsbiträdesavtal (DPA) med samtliga underbiträden enligt artikel 28 i GDPR.
+
+## Aktuella underbiträden
+
+| # | Underbiträde | Funktion | Personuppgifter som behandlas | Plats för behandling | Skyddsåtgärd vid överföring till tredjeland |
+| --- | --- | --- | --- | --- | --- |
+| 1 | **Vercel Inc.** | Webbhosting, edge-funktioner, deploymentinfrastruktur | Konto- och användningsdata, IP-adresser, loggar | EU + USA | EU-US Data Privacy Framework + SCC |
+| 2 | **Supabase Inc.** | Hanterad PostgreSQL-databas, autentisering, fillagring | Kunddata, kontouppgifter, autentiseringsdata | EU (Frankfurt, eu-central-1) | Behandling primärt inom EU. SCC vid eventuell support från USA. |
+| 3 | **OpenAI, L.L.C.** | LLM (stora språkmodeller) för AI-funktioner | Indata till AI-funktioner (prompter och företagsuppgifter du anger) | USA | EU-US Data Privacy Framework + SCC. Träning på kunddata avtalsmässigt utesluten via OpenAI Enterprise/API-avtal. |
+| 4 | **Anthropic, PBC** | LLM (stora språkmodeller) för AI-funktioner | Indata till AI-funktioner | USA | SCC + tilläggsskydd. Träning på kunddata avtalsmässigt utesluten. |
+| 5 | **Cohere Inc.** | Embeddings och sökrelevans | Sökfrågor, dokumentinnehåll för indexering | USA / Kanada | Kanada har adekvat skyddsnivå (kommissionsbeslut). SCC för USA-behandling. |
+| 6 | **Resend Inc.** | Transaktionsutskick (e-post) | E-postadress, namn, innehåll i transaktionsmail | EU + USA | EU-US Data Privacy Framework + SCC |
+| 7 | **Functional Software, Inc. (Sentry)** | Felmonitorering och prestandaspårning | Felloggar, IP-adress, webbläsare, användar-ID | EU + USA | EU-US Data Privacy Framework + SCC. PII-skrubbning aktiverad. |
+| 8 | **Stripe Payments Europe Ltd** | Betalhantering, fakturering | Kortuppgifter (PCI-DSS, hanteras direkt av Stripe), faktureringsadress, organisationsnummer | EU (Irland, primärt) | Inom EU. Visst stöd från Stripe Inc. (USA) under SCC. |
+| 9 | **Roaring Apps AB (Bolagsapi)** | Företagsuppslag mot Bolagsverket och offentliga register | Organisationsnummer (slås upp), publika styrelseuppgifter som returneras | EU (Sverige) | Inom EU. |
+| 10 | **Google Ireland Ltd / Google LLC** | Webbanalys (Google Analytics 4), webbplatsverifiering (Search Console), annonsering och konverteringsmätning (Google Ads) | IP-adress, klient-ID, händelsedata, konverteringsdata | EU + USA | EU-US Data Privacy Framework + SCC |
+| 11 | **Meta Platforms Ireland Ltd** | Annonsering och konverteringsspårning via Meta Ads / Facebook Pixel | IP-adress, browser-ID, händelsedata | EU + USA (Meta Platforms, Inc.) | EU-US Data Privacy Framework + SCC |
+| 12 | **LinkedIn Ireland Unlimited Co.** | Annonsering och konverteringsspårning via LinkedIn Ads / Insight Tag | IP-adress, browser-ID, händelsedata | EU + USA (LinkedIn Corporation) | EU-US Data Privacy Framework + SCC |
+
+## Process vid byte eller tillägg av underbiträden
+
+Vi förbehåller oss rätten att lägga till eller byta ut underbiträden. Vid sådana ändringar:
+
+1. Uppdaterar vi denna förteckning.
+2. Meddelar vi befintliga kunder via e-post eller i Tjänsten minst trettio (30) dagar innan ändringen träder i kraft, om det avser ett underbiträde med betydelsefull databehandling.
+3. Du har rätt att invända mot ett nytt underbiträde av sakliga skäl. Vid sådan invändning söker vi en alternativ lösning. Om ingen lösning kan nås har du rätt att säga upp avtalet utan kostnad för innevarande period.
+
+## Kontakt
+
+Frågor eller invändningar mot underbiträden: dev@laglig.se
+    </script>
+
+    <!-- Layout JS provides the top nav (mega-menu).
+         We deliberately DO NOT include <div id="site-footer"></div>, so the
+         injectFooter() in _layout.js becomes a no-op for this page — our
+         proposed footer above is what reviewers should look at. -->
+    <script src="_layout.js"></script>
+
+    <script>
+      // Document registry — keyed by URL slug
+      const DOCS = [
+        {
+          key: 'villkor',
+          slug: '/villkor',
+          title: 'Användarvillkor',
+          subtitle: 'Avtal mellan Grro Technologies AB och dig som beställare/användare av Tjänsten.',
+          breadcrumb: 'Användarvillkor',
+        },
+        {
+          key: 'integritetspolicy',
+          slug: '/integritetspolicy',
+          title: 'Integritetspolicy',
+          subtitle: 'Hur vi behandlar personuppgifter enligt GDPR och svensk dataskyddslagstiftning.',
+          breadcrumb: 'Integritetspolicy',
+        },
+        {
+          key: 'cookiepolicy',
+          slug: '/cookiepolicy',
+          title: 'Cookiepolicy',
+          subtitle: 'Vilka cookies och liknande tekniker vi använder, och hur du hanterar samtycke.',
+          breadcrumb: 'Cookiepolicy',
+        },
+        {
+          key: 'pub',
+          slug: '/personuppgiftsbitradesavtal',
+          title: 'Personuppgiftsbiträdesavtal',
+          subtitle: 'PuB-mall (Art. 28 GDPR) som utgör bilaga till Användarvillkoren när Kunden är personuppgiftsansvarig.',
+          breadcrumb: 'PuB',
+        },
+        {
+          key: 'underbitraden',
+          slug: '/underbitraden',
+          title: 'Underbiträdesförteckning',
+          subtitle: 'Aktuell lista över underbiträden ("sub-processors") som behandlar personuppgifter för Laglig.ses räkning.',
+          breadcrumb: 'Underbiträden',
+        },
+      ];
+
+      const ICONS = {
+        villkor: 'file-text',
+        integritetspolicy: 'shield-check',
+        cookiepolicy: 'cookie',
+        pub: 'file-signature',
+        underbitraden: 'list-tree',
+      };
+
+      function buildSidebar() {
+        const nav = document.getElementById('legal-nav');
+        nav.innerHTML = DOCS.map((d) => `
+          <a href="#${d.key}" data-doc="${d.key}" class="legal-nav-item group flex items-start gap-3 rounded-lg px-3 py-2.5 text-sm text-stone-700 transition hover:bg-stone-100/70">
+            <span class="legal-nav-icon mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-md bg-stone-900/95 text-stone-50 transition group-hover:bg-stone-700">
+              <i data-lucide="${ICONS[d.key]}" class="h-3.5 w-3.5"></i>
+            </span>
+            <span class="min-w-0 flex-1">
+              <span class="block font-semibold leading-tight text-stone-900">${d.title}</span>
+              <span class="mt-0.5 block text-[11px] font-mono text-stone-500">${d.slug}</span>
+            </span>
+          </a>
+        `).join('');
+      }
+
+      function loadDoc(key) {
+        const idx = DOCS.findIndex((d) => d.key === key);
+        if (idx === -1) return;
+        const doc = DOCS[idx];
+
+        const md = document.getElementById(`doc-${key}`).textContent;
+        document.getElementById('doc-content').innerHTML = marked.parse(md.trim(), { gfm: true, breaks: false });
+        document.getElementById('doc-title').textContent = doc.title;
+        document.getElementById('doc-subtitle').textContent = doc.subtitle;
+        document.getElementById('breadcrumb-current').textContent = doc.breadcrumb;
+        document.title = `${doc.title} — laglig.se`;
+
+        // Sidebar active state
+        document.querySelectorAll('.legal-nav-item').forEach((el) => {
+          el.setAttribute('data-active', el.getAttribute('data-doc') === key ? 'true' : 'false');
+        });
+
+        // Prev / next
+        const prev = DOCS[idx - 1];
+        const next = DOCS[idx + 1];
+        const prevBtn = document.getElementById('prev-doc');
+        const nextBtn = document.getElementById('next-doc');
+        prevBtn.disabled = !prev;
+        nextBtn.disabled = !next;
+        document.getElementById('prev-label').textContent = prev ? prev.title : 'Föregående';
+        document.getElementById('next-label').textContent = next ? next.title : 'Nästa';
+        prevBtn.onclick = prev ? () => navigate(prev.key) : null;
+        nextBtn.onclick = next ? () => navigate(next.key) : null;
+
+        // Re-render lucide icons inside the new content
+        if (window.lucide) window.lucide.createIcons();
+
+        // Scroll to top of article
+        window.scrollTo({ top: document.querySelector('main').offsetTop - 80, behavior: 'smooth' });
+      }
+
+      function navigate(key) {
+        history.replaceState(null, '', `#${key}`);
+        loadDoc(key);
+      }
+
+      function wireLinks() {
+        // Sidebar
+        document.querySelectorAll('.legal-nav-item').forEach((el) => {
+          el.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigate(el.getAttribute('data-doc'));
+          });
+        });
+        // Footer cross-links
+        document.querySelectorAll('[data-load-doc]').forEach((el) => {
+          el.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigate(el.getAttribute('data-load-doc'));
+          });
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        buildSidebar();
+        wireLinks();
+        const fromHash = (location.hash || '#villkor').slice(1);
+        const initial = DOCS.find((d) => d.key === fromHash) ? fromHash : 'villkor';
+        loadDoc(initial);
+        if (window.lucide) window.lucide.createIcons();
+      });
+    </script>
+  </body>
+</html>
