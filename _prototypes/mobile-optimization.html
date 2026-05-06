@@ -1,0 +1,2675 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Laglig — mobile optimization prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+      /* ---------------------------------------------------------------------- */
+      /* Brand fonts                                                              */
+      /* ---------------------------------------------------------------------- */
+      @font-face {
+        font-family: 'Safiro';
+        src:
+          url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'),
+          url('../public/fonts/safiro-medium-webfont.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Google Sans Flex';
+        src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype');
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      /* ---------------------------------------------------------------------- */
+      /* Tokens — mirrored from app/globals.css :root                            */
+      /* ---------------------------------------------------------------------- */
+      :root {
+        --background: 40 20% 98%;
+        --foreground: 30 10% 10%;
+        --card: 40 15% 99%;
+        --card-foreground: 30 10% 10%;
+        --primary: 30 15% 12%;
+        --primary-foreground: 40 20% 98%;
+        --secondary: 40 15% 95%;
+        --muted: 40 12% 94%;
+        --muted-foreground: 30 8% 45%;
+        --accent: 40 15% 93%;
+        --border: 35 10% 88%;
+        --ring: 30 15% 12%;
+        --section-warm: 45 30% 96%;
+        --section-sage: 140 25% 95%;
+        --section-cream: 35 40% 97%;
+        --amber-50: 48 100% 96%;
+        --amber-200: 48 96% 76%;
+        --amber-700: 26 90% 37%;
+        --amber-900: 22 78% 26%;
+      }
+
+      html, body {
+        font-family: 'Google Sans Flex', system-ui, -apple-system, sans-serif;
+        background: hsl(var(--background));
+        color: hsl(var(--foreground));
+      }
+      .font-safiro { font-family: 'Safiro', system-ui, sans-serif; font-weight: 500; }
+
+      /* ---------------------------------------------------------------------- */
+      /* Phone frame                                                              */
+      /* ---------------------------------------------------------------------- */
+      .phone {
+        width: 390px;
+        height: 780px;
+        border: 8px solid #1c1a17;
+        border-radius: 44px;
+        background: hsl(var(--background));
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 60px -20px rgba(0,0,0,.35);
+      }
+      .phone::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 50%; transform: translateX(-50%);
+        width: 130px; height: 28px;
+        background: #1c1a17;
+        border-radius: 0 0 18px 18px;
+        z-index: 60;
+      }
+      .phone-inner {
+        position: absolute;
+        inset: 0;
+        overflow-y: auto;
+        scrollbar-width: thin;
+      }
+      .phone-inner::-webkit-scrollbar { width: 4px; }
+      .phone-inner::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 4px; }
+
+      /* Side-by-side comparison layout */
+      .compare {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+        align-items: start;
+      }
+      .label-bad {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: hsl(0 80% 95%); color: hsl(0 80% 35%);
+        font-size: 11px; font-weight: 500;
+        padding: 4px 10px; border-radius: 999px;
+      }
+      .label-good {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: hsl(140 50% 92%); color: hsl(140 50% 28%);
+        font-size: 11px; font-weight: 500;
+        padding: 4px 10px; border-radius: 999px;
+      }
+
+      /* In-phone tiny status bar */
+      .status-bar {
+        position: relative; z-index: 50;
+        padding: 12px 24px 4px 24px;
+        font-size: 13px; font-weight: 600;
+        display: flex; justify-content: space-between;
+        background: hsl(var(--background));
+      }
+
+      /* Bottom nav */
+      .bottom-nav {
+        position: absolute; left: 0; right: 0; bottom: 0;
+        background: hsl(var(--background));
+        border-top: 1px solid hsl(var(--border));
+        padding: 8px 8px calc(8px + env(safe-area-inset-bottom)) 8px;
+        display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;
+        z-index: 40;
+      }
+      .bottom-nav button {
+        display: flex; flex-direction: column; align-items: center; gap: 2px;
+        padding: 6px 4px; border-radius: 8px;
+        font-size: 10px; color: hsl(var(--muted-foreground));
+      }
+      .bottom-nav button.active { color: hsl(var(--primary)); background: hsl(var(--accent)); }
+
+      /* Sheet (bottom drawer) overlay */
+      .sheet-handle {
+        width: 36px; height: 4px;
+        background: hsl(var(--border));
+        border-radius: 2px; margin: 8px auto;
+      }
+
+      /* Sticky bottom action bar */
+      .sticky-action {
+        position: sticky; bottom: 0;
+        background: hsl(var(--background));
+        border-top: 1px solid hsl(var(--border));
+        padding: 12px 16px calc(12px + env(safe-area-inset-bottom)) 16px;
+        margin: 0 -16px;
+      }
+
+      /* Card-list table replacement */
+      .row-card {
+        background: hsl(var(--card));
+        border: 1px solid hsl(var(--border));
+        border-radius: 12px;
+        padding: 14px;
+        display: flex; align-items: center; gap: 12px;
+        min-height: 64px;
+      }
+      .row-card:active { background: hsl(var(--accent)); }
+
+      /* Pill column tabs (kanban-mobile) */
+      .col-pill {
+        flex-shrink: 0; padding: 8px 14px; border-radius: 999px;
+        background: hsl(var(--secondary));
+        font-size: 13px; font-weight: 500;
+        color: hsl(var(--muted-foreground));
+        white-space: nowrap;
+      }
+      .col-pill.active {
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+      }
+
+      /* Floating action button */
+      .fab {
+        position: absolute; right: 16px; bottom: 76px;
+        width: 56px; height: 56px;
+        border-radius: 18px;
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 8px 24px -6px rgba(0,0,0,.35);
+        z-index: 30;
+      }
+      [data-section] { scroll-margin-top: 80px; }
+
+      /* TOC pill */
+      .toc-pill {
+        padding: 6px 12px; border: 1px solid hsl(var(--border));
+        background: hsl(var(--card)); color: hsl(var(--muted-foreground));
+        border-radius: 999px; font-size: 13px; font-weight: 500;
+      }
+      .toc-pill:hover {
+        background: hsl(var(--accent)); color: hsl(var(--foreground));
+        border-color: hsl(var(--ring));
+      }
+    </style>
+  </head>
+
+  <body class="bg-section-warm" style="background: hsl(var(--section-warm));">
+
+    <!-- ====================================================================== -->
+    <!-- Document header                                                         -->
+    <!-- ====================================================================== -->
+    <header class="border-b" style="background: hsl(var(--background)); border-color: hsl(var(--border));">
+      <div class="max-w-6xl mx-auto px-6 py-10">
+        <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Mobile Optimization Prototype · 2026-05-06</p>
+        <h1 class="font-safiro text-5xl tracking-tight mt-3">Laglig.se on the phone</h1>
+        <p class="mt-4 text-lg max-w-3xl" style="color: hsl(var(--muted-foreground));">
+          Side-by-side mockups of every major mobile pattern this app needs. Read the companion audit at
+          <code class="text-xs px-2 py-1 rounded" style="background: hsl(var(--muted));">_prototypes/mobile-optimization-audit.md</code>
+          for the page-by-page assessment + phased roadmap.
+        </p>
+
+        <!-- Anchor TOC -->
+        <nav class="mt-8 flex flex-wrap gap-2">
+          <a class="toc-pill" href="#nav">1. Bottom nav + drawer</a>
+          <a class="toc-pill" href="#dialog">2. Adaptive Dialog → Sheet</a>
+          <a class="toc-pill" href="#table">3. Table → cards</a>
+          <a class="toc-pill" href="#kanban">4. Kanban → tabs</a>
+          <a class="toc-pill" href="#settings">5. Settings tabs → select</a>
+          <a class="toc-pill" href="#tiptap">6. Tiptap toolbar</a>
+          <a class="toc-pill" href="#actionbar">7. Sticky action bar</a>
+          <a class="toc-pill" href="#dashboard">8. Mobile dashboard</a>
+          <a class="toc-pill" href="#filters">9. Filter drawer</a>
+          <a class="toc-pill" href="#legalmodal" style="border-color: hsl(var(--ring)); background: hsl(var(--accent));">10. Legal-document modal ★</a>
+          <a class="toc-pill" href="#taskmodal" style="border-color: hsl(var(--ring)); background: hsl(var(--accent));">11. Task modal ★</a>
+          <a class="toc-pill" href="#notif">12. Notification bell</a>
+          <a class="toc-pill" href="#aichat">13. AI chat content</a>
+          <a class="toc-pill" href="#tooltip">14. Tooltip touch fallback</a>
+          <a class="toc-pill" href="#touchtargets">15. Touch targets + Swedish wrap</a>
+          <a class="toc-pill" href="#camera" style="border-color: hsl(var(--ring)); background: hsl(var(--accent));">16. 📷 Photo evidence capture ★</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 py-16 space-y-24">
+
+      <!-- ================================================================== -->
+      <!-- 1. NAV — bottom tabs + hamburger drawer                              -->
+      <!-- ================================================================== -->
+      <section data-section id="nav">
+        <div class="mb-8">
+          <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Pattern 1</p>
+          <h2 class="font-safiro text-3xl mt-1">Navigation: bottom tabs + hamburger drawer</h2>
+          <p class="mt-3 text-base max-w-2xl" style="color: hsl(var(--muted-foreground));">
+            The shell is already mobile-aware (left sidebar hides at <code>md:</code>, MobileSidebar Sheet drawer
+            takes over). Adding a 5-button bottom tab bar gives mobile users the most-traveled destinations
+            (Hem, Efterlevnad, Uppgifter, Filer, Mer) within one thumb's reach. The hamburger stays for the long tail.
+          </p>
+        </div>
+
+        <div class="compare">
+
+          <!-- Current -->
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-bad"><i data-lucide="x" class="w-3 h-3"></i> Current</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">Top-only nav. All destinations buried in hamburger.</span></div>
+            <div class="phone mx-auto">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="flex items-center justify-between px-4 py-3 border-b" style="border-color: hsl(var(--border));">
+                  <button><i data-lucide="menu" class="w-5 h-5"></i></button>
+                  <span class="font-safiro text-lg">Laglig</span>
+                  <button><i data-lucide="bell" class="w-5 h-5"></i></button>
+                </header>
+                <div class="p-4">
+                  <h2 class="font-safiro text-2xl">Hem</h2>
+                  <p class="text-sm mt-2" style="color: hsl(var(--muted-foreground));">Page content...</p>
+                  <div class="mt-6 space-y-2">
+                    <div class="row-card"><i data-lucide="check-circle-2" class="w-5 h-5"></i><span class="text-sm">0 av 7 lagar uppfyllda</span></div>
+                    <div class="row-card"><i data-lucide="bell" class="w-5 h-5"></i><span class="text-sm">1 ny lagändring</span></div>
+                    <div class="row-card"><i data-lucide="alert-circle" class="w-5 h-5"></i><span class="text-sm">Inga förfallna</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Proposed -->
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-good"><i data-lucide="check" class="w-3 h-3"></i> Proposed</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">5-tab bottom nav. Top hamburger for tertiary nav.</span></div>
+            <div class="phone mx-auto">
+              <div class="phone-inner pb-20">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="flex items-center justify-between px-4 py-3 border-b" style="border-color: hsl(var(--border));">
+                  <button><i data-lucide="menu" class="w-5 h-5"></i></button>
+                  <span class="font-safiro text-lg">nShift AB</span>
+                  <button><i data-lucide="bell" class="w-5 h-5"></i></button>
+                </header>
+                <div class="p-4">
+                  <h2 class="font-safiro text-2xl">Hem</h2>
+                  <p class="text-sm mt-2" style="color: hsl(var(--muted-foreground));">Same content, but the next destination is one thumb-tap away.</p>
+                  <div class="mt-6 space-y-2">
+                    <div class="row-card"><i data-lucide="check-circle-2" class="w-5 h-5"></i><span class="text-sm">0 av 7 lagar uppfyllda</span></div>
+                    <div class="row-card"><i data-lucide="bell" class="w-5 h-5"></i><span class="text-sm">1 ny lagändring</span></div>
+                    <div class="row-card"><i data-lucide="alert-circle" class="w-5 h-5"></i><span class="text-sm">Inga förfallna</span></div>
+                  </div>
+                </div>
+              </div>
+              <nav class="bottom-nav">
+                <button class="active"><i data-lucide="home" class="w-5 h-5"></i><span>Hem</span></button>
+                <button><i data-lucide="shield" class="w-5 h-5"></i><span>Efterlevn.</span></button>
+                <button><i data-lucide="check-square" class="w-5 h-5"></i><span>Uppgifter</span></button>
+                <button><i data-lucide="folder" class="w-5 h-5"></i><span>Filer</span></button>
+                <button><i data-lucide="more-horizontal" class="w-5 h-5"></i><span>Mer</span></button>
+              </nav>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- 2. ADAPTIVE DIALOG → SHEET                                            -->
+      <!-- ================================================================== -->
+      <section data-section id="dialog">
+        <div class="mb-8">
+          <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Pattern 2 · highest leverage</p>
+          <h2 class="font-safiro text-3xl mt-1">Adaptive Dialog → bottom Sheet</h2>
+          <p class="mt-3 text-base max-w-2xl" style="color: hsl(var(--muted-foreground));">
+            26 files use <code>&lt;Dialog&gt;</code>. On mobile they squeeze into a centered 90vw box.
+            Replace with a <code>&lt;ResponsiveDialog&gt;</code> wrapper that renders Dialog at <code>≥md</code>
+            and a bottom Sheet at <code>&lt;md</code>. Same children, same form, different chrome.
+          </p>
+        </div>
+
+        <div class="compare">
+
+          <!-- Current — centered Dialog -->
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-bad"><i data-lucide="x" class="w-3 h-3"></i> Current</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">Dialog centered, dim overlay. Fixed max-w-lg.</span></div>
+            <div class="phone mx-auto" style="position: relative;">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="flex items-center justify-between px-4 py-3 border-b" style="border-color: hsl(var(--border));">
+                  <button><i data-lucide="menu" class="w-5 h-5"></i></button>
+                  <span class="font-safiro text-lg">Uppgifter</span>
+                  <span class="w-5"></span>
+                </header>
+                <div class="p-4 opacity-30">
+                  <h2 class="font-safiro text-2xl">Skapa uppgift</h2>
+                  <div class="row-card mt-3"><span class="text-sm">Konsekvensbedöm 2024:1234</span></div>
+                  <div class="row-card mt-2"><span class="text-sm">Uppdatera arbetsmiljöplan</span></div>
+                </div>
+              </div>
+              <!-- Dim overlay -->
+              <div style="position: absolute; inset: 0; background: rgba(0,0,0,.45); z-index: 30;"></div>
+              <!-- Centered modal -->
+              <div style="position: absolute; left: 16px; right: 16px; top: 50%; transform: translateY(-50%); background: hsl(var(--card)); border-radius: 12px; padding: 16px; z-index: 40; box-shadow: 0 12px 32px rgba(0,0,0,.3);">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="font-safiro text-lg">Ny uppgift</h3>
+                  <button><i data-lucide="x" class="w-4 h-4"></i></button>
+                </div>
+                <p class="text-xs mb-3" style="color: hsl(var(--muted-foreground));">Beskrivning</p>
+                <input class="w-full border rounded px-2 py-1.5 text-sm mb-3" style="border-color: hsl(var(--border));" placeholder="Vad ska göras?" />
+                <p class="text-xs mb-3" style="color: hsl(var(--muted-foreground));">Ansvarig · Förfallodatum</p>
+                <div class="flex gap-2 mb-4">
+                  <select class="flex-1 border rounded px-2 py-1.5 text-sm" style="border-color: hsl(var(--border));"><option>Välj</option></select>
+                  <input class="flex-1 border rounded px-2 py-1.5 text-sm" style="border-color: hsl(var(--border));" placeholder="2026-06-01" />
+                </div>
+                <div class="flex gap-2 justify-end mt-4">
+                  <button class="px-3 py-1.5 text-sm border rounded" style="border-color: hsl(var(--border));">Avbryt</button>
+                  <button class="px-3 py-1.5 text-sm rounded text-white" style="background: hsl(var(--primary));">Spara</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Proposed — bottom sheet -->
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-good"><i data-lucide="check" class="w-3 h-3"></i> Proposed</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">Bottom Sheet. Drag-handle. Sticky action bar.</span></div>
+            <div class="phone mx-auto" style="position: relative;">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="flex items-center justify-between px-4 py-3 border-b" style="border-color: hsl(var(--border));">
+                  <button><i data-lucide="menu" class="w-5 h-5"></i></button>
+                  <span class="font-safiro text-lg">Uppgifter</span>
+                  <span class="w-5"></span>
+                </header>
+                <div class="p-4 opacity-30">
+                  <h2 class="font-safiro text-2xl">Skapa uppgift</h2>
+                  <div class="row-card mt-3"><span class="text-sm">Konsekvensbedöm 2024:1234</span></div>
+                </div>
+              </div>
+              <!-- Dim overlay (lighter) -->
+              <div style="position: absolute; inset: 0; background: rgba(0,0,0,.35); z-index: 30;"></div>
+              <!-- Bottom sheet -->
+              <div style="position: absolute; left: 0; right: 0; bottom: 0; background: hsl(var(--card)); border-top-left-radius: 24px; border-top-right-radius: 24px; z-index: 40; box-shadow: 0 -8px 24px rgba(0,0,0,.2); max-height: 85%; display: flex; flex-direction: column;">
+                <div class="sheet-handle"></div>
+                <div class="px-5 pt-2 pb-3 border-b" style="border-color: hsl(var(--border));">
+                  <h3 class="font-safiro text-xl">Ny uppgift</h3>
+                  <p class="text-xs mt-1" style="color: hsl(var(--muted-foreground));">Skapa en uppgift för efterlevnad eller åtgärd</p>
+                </div>
+                <div class="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+                  <div>
+                    <label class="text-xs font-medium mb-1.5 block">Beskrivning</label>
+                    <input class="w-full border rounded-md px-3 py-2.5 text-sm" style="border-color: hsl(var(--border));" placeholder="Vad ska göras?" />
+                  </div>
+                  <div>
+                    <label class="text-xs font-medium mb-1.5 block">Ansvarig</label>
+                    <select class="w-full border rounded-md px-3 py-2.5 text-sm" style="border-color: hsl(var(--border));"><option>Välj person</option></select>
+                  </div>
+                  <div>
+                    <label class="text-xs font-medium mb-1.5 block">Förfallodatum</label>
+                    <input class="w-full border rounded-md px-3 py-2.5 text-sm" style="border-color: hsl(var(--border));" placeholder="2026-06-01" />
+                  </div>
+                  <div>
+                    <label class="text-xs font-medium mb-1.5 block">Prioritet</label>
+                    <div class="flex gap-2">
+                      <button class="flex-1 border rounded-md py-2 text-sm" style="border-color: hsl(var(--border));">Låg</button>
+                      <button class="flex-1 border rounded-md py-2 text-sm" style="border-color: hsl(var(--ring)); background: hsl(var(--accent));">Medium</button>
+                      <button class="flex-1 border rounded-md py-2 text-sm" style="border-color: hsl(var(--border));">Hög</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="px-5 pt-3 pb-5 border-t flex gap-2" style="border-color: hsl(var(--border));">
+                  <button class="flex-1 border rounded-md py-3 text-sm font-medium" style="border-color: hsl(var(--border));">Avbryt</button>
+                  <button class="flex-1 rounded-md py-3 text-sm font-medium text-white" style="background: hsl(var(--primary));">Spara uppgift</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <details class="mt-8 max-w-2xl">
+          <summary class="cursor-pointer text-sm font-medium" style="color: hsl(var(--muted-foreground));">Implementation sketch</summary>
+          <pre class="text-xs mt-3 p-4 rounded overflow-x-auto" style="background: hsl(var(--muted));"><code>// components/ui/responsive-dialog.tsx
+'use client'
+import { useIsMobile } from '@/lib/hooks/use-is-mobile'
+import * as Dialog from '@/components/ui/dialog'
+import * as Sheet from '@/components/ui/sheet'
+
+export function ResponsiveDialog({ open, onOpenChange, children }) {
+  const isMobile = useIsMobile()
+  if (isMobile) {
+    return (
+      &lt;Sheet.Sheet open={open} onOpenChange={onOpenChange}&gt;
+        &lt;Sheet.SheetContent side="bottom" className="rounded-t-3xl max-h-[85vh]"&gt;
+          {children}
+        &lt;/Sheet.SheetContent&gt;
+      &lt;/Sheet.Sheet&gt;
+    )
+  }
+  return (
+    &lt;Dialog.Dialog open={open} onOpenChange={onOpenChange}&gt;
+      &lt;Dialog.DialogContent&gt;{children}&lt;/Dialog.DialogContent&gt;
+    &lt;/Dialog.Dialog&gt;
+  )
+}</code></pre>
+        </details>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- 3. TABLE → CARDS                                                      -->
+      <!-- ================================================================== -->
+      <section data-section id="table">
+        <div class="mb-8">
+          <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Pattern 3 · biggest content fix</p>
+          <h2 class="font-safiro text-3xl mt-1">Wide table → row cards on mobile</h2>
+          <p class="mt-3 text-base max-w-2xl" style="color: hsl(var(--muted-foreground));">
+            Every workspace table currently uses <code>overflow-x-auto</code>. Horizontal scroll on touch is poor UX
+            and you can never see status + title at the same time. Replace with vertical row-cards that surface the
+            primary attributes and tap-into a detail sheet for the rest.
+          </p>
+        </div>
+
+        <div class="compare">
+
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-bad"><i data-lucide="x" class="w-3 h-3"></i> Current</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">7-column table, horizontal scroll, lost context.</span></div>
+            <div class="phone mx-auto">
+              <div class="phone-inner pb-20">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-4 py-3 border-b" style="border-color: hsl(var(--border));">
+                  <span class="font-safiro text-lg">Laglistor</span>
+                </header>
+                <div class="p-4">
+                  <h2 class="font-safiro text-2xl mb-3">Arbetsmiljö</h2>
+                  <div style="overflow-x: auto;">
+                    <table class="text-xs" style="min-width: 720px; border-collapse: collapse;">
+                      <thead style="background: hsl(var(--muted));">
+                        <tr>
+                          <th class="px-2 py-2 text-left">Lag</th>
+                          <th class="px-2 py-2 text-left">Status</th>
+                          <th class="px-2 py-2 text-left">Ansvarig</th>
+                          <th class="px-2 py-2 text-left">Senast</th>
+                          <th class="px-2 py-2 text-left">Krav</th>
+                          <th class="px-2 py-2 text-left">Bevis</th>
+                          <th class="px-2 py-2 text-left">Åtg.</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr class="border-t" style="border-color: hsl(var(--border));">
+                          <td class="px-2 py-2">AML 1977:1160</td>
+                          <td class="px-2 py-2">⚠ Pågår</td>
+                          <td class="px-2 py-2">Anna L.</td>
+                          <td class="px-2 py-2">2026-04-22</td>
+                          <td class="px-2 py-2">8/12</td>
+                          <td class="px-2 py-2">3</td>
+                          <td class="px-2 py-2">2</td>
+                        </tr>
+                        <tr class="border-t" style="border-color: hsl(var(--border));">
+                          <td class="px-2 py-2">AFS 2020:5</td>
+                          <td class="px-2 py-2">✓ Klar</td>
+                          <td class="px-2 py-2">Erik B.</td>
+                          <td class="px-2 py-2">2026-04-19</td>
+                          <td class="px-2 py-2">5/5</td>
+                          <td class="px-2 py-2">5</td>
+                          <td class="px-2 py-2">0</td>
+                        </tr>
+                        <tr class="border-t" style="border-color: hsl(var(--border));">
+                          <td class="px-2 py-2">AFS 2001:1</td>
+                          <td class="px-2 py-2">— Ej startad</td>
+                          <td class="px-2 py-2">—</td>
+                          <td class="px-2 py-2">—</td>
+                          <td class="px-2 py-2">0/6</td>
+                          <td class="px-2 py-2">0</td>
+                          <td class="px-2 py-2">0</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="text-xs mt-2 italic" style="color: hsl(var(--muted-foreground));">← scroll horizontally to see all columns →</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-good"><i data-lucide="check" class="w-3 h-3"></i> Proposed</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">Row cards. Title + status + 1 meta row. Tap → detail sheet.</span></div>
+            <div class="phone mx-auto">
+              <div class="phone-inner pb-20">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-4 py-3 border-b flex items-center justify-between" style="border-color: hsl(var(--border));">
+                  <span class="font-safiro text-lg">Laglistor</span>
+                  <button><i data-lucide="search" class="w-4 h-4"></i></button>
+                </header>
+                <div class="p-4">
+                  <div class="flex items-center justify-between mb-3">
+                    <h2 class="font-safiro text-2xl">Arbetsmiljö</h2>
+                    <button class="text-xs px-2.5 py-1.5 rounded-full border" style="border-color: hsl(var(--border));"><i data-lucide="filter" class="w-3 h-3 inline -mt-0.5"></i> Filter</button>
+                  </div>
+                  <div class="space-y-2">
+                    <button class="row-card w-full text-left">
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-medium truncate">AML 1977:1160</span>
+                          <span class="text-[10px] px-1.5 py-0.5 rounded" style="background: hsl(var(--amber-50)); color: hsl(var(--amber-900));">Pågår</span>
+                        </div>
+                        <p class="text-xs mt-0.5" style="color: hsl(var(--muted-foreground));">Anna L. · 8/12 krav · 22 apr</p>
+                      </div>
+                      <i data-lucide="chevron-right" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i>
+                    </button>
+                    <button class="row-card w-full text-left">
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-medium truncate">AFS 2020:5</span>
+                          <span class="text-[10px] px-1.5 py-0.5 rounded" style="background: hsl(140 50% 92%); color: hsl(140 50% 28%);">Klar</span>
+                        </div>
+                        <p class="text-xs mt-0.5" style="color: hsl(var(--muted-foreground));">Erik B. · 5/5 krav · 19 apr</p>
+                      </div>
+                      <i data-lucide="chevron-right" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i>
+                    </button>
+                    <button class="row-card w-full text-left">
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-medium truncate">AFS 2001:1</span>
+                          <span class="text-[10px] px-1.5 py-0.5 rounded" style="background: hsl(var(--muted)); color: hsl(var(--muted-foreground));">Ej startad</span>
+                        </div>
+                        <p class="text-xs mt-0.5" style="color: hsl(var(--muted-foreground));">— · 0/6 krav</p>
+                      </div>
+                      <i data-lucide="chevron-right" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i>
+                    </button>
+                    <button class="row-card w-full text-left">
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-medium truncate">AFS 2018:1</span>
+                          <span class="text-[10px] px-1.5 py-0.5 rounded" style="background: hsl(0 80% 95%); color: hsl(0 80% 35%);">Avvikelse</span>
+                        </div>
+                        <p class="text-xs mt-0.5" style="color: hsl(var(--muted-foreground));">Karl S. · 2/9 krav · 12 apr</p>
+                      </div>
+                      <i data-lucide="chevron-right" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i>
+                    </button>
+                    <button class="row-card w-full text-left">
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-medium truncate">AFS 2001:3</span>
+                          <span class="text-[10px] px-1.5 py-0.5 rounded" style="background: hsl(var(--amber-50)); color: hsl(var(--amber-900));">Pågår</span>
+                        </div>
+                        <p class="text-xs mt-0.5" style="color: hsl(var(--muted-foreground));">Maria K. · 4/7 krav · 18 apr</p>
+                      </div>
+                      <i data-lucide="chevron-right" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <details class="mt-8 max-w-2xl">
+          <summary class="cursor-pointer text-sm font-medium" style="color: hsl(var(--muted-foreground));">Implementation sketch</summary>
+          <pre class="text-xs mt-3 p-4 rounded overflow-x-auto" style="background: hsl(var(--muted));"><code>// In compliance-detail-table.tsx
+&lt;div className="hidden md:block"&gt;
+  &lt;Table&gt;{/* existing virtualised table */}&lt;/Table&gt;
+&lt;/div&gt;
+&lt;div className="md:hidden space-y-2"&gt;
+  {rows.map((row) =&gt; (
+    &lt;ComplianceRowCard key={row.id} row={row} onClick={() =&gt; openDetail(row)} /&gt;
+  ))}
+&lt;/div&gt;</code></pre>
+        </details>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- 4. KANBAN → COLUMN TABS                                               -->
+      <!-- ================================================================== -->
+      <section data-section id="kanban">
+        <div class="mb-8">
+          <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Pattern 4</p>
+          <h2 class="font-safiro text-3xl mt-1">Kanban → column pill-tabs</h2>
+          <p class="mt-3 text-base max-w-2xl" style="color: hsl(var(--muted-foreground));">
+            Three side-by-side columns don't fit any phone. Switch to a horizontal pill-tab bar at the top showing
+            the active column. Cards stack vertically. "Move" action on each card opens a Sheet picker — no
+            drag-and-drop on touch (it's fragile and discoverable with explicit action only).
+          </p>
+        </div>
+
+        <div class="compare">
+
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-bad"><i data-lucide="x" class="w-3 h-3"></i> Current</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">3 columns horizontal-scroll. Drag-drop on touch is fragile.</span></div>
+            <div class="phone mx-auto">
+              <div class="phone-inner pb-20">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-4 py-3 border-b" style="border-color: hsl(var(--border));">
+                  <span class="font-safiro text-lg">Uppgifter</span>
+                </header>
+                <div class="p-4" style="overflow-x: auto;">
+                  <div class="flex gap-3" style="min-width: 720px;">
+                    <div style="width: 230px;">
+                      <h3 class="text-xs font-medium uppercase tracking-wide mb-2" style="color: hsl(var(--muted-foreground));">Att göra (5)</h3>
+                      <div class="space-y-2">
+                        <div class="border rounded p-2" style="border-color: hsl(var(--border));"><p class="text-xs font-medium">Konsekvensbedöm 2024:1234</p></div>
+                        <div class="border rounded p-2" style="border-color: hsl(var(--border));"><p class="text-xs font-medium">Uppdatera AMP</p></div>
+                      </div>
+                    </div>
+                    <div style="width: 230px;">
+                      <h3 class="text-xs font-medium uppercase tracking-wide mb-2" style="color: hsl(var(--muted-foreground));">Pågående (3)</h3>
+                      <div class="space-y-2">
+                        <div class="border rounded p-2" style="border-color: hsl(var(--border));"><p class="text-xs font-medium">Översyn brandskydd</p></div>
+                      </div>
+                    </div>
+                    <div style="width: 230px;">
+                      <h3 class="text-xs font-medium uppercase tracking-wide mb-2" style="color: hsl(var(--muted-foreground));">Klar (12)</h3>
+                      <div class="space-y-2">
+                        <div class="border rounded p-2" style="border-color: hsl(var(--border));"><p class="text-xs font-medium">Inventering kemikalier</p></div>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="text-xs mt-3 italic" style="color: hsl(var(--muted-foreground));">← scroll →</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-good"><i data-lucide="check" class="w-3 h-3"></i> Proposed</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">Pill tabs at top. One active column. Move-via-Sheet.</span></div>
+            <div class="phone mx-auto">
+              <div class="phone-inner pb-20">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-4 py-3 border-b" style="border-color: hsl(var(--border));">
+                  <span class="font-safiro text-lg">Uppgifter</span>
+                </header>
+                <div class="p-4">
+                  <div class="flex items-center justify-between mb-3">
+                    <h2 class="font-safiro text-2xl">Min tavla</h2>
+                    <button><i data-lucide="more-horizontal" class="w-5 h-5"></i></button>
+                  </div>
+                  <div class="flex gap-2 mb-4 overflow-x-auto -mx-4 px-4" style="scrollbar-width: none;">
+                    <button class="col-pill active">Att göra · 5</button>
+                    <button class="col-pill">Pågående · 3</button>
+                    <button class="col-pill">Klar · 12</button>
+                  </div>
+                  <div class="space-y-2">
+                    <div class="row-card">
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium">Konsekvensbedöm 2024:1234</p>
+                        <p class="text-xs mt-0.5" style="color: hsl(var(--muted-foreground));">Anna L. · Förfaller 2 jun</p>
+                      </div>
+                      <button><i data-lucide="more-vertical" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i></button>
+                    </div>
+                    <div class="row-card">
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium">Uppdatera arbetsmiljöplan</p>
+                        <p class="text-xs mt-0.5" style="color: hsl(var(--muted-foreground));">Erik B. · Förfaller 10 jun</p>
+                      </div>
+                      <button><i data-lucide="more-vertical" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i></button>
+                    </div>
+                    <div class="row-card">
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium">Säkerhetsutbildning Q2</p>
+                        <p class="text-xs mt-0.5" style="color: hsl(var(--muted-foreground));">— · Förfaller 15 jun</p>
+                      </div>
+                      <button><i data-lucide="more-vertical" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i></button>
+                    </div>
+                    <div class="row-card">
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium">Kemikalierond</p>
+                        <p class="text-xs mt-0.5" style="color: hsl(var(--muted-foreground));">Maria K. · Förfaller 20 jun</p>
+                      </div>
+                      <button><i data-lucide="more-vertical" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i></button>
+                    </div>
+                    <div class="row-card">
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium">Riskbedöm ny maskin</p>
+                        <p class="text-xs mt-0.5" style="color: hsl(var(--muted-foreground));">Karl S. · Förfaller 25 jun</p>
+                      </div>
+                      <button><i data-lucide="more-vertical" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <button class="fab"><i data-lucide="plus" class="w-6 h-6"></i></button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- 5. SETTINGS 7 TABS → SELECT                                           -->
+      <!-- ================================================================== -->
+      <section data-section id="settings">
+        <div class="mb-8">
+          <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Pattern 5</p>
+          <h2 class="font-safiro text-3xl mt-1">7 Settings tabs → mobile Select</h2>
+          <p class="mt-3 text-base max-w-2xl" style="color: hsl(var(--muted-foreground));">
+            Even with <code>hidden sm:inline</code> labels, 7 icon-only tabs cramp at &lt;430px. Swap to a Select
+            dropdown that mirrors the same destinations on mobile, keep the tab strip on <code>≥md</code>.
+            Native iOS/Android picker is familiar.
+          </p>
+        </div>
+
+        <div class="compare">
+
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-bad"><i data-lucide="x" class="w-3 h-3"></i> Current</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">7 cramped icon tabs. Scroll to find Fakturering.</span></div>
+            <div class="phone mx-auto">
+              <div class="phone-inner pb-20">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-4 py-3 border-b" style="border-color: hsl(var(--border));">
+                  <span class="font-safiro text-lg">Inställningar</span>
+                </header>
+                <div class="p-4">
+                  <h2 class="font-safiro text-2xl mb-3">Inställningar</h2>
+                  <div class="flex gap-1 overflow-x-auto -mx-4 px-4 mb-4" style="scrollbar-width: none;">
+                    <button class="px-3 py-2 text-xs border-b-2" style="border-color: hsl(var(--ring));"><i data-lucide="settings" class="w-4 h-4"></i></button>
+                    <button class="px-3 py-2 text-xs"><i data-lucide="building-2" class="w-4 h-4"></i></button>
+                    <button class="px-3 py-2 text-xs"><i data-lucide="users" class="w-4 h-4"></i></button>
+                    <button class="px-3 py-2 text-xs"><i data-lucide="credit-card" class="w-4 h-4"></i></button>
+                    <button class="px-3 py-2 text-xs"><i data-lucide="bell" class="w-4 h-4"></i></button>
+                    <button class="px-3 py-2 text-xs"><i data-lucide="plug" class="w-4 h-4"></i></button>
+                    <button class="px-3 py-2 text-xs"><i data-lucide="kanban" class="w-4 h-4"></i></button>
+                  </div>
+                  <p class="text-sm" style="color: hsl(var(--muted-foreground));">Vald: Allmänt — vilken visste du? 🤔</p>
+                  <div class="mt-4 space-y-3">
+                    <div class="row-card"><span class="text-sm">Arbetsplatsens namn</span></div>
+                    <div class="row-card"><span class="text-sm">Logotyp</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-good"><i data-lucide="check" class="w-3 h-3"></i> Proposed</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">Native Select. All 7 visible. Familiar UX.</span></div>
+            <div class="phone mx-auto">
+              <div class="phone-inner pb-20">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-4 py-3 border-b" style="border-color: hsl(var(--border));">
+                  <span class="font-safiro text-lg">Inställningar</span>
+                </header>
+                <div class="p-4">
+                  <h2 class="font-safiro text-2xl mb-1">Inställningar</h2>
+                  <p class="text-sm mb-4" style="color: hsl(var(--muted-foreground));">Hantera din arbetsplats</p>
+                  <button class="w-full border rounded-md px-4 py-3 mb-4 flex items-center justify-between" style="border-color: hsl(var(--border)); background: hsl(var(--card));">
+                    <span class="flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4"></i><span class="text-sm font-medium">Allmänt</span></span>
+                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                  </button>
+                  <div class="space-y-3">
+                    <div>
+                      <label class="text-xs font-medium mb-1.5 block">Arbetsplatsens namn</label>
+                      <input class="w-full border rounded-md px-3 py-2.5 text-sm" style="border-color: hsl(var(--border));" value="nShift AB" />
+                    </div>
+                    <div>
+                      <label class="text-xs font-medium mb-1.5 block">Org.nummer</label>
+                      <input class="w-full border rounded-md px-3 py-2.5 text-sm" style="border-color: hsl(var(--border));" value="556712-9876" />
+                    </div>
+                    <div>
+                      <label class="text-xs font-medium mb-1.5 block">Logotyp</label>
+                      <button class="w-full border-2 border-dashed rounded-md py-6 text-sm" style="border-color: hsl(var(--border)); color: hsl(var(--muted-foreground));">
+                        <i data-lucide="upload" class="w-4 h-4 inline -mt-0.5 mr-1"></i> Ladda upp
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- 6. TIPTAP TOOLBAR                                                     -->
+      <!-- ================================================================== -->
+      <section data-section id="tiptap">
+        <div class="mb-8">
+          <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Pattern 6</p>
+          <h2 class="font-safiro text-3xl mt-1">Tiptap toolbar: 6 + More</h2>
+          <p class="mt-3 text-base max-w-2xl" style="color: hsl(var(--muted-foreground));">
+            19 toolbar icons crammed into one row is unusable on phones. Show 6 most-used (Bold, Italic, H, List,
+            Link, More) + a "More" Sheet for the long tail. Or — bigger discussion — adopt a contextual floating
+            menu that appears only on text selection (Notion-style).
+          </p>
+        </div>
+
+        <div class="compare">
+
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-bad"><i data-lucide="x" class="w-3 h-3"></i> Current</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">19 icons in one row. Wraps awkwardly.</span></div>
+            <div class="phone mx-auto">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-4 py-3 border-b" style="border-color: hsl(var(--border));">
+                  <span class="font-safiro text-lg">Styrdokument</span>
+                </header>
+                <div class="px-2 py-2 border-b flex flex-wrap gap-0.5" style="border-color: hsl(var(--border)); background: hsl(var(--muted));">
+                  <button class="w-7 h-7 flex items-center justify-center rounded text-xs font-bold">B</button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded text-xs italic">I</button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded text-xs underline">U</button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded text-xs line-through">S</button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded text-xs">H1</button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded text-xs">H2</button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded text-xs">H3</button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded"><i data-lucide="list" class="w-3.5 h-3.5"></i></button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded"><i data-lucide="list-ordered" class="w-3.5 h-3.5"></i></button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded"><i data-lucide="quote" class="w-3.5 h-3.5"></i></button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded"><i data-lucide="link" class="w-3.5 h-3.5"></i></button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded"><i data-lucide="image" class="w-3.5 h-3.5"></i></button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded"><i data-lucide="table" class="w-3.5 h-3.5"></i></button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded"><i data-lucide="align-left" class="w-3.5 h-3.5"></i></button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded"><i data-lucide="align-center" class="w-3.5 h-3.5"></i></button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded"><i data-lucide="align-right" class="w-3.5 h-3.5"></i></button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded"><i data-lucide="palette" class="w-3.5 h-3.5"></i></button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded"><i data-lucide="highlighter" class="w-3.5 h-3.5"></i></button>
+                  <button class="w-7 h-7 flex items-center justify-center rounded"><i data-lucide="at-sign" class="w-3.5 h-3.5"></i></button>
+                </div>
+                <div class="p-4">
+                  <h1 class="font-safiro text-xl mb-2">Arbetsmiljöpolicy</h1>
+                  <p class="text-sm mb-2">nShift AB ska bedriva ett systematiskt...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-good"><i data-lucide="check" class="w-3 h-3"></i> Proposed</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">6 essentials + More Sheet. Touch-friendly tap targets.</span></div>
+            <div class="phone mx-auto">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-4 py-3 border-b flex items-center justify-between" style="border-color: hsl(var(--border));">
+                  <button><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                  <span class="font-safiro text-base truncate">Arbetsmiljöpolicy</span>
+                  <button><i data-lucide="more-horizontal" class="w-5 h-5"></i></button>
+                </header>
+                <div class="px-3 py-2 border-b flex gap-2 justify-between" style="border-color: hsl(var(--border)); background: hsl(var(--card));">
+                  <button class="w-10 h-10 flex items-center justify-center rounded-md font-bold border" style="border-color: hsl(var(--border));">B</button>
+                  <button class="w-10 h-10 flex items-center justify-center rounded-md italic border" style="border-color: hsl(var(--border));">I</button>
+                  <button class="w-10 h-10 flex items-center justify-center rounded-md text-sm border" style="border-color: hsl(var(--border));">H</button>
+                  <button class="w-10 h-10 flex items-center justify-center rounded-md border" style="border-color: hsl(var(--border));"><i data-lucide="list" class="w-4 h-4"></i></button>
+                  <button class="w-10 h-10 flex items-center justify-center rounded-md border" style="border-color: hsl(var(--border));"><i data-lucide="link" class="w-4 h-4"></i></button>
+                  <button class="w-10 h-10 flex items-center justify-center rounded-md border" style="border-color: hsl(var(--border));"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+                </div>
+                <div class="p-4">
+                  <h1 class="font-safiro text-xl mb-2">Arbetsmiljöpolicy</h1>
+                  <p class="text-sm mb-2">nShift AB ska bedriva ett systematiskt...</p>
+                  <p class="text-sm mb-2">Vi ska följa AML och föreskrifterna...</p>
+                  <p class="text-sm">Senast uppdaterad: 2026-04-22</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- 7. STICKY ACTION BAR                                                  -->
+      <!-- ================================================================== -->
+      <section data-section id="actionbar">
+        <div class="mb-8">
+          <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Pattern 7</p>
+          <h2 class="font-safiro text-3xl mt-1">Sticky bottom action bar</h2>
+          <p class="mt-3 text-base max-w-2xl" style="color: hsl(var(--muted-foreground));">
+            Long forms — Spara always within thumb's reach, never requires scrolling. Used in modals (already shown
+            in pattern 2) AND in edit pages like cycle-detail or kravpunkter. Auto-flat on <code>≥md</code> via
+            <code>md:static md:p-0 md:border-0</code>.
+          </p>
+        </div>
+
+        <div class="compare">
+
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-bad"><i data-lucide="x" class="w-3 h-3"></i> Current</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">Save buried at the bottom of long form. Scroll to find.</span></div>
+            <div class="phone mx-auto">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-4 py-3 border-b" style="border-color: hsl(var(--border));">
+                  <span class="font-safiro text-lg">Kravpunkt</span>
+                </header>
+                <div class="p-4 space-y-3">
+                  <h2 class="font-safiro text-xl">Riskbedömning AML §3</h2>
+                  <input class="w-full border rounded px-3 py-2 text-sm" style="border-color: hsl(var(--border));" placeholder="Kravtext" />
+                  <textarea class="w-full border rounded px-3 py-2 text-sm h-20" style="border-color: hsl(var(--border));" placeholder="Kommentar"></textarea>
+                  <input class="w-full border rounded px-3 py-2 text-sm" style="border-color: hsl(var(--border));" placeholder="Bevis URL" />
+                  <select class="w-full border rounded px-3 py-2 text-sm" style="border-color: hsl(var(--border));"><option>Status</option></select>
+                  <input class="w-full border rounded px-3 py-2 text-sm" style="border-color: hsl(var(--border));" placeholder="Ansvarig" />
+                  <input class="w-full border rounded px-3 py-2 text-sm" style="border-color: hsl(var(--border));" placeholder="Förfaller" />
+                  <input class="w-full border rounded px-3 py-2 text-sm" style="border-color: hsl(var(--border));" placeholder="Notering 1" />
+                  <input class="w-full border rounded px-3 py-2 text-sm" style="border-color: hsl(var(--border));" placeholder="Notering 2" />
+                  <p class="text-xs italic" style="color: hsl(var(--muted-foreground));">↓ Save button is somewhere down here ↓</p>
+                  <input class="w-full border rounded px-3 py-2 text-sm" style="border-color: hsl(var(--border));" placeholder="Notering 3" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-good"><i data-lucide="check" class="w-3 h-3"></i> Proposed</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">Spara always docked at bottom. Safe-area aware.</span></div>
+            <div class="phone mx-auto">
+              <div class="phone-inner" style="display: flex; flex-direction: column;">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-4 py-3 border-b" style="border-color: hsl(var(--border));">
+                  <span class="font-safiro text-lg">Kravpunkt</span>
+                </header>
+                <div class="flex-1 overflow-y-auto p-4 space-y-3" style="padding-bottom: 100px;">
+                  <h2 class="font-safiro text-xl">Riskbedömning AML §3</h2>
+                  <input class="w-full border rounded px-3 py-2 text-sm" style="border-color: hsl(var(--border));" placeholder="Kravtext" />
+                  <textarea class="w-full border rounded px-3 py-2 text-sm h-20" style="border-color: hsl(var(--border));" placeholder="Kommentar"></textarea>
+                  <input class="w-full border rounded px-3 py-2 text-sm" style="border-color: hsl(var(--border));" placeholder="Bevis URL" />
+                  <select class="w-full border rounded px-3 py-2 text-sm" style="border-color: hsl(var(--border));"><option>Status</option></select>
+                  <input class="w-full border rounded px-3 py-2 text-sm" style="border-color: hsl(var(--border));" placeholder="Ansvarig" />
+                  <input class="w-full border rounded px-3 py-2 text-sm" style="border-color: hsl(var(--border));" placeholder="Förfaller" />
+                  <input class="w-full border rounded px-3 py-2 text-sm" style="border-color: hsl(var(--border));" placeholder="Notering 1" />
+                  <input class="w-full border rounded px-3 py-2 text-sm" style="border-color: hsl(var(--border));" placeholder="Notering 2" />
+                  <input class="w-full border rounded px-3 py-2 text-sm" style="border-color: hsl(var(--border));" placeholder="Notering 3" />
+                </div>
+                <div style="position: absolute; left: 0; right: 0; bottom: 0; background: hsl(var(--background)); border-top: 1px solid hsl(var(--border)); padding: 12px 16px calc(12px + env(safe-area-inset-bottom)) 16px; display: flex; gap: 8px;">
+                  <button class="flex-1 border rounded-md py-3 text-sm font-medium" style="border-color: hsl(var(--border));">Avbryt</button>
+                  <button class="flex-1 rounded-md py-3 text-sm font-medium text-white" style="background: hsl(var(--primary));">Spara ändringar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- 8. MOBILE DASHBOARD                                                   -->
+      <!-- ================================================================== -->
+      <section data-section id="dashboard">
+        <div class="mb-8">
+          <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Pattern 8</p>
+          <h2 class="font-safiro text-3xl mt-1">Mobile Hem (dashboard)</h2>
+          <p class="mt-3 text-base max-w-2xl" style="color: hsl(var(--muted-foreground));">
+            The current Hem is already chat-first and mobile-friendly. This shows the proposed mobile-optimized
+            flow with bottom nav, FAB for quick assistant access, and stacked summary cards.
+          </p>
+        </div>
+
+        <div class="phone mx-auto">
+          <div class="phone-inner pb-20">
+            <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+            <header class="flex items-center justify-between px-4 py-3 border-b" style="border-color: hsl(var(--border));">
+              <button><i data-lucide="menu" class="w-5 h-5"></i></button>
+              <span class="font-safiro text-lg">nShift AB</span>
+              <button><i data-lucide="bell" class="w-5 h-5"></i></button>
+            </header>
+            <div class="p-4">
+              <h2 class="font-safiro text-2xl">God morgon, Alex</h2>
+              <p class="text-sm" style="color: hsl(var(--muted-foreground));">Här är vad som händer idag</p>
+              <div class="mt-5 space-y-2">
+                <div class="row-card" style="background: hsl(var(--amber-50)); border-color: hsl(var(--amber-200));">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background: hsl(var(--amber-700)); color: white;"><i data-lucide="alert-triangle" class="w-5 h-5"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium" style="color: hsl(var(--amber-900));">1 ny lagändring att granska</p>
+                    <p class="text-xs" style="color: hsl(var(--amber-700));">AFS 2026:3 — Kemiska arbetsmiljörisker</p>
+                  </div>
+                  <i data-lucide="chevron-right" class="w-4 h-4" style="color: hsl(var(--amber-700));"></i>
+                </div>
+                <div class="row-card">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background: hsl(var(--accent));"><i data-lucide="check-circle-2" class="w-5 h-5"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium">5 av 7 lagar uppfyllda</p>
+                    <p class="text-xs" style="color: hsl(var(--muted-foreground));">71% efterlevnadsgrad</p>
+                  </div>
+                  <i data-lucide="chevron-right" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i>
+                </div>
+                <div class="row-card">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background: hsl(var(--accent));"><i data-lucide="check-square" class="w-5 h-5"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium">3 uppgifter denna vecka</p>
+                    <p class="text-xs" style="color: hsl(var(--muted-foreground));">2 förfaller fredag</p>
+                  </div>
+                  <i data-lucide="chevron-right" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i>
+                </div>
+                <div class="row-card">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background: hsl(var(--accent));"><i data-lucide="message-square" class="w-5 h-5"></i></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium">Senaste samtal</p>
+                    <p class="text-xs" style="color: hsl(var(--muted-foreground));">Fortsätt där du slutade</p>
+                  </div>
+                  <i data-lucide="chevron-right" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i>
+                </div>
+              </div>
+
+              <h3 class="text-xs font-medium uppercase tracking-wide mt-6 mb-2" style="color: hsl(var(--muted-foreground));">Snabbåtgärder</h3>
+              <div class="grid grid-cols-2 gap-2">
+                <button class="row-card flex-col items-start gap-2 text-left p-3" style="min-height: 80px;">
+                  <i data-lucide="search" class="w-5 h-5" style="color: hsl(var(--ring));"></i>
+                  <span class="text-xs font-medium">Sök i regelverket</span>
+                </button>
+                <button class="row-card flex-col items-start gap-2 text-left p-3" style="min-height: 80px;">
+                  <i data-lucide="plus-circle" class="w-5 h-5" style="color: hsl(var(--ring));"></i>
+                  <span class="text-xs font-medium">Ny uppgift</span>
+                </button>
+                <button class="row-card flex-col items-start gap-2 text-left p-3" style="min-height: 80px;">
+                  <i data-lucide="file-plus" class="w-5 h-5" style="color: hsl(var(--ring));"></i>
+                  <span class="text-xs font-medium">Nytt dokument</span>
+                </button>
+                <button class="row-card flex-col items-start gap-2 text-left p-3" style="min-height: 80px;">
+                  <i data-lucide="clipboard-list" class="w-5 h-5" style="color: hsl(var(--ring));"></i>
+                  <span class="text-xs font-medium">Skapa kontroll</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <button class="fab"><i data-lucide="message-circle" class="w-6 h-6"></i></button>
+          <nav class="bottom-nav">
+            <button class="active"><i data-lucide="home" class="w-5 h-5"></i><span>Hem</span></button>
+            <button><i data-lucide="shield" class="w-5 h-5"></i><span>Efterlevn.</span></button>
+            <button><i data-lucide="check-square" class="w-5 h-5"></i><span>Uppgifter</span></button>
+            <button><i data-lucide="folder" class="w-5 h-5"></i><span>Filer</span></button>
+            <button><i data-lucide="more-horizontal" class="w-5 h-5"></i><span>Mer</span></button>
+          </nav>
+        </div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- 9. FILTER DRAWER                                                      -->
+      <!-- ================================================================== -->
+      <section data-section id="filters">
+        <div class="mb-8">
+          <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Pattern 9</p>
+          <h2 class="font-safiro text-3xl mt-1">Filter drawer (already in catalogue)</h2>
+          <p class="mt-3 text-base max-w-2xl" style="color: hsl(var(--muted-foreground));">
+            <code>/browse/*</code> already uses <code>MobileFilterDrawer</code> (Sheet, side="left"). This is the
+            pattern to extend to laglistor, kontroller, krav, files. Filter chip strip at top with active
+            filters; "Filter" button opens the full Sheet for less-common controls.
+          </p>
+        </div>
+
+        <div class="phone mx-auto" style="position: relative;">
+          <div class="phone-inner pb-20">
+            <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+            <header class="px-4 py-3 border-b" style="border-color: hsl(var(--border));">
+              <span class="font-safiro text-lg">Browse · Lagar</span>
+            </header>
+            <div class="p-4">
+              <input class="w-full border rounded-md px-3 py-2.5 text-sm mb-3" style="border-color: hsl(var(--border));" placeholder="Sök lagar..." />
+              <div class="flex gap-2 mb-4 overflow-x-auto -mx-4 px-4" style="scrollbar-width: none;">
+                <button class="col-pill"><i data-lucide="filter" class="w-3 h-3 inline -mt-0.5"></i> Filter</button>
+                <button class="col-pill active">Arbetsmiljö ×</button>
+                <button class="col-pill active">2024 ×</button>
+                <button class="col-pill">Föreskrift</button>
+                <button class="col-pill">Pågår</button>
+              </div>
+              <p class="text-xs mb-3" style="color: hsl(var(--muted-foreground));">3 247 träffar</p>
+              <div class="space-y-2">
+                <div class="row-card"><div class="flex-1"><p class="text-sm font-medium">SFS 2024:1234</p><p class="text-xs" style="color: hsl(var(--muted-foreground));">Lag om...</p></div><i data-lucide="chevron-right" class="w-4 h-4"></i></div>
+                <div class="row-card"><div class="flex-1"><p class="text-sm font-medium">AFS 2024:8</p><p class="text-xs" style="color: hsl(var(--muted-foreground));">Föreskrift...</p></div><i data-lucide="chevron-right" class="w-4 h-4"></i></div>
+                <div class="row-card"><div class="flex-1"><p class="text-sm font-medium">SFS 2024:1156</p><p class="text-xs" style="color: hsl(var(--muted-foreground));">Lag om...</p></div><i data-lucide="chevron-right" class="w-4 h-4"></i></div>
+              </div>
+            </div>
+          </div>
+          <nav class="bottom-nav">
+            <button><i data-lucide="home" class="w-5 h-5"></i><span>Hem</span></button>
+            <button class="active"><i data-lucide="shield" class="w-5 h-5"></i><span>Efterlevn.</span></button>
+            <button><i data-lucide="check-square" class="w-5 h-5"></i><span>Uppgifter</span></button>
+            <button><i data-lucide="folder" class="w-5 h-5"></i><span>Filer</span></button>
+            <button><i data-lucide="more-horizontal" class="w-5 h-5"></i><span>Mer</span></button>
+          </nav>
+        </div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- 10. LEGAL DOCUMENT MODAL                                              -->
+      <!-- ================================================================== -->
+      <section data-section id="legalmodal">
+        <div class="mb-8">
+          <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Pattern 10 · highest impact</p>
+          <h2 class="font-safiro text-3xl mt-1">Legal-document modal (laglistor → row click)</h2>
+          <p class="mt-3 text-base max-w-3xl" style="color: hsl(var(--muted-foreground));">
+            <code>SplitPanelModal</code> already goes full-screen on mobile (<code>max-md:max-w-full max-md:max-h-full</code>) and
+            stacks panels vertically (<code>max-md:flex-col</code>). <strong>The problem:</strong> "stacking" means the user
+            scrolls past the entire left panel (Lagtext, Kravpunkter, Tasks, Activity feed) before reaching the right panel
+            (Details, Compliance health, Quick links, Business context, Compliance narrative, Linked artifacts). On a phone
+            that's 3000+ px of scroll. <strong>Replace stacking with tabs.</strong> Same content, three swipeable tabs:
+            <em>Översikt · Krav · Aktivitet</em>.
+          </p>
+        </div>
+
+        <div class="compare">
+
+          <!-- Current: stacked panels -->
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-bad"><i data-lucide="x" class="w-3 h-3"></i> Current</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">Both panels stacked vertically. 3000px scroll.</span></div>
+            <div class="phone mx-auto">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-4 py-3 border-b flex items-center justify-between" style="border-color: hsl(var(--border));">
+                  <button><i data-lucide="x" class="w-5 h-5"></i></button>
+                  <span class="font-safiro text-sm truncate flex-1 mx-3 text-center">AML 1977:1160</span>
+                  <button><i data-lucide="message-circle" class="w-5 h-5"></i></button>
+                </header>
+                <div class="px-4 py-3 border-b" style="background: hsl(var(--secondary)); border-color: hsl(var(--border));">
+                  <p class="text-[11px] uppercase tracking-wide" style="color: hsl(var(--muted-foreground));">Arbetsmiljölagen</p>
+                  <h2 class="font-safiro text-base">AML 1977:1160</h2>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded inline-block mt-1" style="background: hsl(var(--amber-50)); color: hsl(var(--amber-900));">Pågår</span>
+                </div>
+                <div class="p-4">
+                  <h3 class="text-xs font-medium uppercase tracking-wide mb-2" style="color: hsl(var(--muted-foreground));">Lagtext</h3>
+                  <p class="text-sm mb-2">1 § Lagens ändamål är att förebygga ohälsa och olycksfall i arbetet samt...</p>
+                  <p class="text-sm mb-2">2 § Lagen gäller varje verksamhet i vilken arbetstagare utför arbete för...</p>
+                  <p class="text-sm mb-3">3 § I fråga om fartygsarbete gäller lagen även arbete som utförs...</p>
+                  <h3 class="text-xs font-medium uppercase tracking-wide mb-2 mt-5" style="color: hsl(var(--muted-foreground));">Kravpunkter</h3>
+                  <div class="border rounded p-2 mb-1.5 text-xs" style="border-color: hsl(var(--border));">☐ Riskbedömning genomförd</div>
+                  <div class="border rounded p-2 mb-1.5 text-xs" style="border-color: hsl(var(--border));">☑ Skyddsombud utsett</div>
+                  <p class="text-[11px] italic mt-3" style="color: hsl(var(--muted-foreground));">↓ ...3 fler kravpunkter, then Tasks, then Activity feed, then ↓</p>
+                  <p class="text-[11px] italic" style="color: hsl(var(--muted-foreground));">↓ right panel: Details, Compliance health, Linked artifacts, ... ↓</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Proposed: tabs -->
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-good"><i data-lucide="check" class="w-3 h-3"></i> Proposed</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">3 tabs: Översikt · Krav · Aktivitet. Same content, organized.</span></div>
+            <div class="phone mx-auto" style="position: relative;">
+              <div class="phone-inner" style="display: flex; flex-direction: column;">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <!-- Compact sticky header -->
+                <header class="px-3 py-2.5 border-b flex items-center gap-2" style="border-color: hsl(var(--border));">
+                  <button class="p-1 -ml-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[10px] uppercase tracking-wider truncate" style="color: hsl(var(--muted-foreground));">Arbetsmiljölagen</p>
+                    <div class="flex items-center gap-1.5">
+                      <span class="font-safiro text-sm truncate">AML 1977:1160</span>
+                      <span class="text-[9px] px-1.5 py-0.5 rounded shrink-0" style="background: hsl(var(--amber-50)); color: hsl(var(--amber-900));">Pågår</span>
+                    </div>
+                  </div>
+                  <button class="p-1.5 rounded-md border shrink-0" style="border-color: hsl(var(--border));"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+                </header>
+                <!-- Tabs -->
+                <div class="flex border-b" style="border-color: hsl(var(--border));">
+                  <button class="flex-1 py-2.5 text-xs font-medium border-b-2" style="border-color: hsl(var(--ring));">Översikt</button>
+                  <button class="flex-1 py-2.5 text-xs" style="color: hsl(var(--muted-foreground)); border-bottom: 2px solid transparent;">Krav · 5</button>
+                  <button class="flex-1 py-2.5 text-xs" style="color: hsl(var(--muted-foreground)); border-bottom: 2px solid transparent;">Aktivitet</button>
+                </div>
+                <!-- Tab content (Översikt) -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-4" style="padding-bottom: 80px;">
+                  <!-- Status section -->
+                  <div class="border rounded-xl p-3" style="border-color: hsl(var(--border));">
+                    <h3 class="text-[10px] uppercase tracking-wider font-medium mb-2" style="color: hsl(var(--muted-foreground));">Status</h3>
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="text-[10px] px-2 py-0.5 rounded-full" style="background: hsl(var(--amber-50)); color: hsl(var(--amber-900));">Pågår</span>
+                      <span class="text-xs">·</span>
+                      <span class="text-xs">Hög prioritet</span>
+                    </div>
+                    <div class="text-xs grid grid-cols-2 gap-1.5 mt-3">
+                      <div><span style="color: hsl(var(--muted-foreground));">Ansvarig:</span><br /><strong>Anna Lindberg</strong></div>
+                      <div><span style="color: hsl(var(--muted-foreground));">Senast:</span><br /><strong>22 apr 2026</strong></div>
+                    </div>
+                  </div>
+                  <!-- Compliance health -->
+                  <div class="border rounded-xl p-3" style="border-color: hsl(var(--border));">
+                    <h3 class="text-[10px] uppercase tracking-wider font-medium mb-2" style="color: hsl(var(--muted-foreground));">Efterlevnad</h3>
+                    <div class="flex items-end gap-3 mb-1.5">
+                      <div class="font-safiro text-2xl">8 / 12</div>
+                      <p class="text-[10px] mb-1" style="color: hsl(var(--muted-foreground));">krav uppfyllda</p>
+                    </div>
+                    <div class="h-1.5 rounded-full overflow-hidden" style="background: hsl(var(--muted));">
+                      <div class="h-full" style="width: 67%; background: hsl(var(--ring));"></div>
+                    </div>
+                    <p class="text-[11px] mt-2" style="color: hsl(var(--muted-foreground));">3 kravpunkter saknar bevis</p>
+                  </div>
+                  <!-- Business context -->
+                  <div class="border rounded-xl p-3" style="border-color: hsl(var(--border));">
+                    <h3 class="text-[10px] uppercase tracking-wider font-medium mb-2" style="color: hsl(var(--muted-foreground));">Verksamhetsbeskrivning</h3>
+                    <p class="text-xs leading-relaxed">Lagen tillämpas på vår produktionsanläggning i Älvsjö där 18 medarbetare arbetar med tunga maskiner...</p>
+                    <button class="text-[11px] mt-2 underline" style="color: hsl(var(--ring));">Redigera</button>
+                  </div>
+                  <!-- Linked artifacts -->
+                  <div class="border rounded-xl p-3" style="border-color: hsl(var(--border));">
+                    <h3 class="text-[10px] uppercase tracking-wider font-medium mb-2" style="color: hsl(var(--muted-foreground));">Bevis · 3 kopplingar</h3>
+                    <div class="space-y-1.5">
+                      <div class="flex items-center gap-2 text-xs"><i data-lucide="file-text" class="w-3.5 h-3.5"></i><span class="truncate">Arbetsmiljöplan 2026.pdf</span></div>
+                      <div class="flex items-center gap-2 text-xs"><i data-lucide="file-text" class="w-3.5 h-3.5"></i><span class="truncate">Riskbedömning Q1.docx</span></div>
+                      <div class="flex items-center gap-2 text-xs"><i data-lucide="file-text" class="w-3.5 h-3.5"></i><span class="truncate">Skyddsrond protokoll.pdf</span></div>
+                    </div>
+                  </div>
+                  <!-- Quick links -->
+                  <div class="border rounded-xl p-3" style="border-color: hsl(var(--border));">
+                    <h3 class="text-[10px] uppercase tracking-wider font-medium mb-2" style="color: hsl(var(--muted-foreground));">Snabblänkar</h3>
+                    <div class="space-y-1.5 text-xs">
+                      <a class="flex items-center gap-2"><i data-lucide="external-link" class="w-3.5 h-3.5"></i> Lagtext på riksdagen.se</a>
+                      <a class="flex items-center gap-2"><i data-lucide="external-link" class="w-3.5 h-3.5"></i> Föreskrifter (AFS)</a>
+                    </div>
+                  </div>
+                </div>
+                <!-- Sticky bottom bar -->
+                <div style="position: absolute; left: 0; right: 0; bottom: 0; background: hsl(var(--background)); border-top: 1px solid hsl(var(--border)); padding: 10px 14px calc(10px + env(safe-area-inset-bottom)) 14px; display: flex; gap: 8px; align-items: center;">
+                  <button class="w-10 h-10 rounded-md border flex items-center justify-center shrink-0" style="border-color: hsl(var(--border));"><i data-lucide="message-circle" class="w-4 h-4"></i></button>
+                  <button class="flex-1 rounded-md py-2.5 text-sm font-medium text-white" style="background: hsl(var(--primary));">Markera som klar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Krav tab variant -->
+        <div class="grid md:grid-cols-2 gap-8 mt-12">
+          <div>
+            <p class="text-sm font-medium mb-3">Krav tab — kravpunkter checklist</p>
+            <div class="phone mx-auto">
+              <div class="phone-inner" style="display: flex; flex-direction: column;">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-3 py-2.5 border-b flex items-center gap-2" style="border-color: hsl(var(--border));">
+                  <button class="p-1 -ml-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[10px] uppercase tracking-wider truncate" style="color: hsl(var(--muted-foreground));">Arbetsmiljölagen</p>
+                    <span class="font-safiro text-sm truncate">AML 1977:1160</span>
+                  </div>
+                  <button class="p-1.5 rounded-md border shrink-0" style="border-color: hsl(var(--border));"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+                </header>
+                <div class="flex border-b" style="border-color: hsl(var(--border));">
+                  <button class="flex-1 py-2.5 text-xs" style="color: hsl(var(--muted-foreground)); border-bottom: 2px solid transparent;">Översikt</button>
+                  <button class="flex-1 py-2.5 text-xs font-medium border-b-2" style="border-color: hsl(var(--ring));">Krav · 5</button>
+                  <button class="flex-1 py-2.5 text-xs" style="color: hsl(var(--muted-foreground)); border-bottom: 2px solid transparent;">Aktivitet</button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 space-y-2" style="padding-bottom: 80px;">
+                  <div class="text-xs flex items-center justify-between mb-2">
+                    <span style="color: hsl(var(--muted-foreground));">3 av 5 uppfyllda</span>
+                    <button class="px-2 py-1 rounded border text-[11px]" style="border-color: hsl(var(--border));"><i data-lucide="plus" class="w-3 h-3 inline -mt-0.5"></i> Ny</button>
+                  </div>
+                  <div class="border rounded-lg p-3" style="border-color: hsl(var(--border));">
+                    <div class="flex items-start gap-2">
+                      <input type="checkbox" checked class="mt-0.5" />
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm">Skyddsombud utsett</p>
+                        <p class="text-[11px] mt-0.5" style="color: hsl(var(--muted-foreground));">Bevis: Protokoll 2026-01-15</p>
+                      </div>
+                      <span class="text-[10px] px-1.5 py-0.5 rounded shrink-0" style="background: hsl(140 50% 92%); color: hsl(140 50% 28%);">Klar</span>
+                    </div>
+                  </div>
+                  <div class="border rounded-lg p-3" style="border-color: hsl(var(--border));">
+                    <div class="flex items-start gap-2">
+                      <input type="checkbox" checked class="mt-0.5" />
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm">Riskbedömning genomförd</p>
+                        <p class="text-[11px] mt-0.5" style="color: hsl(var(--muted-foreground));">Bevis: Riskbedömning Q1.docx</p>
+                      </div>
+                      <span class="text-[10px] px-1.5 py-0.5 rounded shrink-0" style="background: hsl(140 50% 92%); color: hsl(140 50% 28%);">Klar</span>
+                    </div>
+                  </div>
+                  <div class="border rounded-lg p-3" style="border-color: hsl(var(--border));">
+                    <div class="flex items-start gap-2">
+                      <input type="checkbox" checked class="mt-0.5" />
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm">SAM-rutin dokumenterad</p>
+                        <p class="text-[11px] mt-0.5" style="color: hsl(var(--muted-foreground));">Bevis: SAM-pärm.pdf</p>
+                      </div>
+                      <span class="text-[10px] px-1.5 py-0.5 rounded shrink-0" style="background: hsl(140 50% 92%); color: hsl(140 50% 28%);">Klar</span>
+                    </div>
+                  </div>
+                  <div class="border rounded-lg p-3" style="border-color: hsl(var(--border)); background: hsl(var(--amber-50));">
+                    <div class="flex items-start gap-2">
+                      <input type="checkbox" class="mt-0.5" />
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm" style="color: hsl(var(--amber-900));">Skyddsrond senaste 6 mån</p>
+                        <p class="text-[11px] mt-0.5" style="color: hsl(var(--amber-700));"><i data-lucide="alert-triangle" class="w-3 h-3 inline -mt-0.5"></i> Saknar bevis</p>
+                      </div>
+                      <span class="text-[10px] px-1.5 py-0.5 rounded shrink-0" style="background: hsl(var(--amber-700)); color: white;">Pågår</span>
+                    </div>
+                  </div>
+                  <div class="border rounded-lg p-3" style="border-color: hsl(var(--border)); background: hsl(0 80% 97%);">
+                    <div class="flex items-start gap-2">
+                      <input type="checkbox" class="mt-0.5" />
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm" style="color: hsl(0 80% 30%);">Anmälan av allvarliga olyckor</p>
+                        <p class="text-[11px] mt-0.5" style="color: hsl(0 80% 35%);">Förfaller 5 jun</p>
+                      </div>
+                      <span class="text-[10px] px-1.5 py-0.5 rounded shrink-0" style="background: hsl(0 80% 95%); color: hsl(0 80% 35%);">Avvikelse</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="position: absolute; left: 0; right: 0; bottom: 0; background: hsl(var(--background)); border-top: 1px solid hsl(var(--border)); padding: 10px 14px calc(10px + env(safe-area-inset-bottom)) 14px;">
+                  <button class="w-full rounded-md py-2.5 text-sm font-medium text-white" style="background: hsl(var(--primary));">Spara ändringar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-sm font-medium mb-3">Aktivitet tab — feed + comments</p>
+            <div class="phone mx-auto">
+              <div class="phone-inner" style="display: flex; flex-direction: column;">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-3 py-2.5 border-b flex items-center gap-2" style="border-color: hsl(var(--border));">
+                  <button class="p-1 -ml-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[10px] uppercase tracking-wider truncate" style="color: hsl(var(--muted-foreground));">Arbetsmiljölagen</p>
+                    <span class="font-safiro text-sm truncate">AML 1977:1160</span>
+                  </div>
+                  <button class="p-1.5 rounded-md border shrink-0" style="border-color: hsl(var(--border));"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+                </header>
+                <div class="flex border-b" style="border-color: hsl(var(--border));">
+                  <button class="flex-1 py-2.5 text-xs" style="color: hsl(var(--muted-foreground)); border-bottom: 2px solid transparent;">Översikt</button>
+                  <button class="flex-1 py-2.5 text-xs" style="color: hsl(var(--muted-foreground)); border-bottom: 2px solid transparent;">Krav · 5</button>
+                  <button class="flex-1 py-2.5 text-xs font-medium border-b-2" style="border-color: hsl(var(--ring));">Aktivitet</button>
+                </div>
+                <div class="flex border-b text-xs" style="border-color: hsl(var(--border));">
+                  <button class="flex-1 py-1.5 px-2 border-b-2" style="border-color: hsl(var(--ring));">Alla</button>
+                  <button class="flex-1 py-1.5 px-2" style="color: hsl(var(--muted-foreground));">Kommentarer</button>
+                  <button class="flex-1 py-1.5 px-2" style="color: hsl(var(--muted-foreground));">Historik</button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-3 space-y-3" style="padding-bottom: 76px;">
+                  <div class="flex gap-2.5">
+                    <div class="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-medium text-white" style="background: hsl(var(--ring));">AL</div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs"><strong>Anna Lindberg</strong> kommenterade · 2h sedan</p>
+                      <p class="text-sm mt-1">Skyddsronden är schemalagd till 2 juni. Behöver hjälp med checklistan.</p>
+                    </div>
+                  </div>
+                  <div class="flex gap-2.5">
+                    <div class="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-medium text-white" style="background: hsl(var(--muted-foreground));">EB</div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs"><strong>Erik Berg</strong> uppdaterade status · igår</p>
+                      <p class="text-[11px] mt-0.5" style="color: hsl(var(--muted-foreground));">Ej startad → Pågår</p>
+                    </div>
+                  </div>
+                  <div class="flex gap-2.5">
+                    <div class="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-medium text-white" style="background: hsl(var(--muted-foreground));">SY</div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs"><strong>System</strong> · 3 dagar sedan</p>
+                      <p class="text-[11px] mt-0.5" style="color: hsl(var(--muted-foreground));">Ny lagändring detekterad: AFS 2026:3</p>
+                    </div>
+                  </div>
+                  <div class="flex gap-2.5">
+                    <div class="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[10px] font-medium text-white" style="background: hsl(var(--ring));">AL</div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs"><strong>Anna Lindberg</strong> laddade upp bevis · 5 dagar sedan</p>
+                      <p class="text-[11px] mt-0.5" style="color: hsl(var(--muted-foreground));">Skyddsrond protokoll.pdf</p>
+                    </div>
+                  </div>
+                </div>
+                <div style="position: absolute; left: 0; right: 0; bottom: 0; background: hsl(var(--background)); border-top: 1px solid hsl(var(--border)); padding: 8px 12px calc(8px + env(safe-area-inset-bottom)) 12px; display: flex; gap: 6px; align-items: center;">
+                  <input class="flex-1 border rounded-full px-3 py-2 text-xs" style="border-color: hsl(var(--border));" placeholder="Skriv en kommentar..." />
+                  <button class="w-9 h-9 rounded-full flex items-center justify-center text-white shrink-0" style="background: hsl(var(--primary));"><i data-lucide="send" class="w-4 h-4"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <details class="mt-8 max-w-2xl">
+          <summary class="cursor-pointer text-sm font-medium" style="color: hsl(var(--muted-foreground));">Implementation sketch — adaptive panel layout in SplitPanelModal</summary>
+          <pre class="text-xs mt-3 p-4 rounded overflow-x-auto" style="background: hsl(var(--muted));"><code>// In components/shared/split-panel-modal/index.tsx
+// Replace `max-md:flex-col` with a tab-based mobile layout:
+
+const [mobileTab, setMobileTab] = useState&lt;'overview' | 'kravpunkter' | 'activity'&gt;('overview')
+const isMobile = useMediaQuery('(max-width: 767px)')
+
+// Mobile body: show ONE panel at a time based on active tab.
+// Desktop body: keep current side-by-side flex.
+
+{isMobile ? (
+  &lt;&gt;
+    &lt;TabsList className="flex border-b"&gt;
+      &lt;TabsTrigger value="overview" className="flex-1"&gt;Översikt&lt;/TabsTrigger&gt;
+      &lt;TabsTrigger value="kravpunkter" className="flex-1"&gt;Krav · {kravCount}&lt;/TabsTrigger&gt;
+      &lt;TabsTrigger value="activity" className="flex-1"&gt;Aktivitet&lt;/TabsTrigger&gt;
+    &lt;/TabsList&gt;
+    &lt;TabsContent value="overview"&gt;{rightPanel}&lt;/TabsContent&gt;
+    &lt;TabsContent value="kravpunkter"&gt;{kravpunkterPanel}&lt;/TabsContent&gt;
+    &lt;TabsContent value="activity"&gt;{activityPanel}&lt;/TabsContent&gt;
+  &lt;/&gt;
+) : (
+  &lt;div className="flex flex-1 min-h-0 overflow-hidden"&gt;
+    {leftPanel}
+    {rightPanel}
+  &lt;/div&gt;
+)}
+
+// Mobile tabs require LegalDocumentModal to split its left panel into named slots
+// (kravpunkterPanel, activityPanel) and the right panel becomes the "Översikt" tab.</code></pre>
+        </details>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- 11. TASK MODAL                                                        -->
+      <!-- ================================================================== -->
+      <section data-section id="taskmodal">
+        <div class="mb-8">
+          <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Pattern 11 · highest impact</p>
+          <h2 class="font-safiro text-3xl mt-1">Task modal (uppgift detail)</h2>
+          <p class="mt-3 text-base max-w-3xl" style="color: hsl(var(--muted-foreground));">
+            Same SplitPanelModal shell as legal-document. Same problem on mobile (long stacked scroll). Tasks have a
+            simpler content shape — title editor, description editor, comments, then right-rail metadata (status,
+            priority, assignee, due date, linked laws, linked cycles, quick links). Two tabs are enough:
+            <em>Detaljer · Aktivitet</em>. Status/priority pills go in a sticky strip below the header so the user
+            sees + edits them without scrolling.
+          </p>
+        </div>
+
+        <div class="compare">
+
+          <!-- Current: stacked panels -->
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-bad"><i data-lucide="x" class="w-3 h-3"></i> Current</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">Description, comments, then metadata pillared at the bottom.</span></div>
+            <div class="phone mx-auto">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-4 py-3 border-b flex items-center justify-between" style="border-color: hsl(var(--border));">
+                  <button><i data-lucide="x" class="w-5 h-5"></i></button>
+                  <span class="font-safiro text-sm truncate flex-1 mx-3 text-center">Konsekvensbedöm 2024:1234</span>
+                  <button><i data-lucide="more-horizontal" class="w-5 h-5"></i></button>
+                </header>
+                <div class="p-4 space-y-3">
+                  <h2 class="font-safiro text-lg">Konsekvensbedöm 2024:1234</h2>
+                  <h3 class="text-xs font-medium uppercase tracking-wide" style="color: hsl(var(--muted-foreground));">Beskrivning</h3>
+                  <p class="text-sm">Genomför konsekvensanalys av lagändringen och dokumentera påverkan på vår verksamhet...</p>
+                  <h3 class="text-xs font-medium uppercase tracking-wide pt-2" style="color: hsl(var(--muted-foreground));">Kommentarer</h3>
+                  <div class="border rounded p-2 text-xs" style="border-color: hsl(var(--border));">
+                    <p><strong>Anna L.</strong></p>
+                    <p>Påbörjad. Klart inom en vecka.</p>
+                  </div>
+                  <p class="text-[11px] italic mt-3" style="color: hsl(var(--muted-foreground));">↓ ...more comments...</p>
+                  <p class="text-[11px] italic" style="color: hsl(var(--muted-foreground));">↓ Status, Priority, Assignee, Due date, Linked laws, etc. ↓</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Proposed: 2 tabs + sticky strip -->
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-good"><i data-lucide="check" class="w-3 h-3"></i> Proposed</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">Sticky pill strip + 2 tabs. Status & priority always visible.</span></div>
+            <div class="phone mx-auto" style="position: relative;">
+              <div class="phone-inner" style="display: flex; flex-direction: column;">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-3 py-2.5 border-b flex items-center gap-2" style="border-color: hsl(var(--border));">
+                  <button class="p-1 -ml-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[10px] uppercase tracking-wider" style="color: hsl(var(--muted-foreground));">Uppgift</p>
+                    <span class="font-safiro text-sm truncate block">Konsekvensbedöm 2024:1234</span>
+                  </div>
+                  <button class="p-1.5 rounded-md border shrink-0" style="border-color: hsl(var(--border));"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+                </header>
+                <!-- Sticky pill strip — status, priority, assignee, due -->
+                <div class="px-3 py-2 border-b flex gap-1.5 overflow-x-auto" style="border-color: hsl(var(--border)); background: hsl(var(--card)); scrollbar-width: none;">
+                  <button class="shrink-0 px-2.5 py-1 rounded-full text-[10px] font-medium flex items-center gap-1" style="background: hsl(var(--amber-50)); color: hsl(var(--amber-900));">
+                    <span class="w-1.5 h-1.5 rounded-full" style="background: hsl(var(--amber-700));"></span> Pågår
+                  </button>
+                  <button class="shrink-0 px-2.5 py-1 rounded-full text-[10px] border" style="border-color: hsl(var(--border));">
+                    <i data-lucide="alert-circle" class="w-3 h-3 inline -mt-0.5"></i> Hög
+                  </button>
+                  <button class="shrink-0 px-2.5 py-1 rounded-full text-[10px] border flex items-center gap-1" style="border-color: hsl(var(--border));">
+                    <span class="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8px] text-white" style="background: hsl(var(--ring));">AL</span> Anna
+                  </button>
+                  <button class="shrink-0 px-2.5 py-1 rounded-full text-[10px] border" style="border-color: hsl(var(--border));">
+                    <i data-lucide="calendar" class="w-3 h-3 inline -mt-0.5"></i> 2 jun
+                  </button>
+                </div>
+                <!-- Tabs -->
+                <div class="flex border-b" style="border-color: hsl(var(--border));">
+                  <button class="flex-1 py-2.5 text-xs font-medium border-b-2" style="border-color: hsl(var(--ring));">Detaljer</button>
+                  <button class="flex-1 py-2.5 text-xs" style="color: hsl(var(--muted-foreground)); border-bottom: 2px solid transparent;">Aktivitet · 3</button>
+                </div>
+                <!-- Tab content (Detaljer) -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-4" style="padding-bottom: 80px;">
+                  <div>
+                    <label class="text-[10px] uppercase tracking-wider font-medium block mb-1.5" style="color: hsl(var(--muted-foreground));">Beskrivning</label>
+                    <div class="border rounded-lg p-3 min-h-[80px]" style="border-color: hsl(var(--border));">
+                      <p class="text-sm">Genomför konsekvensanalys av lagändringen och dokumentera påverkan på vår verksamhet. Inkludera riskbedömning + handlingsplan.</p>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="text-[10px] uppercase tracking-wider font-medium block mb-1.5" style="color: hsl(var(--muted-foreground));">Kopplade lagar · 1</label>
+                    <div class="border rounded-lg p-2.5 flex items-center gap-2" style="border-color: hsl(var(--border));">
+                      <i data-lucide="link" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i>
+                      <span class="text-sm flex-1">SFS 2024:1234 — Lag om kemiska...</span>
+                      <i data-lucide="chevron-right" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="text-[10px] uppercase tracking-wider font-medium block mb-1.5" style="color: hsl(var(--muted-foreground));">Kopplade kontroller · 1</label>
+                    <div class="border rounded-lg p-2.5 flex items-center gap-2" style="border-color: hsl(var(--border));">
+                      <i data-lucide="clipboard-list" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i>
+                      <span class="text-sm flex-1">Q2 efterlevnadskontroll</span>
+                      <i data-lucide="chevron-right" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="text-[10px] uppercase tracking-wider font-medium block mb-1.5" style="color: hsl(var(--muted-foreground));">Bilagor · 0</label>
+                    <button class="w-full border-2 border-dashed rounded-lg py-4 text-xs flex items-center justify-center gap-1" style="border-color: hsl(var(--border)); color: hsl(var(--muted-foreground));">
+                      <i data-lucide="paperclip" class="w-4 h-4"></i> Lägg till fil
+                    </button>
+                  </div>
+                </div>
+                <!-- Sticky bottom action bar -->
+                <div style="position: absolute; left: 0; right: 0; bottom: 0; background: hsl(var(--background)); border-top: 1px solid hsl(var(--border)); padding: 10px 14px calc(10px + env(safe-area-inset-bottom)) 14px; display: flex; gap: 8px; align-items: center;">
+                  <button class="w-10 h-10 rounded-md border flex items-center justify-center shrink-0" style="border-color: hsl(var(--border));"><i data-lucide="message-circle" class="w-4 h-4"></i></button>
+                  <button class="flex-1 rounded-md py-2.5 text-sm font-medium text-white" style="background: hsl(var(--primary));">Markera som klar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Editing pill strip (popover) -->
+        <div class="mt-12 max-w-2xl">
+          <p class="text-sm font-medium mb-3">Pill-strip interaction: tap a pill → bottom Sheet for editing</p>
+          <p class="text-sm mb-4" style="color: hsl(var(--muted-foreground));">
+            Tapping any pill in the sticky strip (Status, Priority, Ansvarig, Förfallodatum) opens a focused
+            bottom Sheet picker. Single-purpose, thumb-friendly, keyboard-aware. Same pattern as Linear, Notion,
+            Things, etc.
+          </p>
+          <div class="phone mx-auto" style="position: relative;">
+            <div class="phone-inner">
+              <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+              <header class="px-3 py-2.5 border-b flex items-center gap-2" style="border-color: hsl(var(--border));">
+                <button class="p-1 -ml-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <span class="font-safiro text-sm truncate flex-1">Konsekvensbedöm 2024:1234</span>
+              </header>
+              <div class="px-3 py-2 border-b flex gap-1.5 opacity-30" style="border-color: hsl(var(--border));">
+                <span class="px-2.5 py-1 rounded-full text-[10px] font-medium" style="background: hsl(var(--amber-50)); color: hsl(var(--amber-900));">Pågår</span>
+                <span class="px-2.5 py-1 rounded-full text-[10px] border" style="border-color: hsl(var(--border));">Hög</span>
+              </div>
+              <div class="p-4 opacity-30">
+                <p class="text-sm">Genomför konsekvensanalys...</p>
+              </div>
+            </div>
+            <div style="position: absolute; inset: 0; background: rgba(0,0,0,.4); z-index: 30;"></div>
+            <div style="position: absolute; left: 0; right: 0; bottom: 0; background: hsl(var(--card)); border-top-left-radius: 24px; border-top-right-radius: 24px; z-index: 40; box-shadow: 0 -8px 24px rgba(0,0,0,.2); display: flex; flex-direction: column;">
+              <div class="sheet-handle"></div>
+              <div class="px-5 pt-2 pb-3 border-b" style="border-color: hsl(var(--border));">
+                <h3 class="font-safiro text-lg">Status</h3>
+                <p class="text-xs mt-0.5" style="color: hsl(var(--muted-foreground));">Välj kolumn</p>
+              </div>
+              <div class="p-3 space-y-1">
+                <button class="w-full text-left p-3 rounded-lg flex items-center justify-between border" style="border-color: hsl(var(--border));">
+                  <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background: hsl(var(--muted-foreground));"></span><span class="text-sm">Att göra</span></span>
+                </button>
+                <button class="w-full text-left p-3 rounded-lg flex items-center justify-between" style="background: hsl(var(--accent)); border: 2px solid hsl(var(--ring));">
+                  <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background: hsl(var(--amber-700));"></span><span class="text-sm font-medium">Pågår</span></span>
+                  <i data-lucide="check" class="w-4 h-4"></i>
+                </button>
+                <button class="w-full text-left p-3 rounded-lg flex items-center justify-between border" style="border-color: hsl(var(--border));">
+                  <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background: hsl(140 50% 40%);"></span><span class="text-sm">Klar</span></span>
+                </button>
+              </div>
+              <div style="padding: 12px 16px calc(12px + env(safe-area-inset-bottom)) 16px;">
+                <button class="w-full rounded-md py-2.5 text-sm font-medium" style="background: hsl(var(--secondary));">Avbryt</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <details class="mt-8 max-w-2xl">
+          <summary class="cursor-pointer text-sm font-medium" style="color: hsl(var(--muted-foreground));">Implementation sketch — TaskModal mobile slots</summary>
+          <pre class="text-xs mt-3 p-4 rounded overflow-x-auto" style="background: hsl(var(--muted));"><code>// In components/features/tasks/task-modal/index.tsx
+// Pass mobile-specific slots to SplitPanelModal alongside the existing
+// leftPanel/rightPanel:
+
+&lt;SplitPanelModal
+  open={isOpen}
+  onClose={onClose}
+  srTitle={task?.title}
+  header={&lt;ModalHeader task={task} /&gt;}
+  // Existing desktop panels
+  leftPanel={&lt;LeftPanel task={task} /&gt;}
+  rightPanel={&lt;RightPanel task={task} /&gt;}
+  // NEW: mobile pill-strip below header (status/priority/assignee/due)
+  mobilePillStrip={&lt;StatusPriorityBadges task={task} mobile /&gt;}
+  // NEW: mobile tab structure — only renders when isMobile
+  mobileTabs={[
+    { id: 'details', label: 'Detaljer', content: &lt;TaskDetailsContent task={task} /&gt; },
+    { id: 'activity', label: `Aktivitet · ${task.activityCount}`, content: &lt;ActivityFeed task={task} /&gt; },
+  ]}
+  // NEW: sticky bottom action — primary CTA always reachable
+  mobilePrimaryAction={{
+    label: task.isDone ? 'Markera som ej klar' : 'Markera som klar',
+    onClick: handleToggleDone,
+  }}
+/&gt;
+
+// SplitPanelModal forks behavior on isMobile: render mobilePillStrip + Tabs +
+// mobilePrimaryAction instead of leftPanel/rightPanel split.
+// All existing desktop callers unchanged.</code></pre>
+        </details>
+
+        <!-- Modal-by-modal table -->
+        <div class="mt-12 border rounded-2xl overflow-hidden" style="border-color: hsl(var(--border));">
+          <div class="px-5 py-4 border-b" style="border-color: hsl(var(--border)); background: hsl(var(--secondary));">
+            <h3 class="font-safiro text-lg">Modal-by-modal mobile checklist</h3>
+            <p class="text-xs mt-1" style="color: hsl(var(--muted-foreground));">
+              Adaptation strategy per modal in the codebase. Order = priority.
+            </p>
+          </div>
+          <table class="w-full text-sm">
+            <thead style="background: hsl(var(--muted));">
+              <tr class="text-left text-[11px] uppercase tracking-wider" style="color: hsl(var(--muted-foreground));">
+                <th class="px-4 py-2.5">Modal</th>
+                <th class="px-4 py-2.5">Pattern</th>
+                <th class="px-4 py-2.5">Effort</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-t" style="border-color: hsl(var(--border));">
+                <td class="px-4 py-3"><strong>LegalDocumentModal</strong><br /><code class="text-[11px]" style="color: hsl(var(--muted-foreground));">document-list/legal-document-modal/</code></td>
+                <td class="px-4 py-3">SplitPanelModal already full-screen on mobile. Add 3 tabs (Översikt, Krav, Aktivitet). Sticky bottom action ("Markera som klar"). Chat → bottom Sheet (currently hidden on mobile, no fallback).</td>
+                <td class="px-4 py-3">Medium</td>
+              </tr>
+              <tr class="border-t" style="border-color: hsl(var(--border));">
+                <td class="px-4 py-3"><strong>TaskModal</strong><br /><code class="text-[11px]" style="color: hsl(var(--muted-foreground));">tasks/task-modal/</code></td>
+                <td class="px-4 py-3">Same shell as legal-doc. Sticky pill strip (Status/Priority/Ansvarig/Förfaller) below header. 2 tabs (Detaljer, Aktivitet). Sticky bottom "Markera som klar". Pills tap → focused bottom Sheet picker.</td>
+                <td class="px-4 py-3">Medium</td>
+              </tr>
+              <tr class="border-t" style="border-color: hsl(var(--border));">
+                <td class="px-4 py-3"><strong>CreateTaskModal</strong><br /><code class="text-[11px]" style="color: hsl(var(--muted-foreground));">tasks/create-task-modal.tsx</code></td>
+                <td class="px-4 py-3">Pure form. Replace Dialog → ResponsiveDialog (Sheet on mobile). Single-column form. Sticky "Spara".</td>
+                <td class="px-4 py-3">S</td>
+              </tr>
+              <tr class="border-t" style="border-color: hsl(var(--border));">
+                <td class="px-4 py-3"><strong>ManageListModal</strong><br /><code class="text-[11px]" style="color: hsl(var(--muted-foreground));">document-list/manage-list-modal.tsx</code></td>
+                <td class="px-4 py-3">Replace Dialog → ResponsiveDialog. Long list of toggleable docs. Mobile = full-screen Sheet with sticky search bar at top + sticky save at bottom.</td>
+                <td class="px-4 py-3">S</td>
+              </tr>
+              <tr class="border-t" style="border-color: hsl(var(--border));">
+                <td class="px-4 py-3"><strong>ChangeAssessmentModal</strong><br /><code class="text-[11px]" style="color: hsl(var(--muted-foreground));">change-assessment-modal.tsx</code></td>
+                <td class="px-4 py-3">Multi-step form (Påverkan/Åtgärd/Bevis). Replace Dialog → bottom Sheet. Step indicator inside.</td>
+                <td class="px-4 py-3">M</td>
+              </tr>
+              <tr class="border-t" style="border-color: hsl(var(--border));">
+                <td class="px-4 py-3"><strong>4× Cycle dialogs</strong><br /><code class="text-[11px]" style="color: hsl(var(--muted-foreground));">compliance-audit/cycle-detail/*</code></td>
+                <td class="px-4 py-3">verify-finding, manual-close-finding, complete-cycle, revert-cycle. All small confirmation dialogs. Bulk swap Dialog → ResponsiveDialog. Sticky bottom buttons.</td>
+                <td class="px-4 py-3">XS each</td>
+              </tr>
+              <tr class="border-t" style="border-color: hsl(var(--border));">
+                <td class="px-4 py-3"><strong>InviteMemberModal</strong><br /><code class="text-[11px]" style="color: hsl(var(--muted-foreground));">settings/invite-member-modal.tsx</code></td>
+                <td class="px-4 py-3">Email + role form. Dialog → ResponsiveDialog. Sticky "Skicka inbjudan".</td>
+                <td class="px-4 py-3">XS</td>
+              </tr>
+              <tr class="border-t" style="border-color: hsl(var(--border));">
+                <td class="px-4 py-3"><strong>WorkspaceSelectorDialog</strong><br /><code class="text-[11px]" style="color: hsl(var(--muted-foreground));">workspace-selector-dialog.tsx</code></td>
+                <td class="px-4 py-3">List of workspaces. Dialog → bottom Sheet. Tap row → switch.</td>
+                <td class="px-4 py-3">XS</td>
+              </tr>
+              <tr class="border-t" style="border-color: hsl(var(--border));">
+                <td class="px-4 py-3"><strong>ColumnAddDialog</strong><br /><code class="text-[11px]" style="color: hsl(var(--muted-foreground));">tasks/column-add-dialog.tsx</code></td>
+                <td class="px-4 py-3">Small form. ResponsiveDialog.</td>
+                <td class="px-4 py-3">XS</td>
+              </tr>
+              <tr class="border-t" style="border-color: hsl(var(--border));">
+                <td class="px-4 py-3"><strong>CreateDocumentDialog</strong><br /><code class="text-[11px]" style="color: hsl(var(--muted-foreground));">styrdokument/create-document-dialog.tsx</code></td>
+                <td class="px-4 py-3">Form + template picker. ResponsiveDialog. Template grid stacks 1-col on mobile.</td>
+                <td class="px-4 py-3">S</td>
+              </tr>
+              <tr class="border-t" style="border-color: hsl(var(--border));">
+                <td class="px-4 py-3"><strong>CompletionConfirmDialog</strong><br /><code class="text-[11px]" style="color: hsl(var(--muted-foreground));">tasks/task-modal/completion-confirm-dialog.tsx</code></td>
+                <td class="px-4 py-3">Tiny confirm. ResponsiveDialog.</td>
+                <td class="px-4 py-3">XS</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- 12. NOTIFICATION BELL                                                 -->
+      <!-- ================================================================== -->
+      <section data-section id="notif">
+        <div class="mb-8">
+          <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Pattern 12 · A1 in audit</p>
+          <h2 class="font-safiro text-3xl mt-1">Notification bell: Popover → right Sheet</h2>
+          <p class="mt-3 text-base max-w-3xl" style="color: hsl(var(--muted-foreground));">
+            <code>notification-bell.tsx:127</code> uses <code>&lt;PopoverContent className="w-80 p-0"&gt;</code> —
+            320px wide popover anchored to a right-edge bell button. On a 390px phone it hugs the right edge and
+            clips below 360px. Swap to a right-side Sheet on mobile: full content height, swipe to dismiss, no
+            clipping.
+          </p>
+        </div>
+
+        <div class="compare">
+
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-bad"><i data-lucide="x" class="w-3 h-3"></i> Current</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">320px Popover anchored right. Overflow risk.</span></div>
+            <div class="phone mx-auto" style="position: relative;">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-4 py-3 border-b flex items-center justify-between" style="border-color: hsl(var(--border));">
+                  <button><i data-lucide="menu" class="w-5 h-5"></i></button>
+                  <span class="font-safiro text-lg">nShift AB</span>
+                  <button class="relative">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    <span class="absolute -right-0.5 -top-0.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center text-white" style="background: hsl(0 80% 50%);">3</span>
+                  </button>
+                </header>
+                <div class="p-4 opacity-30">
+                  <h2 class="font-safiro text-2xl">Hem</h2>
+                </div>
+              </div>
+              <!-- Popover overflowing right edge -->
+              <div style="position: absolute; right: 4px; top: 56px; width: 320px; max-width: calc(100% + 60px); background: hsl(var(--card)); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.3); z-index: 30; border: 1px solid hsl(var(--border));">
+                <div class="px-4 py-3 border-b flex items-center justify-between" style="border-color: hsl(var(--border));">
+                  <h3 class="text-sm font-semibold">Notifieringar</h3>
+                  <button class="text-xs" style="color: hsl(var(--muted-foreground));">Markera lästa</button>
+                </div>
+                <div class="px-4 py-3 border-b text-xs" style="border-color: hsl(var(--border));">
+                  <p class="font-medium">Anna kommenterade</p>
+                  <p style="color: hsl(var(--muted-foreground));">2h sedan · AML 1977:1160</p>
+                </div>
+                <div class="px-4 py-3 border-b text-xs" style="border-color: hsl(var(--border));">
+                  <p class="font-medium">Lagändring detekterad</p>
+                  <p style="color: hsl(var(--muted-foreground));">igår · AFS 2026:3</p>
+                </div>
+              </div>
+              <p class="text-[11px] italic absolute" style="bottom: 16px; left: 16px; color: hsl(0 80% 50%); background: hsl(var(--background)); padding: 4px 8px; border-radius: 4px;">↑ Popover overflows right edge of viewport ↑</p>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center gap-3 mb-4"><span class="label-good"><i data-lucide="check" class="w-3 h-3"></i> Proposed</span><span class="text-sm" style="color: hsl(var(--muted-foreground));">Right Sheet, full height. Touch-friendly.</span></div>
+            <div class="phone mx-auto" style="position: relative;">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-4 py-3 border-b flex items-center justify-between" style="border-color: hsl(var(--border));">
+                  <button><i data-lucide="menu" class="w-5 h-5"></i></button>
+                  <span class="font-safiro text-lg">nShift AB</span>
+                  <button class="relative">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                  </button>
+                </header>
+                <div class="p-4 opacity-30">
+                  <h2 class="font-safiro text-2xl">Hem</h2>
+                </div>
+              </div>
+              <!-- Dim overlay -->
+              <div style="position: absolute; inset: 0; background: rgba(0,0,0,.4); z-index: 30;"></div>
+              <!-- Right sheet -->
+              <div style="position: absolute; right: 0; top: 0; bottom: 0; width: 88%; background: hsl(var(--card)); z-index: 40; box-shadow: -8px 0 24px rgba(0,0,0,.2); display: flex; flex-direction: column;">
+                <div class="px-4 py-3 border-b flex items-center justify-between" style="border-color: hsl(var(--border));">
+                  <div>
+                    <h3 class="font-safiro text-base">Notifieringar</h3>
+                    <p class="text-[10px]" style="color: hsl(var(--muted-foreground));">3 olästa</p>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <button class="text-xs px-2 py-1 rounded" style="color: hsl(var(--muted-foreground));">Markera alla</button>
+                    <button class="w-9 h-9 flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
+                  </div>
+                </div>
+                <div class="flex-1 overflow-y-auto">
+                  <button class="w-full px-4 py-3 border-b text-left flex gap-3 items-start" style="border-color: hsl(var(--border));">
+                    <span class="w-2 h-2 rounded-full mt-1.5 shrink-0" style="background: hsl(var(--ring));"></span>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium">Anna kommenterade</p>
+                      <p class="text-xs mt-0.5 truncate" style="color: hsl(var(--muted-foreground));">"Skyddsronden är schemalagd till 2 juni..."</p>
+                      <p class="text-[10px] mt-1" style="color: hsl(var(--muted-foreground));">2h sedan · AML 1977:1160</p>
+                    </div>
+                  </button>
+                  <button class="w-full px-4 py-3 border-b text-left flex gap-3 items-start" style="border-color: hsl(var(--border));">
+                    <span class="w-2 h-2 rounded-full mt-1.5 shrink-0" style="background: hsl(var(--ring));"></span>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium">Lagändring detekterad</p>
+                      <p class="text-xs mt-0.5" style="color: hsl(var(--muted-foreground));">AFS 2026:3 — Kemiska arbetsmiljörisker</p>
+                      <p class="text-[10px] mt-1" style="color: hsl(var(--muted-foreground));">igår · Granska →</p>
+                    </div>
+                  </button>
+                  <button class="w-full px-4 py-3 border-b text-left flex gap-3 items-start" style="border-color: hsl(var(--border));">
+                    <span class="w-2 h-2 rounded-full mt-1.5 shrink-0" style="background: hsl(var(--ring));"></span>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium">Erik tilldelade dig</p>
+                      <p class="text-xs mt-0.5 truncate" style="color: hsl(var(--muted-foreground));">Konsekvensbedöm 2024:1234</p>
+                      <p class="text-[10px] mt-1" style="color: hsl(var(--muted-foreground));">3 dagar sedan · Förfaller 2 jun</p>
+                    </div>
+                  </button>
+                  <button class="w-full px-4 py-3 border-b text-left flex gap-3 items-start opacity-50" style="border-color: hsl(var(--border));">
+                    <span class="w-2 h-2 rounded-full mt-1.5 shrink-0"></span>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm">Anna stängde finding</p>
+                      <p class="text-[10px] mt-1" style="color: hsl(var(--muted-foreground));">5 dagar sedan</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- 13. AI CHAT CONTENT                                                   -->
+      <!-- ================================================================== -->
+      <section data-section id="aichat">
+        <div class="mb-8">
+          <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Pattern 13 · A2 in audit</p>
+          <h2 class="font-safiro text-3xl mt-1">AI chat content rendering</h2>
+          <p class="mt-3 text-base max-w-3xl" style="color: hsl(var(--muted-foreground));">
+            The chat shell adapts (ChatModal swap on mobile), but message <strong>content</strong> rendering needs its own
+            mobile pass. Three concerns: <strong>(1) citation pills</strong> — when tapped, the citation detail panel must be a Sheet not a
+            Dialog (modal-on-modal); <strong>(2) code blocks + tables in streamed responses</strong> need
+            <code>overflow-x-auto</code> with sticky header; <strong>(3) agent action cards</strong> (Story 14.x) — change
+            assessments, draft document approvals — are wide interactive cards that need single-column stacking on mobile.
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+
+          <!-- Citation pill → Sheet -->
+          <div>
+            <p class="text-sm font-medium mb-3">Citation pill → Sheet detail</p>
+            <div class="phone mx-auto" style="position: relative;">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-4 py-2.5 border-b flex items-center gap-3" style="border-color: hsl(var(--border));">
+                  <button><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                  <span class="font-safiro text-sm flex-1">Assistent</span>
+                  <button><i data-lucide="more-horizontal" class="w-5 h-5"></i></button>
+                </header>
+                <div class="p-3 opacity-40">
+                  <div class="border rounded-2xl p-3 mb-2" style="border-color: hsl(var(--border));">
+                    <p class="text-sm">Enligt AML 1977:1160 §3 ska arbetsgivaren <span class="px-1.5 py-0.5 rounded text-[10px]" style="background: hsl(var(--accent));">[1]</span> systematiskt arbeta med arbetsmiljöfrågor...</p>
+                  </div>
+                </div>
+              </div>
+              <div style="position: absolute; inset: 0; background: rgba(0,0,0,.4); z-index: 30;"></div>
+              <div style="position: absolute; left: 0; right: 0; bottom: 0; background: hsl(var(--card)); border-top-left-radius: 24px; border-top-right-radius: 24px; z-index: 40; box-shadow: 0 -8px 24px rgba(0,0,0,.2); display: flex; flex-direction: column; max-height: 70%;">
+                <div class="sheet-handle"></div>
+                <div class="px-4 pt-2 pb-3 border-b" style="border-color: hsl(var(--border));">
+                  <p class="text-[10px] uppercase tracking-wider" style="color: hsl(var(--muted-foreground));">Källa 1</p>
+                  <h3 class="font-safiro text-base">AML 1977:1160 § 3</h3>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4">
+                  <p class="text-sm leading-relaxed">"Arbetsgivaren skall vidtaga alla åtgärder som behövs för att förebygga att arbetstagaren utsättes för ohälsa eller olycksfall..."</p>
+                  <p class="text-[11px] mt-3" style="color: hsl(var(--muted-foreground));">3 kap. 2 § Arbetsmiljölagen (1977:1160)</p>
+                  <button class="mt-4 text-xs flex items-center gap-1.5" style="color: hsl(var(--ring));">
+                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Öppna full lag
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Code block / table -->
+          <div>
+            <p class="text-sm font-medium mb-3">Code/table reflow in streamed response</p>
+            <div class="phone mx-auto">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-4 py-2.5 border-b flex items-center gap-3" style="border-color: hsl(var(--border));">
+                  <button><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                  <span class="font-safiro text-sm flex-1">Assistent</span>
+                </header>
+                <div class="p-3 space-y-2">
+                  <div class="border rounded-2xl p-3" style="border-color: hsl(var(--border));">
+                    <p class="text-sm">Här är en jämförelse av era 3 lagar:</p>
+                    <div class="mt-3 -mx-3 overflow-x-auto" style="scrollbar-width: thin;">
+                      <table class="text-[11px]" style="min-width: 320px; border-collapse: collapse;">
+                        <thead style="background: hsl(var(--muted));">
+                          <tr>
+                            <th class="px-2 py-1.5 text-left">Lag</th>
+                            <th class="px-2 py-1.5 text-left">Status</th>
+                            <th class="px-2 py-1.5 text-left">Sista</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr class="border-t" style="border-color: hsl(var(--border));">
+                            <td class="px-2 py-1.5">AML 1977:1160</td>
+                            <td class="px-2 py-1.5">Pågår</td>
+                            <td class="px-2 py-1.5">22 apr</td>
+                          </tr>
+                          <tr class="border-t" style="border-color: hsl(var(--border));">
+                            <td class="px-2 py-1.5">AFS 2020:5</td>
+                            <td class="px-2 py-1.5">Klar</td>
+                            <td class="px-2 py-1.5">19 apr</td>
+                          </tr>
+                          <tr class="border-t" style="border-color: hsl(var(--border));">
+                            <td class="px-2 py-1.5">AFS 2001:1</td>
+                            <td class="px-2 py-1.5">Ej startad</td>
+                            <td class="px-2 py-1.5">—</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <p class="text-[10px] mt-1.5 italic" style="color: hsl(var(--muted-foreground));">↔ Tabell scrollbar inom bubblan</p>
+                  </div>
+                  <div class="border rounded-2xl p-3" style="border-color: hsl(var(--border));">
+                    <p class="text-sm mb-2">Använd denna kodsnutt för att hämta:</p>
+                    <div class="rounded-md p-2 -mx-1 overflow-x-auto text-[10px] font-mono" style="background: hsl(var(--muted)); white-space: pre;">curl -X POST https://api.../webhooks/stripe \
+  -H "Authorization: Bearer xxx"</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Agent action card -->
+          <div>
+            <p class="text-sm font-medium mb-3">Agent action card (change assessment)</p>
+            <div class="phone mx-auto">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-4 py-2.5 border-b flex items-center gap-3" style="border-color: hsl(var(--border));">
+                  <button><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                  <span class="font-safiro text-sm flex-1">Assistent</span>
+                </header>
+                <div class="p-3">
+                  <div class="border rounded-2xl p-3 mb-2" style="border-color: hsl(var(--border));">
+                    <p class="text-sm">Jag har analyserat AFS 2026:3 och föreslår följande åtgärd:</p>
+                  </div>
+                  <!-- Agent action card -->
+                  <div class="rounded-2xl p-3 border-2" style="border-color: hsl(var(--ring)); background: hsl(var(--card));">
+                    <div class="flex items-start gap-2 mb-2">
+                      <i data-lucide="sparkles" class="w-4 h-4 mt-0.5" style="color: hsl(var(--ring));"></i>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-[10px] uppercase tracking-wider" style="color: hsl(var(--muted-foreground));">Förslag på åtgärdsplan</p>
+                        <h3 class="font-safiro text-sm">Konsekvensbedöm AFS 2026:3</h3>
+                      </div>
+                    </div>
+                    <div class="space-y-2 mt-3">
+                      <div class="text-xs">
+                        <p class="font-medium">Påverkan</p>
+                        <p style="color: hsl(var(--muted-foreground));">Hög — kemikalielagring berörs</p>
+                      </div>
+                      <div class="text-xs">
+                        <p class="font-medium">Föreslagna kravpunkter</p>
+                        <ul class="mt-1 space-y-1 pl-4 list-disc" style="color: hsl(var(--muted-foreground));">
+                          <li>Inventera kemikalier mot ny lista</li>
+                          <li>Uppdatera arbetsmiljöplan</li>
+                          <li>Skyddsutbildning Q2</li>
+                        </ul>
+                      </div>
+                      <div class="text-xs">
+                        <p class="font-medium">Föreslagen ansvarig</p>
+                        <p style="color: hsl(var(--muted-foreground));">Anna Lindberg</p>
+                      </div>
+                    </div>
+                    <div class="flex flex-col gap-1.5 mt-4">
+                      <button class="w-full rounded-md py-2.5 text-sm font-medium text-white" style="background: hsl(var(--primary));">Skapa uppgift</button>
+                      <button class="w-full rounded-md py-2 text-xs border" style="border-color: hsl(var(--border));">Ändra detaljer</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <p class="mt-6 text-sm max-w-3xl" style="color: hsl(var(--muted-foreground));">
+          <strong>Action items per audit A2:</strong> citation-detail.tsx → Sheet not Dialog · Streamdown code/table blocks
+          → ensure inner <code>overflow-x-auto</code> stays inside the chat bubble (not breaking out) · Agent action cards
+          → vertical button stack on <code>&lt;md:</code>, never side-by-side. Schedule a 4-hour focused chat-content
+          audit pass on a real phone before declaring chat mobile-ready.
+        </p>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- 14. TOOLTIP TOUCH FALLBACK                                            -->
+      <!-- ================================================================== -->
+      <section data-section id="tooltip">
+        <div class="mb-8">
+          <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Pattern 14 · A5 in audit</p>
+          <h2 class="font-safiro text-3xl mt-1">Tooltip touch fallback (a11y)</h2>
+          <p class="mt-3 text-base max-w-3xl" style="color: hsl(var(--muted-foreground));">
+            shadcn <code>&lt;Tooltip&gt;</code> only triggers on hover/focus. Touch users miss explanations
+            entirely — affects icon-only buttons, status warnings, kebab menus. Three patterns to choose from per case.
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+
+          <!-- Pattern A: sr-only + visible mobile label -->
+          <div>
+            <div class="rounded-xl border p-5 mb-3" style="border-color: hsl(var(--border)); background: hsl(var(--card));">
+              <p class="text-[10px] uppercase tracking-wider mb-1" style="color: hsl(var(--muted-foreground));">Option A</p>
+              <h3 class="font-safiro text-lg">Visible label on mobile</h3>
+              <p class="text-sm mt-2" style="color: hsl(var(--muted-foreground));">Always show the label on small screens; hide via tooltip on desktop only.</p>
+              <pre class="text-[11px] mt-3 p-2 rounded font-mono overflow-x-auto" style="background: hsl(var(--muted));">&lt;Button&gt;
+  &lt;Save className="md:mr-0 mr-2" /&gt;
+  &lt;span className="md:sr-only"&gt;Spara&lt;/span&gt;
+&lt;/Button&gt;</pre>
+            </div>
+            <div class="phone mx-auto" style="height: 280px;">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-3 py-2 border-b flex items-center justify-between" style="border-color: hsl(var(--border));">
+                  <span class="font-safiro text-sm">Dokument</span>
+                  <div class="flex gap-1.5">
+                    <button class="px-2.5 py-1.5 rounded-md border text-xs flex items-center gap-1.5" style="border-color: hsl(var(--border));">
+                      <i data-lucide="save" class="w-3.5 h-3.5"></i> Spara
+                    </button>
+                    <button class="px-2.5 py-1.5 rounded-md text-xs flex items-center gap-1.5 text-white" style="background: hsl(var(--primary));">
+                      <i data-lucide="check" class="w-3.5 h-3.5"></i> Publicera
+                    </button>
+                  </div>
+                </header>
+                <div class="p-3">
+                  <p class="text-xs" style="color: hsl(var(--muted-foreground));">Labels visible on phone. Same buttons icon-only on desktop with Tooltip.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pattern B: HoverCard (long-press) -->
+          <div>
+            <div class="rounded-xl border p-5 mb-3" style="border-color: hsl(var(--border)); background: hsl(var(--card));">
+              <p class="text-[10px] uppercase tracking-wider mb-1" style="color: hsl(var(--muted-foreground));">Option B</p>
+              <h3 class="font-safiro text-lg">HoverCard (long-press)</h3>
+              <p class="text-sm mt-2" style="color: hsl(var(--muted-foreground));">Radix HoverCard works on long-press. Drop-in for richer tooltip content.</p>
+              <pre class="text-[11px] mt-3 p-2 rounded font-mono overflow-x-auto" style="background: hsl(var(--muted));">&lt;HoverCard&gt;
+  &lt;HoverCardTrigger asChild&gt;
+    &lt;Button variant="ghost"&gt;
+      &lt;AlertTriangle /&gt;
+    &lt;/Button&gt;
+  &lt;/HoverCardTrigger&gt;
+  &lt;HoverCardContent&gt;Saknar bevis&lt;/HoverCardContent&gt;
+&lt;/HoverCard&gt;</pre>
+            </div>
+            <div class="phone mx-auto" style="height: 280px; position: relative;">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <div class="p-3">
+                  <div class="border rounded-lg p-3 flex items-center gap-2" style="border-color: hsl(var(--border));">
+                    <span class="text-sm flex-1">Skyddsrond senaste 6 mån</span>
+                    <button class="w-8 h-8 rounded-md flex items-center justify-center" style="background: hsl(var(--amber-50));">
+                      <i data-lucide="alert-triangle" class="w-4 h-4" style="color: hsl(var(--amber-700));"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <!-- Long-press popover -->
+              <div style="position: absolute; right: 24px; top: 110px; background: hsl(30 15% 12%); color: white; padding: 8px 12px; border-radius: 8px; font-size: 11px; z-index: 30; box-shadow: 0 4px 12px rgba(0,0,0,.3);">
+                Saknar bevis<br /><span style="color: hsl(var(--amber-200));">Förfaller 5 jun</span>
+                <div style="position: absolute; right: 12px; top: -4px; width: 8px; height: 8px; transform: rotate(45deg); background: hsl(30 15% 12%);"></div>
+              </div>
+              <p class="text-[10px] absolute bottom-2 left-2 right-2 text-center" style="color: hsl(var(--muted-foreground));">long-press warning icon → popover</p>
+            </div>
+          </div>
+
+          <!-- Pattern C: visible info icon -->
+          <div>
+            <div class="rounded-xl border p-5 mb-3" style="border-color: hsl(var(--border)); background: hsl(var(--card));">
+              <p class="text-[10px] uppercase tracking-wider mb-1" style="color: hsl(var(--muted-foreground));">Option C</p>
+              <h3 class="font-safiro text-lg">Visible info-icon → Sheet</h3>
+              <p class="text-sm mt-2" style="color: hsl(var(--muted-foreground));">For long explanations: small <code>(i)</code> icon next to the trigger that opens a focused Sheet.</p>
+              <pre class="text-[11px] mt-3 p-2 rounded font-mono overflow-x-auto" style="background: hsl(var(--muted));">&lt;label&gt;
+  Kravtext
+  &lt;InfoButton onPress={openInfo}&gt;
+    &lt;Info /&gt;
+  &lt;/InfoButton&gt;
+&lt;/label&gt;</pre>
+            </div>
+            <div class="phone mx-auto" style="height: 280px; position: relative;">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <div class="p-3 opacity-40">
+                  <label class="text-xs font-medium flex items-center gap-1.5">
+                    Kravtext <i data-lucide="info" class="w-3.5 h-3.5"></i>
+                  </label>
+                  <input class="w-full mt-1 border rounded px-2 py-1.5 text-sm" style="border-color: hsl(var(--border));" />
+                </div>
+              </div>
+              <div style="position: absolute; inset: 0; background: rgba(0,0,0,.4); z-index: 30;"></div>
+              <div style="position: absolute; left: 0; right: 0; bottom: 0; background: hsl(var(--card)); border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 40; padding: 16px;">
+                <div style="width: 28px; height: 3px; background: hsl(var(--border)); border-radius: 2px; margin: 0 auto 12px;"></div>
+                <h4 class="font-safiro text-base mb-2">Vad är en kravtext?</h4>
+                <p class="text-xs leading-relaxed" style="color: hsl(var(--muted-foreground));">En kravtext sammanfattar vad lagen kräver av er. Skriv kortfattat (max 200 tecken) och hänvisa till relevant paragraf.</p>
+                <button class="w-full mt-3 py-2 rounded-md text-xs font-medium" style="background: hsl(var(--secondary));">Stäng</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <p class="mt-6 text-sm max-w-3xl" style="color: hsl(var(--muted-foreground));">
+          <strong>Decision rule:</strong> If the tooltip content is &lt;30 chars and informational → Option A (visible label).
+          If &lt;100 chars and might be richer (status detail, history) → Option B (HoverCard). If &gt;100 chars or
+          needs explanation/help → Option C (info Sheet). Audit step: <code>grep -rn "&lt;Tooltip" components/features/</code>
+          and decide per case.
+        </p>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- 15. TOUCH TARGETS + SWEDISH WORD WRAPPING                             -->
+      <!-- ================================================================== -->
+      <section data-section id="touchtargets">
+        <div class="mb-8">
+          <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Pattern 15 · A6 + A7 in audit</p>
+          <h2 class="font-safiro text-3xl mt-1">Touch targets (44px) + Swedish word wrap</h2>
+          <p class="mt-3 text-base max-w-3xl" style="color: hsl(var(--muted-foreground));">
+            Two cross-cutting fixes that touch dozens of components but each is a tiny edit. Bundle into a
+            <em>Mobile Polish Sprint</em> alongside the prototype work.
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+
+          <!-- Touch target sizes -->
+          <div class="rounded-2xl border p-6" style="border-color: hsl(var(--border)); background: hsl(var(--card));">
+            <p class="text-[10px] uppercase tracking-wider mb-1" style="color: hsl(var(--muted-foreground));">A6 — touch target</p>
+            <h3 class="font-safiro text-xl mb-3">36px → 44px</h3>
+            <p class="text-sm" style="color: hsl(var(--muted-foreground));">
+              shadcn <code>&lt;Button size="icon"&gt;</code> defaults to 36×36. WCAG 2.5.5 (AAA) recommends 44×44.
+              The miss is small but pervasive — 30+ instances across kebab menus, modal close, dropdown triggers,
+              tab close.
+            </p>
+
+            <div class="mt-5 flex gap-6 items-end justify-center">
+              <div class="text-center">
+                <button class="rounded-md flex items-center justify-center mb-2" style="width: 36px; height: 36px; background: hsl(var(--secondary)); margin: 0 auto;">
+                  <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                </button>
+                <p class="text-[10px]" style="color: hsl(var(--muted-foreground));">36px<br />current</p>
+                <span class="label-bad mt-1 text-[9px]"><i data-lucide="x" class="w-2.5 h-2.5"></i> below WCAG</span>
+              </div>
+              <div class="text-center">
+                <button class="rounded-md flex items-center justify-center mb-2" style="width: 44px; height: 44px; background: hsl(var(--primary)); color: white; margin: 0 auto;">
+                  <i data-lucide="more-horizontal" class="w-5 h-5"></i>
+                </button>
+                <p class="text-[10px]" style="color: hsl(var(--muted-foreground));">44px<br />proposed</p>
+                <span class="label-good mt-1 text-[9px]"><i data-lucide="check" class="w-2.5 h-2.5"></i> WCAG AAA</span>
+              </div>
+            </div>
+
+            <pre class="text-[11px] mt-5 p-3 rounded font-mono overflow-x-auto" style="background: hsl(var(--muted));">// In components/ui/button.tsx — add variant
+const buttonVariants = cva(
+  "...",
+  {
+    variants: {
+      size: {
+        icon: "h-9 w-9",
+        // NEW:
+        "icon-mobile": "h-11 w-11 md:h-9 md:w-9",
+      },
+    },
+  }
+)</pre>
+          </div>
+
+          <!-- Swedish wrap -->
+          <div class="rounded-2xl border p-6" style="border-color: hsl(var(--border)); background: hsl(var(--card));">
+            <p class="text-[10px] uppercase tracking-wider mb-1" style="color: hsl(var(--muted-foreground));">A7 — Swedish word wrap</p>
+            <h3 class="font-safiro text-xl mb-3"><code>truncate</code> → <code>break-words</code></h3>
+            <p class="text-sm" style="color: hsl(var(--muted-foreground));">
+              Swedish compound words: <em>Lagefterlevnadskontroll · Personuppgiftsbiträdesavtal · Konsekvensbedömning</em>.
+              <code>truncate</code> shows <code>Lagefterlevnadsko…</code> on a phone — useless. Use <code>break-words</code>
+              for content text; reserve <code>truncate</code> for IDs and URLs.
+            </p>
+
+            <div class="mt-5 space-y-3">
+              <div class="border rounded-lg p-3" style="border-color: hsl(var(--border));">
+                <p class="text-[10px] uppercase tracking-wider mb-1" style="color: hsl(var(--muted-foreground));">Current — truncate</p>
+                <div class="flex items-center gap-2 max-w-[200px]">
+                  <i data-lucide="folder" class="w-4 h-4 shrink-0"></i>
+                  <span class="text-xs truncate">Personuppgiftsbiträdesavtal</span>
+                </div>
+                <span class="label-bad mt-2 inline-flex"><i data-lucide="x" class="w-2.5 h-2.5"></i> ambiguous</span>
+              </div>
+
+              <div class="border rounded-lg p-3" style="border-color: hsl(var(--border));">
+                <p class="text-[10px] uppercase tracking-wider mb-1" style="color: hsl(var(--muted-foreground));">Proposed — break-words + line-clamp</p>
+                <div class="flex items-start gap-2 max-w-[200px]">
+                  <i data-lucide="folder" class="w-4 h-4 shrink-0 mt-0.5"></i>
+                  <span class="text-xs" style="word-break: break-word; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Personuppgiftsbiträdesavtal</span>
+                </div>
+                <span class="label-good mt-2 inline-flex"><i data-lucide="check" class="w-2.5 h-2.5"></i> wraps cleanly</span>
+              </div>
+            </div>
+
+            <pre class="text-[11px] mt-5 p-3 rounded font-mono overflow-x-auto" style="background: hsl(var(--muted));">// Tailwind:
+&lt;span className="break-words line-clamp-2"&gt;
+  {longSwedishTitle}
+&lt;/span&gt;</pre>
+          </div>
+
+        </div>
+
+        <!-- iOS keyboard -->
+        <div class="mt-8 rounded-2xl border p-6" style="border-color: hsl(var(--border)); background: hsl(var(--section-warm));">
+          <p class="text-[10px] uppercase tracking-wider mb-1" style="color: hsl(var(--muted-foreground));">A4 — iOS keyboard</p>
+          <h3 class="font-safiro text-xl mb-3">Keep sticky bars above the keyboard</h3>
+          <p class="text-sm max-w-3xl" style="color: hsl(var(--muted-foreground));">
+            Every sticky-bottom action bar (modals + edit pages) covers up under the iOS keyboard by default.
+            One viewport meta change fixes most of it; <code>100dvh</code> instead of <code>100vh</code> handles the rest.
+          </p>
+          <pre class="text-[11px] mt-4 p-3 rounded font-mono overflow-x-auto max-w-3xl" style="background: hsl(var(--background));">// In app/layout.tsx — viewport meta
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  // NEW: tells iOS to resize the layout when the keyboard opens,
+  // so sticky-bottom bars stay above the keyboard
+  interactiveWidget: 'resizes-content',
+}
+
+// Use 100dvh (dynamic viewport) consistently:
+&lt;div className="h-[100dvh] flex flex-col"&gt;
+  ...
+  &lt;div className="sticky bottom-0"&gt;...&lt;/div&gt;
+&lt;/div&gt;</pre>
+        </div>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- 16. PHOTO EVIDENCE CAPTURE — mobile-native value-add                  -->
+      <!-- ================================================================== -->
+      <section data-section id="camera">
+        <div class="mb-8">
+          <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Pattern 16 · highest product leverage</p>
+          <h2 class="font-safiro text-3xl mt-1">📷 Photo evidence capture (camera-first)</h2>
+          <p class="mt-3 text-base max-w-3xl" style="color: hsl(var(--muted-foreground));">
+            Unlike sections 1–15 (making the desktop product workable on a phone), this is a capability the desktop
+            <em>can't have</em>: the user's camera + their physical presence at a worksite. For AFS protective-equipment
+            compliance, ergonomics audits, machine guards, fire safety — a 30-second site walk with a phone produces
+            all the evidence needed. Photos attach directly to the kravpunkt or law list item via the existing
+            <code>RequirementEvidenceLink</code> model (Story 17.18).
+          </p>
+        </div>
+
+        <!-- Step flow: 4-frame walkthrough -->
+        <div class="grid md:grid-cols-4 gap-5">
+
+          <!-- Step 1: Trigger from kravpunkt -->
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium text-white" style="background: hsl(var(--ring));">1</span>
+              <p class="text-sm font-medium">Trigger from kravpunkt</p>
+            </div>
+            <div class="phone mx-auto" style="height: 540px;">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-3 py-2.5 border-b flex items-center gap-2" style="border-color: hsl(var(--border));">
+                  <button class="p-1 -ml-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[10px] uppercase tracking-wider" style="color: hsl(var(--muted-foreground));">AFS 2001:3</p>
+                    <span class="font-safiro text-sm truncate block">Skyddsutrustning</span>
+                  </div>
+                </header>
+                <div class="flex border-b" style="border-color: hsl(var(--border));">
+                  <button class="flex-1 py-2.5 text-xs" style="color: hsl(var(--muted-foreground)); border-bottom: 2px solid transparent;">Översikt</button>
+                  <button class="flex-1 py-2.5 text-xs font-medium border-b-2" style="border-color: hsl(var(--ring));">Krav · 4</button>
+                  <button class="flex-1 py-2.5 text-xs" style="color: hsl(var(--muted-foreground)); border-bottom: 2px solid transparent;">Aktivitet</button>
+                </div>
+                <div class="p-3 space-y-2.5">
+                  <div class="border rounded-lg p-3" style="border-color: hsl(var(--border)); background: hsl(var(--amber-50));">
+                    <div class="flex items-start gap-2 mb-2">
+                      <input type="checkbox" class="mt-0.5" />
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium">Skyddsglasögon i materialrum</p>
+                        <p class="text-[11px] mt-0.5" style="color: hsl(var(--amber-900));">Saknar bevis · § 3</p>
+                      </div>
+                    </div>
+                    <button class="w-full mt-2 rounded-md py-2 text-xs font-medium text-white flex items-center justify-center gap-1.5" style="background: hsl(var(--primary));">
+                      <i data-lucide="plus" class="w-3.5 h-3.5"></i> Lägg till bevis
+                    </button>
+                  </div>
+                  <div class="border rounded-lg p-3" style="border-color: hsl(var(--border));">
+                    <div class="flex items-start gap-2">
+                      <input type="checkbox" checked class="mt-0.5" />
+                      <span class="text-sm flex-1">Hörselskydd v/ slipverktyg</span>
+                    </div>
+                  </div>
+                  <div class="border rounded-lg p-3" style="border-color: hsl(var(--border));">
+                    <div class="flex items-start gap-2">
+                      <input type="checkbox" class="mt-0.5" />
+                      <span class="text-sm flex-1">Hjälm vid lyftarbeten</span>
+                      <button class="px-2 py-0.5 rounded text-[10px] border" style="border-color: hsl(var(--border));">+ Bevis</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs mt-3" style="color: hsl(var(--muted-foreground));">Each kravpunkt has a contextual <strong>+ Bevis</strong> trigger. Highlighted when missing evidence.</p>
+          </div>
+
+          <!-- Step 2: Source picker -->
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium text-white" style="background: hsl(var(--ring));">2</span>
+              <p class="text-sm font-medium">Source Sheet</p>
+            </div>
+            <div class="phone mx-auto" style="height: 540px; position: relative;">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-3 py-2.5 border-b flex items-center gap-2 opacity-30" style="border-color: hsl(var(--border));">
+                  <button class="p-1 -ml-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+                  <span class="font-safiro text-sm truncate flex-1">Skyddsutrustning</span>
+                </header>
+                <div class="p-3 opacity-30">
+                  <div class="border rounded-lg p-3" style="border-color: hsl(var(--border));">
+                    <p class="text-sm font-medium">Skyddsglasögon i materialrum</p>
+                  </div>
+                </div>
+              </div>
+              <div style="position: absolute; inset: 0; background: rgba(0,0,0,.45); z-index: 30;"></div>
+              <div style="position: absolute; left: 0; right: 0; bottom: 0; background: hsl(var(--card)); border-top-left-radius: 24px; border-top-right-radius: 24px; z-index: 40; box-shadow: 0 -8px 24px rgba(0,0,0,.2);">
+                <div class="sheet-handle"></div>
+                <div class="px-5 pt-2 pb-3 border-b" style="border-color: hsl(var(--border));">
+                  <h3 class="font-safiro text-base">Lägg till bevis</h3>
+                  <p class="text-[11px] mt-0.5" style="color: hsl(var(--muted-foreground));">Kopplas till: Skyddsglasögon i materialrum</p>
+                </div>
+                <div class="p-3 space-y-2">
+                  <button class="w-full text-left p-3 rounded-lg border flex items-center gap-3" style="border-color: hsl(var(--ring)); background: hsl(var(--accent));">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white" style="background: hsl(var(--primary));">
+                      <i data-lucide="camera" class="w-5 h-5"></i>
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-sm font-medium">Ta foto</p>
+                      <p class="text-[11px]" style="color: hsl(var(--muted-foreground));">Använd kameran direkt</p>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i>
+                  </button>
+                  <button class="w-full text-left p-3 rounded-lg border flex items-center gap-3" style="border-color: hsl(var(--border));">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: hsl(var(--muted));">
+                      <i data-lucide="image" class="w-5 h-5"></i>
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-sm font-medium">Välj från bibliotek</p>
+                      <p class="text-[11px]" style="color: hsl(var(--muted-foreground));">Befintliga bilder</p>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i>
+                  </button>
+                  <button class="w-full text-left p-3 rounded-lg border flex items-center gap-3" style="border-color: hsl(var(--border));">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: hsl(var(--muted));">
+                      <i data-lucide="file" class="w-5 h-5"></i>
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-sm font-medium">Välj fil</p>
+                      <p class="text-[11px]" style="color: hsl(var(--muted-foreground));">PDF, Word, Excel...</p>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i>
+                  </button>
+                  <button class="w-full text-left p-3 rounded-lg border flex items-center gap-3" style="border-color: hsl(var(--border));">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: hsl(var(--muted));">
+                      <i data-lucide="link-2" class="w-5 h-5"></i>
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-sm font-medium">Länka befintlig</p>
+                      <p class="text-[11px]" style="color: hsl(var(--muted-foreground));">Fil eller styrdokument</p>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4" style="color: hsl(var(--muted-foreground));"></i>
+                  </button>
+                </div>
+                <div style="padding: 4px 16px calc(12px + env(safe-area-inset-bottom)) 16px;">
+                  <button class="w-full rounded-md py-2.5 text-sm" style="background: hsl(var(--secondary));">Avbryt</button>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs mt-3" style="color: hsl(var(--muted-foreground));">"Ta foto" highlighted as primary; native trigger via <code>capture="environment"</code>.</p>
+          </div>
+
+          <!-- Step 3: Camera + multi-shot review -->
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium text-white" style="background: hsl(var(--ring));">3</span>
+              <p class="text-sm font-medium">Multi-shot review</p>
+            </div>
+            <div class="phone mx-auto" style="height: 540px;">
+              <div class="phone-inner" style="display: flex; flex-direction: column;">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-3 py-2.5 border-b flex items-center gap-2" style="border-color: hsl(var(--border));">
+                  <button class="p-1 -ml-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[10px] uppercase tracking-wider" style="color: hsl(var(--muted-foreground));">Granska bilder · 3</p>
+                    <span class="font-safiro text-sm truncate block">Skyddsglasögon</span>
+                  </div>
+                </header>
+                <div class="flex-1 overflow-y-auto p-3 space-y-2.5" style="padding-bottom: 76px;">
+                  <!-- Photo 1 -->
+                  <div class="rounded-xl border overflow-hidden" style="border-color: hsl(var(--border));">
+                    <div class="aspect-video flex items-center justify-center" style="background: linear-gradient(135deg, hsl(220 30% 30%), hsl(220 30% 50%));">
+                      <i data-lucide="image" class="w-8 h-8 text-white opacity-60"></i>
+                    </div>
+                    <div class="p-2.5 border-t" style="border-color: hsl(var(--border));">
+                      <input class="w-full text-xs border-0 focus:outline-none focus:ring-0 p-0" placeholder="Beskrivning..." value="Skyddsglasögon hängande v/ ingång materialrum" />
+                      <div class="flex items-center justify-between mt-1.5">
+                        <p class="text-[10px]" style="color: hsl(var(--muted-foreground));">412 KB · komprimerad</p>
+                        <button class="text-[10px]" style="color: hsl(0 80% 50%);"><i data-lucide="trash-2" class="w-3 h-3 inline"></i> Ta bort</button>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Photo 2 -->
+                  <div class="rounded-xl border overflow-hidden" style="border-color: hsl(var(--border));">
+                    <div class="aspect-video flex items-center justify-center" style="background: linear-gradient(135deg, hsl(45 30% 35%), hsl(45 30% 55%));">
+                      <i data-lucide="image" class="w-8 h-8 text-white opacity-60"></i>
+                    </div>
+                    <div class="p-2.5 border-t" style="border-color: hsl(var(--border));">
+                      <input class="w-full text-xs border-0 focus:outline-none focus:ring-0 p-0" placeholder="Beskrivning..." value="Skyltning vid arbetsstation 2" />
+                      <p class="text-[10px] mt-1.5" style="color: hsl(var(--muted-foreground));">387 KB · komprimerad</p>
+                    </div>
+                  </div>
+                  <!-- Photo 3 -->
+                  <div class="rounded-xl border overflow-hidden" style="border-color: hsl(var(--border));">
+                    <div class="aspect-video flex items-center justify-center" style="background: linear-gradient(135deg, hsl(140 30% 35%), hsl(140 30% 55%));">
+                      <i data-lucide="image" class="w-8 h-8 text-white opacity-60"></i>
+                    </div>
+                    <div class="p-2.5 border-t" style="border-color: hsl(var(--border));">
+                      <input class="w-full text-xs border-0 focus:outline-none focus:ring-0 p-0 italic" placeholder="Beskrivning (valfri)..." style="color: hsl(var(--muted-foreground));" />
+                      <p class="text-[10px] mt-1.5" style="color: hsl(var(--muted-foreground));">441 KB · komprimerad</p>
+                    </div>
+                  </div>
+                  <button class="w-full rounded-xl border-2 border-dashed py-4 text-xs font-medium flex items-center justify-center gap-1.5" style="border-color: hsl(var(--border)); color: hsl(var(--muted-foreground));">
+                    <i data-lucide="camera" class="w-4 h-4"></i> Lägg till fler
+                  </button>
+                </div>
+                <div style="position: absolute; left: 0; right: 0; bottom: 0; background: hsl(var(--background)); border-top: 1px solid hsl(var(--border)); padding: 10px 14px calc(10px + env(safe-area-inset-bottom)) 14px; display: flex; gap: 8px;">
+                  <button class="px-4 rounded-md border text-sm" style="border-color: hsl(var(--border));">Avbryt</button>
+                  <button class="flex-1 rounded-md py-2.5 text-sm font-medium text-white" style="background: hsl(var(--primary));">Spara 3 bilder</button>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs mt-3" style="color: hsl(var(--muted-foreground));">Multi-shot stack with caption per photo. Compressed sizes shown — privacy strip stays implicit.</p>
+          </div>
+
+          <!-- Step 4: Result in panel -->
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium text-white" style="background: hsl(140 50% 35%);">4</span>
+              <p class="text-sm font-medium">Result + storage delta</p>
+            </div>
+            <div class="phone mx-auto" style="height: 540px; position: relative;">
+              <div class="phone-inner">
+                <div class="status-bar"><span>9:41</span><span>5G  100%</span></div>
+                <header class="px-3 py-2.5 border-b flex items-center gap-2" style="border-color: hsl(var(--border));">
+                  <button class="p-1 -ml-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[10px] uppercase tracking-wider" style="color: hsl(var(--muted-foreground));">AFS 2001:3</p>
+                    <span class="font-safiro text-sm truncate block">Skyddsutrustning</span>
+                  </div>
+                </header>
+                <div class="flex border-b" style="border-color: hsl(var(--border));">
+                  <button class="flex-1 py-2.5 text-xs" style="color: hsl(var(--muted-foreground)); border-bottom: 2px solid transparent;">Översikt</button>
+                  <button class="flex-1 py-2.5 text-xs font-medium border-b-2" style="border-color: hsl(var(--ring));">Krav · 4</button>
+                  <button class="flex-1 py-2.5 text-xs" style="color: hsl(var(--muted-foreground)); border-bottom: 2px solid transparent;">Aktivitet</button>
+                </div>
+                <div class="p-3 space-y-2.5">
+                  <div class="border rounded-lg p-3" style="border-color: hsl(var(--border)); background: hsl(140 50% 96%);">
+                    <div class="flex items-start gap-2 mb-2">
+                      <input type="checkbox" checked class="mt-0.5" />
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium" style="color: hsl(140 50% 25%);">Skyddsglasögon i materialrum</p>
+                        <p class="text-[11px] mt-0.5" style="color: hsl(140 50% 30%);">3 bevisbilder · uppdaterad nu</p>
+                      </div>
+                      <span class="text-[10px] px-1.5 py-0.5 rounded" style="background: hsl(140 50% 92%); color: hsl(140 50% 28%);">Klar</span>
+                    </div>
+                    <!-- Thumbnail row -->
+                    <div class="flex gap-1.5 mt-2 -mx-1 px-1 overflow-x-auto" style="scrollbar-width: none;">
+                      <div class="aspect-square w-14 shrink-0 rounded-md flex items-center justify-center" style="background: linear-gradient(135deg, hsl(220 30% 30%), hsl(220 30% 50%));">
+                        <i data-lucide="image" class="w-4 h-4 text-white opacity-60"></i>
+                      </div>
+                      <div class="aspect-square w-14 shrink-0 rounded-md flex items-center justify-center" style="background: linear-gradient(135deg, hsl(45 30% 35%), hsl(45 30% 55%));">
+                        <i data-lucide="image" class="w-4 h-4 text-white opacity-60"></i>
+                      </div>
+                      <div class="aspect-square w-14 shrink-0 rounded-md flex items-center justify-center" style="background: linear-gradient(135deg, hsl(140 30% 35%), hsl(140 30% 55%));">
+                        <i data-lucide="image" class="w-4 h-4 text-white opacity-60"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="border rounded-lg p-3" style="border-color: hsl(var(--border));">
+                    <div class="flex items-start gap-2">
+                      <input type="checkbox" checked class="mt-0.5" />
+                      <span class="text-sm flex-1">Hörselskydd v/ slipverktyg</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Toast -->
+              <div style="position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); background: hsl(30 15% 12%); color: white; padding: 10px 14px; border-radius: 10px; font-size: 12px; z-index: 30; box-shadow: 0 8px 24px rgba(0,0,0,.35); display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="check-circle-2" class="w-4 h-4" style="color: hsl(140 50% 60%);"></i>
+                <div>
+                  3 bilder uppladdade<br />
+                  <span class="text-[10px] opacity-70">+ 1.2 MB · 1.2 MB / 5 GB använt</span>
+                </div>
+              </div>
+            </div>
+            <p class="text-xs mt-3" style="color: hsl(var(--muted-foreground));">Kravpunkt auto-flips to ✓ Klar. Storage delta in toast — workspace quota visibility (Story 5.5b).</p>
+          </div>
+
+        </div>
+
+        <!-- Worksite use cases -->
+        <div class="mt-12 grid md:grid-cols-2 gap-6">
+          <div class="rounded-2xl border p-6" style="border-color: hsl(var(--border)); background: hsl(var(--section-warm));">
+            <p class="text-[10px] uppercase tracking-wider mb-1" style="color: hsl(var(--muted-foreground));">Why mobile-only</p>
+            <h3 class="font-safiro text-xl mb-3">Worksite scenarios this unlocks</h3>
+            <ul class="text-sm space-y-2" style="color: hsl(var(--foreground));">
+              <li class="flex gap-2"><i data-lucide="hard-hat" class="w-4 h-4 mt-0.5 shrink-0" style="color: hsl(var(--muted-foreground));"></i><span><strong>AFS 2001:3 Skyddsutrustning</strong> — verify PPE in production halls, photograph signage placement</span></li>
+              <li class="flex gap-2"><i data-lucide="flame" class="w-4 h-4 mt-0.5 shrink-0" style="color: hsl(var(--muted-foreground));"></i><span><strong>Brandskydd</strong> — fire extinguishers, escape route signage, blocked exits</span></li>
+              <li class="flex gap-2"><i data-lucide="droplet" class="w-4 h-4 mt-0.5 shrink-0" style="color: hsl(var(--muted-foreground));"></i><span><strong>Kemiska arbetsmiljörisker</strong> — chemical storage labeling, secondary containment, safety showers</span></li>
+              <li class="flex gap-2"><i data-lucide="settings" class="w-4 h-4 mt-0.5 shrink-0" style="color: hsl(var(--muted-foreground));"></i><span><strong>AFS 2006:4 Maskiner</strong> — machine guards, emergency stops, lockout-tagout in place</span></li>
+              <li class="flex gap-2"><i data-lucide="users" class="w-4 h-4 mt-0.5 shrink-0" style="color: hsl(var(--muted-foreground));"></i><span><strong>Ergonomi</strong> — workstation setup, lifting aids, repetitive task evidence</span></li>
+              <li class="flex gap-2"><i data-lucide="thermometer" class="w-4 h-4 mt-0.5 shrink-0" style="color: hsl(var(--muted-foreground));"></i><span><strong>Inomhusklimat</strong> — ventilation, lighting, noise meters</span></li>
+            </ul>
+          </div>
+
+          <div class="rounded-2xl border p-6" style="border-color: hsl(var(--border)); background: hsl(var(--card));">
+            <p class="text-[10px] uppercase tracking-wider mb-1" style="color: hsl(var(--muted-foreground));">Implementation</p>
+            <h3 class="font-safiro text-xl mb-3">Technical sketch</h3>
+            <div class="text-sm space-y-3">
+              <div>
+                <p class="font-medium">Native camera trigger</p>
+                <pre class="text-[11px] mt-1 p-2 rounded font-mono overflow-x-auto" style="background: hsl(var(--muted));">&lt;input type="file"
+  accept="image/*"
+  capture="environment"
+  multiple /&gt;</pre>
+              </div>
+              <div>
+                <p class="font-medium">Client-side compression</p>
+                <p class="text-xs mt-1" style="color: hsl(var(--muted-foreground));">6 MB iPhone photo → ~400 KB after canvas resize at max 1920px / JPEG q=0.85. <strong>15× storage saving.</strong></p>
+              </div>
+              <div>
+                <p class="font-medium">EXIF GPS strip</p>
+                <p class="text-xs mt-1" style="color: hsl(var(--muted-foreground));">Privacy + GDPR. Use <code>exifr</code> to strip GPS tags before upload. Keep timestamp + camera model for audit trail.</p>
+              </div>
+              <div>
+                <p class="font-medium">Auto-association</p>
+                <p class="text-xs mt-1" style="color: hsl(var(--muted-foreground));">Triggered from kravpunkt → <code>RequirementEvidenceLink</code> per Story 17.18. From LinkedArtifactsPanel → <code>FileListItemLink</code>.</p>
+              </div>
+              <div>
+                <p class="font-medium">Effort</p>
+                <p class="text-xs mt-1" style="color: hsl(var(--muted-foreground));">~3–4 days for v1 (no offline queue). High product leverage per LOC.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <details class="mt-8 max-w-3xl">
+          <summary class="cursor-pointer text-sm font-medium" style="color: hsl(var(--muted-foreground));">Story sketch — copy into product backlog</summary>
+          <pre class="text-xs mt-3 p-4 rounded overflow-x-auto" style="background: hsl(var(--muted));"><code>Story 17.x: Mobile photo evidence capture
+
+As a worksite user, I want to capture and attach photos as
+evidence directly from my phone, so that I can document
+compliance during site walks without leaving the building or
+returning to a desktop.
+
+AC 1: "Lägg till bevis" Sheet opens 4 options: Ta foto / Bibliotek
+      / Fil / Länka. Mobile-only; desktop keeps current 3 buttons.
+AC 2: "Ta foto" opens native back camera via capture="environment".
+      Multi-shot supported.
+AC 3: Photos compressed client-side (max 1920px, JPEG q=0.85).
+      EXIF GPS stripped before upload.
+AC 4: Each photo gets caption field + auto-association with the
+      kravpunkt or list-item context.
+AC 5: Photos render as thumbnails (Supabase transform) in
+      LinkedArtifactsPanel.
+AC 6: Storage usage delta shown in toast post-upload.
+AC 7: Tests for compression utility, EXIF stripping, multi-shot
+      stack management.
+
+Out of scope (defer to Phase E): offline queue, AI photo
+description from kravpunkt context, share-sheet integration.</code></pre>
+        </details>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- Implementation roadmap                                                -->
+      <!-- ================================================================== -->
+      <section class="border-t pt-12" style="border-color: hsl(var(--border));">
+        <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Implementation</p>
+        <h2 class="font-safiro text-3xl mt-1">Phased rollout</h2>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+          <div class="border rounded-2xl p-5" style="border-color: hsl(var(--border)); background: hsl(var(--card));">
+            <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Phase A · 1–2 days</p>
+            <h3 class="font-safiro text-xl mt-2">Foundation primitives</h3>
+            <ul class="mt-3 space-y-1.5 text-sm">
+              <li><code class="text-xs">ResponsiveDialog</code></li>
+              <li><code class="text-xs">TableRowCard</code></li>
+              <li><code class="text-xs">MobileTabSelect</code></li>
+              <li><code class="text-xs">StickyMobileActionBar</code></li>
+              <li>Toaster safe-area offset</li>
+              <li>Add <code>vaul</code> (optional)</li>
+            </ul>
+          </div>
+
+          <div class="border rounded-2xl p-5" style="border-color: hsl(var(--border)); background: hsl(var(--card));">
+            <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Phase B · 3–5 days</p>
+            <h3 class="font-safiro text-xl mt-2">High-traffic refactors</h3>
+            <ul class="mt-3 space-y-1.5 text-sm">
+              <li>/laglistor → row cards</li>
+              <li>/tasks → column tabs</li>
+              <li>/settings → MobileTabSelect</li>
+              <li>/kontroller → row cards + tabs</li>
+              <li>26 Dialogs → ResponsiveDialog</li>
+            </ul>
+          </div>
+
+          <div class="border rounded-2xl p-5" style="border-color: hsl(var(--border)); background: hsl(var(--card));">
+            <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Phase C · 2–3 days</p>
+            <h3 class="font-safiro text-xl mt-2">Editor + admin</h3>
+            <ul class="mt-3 space-y-1.5 text-sm">
+              <li>Tiptap toolbar 6 + More</li>
+              <li>EditorMoreMenu Sheet</li>
+              <li>Admin tables → cards</li>
+              <li>Admin charts responsive</li>
+            </ul>
+          </div>
+
+          <div class="border rounded-2xl p-5" style="border-color: hsl(var(--border)); background: hsl(var(--card));">
+            <p class="text-xs font-medium uppercase tracking-widest" style="color: hsl(var(--muted-foreground));">Phase D · 1–2 days</p>
+            <h3 class="font-safiro text-xl mt-2">Polish</h3>
+            <ul class="mt-3 space-y-1.5 text-sm">
+              <li>Onboarding stepper @ 320px</li>
+              <li>Public law metadata stack</li>
+              <li>Toast positioning audit</li>
+              <li>Real-device testing pass</li>
+              <li>Bottom nav 5 tabs</li>
+            </ul>
+          </div>
+        </div>
+
+        <p class="mt-6 text-sm" style="color: hsl(var(--muted-foreground));">
+          <strong>Total:</strong> 7–12 focused days for the entire app to reach mobile-good. Foundation primitives (Phase A) are
+          the highest leverage — once shipped, every subsequent refactor becomes a small mechanical edit.
+        </p>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- Footer                                                                -->
+      <!-- ================================================================== -->
+      <footer class="border-t pt-10 pb-16 text-center text-sm" style="border-color: hsl(var(--border)); color: hsl(var(--muted-foreground));">
+        Companion document: <code>_prototypes/mobile-optimization-audit.md</code><br />
+        Open this prototype in a wide window for the side-by-side comparisons; phone frames are 390×780.
+      </footer>
+    </main>
+
+    <script>
+      // Render all Lucide icons
+      lucide.createIcons()
+    </script>
+  </body>
+</html>
