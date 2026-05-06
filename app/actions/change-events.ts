@@ -7,6 +7,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { withWorkspace } from '@/lib/auth/workspace-context'
+import { passthroughRedirect } from '@/lib/auth/passthrough-redirect'
 import { derivePriority, priorityWeight } from '@/lib/changes/change-utils'
 import type { ContentType, ChangeType } from '@prisma/client'
 import type { UnacknowledgedChange } from '@/lib/changes/change-utils'
@@ -114,6 +115,7 @@ export async function getUnacknowledgedChanges(): Promise<
       return { success: true, data: result }
     }, 'read')
   } catch (error) {
+    passthroughRedirect(error)
     console.error('Error fetching unacknowledged changes:', error)
     return { success: false, error: 'Kunde inte hämta ändringar' }
   }
@@ -152,6 +154,7 @@ export async function getUnacknowledgedChangeCount(): Promise<
       return { success: true, data: Number(result[0]?.count ?? 0) }
     }, 'read')
   } catch (error) {
+    passthroughRedirect(error)
     console.error('Error fetching unacknowledged change count:', error)
     return { success: false, error: 'Kunde inte hämta antal ändringar' }
   }

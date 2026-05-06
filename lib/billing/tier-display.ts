@@ -57,9 +57,15 @@ const TIER_NAMES: Record<DisplayTier, string> = {
   ENTERPRISE: 'Enterprise',
 }
 
+// Three-step compliance-maturity ladder:
+//   Solo       → "want to stay aware" (smaller SMBs, no formal compliance fn)
+//   Team       → "active compliance work" (audit cycles, findings, structure)
+//   Enterprise → "scale + integration"
+// Reframed 2026-05-06 — Solo previously read "egenföretagare" which under-sold
+// it to the much larger SMB audience that just wants lagbevakning.
 const TIER_DESCRIPTIONS: Record<DisplayTier, string> = {
-  SOLO: 'För egenföretagare',
-  TEAM: 'För växande team',
+  SOLO: 'För mindre företag som vill ha koll',
+  TEAM: 'För team med aktivt compliance-arbete',
   ENTERPRISE: 'För större organisationer',
 }
 
@@ -108,12 +114,16 @@ function buildSoloFeatures(): string[] {
   const limits = TIER_LIMITS.SOLO
   return [
     formatUsers(limits.users, 'SOLO'),
+    // Headline differentiator vs commodity AI: an agent that learns the
+    // *workspace's* private context (SNI, styrdokument, prior kontroller,
+    // sector flags) and gets more relevant the longer it's used. Inherited
+    // by Team + Enterprise via "Allt i Solo / Team" so we only state it once.
+    'AI-agent som lär känna ert företag',
     'Personlig laglista (genererad)',
     formatAiTokens(limits.aiTokensPerMonth),
-    // Differentiator: not a generic RSS feed of SFS amendments — Laglig
-    // cross-references each change against the workspace's SNI + activity
-    // flags + employee count to surface only the changes that actually
-    // affect this company's compliance posture.
+    // Same private-context engine, downstream surface: cross-references each
+    // SFS / AFS / EU amendment against the workspace's SNI + activity flags
+    // + employee count to surface only changes that affect THIS company.
     'Lagändringar analyserade för er verksamhet',
     'Uppgifter & styrdokument',
     formatGb(limits.storageGB),

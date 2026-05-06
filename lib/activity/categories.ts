@@ -87,6 +87,13 @@ export const ACTION_TO_CATEGORY: Record<KnownAction, ActivityCategory> = {
 
   // compliance-audit findings — verify step (Epic 21 follow-up)
   finding_verified: 'livscykel',
+
+  // Trial expiration lifecycle (Story 5.13)
+  trial_expired: 'livscykel',
+  trial_paused: 'livscykel',
+  trial_workspace_deleted: 'livscykel',
+  trial_converted: 'livscykel',
+  workspace_reactivated_from_trial_pause: 'livscykel',
 }
 
 export const CATEGORY_META: Record<

@@ -97,7 +97,7 @@ export function ConfirmStep({
               timmar.
             </p>
             <p className="mt-1 text-amber-800 dark:text-amber-300">
-              Under tiden får du Team-funktionalitet i 14 dagar så du kan
+              Under tiden får du Team-funktionalitet i 15 dagar så du kan
               utvärdera plattformen medan vi pratar. Provperioden löper ut{' '}
               {formattedTrialEnd}.
             </p>
@@ -124,7 +124,7 @@ export function ConfirmStep({
       ) : (
         <div className="space-y-2 rounded-lg bg-emerald-50 p-4 text-sm text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-200">
           <p className="font-medium">
-            Provperiod: {TIER_LABELS[pickedTier]} · 14 dagar gratis · ingen
+            Provperiod: {TIER_LABELS[pickedTier]} · 15 dagar gratis · ingen
             betalning krävs
           </p>
           <div className="flex items-center justify-between gap-3">

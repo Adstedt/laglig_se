@@ -7,6 +7,7 @@
 
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
+import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import { prisma } from '@/lib/prisma'
 import {
   getWorkspaceContext,
@@ -146,6 +147,12 @@ export async function getCompanyProfile() {
     return profile
   } catch (error) {
     if (error instanceof WorkspaceAccessError) {
+      throw error
+    }
+    // Story 5.13: Next.js redirect() throws NEXT_REDIRECT — must propagate
+    // unchanged so the framework can intercept and emit the 307. Wrapping
+    // it in a generic Error breaks the redirect chain.
+    if (isRedirectError(error)) {
       throw error
     }
     console.error('Error getting company profile:', error)

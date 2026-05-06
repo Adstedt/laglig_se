@@ -82,17 +82,29 @@ export function TierCard({
         <p className="text-sm text-muted-foreground">{display.description}</p>
       </div>
 
-      {/* Price */}
+      {/* Price — Safiro on the digit (display lift). Unit stays in body sans
+          for typographic contrast. Safiro must pair with font-medium only.
+          Force NBSP for the thousands separator so "1 299" never wraps mid-
+          number on narrow viewports (toLocaleString returns a regular space
+          in some ICU builds). */}
       <div className="mb-6">
         {display.monthlyPriceSek !== null ? (
           <div className="flex items-baseline">
-            <span className="text-4xl font-bold">
-              {display.monthlyPriceSek.toLocaleString('sv-SE')}
+            <span
+              className="font-safiro text-5xl font-medium tracking-tight"
+              style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
+            >
+              {display.monthlyPriceSek
+                .toLocaleString('sv-SE')
+                .replace(/\s/g, ' ')}
             </span>
-            <span className="ml-1 text-muted-foreground">SEK/mån</span>
+            <span className="ml-1.5 text-muted-foreground">SEK/mån</span>
           </div>
         ) : (
-          <span className="text-2xl font-semibold">
+          <span
+            className="font-safiro text-5xl font-medium tracking-tight"
+            style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
+          >
             {formatMonthlyPrice(display.monthlyPriceSek)}
           </span>
         )}

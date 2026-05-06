@@ -96,6 +96,13 @@ export const KNOWN_ACTIONS = [
 
   // Compliance-audit findings — verify step (Epic 21 follow-up)
   'finding_verified',
+
+  // Trial expiration lifecycle (Story 5.13)
+  'trial_expired',
+  'trial_paused',
+  'trial_workspace_deleted',
+  'trial_converted',
+  'workspace_reactivated_from_trial_pause',
 ] as const
 
 export type KnownAction = (typeof KNOWN_ACTIONS)[number]

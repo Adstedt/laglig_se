@@ -1,0 +1,89 @@
+schema: 1
+story: '5.13'
+story_title: 'Trial Expiration Hard Gate + Stripe Checkout Conversion'
+gate: PASS
+status_reason: 'End-to-end conversion flow + AC 19 webhook recovery live-verified against Stripe test mode. Gate semantics correctly use Next.js redirect() to handle App Router layout/page concurrency. All NFRs PASS. 5 low-severity observations for awareness; none block ship.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-06T14:30:00Z'
+
+waiver: { active: false }
+
+quality_score: 95
+expires: '2026-05-20T14:30:00Z'
+
+top_issues:
+  - id: 'DOC-001'
+    severity: low
+    finding: '`getWorkspaceContext` JSDoc still claims `@throws {WorkspaceAccessError}` as the only failure mode, but billing gates (TRIAL_EXPIRED + PAYMENT_PAST_DUE) now propagate via NEXT_REDIRECT instead of throwing. The non-billing codes (UNAUTHORIZED, NO_WORKSPACE, WORKSPACE_DELETED, ACCESS_DENIED) still throw, so the doc is incomplete rather than wrong.'
+    suggested_action: 'Add a one-line JSDoc note that billing-gate failures redirect via Next.js framework rather than throwing.'
+    suggested_owner: 'dev'
+    refs: ['lib/auth/workspace-context.ts:290']
+
+  - id: 'OBS-001'
+    severity: low
+    finding: 'Layout uses `headers().get(''x-pathname'')` to decide between gated vs bypass context, but this header requires middleware to be set. Codebase has no middleware.ts. In practice the fallback `''/''` causes the pathname-based branch to never engage — the bypass version is selected ONLY by the settings page directly. This is fine because the page-level bypass call carries the contract, but the layout''s pathname routing is layered defense that may be inert.'
+    suggested_action: 'Either (a) verify Next.js 16 sets x-pathname automatically in App Router (some versions do; a quick log line at runtime would confirm), (b) add a thin middleware.ts that sets the header, or (c) remove the layout pathname branching since the page-level bypass already guarantees correctness. Option (c) is the smallest change.'
+    suggested_owner: 'dev'
+    refs: ['app/(workspace)/layout.tsx:30-40']
+
+  - id: 'OBS-002'
+    severity: low
+    finding: 'Cron per-row failure logging is verbose: a single workspace failure can emit up to 3 console.error calls (outer try/catch + email try/catch + activity-log try/catch). Acceptable for a daily cron, but signal-to-noise drops for ops monitoring.'
+    suggested_action: 'Consider a single structured log per failed row that includes which sub-step failed (state/email/activity). Not blocking — current approach captures all failure modes.'
+    suggested_owner: 'dev'
+    refs: ['lib/billing/trial-expiration-cron.ts:108-110, 132-134, 138-141, 199-201, 252-254']
+
+  - id: 'TEST-001'
+    severity: low
+    finding: 'AC 12 (countdown banner) and AC 13 (3 email templates) have no dedicated unit tests. Both were live-verified during the smoke-test session, but lack of tests means future regressions could go undetected. The banner''s sessionStorage dismiss + day-window logic and the email templates'' Swedish copy register would benefit from snapshot/render tests.'
+    suggested_action: 'Add `tests/unit/components/features/billing/trial-countdown-banner.test.tsx` (3 cases: renders at daysLeft∈{1,2}, hidden otherwise, dismiss persists in sessionStorage). Email-template snapshot tests are nice-to-have. QA can pick up Playwright parity if mandated.'
+    suggested_owner: 'dev'
+    refs: ['components/features/billing/trial-countdown-banner.tsx', 'emails/trial-ended.tsx', 'emails/workspace-paused.tsx', 'emails/enterprise-inquiry-trial-ended.tsx']
+
+  - id: 'OPS-001'
+    severity: low
+    finding: '`CRON_SECRET` env var confirmation in Vercel is still operator-pending per Dev Agent Record. The `expire-trials` cron route requires Bearer auth in production — without the env var set, all cron invocations will return 401 and the trial-end emails / pause / delete actions will never fire.'
+    suggested_action: 'Operator must confirm `CRON_SECRET` is set in Vercel env (existing pattern from `cleanup-workspaces` cron). Block final Done flip until verified.'
+    suggested_owner: 'po'
+    refs: ['app/api/cron/expire-trials/route.ts:23-32']
+
+evidence:
+  tests_reviewed: 42
+  risks_identified: 5
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 14, 15, 16, 17, 18, 19]
+    ac_gaps: [12, 13]  # countdown banner + email templates lack dedicated unit tests; live-verified
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Webhook signature verified against real Stripe SDK constructEvent. Idempotency via P2002 unique-constraint claim is race-safe (replaces older findUnique→create TOCTOU). Bypass-context skips ONLY billing gates — session/role/membership checks still enforced. CRON_SECRET-protected cron route. Gates enforced at workspace-context boundary (server-side, no client bypass possible). RLS unchanged. Stripe Customer auto-recovery (AC 19) discriminator prevents accidental restoration of billing-failure-paused workspaces.'
+  performance:
+    status: PASS
+    notes: 'Gate evaluation is O(1). Redis cache TTL (5 min) appropriate for the 24h cron window + 3-day grace window. Cache invalidation via `bestEffortInvalidate` runs only on webhook (not on hot path). Cron uses indexed WHERE clauses (subscription_tier + trial_ends_at + stripe_subscription_id are all on Workspace). Per-row failures don''t block the run. revalidatePath wrapped in try/catch so it can''t crash the webhook in test env.'
+  reliability:
+    status: PASS
+    notes: 'Fail-safe pattern throughout: state transition before email send, idempotency lock before action, three layers of try/catch in cron (outer + email + activity-log), best-effort cache invalidation that never blocks webhook. Webhook handler re-throws errors so Stripe retries (idempotency row deleted on failure). NEXT_REDIRECT pattern via redirect() avoids the layout/page race condition that plagued the original throw-based approach. Discovered + fixed during smoke testing: 6 server actions whose generic try/catch would swallow NEXT_REDIRECT (now use passthroughRedirect helper).'
+  maintainability:
+    status: PASS
+    notes: 'Comprehensive JSDoc on every new file explaining WHY (NEXT_REDIRECT propagation, race conditions, cache tradeoffs, discriminator rationale). Architectural decisions traceable in Dev Agent Record + 7-point smoke-test discovery log. `passthroughRedirect` helper is reusable across the codebase. `bestEffortInvalidate` extracted from inline duplication. Single source of truth for trial constants in `lib/billing/trial-config.ts`. Snake_case DB / camelCase TS naming consistent. Bypass pattern is clearly named (`getWorkspaceContextBypassBillingGates`, `requirePermissionForBilling`) so the intent is obvious at call sites.'
+
+recommendations:
+  immediate: []  # No must-fix-before-production items
+
+  future:
+    - action: 'Tighten JSDoc on getWorkspaceContext to note billing-gate redirect behavior (DOC-001).'
+      refs: ['lib/auth/workspace-context.ts:290']
+    - action: 'Decide whether layout pathname-routing is needed or can be removed (OBS-001) — the page-level bypass already guarantees correctness.'
+      refs: ['app/(workspace)/layout.tsx:23-47']
+    - action: 'Add unit tests for TrialCountdownBanner + email template snapshots (TEST-001) to lock in regression protection.'
+      refs: ['components/features/billing/trial-countdown-banner.tsx']
+    - action: 'Operator: confirm CRON_SECRET in Vercel before final Done (OPS-001).'
+      refs: ['app/api/cron/expire-trials/route.ts']
+    - action: 'Consider structured logging for cron per-row failures (OBS-002) once ops dashboards are wired.'
+      refs: ['lib/billing/trial-expiration-cron.ts']
+
+history:
+  - at: '2026-05-06T14:30:00Z'
+    gate: PASS
+    note: 'Initial review. End-to-end smoke test verified gate + conversion + AC 19 recovery. 5 low-severity observations; no blockers.'
