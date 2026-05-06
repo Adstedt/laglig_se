@@ -207,15 +207,20 @@ describe('OnboardingWizard cleanup', () => {
 
     render(<OnboardingWizard />)
 
-    // Step 1: Click "Nästa" on CompanyInfoStep to advance to ActivityQuestionsStep
+    // Step 1: Click "Nästa" on CompanyInfoStep → ActivityQuestionsStep
     const nextButton = screen.getByRole('button', { name: /nästa/i })
     fireEvent.click(nextButton)
 
-    // Step 2: Click "Nästa" on ActivityQuestionsStep to advance to ConfirmStep
+    // Step 2: Click "Nästa" on ActivityQuestionsStep → TierPickerStep
     const activityNext = await screen.findByRole('button', { name: /nästa/i })
     fireEvent.click(activityNext)
 
-    // Step 3: Now on ConfirmStep — click "Skapa workspace" to trigger submit
+    // Step 3: Click "Nästa" on TierPickerStep → ConfirmStep (a default tier
+    // is pre-selected from the recommendation, so no manual pick required).
+    const tierNext = await screen.findByRole('button', { name: /nästa/i })
+    fireEvent.click(tierNext)
+
+    // Step 4: Now on ConfirmStep — click "Skapa workspace" to trigger submit
     const submitButton = await screen.findByRole('button', {
       name: /skapa workspace/i,
     })

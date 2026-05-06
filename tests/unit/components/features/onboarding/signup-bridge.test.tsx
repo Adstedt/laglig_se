@@ -16,10 +16,12 @@ vi.mock('next/navigation', () => ({
 const mockSaveOnboardingData = vi.fn()
 const mockGetOnboardingData = vi.fn()
 const mockParseFlags = vi.fn()
+const mockParsePickedTier = vi.fn()
 vi.mock('@/lib/onboarding/onboarding-store', () => ({
   saveOnboardingData: (...args: unknown[]) => mockSaveOnboardingData(...args),
   getOnboardingData: () => mockGetOnboardingData(),
   parseFlags: (...args: unknown[]) => mockParseFlags(...args),
+  parsePickedTier: (...args: unknown[]) => mockParsePickedTier(...args),
 }))
 
 // Mock auth action
