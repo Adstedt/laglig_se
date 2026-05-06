@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle } from 'lucide-react'
 import { ResetPasswordSchema } from '@/lib/validation/auth'
@@ -14,7 +15,14 @@ import type { z } from 'zod'
 type ResetPasswordFormData = z.infer<typeof ResetPasswordSchema>
 
 export function ResetPasswordForm() {
-  const [error, setError] = useState<string>('')
+  const searchParams = useSearchParams()
+  // AuthHashRedirect routes expired recovery links here with ?error=expired.
+  const expiredLink = searchParams.get('error') === 'expired'
+  const [error, setError] = useState<string>(
+    expiredLink
+      ? 'Länken har gått ut eller är ogiltig. Begär en ny återställningslänk nedan.'
+      : ''
+  )
   const [success, setSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 

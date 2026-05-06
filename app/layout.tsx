@@ -3,6 +3,7 @@ import './globals.css'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { ThemeProvider } from '@/components/providers/theme-provider'
+import { AuthHashRedirect } from '@/components/features/auth/auth-hash-redirect'
 
 // react-pdf styles for PDF preview component
 import 'react-pdf/dist/Page/AnnotationLayer.css'
@@ -34,6 +35,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <AuthHashRedirect />
           {children}
         </ThemeProvider>
         {/* Vercel Analytics - Cookieless, GDPR-compliant tracking */}
