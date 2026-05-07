@@ -30,6 +30,7 @@ import { ComplianceDetailTable } from './compliance-detail-table'
 import { GroupedComplianceTable } from './grouped-compliance-table'
 import { GroupManager } from './group-manager'
 import { ManageListModal } from './manage-list-modal'
+import { EmptyLawListState } from './empty-law-list-state'
 // Story 6.3: Legal Document Modal
 import { LegalDocumentModal } from './legal-document-modal'
 // Story 6.15: Task Modal for bidirectional linking
@@ -70,6 +71,13 @@ interface DocumentListPageContentProps {
   publishedTemplates?: PublishedTemplate[] | undefined
   /** Story 17.16: Server-derived permission flag — disables kravpunkter + kommentar edits for users lacking `tasks:edit` */
   complianceReadOnly?: boolean
+  /**
+   * Pending-imports follow-up: when the workspace has any in-flight
+   * import (AWAITING_REVIEW / MATCHING), the banner above already
+   * surfaces the next step — suppress the Story 24.6 zero-lists empty
+   * state so we don't double up with conflicting "what to do next" copy.
+   */
+  hasPendingImports?: boolean
 }
 
 export function DocumentListPageContent({
@@ -77,11 +85,17 @@ export function DocumentListPageContent({
   defaultListId,
   publishedTemplates,
   complianceReadOnly,
+  hasPendingImports = false,
 }: DocumentListPageContentProps) {
   const [isManageModalOpen, setIsManageModalOpen] = useState(false)
   const [manageModalMode, setManageModalMode] = useState<'create' | 'edit'>(
     'create'
   )
+  // Story 24.6: when the empty-state "importera en lista" link is clicked,
+  // open the modal directly on the import step (skip the chooser).
+  const [manageModalInitialStep, setManageModalInitialStep] = useState<
+    'choose' | 'from-template' | 'blank' | 'import' | undefined
+  >(undefined)
   const [workspaceMembers, setWorkspaceMembers] = useState<
     WorkspaceMemberOption[]
   >([])
@@ -652,11 +666,20 @@ export function DocumentListPageContent({
 
   const handleCreateList = () => {
     setManageModalMode('create')
+    setManageModalInitialStep(undefined)
     setIsManageModalOpen(true)
   }
 
   const handleEditList = () => {
     setManageModalMode('edit')
+    setManageModalInitialStep(undefined)
+    setIsManageModalOpen(true)
+  }
+
+  // Story 24.6 AC 7: empty-state link → open modal directly on import step.
+  const handleOpenImport = () => {
+    setManageModalMode('create')
+    setManageModalInitialStep('import')
     setIsManageModalOpen(true)
   }
 
@@ -713,308 +736,332 @@ export function DocumentListPageContent({
     return bulkUpdateItems(itemIds, updates)
   }
 
+  // Story 24.6 AC 7: empty-state when the workspace has zero law lists.
+  // Suppressed when the page already shows a pending-imports banner — the
+  // banner above takes precedence as the next-step affordance.
+  const hasNoLists = lists.length === 0 && !isLoadingLists && !hasPendingImports
+
   return (
     <div className="flex flex-col gap-4">
-      {/* Toolbar redesign: single-row toolbar + collapsible filter bar */}
-      <LawListToolbar
-        listSwitcher={
-          <DocumentListSwitcher
-            lists={lists}
-            activeListId={activeListId}
-            onSelectList={handleListChange}
-            onCreateList={handleCreateList}
-            isLoading={isLoadingLists}
+      {hasNoLists ? (
+        <EmptyLawListState
+          onCreateList={handleCreateList}
+          onOpenImport={handleOpenImport}
+        />
+      ) : (
+        <>
+          {/* Toolbar redesign: single-row toolbar + collapsible filter bar */}
+          <LawListToolbar
+            listSwitcher={
+              <DocumentListSwitcher
+                lists={lists}
+                activeListId={activeListId}
+                onSelectList={handleListChange}
+                onCreateList={handleCreateList}
+                isLoading={isLoadingLists}
+              />
+            }
+            search={
+              <SearchInput
+                initialValue={searchParams.get('q') ?? ''}
+                onSearch={handleSearch}
+                placeholder="Sök dokument..."
+                className="w-full"
+              />
+            }
+            filterCount={activeFilterCount}
+            isFilterBarOpen={isFilterBarOpen}
+            onToggleFilterBar={() => setIsFilterBarOpen((o) => !o)}
+            viewMenu={
+              <ViewMenu
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                columnVisibility={columnVisibility}
+                onColumnVisibilityChange={setColumnVisibility}
+                complianceColumnVisibility={complianceColumnVisibility}
+                onComplianceColumnVisibilityChange={
+                  setComplianceColumnVisibility
+                }
+                hasGroups={groups.length > 0}
+                onOpenGroupManager={() => setIsGroupManagerOpen(true)}
+                onExpandAll={expandAllGroups}
+                onCollapseAll={collapseAllGroups}
+                listId={activeListId}
+                listName={activeList?.name ?? 'lista'}
+                exportDisabled={!activeListId || listItems.length === 0}
+              />
+            }
+            settingsAction={
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleEditList}
+                disabled={!activeListId}
+                title="Hantera lista"
+                className="h-9 w-9"
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+            }
+            itemCount={
+              viewMode === 'table' &&
+              (groups.length === 0 ||
+                hasFiltersOrSearch ||
+                activeGroupFilter) ? (
+                <ToolbarItemCount
+                  showing={
+                    hasFiltersOrSearch
+                      ? filteredAndSearchedItems.length
+                      : activeGroupFilter
+                        ? filteredItems.length
+                        : listItems.length
+                  }
+                  total={total}
+                  label="dokument"
+                />
+              ) : undefined
+            }
           />
-        }
-        search={
-          <SearchInput
-            initialValue={searchParams.get('q') ?? ''}
-            onSearch={handleSearch}
-            placeholder="Sök dokument..."
-            className="w-full"
+
+          <FilterBar
+            isOpen={isFilterBarOpen}
+            contentTypeFilter={contentTypeFilter}
+            onContentTypeChange={setContentTypeGroupFilter}
+            complianceFilters={complianceFilters}
+            onComplianceFiltersChange={setComplianceFilters}
+            workspaceMembers={workspaceMembers}
+            categories={categories}
+            activeGroupFilterInfo={activeGroupFilterInfo}
+            onClearGroupFilter={handleClearGroupFilter}
+            activeFilterCount={activeFilterCount}
+            onClearAll={clearAllFilters}
           />
-        }
-        filterCount={activeFilterCount}
-        isFilterBarOpen={isFilterBarOpen}
-        onToggleFilterBar={() => setIsFilterBarOpen((o) => !o)}
-        viewMenu={
-          <ViewMenu
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-            columnVisibility={columnVisibility}
-            onColumnVisibilityChange={setColumnVisibility}
-            complianceColumnVisibility={complianceColumnVisibility}
-            onComplianceColumnVisibilityChange={setComplianceColumnVisibility}
-            hasGroups={groups.length > 0}
-            onOpenGroupManager={() => setIsGroupManagerOpen(true)}
-            onExpandAll={expandAllGroups}
-            onCollapseAll={collapseAllGroups}
-            listId={activeListId}
-            listName={activeList?.name ?? 'lista'}
-            exportDisabled={!activeListId || listItems.length === 0}
-          />
-        }
-        settingsAction={
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleEditList}
-            disabled={!activeListId}
-            title="Hantera lista"
-            className="h-9 w-9"
-          >
-            <Settings className="h-4 w-4" />
-          </Button>
-        }
-        itemCount={
-          viewMode === 'table' &&
-          (groups.length === 0 || hasFiltersOrSearch || activeGroupFilter) ? (
-            <ToolbarItemCount
-              showing={
+
+          {/* Error message */}
+          {error && (
+            <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+              {error}
+              <button
+                onClick={clearError}
+                className="ml-2 underline hover:no-underline"
+              >
+                Stäng
+              </button>
+            </div>
+          )}
+
+          {/* Document grid or table based on view mode */}
+          {/* Story 4.13 & 6.2: Use filtered items and show empty state when filters return no results */}
+          {/* Story 6.14: Add grouped table view when in table mode with groups and no filters */}
+          {/* Story 6.18: Add compliance detail view (Efterlevnad) */}
+          {hasFiltersOrSearch &&
+          filteredAndSearchedItems.length === 0 &&
+          !isLoadingItems ? (
+            <FilterEmptyState
+              searchQuery={searchQuery}
+              hasActiveFilters={checkHasActiveFilters(complianceFilters)}
+              onClearFilters={clearAllFiltersAndSearch}
+            />
+          ) : viewMode === 'card' ? (
+            <GroupedDocumentList
+              items={
+                hasFiltersOrSearch
+                  ? filteredAndSearchedItems
+                  : activeGroupFilter
+                    ? filteredItems
+                    : listItems
+              }
+              groups={hasFiltersOrSearch || activeGroupFilter ? [] : groups} // Hide groups when filtering
+              expandedGroups={expandedGroups}
+              total={
                 hasFiltersOrSearch
                   ? filteredAndSearchedItems.length
                   : activeGroupFilter
                     ? filteredItems.length
-                    : listItems.length
+                    : total
               }
-              total={total}
-              label="dokument"
+              hasMore={
+                hasFiltersOrSearch || activeGroupFilter ? false : hasMore
+              } // Disable pagination when filtering
+              isLoading={isLoadingItems}
+              onLoadMore={loadMoreItems}
+              onRemoveItem={removeItem}
+              onReorderItems={reorderItems}
+              onMoveToGroup={moveToGroup}
+              onToggleGroup={toggleGroupExpanded}
+              onExpandAll={expandAllGroups}
+              onCollapseAll={collapseAllGroups}
+              onFilterByGroup={handleFilterByGroup}
+              onRowClick={handleOpenModal}
+              emptyMessage={
+                activeListId
+                  ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
+                  : 'Välj eller skapa en lista för att komma igång.'
+              }
             />
-          ) : undefined
-        }
-      />
-
-      <FilterBar
-        isOpen={isFilterBarOpen}
-        contentTypeFilter={contentTypeFilter}
-        onContentTypeChange={setContentTypeGroupFilter}
-        complianceFilters={complianceFilters}
-        onComplianceFiltersChange={setComplianceFilters}
-        workspaceMembers={workspaceMembers}
-        categories={categories}
-        activeGroupFilterInfo={activeGroupFilterInfo}
-        onClearGroupFilter={handleClearGroupFilter}
-        activeFilterCount={activeFilterCount}
-        onClearAll={clearAllFilters}
-      />
-
-      {/* Error message */}
-      {error && (
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
-          {error}
-          <button
-            onClick={clearError}
-            className="ml-2 underline hover:no-underline"
-          >
-            Stäng
-          </button>
-        </div>
-      )}
-
-      {/* Document grid or table based on view mode */}
-      {/* Story 4.13 & 6.2: Use filtered items and show empty state when filters return no results */}
-      {/* Story 6.14: Add grouped table view when in table mode with groups and no filters */}
-      {/* Story 6.18: Add compliance detail view (Efterlevnad) */}
-      {hasFiltersOrSearch &&
-      filteredAndSearchedItems.length === 0 &&
-      !isLoadingItems ? (
-        <FilterEmptyState
-          searchQuery={searchQuery}
-          hasActiveFilters={checkHasActiveFilters(complianceFilters)}
-          onClearFilters={clearAllFiltersAndSearch}
-        />
-      ) : viewMode === 'card' ? (
-        <GroupedDocumentList
-          items={
-            hasFiltersOrSearch
-              ? filteredAndSearchedItems
-              : activeGroupFilter
-                ? filteredItems
-                : listItems
-          }
-          groups={hasFiltersOrSearch || activeGroupFilter ? [] : groups} // Hide groups when filtering
-          expandedGroups={expandedGroups}
-          total={
-            hasFiltersOrSearch
-              ? filteredAndSearchedItems.length
-              : activeGroupFilter
-                ? filteredItems.length
-                : total
-          }
-          hasMore={hasFiltersOrSearch || activeGroupFilter ? false : hasMore} // Disable pagination when filtering
-          isLoading={isLoadingItems}
-          onLoadMore={loadMoreItems}
-          onRemoveItem={removeItem}
-          onReorderItems={reorderItems}
-          onMoveToGroup={moveToGroup}
-          onToggleGroup={toggleGroupExpanded}
-          onExpandAll={expandAllGroups}
-          onCollapseAll={collapseAllGroups}
-          onFilterByGroup={handleFilterByGroup}
-          onRowClick={handleOpenModal}
-          emptyMessage={
-            activeListId
-              ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
-              : 'Välj eller skapa en lista för att komma igång.'
-          }
-        />
-      ) : viewMode === 'compliance' &&
-        groups.length > 0 &&
-        !hasFiltersOrSearch &&
-        !activeGroupFilter ? (
-        // Story 6.18: Grouped compliance view with accordion structure
-        <GroupedComplianceTable
-          items={listItems}
-          groups={groups}
-          expandedGroups={expandedGroups}
-          total={total}
-          hasMore={hasMore}
-          isLoading={isLoadingItems}
-          columnVisibility={complianceColumnVisibility}
-          onColumnVisibilityChange={setComplianceColumnVisibility}
-          columnSizing={complianceColumnSizing}
-          onColumnSizingChange={setComplianceColumnSizing}
-          columnOrder={complianceColumnOrder}
-          onColumnOrderChange={setComplianceColumnOrder}
-          onLoadMore={loadMoreItems}
-          onUpdateItem={handleUpdateItem}
-          onBulkUpdate={handleTableBulkUpdate}
-          onRemoveItem={removeItem}
-          onReorderItems={reorderItems}
-          onMoveToGroup={moveToGroup}
-          onToggleGroup={toggleGroupExpanded}
-          onExpandAll={expandAllGroups}
-          onCollapseAll={collapseAllGroups}
-          onFilterByGroup={handleFilterByGroup}
-          onRowClick={handleOpenModal}
-          onAddContent={handleAddContent}
-          workspaceMembers={workspaceMembers}
-          emptyMessage={
-            activeListId
-              ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
-              : 'Välj eller skapa en lista för att komma igång.'
-          }
-          complianceReadOnly={complianceReadOnly}
-        />
-      ) : viewMode === 'compliance' ? (
-        // Story 6.18: Flat compliance view (when no groups, or filters/search active)
-        <ComplianceDetailTable
-          items={
-            hasFiltersOrSearch
-              ? filteredAndSearchedItems
-              : activeGroupFilter
-                ? filteredItems
-                : listItems
-          }
-          total={
-            hasFiltersOrSearch
-              ? filteredAndSearchedItems.length
-              : activeGroupFilter
-                ? filteredItems.length
-                : total
-          }
-          hasMore={hasFiltersOrSearch || activeGroupFilter ? false : hasMore}
-          isLoading={isLoadingItems}
-          columnVisibility={complianceColumnVisibility}
-          onColumnVisibilityChange={setComplianceColumnVisibility}
-          columnSizing={complianceColumnSizing}
-          onColumnSizingChange={setComplianceColumnSizing}
-          columnOrder={complianceColumnOrder}
-          onColumnOrderChange={setComplianceColumnOrder}
-          workspaceMembers={workspaceMembers}
-          onLoadMore={loadMoreItems}
-          onRemoveItem={removeItem}
-          onReorderItems={reorderItems}
-          onUpdateItem={handleUpdateItem}
-          onBulkUpdate={handleTableBulkUpdate}
-          groups={groups}
-          onMoveToGroup={moveToGroup}
-          onRowClick={handleOpenModal}
-          onAddContent={handleAddContent}
-          emptyMessage={
-            activeListId
-              ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
-              : 'Välj eller skapa en lista för att komma igång.'
-          }
-          complianceReadOnly={complianceReadOnly}
-        />
-      ) : viewMode === 'table' &&
-        groups.length > 0 &&
-        !hasFiltersOrSearch &&
-        !activeGroupFilter ? (
-        // Story 6.14: Grouped accordion tables for table view
-        <GroupedDocumentListTable
-          items={listItems}
-          groups={groups}
-          expandedGroups={expandedGroups}
-          total={total}
-          hasMore={hasMore}
-          isLoading={isLoadingItems}
-          columnVisibility={columnVisibility}
-          onColumnVisibilityChange={setColumnVisibility}
-          columnSizing={columnSizing}
-          onColumnSizingChange={setColumnSizing}
-          columnOrder={columnOrder}
-          onColumnOrderChange={setColumnOrder}
-          onLoadMore={loadMoreItems}
-          onUpdateItem={handleUpdateItem}
-          onBulkUpdate={handleTableBulkUpdate}
-          onRemoveItem={removeItem}
-          onReorderItems={reorderItems}
-          onMoveToGroup={moveToGroup}
-          onToggleGroup={toggleGroupExpanded}
-          onExpandAll={expandAllGroups}
-          onCollapseAll={collapseAllGroups}
-          onFilterByGroup={handleFilterByGroup}
-          onRowClick={handleOpenModal}
-          workspaceMembers={workspaceMembers}
-          emptyMessage={
-            activeListId
-              ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
-              : 'Välj eller skapa en lista för att komma igång.'
-          }
-        />
-      ) : (
-        // Flat table view (when no groups, or filters/search active, or filtering by specific group)
-        <DocumentListTable
-          items={
-            hasFiltersOrSearch
-              ? filteredAndSearchedItems
-              : activeGroupFilter
-                ? filteredItems
-                : listItems
-          }
-          total={
-            hasFiltersOrSearch
-              ? filteredAndSearchedItems.length
-              : activeGroupFilter
-                ? filteredItems.length
-                : total
-          }
-          hasMore={hasFiltersOrSearch || activeGroupFilter ? false : hasMore}
-          isLoading={isLoadingItems}
-          columnVisibility={columnVisibility}
-          onColumnVisibilityChange={setColumnVisibility}
-          columnSizing={columnSizing}
-          onColumnSizingChange={setColumnSizing}
-          columnOrder={columnOrder}
-          onColumnOrderChange={setColumnOrder}
-          onLoadMore={loadMoreItems}
-          onUpdateItem={handleUpdateItem}
-          onBulkUpdate={handleTableBulkUpdate}
-          onRemoveItem={removeItem}
-          onReorderItems={reorderItems}
-          workspaceMembers={workspaceMembers}
-          groups={groups}
-          onMoveToGroup={moveToGroup}
-          // Story 6.3: Open legal document modal on row click (via URL)
-          onRowClick={handleOpenModal}
-          emptyMessage={
-            activeListId
-              ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
-              : 'Välj eller skapa en lista för att komma igång.'
-          }
-        />
+          ) : viewMode === 'compliance' &&
+            groups.length > 0 &&
+            !hasFiltersOrSearch &&
+            !activeGroupFilter ? (
+            // Story 6.18: Grouped compliance view with accordion structure
+            <GroupedComplianceTable
+              items={listItems}
+              groups={groups}
+              expandedGroups={expandedGroups}
+              total={total}
+              hasMore={hasMore}
+              isLoading={isLoadingItems}
+              columnVisibility={complianceColumnVisibility}
+              onColumnVisibilityChange={setComplianceColumnVisibility}
+              columnSizing={complianceColumnSizing}
+              onColumnSizingChange={setComplianceColumnSizing}
+              columnOrder={complianceColumnOrder}
+              onColumnOrderChange={setComplianceColumnOrder}
+              onLoadMore={loadMoreItems}
+              onUpdateItem={handleUpdateItem}
+              onBulkUpdate={handleTableBulkUpdate}
+              onRemoveItem={removeItem}
+              onReorderItems={reorderItems}
+              onMoveToGroup={moveToGroup}
+              onToggleGroup={toggleGroupExpanded}
+              onExpandAll={expandAllGroups}
+              onCollapseAll={collapseAllGroups}
+              onFilterByGroup={handleFilterByGroup}
+              onRowClick={handleOpenModal}
+              onAddContent={handleAddContent}
+              workspaceMembers={workspaceMembers}
+              emptyMessage={
+                activeListId
+                  ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
+                  : 'Välj eller skapa en lista för att komma igång.'
+              }
+              complianceReadOnly={complianceReadOnly}
+            />
+          ) : viewMode === 'compliance' ? (
+            // Story 6.18: Flat compliance view (when no groups, or filters/search active)
+            <ComplianceDetailTable
+              items={
+                hasFiltersOrSearch
+                  ? filteredAndSearchedItems
+                  : activeGroupFilter
+                    ? filteredItems
+                    : listItems
+              }
+              total={
+                hasFiltersOrSearch
+                  ? filteredAndSearchedItems.length
+                  : activeGroupFilter
+                    ? filteredItems.length
+                    : total
+              }
+              hasMore={
+                hasFiltersOrSearch || activeGroupFilter ? false : hasMore
+              }
+              isLoading={isLoadingItems}
+              columnVisibility={complianceColumnVisibility}
+              onColumnVisibilityChange={setComplianceColumnVisibility}
+              columnSizing={complianceColumnSizing}
+              onColumnSizingChange={setComplianceColumnSizing}
+              columnOrder={complianceColumnOrder}
+              onColumnOrderChange={setComplianceColumnOrder}
+              workspaceMembers={workspaceMembers}
+              onLoadMore={loadMoreItems}
+              onRemoveItem={removeItem}
+              onReorderItems={reorderItems}
+              onUpdateItem={handleUpdateItem}
+              onBulkUpdate={handleTableBulkUpdate}
+              groups={groups}
+              onMoveToGroup={moveToGroup}
+              onRowClick={handleOpenModal}
+              onAddContent={handleAddContent}
+              emptyMessage={
+                activeListId
+                  ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
+                  : 'Välj eller skapa en lista för att komma igång.'
+              }
+              complianceReadOnly={complianceReadOnly}
+            />
+          ) : viewMode === 'table' &&
+            groups.length > 0 &&
+            !hasFiltersOrSearch &&
+            !activeGroupFilter ? (
+            // Story 6.14: Grouped accordion tables for table view
+            <GroupedDocumentListTable
+              items={listItems}
+              groups={groups}
+              expandedGroups={expandedGroups}
+              total={total}
+              hasMore={hasMore}
+              isLoading={isLoadingItems}
+              columnVisibility={columnVisibility}
+              onColumnVisibilityChange={setColumnVisibility}
+              columnSizing={columnSizing}
+              onColumnSizingChange={setColumnSizing}
+              columnOrder={columnOrder}
+              onColumnOrderChange={setColumnOrder}
+              onLoadMore={loadMoreItems}
+              onUpdateItem={handleUpdateItem}
+              onBulkUpdate={handleTableBulkUpdate}
+              onRemoveItem={removeItem}
+              onReorderItems={reorderItems}
+              onMoveToGroup={moveToGroup}
+              onToggleGroup={toggleGroupExpanded}
+              onExpandAll={expandAllGroups}
+              onCollapseAll={collapseAllGroups}
+              onFilterByGroup={handleFilterByGroup}
+              onRowClick={handleOpenModal}
+              workspaceMembers={workspaceMembers}
+              emptyMessage={
+                activeListId
+                  ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
+                  : 'Välj eller skapa en lista för att komma igång.'
+              }
+            />
+          ) : (
+            // Flat table view (when no groups, or filters/search active, or filtering by specific group)
+            <DocumentListTable
+              items={
+                hasFiltersOrSearch
+                  ? filteredAndSearchedItems
+                  : activeGroupFilter
+                    ? filteredItems
+                    : listItems
+              }
+              total={
+                hasFiltersOrSearch
+                  ? filteredAndSearchedItems.length
+                  : activeGroupFilter
+                    ? filteredItems.length
+                    : total
+              }
+              hasMore={
+                hasFiltersOrSearch || activeGroupFilter ? false : hasMore
+              }
+              isLoading={isLoadingItems}
+              columnVisibility={columnVisibility}
+              onColumnVisibilityChange={setColumnVisibility}
+              columnSizing={columnSizing}
+              onColumnSizingChange={setColumnSizing}
+              columnOrder={columnOrder}
+              onColumnOrderChange={setColumnOrder}
+              onLoadMore={loadMoreItems}
+              onUpdateItem={handleUpdateItem}
+              onBulkUpdate={handleTableBulkUpdate}
+              onRemoveItem={removeItem}
+              onReorderItems={reorderItems}
+              workspaceMembers={workspaceMembers}
+              groups={groups}
+              onMoveToGroup={moveToGroup}
+              // Story 6.3: Open legal document modal on row click (via URL)
+              onRowClick={handleOpenModal}
+              emptyMessage={
+                activeListId
+                  ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
+                  : 'Välj eller skapa en lista för att komma igång.'
+              }
+            />
+          )}
+        </>
       )}
 
       {/* Manage list modal */}
@@ -1024,6 +1071,7 @@ export function DocumentListPageContent({
         mode={manageModalMode}
         list={manageModalMode === 'edit' ? activeList : undefined}
         templates={publishedTemplates}
+        initialStep={manageModalInitialStep}
         onCreated={handleListCreated}
         onUpdated={handleListUpdated}
         onDeleted={handleListDeleted}

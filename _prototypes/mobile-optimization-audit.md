@@ -253,8 +253,14 @@ Priority order:
 
 ## 5. Technical preferences
 
-- **Use existing `useMediaQuery` and `useIsMobile` hooks** — they're in `lib/hooks/` and already used. Don't introduce new ones.
+- **Use existing `useMediaQuery` and `useIsMobile` hooks** — they're in `lib/hooks/`. The mobile hook lives at `@/lib/hooks/use-mobile` (NOT `use-is-mobile`); `MOBILE_BREAKPOINT = 768` matches Tailwind's `md:`. Don't introduce new ones.
 - **Prefer `<Sheet>` over installing `vaul`** for v1 — Sheet is already there and good enough. Switch to vaul later if we want gesture-aware drawers (handle drag-down to dismiss).
+- **Use canonical badge tones**, never hand-roll status colors. Status pills must come from `getStatusBadgeProps(domain, value)` in `lib/ui/badge-tones.ts`. Mobile row cards in particular tend to attract one-off `bg-amber-50 text-amber-900` — those are drift. Map to `{ tone, variant, label }` and pass to the Badge primitive. Domain reminders:
+  - `compliance-status PAGAENDE` → **info · soft "Delvis uppfylld"** (blue), NOT amber.
+  - `cycle-status PAGAENDE` → **info · soft "Pågående"** (blue).
+  - Warning-amber is for `finding-severity MINOR`, `finding-type OBSERVATION`, and ad-hoc "Saknar bevis" warnings.
+  - Danger-rose is for `EJ_UPPFYLLD`, `AVVIKELSE`, `CRITICAL` (solid).
+- **Pair Safiro with `font-medium`** every time. Only weight 500 is registered for Safiro; `font-bold`/`font-semibold` triggers browser fake-bold and may fall back to system-ui (per project memory).
 - **Stay mobile-first in Tailwind** — no override modifiers should be needed; just add `md:` and `lg:` for desktop enhancements.
 - **Don't fork desktop UI** — every mobile pattern should be the SAME component with branched chrome, not a separate `MobileXyz` component sitting alongside `Xyz`. Exception: nav (where `MobileSidebar` is justified because the IA is genuinely different).
 - **Test breakpoints:** target 375px (iPhone SE), 390px (iPhone 14), 768px (iPad portrait), 1024px (iPad landscape / desktop). The `hidden md:` (768px) breakpoint is the workhorse split point.
@@ -268,7 +274,11 @@ Priority order:
 - ❌ **Don't try to make tables scroll well horizontally** — they don't. Cards.
 - ❌ **Don't put primary CTAs in dropdowns on mobile** — make them full-width sticky bottom buttons
 - ❌ **Don't auto-trigger keyboard on page load** — kills mobile UX (covers half the screen)
-- ❌ **Don't use `position: fixed` widgets without safe-area-inset-bottom**
+- ❌ **Don't use `position: fixed` widgets without `safe-area-inset-bottom`** — and don't forget `safe-area-inset-top` for full-screen sheets / modal headers (notch / Dynamic Island will overlap)
+- ❌ **Don't pair `font-safiro` with `font-bold` or `font-semibold`** — Safiro ships at weight 500 only; the browser fakes the heavier weight and frequently falls back to system-ui. Always pair Safiro with `font-medium`.
+- ❌ **Don't hand-roll status pill colors** — every `bg-amber-50 text-amber-900` instance for "Pågår" is drift. Use `getStatusBadgeProps(domain, value)` from `lib/ui/badge-tones.ts` (Story 22.1).
+- ❌ **Don't use `truncate` on Swedish content text** — compounds get cut mid-syllable. Use `break-words hyphens-auto` on `<md:`. Reserve `truncate` for IDs/URLs/emails.
+- ❌ **Don't make the "primary action" pop loud in a Sheet of options** — a Sheet of source options (Camera / Library / File / Link) should look uniform; signal the recommended choice with a subtle "Föreslås" tag or a leading-icon color treatment, not a full filled-border highlight that screams "tap this."
 
 ---
 
@@ -448,13 +458,25 @@ The chat shell already adapts (ChatModal swap on `isMobile`), but I never audite
 **Future risk:** when search lights up, mobile users won't see the input at all (`hidden lg:block`). The mobile pattern is well-established: a search-icon-only button in the header that opens a full-screen search Sheet with auto-focused input + recent + results. Capture this in the search story so it's not retrofitted later.
 **Effort:** N/A today; ~40 LOC when search ships
 
-#### A4. iOS keyboard covers sticky bottom bars
-**Pattern:** every sticky-bottom action bar we proposed (modals, edit pages) needs to shift above the iOS keyboard when an input gains focus. Default behavior: keyboard pops up over the bar.
-**Fix options:**
-- Use `100dvh` (dynamic viewport height) consistently instead of `100vh`
-- Add `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">` (the `interactive-widget` is crucial)
-- For complex cases: listen for `window.visualViewport.resize` and apply `transform: translateY()` to shift the bar
-**Effort:** S (one viewport meta change + verify)
+#### A4. iOS keyboard + safe-area covers sticky bars
+**Pattern:** every sticky-bottom action bar we proposed (modals, edit pages) needs to shift above the iOS keyboard when an input gains focus, and to clear the home-indicator inset when no keyboard is visible. Symmetrically, every full-screen sheet header needs to clear the notch / Dynamic Island. Default browser behavior covers neither.
+
+**Fix bundle (one PR):**
+1. **Viewport meta** in `app/layout.tsx`:
+   ```tsx
+   export const viewport: Viewport = {
+     width: 'device-width',
+     initialScale: 1,
+     viewportFit: 'cover',
+     interactiveWidget: 'resizes-content', // iOS keyboard pushes layout up
+   }
+   ```
+2. **Use `100dvh`** (dynamic viewport) consistently instead of `100vh`. `chat-modal.tsx:49` already does this — extend the pattern. Avoid `100svh` (stable small) for full-screen surfaces; that locks layout to the smallest possible viewport even when the URL bar collapses, which wastes space.
+3. **Sticky-bottom bars: `pb-[calc(env(safe-area-inset-bottom)+12px)]`** so the home-indicator inset is respected. The `+12px` keeps a comfortable gap.
+4. **Full-screen sheet/modal headers: `pt-[env(safe-area-inset-top)]`** so notch / Dynamic Island doesn't overlap the X button. Verify `chat-modal.tsx` headers honor this.
+5. **For complex cases** (chat input that must stay glued to keyboard top): listen for `window.visualViewport.resize` + apply `transform: translateY()`. Use sparingly — the meta tag handles 90% of cases.
+
+**Effort:** S — one viewport meta change + add safe-area utility + bulk-replace `100vh` → `100dvh`.
 
 #### A5. Tooltip touch fallback (a11y, WCAG 2.1)
 **Problem:** shadcn `<Tooltip>` only triggers on hover/focus. On touch devices, tooltips never fire — users miss the explanation entirely.
@@ -467,16 +489,41 @@ The chat shell already adapts (ChatModal swap on `isMobile`), but I never audite
 **Effort:** M (depends on count — likely 30+ instances)
 
 #### A6. Touch target sizing (WCAG 2.5.5 AAA)
-**Problem:** WCAG recommends 44×44px minimum for touch targets. shadcn `<Button size="icon">` defaults to `h-9 w-9` (36px) — under the threshold.
-**Affected:** kebab menus on row cards, modal close buttons, icon-only header buttons, tab close buttons, etc.
-**Fix:** add a `size="icon-mobile"` variant in `components/ui/button.tsx` that's `h-11 w-11` (44px), use it everywhere on mobile via responsive class swap, OR bump the icon size globally to 44px on `<md:` via Tailwind `md:` modifiers.
-**Effort:** S — single primitive change + bulk find-and-replace
+**Problem:** WCAG 2.5.5 AAA recommends 44×44px minimum for touch targets. Our `<Button size="icon">` is `h-10 w-10` (40px, per `components/ui/button.tsx:26`) and `size="sm"` is `h-9` (36px). 40px clears WCAG **AA** (24px minimum), but Apple HIG and Material both target ≥44px and the 4-pixel margin matters on dense rows / kebab clusters.
+**Affected:** kebab menus on row cards, modal close buttons, icon-only header buttons, tab close buttons, density-toggle filter buttons (`size="sm"` × icon-only is the worst offender at 36px square).
+**Fix:** add a `size="icon-mobile"` variant in `components/ui/button.tsx` that's `h-11 w-11` on mobile and decays to `h-10 w-10` on `md+`. Use it everywhere icon-only buttons appear in row chrome / sticky bars.
+```tsx
+size: {
+  default: 'h-10 px-4 py-2',
+  sm: 'h-9 rounded-md px-3',
+  lg: 'h-11 rounded-md px-8',
+  icon: 'h-10 w-10',
+  // NEW: bumps to 44px on phones, no change on desktop
+  'icon-mobile': 'h-11 w-11 md:h-10 md:w-10',
+},
+```
+Wrap any non-Button tap target (inline anchor, label) in `min-h-[44px] min-w-[44px]` (or pad it) on `<md:` to keep WCAG 2.5.5 AAA across the app. Important: padding alone counts toward the target — don't shrink the element if the padded hit area meets 44px.
+**Effort:** S — single primitive change + bulk find-and-replace.
 
 #### A7. Swedish word wrapping
 **Problem:** Swedish compound words are long. `Lagefterlevnadskontroll`, `Personuppgiftsbiträdesavtal`, `Konsekvensbedömning`, `Arbetsmiljöverkets föreskriftssamling` — none fit a phone column without wrapping or truncating.
-**Audit:** grep `truncate` across `components/features/**` — replace with `break-words` for content text (titles, descriptions, body); keep `truncate` only for IDs (`SFS 1977:1160`), URLs, and email addresses where mid-word break would harm readability.
+**Three-layer fix** (apply in order):
+1. **Set `lang="sv"` on `<html>`** in `app/layout.tsx` (verify — likely already set). Swedish hyphenation rules require this for `hyphens: auto` to use the right dictionary.
+2. **Use `hyphens-auto` (Tailwind) + `break-words` together** for content text (titles, descriptions, body): `Lagefterlevnadskontroll` → `Lagefter-` ↩ `levnadskontroll` instead of mid-syllable break or ellipsis.
+3. **Reserve `truncate` for identifiers only** — IDs (`SFS 1977:1160`), URLs, email addresses where mid-word break harms readability.
+
+**Recommended utility class composition for content cells:**
+```tsx
+<span className="break-words hyphens-auto md:hyphens-none line-clamp-2">
+  {longSwedishTitle}
+</span>
+```
+The `md:hyphens-none` disables hyphenation on desktop where the column is wider (no wrap needed); mobile gets it. `line-clamp-2` caps at two lines so a row card never grows unbounded.
+
+**Audit:** grep `truncate` across `components/features/**` — likely 50+ instances. Triage by content type, replace per the rule above.
+
 **Risk:** if a row card uses `truncate` on a long Swedish title, user sees `Lagefterlevnadsko…` and can't tell what it is.
-**Effort:** M (manual case-by-case; ~50 instances expected)
+**Effort:** M (manual case-by-case; ~50 instances expected, faster after the first 5 set the pattern).
 
 ### MEDIUM — should ship in mobile sprint but not blocking
 
@@ -611,6 +658,13 @@ Tap → bottom Sheet with 4 options (icons + label):
 - Without `capture` → file picker including library
 - `multiple` → allow batch selection
 
+**HEIC handling (iPhone defaults — must handle):**
+iPhones save photos as `.heic` (High Efficiency Image Container) by default. iOS Safari hands the raw HEIC blob to the input. Two paths:
+- **Browsers that decode HEIC natively** (Safari): `createImageBitmap(file)` works; the canvas re-encodes to JPEG anyway, so compression handles conversion as a side-effect. ✓
+- **Browsers without native HEIC** (most desktop, some Android): need a polyfill — `heic2any` (~80 KB gzipped) or `libheif-js`. Detect via `file.type.startsWith('image/heic')` or `.heif`.
+
+**Pragmatic approach:** since the camera-capture flow only fires from mobile (and Android cameras default to JPEG), HEIC only matters on iPhones — where Safari decodes natively. **You can ship without `heic2any`** for v1, but add HEIC detection + fallback toast (`"HEIC stöds inte i denna webbläsare — välj en JPEG-bild"`) so the failure mode is visible. Add the polyfill in v2 if real users hit it.
+
 **Client-side compression (critical for storage costs + upload speed):**
 ```typescript
 async function compressImage(file: File, maxDim = 1920, quality = 0.85): Promise<Blob> {
@@ -622,6 +676,19 @@ async function compressImage(file: File, maxDim = 1920, quality = 0.85): Promise
 }
 ```
 A 6 MB iPhone photo → ~400 KB after compression. **15× storage saving** — non-trivial against Story 5.5b storage caps (1 GB Solo, 5 GB Team).
+
+**Storage-quota pre-flight (avoid the failed-upload path entirely):**
+Before the camera trigger fires, check workspace usage against the cap:
+```typescript
+const { usedBytes, capBytes } = await getWorkspaceStorageUsage(workspaceId)
+const remainingMb = (capBytes - usedBytes) / 1_048_576
+if (remainingMb < 5) {
+  // Block + redirect to billing instead of letting upload fail mid-walk
+  showQuotaExhaustedSheet({ usedBytes, capBytes })
+  return
+}
+```
+A worker on a site walk can't recover from "your storage is full" if they've already taken 8 photos. Pre-flight at the trigger, not at upload time.
 
 **EXIF GPS stripping (privacy + GDPR):**
 EXIF data includes precise GPS coordinates of where the photo was taken. For a workplace compliance app, this is potentially sensitive (employee location, facility addresses). Use a library like `piexifjs` or `exifr` to strip GPS-related EXIF tags before upload. Keep capture timestamp + camera model (those are useful for audit trail).
@@ -682,6 +749,232 @@ For the LinkedArtifactsPanel grid, photos should render as thumbnails not generi
 > **AC 6:** Storage usage delta shown in toast post-upload.
 > **AC 7:** Tests for compression utility, EXIF stripping, multi-shot stack management.
 > **Out of scope:** offline queue (Phase E).
+
+---
+
+## 7e. Lexa mobile chat — match ChatGPT / Claude polish
+
+The chat surface is the single most-used product page once trial-converted. ChatGPT and Claude have set user expectations for mobile AI chat to a very high bar — anything that feels like a "ported desktop app" reads as a downgrade. This section is about closing that gap explicitly.
+
+**What's already right (verified):**
+- `chat-modal.tsx:49` — `h-[100dvh] max-h-[100dvh] w-screen max-w-none rounded-none` → full-screen modal on mobile, no chrome leaking ✓
+- `chat-input-modern.tsx` exists with placeholder "Fråga vad som helst..." (matching ChatGPT's "Ask anything") ✓
+- Streamdown + `mode="streaming"` for fluid markdown rendering during streaming ✓
+- Citation pills + tool-call rows + agent action cards (Stories 14.x) — rich content already supported ✓
+- Server-side `smoothStream({ delayInMs: 8 })` pacing — character-level smooth streaming ✓
+- Reasoning blocks via Anthropic extended thinking (Story 14.20) ✓
+
+**What needs polish to reach ChatGPT/Claude feel:**
+
+### C1. Empty state with suggested prompts (high impact, low effort)
+
+When a fresh chat opens with zero messages, ChatGPT and Claude both show 4 example prompt cards arranged in a 2×2 grid (or vertical stack on mobile). Each card is a tappable pre-filled prompt that drops into the input + auto-submits.
+
+For Lexa, the suggestions should be **contextual to the user's workspace state** — e.g.:
+- "Vilka lagar har jag missat granska?" (when there's an unacknowledged change)
+- "Sammanfatta vår efterlevnadsstatus" (always)
+- "Vilka uppgifter förfaller denna vecka?" (when overdue tasks exist)
+- "Granska ny lagändring AFS 2026:3" (when there's a recent change-event)
+
+These are workspace-aware suggested prompts — pre-filled context that turns Lexa into a workflow shortcut, not just a Q&A bot. **Big differentiator vs generic ChatGPT.**
+
+**Greeting copy fallback chain:**
+- `firstName` available → "Hej {firstName}" ("Hej Alex")
+- Only `fullName` → first token before space: "Hej Alexander"
+- Neither → "Hej!" (with bang) — never "Hej null" or empty
+- Brand-new user (first chat ever) → "Välkommen till Lexa" instead of "Hej" — surfaces the product name on first impression
+
+Render as `<h2 className="font-safiro text-xl font-medium">` — Safiro **must** be paired with `font-medium` (per project memory: weight 500 is the only registered Safiro weight).
+
+**Effort:** S (~60 LOC for the empty-state component + 4 contextual queries to derive suggestions).
+
+### C2. Conversation history as left drawer (CRITICAL)
+
+Currently `workspace-shell.tsx:122-141` mounts `ConversationHistory` as an inline `<aside hidden md:flex>` next to the left nav. On mobile it's not visible at all (`hidden md:flex` hides it below `md:`), so mobile users have **no way to access past conversations** from the ChatModal.
+
+**Fix:** add a hamburger / "history" button in the chat-modal header that opens `ConversationHistory` as a `<Sheet side="left">`. Same component, same data, different chrome.
+
+```tsx
+// chat-modal.tsx
+<DialogHeader>
+  <Button onClick={() => setHistoryOpen(true)} aria-label="Tidigare samtal">
+    <History />
+  </Button>
+  <DialogTitle>Lexa</DialogTitle>
+  <Button onClick={() => startNewChat()} aria-label="Nytt samtal">
+    <SquarePen />
+  </Button>
+</DialogHeader>
+
+<Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
+  <SheetContent side="left" className="w-[88%] sm:w-[360px] p-0">
+    <ConversationHistory onSelect={...} />
+  </SheetContent>
+</Sheet>
+```
+
+**Effort:** S (~40 LOC delta in chat-modal.tsx)
+
+### C3. Compact header — model/mode pill + new chat (top-right)
+
+ChatGPT and Claude both have a tiny header: app name (centered or left), model selector pill (centered or right), new-chat button (right). Lexa already has the title + close button. Add:
+- Top-left: hamburger → conversation history Sheet (per C2)
+- Center: "Lexa" (title)
+- Top-right: square-pen icon → new chat
+- Far right: close (X)
+
+If we have multiple AI modes / contexts (e.g., "Generell", "Granska ändring", "Skapa uppgift"), surface as a compact pill below the title bar.
+
+**Effort:** XS (~20 LOC)
+
+### C4. Auto-growing input with attach + voice + send (matches ChatGPT exactly)
+
+Current `chat-input-modern.tsx` likely already auto-grows (per its name). Verify it:
+- Starts at 1 line (no scrollbar)
+- Grows with content up to ~5 lines
+- After max, becomes scrollable inside the input (no overflow into the chat)
+- Send button on the right, disabled when empty
+
+Add to match ChatGPT/Claude:
+- **`+` button on the LEFT of input** → opens attachment Sheet (Camera / Photo library / File / Lagar i din laglista). Reuses the photo-evidence Sheet from section 7d but with chat-context destinations
+- **Mic button** between attach and send (or replacing send when input is empty) — kicks off iOS native dictation via the keyboard's mic, no custom voice infra needed for v1
+- **Send button** → square-with-arrow icon (44×44 minimum tap target). When user is mid-message: shows arrow (send). When AI is streaming: shows stop icon (cancel)
+
+Layout (sticky bottom, above iOS keyboard via `100dvh` + `interactive-widget=resizes-content` from section A4):
+
+```
+[+]  Fråga vad som helst...  [🎤] [⏎/⏹]
+```
+
+**Effort:** M (~120 LOC across attach Sheet wiring + stop button + mic button)
+
+### C5. Message bubbles — tonal differentiation, not heavy
+
+ChatGPT and Claude both use **subtle** bubble styling:
+- **User messages:** right-aligned, soft background tint (e.g. `bg-secondary/50`), max-width ~85% of viewport, rounded-2xl
+- **AI (Lexa) messages:** left-aligned, NO bubble (just text on background), full-width minus padding
+
+This avoids the heavy "iMessage with two parties" feel and lets AI responses use the full reading width for code blocks, tables, citation pills.
+
+```
+                    ┌─────────────────┐
+                    │ Vilka lagar har │  ← user (right-aligned bubble)
+                    │ jag missat?    │
+                    └─────────────────┘
+
+  Du har 3 olästa lagändringar:                    ← AI (no bubble)
+
+  • AFS 2026:3 — Kemiska arbetsmiljörisker ¹
+  • SFS 2026:144 — Skattetillägg ²
+  • AFS 2025:8 — Vibrationer ³
+
+  Vill du att jag granskar dem? [Skapa uppgifter]
+```
+
+**Effort:** XS (~20 LOC styling delta)
+
+### C6. Streaming UX — stop button + scroll behavior
+
+When AI is streaming:
+- The right-side send button morphs into a **stop button** (⏹ filled square). Tapping cancels generation immediately
+- Auto-scroll to bottom continues UNTIL the user manually scrolls up. Then scroll-pause activates and a small "↓ Nytt innehåll" pill appears at the bottom; tap to resume auto-scroll
+- Streaming indicator: subtle pulsing dot AFTER the last rendered character (not a separate "AI is typing..." blob — that's pre-2024 chat UX)
+
+**Effort:** S (~80 LOC for stop wiring + scroll-pause logic + pulsing indicator)
+
+### C7. Long-press message actions Sheet
+
+ChatGPT and Claude both put message actions behind long-press (or 3-dot menu). Action sheet with:
+- **Kopiera** (copy text to clipboard)
+- **Dela** (share — iOS share sheet via Web Share API)
+- **Regenerera** (only on AI messages — re-stream the response)
+- **Redigera** (only on user messages — edit + re-submit, drops everything after)
+- **Rapportera** (rare, but standard for AI safety)
+
+Pattern: Radix `<ContextMenu>` wraps the message; on touch it's triggered by long-press. Or wrap in a button with `onLongPress` handler. Either way the action menu is a bottom Sheet (per pattern 2 / pattern 14).
+
+**Effort:** S (~60 LOC for the action Sheet + clipboard/share wiring)
+
+### C8. Citation pills → Sheet detail (already in pattern 13 — restate here)
+
+Citation pills in AI messages are subtle numbered superscripts (¹ ² ³) inline with text. The codebase ships `components/ui/inline-citation.tsx` as the primitive — when refactoring for mobile, **reuse `<InlineCitation>` and swap its trigger target to a Sheet on `<md:`** rather than inventing a new pill style. Tapping opens the **citation detail as a bottom Sheet** (currently might be a Popover or Dialog — verify). The Sheet shows:
+- Source citation (paragraph from the law/document)
+- Snippet that the AI actually used
+- "Öppna full lag" CTA → navigates to the law page (must be a real link, not just text)
+
+This is verified in section 13 mockup. Just calling out it's part of the chat-feel work.
+
+### C9. Tool-call rows — collapsed by default, expandable
+
+When the AI calls a tool (e.g., "Sökte i regelverket", "Läste laglista"), it appears as a compact horizontal row — icon + tool name + status (Pågår / Klar):
+
+```
+🔍 Sökte i regelverket · 4 träffar         ↓
+```
+
+Tap → expands to show the parameters and result. ChatGPT/Claude do this for every tool call so the user sees the AI's "work". Already exists per `chat-message.tsx` ToolCallRow — verify mobile-friendly tap target (≥44px) and that expanded state doesn't break the chat scroll.
+
+**Effort:** XS (verify only)
+
+### C10. Reasoning blocks (Anthropic extended thinking) — collapsible
+
+Per Story 14.20, reasoning blocks render in a collapsed-by-default state with `defaultOpen={contextType === 'change'}`. On mobile, ensure:
+- Reasoning header has a visible toggle chevron with ≥44px tap target
+- Long reasoning text uses `break-words`, not `truncate`
+- Reasoning bubble is visually distinct from regular AI text (subtle bg, italic, or bordered)
+
+**Effort:** XS (mostly verify)
+
+### C11. Keyboard-aware input bar (cross-references A4)
+
+Sticky bottom input must stay above the iOS keyboard. Per section A4: `100dvh` + viewport `interactive-widget=resizes-content` is the fix. Verify after applying.
+
+### C12. New-chat button + state persistence
+
+When user taps "new chat" from the header, the current chat is saved (already happens) and the empty state appears. New chats should persist immediately — don't wait for first message. Otherwise the user can lose context if the app backgrounds.
+
+**Effort:** XS (verify SWR cache / server-action behavior)
+
+### Non-goals for v1 (defer)
+
+- **Custom voice input** (waveform recording + Whisper transcription) — iOS native dictation via keyboard mic is good enough for v1; build custom only if voice usage data shows traction
+- **Image input from chat** (multimodal) — depends on model + cost; defer to a separate AI capability story
+- **Inline editing of AI responses** — desktop polish, low mobile value
+- **Conversation forking / branching** — UX complexity not justified for v1
+- **Custom keyboard accessory bar** (iOS) — needs a native bridge; web app can't easily do this
+
+### Effort summary for chat-feel sprint
+
+| Item | Effort | Impact |
+|---|---|---|
+| C1 Empty state + suggested prompts | S | High |
+| C2 Conversation history Sheet | S | **Critical** |
+| C3 Compact header | XS | Medium |
+| C4 Attach + voice + send input | M | High |
+| C5 Message bubble tonal styling | XS | Medium |
+| C6 Streaming + stop button | S | High |
+| C7 Long-press action Sheet | S | Medium |
+| C8 Citation Sheet | (already in pattern 13) | High |
+| C9 Tool-call rows verify | XS | Low |
+| C10 Reasoning blocks verify | XS | Low |
+| C11 Keyboard input bar | (already in A4) | High |
+| C12 New-chat verify | XS | Low |
+
+**Total:** ~3–4 days for the full ChatGPT/Claude polish pass. The single most-used surface in the app deserves this investment.
+
+### Test plan
+
+Walk through these 8 scenarios on a real iPhone after implementation:
+1. Open Lexa fresh — see empty state with 4 contextual prompts
+2. Tap a prompt → submitted, streaming starts, can't scroll past streaming
+3. Mid-stream, tap stop → generation halts cleanly
+4. Long-press an AI message → action Sheet (Copy / Share / Regenerate)
+5. Tap a citation pill → bottom Sheet with source + open-law CTA
+6. Tap hamburger → conversation history left drawer with search
+7. Tap a past conversation → loads, scrolls to bottom
+8. Type a long message — input grows, then scrolls internally; send button stays visible
+
+If all 8 feel native (vs "this is ChatGPT but in a different app"), Lexa mobile chat is shipped.
 
 ---
 

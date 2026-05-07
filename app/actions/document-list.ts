@@ -635,6 +635,11 @@ export async function addDocumentToList(
           position: newPosition,
           added_by: ctx.userId,
           group_id: parsed.data.groupId ?? null,
+          // Add-time baseline for the pending-change-count query (Story 8.1).
+          // Without this, every historical change_event for the document
+          // surfaces as new the moment the user adds it to a list — see
+          // `getDocumentList` SQL filter at line ~469.
+          last_change_acknowledged_at: new Date(),
         },
       })
 

@@ -3,9 +3,11 @@
 /**
  * Story 4.11: Manage List Modal
  * Story 12.10b: Refactored into multi-step template-aware creation flow.
+ * Story 24.6: Added 'import' step that mounts <ImportUploadStep>.
  */
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Dialog,
   DialogContent,
@@ -39,9 +41,10 @@ import {
 import { regenerateLawList } from '@/app/actions/workspace'
 import { CreateListChooser } from './create-list-chooser'
 import { CreateListFromTemplate } from './create-list-from-template'
+import { ImportUploadStep } from '@/components/features/onboarding-modal/import-upload-step'
 import type { PublishedTemplate } from '@/lib/db/queries/template-catalog'
 
-type Step = 'choose' | 'from-template' | 'blank'
+type Step = 'choose' | 'from-template' | 'blank' | 'import'
 
 interface ManageListModalProps {
   open: boolean
@@ -52,6 +55,12 @@ interface ManageListModalProps {
   onCreated: (_listId: string) => void
   onUpdated: () => void
   onDeleted: () => void
+  /**
+   * Story 24.6: Optional override for the initial step. When caller passes
+   * `'import'`, the modal opens directly on <ImportUploadStep> (skips the
+   * chooser). Default behaviour is preserved when omitted.
+   */
+  initialStep?: Step | undefined
 }
 
 export function ManageListModal({
@@ -63,13 +72,16 @@ export function ManageListModal({
   onCreated,
   onUpdated,
   onDeleted,
+  initialStep,
 }: ManageListModalProps) {
+  const router = useRouter()
   const hasTemplates = (templates?.length ?? 0) > 0
 
-  // Multi-step state (only for create mode)
-  const initialStep: Step =
-    mode === 'create' && hasTemplates ? 'choose' : 'blank'
-  const [step, setStep] = useState<Step>(initialStep)
+  // Multi-step state (only for create mode). `initialStep` prop wins if set
+  // — Story 24.6's empty-state link uses it to open straight to 'import'.
+  const defaultStep: Step =
+    initialStep ?? (mode === 'create' && hasTemplates ? 'choose' : 'blank')
+  const [step, setStep] = useState<Step>(defaultStep)
   const [selectedTemplate, setSelectedTemplate] =
     useState<PublishedTemplate | null>(null)
 
@@ -97,8 +109,10 @@ export function ManageListModal({
     }
     setError(null)
     setSelectedTemplate(null)
-    setStep(mode === 'create' && hasTemplates ? 'choose' : 'blank')
-  }, [mode, list, open, hasTemplates])
+    setStep(
+      initialStep ?? (mode === 'create' && hasTemplates ? 'choose' : 'blank')
+    )
+  }, [mode, list, open, hasTemplates, initialStep])
 
   const goForward = useCallback((nextStep: Step) => {
     setStep(nextStep)
@@ -119,6 +133,21 @@ export function ManageListModal({
   const handleSelectBlank = useCallback(() => {
     goForward('blank')
   }, [goForward])
+
+  const handleSelectImport = useCallback(() => {
+    goForward('import')
+  }, [goForward])
+
+  // Story 24.6: ImportUploadStep success — close modal then route. The
+  // close-first ordering avoids the granska page flickering under the open
+  // dialog while the route transition resolves.
+  const handleImportSuccess = useCallback(
+    (importId: string) => {
+      onOpenChange(false)
+      router.push(`/laglistor/skapa/${importId}/granska`)
+    },
+    [onOpenChange, router]
+  )
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -214,6 +243,7 @@ export function ManageListModal({
     if (mode === 'edit') return 'Redigera lista'
     if (step === 'choose') return 'Skapa ny laglista'
     if (step === 'from-template') return 'Skapa från mall'
+    if (step === 'import') return 'Importera laglista'
     return 'Skapa ny lista'
   }
 
@@ -221,6 +251,8 @@ export function ManageListModal({
     if (mode === 'edit') return 'Uppdatera listans namn och inställningar.'
     if (step === 'choose') return 'Välj hur du vill börja.'
     if (step === 'from-template') return undefined
+    if (step === 'import')
+      return 'Ladda upp en befintlig laglista från Excel, CSV eller klistra in raderna.'
     return 'Skapa en ny dokumentlista för att organisera relevanta lagar och föreskrifter.'
   }
 
@@ -333,6 +365,7 @@ export function ManageListModal({
           templates={templates}
           onSelectTemplate={handleSelectTemplate}
           onSelectBlank={handleSelectBlank}
+          onSelectImport={handleSelectImport}
         />
       )
     }
@@ -347,6 +380,26 @@ export function ManageListModal({
       )
     }
 
+    if (step === 'import') {
+      return (
+        <div className="flex flex-col gap-4">
+          {hasTemplates && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={goBack}
+              className="w-fit -ml-2 gap-1.5"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Tillbaka
+            </Button>
+          )}
+          <ImportUploadStep onSuccess={handleImportSuccess} />
+        </div>
+      )
+    }
+
     return renderBlankForm()
   }
 
@@ -355,7 +408,15 @@ export function ManageListModal({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent
+          className={
+            step === 'choose'
+              ? 'sm:max-w-3xl'
+              : step === 'import'
+                ? 'sm:max-w-2xl'
+                : 'sm:max-w-lg'
+          }
+        >
           <DialogHeader>
             <DialogTitle>{getTitle()}</DialogTitle>
             {descriptionText && (

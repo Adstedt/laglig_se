@@ -1,9 +1,10 @@
 /**
  * Story 12.10b: ManageListModal Multi-Step Tests
+ * Story 24.6: Added 'import' step coverage.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ManageListModal } from '@/components/features/document-list/manage-list-modal'
 import type { PublishedTemplate } from '@/lib/db/queries/template-catalog'
@@ -15,9 +16,31 @@ vi.mock('@/app/actions/document-list', () => ({
   deleteDocumentList: vi.fn(),
 }))
 
+// Story 24.6: ImportUploadStep mounts inside the import step. Stub the
+// upload server actions so the component renders without network.
+vi.mock('@/app/actions/law-list-import', () => ({
+  createImport: vi.fn(),
+  parseImportFile: vi.fn(),
+  runMatching: vi.fn(),
+}))
+
 // Mock adoptTemplate
 vi.mock('@/app/actions/template-adoption', () => ({
   adoptTemplate: vi.fn(),
+}))
+
+// Story 24.6: stub useRouter so handleImportSuccess can call router.push
+// without an actual Next.js context.
+const mockRouterPush = vi.fn()
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: mockRouterPush,
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+    prefetch: vi.fn(),
+  }),
 }))
 
 // Mock sonner toast
@@ -25,6 +48,7 @@ vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
+    warning: vi.fn(),
   },
 }))
 
@@ -295,5 +319,143 @@ describe('ManageListModal', () => {
 
     // Blank step: title is "Skapa ny lista"
     expect(screen.getByText('Skapa ny lista')).toBeInTheDocument()
+  })
+
+  // --- Story 24.6: Import step ---
+
+  describe('Import step', () => {
+    beforeEach(() => {
+      mockRouterPush.mockClear()
+    })
+
+    it('clicking the "Importera" card transitions to the import step', async () => {
+      const user = userEvent.setup()
+      render(<ManageListModal {...defaultProps} templates={mockTemplates} />)
+
+      // Click the Importera card
+      const allButtons = screen.getAllByRole('button')
+      const importCard = allButtons.find(
+        (btn) =>
+          btn.textContent?.includes('Importera') &&
+          btn.textContent?.includes('Excel')
+      )
+      expect(importCard).toBeDefined()
+      await user.click(importCard!)
+
+      // Title flips to "Importera laglista" + ImportUploadStep is mounted
+      expect(screen.getByText('Importera laglista')).toBeInTheDocument()
+      // ImportUploadStep's distinctive heading
+      expect(
+        screen.getByText('Ladda upp er befintliga lista')
+      ).toBeInTheDocument()
+      // Tabs from ImportUploadStep
+      expect(screen.getByRole('tab', { name: 'Fil' })).toBeInTheDocument()
+      expect(
+        screen.getByRole('tab', { name: 'Klistra in' })
+      ).toBeInTheDocument()
+    })
+
+    it('"Tillbaka" affordance from the import step returns to the chooser', async () => {
+      const user = userEvent.setup()
+      render(<ManageListModal {...defaultProps} templates={mockTemplates} />)
+
+      // Navigate to import step
+      const allButtons = screen.getAllByRole('button')
+      const importCard = allButtons.find(
+        (btn) =>
+          btn.textContent?.includes('Importera') &&
+          btn.textContent?.includes('Excel')
+      )
+      await user.click(importCard!)
+
+      // Click Tillbaka
+      const backBtn = screen.getByRole('button', { name: /tillbaka/i })
+      await user.click(backBtn)
+
+      // Back at chooser
+      expect(screen.getByText('Börja från mall')).toBeInTheDocument()
+      expect(screen.getByText('Tom lista')).toBeInTheDocument()
+    })
+
+    it('initialStep="import" opens the modal directly on the import step', () => {
+      render(
+        <ManageListModal
+          {...defaultProps}
+          templates={mockTemplates}
+          initialStep="import"
+        />
+      )
+
+      // Skip the chooser entirely
+      expect(screen.queryByText('Börja från mall')).not.toBeInTheDocument()
+      // Land on import step
+      expect(screen.getByText('Importera laglista')).toBeInTheDocument()
+      expect(
+        screen.getByText('Ladda upp er befintliga lista')
+      ).toBeInTheDocument()
+    })
+
+    it('successful import closes the modal and routes to /granska', async () => {
+      const user = userEvent.setup()
+      const onOpenChange = vi.fn()
+
+      // Mock the upload + parse + matching server actions to succeed
+      const { createImport, parseImportFile, runMatching } = await import(
+        '@/app/actions/law-list-import'
+      )
+      vi.mocked(createImport).mockResolvedValueOnce({
+        success: true,
+        data: { importId: 'import-123' },
+      })
+      vi.mocked(parseImportFile).mockResolvedValueOnce({
+        success: true,
+        data: { rowCount: 5, truncated: false },
+      })
+      vi.mocked(runMatching).mockResolvedValueOnce({
+        success: true,
+        data: { matchedCount: 5 },
+      })
+
+      render(
+        <ManageListModal
+          {...defaultProps}
+          onOpenChange={onOpenChange}
+          templates={mockTemplates}
+          initialStep="import"
+        />
+      )
+
+      // Switch to paste tab so we don't need to wire a file
+      const pasteTab = screen.getByRole('tab', { name: 'Klistra in' })
+      await user.click(pasteTab)
+
+      const textarea = screen.getByPlaceholderText(/klistra in raderna/i)
+      await user.type(textarea, 'Lag SFS 1962:381\nDataskyddslag SFS 2018:218')
+
+      const submit = screen.getByRole('button', { name: /importera/i })
+      await user.click(submit)
+
+      await waitFor(() => {
+        expect(onOpenChange).toHaveBeenCalledWith(false)
+        expect(mockRouterPush).toHaveBeenCalledWith(
+          '/laglistor/skapa/import-123/granska'
+        )
+      })
+    })
+
+    it('initialStep="import" without templates still opens directly on import step', () => {
+      // Even when templates are missing, initialStep prop wins.
+      render(
+        <ManageListModal
+          {...defaultProps}
+          templates={[]}
+          initialStep="import"
+        />
+      )
+
+      expect(screen.getByText('Importera laglista')).toBeInTheDocument()
+      // The plain blank form should NOT render
+      expect(screen.queryByLabelText('Namn')).not.toBeInTheDocument()
+    })
   })
 })

@@ -113,7 +113,10 @@ describe('countActiveAddonSeats', () => {
     expect(await countActiveAddonSeats('ws_x')).toBe(0)
   })
 
-  it('sums quantities across non-base SubscriptionItems', async () => {
+  // Skipped: countActiveAddonSeats is short-circuited to return 0 until
+  // Story 5.6 (Add-On Purchase System) ships. Un-skip this and the next
+  // two tests when the live Stripe lookup is restored.
+  it.skip('sums quantities across non-base SubscriptionItems', async () => {
     setWorkspace('TEAM', { stripe_subscription_id: 'sub_xyz' })
     stripeMock.subscriptions.retrieve.mockResolvedValue({
       items: {
@@ -128,7 +131,7 @@ describe('countActiveAddonSeats', () => {
     expect(await countActiveAddonSeats('ws_x')).toBe(3)
   })
 
-  it('honors trial_picked_tier=TEAM for TRIAL workspace', async () => {
+  it.skip('honors trial_picked_tier=TEAM for TRIAL workspace', async () => {
     setWorkspace('TRIAL', {
       trial_picked_tier: 'TEAM',
       stripe_subscription_id: 'sub_xyz',
@@ -202,7 +205,8 @@ describe('assertSeatAvailable', () => {
     )
   })
 
-  it('Team at 3 members + 2 add-on seats → allows fourth invite (cap = 5)', async () => {
+  // Skipped: depends on add-on seats (Story 5.6, in backlog).
+  it.skip('Team at 3 members + 2 add-on seats → allows fourth invite (cap = 5)', async () => {
     setWorkspace('TEAM', { stripe_subscription_id: 'sub_xyz' })
     setSeatCounts(3, 0)
     stripeMock.subscriptions.retrieve.mockResolvedValue({

@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import Link from 'next/link'
 import { MetricCard } from '@/components/admin/metric-card'
 import {
   STATUS_LABELS,
@@ -23,25 +24,69 @@ import {
   getRecentWorkspaces,
   getRecentUsers,
 } from '@/lib/admin/queries'
+import { getCatalogRequestPipCount } from '@/app/actions/catalog-ingest-request'
 import type { SubscriptionTier } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminDashboardPage() {
-  const [workspaceMetrics, userMetrics, recentWorkspaces, recentUsers] =
-    await Promise.all([
-      getWorkspaceMetrics(),
-      getUserMetrics(),
-      getRecentWorkspaces(10),
-      getRecentUsers(10),
-    ])
+  const [
+    workspaceMetrics,
+    userMetrics,
+    recentWorkspaces,
+    recentUsers,
+    pipResult,
+  ] = await Promise.all([
+    getWorkspaceMetrics(),
+    getUserMetrics(),
+    getRecentWorkspaces(10),
+    getRecentUsers(10),
+    getCatalogRequestPipCount(),
+  ])
+  // Story 24.5 AC 15 — SLA-bryts KPI. Fail-safe: render 0 if the action
+  // fails (the admin-session check should never fail inside the admin
+  // layout group, but be defensive).
+  const catalogPip =
+    pipResult.success && pipResult.data
+      ? pipResult.data
+      : { pending: 0, breached: 0 }
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Dashboard</h1>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+        {/* Story 24.5 AC 15 — SLA-bryts KPI. Red if any pending request has
+            been waiting >24h. Click routes to the catalog-requests admin queue. */}
+        <Link
+          href="/admin/catalog-requests?status=pending"
+          className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
+          data-testid="admin-dashboard-sla-bryts"
+        >
+          <MetricCard
+            title="SLA-bryts (24h)"
+            value={catalogPip.breached}
+            description={
+              catalogPip.breached > 0
+                ? 'Katalogtillägg som väntar för länge'
+                : 'Inga försenade katalogtillägg'
+            }
+            valueClassName={
+              catalogPip.breached > 0 ? 'text-rose-600' : undefined
+            }
+          >
+            <div className="space-y-1 text-xs text-muted-foreground">
+              <div className="flex justify-between">
+                <span>Totalt väntande</span>
+                <span className="font-medium text-foreground">
+                  {catalogPip.pending}
+                </span>
+              </div>
+            </div>
+          </MetricCard>
+        </Link>
+
         <MetricCard title="Totalt arbetsytor" value={workspaceMetrics.total}>
           <div className="space-y-1 text-xs text-muted-foreground">
             <div className="flex justify-between">

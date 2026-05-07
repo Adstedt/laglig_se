@@ -8,6 +8,8 @@ const mockRequirementFindMany = vi.fn()
 const mockComplianceAuditCycleFindMany = vi.fn()
 const mockComplianceAuditItemFindMany = vi.fn()
 const mockComplianceFindingFindMany = vi.fn()
+// Story 24.2 — import-pipeline entity.
+const mockLawListImportFindMany = vi.fn()
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -34,6 +36,9 @@ vi.mock('@/lib/prisma', () => ({
     complianceFinding: {
       findMany: (...args: unknown[]) => mockComplianceFindingFindMany(...args),
     },
+    lawListImport: {
+      findMany: (...args: unknown[]) => mockLawListImportFindMany(...args),
+    },
   },
 }))
 
@@ -47,6 +52,7 @@ describe('resolveEntityNames', () => {
     mockComplianceAuditCycleFindMany.mockResolvedValue([])
     mockComplianceAuditItemFindMany.mockResolvedValue([])
     mockComplianceFindingFindMany.mockResolvedValue([])
+    mockLawListImportFindMany.mockResolvedValue([])
   })
 
   it('resolves primary task entity with deep link', async () => {
@@ -482,6 +488,89 @@ describe('resolveEntityNames', () => {
       'ws-1'
     )
     expect(result.get('row-1')?.secondary).toBeUndefined()
+  })
+
+  // ==========================================================================
+  // Story 24.2: law_list_import entity (Epic 24)
+  // ==========================================================================
+
+  it('resolves primary law_list_import with deep link to granska review surface', async () => {
+    mockLawListImportFindMany.mockResolvedValue([
+      { id: 'imp-1', filename: 'notisum-export-2026.xlsx' },
+    ])
+    const { resolveEntityNames } = await import(
+      '@/lib/activity/entity-resolver'
+    )
+    const result = await resolveEntityNames(
+      [
+        {
+          id: 'row-1',
+          action: 'law_list_import.created',
+          entity_type: 'law_list_import',
+          entity_id: 'imp-1',
+          old_value: null,
+          new_value: {
+            filename: 'notisum-export-2026.xlsx',
+            source_type: 'xlsx',
+          },
+        },
+      ],
+      'ws-1'
+    )
+    const ref = result.get('row-1')?.primary
+    expect(ref?.label).toBe('notisum-export-2026.xlsx')
+    expect(ref?.href).toBe('/laglistor/skapa/imp-1/granska')
+    expect(ref?.deleted).toBe(false)
+  })
+
+  it('returns tombstone for law_list_import not found in workspace (cross-workspace or deleted)', async () => {
+    mockLawListImportFindMany.mockResolvedValue([])
+    const { resolveEntityNames } = await import(
+      '@/lib/activity/entity-resolver'
+    )
+    const result = await resolveEntityNames(
+      [
+        {
+          id: 'row-1',
+          action: 'law_list_import.created',
+          entity_type: 'law_list_import',
+          entity_id: 'imp-gone',
+          old_value: null,
+          new_value: { filename: 'an-old-file.xlsx', source_type: 'xlsx' },
+        },
+      ],
+      'ws-1'
+    )
+    const ref = result.get('row-1')?.primary
+    expect(ref?.deleted).toBe(true)
+    expect(ref?.href).toBeNull()
+    expect(ref?.label).toContain('an-old-file.xlsx')
+  })
+
+  it('truncates very long filenames in the displayed label', async () => {
+    const longFilename = 'a'.repeat(80) + '.xlsx'
+    mockLawListImportFindMany.mockResolvedValue([
+      { id: 'imp-2', filename: longFilename },
+    ])
+    const { resolveEntityNames } = await import(
+      '@/lib/activity/entity-resolver'
+    )
+    const result = await resolveEntityNames(
+      [
+        {
+          id: 'row-1',
+          action: 'law_list_import.created',
+          entity_type: 'law_list_import',
+          entity_id: 'imp-2',
+          old_value: null,
+          new_value: null,
+        },
+      ],
+      'ws-1'
+    )
+    const ref = result.get('row-1')?.primary
+    expect(ref?.label).toMatch(/…$/) // ends with the truncate ellipsis
+    expect(ref?.label!.length).toBeLessThan(longFilename.length)
   })
 
   it('finding_closed payloads render primary-only (no lawListItemId carried)', async () => {

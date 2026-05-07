@@ -1,0 +1,1015 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Laglig — Import-review UX options</title>
+
+  <style>
+    @font-face {
+      font-family: 'Safiro';
+      src:
+        url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'),
+        url('../public/fonts/safiro-medium-webfont.woff') format('woff');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Google Sans Flex';
+      src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --background: 40 20% 98%;
+      --foreground: 30 10% 10%;
+      --card: 40 15% 99%;
+      --primary: 30 15% 12%;
+      --primary-foreground: 40 20% 98%;
+      --muted: 40 12% 94%;
+      --muted-foreground: 30 8% 45%;
+      --border: 35 10% 88%;
+      --radius: 0.5rem;
+
+      --tone-success-soft-bg: #d1fae5;
+      --tone-success-soft-fg: #047857;
+      --tone-warning-soft-bg: #fef3c7;
+      --tone-warning-soft-fg: #b45309;
+      --tone-danger-soft-bg: #ffe4e6;
+      --tone-danger-soft-fg: #be123c;
+      --tone-info-soft-bg: #dbeafe;
+      --tone-info-soft-fg: #1d4ed8;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: 'Google Sans Flex', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      color: hsl(var(--foreground));
+      background: hsl(var(--background));
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-safiro { font-family: 'Safiro', system-ui, sans-serif; font-weight: 500; }
+    a { color: inherit; }
+
+    /* Page wrapper */
+    .page {
+      max-width: 1340px;
+      margin: 0 auto;
+      padding: 56px clamp(24px, 4vw, 56px) 96px;
+    }
+
+    /* Hero */
+    .hero {
+      margin-bottom: 56px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+    .hero h1 {
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 32px;
+      letter-spacing: -0.01em;
+      margin: 0 0 12px;
+    }
+    .hero p {
+      max-width: 720px;
+      color: hsl(var(--muted-foreground));
+      margin: 0 0 4px;
+    }
+    .hero .meta {
+      margin-top: 16px;
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+      color: hsl(var(--muted-foreground));
+      padding: 6px 10px;
+      border: 1px solid hsl(var(--border));
+      border-radius: 999px;
+      background: hsl(var(--card));
+    }
+
+    /* Section */
+    .section {
+      margin: 64px 0 0;
+    }
+    .section__head {
+      margin-bottom: 24px;
+    }
+    .section__head .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 6px;
+    }
+    .section__head h2 {
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 24px;
+      margin: 0 0 8px;
+      letter-spacing: -0.01em;
+    }
+    .section__head p {
+      max-width: 800px;
+      color: hsl(var(--muted-foreground));
+      margin: 0;
+    }
+
+    /* Comparison grid */
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 32px;
+      margin-bottom: 56px;
+    }
+    @media (min-width: 1100px) {
+      .compare { grid-template-columns: 1fr 1fr; }
+    }
+    .compare__col h3 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: hsl(var(--muted-foreground));
+      margin: 0 0 12px;
+    }
+
+    /* Mock surface */
+    .surface {
+      border: 1px solid hsl(var(--border));
+      border-radius: 12px;
+      background: hsl(var(--card));
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .surface__header {
+      padding: 16px 20px;
+      border-bottom: 1px solid hsl(var(--border));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .surface__title {
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 18px;
+      margin: 0;
+    }
+    .surface__sub {
+      font-size: 12px;
+      color: hsl(var(--muted-foreground));
+      margin-top: 2px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid hsl(var(--border));
+      background: hsl(var(--card));
+      color: hsl(var(--foreground));
+      cursor: pointer;
+      transition: background 120ms;
+      white-space: nowrap;
+    }
+    .btn:hover { background: hsl(var(--muted)); }
+    .btn--primary {
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      border-color: hsl(var(--primary));
+    }
+    .btn--primary:hover { opacity: 0.9; background: hsl(var(--primary)); }
+    .btn--ghost { border-color: transparent; background: transparent; }
+    .btn--ghost:hover { background: hsl(var(--muted)); }
+    .btn--sm { padding: 4px 8px; font-size: 12px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Filter chips */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      font-size: 12px;
+      border: 1px solid hsl(var(--border));
+      border-radius: 999px;
+      background: hsl(var(--card));
+      color: hsl(var(--foreground));
+      cursor: pointer;
+    }
+    .chip[aria-pressed="true"] {
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      border-color: hsl(var(--primary));
+    }
+    .chip__count {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+
+    /* Tone dots */
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .dot--success { background: #10b981; }
+    .dot--warning { background: #f59e0b; }
+    .dot--danger { background: #f43f5e; }
+
+    /* Tier badges */
+    .tier {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .tier--high { background: var(--tone-success-soft-bg); color: var(--tone-success-soft-fg); }
+    .tier--medium { background: var(--tone-warning-soft-bg); color: var(--tone-warning-soft-fg); }
+    .tier--unmatched { background: var(--tone-danger-soft-bg); color: var(--tone-danger-soft-fg); }
+    .tier--accepted { background: var(--tone-info-soft-bg); color: var(--tone-info-soft-fg); }
+
+    /* ===== CURRENT (Proposal "before") ===== */
+    .current-row {
+      padding: 18px 20px;
+      border-top: 1px solid hsl(var(--border));
+      display: grid;
+      grid-template-columns: 1fr 1fr 140px;
+      gap: 24px;
+      align-items: start;
+    }
+    .current-row:first-child { border-top: none; }
+    .current-row__col-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 4px;
+    }
+    .current-row__title { font-weight: 500; font-size: 14px; }
+    .current-row__sub { font-size: 12px; color: hsl(var(--muted-foreground)); margin-top: 2px; }
+    .current-row__reasoning {
+      font-size: 12px;
+      font-style: italic;
+      color: hsl(var(--muted-foreground));
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+    .current-row__actions {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-end;
+    }
+
+    /* ===== PROPOSED — compact table ===== */
+    .ptable {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    .ptable thead th {
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: hsl(var(--muted-foreground));
+      font-weight: 500;
+      padding: 10px 12px;
+      border-bottom: 1px solid hsl(var(--border));
+      background: hsl(var(--muted) / 0.4);
+    }
+    .ptable td {
+      padding: 10px 12px;
+      border-bottom: 1px solid hsl(var(--border));
+      vertical-align: middle;
+      font-size: 13px;
+    }
+    .ptable tbody tr {
+      cursor: pointer;
+      transition: background 100ms;
+    }
+    .ptable tbody tr:hover { background: hsl(var(--muted) / 0.4); }
+    .ptable tbody tr.is-selected { background: hsl(var(--muted) / 0.7); }
+    .ptable tbody tr.is-active {
+      background: hsl(var(--muted) / 0.6);
+      outline: 1px solid hsl(var(--primary) / 0.15);
+      outline-offset: -1px;
+    }
+
+    .cell-source { display: flex; flex-direction: column; }
+    .cell-source__t { font-weight: 500; }
+    .cell-source__s { font-size: 11.5px; color: hsl(var(--muted-foreground)); }
+
+    .cell-match { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .cell-match__title { font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cell-match__none { color: hsl(var(--muted-foreground)); font-style: italic; }
+
+    .cell-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      justify-content: flex-end;
+    }
+
+    .checkbox {
+      width: 16px; height: 16px;
+      border: 1.5px solid hsl(var(--border));
+      border-radius: 3px;
+      display: inline-block;
+      vertical-align: middle;
+      cursor: pointer;
+      position: relative;
+    }
+    .checkbox.checked {
+      background: hsl(var(--primary));
+      border-color: hsl(var(--primary));
+    }
+    .checkbox.checked::after {
+      content: '✓';
+      color: hsl(var(--primary-foreground));
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* Bulk-actions bar */
+    .bulkbar {
+      padding: 10px 16px;
+      background: hsl(30 15% 12%);
+      color: hsl(var(--primary-foreground));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+    .bulkbar__actions { display: flex; gap: 8px; }
+    .bulkbar .btn {
+      background: hsl(40 20% 98% / 0.1);
+      color: hsl(var(--primary-foreground));
+      border-color: hsl(40 20% 98% / 0.2);
+    }
+    .bulkbar .btn--primary {
+      background: hsl(var(--primary-foreground));
+      color: hsl(var(--primary));
+      border-color: hsl(var(--primary-foreground));
+    }
+
+    /* ===== Drawer (slides in from right) ===== */
+    .surface--with-drawer {
+      position: relative;
+      overflow: hidden;
+      min-height: 540px;
+    }
+    .drawer {
+      position: absolute;
+      top: 0; right: 0; bottom: 0;
+      width: 380px;
+      background: hsl(var(--card));
+      border-left: 1px solid hsl(var(--border));
+      transform: translateX(100%);
+      transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      box-shadow: -2px 0 12px rgba(0,0,0,0.04);
+    }
+    .drawer.is-open { transform: translateX(0); }
+    .drawer__head {
+      padding: 16px 20px;
+      border-bottom: 1px solid hsl(var(--border));
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .drawer__head h3 {
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 16px;
+      margin: 0;
+    }
+    .drawer__close {
+      background: none;
+      border: none;
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+      color: hsl(var(--muted-foreground));
+      padding: 0 6px;
+    }
+    .drawer__body {
+      padding: 16px 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .drawer__section + .drawer__section { margin-top: 20px; }
+    .drawer__label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 6px;
+    }
+    .drawer__match {
+      padding: 12px;
+      border: 1px solid hsl(var(--border));
+      border-radius: 8px;
+      background: hsl(var(--muted) / 0.3);
+    }
+    .drawer__match-title { font-weight: 500; font-size: 14px; margin: 0; }
+    .drawer__match-meta { font-size: 12px; color: hsl(var(--muted-foreground)); margin-top: 2px; }
+    .drawer__reasoning {
+      font-size: 13px;
+      color: hsl(var(--muted-foreground));
+      font-style: italic;
+      line-height: 1.55;
+    }
+    .drawer__candidate {
+      padding: 10px 12px;
+      border: 1px solid hsl(var(--border));
+      border-radius: 6px;
+      background: hsl(var(--card));
+      margin-top: 6px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .drawer__candidate:hover { background: hsl(var(--muted) / 0.5); }
+    .drawer__candidate-title { font-weight: 500; }
+    .drawer__candidate-meta { font-size: 11.5px; color: hsl(var(--muted-foreground)); margin-top: 2px; }
+    .drawer__footer {
+      padding: 12px 20px;
+      border-top: 1px solid hsl(var(--border));
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    /* Pros/Cons cards */
+    .proscons {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    @media (min-width: 760px) {
+      .proscons { grid-template-columns: 1fr 1fr; }
+    }
+    .proscons__card {
+      padding: 16px 20px;
+      border: 1px solid hsl(var(--border));
+      border-radius: 8px;
+      background: hsl(var(--card));
+    }
+    .proscons__card h4 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin: 0 0 8px;
+      color: hsl(var(--muted-foreground));
+    }
+    .proscons__card ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .proscons__card li {
+      font-size: 13.5px;
+      margin-bottom: 6px;
+      line-height: 1.5;
+    }
+
+    /* Mini-references at the bottom */
+    .alt {
+      padding: 16px 20px;
+      border: 1px solid hsl(var(--border));
+      border-radius: 8px;
+      background: hsl(var(--card));
+    }
+    .alt h4 {
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 15px;
+      margin: 0 0 4px;
+    }
+    .alt p {
+      font-size: 13px;
+      color: hsl(var(--muted-foreground));
+      margin: 0;
+    }
+    .alt-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    @media (min-width: 760px) {
+      .alt-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* Helpers */
+    .icon {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+    .row-truncate {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- =================================================================
+       HERO
+       ================================================================= -->
+  <section class="hero">
+    <h1>Import-review — UX rework prototype</h1>
+    <p>The current per-row card layout (~120 px tall) doesn't scale to 50–1000-row imports the way users expect from tools like HubSpot, Stripe, or Mailchimp. This prototype shows a compact-table reviewer that fits ~3× more rows on screen and keeps the rich detail (LLM reasoning, alt candidates) one click away in a side drawer.</p>
+    <span class="meta">📋 Replaces <strong>/laglistor/skapa/[importId]/granska</strong> · 20 sample rows below</span>
+  </section>
+
+  <!-- =================================================================
+       SIDE-BY-SIDE COMPARISON
+       ================================================================= -->
+  <section class="section">
+    <div class="section__head">
+      <div class="label">Visceral comparison</div>
+      <h2>Same 4 rows — current vs proposed</h2>
+      <p>To feel the density difference. Current layout shows ~5 rows per viewport; proposed shows ~14 with the drawer closed.</p>
+    </div>
+
+    <div class="compare">
+      <!-- CURRENT -->
+      <div class="compare__col">
+        <h3>Current (today)</h3>
+        <div class="surface">
+          <div class="current-row">
+            <div>
+              <div class="current-row__col-label">Källrad</div>
+              <div class="current-row__title">Arbetsmiljölag</div>
+              <div class="current-row__sub">SFS 1977:1160</div>
+            </div>
+            <div>
+              <div class="current-row__col-label">Matchat dokument</div>
+              <div class="current-row__title">Arbetsmiljölag (1977:1160)</div>
+              <div class="current-row__sub">SFS 1977:1160 · Lag · <a href="#">Visa i katalogen ↗</a></div>
+              <div class="current-row__reasoning">Perfekt matchning av både titel och dokumentnummer.</div>
+            </div>
+            <div class="current-row__actions">
+              <span class="tier tier--high">● Hög</span>
+              <button class="btn btn--primary btn--sm" style="margin-top:6px">Acceptera</button>
+              <button class="btn btn--sm">Byt matchning ▾</button>
+              <button class="btn btn--ghost btn--sm">Avvisa</button>
+            </div>
+          </div>
+          <div class="current-row">
+            <div>
+              <div class="current-row__col-label">Källrad</div>
+              <div class="current-row__title">Anställningsskyddslag (LAS)</div>
+              <div class="current-row__sub">SFS 1982:80</div>
+            </div>
+            <div>
+              <div class="current-row__col-label">Matchat dokument</div>
+              <div class="current-row__title">Lag (1982:80) om anställningsskydd</div>
+              <div class="current-row__sub">SFS 1982:80 · Lag · <a href="#">Visa i katalogen ↗</a></div>
+              <div class="current-row__reasoning">Exakt matchning av dokumentnummer 1982:80; titlarna stämmer överens (LAS).</div>
+            </div>
+            <div class="current-row__actions">
+              <span class="tier tier--medium">● Medel</span>
+              <button class="btn btn--primary btn--sm" style="margin-top:6px">Acceptera</button>
+              <button class="btn btn--sm">Byt matchning ▾</button>
+              <button class="btn btn--ghost btn--sm">Avvisa</button>
+            </div>
+          </div>
+          <div class="current-row">
+            <div>
+              <div class="current-row__col-label">Källrad</div>
+              <div class="current-row__title">Diskrimineringslag</div>
+              <div class="current-row__sub">SFS 2008:567</div>
+            </div>
+            <div>
+              <div class="current-row__col-label">Matchat dokument</div>
+              <div class="current-row__title">Diskrimineringslag (2008:567)</div>
+              <div class="current-row__sub">SFS 2008:567 · Lag · <a href="#">Visa i katalogen ↗</a></div>
+              <div class="current-row__reasoning">Exakt matchning av både titel och dokumentnummer (SFS 2008:567).</div>
+            </div>
+            <div class="current-row__actions">
+              <span class="tier tier--medium">● Medel</span>
+              <button class="btn btn--primary btn--sm" style="margin-top:6px">Acceptera</button>
+              <button class="btn btn--sm">Byt matchning ▾</button>
+              <button class="btn btn--ghost btn--sm">Avvisa</button>
+            </div>
+          </div>
+          <div class="current-row">
+            <div>
+              <div class="current-row__col-label">Källrad</div>
+              <div class="current-row__title">Medicinska kontroller i arbetslivet</div>
+              <div class="current-row__sub">AFS 2019:3</div>
+            </div>
+            <div>
+              <div class="current-row__col-label">Matchat dokument</div>
+              <div class="current-row__title current-row__sub">Inget matchande dokument hittades</div>
+            </div>
+            <div class="current-row__actions">
+              <span class="tier tier--unmatched">● Saknas</span>
+              <button class="btn btn--primary btn--sm" style="margin-top:6px">Begär tillägg</button>
+              <button class="btn btn--ghost btn--sm">Avvisa</button>
+            </div>
+          </div>
+        </div>
+        <p style="margin-top:8px; font-size:12px; color: hsl(var(--muted-foreground));">~120 px per row · 5 rows = ~600 px</p>
+      </div>
+
+      <!-- PROPOSED -->
+      <div class="compare__col">
+        <h3>Proposed (compact table)</h3>
+        <div class="surface">
+          <table class="ptable">
+            <colgroup>
+              <col style="width:32px"><col style="width:34%"><col style="width:36%">
+              <col style="width:80px"><col style="width:auto">
+            </colgroup>
+            <thead>
+              <tr>
+                <th><span class="checkbox" aria-hidden></span></th>
+                <th>Källrad</th>
+                <th>Matchat dokument</th>
+                <th>Konfidens</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="checkbox"></span></td>
+                <td><div class="cell-source"><span class="cell-source__t">Arbetsmiljölag</span><span class="cell-source__s">SFS 1977:1160</span></div></td>
+                <td><div class="cell-match"><span class="cell-match__title row-truncate">Arbetsmiljölag (1977:1160)</span></div></td>
+                <td><span class="tier tier--high">● Hög</span></td>
+                <td><div class="cell-actions"><button class="btn btn--primary btn--sm">Acceptera</button><button class="btn btn--ghost btn--sm" title="Mer">⋯</button></div></td>
+              </tr>
+              <tr>
+                <td><span class="checkbox"></span></td>
+                <td><div class="cell-source"><span class="cell-source__t">Anställningsskyddslag (LAS)</span><span class="cell-source__s">SFS 1982:80</span></div></td>
+                <td><div class="cell-match"><span class="cell-match__title row-truncate">Lag (1982:80) om anställningsskydd</span></div></td>
+                <td><span class="tier tier--medium">● Medel</span></td>
+                <td><div class="cell-actions"><button class="btn btn--primary btn--sm">Acceptera</button><button class="btn btn--ghost btn--sm">⋯</button></div></td>
+              </tr>
+              <tr>
+                <td><span class="checkbox"></span></td>
+                <td><div class="cell-source"><span class="cell-source__t">Diskrimineringslag</span><span class="cell-source__s">SFS 2008:567</span></div></td>
+                <td><div class="cell-match"><span class="cell-match__title row-truncate">Diskrimineringslag (2008:567)</span></div></td>
+                <td><span class="tier tier--medium">● Medel</span></td>
+                <td><div class="cell-actions"><button class="btn btn--primary btn--sm">Acceptera</button><button class="btn btn--ghost btn--sm">⋯</button></div></td>
+              </tr>
+              <tr>
+                <td><span class="checkbox"></span></td>
+                <td><div class="cell-source"><span class="cell-source__t">Medicinska kontroller i arbetslivet</span><span class="cell-source__s">AFS 2019:3</span></div></td>
+                <td><div class="cell-match"><span class="cell-match__none">Inget exakt matchande dokument</span></div></td>
+                <td><span class="tier tier--unmatched">● Saknas</span></td>
+                <td><div class="cell-actions"><button class="btn btn--sm">Begär tillägg</button><button class="btn btn--ghost btn--sm">⋯</button></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-top:8px; font-size:12px; color: hsl(var(--muted-foreground));">~46 px per row · 4 rows = ~190 px (3× denser, same info one click away)</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================================================================
+       FULL PROTOTYPE — 20 rows + drawer + bulk
+       ================================================================= -->
+  <section class="section">
+    <div class="section__head">
+      <div class="label">Full prototype — proposed layout</div>
+      <h2>Compact table + side drawer</h2>
+      <p>20-row import. Click any row to open the detail drawer with full LLM reasoning + alt candidates. Tick checkboxes to surface a sticky bulk-actions bar. Try clicking <strong>row #5 (LAS)</strong> — that's where today's reasoning is most useful.</p>
+    </div>
+
+    <div class="surface surface--with-drawer" id="protosurface">
+      <div class="surface__header">
+        <div>
+          <h3 class="surface__title">Granska import</h3>
+          <p class="surface__sub">laglista-import-mall.xlsx · 20 rader · uppladdad precis nu</p>
+        </div>
+        <button class="btn btn--primary" id="commitBtn">Bekräfta och skapa lista (0)</button>
+      </div>
+
+      <!-- Filter chips + KPI -->
+      <div style="padding: 12px 20px; border-bottom: 1px solid hsl(var(--border)); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+        <div class="chips">
+          <button class="chip" aria-pressed="true" data-filter="all">Alla <span class="chip__count">20</span></button>
+          <button class="chip" aria-pressed="false" data-filter="high"><span class="dot dot--success"></span> Hög <span class="chip__count">4</span></button>
+          <button class="chip" aria-pressed="false" data-filter="medium"><span class="dot dot--warning"></span> Behöver bekräftelse <span class="chip__count">10</span></button>
+          <button class="chip" aria-pressed="false" data-filter="unmatched"><span class="dot dot--danger"></span> Saknas <span class="chip__count">6</span></button>
+          <button class="chip" aria-pressed="false" data-filter="handled">Hanterade <span class="chip__count">0</span></button>
+        </div>
+        <button class="btn">⚡ Acceptera alla höga (4)</button>
+      </div>
+
+      <!-- Bulk actions bar (hidden until selection) -->
+      <div class="bulkbar" id="bulkbar" style="display:none">
+        <span><strong id="bulkCount">0</strong> rader valda</span>
+        <div class="bulkbar__actions">
+          <button class="btn">Acceptera valda</button>
+          <button class="btn">Avvisa valda</button>
+          <button class="btn btn--ghost" id="clearSel">Avmarkera alla</button>
+        </div>
+      </div>
+
+      <!-- Main table -->
+      <div style="max-height: 540px; overflow-y: auto;">
+        <table class="ptable">
+          <colgroup>
+            <col style="width:36px"><col style="width:30%"><col style="width:36%">
+            <col style="width:96px"><col style="width:auto">
+          </colgroup>
+          <thead>
+            <tr>
+              <th><span class="checkbox" id="selectAll" aria-hidden></span></th>
+              <th>Källrad</th>
+              <th>Matchat dokument</th>
+              <th>Konfidens</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <!-- populated by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Detail drawer -->
+      <aside class="drawer" id="drawer">
+        <div class="drawer__head">
+          <div>
+            <h3 id="drawerTitle">—</h3>
+            <p style="font-size: 12px; color: hsl(var(--muted-foreground)); margin: 2px 0 0;" id="drawerSubtitle">—</p>
+          </div>
+          <button class="drawer__close" id="drawerClose" aria-label="Stäng">×</button>
+        </div>
+        <div class="drawer__body" id="drawerBody"></div>
+        <div class="drawer__footer" id="drawerFooter"></div>
+      </aside>
+    </div>
+
+    <div class="proscons">
+      <div class="proscons__card">
+        <h4>Why it works</h4>
+        <ul>
+          <li>3× more rows visible — for a 50-row import users can see all status tiers without scrolling</li>
+          <li>Familiar pattern — HubSpot contact import, Stripe customer import, Notion CSV upload all use this shape</li>
+          <li>LLM reasoning + alt candidates stay accessible (drawer) but stop dominating the page</li>
+          <li>Bulk select + bulk-action footer matches modern workflows ("review 50 rows, accept the obvious 40, scrutinise the 10 weird ones")</li>
+          <li>Sticky filter chips + commit button stay in view at all scroll depths</li>
+        </ul>
+      </div>
+      <div class="proscons__card">
+        <h4>Trade-offs</h4>
+        <ul>
+          <li>Reasoning text isn't visible at a glance — requires click. Mitigation: hover-tooltip on the confidence badge could show first ~80 chars inline</li>
+          <li>Long titles need truncation with title-tooltip (catalog titles can be 100+ chars). Code uses CSS truncation + native title attr</li>
+          <li>The row-as-button vs row-with-actions can confuse — separate the click target (row body opens drawer) from the action buttons (don't propagate)</li>
+          <li>Mobile layout needs a separate stacked-card view (out of scope for this prototype, current layout is also bad on mobile)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================================================================
+       ALTERNATE PATTERNS (briefly)
+       ================================================================= -->
+  <section class="section">
+    <div class="section__head">
+      <div class="label">Alternates considered</div>
+      <h2>Other patterns we could explore</h2>
+      <p>Not built out — just sketched. Happy to prototype either if you'd prefer one of these over the table.</p>
+    </div>
+
+    <div class="alt-grid">
+      <div class="alt">
+        <h4>B. Wizard grouped by status</h4>
+        <p>3 steps: review your <strong>4 high-confidence matches</strong> (one-click batch accept), then your <strong>10 medium-confidence matches</strong> (paginated review), then your <strong>6 unmatched rows</strong> (request adds or reject). TurboTax / FreeAgent vibes — guides the user through the path of least resistance.</p>
+      </div>
+      <div class="alt">
+        <h4>C. Two-pane reviewer (Linear-style)</h4>
+        <p>Dense list on the left (one line per row), full detail panel on the right that updates as you arrow-key through. Keyboard-first: <kbd>j</kbd>/<kbd>k</kbd> to navigate, <kbd>Enter</kbd> to accept, <kbd>x</kbd> to reject, <kbd>r</kbd> to replace. Power-user heaven; less friendly for first-time users.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- =================================================================
+     INTERACTIVITY — minimal vanilla JS
+     ================================================================= -->
+<script>
+  // 20 rows of realistic data mirroring the live test import
+  const ROWS = [
+    { i: 1, src: 'Arbetsmiljölag', srcDn: 'SFS 1977:1160', match: 'Arbetsmiljölag (1977:1160)', matchDn: 'SFS 1977:1160', type: 'Lag', tier: 'high', reason: 'Perfekt matchning av både titel och dokumentnummer.', cands: [] },
+    { i: 2, src: 'Lag om anställningsskydd (LAS)', srcDn: 'SFS 1982:80', match: 'Lag (1982:80) om anställningsskydd', matchDn: 'SFS 1982:80', type: 'Lag', tier: 'medium', reason: 'Exakt matchning av dokumentnummer 1982:80; titlarna stämmer överens (LAS = Anställningsskyddslag). Övriga kandidater är ändringsförfattningar.', cands: ['Lag (2024:91) om ändring i lag (1982:80)…', 'Lag (2023:559) om ändring i lag (1982:80)…'] },
+    { i: 3, src: 'Diskrimineringslag', srcDn: 'SFS 2008:567', match: 'Diskrimineringslag (2008:567)', matchDn: 'SFS 2008:567', type: 'Lag', tier: 'medium', reason: 'Exakt matchning av både titel och dokumentnummer.', cands: [] },
+    { i: 4, src: 'Föräldraledighetslag', srcDn: 'SFS 1995:584', match: 'Föräldraledighetslag (1995:584)', matchDn: 'SFS 1995:584', type: 'Lag', tier: 'medium', reason: 'Exakt matchning av både titel och dokumentnummer för Föräldraledighetslag.', cands: [] },
+    { i: 5, src: 'Semesterlag', srcDn: 'SFS 1977:480', match: 'Semesterlag (1977:480)', matchDn: 'SFS 1977:480', type: 'Lag', tier: 'medium', reason: 'Exakt matchning av både dokumentnummer och titel.', cands: [] },
+    { i: 6, src: 'Lag om medbestämmande i arbetslivet (MBL)', srcDn: 'SFS 1976:580', match: 'Lag (1976:580) om medbestämmande i arbetslivet', matchDn: 'SFS 1976:580', type: 'Lag', tier: 'medium', reason: 'Exakt matchning av både dokumentnummer (1976:580) och titel (Lag om medbestämmande i arbetslivet).', cands: [] },
+    { i: 7, src: 'Bokföringslag', srcDn: 'SFS 1999:1078', match: 'Bokföringslag (1999:1078)', matchDn: 'SFS 1999:1078', type: 'Lag', tier: 'medium', reason: 'Perfekt matchning av både titel och dokumentnummer.', cands: [] },
+    { i: 8, src: 'Årsredovisningslag', srcDn: 'SFS 1995:1554', match: 'Årsredovisningslag (1995:1554)', matchDn: 'SFS 1995:1554', type: 'Lag', tier: 'medium', reason: 'Exakt matchning av både titel och dokumentnummer.', cands: [] },
+    { i: 9, src: 'Aktiebolagslag', srcDn: 'SFS 2005:551', match: 'Aktiebolagslag (2005:551)', matchDn: 'SFS 2005:551', type: 'Lag', tier: 'medium', reason: 'Perfekt matchning. Detta är den gällande aktiebolagslagen.', cands: [] },
+    { i: 10, src: 'Miljöbalk', srcDn: 'SFS 1998:808', match: 'Miljöbalk (1998:808)', matchDn: 'SFS 1998:808', type: 'Lag', tier: 'medium', reason: 'Exakt matchning av både titel och dokumentnummer.', cands: [] },
+    { i: 11, src: 'Systematiskt arbetsmiljöarbete', srcDn: 'AFS 2001:1', match: 'Systematiskt arbetsmiljöarbete (AFS 2001:1)', matchDn: 'AFS 2001:1', type: 'Föreskrift', tier: 'high', reason: 'Branch A — exakt kanonisk matchning.', cands: [] },
+    { i: 12, src: 'Organisatorisk och social arbetsmiljö', srcDn: 'AFS 2015:4', match: 'Organisatorisk och social arbetsmiljö (AFS 2015:4)', matchDn: 'AFS 2015:4', type: 'Föreskrift', tier: 'high', reason: 'Branch A — exakt kanonisk matchning.', cands: [] },
+    { i: 13, src: 'Medicinska kontroller i arbetslivet', srcDn: 'AFS 2023:15', match: 'Medicinska kontroller i arbetslivet (AFS 2023:15)', matchDn: 'AFS 2023:15', type: 'Föreskrift', tier: 'medium', reason: 'Title trigram 0.95 + suffix-match year+number. Catalog stores chapter slices alongside parent.', cands: ['AFS 2023:15 kap. 8', 'AFS 2023:15 kap. 12'] },
+    { i: 14, src: 'Planering och organisering', srcDn: 'AFS 2023:2', match: 'Planering och organisering (AFS 2023:2)', matchDn: 'AFS 2023:2', type: 'Föreskrift', tier: 'medium', reason: 'Title-rescue override applied — strong title trigram unblocks Branch B.', cands: [] },
+    { i: 15, src: 'Arbetsutrustning och personlig skyddsutrustning', srcDn: 'AFS 2023:11', match: 'Arbetsutrustning och personlig skyddsutrustning (AFS 2023:11)', matchDn: 'AFS 2023:11', type: 'Föreskrift', tier: 'medium', reason: 'Exakt matchning av både titel och dokumentnummer.', cands: [] },
+    { i: 16, src: 'Dataskyddsförordningen (GDPR)', srcDn: '(EU) 2016/679', match: 'Europaparlamentets och rådets förordning (EU) nr 679/2016', matchDn: '32016R0679', type: 'EU-förordning', tier: 'high', reason: 'Branch A via CELEX alt-form. Catalog stores GDPR i CELEX-format 32016R0679.', cands: [] },
+    { i: 17, src: 'AI-förordningen', srcDn: '(EU) 2024/1689', match: 'Europaparlamentets och rådets förordning (EU) 2024/1689', matchDn: 'Regulation (EU) 2024/1689', type: 'EU-förordning', tier: 'high', reason: 'Branch A — exakt kanonisk matchning.', cands: [] },
+    { i: 18, src: 'REACH — kemikalieförordningen', srcDn: '(EG) 1907/2006', match: 'Europaparlamentets och rådets förordning (EG) nr 1907/2006', matchDn: '32006R1907', type: 'EU-förordning', tier: 'medium', reason: 'Branch A via CELEX alt-form. EG-prefix bridgar till CELEX-format.', cands: [] },
+    { i: 19, src: 'CLP-förordningen', srcDn: '(EG) 1272/2008', match: 'Europaparlamentets och rådets förordning (EG) nr 1272/2008', matchDn: '32008R1272', type: 'EU-förordning', tier: 'medium', reason: 'Branch A via CELEX alt-form.', cands: [] },
+    { i: 20, src: 'CSRD — hållbarhetsrapportering', srcDn: '2022/2464/EU', match: null, matchDn: null, type: null, tier: 'unmatched', reason: 'Inga kandidater i katalogen.', cands: [] },
+  ]
+
+  const tierLabel = (t) => ({ high: 'Hög', medium: 'Medel', unmatched: 'Saknas' }[t] || t)
+  const tierClass = (t) => `tier tier--${t}`
+  const dotClass = (t) => `dot dot--${ { high:'success', medium:'warning', unmatched:'danger' }[t] }`
+
+  // Render
+  const tbody = document.getElementById('tbody')
+  const drawer = document.getElementById('drawer')
+  const drawerTitle = document.getElementById('drawerTitle')
+  const drawerSubtitle = document.getElementById('drawerSubtitle')
+  const drawerBody = document.getElementById('drawerBody')
+  const drawerFooter = document.getElementById('drawerFooter')
+
+  let activeRowId = null
+  let selected = new Set()
+  let filter = 'all'
+
+  function rowMatches(r) {
+    if (filter === 'all') return true
+    if (filter === 'handled') return false
+    return r.tier === filter
+  }
+
+  function render() {
+    tbody.innerHTML = ROWS.filter(rowMatches).map(r => `
+      <tr data-id="${r.i}" class="${activeRowId === r.i ? 'is-active' : ''} ${selected.has(r.i) ? 'is-selected' : ''}">
+        <td><span class="checkbox ${selected.has(r.i) ? 'checked' : ''}" data-toggle="${r.i}"></span></td>
+        <td>
+          <div class="cell-source">
+            <span class="cell-source__t">${r.src}</span>
+            <span class="cell-source__s">${r.srcDn}</span>
+          </div>
+        </td>
+        <td>
+          <div class="cell-match">
+            ${r.match
+              ? `<span class="cell-match__title row-truncate" title="${r.match}">${r.match}</span>`
+              : `<span class="cell-match__none">Inget matchande dokument</span>`}
+          </div>
+        </td>
+        <td><span class="${tierClass(r.tier)}"><span class="${dotClass(r.tier)}"></span> ${tierLabel(r.tier)}</span></td>
+        <td>
+          <div class="cell-actions">
+            ${r.tier === 'unmatched'
+              ? '<button class="btn btn--sm">Begär tillägg</button>'
+              : '<button class="btn btn--primary btn--sm">Acceptera</button>'}
+            <button class="btn btn--ghost btn--sm" title="Mer">⋯</button>
+          </div>
+        </td>
+      </tr>
+    `).join('')
+  }
+
+  function openDrawer(id) {
+    const r = ROWS.find(x => x.i === id)
+    if (!r) return
+    activeRowId = id
+    drawerTitle.textContent = r.src
+    drawerSubtitle.textContent = r.srcDn
+    drawerBody.innerHTML = `
+      <div class="drawer__section">
+        <div class="drawer__label">Matchat dokument</div>
+        ${r.match ? `
+          <div class="drawer__match">
+            <p class="drawer__match-title">${r.match}</p>
+            <p class="drawer__match-meta">${r.matchDn} · ${r.type} · <a href="#">Visa i katalogen ↗</a></p>
+          </div>
+        ` : `<p style="color: hsl(var(--muted-foreground)); font-style: italic; margin: 0;">Inget matchande dokument hittades</p>`}
+      </div>
+      <div class="drawer__section">
+        <div class="drawer__label">Resonemang</div>
+        <p class="drawer__reasoning">${r.reason}</p>
+      </div>
+      ${r.cands.length > 0 ? `
+        <div class="drawer__section">
+          <div class="drawer__label">Andra kandidater (${r.cands.length})</div>
+          ${r.cands.map(c => `
+            <div class="drawer__candidate">
+              <div class="drawer__candidate-title">${c}</div>
+              <div class="drawer__candidate-meta">Klicka för att byta matchning</div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    `
+    drawerFooter.innerHTML = r.tier === 'unmatched'
+      ? `<button class="btn">Begär tillägg</button><button class="btn btn--ghost">Avvisa</button>`
+      : `<button class="btn btn--primary">Acceptera</button><button class="btn">Byt matchning</button><button class="btn btn--ghost">Avvisa</button>`
+    drawer.classList.add('is-open')
+    render()
+  }
+
+  function closeDrawer() {
+    drawer.classList.remove('is-open')
+    activeRowId = null
+    render()
+  }
+
+  function updateBulkBar() {
+    const bar = document.getElementById('bulkbar')
+    const count = document.getElementById('bulkCount')
+    if (selected.size === 0) {
+      bar.style.display = 'none'
+    } else {
+      bar.style.display = 'flex'
+      count.textContent = selected.size
+    }
+  }
+
+  // Click delegation
+  document.addEventListener('click', (e) => {
+    const cb = e.target.closest('[data-toggle]')
+    if (cb) {
+      e.stopPropagation()
+      const id = Number(cb.dataset.toggle)
+      if (selected.has(id)) selected.delete(id); else selected.add(id)
+      render()
+      updateBulkBar()
+      return
+    }
+
+    if (e.target.closest('.btn')) {
+      e.stopPropagation()
+      return
+    }
+
+    const tr = e.target.closest('tr[data-id]')
+    if (tr) {
+      openDrawer(Number(tr.dataset.id))
+      return
+    }
+
+    if (e.target.id === 'drawerClose') {
+      closeDrawer()
+      return
+    }
+
+    if (e.target.id === 'clearSel') {
+      selected.clear()
+      render()
+      updateBulkBar()
+      return
+    }
+
+    const chip = e.target.closest('[data-filter]')
+    if (chip) {
+      filter = chip.dataset.filter
+      document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', String(c === chip)))
+      render()
+      return
+    }
+  })
+
+  render()
+</script>
+
+</body>
+</html>

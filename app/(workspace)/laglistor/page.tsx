@@ -17,8 +17,10 @@ import {
   getUnacknowledgedChanges,
   getUnacknowledgedChangeCount,
 } from '@/app/actions/change-events'
+import { listPendingImports } from '@/app/actions/law-list-import'
 import { DocumentListPageContent } from '@/components/features/document-list/document-list-page-content'
 import { DocumentListPageSkeleton } from '@/components/features/document-list/document-list-skeleton'
+import { PendingImportsBanner } from '@/components/features/document-list/pending-imports-banner'
 import { LawListTabs } from '@/components/features/changes/law-list-tabs'
 import { LawListPrimaryAction } from '@/components/features/document-list/law-list-primary-action'
 import { Button } from '@/components/ui/button'
@@ -43,6 +45,7 @@ export default async function DocumentListsPage() {
     publishedTemplates,
     changesResult,
     changeCountResult,
+    pendingImportsResult,
   ] = await Promise.all([
     getWorkspaceContext(),
     getDocumentLists(),
@@ -50,6 +53,7 @@ export default async function DocumentListsPage() {
     getPublishedTemplates(),
     getUnacknowledgedChanges(),
     getUnacknowledgedChangeCount(),
+    listPendingImports(),
   ])
 
   const lists = listsResult.success ? (listsResult.data ?? []) : []
@@ -60,6 +64,9 @@ export default async function DocumentListsPage() {
   const initialChangeCount = changeCountResult.success
     ? (changeCountResult.data ?? 0)
     : 0
+  const pendingImports = pendingImportsResult.success
+    ? (pendingImportsResult.data ?? [])
+    : []
 
   // Story 17.16: Gate compliance (kravpunkter + kommentar) edits by the tasks:edit permission.
   // AUDITORs lack this — they should see read-only UI instead of clicking buttons that 500.
@@ -88,6 +95,10 @@ export default async function DocumentListsPage() {
         primaryAction={<LawListPrimaryAction />}
       />
 
+      {pendingImports.length > 0 && (
+        <PendingImportsBanner imports={pendingImports} />
+      )}
+
       <LawListTabs
         initialChangeCount={initialChangeCount}
         initialChanges={initialChanges}
@@ -98,6 +109,7 @@ export default async function DocumentListsPage() {
             defaultListId={defaultListId}
             publishedTemplates={publishedTemplates}
             complianceReadOnly={complianceReadOnly}
+            hasPendingImports={pendingImports.length > 0}
           />
         </Suspense>
       </LawListTabs>

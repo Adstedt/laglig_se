@@ -139,7 +139,11 @@ export async function adoptTemplate(
         }
       })
 
-      // 4. Bulk-create LawListItem records
+      // 4. Bulk-create LawListItem records.
+      // Same pending-change-count baseline as commitImport / addDocumentToList:
+      // without `last_change_acknowledged_at` set, every historical change_event
+      // for each document surfaces as new on first render.
+      const adoptedAt = new Date()
       const itemData = template.sections.flatMap((section) =>
         section.items.map((item) => ({
           law_list_id: lawList.id,
@@ -153,6 +157,7 @@ export async function adoptTemplate(
           status: 'NOT_STARTED' as const,
           compliance_status: 'EJ_PABORJAD' as const,
           added_by: ctx.userId,
+          last_change_acknowledged_at: adoptedAt,
         }))
       )
 

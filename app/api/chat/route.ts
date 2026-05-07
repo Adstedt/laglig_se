@@ -480,7 +480,14 @@ export async function POST(req: Request) {
         : {}),
     })
   } catch (error) {
+    // Without Sentry capture here, /api/chat 500s are invisible — the
+    // generic JSON response bypasses Next.js's auto-instrumentation.
+    // Without this, root-causing chat failures requires DevTools + DB
+    // forensics (TreDoffice AB incident, May 2026).
     console.error('[CHAT API ERROR]', error)
+    Sentry.captureException(error, {
+      tags: { area: 'chat', event: 'chat_route_500' },
+    })
     return new Response(
       JSON.stringify({
         error: 'Internal server error',

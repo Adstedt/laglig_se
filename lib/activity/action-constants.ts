@@ -103,6 +103,30 @@ export const KNOWN_ACTIONS = [
   'trial_workspace_deleted',
   'trial_converted',
   'workspace_reactivated_from_trial_pause',
+
+  // Epic 24 — Import existing law list (Story 24.1: only create + commit;
+  // per-row events are added in subsequent stories)
+  'law_list_import.created',
+  'law_list_import.committed',
+
+  // Story 24.3 — matching engine lifecycle
+  'law_list_import.matching_started',
+  'law_list_import.matching_completed',
+  'law_list_import.matching_failed',
+
+  // Story 24.4 — review-surface per-row decisions + batch + commit
+  'law_list_import.row_accepted',
+  'law_list_import.row_replaced',
+  'law_list_import.row_rejected',
+  'law_list_import.row_catalog_requested',
+  'law_list_import.row_decision_undone',
+  'law_list_import.bulk_accepted_high',
+  // Banner cancel action — hard-deletes an in-flight import (24.x follow-up)
+  'law_list_import.discarded',
+
+  // Story 24.5 — catalog-requests admin queue
+  'catalog_request.fulfilled',
+  'catalog_request.rejected',
 ] as const
 
 export type KnownAction = (typeof KNOWN_ACTIONS)[number]
