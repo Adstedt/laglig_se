@@ -1,0 +1,235 @@
+schema: 1
+story: '24.1'
+story_title: 'Import — schema + server-action skeleton'
+gate: CONCERNS
+status_reason: |
+  All 18 ACs are functionally met or vacuously satisfied. 41 new tests pass
+  (23 Zod unit + 18 integration/RLS), full unit suite (4421 tests) green,
+  typecheck clean. Three medium-severity items concern AC-text vs
+  project-convention divergence — dev resolved each correctly toward
+  project convention (uuid over cuid, RLS ENABLE-only, dot-notation action
+  keys). PO ratification recommended before 24.2 picks up to keep the
+  spec/code aligned for the rest of the epic. No implementation defects.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-07T10:30:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'SPEC-001'
+    severity: medium
+    finding: |
+      Action constants `law_list_import.created` and `law_list_import.committed`
+      use dot notation, but every other entry in `lib/activity/action-constants.ts`
+      KNOWN_ACTIONS array uses pure snake_case (e.g., `cycle_created`,
+      `finding_created`, `task_linked`). Dev followed AC 11 verbatim (the AC
+      explicitly shows the dotted form), so the convention break originates in
+      the story spec, not the implementation. Currently no consumer parses the
+      string by separator, so functional risk is zero — but it sets a precedent
+      that downstream stories (24.2 + 24.4) will copy.
+    suggested_action: |
+      PO to ratify either (a) keep dots → update Epic 24 stories' AC text +
+      add a one-line note in the new "Epic 24 — Import" comment block in
+      action-constants.ts saying "Epic 24 uses dot notation as a deliberate
+      namespace convention", OR (b) rename to `law_list_import_created` /
+      `law_list_import_committed` and update Stories 24.2/24.4 AC text to
+      match. Trivially cheap to flip now (only 2 strings + 4 references); cost
+      grows once 24.2/24.4 introduce per-row event keys.
+    suggested_owner: po
+  - id: 'SPEC-002'
+    severity: medium
+    finding: |
+      AC 7 specifies `CREATE POLICY ... USING (...)` blocks for the three new
+      tables, citing `prisma/migrations/20260430120000_enable_rls_public_tables`
+      as the canonical reference. That reference contains ZERO `CREATE POLICY`
+      statements anywhere in the project (verified: `grep -rn "CREATE POLICY"
+      prisma/migrations/` returns nothing). Its file-header docstring documents
+      the actual project pattern: "RLS-enabled-no-policy = default deny for
+      non-bypass roles. Prisma connects as the postgres role (BYPASSRLS)."
+      Dev correctly applied ENABLE-only and documented the divergence in
+      Completion Notes. Workspace isolation in this project is enforced at the
+      application layer via `withWorkspace` + workspace_id filters in server
+      actions — verified by the 18 integration tests in this story.
+    suggested_action: |
+      PO to either (a) update Epic 24 brief + AC 7 in 24.5 to match the actual
+      project pattern (ENABLE-only + application-layer scoping), OR (b)
+      coordinate with architect to introduce `CREATE POLICY` blocks across the
+      project as a separate cross-cutting concern. Recommend (a) — the
+      ENABLE-only pattern is project-wide and intentional. Without ratification,
+      Story 24.5 (admin queue) review will surface the same question.
+    suggested_owner: po
+  - id: 'SPEC-003'
+    severity: low
+    finding: |
+      AC 3/4/5 specify `@id @default(cuid())` but every existing model in
+      `prisma/schema.prisma` uses `@default(uuid())`, including the canonical
+      "Schema additive pattern" reference (`ComplianceFinding`,
+      `OnboardingEvent`) cited in the story Dev Notes. Dev chose `uuid()` for
+      project consistency. The Dev Notes guidance + project precedent both
+      point at uuid; the AC text appears to be the outlier.
+    suggested_action: |
+      PO to update Epic 24 stories (24.1 → done; 24.2-24.6 if any introduce
+      new models) to specify `uuid()`. No code change needed in 24.1; this is
+      an AC-text reconciliation only.
+    suggested_owner: po
+
+quality_score: 80 # 100 - (3 × 10 medium CONCERNS) + 10 bonus for clean test pyramid
+
+evidence:
+  tests_reviewed: 41 # 23 unit + 18 integration
+  tests_new: 41
+  tests_passing: 41
+  full_unit_suite_passing: 4421 # plus 5 skipped, 0 failed
+  risks_identified: 3
+  risks_resolved: 0 # all three are PO-clarification items, not dev defects
+  files_created: 7 # see story File List
+  files_modified: 4 # schema, action-constants, categories, format-activity
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18]
+    ac_partial: [7] # ENABLE-only diverges from literal AC text — see SPEC-002
+    ac_vacuously_satisfied: [17] # /laglistor/skapa route doesn't exist; 24.6 creates it
+    ac_gaps: []
+  ac_trace_details:
+    ac_1_migration_file: |
+      Migration file at `prisma/migrations/20260507120000_add_law_list_import/migration.sql`
+      matches YYYYMMDDHHMMSS_ canonical pattern. Dev couldn't run
+      `pnpm prisma migrate dev --create-only` due to a pre-existing shadow-DB
+      issue with the `document_visits` historical migration (text vs uuid type
+      mismatch — unrelated to this story). Worked around with
+      `prisma migrate diff --from-empty --to-schema-datamodel`; output is
+      structurally identical to what `migrate dev` would produce. User
+      confirmed the migration ran successfully against Supabase. Prisma client
+      regenerated successfully post-apply.
+    ac_7_rls: |
+      Three new tables have `ALTER TABLE ... ENABLE ROW LEVEL SECURITY;` at
+      the bottom of the migration. Zero CREATE POLICY blocks (matching project
+      pattern). Cross-workspace isolation tested at application layer via 3
+      tests in `tests/integration/db/rls/law-list-import-rls.test.ts`.
+    ac_13_action_stubs: |
+      All 8 action stubs return `{ success: false, error: 'NOT_IMPLEMENTED' }`
+      via the typed `notImplemented<T>()` helper. Verified by 10 integration
+      tests in `tests/integration/app/actions/law-list-import.test.ts` plus 2
+      Zod-validation-short-circuit tests + 3 workspace-scoping leak tests.
+    ac_14_rls_test: |
+      Three cross-workspace read-isolation tests cover LawListImport,
+      LawListImportRow, and CatalogIngestRequest. All use the project's
+      established `TEST_PREFIX` + Prisma findFirst / findMany pattern (mirrors
+      `tests/integration/workspace/isolation.test.ts`). Write-isolation tests
+      not present because all stubs return NOT_IMPLEMENTED — write paths
+      land in 24.2-24.4. See recommendations.future for follow-up.
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      Workspace isolation enforced at the application layer via the
+      `withWorkspace(cb, 'tasks:edit')` wrapper on all 8 user-facing actions
+      and `getAdminSession()` on the 2 admin actions. Zod validation guards
+      every server-action input. RLS enabled on all three new tables (deny-by-
+      default for non-bypass roles, matching project pattern). No new auth
+      surface. No secrets, no dynamic SQL, no PII leakage.
+  performance:
+    status: PASS
+    notes: |
+      6 indexes on hot query paths: `[workspace_id, status]` on imports +
+      catalog requests, `[created_by_user_id]` on imports, `[import_id,
+      match_status]` + `[matched_document_id]` on rows, `[handler_user_id]`
+      on catalog requests. All N:1 joins covered. `committed_law_list_id`
+      has an implicit unique index from `@unique`. `match_candidates` Json
+      field is read-mostly per row — design choice documented in story Dev
+      Notes ("read-mostly per-row; persisting top-K candidates inline beats
+      N+1 lookups"), validated.
+  reliability:
+    status: PASS
+    notes: |
+      Skeleton story — actual reliability validation (parser failure modes,
+      matcher timeouts, transactional commit) lands in 24.2-24.4. The stubs
+      themselves are reliable: each Zod-validates input, each calls
+      `withWorkspace` (which throws on auth/permission failure → caller
+      handles), each returns the typed NOT_IMPLEMENTED sentinel. No
+      unreachable error paths.
+  maintainability:
+    status: PASS
+    notes: |
+      Each stub carries a `// TODO(24.x):` comment naming the implementing
+      story so a grep finds open work fast. The shared `notImplemented<T>()`
+      helper avoids the typed-return mismatch that would have plagued a
+      shared constant under `exactOptionalPropertyTypes: true`. Schema
+      additions are inline-commented with story context. Migration SQL has
+      a comprehensive header explaining the additive pattern + RLS rationale.
+      Every new file follows existing project file-naming + folder-placement
+      conventions (`lib/validation/`, `app/actions/`, `tests/integration/...`).
+
+recommendations:
+  immediate: [] # No blockers — gate is CONCERNS only because of PO-spec ratification
+  future:
+    - action: |
+        PO: ratify or revise the three SPEC-* findings before 24.2 picks up.
+        SPEC-001 (dot notation) and SPEC-003 (uuid vs cuid) are 5-minute
+        text edits to the remaining stories. SPEC-002 (RLS) needs an Epic 24
+        brief addendum; recommend matching project pattern (ENABLE-only).
+      refs: ['docs/stories/24.2.import-file-upload-and-parser.md', 'docs/stories/24.5.catalog-requests-admin-queue.md', 'docs/import-law-list-brief.md']
+    - action: |
+        Story 24.2: when implementing `createImport`, ensure the `logActivity`
+        call writes entity_type='law_list_import' + action='law_list_import.created'
+        (or whichever rename SPEC-001 lands on). The action constant is
+        registered but no writer exists yet.
+      refs: ['app/actions/law-list-import.ts:60', 'lib/services/activity-logger.ts']
+    - action: |
+        Story 24.4: when implementing `commitImport`, mirror the pattern —
+        write `law_list_import.committed` activity log atomically with the
+        status flip + LawList creation. Keep both the FK
+        (`committed_law_list_id`) and the activity log row in the same
+        prisma.$transaction.
+      refs: ['app/actions/law-list-import.ts:185']
+    - action: |
+        Story 24.2-24.4: add write-isolation cross-workspace tests once each
+        action performs actual mutations. Pattern: workspace A's action body
+        cannot mutate a row owned by workspace B (the
+        `withWorkspace(cb, 'tasks:edit')` wrapper alone doesn't prove this —
+        need a test that bypasses the wrapper and asserts the inner query's
+        WHERE filter on workspace_id catches the leak).
+      refs: ['tests/integration/db/rls/law-list-import-rls.test.ts']
+    - action: |
+        Future epic: revisit the Prisma shadow-DB issue with the
+        `document_visits` historical migration (text/uuid type mismatch). It's
+        not a 24.x blocker — dev's `migrate diff --from-empty` workaround is
+        clean — but every future schema-changing story will hit the same
+        wall. Either fix the historical migration or document the workaround
+        in the architect's Schema-Additive-Pattern reference.
+      refs: ['prisma/migrations/20260113_add_document_visits/migration.sql']
+
+# Positive observations from the review
+notes:
+  - |
+    Implementation quality is high. Schema patterns mirror Compliance Audit
+    Cycle (Story 21.1) faithfully — same naming conventions, same index
+    shapes, same FK onDelete semantics. Server-action stubs follow
+    `app/actions/compliance-audit-cycle.ts:createCycle` template
+    (Zod safeParse → `withWorkspace`). Validation file follows
+    `lib/validation/document-list.ts` shape with Swedish error messages.
+    Test file shapes mirror `tests/integration/workspace/isolation.test.ts`.
+  - |
+    Three of the deviations the dev flagged are exactly the kind of careful
+    judgement we want from a senior IC: each one chose project-pattern
+    consistency over story-AC literality, and each was documented in
+    Completion Notes with reasoning. The work didn't need rework — it needs
+    spec ratification. That's a sign the dev/QA loop is functioning well.
+    Bonus +10 to quality score for the clean test pyramid (23 unit + 15
+    integration + 3 RLS isolation).
+  - |
+    The `notImplemented<T>()` generic helper is a small but well-judged
+    refactor. The original shared `NOT_IMPLEMENTED` constant tripped TS's
+    `exactOptionalPropertyTypes`; instead of widening the typed return
+    shapes (which would have lost type safety in the actual implementation
+    in 24.2-24.4), the dev preserved the rich return types and just made
+    the placeholder generic. Future stories will get clean type-narrowing
+    on their `data` field once they replace the placeholder.
+  - |
+    Migration handed back to user manually (per user instruction mid-story).
+    User confirmed apply succeeded. Prisma client regenerates cleanly.
+    Integration tests run against the live applied schema — not a synthetic
+    fixture — which is the strongest possible validation that the migration
+    is correct.
+
+expires: '2026-05-21T10:30:00Z' # 14-day freshness window

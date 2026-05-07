@@ -12,8 +12,6 @@
  */
 
 import { prisma } from '@/lib/prisma'
-import { stripe } from '@/lib/stripe/config'
-import { env } from '@/lib/env'
 import { getEffectiveLimits, isUnlimited } from './limits'
 
 /** Thrown when a seat-consuming operation would exceed the workspace's cap. */
@@ -44,53 +42,19 @@ export class StripeUnavailableError extends Error {
 }
 
 /**
- * Count Team add-on SubscriptionItems on the workspace's Stripe subscription.
- *
- * Returns 0 for:
- *   - Non-TEAM workspaces (Solo / Enterprise / TRIAL — add-ons don't apply)
- *   - Workspaces without a Stripe subscription (still trialing, never billed)
- *   - TEAM workspaces where the only SubscriptionItem is the base Team Price
- *
- * Otherwise sums `quantity` across SubscriptionItems whose `price.id` differs
- * from `env.STRIPE_TEAM_PRICE_ID`. Each non-base item contributes one or more
- * add-on seats (each typically `quantity: 1`).
+ * Add-on seat count for a workspace. Currently always 0 — restore live
+ * Stripe lookup when Story 5.6 (Add-On Purchase System) ships.
  */
 export async function countActiveAddonSeats(
-  workspaceId: string
+  _workspaceId: string
 ): Promise<number> {
-  const workspace = await prisma.workspace.findUnique({
-    where: { id: workspaceId },
-    select: {
-      stripe_subscription_id: true,
-      subscription_tier: true,
-      trial_picked_tier: true,
-    },
-  })
-
-  if (!workspace?.stripe_subscription_id) return 0
-
-  const effectiveTier =
-    workspace.trial_picked_tier ?? workspace.subscription_tier
-  if (effectiveTier !== 'TEAM') return 0
-
-  // Fail-closed on Stripe outage (Story 5.5a SEAT-003): callers map
-  // StripeUnavailableError to HTTP 503 / structured action error so the
-  // client sees a clean retry message rather than an unstructured 500.
-  let subscription: Awaited<ReturnType<typeof stripe.subscriptions.retrieve>>
-  try {
-    subscription = await stripe.subscriptions.retrieve(
-      workspace.stripe_subscription_id,
-      { expand: ['items.data.price'] }
-    )
-  } catch (error) {
-    // eslint-disable-next-line no-console -- diagnostic for ops on outage
-    console.error('[SEATS_STRIPE_ERROR]', error)
-    throw new StripeUnavailableError(error)
-  }
-
-  return subscription.items.data
-    .filter((item) => item.price.id !== env.STRIPE_TEAM_PRICE_ID)
-    .reduce((sum, item) => sum + (item.quantity ?? 0), 0)
+  // Story 5.6 (Add-On Purchase System) is in backlog — there is no purchase
+  // flow yet, so no workspace can have add-on seats. Short-circuit to 0 to
+  // avoid a Stripe round-trip on every chat turn, which was a single point
+  // of failure: any stale/test-mode stripe_subscription_id took down chat
+  // for the whole workspace (TreDoffice AB, Sentry JAVASCRIPT-NEXTJS-3X).
+  // Restore the live Stripe lookup when 5.6 ships.
+  return 0
 }
 
 /**

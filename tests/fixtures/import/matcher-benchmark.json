@@ -1,0 +1,359 @@
+[
+  {
+    "source_titel": "Aktiebolagsförordning (2005:559)",
+    "source_sfs_nummer": "SFS 2005:559",
+    "expected_document_id": "0000135a-8db8-461f-aa69-381e8845dd90",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Förordning om ändring i förordningen (2007:951) med instruktion för Post- och telestyrelsen",
+    "source_sfs_nummer": "SFS 2014:8",
+    "expected_document_id": "0000ae04-15ed-4a9f-9864-00a21589490f",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "SFS 1999:1406 Lag om ändring i mervärdesskattelagen (1994:200)",
+    "source_sfs_nummer": "SFS 1999:1406",
+    "expected_document_id": "0000f4c2-abd2-4899-aa16-f4ad08246b06",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Förordning om ändring i förordningen (1998:786) om internationella vägtransporter inom Europeiska ekonomiska samarbetsområdet (EES)",
+    "source_sfs_nummer": "SFS 2015:75",
+    "expected_document_id": "0004d6e9-3eff-4424-8af6-3872063533c3",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Lag om ändring i pantbankslagen (1995:1000)",
+    "source_sfs_nummer": "SFS 2015:439",
+    "expected_document_id": "000af132-21a5-4e57-95b6-a9487ab663af",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Förordning om ändring i förordningen (1993:712) om den statliga fonden för fukt- och mögelskador i småhus, m.m.",
+    "source_sfs_nummer": "SFS 1998:1166",
+    "expected_document_id": "000c4ff0-96a5-443c-ac2e-c66f4b5ed01a",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Förordning (1989:10) med instruktion för Rederinämnden\n",
+    "source_sfs_nummer": "SFS 1989:10",
+    "expected_document_id": "000db7e2-939a-43f5-acef-c5f6996b4ee2",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Förordning om ändring i förordningen (2000:1178) med instruktion för Verket för näringslivsutveckling",
+    "source_sfs_nummer": "SFS 2005:1234",
+    "expected_document_id": "000e025f-3f28-433f-ad12-895bb533011c",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Förordning (2007:758) med instruktion för Fortifikationsverket",
+    "source_sfs_nummer": "SFS 2007:758",
+    "expected_document_id": "000f751d-1f8e-46f5-92aa-60cdda94b366",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Förordning om ändring i förordningen (2011:1108) om vuxenutbildning",
+    "source_sfs_nummer": "SFS 2023:518",
+    "expected_document_id": "000fd9fd-36e9-474d-adea-716707fcaaf6",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Förordning om ändring i förordningen (2009:279) med instruktion för Myndigheten för yrkeshögskolan",
+    "source_sfs_nummer": "SFS 2011:184",
+    "expected_document_id": "0016736e-492b-4f47-ab38-c93428f29a91",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Förordning om ändring i förordningen (1995:701) om gränsöverskridande transporter av avfall",
+    "source_sfs_nummer": "SFS 1998:934",
+    "expected_document_id": "0016e1c1-4f4a-4f23-bdf8-a0e4e2274b6d",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Kungörelse (1971:1016) om tillämpning av stadgan för finsk-svenska gränsälvskommissionen",
+    "source_sfs_nummer": "SFS 1971:1016",
+    "expected_document_id": "0018f180-da7f-4f8c-82e3-a06435a0a534",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Förordning om ändring i förordningen (2002:1118) om statlig ersättning för asylsökande m.fl.",
+    "source_sfs_nummer": "SFS 2006:1414",
+    "expected_document_id": "0019caaa-8d79-4c11-a053-f93b43ee87fb",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Lag om ändring i lagen (1991:1129) om rättspsykiatrisk vård",
+    "source_sfs_nummer": "SFS 2006:664",
+    "expected_document_id": "001a2c10-9965-42d4-9736-b6261d106a2a",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Lag om ändring i brottsbalken",
+    "source_sfs_nummer": "SFS 2026:253",
+    "expected_document_id": "001b41aa-b953-46cd-a131-d6738f24f0d7",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Förordning om ändring i förordningen (2012:993) om statsbidrag för utbildning i svenska för invandrare",
+    "source_sfs_nummer": "SFS 2016:459",
+    "expected_document_id": "001c1d27-b63c-4df9-b630-5b5283ca9427",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Förordning om ändring i förordningen (1996:93) om nationellt stöd till jordbruket i norra Sverige",
+    "source_sfs_nummer": "SFS 2021:1053",
+    "expected_document_id": "001db5b7-9b0d-4a9f-9676-6220176ad4a7",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Förordning om ändring i förordningen (2004:329) om bank- och finansieringsrörelse",
+    "source_sfs_nummer": "SFS 2016:347",
+    "expected_document_id": "001f36c4-1092-45f3-956f-4ec1a4192196",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Lag om ändring i lagen (1994:137) om mottagande av asylsökande m.fl.",
+    "source_sfs_nummer": "SFS 2010:201",
+    "expected_document_id": "001f7a64-b3c5-4e96-97b8-75f5afcc4601",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Lag om ändring i lagen (1994:1776) om skatt på energi",
+    "source_sfs_nummer": "SFS 2005:960",
+    "expected_document_id": "0022265e-08f4-4e14-9919-1c871c6f3315",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Förordning (1983:1079) om statsbidrag till \nverksamheten med ungdomslag, m.m.\n",
+    "source_sfs_nummer": "SFS 1983:1079",
+    "expected_document_id": "00225c80-c175-4f3e-a247-7fc95fa7fd8c",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Förordning om ändring i skolförordningen (2011:185)",
+    "source_sfs_nummer": "SFS 2015:142",
+    "expected_document_id": "002291aa-47f7-495b-a62d-0fc0809fd88d",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Förordning om ändring i livsmedelsförordningen (2006:813)",
+    "source_sfs_nummer": "SFS 2017:796",
+    "expected_document_id": "00261d63-4b97-4ebb-b971-18907d07e3d1",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Förordning om ändring i förordningen (2000:1211) med instruktion för Arbetsmiljöverket",
+    "source_sfs_nummer": "SFS 2001:787",
+    "expected_document_id": "0026e3c1-b5c7-4ca1-a1b3-a9b4d730e993",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Lag om ändring i lagen (1927:85) om dödande av förkommen handling",
+    "source_sfs_nummer": "SFS 2003:533",
+    "expected_document_id": "0027a6e2-c423-4f7f-899e-a3f6ac7bdca3",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Lag om ändring i lagen (2001:761) om bostadstillägg till pensionärer m.fl.",
+    "source_sfs_nummer": "SFS 2006:1526",
+    "expected_document_id": "0027eb2d-2321-4217-8d22-ce9ac660ae2a",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Lag om ändring i patientlagen (2014:821)",
+    "source_sfs_nummer": "SFS 2017:615",
+    "expected_document_id": "00281071-7b2c-4f8a-a2e6-c1182710d878",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Lag (1982:268) om Sveriges riksvapen\n",
+    "source_sfs_nummer": "SFS 1982:268",
+    "expected_document_id": "00299d6f-2187-4868-8fd4-e26c2a2ff1e6",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Lag om ändring i socialtjänstlagen (2025:400)",
+    "source_sfs_nummer": "SFS 2025:762",
+    "expected_document_id": "0029bc06-8914-4474-a36c-3d1cb52d53ab",
+    "expected_tier": "high",
+    "series": "SFS"
+  },
+  {
+    "source_titel": "Projektering och byggarbetsmiljösamordning",
+    "source_sfs_nummer": "AFS 2023:3",
+    "expected_document_id": "08bdf560-3638-4f97-98e7-91836ee49bee",
+    "expected_tier": "high",
+    "series": "AFS"
+  },
+  {
+    "source_titel": "Produkter – förbud ledade skärverktyg röjsågar",
+    "source_sfs_nummer": "AFS 2023:8",
+    "expected_document_id": "0e0dd98f-94e7-454d-94f1-377249441152",
+    "expected_tier": "high",
+    "series": "AFS"
+  },
+  {
+    "source_titel": "Risker i arbetsmiljön",
+    "source_sfs_nummer": "AFS 2023:10",
+    "expected_document_id": "1f56df9d-8213-465b-b9a7-af8334622c83",
+    "expected_tier": "high",
+    "series": "AFS"
+  },
+  {
+    "source_titel": "Planering och organisering",
+    "source_sfs_nummer": "AFS 2023:2",
+    "expected_document_id": "42525f1a-946f-4e84-9552-3489aebf4682",
+    "expected_tier": "high",
+    "series": "AFS"
+  },
+  {
+    "source_titel": "Medicinska kontroller i arbetslivet",
+    "source_sfs_nummer": "AFS 2023:15",
+    "expected_document_id": "44cef4d4-6418-40cd-b300-d8e9b253dbd1",
+    "expected_tier": "high",
+    "series": "AFS"
+  },
+  {
+    "source_titel": "Produkter – utrustning explosiva atmosfärer",
+    "source_sfs_nummer": "AFS 2023:7",
+    "expected_document_id": "50c73690-14da-4790-8c0d-6a7271bd3c8d",
+    "expected_tier": "high",
+    "series": "AFS"
+  },
+  {
+    "source_titel": "Kommissionens genomförandeförordning (EU) 2024/3239 av den 19 december 2024 om ändring av bilagorna V och XIV till genomförandeförordning (EU) 2021/404 vad gäller posterna för Förenade kungariket och Förenta staterna i förteckningarna över tredjeländer, territorier eller zoner däri från vilka sändningar av fjäderfä och avelsmaterial från fjäderfä samt färskt kött från fjäderfä och fjädervilt får föras in till unionen",
+    "source_sfs_nummer": "Regulation (EU) 2024/3239",
+    "expected_document_id": "0017bf06-1d4e-4f57-bac3-2994f76b74bf",
+    "expected_tier": "high",
+    "series": "EU"
+  },
+  {
+    "source_titel": "Kommissionens delegerade förordning (EU) 2020/1413 av den 29 juni 2020 om rättelse av den svenska språkversionen av bilaga I till Europaparlamentets och rådets förordning (EG) nr 1272/2008 om klassificering, märkning och förpackning av ämnen och blandningar (Text av betydelse för EES)",
+    "source_sfs_nummer": "32020R1413",
+    "expected_document_id": "003835f7-7f0d-4eb9-a927-a11c8b44b957",
+    "expected_tier": "high",
+    "series": "EU"
+  },
+  {
+    "source_titel": "Kommissionens delegerade direktiv (EU) 2020/1833 av den 2 oktober 2020 om ändring av bilagorna till Europaparlamentets och rådets direktiv 2008/68/EG vad gäller anpassning till den vetenskapliga och tekniska utvecklingen (Text av betydelse för EES)",
+    "source_sfs_nummer": "32020L1833",
+    "expected_document_id": "0aabf27f-b240-45e3-b632-a6792c421047",
+    "expected_tier": "high",
+    "series": "EU"
+  },
+  {
+    "source_titel": "Kommissionens direktiv (EU) 2020/612 av den 4 maj 2020 om ändring av Europaparlamentets och rådets direktiv 2006/126/EG om körkort (Text av betydelse för EES)",
+    "source_sfs_nummer": "32020L0612",
+    "expected_document_id": "0bbfaca9-0ae9-4378-b922-50d7ebd36da0",
+    "expected_tier": "high",
+    "series": "EU"
+  },
+  {
+    "source_titel": "Föreskrifter om ackreditering av organ som ska utföra certifiering av förpackningar, IBC-behållare och storförpackningar för transport av farligt gods på land",
+    "source_sfs_nummer": "MSBFS 2009:5",
+    "expected_document_id": "005c2c91-db84-4e93-b4db-258fb9b78bb8",
+    "expected_tier": "high",
+    "series": "OTHER_AGENCY"
+  },
+  {
+    "source_titel": "Strålsäkerhetsmyndighetens föreskrifter om naturligt förekommande radioaktivt material och byggnadsmaterial",
+    "source_sfs_nummer": "SSMFS 2018:4",
+    "expected_document_id": "0081d1de-d377-43c8-a47c-9f2e3350aa06",
+    "expected_tier": "high",
+    "series": "OTHER_AGENCY"
+  },
+  {
+    "source_titel": "Föreskrifter om ackreditering av organ som ska kontrollera fordon för transport av farligt gods",
+    "source_sfs_nummer": "MSBFS 2011:4",
+    "expected_document_id": "00c41d65-ac5c-449a-9e17-36fe87370e81",
+    "expected_tier": "high",
+    "series": "OTHER_AGENCY"
+  },
+  {
+    "source_titel": "Personuppgiftslagen från 1973 i Sverige",
+    "source_sfs_nummer": null,
+    "expected_document_id": null,
+    "expected_tier": "unmatched",
+    "series": "NEGATIVE",
+    "note": "Outdated repealed law; not in current catalog"
+  },
+  {
+    "source_titel": "Internal company brand guidelines v3",
+    "source_sfs_nummer": null,
+    "expected_document_id": null,
+    "expected_tier": "unmatched",
+    "series": "NEGATIVE",
+    "note": "Not lagstiftning at all"
+  },
+  {
+    "source_titel": "Helt påhittat namn på en lag som inte existerar",
+    "source_sfs_nummer": "XYZ 9999:1",
+    "expected_document_id": null,
+    "expected_tier": "unmatched",
+    "series": "NEGATIVE",
+    "note": "Synthetic prefix + far-future year"
+  },
+  {
+    "source_titel": "",
+    "source_sfs_nummer": null,
+    "expected_document_id": null,
+    "expected_tier": "unmatched",
+    "series": "NEGATIVE",
+    "note": "Empty source"
+  },
+  {
+    "source_titel": "Projektering och byggarbetsmiljösamordning",
+    "source_sfs_nummer": "2023:3",
+    "expected_document_id": "08bdf560-3638-4f97-98e7-91836ee49bee",
+    "expected_tier": "medium",
+    "series": "PREFIX_MISMATCH",
+    "note": "AFS row with prefix stripped — should land MEDIUM via suffix match"
+  },
+  {
+    "source_titel": "Produkter – förbud ledade skärverktyg röjsågar",
+    "source_sfs_nummer": "NFS 2023:8",
+    "expected_document_id": "0e0dd98f-94e7-454d-94f1-377249441152",
+    "expected_tier": "medium",
+    "series": "PREFIX_MISMATCH",
+    "note": "AFS row written with non-colliding wrong prefix (NFS) — suffix match should rescue"
+  },
+  {
+    "source_titel": "Föreskrifter om ackreditering av organ som ska utföra certifiering av förpackningar, IBC-behållare och storförpackningar för transport av farligt gods på land",
+    "source_sfs_nummer": "2009:5",
+    "expected_document_id": "005c2c91-db84-4e93-b4db-258fb9b78bb8",
+    "expected_tier": "medium",
+    "series": "PREFIX_MISMATCH",
+    "note": "Other-agency row with prefix stripped"
+  }
+]

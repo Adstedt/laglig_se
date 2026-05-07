@@ -186,7 +186,9 @@ describe('POST /api/workspace/invitations — seat gate wiring', () => {
     expect(mockWorkspaceInvitation.create).not.toHaveBeenCalled()
   })
 
-  it('returns HTTP 503 + STRIPE_UNAVAILABLE when Stripe API throws', async () => {
+  // Skipped: countActiveAddonSeats no longer calls Stripe (Story 5.6 backlog).
+  // Un-skip when the live Stripe lookup is restored.
+  it.skip('returns HTTP 503 + STRIPE_UNAVAILABLE when Stripe API throws', async () => {
     const ws = stubWorkspace('TEAM', { stripe_subscription_id: 'sub_xyz' })
     mockWorkspace.findUnique.mockResolvedValue(ws)
     mockWorkspace.findUniqueOrThrow.mockResolvedValue(ws)
@@ -275,7 +277,8 @@ describe('acceptInvitation — seat gate wiring', () => {
     })
   })
 
-  it('returns STRIPE_UNAVAILABLE shape when Stripe lookup fails before transaction', async () => {
+  // Skipped: countActiveAddonSeats no longer calls Stripe (Story 5.6 backlog).
+  it.skip('returns STRIPE_UNAVAILABLE shape when Stripe lookup fails before transaction', async () => {
     const ws = stubWorkspace('TEAM', { stripe_subscription_id: 'sub_xyz' })
     mockWorkspaceInvitation.findUnique.mockResolvedValue(validInvitation)
     mockUser.findUnique.mockResolvedValue({

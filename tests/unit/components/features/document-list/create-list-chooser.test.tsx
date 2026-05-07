@@ -209,4 +209,113 @@ describe('CreateListChooser', () => {
       expect(btn).toHaveAttribute('tabindex', '0')
     }
   })
+
+  // --- Story 24.6: Importera card ---
+
+  it('renders the "Importera" card when onSelectImport is provided', () => {
+    render(
+      <CreateListChooser
+        templates={mockTemplates}
+        onSelectTemplate={vi.fn()}
+        onSelectBlank={vi.fn()}
+        onSelectImport={vi.fn()}
+      />
+    )
+
+    expect(screen.getByText('Importera')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Ladda upp en befintlig laglista från Excel, CSV eller klistra in raderna'
+      )
+    ).toBeInTheDocument()
+  })
+
+  it('does NOT render the "Importera" card when onSelectImport is omitted', () => {
+    render(
+      <CreateListChooser
+        templates={mockTemplates}
+        onSelectTemplate={vi.fn()}
+        onSelectBlank={vi.fn()}
+      />
+    )
+
+    expect(screen.queryByText('Importera')).not.toBeInTheDocument()
+  })
+
+  it('calls onSelectImport when "Importera" card is clicked', async () => {
+    const user = userEvent.setup()
+    const onSelectImport = vi.fn()
+    render(
+      <CreateListChooser
+        templates={mockTemplates}
+        onSelectTemplate={vi.fn()}
+        onSelectBlank={vi.fn()}
+        onSelectImport={onSelectImport}
+      />
+    )
+
+    const allButtons = screen.getAllByRole('button')
+    const importCard = allButtons.find((btn) =>
+      btn.textContent?.includes('Importera')
+    )
+    expect(importCard).toBeDefined()
+    await user.click(importCard!)
+
+    expect(onSelectImport).toHaveBeenCalledOnce()
+  })
+
+  it('Importera card is keyboard accessible (Enter)', async () => {
+    const user = userEvent.setup()
+    const onSelectImport = vi.fn()
+    render(
+      <CreateListChooser
+        templates={mockTemplates}
+        onSelectTemplate={vi.fn()}
+        onSelectBlank={vi.fn()}
+        onSelectImport={onSelectImport}
+      />
+    )
+
+    const allButtons = screen.getAllByRole('button')
+    const importCard = allButtons.find((btn) =>
+      btn.textContent?.includes('Importera')
+    )
+    importCard!.focus()
+    await user.keyboard('{Enter}')
+
+    expect(onSelectImport).toHaveBeenCalledOnce()
+  })
+
+  it('uses 3-column grid (lg breakpoint) when import card is shown', () => {
+    const { container } = render(
+      <CreateListChooser
+        templates={mockTemplates}
+        onSelectTemplate={vi.fn()}
+        onSelectBlank={vi.fn()}
+        onSelectImport={vi.fn()}
+      />
+    )
+
+    // Find the option-cards grid wrapper. Smoke check on the layout class —
+    // 1 col on mobile, 2 cols at sm, 3 cols at lg. (`sm:grid-cols-3` was
+    // considered but rejected in PO NICE-001 review for breathing room.)
+    const grid = container.querySelector('.lg\\:grid-cols-3')
+    expect(grid).not.toBeNull()
+  })
+
+  it('uses 2-column grid when import card is hidden', () => {
+    const { container } = render(
+      <CreateListChooser
+        templates={mockTemplates}
+        onSelectTemplate={vi.fn()}
+        onSelectBlank={vi.fn()}
+      />
+    )
+
+    // No 3-col grid class when import card not rendered.
+    const lgGrid = container.querySelector('.lg\\:grid-cols-3')
+    expect(lgGrid).toBeNull()
+    const smGrid = container.querySelector('.sm\\:grid-cols-2')
+    expect(smGrid).not.toBeNull()
+  })
 })

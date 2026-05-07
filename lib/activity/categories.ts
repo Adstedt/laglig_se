@@ -94,6 +94,28 @@ export const ACTION_TO_CATEGORY: Record<KnownAction, ActivityCategory> = {
   trial_workspace_deleted: 'livscykel',
   trial_converted: 'livscykel',
   workspace_reactivated_from_trial_pause: 'livscykel',
+
+  // Epic 24 — Import existing law list (Story 24.1)
+  'law_list_import.created': 'livscykel',
+  'law_list_import.committed': 'livscykel',
+  // Story 24.3 — matching lifecycle
+  'law_list_import.matching_started': 'livscykel',
+  'law_list_import.matching_completed': 'livscykel',
+  'law_list_import.matching_failed': 'livscykel',
+
+  // Story 24.4 — review-surface per-row decisions
+  'law_list_import.row_accepted': 'andringar',
+  'law_list_import.row_replaced': 'andringar',
+  'law_list_import.row_rejected': 'andringar',
+  'law_list_import.row_catalog_requested': 'kopplingar',
+  'law_list_import.row_decision_undone': 'andringar',
+  'law_list_import.bulk_accepted_high': 'andringar',
+  // Discard is a lifecycle event (terminates the import)
+  'law_list_import.discarded': 'livscykel',
+
+  // Story 24.5 — catalog-requests admin queue (ops fulfilment loop)
+  'catalog_request.fulfilled': 'livscykel',
+  'catalog_request.rejected': 'livscykel',
 }
 
 export const CATEGORY_META: Record<

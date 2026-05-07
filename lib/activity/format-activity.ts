@@ -664,6 +664,111 @@ export function formatActivity(input: FormatInput): SentencePart[] {
         text(' efter trial-pause via Stripe Checkout'),
       ]
 
+    // ----------------- Epic 24: Import existing law list (Story 24.1) -----------------
+    case 'law_list_import.created':
+      return [u, text(' skapade laglistimporten '), primary]
+
+    case 'law_list_import.committed':
+      return [u, text(' bekräftade laglistimporten '), primary]
+
+    // ----------------- Story 24.3: matching lifecycle -----------------
+    case 'law_list_import.matching_started':
+      return [u, text(' startade matchningen för '), primary]
+
+    case 'law_list_import.matching_completed': {
+      const high = newP?.matched_high_count
+      const med = newP?.matched_medium_count
+      const un = newP?.unmatched_count
+      const parts: SentencePart[] = [
+        u,
+        text(' avslutade matchningen för '),
+        primary,
+      ]
+      if (
+        typeof high === 'number' &&
+        typeof med === 'number' &&
+        typeof un === 'number'
+      ) {
+        parts.push(text(` (${high} hög, ${med} medel, ${un} omatchade)`))
+      }
+      return parts
+    }
+
+    case 'law_list_import.matching_failed':
+      return [
+        text('Matchningen misslyckades för '),
+        primary,
+        text(' — kontakta support'),
+      ]
+
+    // ----------------- Story 24.4: review-surface decisions -----------------
+    case 'law_list_import.row_accepted':
+      return [u, text(' accepterade en matchning i '), primary]
+
+    case 'law_list_import.row_replaced':
+      return [u, text(' bytte matchning för en rad i '), primary]
+
+    case 'law_list_import.row_rejected':
+      return [u, text(' avvisade en matchning i '), primary]
+
+    case 'law_list_import.row_catalog_requested':
+      return [u, text(' begärde katalogtillägg för en rad i '), primary]
+
+    case 'law_list_import.row_decision_undone':
+      return [u, text(' ångrade ett beslut för en rad i '), primary]
+
+    case 'law_list_import.bulk_accepted_high': {
+      const count = newP?.count
+      const parts: SentencePart[] = [
+        u,
+        text(' accepterade alla höga matchningar i '),
+        primary,
+      ]
+      if (typeof count === 'number') parts.push(text(` (${count} rader)`))
+      return parts
+    }
+
+    case 'law_list_import.discarded':
+      // The import + all rows are gone by the time the activity log renders,
+      // so `primary` (entity-resolved label) falls back to the snapshot
+      // filename embedded in oldValue. Keep the sentence terse.
+      return [u, text(' avbröt importen '), primary]
+
+    // ----------------- Story 24.5: catalog-requests admin queue -----------------
+    case 'catalog_request.fulfilled': {
+      const docTitle = pickString(
+        newP,
+        'document_title',
+        'fulfilled_with_document_title'
+      )
+      const parts: SentencePart[] = [
+        u,
+        text(' hanterade katalogtillägg för '),
+        primary,
+      ]
+      if (docTitle) {
+        parts.push(text(' — matchat mot '), emphasis(docTitle))
+      }
+      return parts
+    }
+
+    case 'catalog_request.rejected': {
+      const reason = pickString(newP, 'admin_note', 'reason')
+      const parts: SentencePart[] = [
+        u,
+        text(' avvisade katalogtillägg för '),
+        primary,
+      ]
+      if (reason) {
+        const truncated =
+          reason.length > CLOSE_REASON_MAX_CHARS
+            ? reason.slice(0, CLOSE_REASON_MAX_CHARS) + '…'
+            : reason
+        parts.push(text(': '), emphasis(truncated))
+      }
+      return parts
+    }
+
     // ----------------- Fallback -----------------
     default:
       return [

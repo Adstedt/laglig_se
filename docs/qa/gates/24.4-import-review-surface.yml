@@ -1,0 +1,256 @@
+schema: 1
+story: '24.4'
+story_title: 'Import — review surface (full-page, per-row decisions, commit)'
+gate: CONCERNS
+status_reason: |
+  All 23 ACs functionally met or properly handled. Implementation is high
+  quality: 8 server actions wired with idempotency throughout, two well-
+  organised client components, polished edge-state handling (empty / MATCHING /
+  FAILED / COMMITTED), comprehensive test pyramid (24 component + 10
+  integration tests). Gate is CONCERNS not PASS for two reasons: (1) AC 2
+  mandates `TanStack Virtual` for >50 rows; dev deferred virtualisation
+  entirely with a "fixtures stay sub-100 rows" justification — but real
+  customer files can run up to 1000 rows (24.2 parser cap). (2) AC 18's E2E
+  escape-hatch is "if Playwright is NOT configured" — Playwright IS
+  configured here, so the dev's substitution of a manual smoke checklist is
+  a strict-reading deviation. Both items are scoped, manageable follow-ups,
+  not implementation defects.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-07T13:00:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'PERF-001'
+    severity: medium
+    finding: |
+      AC 2 specifies "shadcn `<Table>`: rows virtualised via `TanStack Virtual`
+      for >50 rows". Implementation in `import-review-page.tsx` renders a
+      naive `filteredRows.map(...)` over `<ImportRowCard>` (each card ~150-
+      200px tall) with no virtualisation. The dev's deferral note —
+      "fixtures stay sub-100 rows" — is true for the dev fixtures, but
+      `lib/import/parser.ts:MAX_ROWS = 1000` means real customer imports can
+      legitimately produce 1000 rows. At that size, the page renders ~150-200K
+      pixels of DOM (~1000 cards × ~180px) plus the per-row React reconciler
+      cost on every state mutation. Browsers will cope but interaction
+      latency degrades noticeably.
+    suggested_action: |
+      Wire `useVirtualizer` from `@tanstack/react-virtual` per the existing
+      pattern at `components/features/compliance-audit/cycle-detail/cycle-items-tab.tsx`.
+      Threshold of 100 rows (mirrors that file's `VIRTUALIZATION_THRESHOLD`)
+      is conservative — below 100 rows the array .map is fine. ~30 lines.
+      Pair with a per-row `estimateSize` of ~180px since `<ImportRowCard>` is
+      the larger card (vs cycle-items' 72px row). Keep the existing
+      filtered-array pipeline above the virtualizer; the virtualizer only
+      changes the rendering layer.
+    suggested_owner: dev
+  - id: 'TEST-001'
+    severity: low
+    finding: |
+      AC 18 says "first verify Playwright setup exists: check for
+      `playwright.config.ts` at repo root + `tests/e2e/` directory. If neither
+      exists, skip the E2E test entirely". Both DO exist in this repo
+      (verified). The dev's Completion Notes substitute a manual smoke
+      checklist instead, citing "Playwright config exists but the harness is
+      heavy for a single happy-path". This is a strict-reading deviation
+      from AC 18's escape hatch. The 34 component+integration tests give
+      strong coverage — the missing E2E is a happy-path-confidence gap, not
+      a logic gap.
+    suggested_action: |
+      Either (a) write the AC-mandated `tests/e2e/import-flow.spec.ts` happy-
+      path: upload notisum fixture → wait for matching → click "Acceptera
+      alla höga" → confirm → click commit → assert redirect to
+      `/laglistor/{id}` → assert items present. Mocking the LLM in E2E means
+      either pre-seeding rows directly into the DB OR running against the
+      live Anthropic API (~$0.20 per CI run). Recommend (a) with pre-seeded
+      rows. (b) the alternative — formally waive the AC by getting PO
+      sign-off and updating AC 18 to drop the E2E requirement.
+    suggested_owner: dev
+  - id: 'TEST-002'
+    severity: low
+    finding: |
+      Single test flake observed during parallel run (component + integration
+      suites running concurrently): one of the integration tests intermittently
+      failed with `expected false to be true` then passed on isolated re-run.
+      Root cause likely vitest worker-pool DB-row contention — the integration
+      tests share the test workspace via `TEST_PREFIX` and parallel workers
+      can race during the row-state setup. Not a code defect; tests pass
+      reliably when run alone OR when integration runs sequentially.
+    suggested_action: |
+      Add `pool: 'forks', poolOptions: { forks: { singleFork: true } }` to
+      `vitest.config.mts` for the integration suite specifically (or move
+      the integration tests to a separate config). Alternatively, gate
+      cross-test fixtures with per-test prefixes (e.g. test name
+      hashed-into-prefix). Defensible to defer — the flake is rare enough
+      that the existing suite catches issues reliably in practice.
+    suggested_owner: dev
+
+quality_score: 85 # 100 - (1 medium × 10) - (2 low × 2.5) ≈ 85
+
+evidence:
+  tests_reviewed: 67 # 24 component + 10 integration new + 33 baseline (24.1+24.2+24.3 still passing)
+  tests_new_for_24_4: 34 # 24 component + 10 integration
+  tests_passing: 67
+  full_unit_suite_passing: 4535 # +24 net new vs 24.3 baseline of 4511
+  full_integration_law_list_import_passing: 33
+  files_created: 6 # page route, 2 client components, email, 2 test files
+  files_modified: 5 # actions, 3 activity-log files, 1 integration test file
+  risks_identified: 3
+  risks_resolved: 0 # all are tightening / deferred-AC items
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 20, 21, 22, 23]
+    ac_partial: [2, 18] # AC 2 virtualisation deferred (PERF-001); AC 18 E2E swapped for manual smoke (TEST-001)
+    ac_gaps: []
+    ac_extras: [15] # 6 activity-log keys vs AC's 5 — extra `row_decision_undone` is additive + useful
+  ac_trace_details:
+    ac_2_virtualisation_gap: |
+      AC 2 mandates virtualisation for >50 rows. Implementation renders all
+      rows. See PERF-001. Empirically fine for fixtures + dev workflow;
+      degrades at the parser-cap edge (1000 rows).
+    ac_8_schema_correction: |
+      AC 8 instructed "verify `LawListItem.area_label` etc. against the
+      actual schema". Dev did the verification: `area_label` does NOT exist;
+      closest field is `category` (per `prisma/schema.prisma:LawListItem`).
+      Implementation uses `category`. Documented in dev Debug Log. Correct.
+    ac_8_bis_responsible_user_id: |
+      Per AC 8.bis: trim + lowercase, query workspace_members + OR(email,
+      name), exactly one match → assign, else null. Implementation at
+      `app/actions/law-list-import.ts:resolveResponsibleUserId` matches
+      exactly.
+    ac_14_idempotency: |
+      Server actions are all idempotent (re-call returns success silently
+      OR returns the existing entity for natural-key actions like
+      requestCatalogAdd). Verified by integration tests. AC 14 satisfied.
+    ac_15_extra_action: |
+      AC 15 lists 5 new action constants; implementation has 6 (added
+      `law_list_import.row_decision_undone` for the Ångra path).
+      Additive — the undo is a real user action and should be auditable.
+      Categories.ts and format-activity.ts both updated. Net positive.
+    ac_18_e2e_deferred: |
+      AC 18 escape hatch fires "if neither Playwright config NOR
+      tests/e2e/ exists" — both exist here. Dev substituted a manual smoke
+      checklist (documented in Completion Notes). See TEST-001.
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      Workspace scoping on every action via `withWorkspace`. The
+      `replaceRowMatch` action explicitly validates the chosen
+      `candidateDocId` is in the row's `match_candidates` JSON — guards
+      against arbitrary doc-id injection (AC 17 integration test verifies
+      this rejection). `getImport` uses `'read'` permission (workspace-
+      member-readable). All Prisma queries are workspace-scoped via
+      `loadWorkspaceScopedRow` helper. Email send is fail-safe (try/catch +
+      console.error; doesn't fail the commit). No new auth surface.
+  performance:
+    status: CONCERNS
+    notes: |
+      `getImport` is one Prisma query with includes — good. Bulk operations
+      use `updateMany` / `createMany` — good. `commitImport` runs in a
+      single transaction — good. **Concern: row-list virtualisation
+      deferred** (PERF-001). At ~50-100 rows, the rendering is fine; at
+      ~1000 rows (parser cap), interaction latency degrades because every
+      filter chip click and every state update reconciles all 1000
+      `<ImportRowCard>` instances. Mitigations: (a) wire `useVirtualizer`
+      per AC 2; (b) client-side filtering already short-circuits — at
+      filter !== 'all' the rendered count drops, so the worst-case is
+      unfiltered "Alla" view of a 1000-row import. Real-world expected to
+      hover ~50-300 rows; rare beyond that.
+  reliability:
+    status: PASS
+    notes: |
+      Idempotency throughout — every action's natural-key behavior is
+      idempotent (re-accepting an already-accepted row succeeds; commit
+      returns existing law_list_id; requestCatalogAdd returns existing
+      request). Edge states (empty / MATCHING / FAILED / COMMITTED) are
+      explicit pre-render branches in the page. Email send is fail-safe.
+      Status state machine respects guards (cannot commit unless
+      AWAITING_REVIEW; cannot accept unless MATCHED_*; etc.). The undo
+      branch correctly handles each prior state including deleting the
+      pending CatalogIngestRequest when undoing a CATALOG_REQUEST_PENDING.
+  maintainability:
+    status: PASS
+    notes: |
+      Server-action file is now 1316 lines but each action is independent
+      and well-named with section banners. The `loadWorkspaceScopedRow`
+      helper + `MatchCandidateJson` type + `isMatchCandidate` type guard
+      keep the type narrowing clean. Component files are 480-530 lines —
+      long but cohesive (page shell + per-row card are the natural
+      boundaries). Activity-log integration follows the established 3-file
+      pattern (action-constants + categories + format-activity). Email
+      template mirrors `task-assigned.tsx` exactly. AC 8 schema correction
+      is documented in dev Debug Log so future devs touching commitImport
+      see the rationale. Test mocks are well-scoped (next/cache,
+      email-service, matcher).
+
+recommendations:
+  immediate: [] # no blockers — gate is CONCERNS only on the virtualisation gap
+  future:
+    - action: |
+        PERF-001: wire `useVirtualizer` from `@tanstack/react-virtual` to
+        `<ImportReviewPage>`'s row list. Threshold ~100 rows; estimateSize
+        ~180px. ~30 lines mirroring `cycle-items-tab.tsx`. AC 2 mandate.
+      refs: [
+        'components/features/law-list-import/import-review-page.tsx:430',
+        'components/features/compliance-audit/cycle-detail/cycle-items-tab.tsx'
+      ]
+    - action: |
+        TEST-001: pick a path on AC 18. Recommend (a) write the
+        Playwright happy-path with pre-seeded LLM rows in fixtures (avoids
+        Anthropic cost in CI). (b) requires PO ratification + AC text update.
+      refs: [
+        'tests/e2e/import-flow.spec.ts (does not exist)',
+        'docs/stories/24.4.import-review-surface.md AC 18'
+      ]
+    - action: |
+        TEST-002: tighten vitest worker-pool isolation for the integration
+        suite to eliminate the rare parallel-run flake. Either single-fork
+        the integration suite or hash the test name into TEST_PREFIX so
+        cross-test row contention is impossible.
+      refs: ['vitest.config.mts', 'tests/integration/app/actions/law-list-import.test.ts']
+    - action: |
+        Story 24.5 dependency: the `getImport` action returns the new
+        `ImportSummary` shape — admin queue UI in 24.5 may want to query
+        catalog requests directly from the existing `listPendingCatalogRequests`
+        action rather than re-using `getImport`. Document the read paths
+        clearly in 24.5's Dev Notes.
+      refs: ['app/actions/catalog-ingest-request.ts']
+    - action: |
+        Story 24.6 dependency: the page route at
+        `app/(workspace)/laglistor/skapa/[importId]/granska/` exists but the
+        parent `[importId]/` directory and `app/(workspace)/laglistor/skapa/`
+        index page do NOT yet exist. Story 24.6 creates the
+        `/laglistor/skapa` Generate-or-Import fork; verify the route tree
+        renders correctly when 24.6 lands.
+      refs: ['app/(workspace)/laglistor/skapa/']
+
+# Positive observations
+notes:
+  - |
+    Strong AC traceability. The dev's 24-test component coverage hits every
+    per-row action variant and every edge state explicitly — no test was
+    deduped on convenience. Integration tests cover the candidate-validation
+    gate (AC 17 explicit ask) AND the commit idempotency (AC 17 ask) with
+    real LegalDocument FKs.
+  - |
+    The AC 8 schema correction was caught and documented at dev time —
+    this is exactly the loop QA wants. The wrong field (`area_label`) would
+    have been a P2025 at runtime; the dev grepped, found `category`, and
+    documented the substitution.
+  - |
+    Idempotency design across all 8 actions is consistent and well-tested.
+    The undo branch correctly handles the catalog-request deletion + the
+    derived-tier-from-confidence-score path. Hard to get right on a first
+    pass.
+  - |
+    The pre-task QA-fix round (24.2/24.3 follow-ups) before starting 24.4
+    was the right ordering: DESIGN-001 (Branch-B-only cap → MEDIUM) prevents
+    user-facing wrong-but-confident matches that 24.4's review UI would
+    have surfaced. Cross-story regression discipline maintained.
+  - |
+    The cross-cutting Epic 24 conventions (dot-notation activity keys,
+    ENABLE-only RLS, uuid PKs) all honoured throughout. PO → Dev → QA loop
+    has been productive across the 4-story epic so far.
+
+expires: '2026-05-21T13:00:00Z' # 14-day freshness window

@@ -19,6 +19,25 @@ export default defineConfig({
       '**/.next/**',
       '**/e2e/**', // Exclude Playwright E2E tests
     ],
+    // Story 24.4 QA gate TEST-002: integration tests share the staging
+    // database through prisma — running multiple integration files in
+    // parallel workers causes occasional Supabase-pool contention where a
+    // server action's prisma call times out and returns
+    // `{success: false}`, producing a spurious test failure. Force the
+    // integration suite to run in a single fork so all integration tests
+    // serialise on one prisma client. Unit tests keep the default thread
+    // pool — only the matched integration files take the slow path.
+    poolMatchGlobs: [
+      [
+        '**/tests/integration/**',
+        'forks',
+      ],
+    ],
+    poolOptions: {
+      forks: {
+        singleFork: true,
+      },
+    },
   },
   resolve: {
     alias: [

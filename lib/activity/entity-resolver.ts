@@ -99,7 +99,17 @@ function tombstone(
 function fallbackLabelFromPayload(row: ActivityRowLike): string | null {
   const p = (row.new_value ?? row.old_value) as Record<string, unknown> | null
   if (!p) return null
-  const candidates = ['title', 'name', 'text', 'law_title', 'subject']
+  // Story 24.2: include `filename` so soft-deleted/cross-workspace
+  // law_list_import tombstones display the source filename instead of a
+  // generic "[borttagen law_list_import]" placeholder.
+  const candidates = [
+    'title',
+    'name',
+    'text',
+    'law_title',
+    'subject',
+    'filename',
+  ]
   for (const k of candidates) {
     const v = p[k]
     if (typeof v === 'string' && v.length > 0) return truncate(v)
@@ -124,6 +134,7 @@ export async function resolveEntityNames(
   const cycleIds = new Set<string>()
   const auditItemIds = new Set<string>()
   const findingIds = new Set<string>()
+  const lawListImportIds = new Set<string>()
 
   const pushById = (entityType: string, id: string) => {
     if (!id) return
@@ -134,6 +145,7 @@ export async function resolveEntityNames(
     else if (entityType === 'compliance_audit_cycle') cycleIds.add(id)
     else if (entityType === 'compliance_audit_item') auditItemIds.add(id)
     else if (entityType === 'compliance_finding') findingIds.add(id)
+    else if (entityType === 'law_list_import') lawListImportIds.add(id)
   }
 
   const secondaryByRow = new Map<string, SecondaryRef | null>()
@@ -144,75 +156,93 @@ export async function resolveEntityNames(
     if (secondary) pushById(secondary.entity_type, secondary.id)
   }
 
-  const [tasks, listItems, docs, requirements, cycles, auditItems, findings] =
-    await Promise.all([
-      taskIds.size
-        ? prisma.task.findMany({
-            where: { id: { in: [...taskIds] }, workspace_id: workspaceId },
-            select: { id: true, title: true },
-          })
-        : Promise.resolve([]),
-      listItemIds.size
-        ? prisma.lawListItem.findMany({
-            where: {
-              id: { in: [...listItemIds] },
-              law_list: { workspace_id: workspaceId },
-            },
-            select: {
-              id: true,
-              document: { select: { title: true, document_number: true } },
-            },
-          })
-        : Promise.resolve([]),
-      docIds.size
-        ? prisma.workspaceDocument.findMany({
-            where: { id: { in: [...docIds] }, workspace_id: workspaceId },
-            select: { id: true, title: true },
-          })
-        : Promise.resolve([]),
-      requirementIds.size
-        ? prisma.lawListItemRequirement.findMany({
-            where: {
-              id: { in: [...requirementIds] },
-              list_item: { law_list: { workspace_id: workspaceId } },
-            },
-            select: { id: true, text: true, list_item_id: true },
-          })
-        : Promise.resolve([]),
-      // Story 21.13: compliance-audit entities.
-      cycleIds.size
-        ? prisma.complianceAuditCycle.findMany({
-            where: { id: { in: [...cycleIds] }, workspace_id: workspaceId },
-            select: { id: true, name: true },
-          })
-        : Promise.resolve([]),
-      auditItemIds.size
-        ? prisma.complianceAuditItem.findMany({
-            where: {
-              id: { in: [...auditItemIds] },
-              cycle: { workspace_id: workspaceId },
-            },
-            select: {
-              id: true,
-              cycle_id: true,
-              law_list_item: {
-                select: {
-                  document: { select: { title: true, document_number: true } },
-                },
+  const [
+    tasks,
+    listItems,
+    docs,
+    requirements,
+    cycles,
+    auditItems,
+    findings,
+    lawListImports,
+  ] = await Promise.all([
+    taskIds.size
+      ? prisma.task.findMany({
+          where: { id: { in: [...taskIds] }, workspace_id: workspaceId },
+          select: { id: true, title: true },
+        })
+      : Promise.resolve([]),
+    listItemIds.size
+      ? prisma.lawListItem.findMany({
+          where: {
+            id: { in: [...listItemIds] },
+            law_list: { workspace_id: workspaceId },
+          },
+          select: {
+            id: true,
+            document: { select: { title: true, document_number: true } },
+          },
+        })
+      : Promise.resolve([]),
+    docIds.size
+      ? prisma.workspaceDocument.findMany({
+          where: { id: { in: [...docIds] }, workspace_id: workspaceId },
+          select: { id: true, title: true },
+        })
+      : Promise.resolve([]),
+    requirementIds.size
+      ? prisma.lawListItemRequirement.findMany({
+          where: {
+            id: { in: [...requirementIds] },
+            list_item: { law_list: { workspace_id: workspaceId } },
+          },
+          select: { id: true, text: true, list_item_id: true },
+        })
+      : Promise.resolve([]),
+    // Story 21.13: compliance-audit entities.
+    cycleIds.size
+      ? prisma.complianceAuditCycle.findMany({
+          where: { id: { in: [...cycleIds] }, workspace_id: workspaceId },
+          select: { id: true, name: true },
+        })
+      : Promise.resolve([]),
+    auditItemIds.size
+      ? prisma.complianceAuditItem.findMany({
+          where: {
+            id: { in: [...auditItemIds] },
+            cycle: { workspace_id: workspaceId },
+          },
+          select: {
+            id: true,
+            cycle_id: true,
+            law_list_item: {
+              select: {
+                document: { select: { title: true, document_number: true } },
               },
             },
-          })
-        : Promise.resolve([]),
-      findingIds.size
-        ? prisma.complianceFinding.findMany({
-            where: {
-              id: { in: [...findingIds] },
-              cycle: { workspace_id: workspaceId },
-            },
-            select: { id: true, cycle_id: true, title: true },
-          })
-        : Promise.resolve([]),
-    ])
+          },
+        })
+      : Promise.resolve([]),
+    findingIds.size
+      ? prisma.complianceFinding.findMany({
+          where: {
+            id: { in: [...findingIds] },
+            cycle: { workspace_id: workspaceId },
+          },
+          select: { id: true, cycle_id: true, title: true },
+        })
+      : Promise.resolve([]),
+    // Story 24.2: import-pipeline events keyed by entity_type='law_list_import'.
+    lawListImportIds.size
+      ? prisma.lawListImport.findMany({
+          where: {
+            id: { in: [...lawListImportIds] },
+            workspace_id: workspaceId,
+          },
+          select: { id: true, filename: true },
+        })
+      : Promise.resolve([]),
+  ])
 
   const refFor = (
     entityType: string,
@@ -301,6 +331,19 @@ export async function resolveEntityNames(
         id,
         label: truncate(hit.title),
         href: `/laglistor/kontroller/${hit.cycle_id}#findings`,
+        deleted: false,
+      }
+    }
+    // Story 24.2: law-list-import primary entity. Label is the source filename
+    // (truncated). Href points at the granska review surface (Story 24.4 ships
+    // the page; href is harmless before that since the row label still renders).
+    if (entityType === 'law_list_import') {
+      const hit = lawListImports.find((i) => i.id === id)
+      if (!hit) return tombstone(entityType, id, fallback)
+      return {
+        id,
+        label: truncate(hit.filename),
+        href: `/laglistor/skapa/${id}/granska`,
         deleted: false,
       }
     }
