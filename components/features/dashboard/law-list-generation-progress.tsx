@@ -208,19 +208,37 @@ function CompletedCard({
 }
 
 function FailedCard({ error }: { error?: string | null }) {
+  const [dismissed, setDismissed] = useState(false)
+
+  const handleDismiss = () => {
+    setDismissed(true)
+    fetch('/api/workspace/generation-status', { method: 'DELETE' }).catch(
+      () => {}
+    )
+  }
+
+  if (dismissed) return null
+
   return (
-    <Card className="border-destructive/20 bg-destructive/5">
-      <CardHeader className="pb-3">
+    <Card className="relative border-destructive/20 bg-destructive/5">
+      <button
+        onClick={handleDismiss}
+        className="absolute top-3 right-3 p-1 rounded-md text-muted-foreground/60 hover:text-foreground hover:bg-destructive/10 transition-colors"
+        aria-label="Stäng"
+      >
+        <X className="h-4 w-4" />
+      </button>
+      <CardHeader className="pb-3 pr-10">
         <CardTitle className="flex items-center gap-2 text-base">
           <AlertTriangle className="h-4 w-4 text-destructive" />
           Laglistan kunde inte skapas automatiskt
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex items-center justify-between">
+      <CardContent className="flex items-center justify-between gap-4">
         <p className="text-sm text-muted-foreground">
           {error ?? 'Du kan skapa din lista manuellt.'}
         </p>
-        <Button asChild variant="outline" size="sm">
+        <Button asChild variant="outline" size="sm" className="shrink-0">
           <Link href="/laglistor">Skapa manuellt</Link>
         </Button>
       </CardContent>

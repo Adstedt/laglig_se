@@ -48,27 +48,57 @@ export async function GET() {
       )
     }
 
-    // Stale detection: if in_progress for over 6 minutes, auto-recover to failed
-    // This handles Vercel function timeouts where the catch block never runs
+    // Stale detection: if in_progress for over 6 minutes, treat as failed.
+    // Handles Vercel function timeouts where the catch block never runs.
     const STALE_THRESHOLD_MS = 6 * 60 * 1000
-    if (
+    const isStaleInProgress =
       workspace.law_list_generation_status === 'in_progress' &&
       workspace.updated_at.getTime() < Date.now() - STALE_THRESHOLD_MS
-    ) {
-      await prisma.workspace.update({
-        where: { id: workspaceId },
-        data: {
-          law_list_generation_status: 'failed',
-          law_list_generation_error:
+    const looksFailed =
+      workspace.law_list_generation_status === 'failed' || isStaleInProgress
+
+    if (looksFailed) {
+      // Auto-recovery: the generation may have succeeded before the function
+      // timed out, just without updating the status field. If a default law
+      // list with items already exists, silently clear the status so no banner
+      // is shown.
+      const existingList = await prisma.lawList.findFirst({
+        where: { workspace_id: workspaceId, is_default: true },
+        select: { _count: { select: { items: true } } },
+      })
+
+      if (existingList && existingList._count.items > 0) {
+        await prisma.workspace.update({
+          where: { id: workspaceId },
+          data: {
+            law_list_generation_status: null,
+            law_list_generation_error: null,
+          },
+        })
+        return NextResponse.json({
+          status: null,
+          progress: null,
+          error: null,
+        })
+      }
+
+      // Genuine failure — persist it if we detected staleness here.
+      if (isStaleInProgress) {
+        await prisma.workspace.update({
+          where: { id: workspaceId },
+          data: {
+            law_list_generation_status: 'failed',
+            law_list_generation_error:
+              'Genereringen tog för lång tid. Försök igen eller skapa listan manuellt.',
+          },
+        })
+        return NextResponse.json({
+          status: 'failed',
+          progress: workspace.law_list_generation_progress ?? null,
+          error:
             'Genereringen tog för lång tid. Försök igen eller skapa listan manuellt.',
-        },
-      })
-      return NextResponse.json({
-        status: 'failed',
-        progress: workspace.law_list_generation_progress ?? null,
-        error:
-          'Genereringen tog för lång tid. Försök igen eller skapa listan manuellt.',
-      })
+        })
+      }
     }
 
     // Get item count and groups if completed
