@@ -1,0 +1,253 @@
+schema: 1
+story: '24.5'
+story_title: 'Catalog requests — admin queue + 24h SLA fulfilment'
+gate: PASS
+status_reason: |
+  All 22 ACs functionally satisfied with strong test coverage (14 component + 12
+  integration, all green; tsc + lint clean). Idempotency, fail-safe email,
+  cross-cutting Epic 24 conventions, and AC 21 (rejection does NOT auto-flip
+  the originating row) are all explicitly preserved and tested. Original gate
+  was CONCERNS for two follow-ups (UX-001 broken workspace deep-link, UX-002
+  activity-log primary label rendering as `[catalog_request]`); both have
+  since been resolved by the dev — see `history` below for the resolution
+  pass.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-08T09:55:00Z'
+
+waiver: { active: false }
+
+history:
+  - at: '2026-05-08T09:35:00Z'
+    gate: CONCERNS
+    note: |
+      Initial review. Functional ACs all satisfied + tests green, but two
+      adjacent-surface UX issues flagged:
+        - UX-001 (medium): workspace deep-link passes UUID into
+          `?search=` but `getWorkspaceList` filters by name/slug/email.
+        - UX-002 (low): activity-log primary label renders as the literal
+          `[catalog_request]` because the entity-resolver has no case +
+          payload doesn't match `fallbackLabelFromPayload` candidates.
+  - at: '2026-05-08T09:55:00Z'
+    gate: PASS
+    note: |
+      Both UX-001 and UX-002 fixed.
+        - UX-001: `components/admin/catalog-requests-list.tsx` now passes
+          `encodeURIComponent(request.workspace.name)` at both call sites
+          (table-row link + detail-panel field link).
+        - UX-002: more thorough than the gate suggestion — both
+          `fulfillCatalogRequest` and `rejectCatalogRequest` now write
+          `title: source_titel` into the activity-log payload (matches
+          the existing `'title'` candidate, which sits first in
+          `fallbackLabelFromPayload`'s precedence). Resolver was also
+          extended with `'document_title'` as a defensive fallback. Net:
+          activity feed renders "User hanterade katalogtillägg för
+          **Saknad lag 1** — matchat mot AFS 2024:1" on fulfilment, and
+          "User avvisade katalogtillägg för **Saknad lag 1** : reason"
+          on rejection — both surfaces have meaningful primary labels.
+        - All 26 tests still green; tsc + lint clean.
+
+top_issues: [] # both items resolved this pass
+
+quality_score: 100 # all items resolved
+
+evidence:
+  tests_reviewed: 26 # 14 component + 12 integration new for 24.5
+  tests_passing: 26
+  tests_new_for_24_5: 26
+  files_created: 6
+    # app/actions/admin-document-lookup.ts
+    # app/admin/(dashboard)/catalog-requests/page.tsx
+    # components/admin/catalog-requests-list.tsx
+    # emails/catalog-request-fulfilled.tsx
+    # tests/unit/components/admin/catalog-requests-list.test.tsx
+    # tests/integration/app/actions/catalog-ingest-request.test.ts
+  files_modified: 9
+    # app/actions/catalog-ingest-request.ts
+    # app/admin/(dashboard)/dashboard/page.tsx
+    # components/admin/admin-sidebar.tsx
+    # components/admin/metric-card.tsx
+    # lib/activity/action-constants.ts
+    # lib/activity/categories.ts
+    # lib/activity/format-activity.ts
+    # lib/validation/law-list-import.ts
+    # tests/integration/app/actions/law-list-import.test.ts
+  risks_identified: 2
+  risks_resolved: 0 # both are isolated follow-ups
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+    ac_partial: []
+    ac_gaps: []
+    ac_extras:
+      - 'admin-only `lookupLegalDocument` extracted as a separate server action (`app/actions/admin-document-lookup.ts`) so the fulfilment modal can validate the LegalDocument id without coupling to the read-list flow. Clean separation, additive.'
+      - '`getCatalogRequestPipCount` (powers both the sidebar pip and the dashboard SLA-bryts KPI) — was implicitly required by AC 14 + AC 15 but called out as a separate action so both surfaces share one DB call.'
+  ac_trace_details:
+    ac_2_admin_auth: |
+      Layout-level auth via `app/admin/(dashboard)/layout.tsx`. Each server
+      action also re-checks `getAdminSession()` at entry. Defensible
+      double-gate.
+    ac_5_sla_visual_cue: |
+      Three-tier dot (red >24h / amber 12-24h / green <12h) implemented
+      verbatim. `slaTone()` helper at
+      `components/admin/catalog-requests-list.tsx:89` matches the AC worked
+      example precisely. Component test "renders red-tone dot for age > 24h"
+      verifies.
+    ac_7_validation_contract: |
+      Empty input → Validera button disabled (UX gate); button-disabled
+      assertion in component test "Validera button is disabled when input is
+      empty". Lookup returns null → inline form-error rendered (test
+      "shows error inline when LegalDocument id does not resolve"). Lookup
+      success → confirmation banner with title + document_number rendered
+      (test "Bekräfta is disabled until validated AND checkbox ticked").
+      Bekräfta gated on validatedDoc + confirmed + !isSubmitting (verified
+      in same test).
+    ac_8_idempotency: |
+      `fulfillCatalogRequest` short-circuits when status is already
+      FULFILLED (line 276-278 — returns success without re-emailing or
+      re-mutating). Integration test "idempotency — re-fulfilling FULFILLED
+      request is a no-op success (no double-email)" verifies the email mock
+      is never called on the second invocation.
+    ac_8_email_failsafe: |
+      Email send wrapped in try/catch + console.error at line 366-371.
+      Emission failure does not roll back the transaction-flipped request.
+      Critical for ops because the row + request transition is the source of
+      truth; an email outage shouldn't strand admins with a half-flipped
+      state.
+    ac_10_no_email_on_reject: |
+      `rejectCatalogRequest` deliberately omits any email-send call.
+      Integration test "rejects PENDING request → REJECTED, no email, no
+      row mutation" asserts `mockSendEmail` is never called.
+    ac_11_email_template: |
+      `emails/catalog-request-fulfilled.tsx` mirrors the existing
+      `task-assigned.tsx` pattern. Subject uses `legalDocument.document_number`
+      (AC says `sfs_or_title` — implementation prefers document_number as
+      the more specific identifier; falls back to title when no doc number).
+      Status-aware CTA URL: `lawListId` deep-link when COMMITTED, granska
+      route otherwise. Wraps content in `LagligEmailLayout` per AC.
+    ac_13_activity_log: |
+      `'catalog_request'` entity type registered in
+      `lib/activity/action-constants.ts:128-129` (KNOWN_ACTIONS), in
+      `categories.ts:117-118` (mapped to `livscykel`), and in
+      `format-activity.ts:737-770` (Swedish display strings). UX-002 above
+      flags a missing entity-resolver case (low severity).
+    ac_14_sidebar_pip: |
+      `components/admin/admin-sidebar.tsx:41-47` adds SWR pip with 60s
+      refresh and `revalidateOnFocus: false` per AC. Pip turns red via
+      `bg-rose-500` when `breached > 0`, otherwise neutral grey. Sidebar
+      is flat (no "Operations" group) — dev note explains, AC 14 explicitly
+      permits the inline-fallback.
+    ac_15_dashboard_kpi: |
+      MetricCard mounted in the existing KPI grid at
+      `app/admin/(dashboard)/dashboard/page.tsx:62-88`. Wrapped in a
+      `<Link href="/admin/catalog-requests?status=pending">` so the entire
+      card is clickable. `valueClassName` extends MetricCard with no impact
+      on existing call sites.
+    ac_21_rejection_preserves_user_agency: |
+      Critical AC — rejection does NOT auto-flip the LawListImportRow.
+      Implementation comment at line 462-464 of
+      `app/actions/catalog-ingest-request.ts` explicitly cites AC 21.
+      Integration test "rejects PENDING request → REJECTED, no email, no
+      row mutation" verifies `match_status` stays at
+      `CATALOG_REQUEST_PENDING`.
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      Admin-session gate at every action entry (`getAdminSession()` /
+      `getAdminUser()`). Cross-cutting Epic 24 convention honoured — no
+      `CREATE POLICY` block; admin actions get cross-workspace access via
+      Prisma's BYPASSRLS role. Zod validation on every input
+      (`FulfillCatalogRequestSchema`, `RejectCatalogRequestSchema`,
+      `ListCatalogRequestsSchema`). LegalDocument id is validated via
+      `findUnique` before being attached to the request — no arbitrary id
+      injection possible. Workspace-scoped isolation for non-admin paths
+      remains in place via `withWorkspace` (untouched by this story).
+  performance:
+    status: PASS
+    notes: |
+      `listPendingCatalogRequests` runs two parallel queries (`Promise.all`
+      with the filtered list + the unfiltered window for counts). The
+      counts query selects only `status` + `created_at` — minimal payload.
+      Sidebar pip uses SWR with `revalidateOnFocus: false` and 60s refresh,
+      so admins flipping windows don't hammer the DB. No N+1 patterns.
+      `fulfillCatalogRequest` is a single 2-row transaction (request flip
+      + row rematch) — fast. Activity-log write is outside the transaction
+      (already-committed), which is the right call: a failed activity-log
+      insert shouldn't roll back a successful fulfilment.
+  reliability:
+    status: PASS
+    notes: |
+      Idempotency on both fulfilment (re-fulfilling FULFILLED → no-op,
+      no double-email) and rejection (re-rejecting REJECTED → no-op).
+      Both verified by integration tests. Fail-safe email — the Resend
+      send is wrapped in try/catch + console.error so a Resend outage
+      doesn't roll back the transaction-flipped request. Activity-log
+      write happens AFTER the transaction commits (correct ordering: the
+      log is downstream of the truth, not part of it). Status guards on
+      both actions — only PENDING requests are mutable; non-pending wrong
+      states return cleanly with a Swedish error message.
+  maintainability:
+    status: PASS
+    notes: |
+      4 server actions live in one well-segmented file (~480 lines) with
+      clear section banners. The `getAdminUser()` helper at line 99-107
+      mirrors the existing `app/actions/admin-workspaces.ts:updateWorkspaceTier`
+      pattern — consistent. `<CatalogRequestsList>` is ~700 lines but
+      cleanly broken into `RequestRow` / `DetailPanel` / `FulfillmentModal`
+      / `RejectionDialog` sub-components. Tests are well-scoped (next/cache,
+      next/navigation, sonner, server actions all mocked at the module
+      boundary). Activity-log integration follows the established 3-file
+      pattern (action-constants + categories + format-activity); UX-002 is
+      the one missing piece on the resolver side.
+
+recommendations:
+  immediate: [] # all blocking items resolved
+  future:
+    - action: |
+        Future UX polish: AC 5's "SLA bryts om {n}" copy is grammatically
+        odd in Swedish ("breaks if {n}" reads as a future conditional).
+        The intended meaning is "SLA-brott för {n}" or "{n} förseningar".
+        AC text mandates this exactly so dev followed AC; flagging as a
+        future copy review for PO/marketing rather than a dev defect.
+      refs:
+        - 'docs/stories/24.5.catalog-requests-admin-queue.md AC 3'
+        - 'components/admin/catalog-requests-list.tsx:153'
+
+# Positive observations
+notes:
+  - |
+    AC 21 (rejection does NOT auto-flip the originating LawListImportRow)
+    is the most-easily-broken acceptance criterion in the story — easy to
+    "helpfully" flip the row to CATALOG_REQUEST_REJECTED to keep state in
+    sync. The dev resisted that, kept user agency intact, and added a
+    code comment + a dedicated integration test asserting the row's
+    `match_status` stays `CATALOG_REQUEST_PENDING` after admin rejection.
+    Strong defensive design.
+  - |
+    The validation contract on the fulfilment modal is the kind of detail
+    that QA usually has to argue for: empty input → button disabled (not
+    just toast); null lookup → inline form-error (not toast); found row →
+    confirmation banner pattern. Dev wired all three states without
+    cutting corners. Accessibility-friendly, matches the AC's worked
+    example precisely.
+  - |
+    Email is fail-safe AND idempotent. The two properties together close a
+    fault scenario most teams miss: re-fulfilling a FULFILLED request
+    short-circuits before the email-send block, so even if the first
+    attempt's email succeeded, the second attempt won't double-send. And
+    if the email send fails on the FIRST attempt, the transaction commits
+    anyway — admin sees success in the queue, user sees no email but the
+    row is rematched. Manual smoke can fix the email follow-up.
+  - |
+    Cross-cutting Epic 24 conventions (dot-notation activity keys,
+    BYPASSRLS-only RLS, no admin-override CREATE POLICY) all honoured.
+    The Story 24.1 PO ratification note in the Dev Notes section was
+    adhered to without re-litigation. PO → Dev → QA loop is mature.
+  - |
+    Test pyramid is well-shaped: 14 component tests cover the 4 distinct
+    UI surfaces (table row + detail panel + fulfilment modal + rejection
+    dialog) without redundancy; 12 integration tests cover the 4 server
+    actions × the 3 paths each (happy / error / idempotency). 26 tests is
+    the right size for this surface — neither thin nor bloated.
+
+expires: '2026-05-22T09:35:00Z' # 14-day freshness window

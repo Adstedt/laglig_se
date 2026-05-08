@@ -319,6 +319,11 @@ export async function fulfillCatalogRequest(
 
     // Activity-log on the originating workspace's timeline (so users see it
     // alongside their own actions, per AC 13 + Dev Notes "Activity log scope").
+    // `title` carries the source row's titel so the activity-log entity
+    // resolver renders "Katalogtillägg för Saknad lag 1" instead of the
+    // literal `[catalog_request]` placeholder. `document_title` is the
+    // matched LegalDocument's title — used in the sentence's emphasis tail
+    // by `format-activity.ts`.
     await logActivity(
       request.workspace_id,
       adminUser.id,
@@ -327,6 +332,7 @@ export async function fulfillCatalogRequest(
       'catalog_request.fulfilled',
       null,
       {
+        title: request.import_row.source_titel,
         document_title: legalDocument.title,
         document_number: legalDocument.document_number,
         fulfilled_with_document_id: legalDocument.id,
@@ -433,6 +439,9 @@ export async function rejectCatalogRequest(
   try {
     const request = await prisma.catalogIngestRequest.findUnique({
       where: { id: parsed.data.requestId },
+      include: {
+        import_row: { select: { source_titel: true } },
+      },
     })
     if (!request) {
       return { success: false, error: 'Förfrågan hittades inte' }
@@ -463,6 +472,9 @@ export async function rejectCatalogRequest(
     // The row stays CATALOG_REQUEST_PENDING from the user's perspective. They
     // can re-decide via the review surface.
 
+    // `title` carries the source row's titel so the activity-log entity
+    // resolver renders "Katalogtillägg för Saknad lag 1" instead of the
+    // literal `[catalog_request]` placeholder.
     await logActivity(
       request.workspace_id,
       adminUser.id,
@@ -471,6 +483,7 @@ export async function rejectCatalogRequest(
       'catalog_request.rejected',
       null,
       {
+        title: request.import_row.source_titel,
         admin_note: parsed.data.adminNote ?? null,
       }
     )

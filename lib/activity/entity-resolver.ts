@@ -102,6 +102,9 @@ function fallbackLabelFromPayload(row: ActivityRowLike): string | null {
   // Story 24.2: include `filename` so soft-deleted/cross-workspace
   // law_list_import tombstones display the source filename instead of a
   // generic "[borttagen law_list_import]" placeholder.
+  // Story 24.5: include `document_title` so `catalog_request.fulfilled`
+  // rows render the matched LegalDocument title as the primary label
+  // instead of the literal `[catalog_request]` placeholder.
   const candidates = [
     'title',
     'name',
@@ -109,6 +112,7 @@ function fallbackLabelFromPayload(row: ActivityRowLike): string | null {
     'law_title',
     'subject',
     'filename',
+    'document_title',
   ]
   for (const k of candidates) {
     const v = p[k]
