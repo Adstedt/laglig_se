@@ -86,8 +86,26 @@ export const RowDecisionSchema = z.discriminatedUnion('type', [
 export type RowDecisionInput = z.infer<typeof RowDecisionSchema>
 
 // ============================================================================
-// COMMIT IMPORT (Story 24.4)
+// COMMIT IMPORT (Story 24.4 + 24.7 group assignments)
 // ============================================================================
+
+// Story 24.7: optional grouping payload. Validation rules per AC 16:
+//   - Empty `groups: []` is treated as flat list (back-compat with 24.4).
+//   - Group name must be non-empty after trim (.trim() applied at action level
+//     to surface the EMPTY_GROUP_NAME error explicitly; Zod min(1) here is a
+//     defensive baseline).
+//   - DUPLICATE_ROW_ASSIGNMENT and INVALID_ROW_REFERENCE are validated inside
+//     the server action against the import's row set — they need DB context
+//     that schema-level Zod cannot enforce.
+export const GroupAssignmentSchema = z.object({
+  name: z.string().min(1, 'Gruppnamn krävs'),
+  rowIds: z.array(z.string().uuid('Ogiltigt rad-ID')),
+})
+
+export const GroupAssignmentsSchema = z.object({
+  groups: z.array(GroupAssignmentSchema),
+  asSuggested: z.boolean().optional(),
+})
 
 export const CommitImportSchema = z.object({
   importId: z.string().uuid('Ogiltigt import-ID'),
@@ -95,8 +113,11 @@ export const CommitImportSchema = z.object({
     .string()
     .min(1, 'Namn på laglista krävs')
     .max(100, 'Namnet får vara max 100 tecken'),
+  groupAssignments: GroupAssignmentsSchema.optional(),
 })
 
+export type GroupAssignmentInput = z.infer<typeof GroupAssignmentSchema>
+export type GroupAssignmentsInput = z.infer<typeof GroupAssignmentsSchema>
 export type CommitImportInput = z.infer<typeof CommitImportSchema>
 
 // ============================================================================

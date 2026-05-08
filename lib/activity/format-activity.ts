@@ -717,6 +717,31 @@ export function formatActivity(input: FormatInput): SentencePart[] {
     case 'law_list_import.row_decision_undone':
       return [u, text(' ångrade ett beslut för en rad i '), primary]
 
+    case 'law_list_import.groupings_proposed': {
+      const llmUsed = newP?.llmUsed
+      const tier1 = newP?.tier1Count
+      const tier2 = newP?.tier2Count
+      const parts: SentencePart[] = [
+        u,
+        text(' genererade gruppförslag för '),
+        primary,
+      ]
+      if (typeof tier1 === 'number' && typeof tier2 === 'number') {
+        // QA-fix FORMAT-001 (24.7 review): tier1Count / tier2Count are GROUP
+        // counts, not row counts. The earlier copy "${tier1} från Område"
+        // read ambiguously as "8 rows" rather than "8 groups". Spell out
+        // "grupper" so the activity feed reads unambiguously.
+        parts.push(
+          text(
+            ` (${tier1} grupper från Område${
+              llmUsed === true ? `, ${tier2} från AI` : ' — AI inte tillgänglig'
+            })`
+          )
+        )
+      }
+      return parts
+    }
+
     case 'law_list_import.bulk_accepted_high': {
       const count = newP?.count
       const parts: SentencePart[] = [

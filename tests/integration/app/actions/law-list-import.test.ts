@@ -20,6 +20,7 @@ import {
   afterAll,
   vi,
   beforeEach,
+  afterEach,
 } from 'vitest'
 import { readFileSync } from 'fs'
 import { join } from 'path'
@@ -27,15 +28,30 @@ import { join } from 'path'
 // State variable updated in beforeAll so the mock can reach the live IDs.
 let mockCtxUserId = 'unset'
 let mockCtxWorkspaceId = 'unset'
+// Story 24.7: per-test toggle for permission gate (default true preserves
+// existing 24.x test behaviour).
+let mockCtxHasPermission = true
 
 vi.mock('@/lib/auth/workspace-context', async () => {
   const actual = await vi.importActual<
     typeof import('@/lib/auth/workspace-context')
   >('@/lib/auth/workspace-context')
+  // Re-use the production WorkspaceAccessError so callers' instanceof / code
+  // checks behave identically when the gate trips.
+  const { WorkspaceAccessError } = actual
   return {
     ...actual,
     withWorkspace: vi.fn(
-      async <T>(cb: (_ctx: unknown) => Promise<T>): Promise<T> => {
+      async <T>(
+        cb: (_ctx: unknown) => Promise<T>,
+        requiredPermission?: string
+      ): Promise<T> => {
+        if (requiredPermission && !mockCtxHasPermission) {
+          throw new WorkspaceAccessError(
+            `Permission denied: ${requiredPermission}`,
+            'ACCESS_DENIED'
+          )
+        }
         return cb({
           userId: mockCtxUserId,
           workspaceId: mockCtxWorkspaceId,
@@ -43,7 +59,7 @@ vi.mock('@/lib/auth/workspace-context', async () => {
           workspaceSlug: 'mock',
           workspaceStatus: 'ACTIVE',
           role: 'OWNER',
-          hasPermission: () => true,
+          hasPermission: () => mockCtxHasPermission,
         })
       }
     ),
@@ -94,6 +110,7 @@ import {
   createImport,
   getImport,
   parseImportFile,
+  proposeGroupings,
   rejectRow,
   replaceRowMatch,
   requestCatalogAdd,
@@ -481,6 +498,43 @@ describe('Stories 24.1 + 24.2 — server actions', () => {
       })
       expect(result.success).toBe(false)
       expect(result.error).toContain('5 MB')
+    })
+
+    // Story 24.2 QA gate TEST-002: defensive post-decode byte-length gate.
+    // The Zod cap (7 MB on the base64 string) is the primary line of defense;
+    // this test exercises the secondary check at parseImportFile that compares
+    // decoded.byteLength against MAX_DECODED_BYTES (5 MB). Construct a base64
+    // string that's *under* the Zod cap but decodes to *over* 5 MB:
+    //   base64 chars = 7 MB - 4 → ~5.25 MB decoded (3/4 expansion ratio).
+    test('rejects payload that passes Zod cap but exceeds 5 MB decoded (post-decode gate)', async () => {
+      // Need a fresh UPLOADED-status import — the existing fixture rows
+      // for `importAId` keep its status at UPLOADED by default, but
+      // create a clean one to make the test self-contained.
+      const created = await createImport({
+        filename: 'just-under-zod-cap.xlsx',
+        source_type: 'xlsx',
+      })
+      const importId = created.data!.importId
+
+      // 7 MB - 4 chars (multiple of 4 to avoid base64 padding edge cases).
+      // 'A' is a valid base64 char; Buffer.from decodes (N/4)*3 bytes.
+      // (7 * 1024 * 1024 - 4) / 4 * 3 ≈ 5,505,021 bytes ≈ 5.25 MB > 5 MB cap.
+      const justUnderZodCap = 'A'.repeat(7 * 1024 * 1024 - 4)
+      const result = await parseImportFile({
+        importId,
+        fileBuffer: justUnderZodCap,
+      })
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('5 MB')
+
+      // Defensive gate persists FAILED state on the import row so the user
+      // sees a meaningful entry in import history.
+      const persisted = await prisma.lawListImport.findUnique({
+        where: { id: importId },
+      })
+      expect(persisted?.status).toBe('FAILED')
+
+      await prisma.lawListImport.delete({ where: { id: importId } })
     })
   })
 
@@ -1175,6 +1229,396 @@ describe('Stories 24.1 + 24.2 — server actions', () => {
       expect(result.error).toContain('väntar på granskning')
 
       await prisma.lawListImport.delete({ where: { id: fresh.data!.importId } })
+    })
+  })
+
+  // ============================================================================
+  // Story 24.7: commitImport with groupAssignments
+  // ============================================================================
+  describe('Story 24.7: commitImport with groupAssignments', () => {
+    /**
+     * Each test in this block spins up a fresh import with two committable
+     * rows pointing at two real catalog documents so we can assert grouping
+     * behaviour in isolation. The 24.4 block above commits its primary import
+     * earlier, so we can't reuse it here without conflicting with idempotency.
+     */
+    let g_docId1: string
+    let g_docId2: string
+    let g_importId: string
+    let g_rowId1: string
+    let g_rowId2: string
+
+    beforeAll(async () => {
+      const docs = await prisma.legalDocument.findMany({
+        select: { id: true },
+        take: 2,
+      })
+      g_docId1 = docs[0]!.id
+      g_docId2 = docs[1]!.id
+    })
+
+    async function seedGroupingImport(): Promise<void> {
+      const created = await createImport({
+        filename: '24.7-grouping.xlsx',
+        source_type: 'xlsx',
+      })
+      g_importId = created.data!.importId
+      const r1 = await prisma.lawListImportRow.create({
+        data: {
+          import_id: g_importId,
+          row_index: 0,
+          source_titel: 'Row A',
+          source_raw: {},
+          match_status: 'ACCEPTED_BY_USER',
+          matched_document_id: g_docId1,
+          confidence_score: 0.95,
+        },
+      })
+      const r2 = await prisma.lawListImportRow.create({
+        data: {
+          import_id: g_importId,
+          row_index: 1,
+          source_titel: 'Row B',
+          source_raw: {},
+          match_status: 'REPLACED_BY_USER',
+          matched_document_id: g_docId2,
+          confidence_score: 0.7,
+        },
+      })
+      g_rowId1 = r1.id
+      g_rowId2 = r2.id
+      await prisma.lawListImport.update({
+        where: { id: g_importId },
+        data: { row_count: 2, status: 'AWAITING_REVIEW' },
+      })
+    }
+
+    async function teardownGroupingImport(): Promise<void> {
+      const lists = await prisma.lawList.findMany({
+        where: {
+          name: { startsWith: '24.7-' },
+        },
+        select: { id: true },
+      })
+      for (const l of lists) {
+        await prisma.lawListItem.deleteMany({ where: { law_list_id: l.id } })
+        await prisma.lawListGroup.deleteMany({ where: { law_list_id: l.id } })
+        await prisma.lawList.delete({ where: { id: l.id } })
+      }
+      await prisma.activityLog.deleteMany({ where: { entity_id: g_importId } })
+      await prisma.lawListImportRow.deleteMany({
+        where: { import_id: g_importId },
+      })
+      await prisma.lawListImport.delete({ where: { id: g_importId } })
+    }
+
+    beforeEach(async () => {
+      await seedGroupingImport()
+    })
+
+    afterEach(async () => {
+      await teardownGroupingImport()
+    })
+
+    test('commitImport with groupAssignments creates LawListGroup rows and assigns group_id to items', async () => {
+      const result = await commitImport({
+        importId: g_importId,
+        listName: '24.7-grouped',
+        groupAssignments: {
+          groups: [
+            { name: 'Arbetsmiljö', rowIds: [g_rowId1] },
+            { name: 'Miljö', rowIds: [g_rowId2] },
+          ],
+        },
+      })
+      expect(result.success).toBe(true)
+      const lawListId = result.data!.lawListId
+
+      const groups = await prisma.lawListGroup.findMany({
+        where: { law_list_id: lawListId },
+        orderBy: { position: 'asc' },
+      })
+      expect(groups.map((g) => g.name)).toEqual(['Arbetsmiljö', 'Miljö'])
+      expect(groups.map((g) => g.position)).toEqual([0, 1])
+
+      const items = await prisma.lawListItem.findMany({
+        where: { law_list_id: lawListId },
+      })
+      expect(items).toHaveLength(2)
+      expect(items.every((i) => i.group_id !== null)).toBe(true)
+      const groupNamesByItem = new Map(
+        items.map((i) => [
+          i.document_id,
+          groups.find((g) => g.id === i.group_id)?.name,
+        ])
+      )
+      expect(groupNamesByItem.get(g_docId1)).toBe('Arbetsmiljö')
+      expect(groupNamesByItem.get(g_docId2)).toBe('Miljö')
+    })
+
+    test('commitImport with groups: [] is treated as flat list (no LawListGroup rows)', async () => {
+      const result = await commitImport({
+        importId: g_importId,
+        listName: '24.7-empty-groups',
+        groupAssignments: { groups: [] },
+      })
+      expect(result.success).toBe(true)
+      const lawListId = result.data!.lawListId
+
+      const groups = await prisma.lawListGroup.findMany({
+        where: { law_list_id: lawListId },
+      })
+      expect(groups).toHaveLength(0)
+
+      const items = await prisma.lawListItem.findMany({
+        where: { law_list_id: lawListId },
+      })
+      expect(items).toHaveLength(2)
+      expect(items.every((i) => i.group_id === null)).toBe(true)
+    })
+
+    test('commitImport with duplicate group names → DUPLICATE_GROUP_NAME', async () => {
+      const result = await commitImport({
+        importId: g_importId,
+        listName: '24.7-dup',
+        groupAssignments: {
+          groups: [
+            { name: 'Arbetsmiljö', rowIds: [g_rowId1] },
+            { name: 'Arbetsmiljö', rowIds: [g_rowId2] },
+          ],
+        },
+      })
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('DUPLICATE_GROUP_NAME')
+      expect(result.error).toContain('Arbetsmiljö')
+
+      // Transaction rolled back — no LawList persisted.
+      const persistedImport = await prisma.lawListImport.findUnique({
+        where: { id: g_importId },
+      })
+      expect(persistedImport?.status).toBe('AWAITING_REVIEW')
+
+      // QA-fix regression guard: pre-fix, returning a sentinel from inside
+      // the transaction committed it, leaking an orphaned LawList. Verify
+      // no LawList row was created with the rejected name.
+      const orphans = await prisma.lawList.findMany({
+        where: { name: '24.7-dup' },
+      })
+      expect(orphans).toHaveLength(0)
+    })
+
+    test('commitImport with foreign rowId in groupAssignments → INVALID_ROW_REFERENCE', async () => {
+      // Valid UUID v4 shape but pointing at no row in this import.
+      const FOREIGN_UUID = '550e8400-e29b-41d4-a716-446655440099'
+      const result = await commitImport({
+        importId: g_importId,
+        listName: '24.7-foreign',
+        groupAssignments: {
+          groups: [{ name: 'Arbetsmiljö', rowIds: [FOREIGN_UUID] }],
+        },
+      })
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('INVALID_ROW_REFERENCE')
+    })
+
+    test('commitImport with the same rowId in two groups → DUPLICATE_ROW_ASSIGNMENT', async () => {
+      const result = await commitImport({
+        importId: g_importId,
+        listName: '24.7-dup-row',
+        groupAssignments: {
+          groups: [
+            { name: 'A', rowIds: [g_rowId1] },
+            { name: 'B', rowIds: [g_rowId1, g_rowId2] },
+          ],
+        },
+      })
+      expect(result.success).toBe(false)
+      expect(result.error).toContain('DUPLICATE_ROW_ASSIGNMENT')
+      expect(result.error).toContain(g_rowId1)
+    })
+
+    test('commitImport with empty group name → EMPTY_GROUP_NAME', async () => {
+      const result = await commitImport({
+        importId: g_importId,
+        listName: '24.7-empty-name',
+        groupAssignments: {
+          groups: [{ name: '   ', rowIds: [g_rowId1, g_rowId2] }],
+        },
+      })
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('EMPTY_GROUP_NAME')
+    })
+
+    test('commitImport with groupAssignments is idempotent — second call returns existing lawListId, does NOT recreate groups', async () => {
+      const first = await commitImport({
+        importId: g_importId,
+        listName: '24.7-idempotent',
+        groupAssignments: {
+          groups: [
+            { name: 'Arbetsmiljö', rowIds: [g_rowId1] },
+            { name: 'Miljö', rowIds: [g_rowId2] },
+          ],
+        },
+      })
+      expect(first.success).toBe(true)
+      const lawListId = first.data!.lawListId
+
+      // Second call — different group payload should be IGNORED.
+      const second = await commitImport({
+        importId: g_importId,
+        listName: '24.7-idempotent-second',
+        groupAssignments: {
+          groups: [{ name: 'X', rowIds: [g_rowId1, g_rowId2] }],
+        },
+      })
+      expect(second.success).toBe(true)
+      expect(second.data?.lawListId).toBe(lawListId)
+
+      // The original groups are still present, no new "X" group.
+      const groups = await prisma.lawListGroup.findMany({
+        where: { law_list_id: lawListId },
+        orderBy: { position: 'asc' },
+      })
+      expect(groups.map((g) => g.name)).toEqual(['Arbetsmiljö', 'Miljö'])
+    })
+
+    test('commitImport with groupAssignments=undefined still works (back-compat regression)', async () => {
+      const result = await commitImport({
+        importId: g_importId,
+        listName: '24.7-back-compat',
+      })
+      expect(result.success).toBe(true)
+
+      const groups = await prisma.lawListGroup.findMany({
+        where: { law_list_id: result.data!.lawListId },
+      })
+      expect(groups).toHaveLength(0)
+
+      const items = await prisma.lawListItem.findMany({
+        where: { law_list_id: result.data!.lawListId },
+      })
+      expect(items).toHaveLength(2)
+      expect(items.every((i) => i.group_id === null)).toBe(true)
+    })
+
+    test('proposeGroupings size gate: import with 14 committable rows → GATE_NOT_MET', async () => {
+      // Beef up to 14 committable rows on the seeded import.
+      // Bulk creation; each row points at the same matched_document_id (validated
+      // committable rows just need ACCEPTED/REPLACED + matched).
+      await prisma.lawListImportRow.createMany({
+        data: Array.from({ length: 12 }, (_, i) => ({
+          import_id: g_importId,
+          row_index: i + 2,
+          source_titel: `Extra row ${i + 2}`,
+          source_raw: {},
+          match_status: 'ACCEPTED_BY_USER' as const,
+          matched_document_id: g_docId1,
+          confidence_score: 0.95,
+        })),
+      })
+
+      const result = await proposeGroupings(g_importId)
+      expect(result.success).toBe(false)
+      expect(result.error).toBe('GATE_NOT_MET')
+    })
+
+    test('proposeGroupings size gate boundary: 15 → returns proposal', async () => {
+      // 13 extras + 2 from seed = 15.
+      await prisma.lawListImportRow.createMany({
+        data: Array.from({ length: 13 }, (_, i) => ({
+          import_id: g_importId,
+          row_index: i + 2,
+          source_titel: `Extra row ${i + 2}`,
+          source_omrade: 'Arbetsmiljö',
+          source_raw: {},
+          match_status: 'ACCEPTED_BY_USER' as const,
+          matched_document_id: g_docId1,
+          confidence_score: 0.95,
+        })),
+      })
+
+      const mockedAdapter = {
+        cluster: vi.fn(async () => ({
+          kind: 'success' as const,
+          clusters: [],
+          unassignedRowIds: [],
+          durationMs: 50,
+          usage: {
+            inputTokens: 0,
+            outputTokens: 0,
+            cacheReadInputTokens: 0,
+            cacheWriteInputTokens: 0,
+          },
+        })),
+      }
+
+      const result = await proposeGroupings(g_importId, {
+        adapter: mockedAdapter,
+      })
+      expect(result.success).toBe(true)
+      expect(result.data?.groups.length).toBeGreaterThan(0)
+      // The 13 'Arbetsmiljö' rows form a Tier 1 group (the 2 seed rows have
+      // null source_omrade so they go to Tier 2).
+      const tier1Groups = result.data!.groups.filter(
+        (g) => g.source === 'omrade'
+      )
+      expect(tier1Groups[0]?.name).toBe('Arbetsmiljö')
+      expect(tier1Groups[0]?.rowIds.length).toBe(13)
+    })
+
+    test('proposeGroupings permission gate: caller without tasks:edit → rejected', async () => {
+      mockCtxHasPermission = false
+      try {
+        const result = await proposeGroupings(g_importId)
+        expect(result.success).toBe(false)
+        expect(result.error).toBe('FORBIDDEN')
+      } finally {
+        mockCtxHasPermission = true
+      }
+    })
+
+    test('proposeGroupings feature flag off → FEATURE_DISABLED', async () => {
+      const before = process.env['LAWLIST_IMPORT_GROUPINGS_ENABLED']
+      process.env['LAWLIST_IMPORT_GROUPINGS_ENABLED'] = 'false'
+      try {
+        const result = await proposeGroupings(g_importId)
+        expect(result.success).toBe(false)
+        expect(result.error).toBe('FEATURE_DISABLED')
+      } finally {
+        if (before === undefined) {
+          delete process.env['LAWLIST_IMPORT_GROUPINGS_ENABLED']
+        } else {
+          process.env['LAWLIST_IMPORT_GROUPINGS_ENABLED'] = before
+        }
+      }
+    })
+
+    test('Committable rows not in any groups[].rowIds commit ungrouped (group_id = null)', async () => {
+      const result = await commitImport({
+        importId: g_importId,
+        listName: '24.7-partial',
+        // Only assign rowId1; rowId2 is intentionally unlisted → ungrouped.
+        groupAssignments: {
+          groups: [{ name: 'Arbetsmiljö', rowIds: [g_rowId1] }],
+        },
+      })
+      expect(result.success).toBe(true)
+      const lawListId = result.data!.lawListId
+
+      const items = await prisma.lawListItem.findMany({
+        where: { law_list_id: lawListId },
+      })
+      expect(items).toHaveLength(2)
+      const rowId1Item = items.find((i) => i.document_id === g_docId1)
+      const rowId2Item = items.find((i) => i.document_id === g_docId2)
+      expect(rowId1Item?.group_id).not.toBeNull()
+      expect(rowId2Item?.group_id).toBeNull()
+
+      const groups = await prisma.lawListGroup.findMany({
+        where: { law_list_id: lawListId },
+      })
+      expect(groups).toHaveLength(1)
+      expect(groups[0]?.name).toBe('Arbetsmiljö')
     })
   })
 })

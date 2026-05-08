@@ -1458,6 +1458,9 @@ enum ChatContextType {
   // Story 24.3 — per-row LLM telemetry for the import-pipeline matcher.
   // Distinguishes matcher cost from chat cost in the admin usage dashboard.
   IMPORT_MATCHING
+  // Story 24.7 — per-call LLM telemetry for the granska-page grouping
+  // proposer (claude-haiku-4-5). Distinguishes grouping cost from matching.
+  IMPORT_GROUPING
 }
 
 // Story 14.27: Per-turn chat usage telemetry. One row per successful chat turn.

@@ -47,6 +47,16 @@ import {
   type MatchResult,
 } from '@/lib/import/matcher'
 import {
+  proposeGroupingsForRows,
+  type GroupingProposerRow,
+} from '@/lib/import/grouping-proposer'
+import {
+  createGroupingLlmAdapter,
+  GROUPING_LLM_TELEMETRY_NAME,
+  type GroupingLlmAdapter,
+} from '@/lib/import/grouping-llm'
+import { estimateCostUsd } from '@/lib/usage/cost-estimator'
+import {
   CommitImportSchema,
   CreateImportSchema,
   ParseImportSchema,
@@ -1335,66 +1345,211 @@ export async function commitImport(
       ).length
       const rowsAdded = rowsWithResponsible.length
 
-      // Single transaction: create LawList → LawListItems → flip import status.
-      const lawList = await prisma.$transaction(async (tx) => {
-        const created = await tx.lawList.create({
-          data: {
-            workspace_id: ctx.workspaceId,
-            name: parsed.data.listName,
-            created_by: ctx.userId,
-          },
+      // Story 24.7: validate optional groupAssignments BEFORE the transaction.
+      // Empty groups[] coalesces to flat (= no LawListGroup rows created).
+      const rawGroupAssignments = parsed.data.groupAssignments
+      const groupsRequested =
+        rawGroupAssignments?.groups.filter((g) => g.rowIds.length >= 0) ?? []
+      const useGroups =
+        rawGroupAssignments !== undefined && groupsRequested.length > 0
+
+      if (useGroups) {
+        const validRowIds = new Set(rowsWithResponsible.map((r) => r.row.id))
+        const seenInGroups = new Set<string>()
+        const seenGroupNames = new Set<string>()
+
+        for (const group of groupsRequested) {
+          const trimmedName = group.name.trim()
+          // EMPTY_GROUP_NAME — surface explicit error before the transaction.
+          if (trimmedName.length === 0) {
+            return {
+              success: false,
+              error: 'EMPTY_GROUP_NAME',
+            }
+          }
+          // DUPLICATE_GROUP_NAME — same trimmed name appears twice in payload.
+          // QA-fix (24.7 review): catching this BEFORE the transaction prevents
+          // a partial-state leak where lawList + some lawListGroups would
+          // commit before the duplicate triggered a rollback.
+          if (seenGroupNames.has(trimmedName)) {
+            return {
+              success: false,
+              error: `DUPLICATE_GROUP_NAME:${trimmedName}`,
+            }
+          }
+          seenGroupNames.add(trimmedName)
+          for (const rowId of group.rowIds) {
+            // INVALID_ROW_REFERENCE — every rowId must belong to a committable
+            // row of THIS import (state ∈ {ACCEPTED, REPLACED} and matched).
+            if (!validRowIds.has(rowId)) {
+              return {
+                success: false,
+                error: 'INVALID_ROW_REFERENCE',
+              }
+            }
+            // DUPLICATE_ROW_ASSIGNMENT — same rowId in two groups.
+            if (seenInGroups.has(rowId)) {
+              return {
+                success: false,
+                error: `DUPLICATE_ROW_ASSIGNMENT:${rowId}`,
+              }
+            }
+            seenInGroups.add(rowId)
+          }
+        }
+      }
+
+      // Story 24.7: build a rowId → groupName lookup for the transaction.
+      // Built outside the transaction so we don't repeat work; rows not in
+      // any group commit with group_id = null (= ungrouped).
+      const rowIdToGroupName = new Map<string, string>()
+      if (useGroups) {
+        for (const group of groupsRequested) {
+          const trimmedName = group.name.trim()
+          for (const rowId of group.rowIds) {
+            rowIdToGroupName.set(rowId, trimmedName)
+          }
+        }
+      }
+
+      // Single transaction: create LawList → LawListGroups → LawListItems → flip import status.
+      // QA-fix (24.7 review): validation errors must throw (not return
+      // sentinels) so Prisma rolls back the entire transaction. Returning
+      // a non-error value commits, which would leak orphaned lawList rows.
+      let groupsCreated = 0
+      const TX_DUPLICATE_GROUP_NAME = '__TX_DUPLICATE_GROUP_NAME__'
+      let txDuplicateConflict = ''
+      const lawList = await prisma
+        .$transaction(async (tx) => {
+          const created = await tx.lawList.create({
+            data: {
+              workspace_id: ctx.workspaceId,
+              name: parsed.data.listName,
+              created_by: ctx.userId,
+            },
+          })
+
+          // Story 24.7: create LawListGroup rows in input order. Position is
+          // the array index so the new list opens with groups in the order
+          // the user saw in the panel. Duplicate-within-payload is already
+          // caught pre-transaction; the P2002 catch below defends against
+          // a TOCTOU race between two simultaneous commits.
+          const groupNameToId = new Map<string, string>()
+          if (useGroups) {
+            for (let i = 0; i < groupsRequested.length; i++) {
+              const group = groupsRequested[i]!
+              const trimmedName = group.name.trim()
+              // Skip empty groups (no rows assigned) — common when a user
+              // added a fresh group via "Lägg till grupp" but moved no rows
+              // into it.
+              if (group.rowIds.length === 0) continue
+              try {
+                const groupRow = await tx.lawListGroup.create({
+                  data: {
+                    law_list_id: created.id,
+                    name: trimmedName,
+                    position: i,
+                  },
+                })
+                groupNameToId.set(trimmedName, groupRow.id)
+                groupsCreated += 1
+              } catch (err) {
+                // Prisma P2002 — unique constraint @@unique([law_list_id, name]).
+                if (
+                  err instanceof Error &&
+                  'code' in err &&
+                  (err as { code: string }).code === 'P2002'
+                ) {
+                  txDuplicateConflict = trimmedName
+                  throw new Error(TX_DUPLICATE_GROUP_NAME)
+                }
+                throw err
+              }
+            }
+          }
+
+          // Create one LawListItem per accepted/replaced row. Carry over
+          // source_omrade → category, source_kommentar → notes, lagansvarig →
+          // responsible_user_id (best-effort). Skip duplicates of (law_list_id,
+          // document_id) — Prisma's @@unique([law_list_id, document_id]) on
+          // LawListItem would otherwise throw.
+          // Treat the moment of import as the "I have read this document up to
+          // here" baseline. Without this, the pending-change-count query at
+          // `app/actions/document-list.ts` (Story 8.1) would surface every
+          // historical amendment for the underlying LegalDocument as new — a
+          // bulk-import would light up the Ändringar tab with months of stale
+          // events that the user had no opportunity to acknowledge.
+          const importedAt = new Date()
+          const seenDocs = new Set<string>()
+          const itemsToCreate: Prisma.LawListItemCreateManyInput[] = []
+          for (const { row, responsibleUserId } of rowsWithResponsible) {
+            const docId = row.matched_document_id!
+            if (seenDocs.has(docId)) continue
+            seenDocs.add(docId)
+            // Story 24.7: assign group_id from the rowId → groupName → groupId
+            // chain. Fall back to null when the row isn't in any group.
+            const groupName = rowIdToGroupName.get(row.id)
+            const groupId = groupName
+              ? (groupNameToId.get(groupName) ?? null)
+              : null
+            itemsToCreate.push({
+              law_list_id: created.id,
+              document_id: docId,
+              source: LawListItemSource.IMPORT,
+              added_by: ctx.userId,
+              // Per AC 8: source_omrade → category (verified: schema has
+              // `category` not `area_label`); source_kommentar → notes;
+              // source_lagansvarig → responsible_user_id (best-effort).
+              category: row.source_omrade ?? null,
+              notes: row.source_kommentar ?? null,
+              responsible_user_id: responsibleUserId,
+              last_change_acknowledged_at: importedAt,
+              group_id: groupId,
+            })
+          }
+          if (itemsToCreate.length > 0) {
+            await tx.lawListItem.createMany({
+              data: itemsToCreate,
+              skipDuplicates: true,
+            })
+          }
+
+          await tx.lawListImport.update({
+            where: { id: importRow.id },
+            data: {
+              status: ImportStatus.COMMITTED,
+              committed_law_list_id: created.id,
+              committed_at: new Date(),
+            },
+          })
+
+          return created
+        })
+        .catch((err: unknown) => {
+          // QA-fix: a P2002 inside the transaction now THROWS so Prisma rolls
+          // back. We tag the throw with TX_DUPLICATE_GROUP_NAME so we can
+          // surface a structured error to the client without leaking other
+          // throws.
+          if (err instanceof Error && err.message === TX_DUPLICATE_GROUP_NAME) {
+            return null
+          }
+          throw err
         })
 
-        // Create one LawListItem per accepted/replaced row. Carry over
-        // source_omrade → category, source_kommentar → notes, lagansvarig →
-        // responsible_user_id (best-effort). Skip duplicates of (law_list_id,
-        // document_id) — Prisma's @@unique([law_list_id, document_id]) on
-        // LawListItem would otherwise throw.
-        // Treat the moment of import as the "I have read this document up to
-        // here" baseline. Without this, the pending-change-count query at
-        // `app/actions/document-list.ts` (Story 8.1) would surface every
-        // historical amendment for the underlying LegalDocument as new — a
-        // bulk-import would light up the Ändringar tab with months of stale
-        // events that the user had no opportunity to acknowledge.
-        const importedAt = new Date()
-        const seenDocs = new Set<string>()
-        const itemsToCreate: Prisma.LawListItemCreateManyInput[] = []
-        for (const { row, responsibleUserId } of rowsWithResponsible) {
-          const docId = row.matched_document_id!
-          if (seenDocs.has(docId)) continue
-          seenDocs.add(docId)
-          itemsToCreate.push({
-            law_list_id: created.id,
-            document_id: docId,
-            source: LawListItemSource.IMPORT,
-            added_by: ctx.userId,
-            // Per AC 8: source_omrade → category (verified: schema has
-            // `category` not `area_label`); source_kommentar → notes;
-            // source_lagansvarig → responsible_user_id (best-effort).
-            category: row.source_omrade ?? null,
-            notes: row.source_kommentar ?? null,
-            responsible_user_id: responsibleUserId,
-            last_change_acknowledged_at: importedAt,
-          })
+      if (lawList === null) {
+        return {
+          success: false,
+          error: `DUPLICATE_GROUP_NAME:${txDuplicateConflict}`,
         }
-        if (itemsToCreate.length > 0) {
-          await tx.lawListItem.createMany({
-            data: itemsToCreate,
-            skipDuplicates: true,
-          })
-        }
+      }
+      const created = lawList
 
-        await tx.lawListImport.update({
-          where: { id: importRow.id },
-          data: {
-            status: ImportStatus.COMMITTED,
-            committed_law_list_id: created.id,
-            committed_at: new Date(),
-          },
-        })
-
-        return created
-      })
+      // Story 24.7: derive grouping_source for telemetry.
+      const groupingSource: 'flat' | 'as-suggested' | 'user-edited' = !useGroups
+        ? 'flat'
+        : rawGroupAssignments?.asSuggested === true
+          ? 'as-suggested'
+          : 'user-edited'
 
       await logActivity(
         ctx.workspaceId,
@@ -1407,7 +1562,11 @@ export async function commitImport(
           rowsAdded,
           rowsRequested: requestedCount,
           rowsRejected: rejectedCount,
-          lawListId: lawList.id,
+          lawListId: created.id,
+          // Story 24.7: optional fields. Always include groupingSource for
+          // analytics; groupsCreated only when grouping was used.
+          groupingSource,
+          ...(useGroups ? { groupsCreated } : {}),
         }
       )
 
@@ -1425,7 +1584,7 @@ export async function commitImport(
             react: ImportReviewReadyEmail({
               firstName,
               listName: parsed.data.listName,
-              lawListId: lawList.id,
+              lawListId: created.id,
               rowsAdded,
               rowsRequested: requestedCount,
             }),
@@ -1438,10 +1597,208 @@ export async function commitImport(
 
       revalidatePath('/laglistor')
       revalidatePath(`/laglistor/skapa/${importRow.id}/granska`)
-      return { success: true, data: { lawListId: lawList.id } }
+      return { success: true, data: { lawListId: created.id } }
     }, 'tasks:edit')
   } catch (err) {
     console.error('commitImport error:', err)
     return { success: false, error: 'Kunde inte bekräfta importen' }
+  }
+}
+
+// ============================================================================
+// proposeGroupings (Story 24.7)
+// ============================================================================
+
+/**
+ * Story 24.7 AC 4 — propose groupings for committable rows of an import.
+ *
+ * Read-only: never mutates DB state. Wraps the pure proposer with auth
+ * (`tasks:edit`), the size gate (≥15 committable rows), the feature flag,
+ * and ChatUsageEvent + activity-log telemetry.
+ *
+ * Failure modes return as ActionResult `error` strings the client can
+ * branch on:
+ *   - `GATE_NOT_MET` — fewer than 15 committable rows
+ *   - `IMPORT_NOT_FOUND` — workspace mismatch or missing import
+ *   - `WRONG_STATUS` — import not in AWAITING_REVIEW
+ *   - `FEATURE_DISABLED` — env flag turned off
+ */
+
+const GROUPING_SIZE_GATE = 15
+
+const FEATURE_FLAG_KEY = 'LAWLIST_IMPORT_GROUPINGS_ENABLED'
+
+function isGroupingsFeatureEnabled(): boolean {
+  // Read once per call (Next.js server actions don't cache module state
+  // strongly between hot reloads in dev). The env var being present + not
+  // explicitly "false" means enabled — defaults to true per AC 20.
+  const raw = process.env[FEATURE_FLAG_KEY]
+  if (raw === undefined || raw === '') return true
+  return raw.toLowerCase() !== 'false' && raw !== '0'
+}
+
+export interface ProposeGroupingsResult {
+  groups: Array<{ name: string; rowIds: string[]; source: 'omrade' | 'llm' }>
+  unassigned: string[]
+  generatedAt: string
+  llmUsed: boolean
+  llmFailureReason?: string
+}
+
+export async function proposeGroupings(
+  importId: string,
+  options?: { adapter?: GroupingLlmAdapter }
+): Promise<ActionResult<ProposeGroupingsResult>> {
+  if (!importId || typeof importId !== 'string') {
+    return { success: false, error: 'Ogiltigt import-ID' }
+  }
+  if (!isGroupingsFeatureEnabled()) {
+    return { success: false, error: 'FEATURE_DISABLED' }
+  }
+
+  try {
+    return await withWorkspace(async (ctx) => {
+      const importRow = await prisma.lawListImport.findFirst({
+        where: { id: importId, workspace_id: ctx.workspaceId },
+        select: { id: true, status: true },
+      })
+      if (!importRow) {
+        return { success: false, error: 'IMPORT_NOT_FOUND' }
+      }
+      if (importRow.status !== ImportStatus.AWAITING_REVIEW) {
+        return { success: false, error: 'WRONG_STATUS' }
+      }
+
+      // Hydrate committable rows + the matched-document metadata the
+      // proposer needs.
+      const rows = await prisma.lawListImportRow.findMany({
+        where: {
+          import_id: importRow.id,
+          match_status: {
+            in: [
+              RowMatchStatus.ACCEPTED_BY_USER,
+              RowMatchStatus.REPLACED_BY_USER,
+            ],
+          },
+          matched_document_id: { not: null },
+        },
+        select: {
+          id: true,
+          source_omrade: true,
+          matched_document_id: true,
+          matched_document: {
+            select: {
+              title: true,
+              document_number: true,
+              content_type: true,
+            },
+          },
+        },
+      })
+
+      if (rows.length < GROUPING_SIZE_GATE) {
+        return { success: false, error: 'GATE_NOT_MET' }
+      }
+
+      const proposerInput: GroupingProposerRow[] = rows.map((r) => ({
+        rowId: r.id,
+        sourceOmrade: r.source_omrade,
+        matchedDocumentId: r.matched_document_id,
+        title: r.matched_document?.title ?? null,
+        documentNumber: r.matched_document?.document_number ?? null,
+        contentType: r.matched_document?.content_type ?? null,
+      }))
+
+      const adapter = options?.adapter ?? createGroupingLlmAdapter()
+      const proposal = await proposeGroupingsForRows(proposerInput, adapter)
+
+      // Telemetry write — Anthropic-only fields filled when llmUsed === true.
+      // Wrapped in try/catch per Story 14.27 — failure-to-write is logged
+      // but never re-thrown.
+      if (proposal.llmUsed && proposal.llmUsage) {
+        try {
+          const cost = estimateCostUsd({
+            model: GROUPING_LLM_TELEMETRY_NAME,
+            inputTokens: proposal.llmUsage.inputTokens,
+            outputTokens: proposal.llmUsage.outputTokens,
+            cacheReadInputTokens: proposal.llmUsage.cacheReadInputTokens,
+            cacheWriteInputTokens: proposal.llmUsage.cacheWriteInputTokens,
+            reasoningTokens: 0,
+          })
+          await prisma.chatUsageEvent.create({
+            data: {
+              workspace_id: ctx.workspaceId,
+              user_id: ctx.userId,
+              model: GROUPING_LLM_TELEMETRY_NAME,
+              // Story 24.7 — IMPORT_GROUPING enum value added in
+              // 20260508120000_add_import_grouping_chat_context migration.
+              // String literal cast keeps TS happy when the generated
+              // Prisma client hasn't been refreshed yet on Windows
+              // (query-engine DLL hot-reload constraint).
+              context_type: 'IMPORT_GROUPING' as never,
+              input_tokens: proposal.llmUsage.inputTokens,
+              output_tokens: proposal.llmUsage.outputTokens,
+              cache_read_input_tokens: proposal.llmUsage.cacheReadInputTokens,
+              cache_write_input_tokens: proposal.llmUsage.cacheWriteInputTokens,
+              reasoning_tokens: 0,
+              step_count: 1,
+              cost_usd_estimate: cost,
+            },
+          })
+        } catch (err) {
+          console.error('[CHAT_USAGE_EVENT_WRITE_FAIL]', err)
+        }
+      }
+
+      // Activity log — emitted on EVERY successful return (incl. degraded).
+      try {
+        await logActivity(
+          ctx.workspaceId,
+          ctx.userId,
+          'law_list_import',
+          importRow.id,
+          'law_list_import.groupings_proposed',
+          null,
+          {
+            tier1Count: proposal.tier1Count,
+            tier2Count: proposal.tier2Count,
+            unassignedCount: proposal.unassignedCount,
+            llmUsed: proposal.llmUsed,
+            ...(proposal.llmDurationMs !== undefined
+              ? { llmDurationMs: proposal.llmDurationMs }
+              : {}),
+            ...(proposal.llmFailureReason
+              ? { llmFailureReason: proposal.llmFailureReason }
+              : {}),
+          }
+        )
+      } catch (err) {
+        // Non-fatal; activity-log failures must never break the user flow.
+        console.error('proposeGroupings activity-log write failed:', err)
+      }
+
+      return {
+        success: true,
+        data: {
+          groups: proposal.groups,
+          unassigned: proposal.unassigned,
+          generatedAt: proposal.generatedAt,
+          llmUsed: proposal.llmUsed,
+          ...(proposal.llmFailureReason
+            ? { llmFailureReason: proposal.llmFailureReason }
+            : {}),
+        },
+      }
+    }, 'tasks:edit')
+  } catch (err) {
+    if (
+      err instanceof Error &&
+      'code' in err &&
+      (err as { code: string }).code === 'ACCESS_DENIED'
+    ) {
+      return { success: false, error: 'FORBIDDEN' }
+    }
+    console.error('proposeGroupings error:', err)
+    return { success: false, error: 'Kunde inte föreslå grupper' }
   }
 }

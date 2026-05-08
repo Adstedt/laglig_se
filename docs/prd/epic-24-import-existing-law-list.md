@@ -219,13 +219,35 @@ Ship a self-serve import pipeline that resolves user-supplied law lists (Excel /
 
 ---
 
+### Story 24.7 — LLM-suggested groupings on the granska page
+
+**Scope:** Final UX layer on the import review surface. Proposes a sensible grouping of accepted rows just before commit. Editable by the user; skip-and-commit always allowed; lists land flat below a 15-row size gate. No schema changes — reuses the existing `LawListGroup` model.
+
+- New server action `proposeGroupings(importId)` in `app/actions/law-list-import.ts` (read-only). 2-tier proposer: (1) group by `LawListImportRow.source_omrade` verbatim (deterministic, free); (2) `claude-haiku-4-5` clustering via `generateObject` on residual rows. The LLM system prompt embeds 3–5 example agency mappings (AFS → Arbetsmiljö, MSBFS → Brandskydd, etc.) as natural-language priors — **no code-level agency-prefix table** so new regulatory series ship without a Laglig change. 15s timeout; degrades cleanly to Tier 1 only on any LLM failure (timeout / rate-limit / schema-violation / network).
+- Extend `commitImport` with optional `groupAssignments` payload (request shape: `{groups: Array<{name, rowIds}>}` — no `unassigned[]`; rows not listed commit ungrouped). Creates `LawListGroup` rows + assigns `LawListItem.group_id` inside the existing transaction. `undefined` or `groups: []` = flat list (current behaviour). Validation: `INVALID_ROW_REFERENCE` / `DUPLICATE_ROW_ASSIGNMENT` / `DUPLICATE_GROUP_NAME` / `EMPTY_GROUP_NAME`.
+- Editable suggestion panel mounted inside the existing commit dialog in `<ImportReviewPage>`. Inline group rename, "Flytta till →" row reassignment, "Lägg till grupp", "Övriga (utan grupp)" bucket, "Föreslå om" with edit-discard guard, provenance badges (Område / AI-förslag). Row decisions are frozen while the dialog is open — the dialog overlays the row table.
+- New activity-log key `law_list_import.groupings_proposed` (with `llmFailureReason` when degraded); `law_list_import.committed` payload extended with `groupsCreated` + `groupingSource`.
+- `ChatUsageEvent` telemetry with `context_type='import_grouping'` per Story 14.27 conventions; Anthropic-side prompt caching on the stable system prompt per Story 14.26 pattern.
+- Feature flag `LAWLIST_IMPORT_GROUPINGS_ENABLED` for emergency disable.
+
+**Definition of Done:**
+- [ ] `proposeGroupings` returns Tier 1 + Tier 2 + Tier 3 results for ≥15-row imports; size gate enforced
+- [ ] `commitImport` with `groupAssignments` creates groups in transaction; idempotent on second call
+- [ ] Suggestion panel renders inside the commit dialog with rename / remove / move / re-propose affordances
+- [ ] "Hoppa över grupper" path commits flat (back-compat preserved)
+- [ ] Below 15 rows: CTA does not render, no LLM call
+- [ ] Telemetry rows written; activity log emitted
+- [ ] Existing 24.1–24.6 tests pass unchanged
+
+---
+
 ## Compatibility Requirements
 
 - [x] Existing `/laglistor/skapa` Generate flow unchanged (verified in 24.6 acceptance)
 - [x] Existing `LawList` and `LawListItem` schemas unchanged (additive write only)
 - [x] Existing `LegalDocument` schema unchanged (read-only)
 - [x] No existing API routes modified (all additions are new server actions)
-- [x] LLM cost reflected in `ChatUsageEvent` telemetry with `context_type='import_matching'` for admin visibility
+- [x] LLM cost reflected in `ChatUsageEvent` telemetry with `context_type='import_matching'` for admin visibility (and `context_type='import_grouping'` per Story 24.7)
 - [x] No regression in workspace RLS isolation (new tables follow existing pattern)
 
 ## Risk Mitigation
