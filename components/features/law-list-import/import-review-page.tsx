@@ -395,6 +395,12 @@ export function ImportReviewPage({ initialImport }: ImportReviewPageProps) {
 
   const pendingHighCount = counts.matched_high
   const canCommit = isReviewable && acceptedCount > 0
+  // Rows still in an undecided state at commit time — auto-matched rows the
+  // user never explicitly accepted, plus unmatched rows. These are silently
+  // dropped by commitImport's status filter, so surface the count in the
+  // confirm dialog instead of letting them disappear without warning.
+  const droppedCount =
+    counts.matched_high + counts.matched_medium + counts.unmatched
   // Story 24.7 AC 1 — size gate at ≥15 committable rows. Re-evaluated when
   // commit dialog opens so the user gets the latest count after any acceptance
   // mutations during this session.
@@ -563,6 +569,15 @@ export function ImportReviewPage({ initialImport }: ImportReviewPageProps) {
               {counts.catalog_requested + counts.catalog_fulfilled} skickas för
               manuell registrering, {counts.rejected} avvisas.
             </DialogDescription>
+            {droppedCount > 0 && (
+              <div className="mt-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-600 dark:text-amber-400">
+                {droppedCount === 1
+                  ? '1 rad är ogranskad och kommer inte att läggas till.'
+                  : `${droppedCount} rader är ogranskade och kommer inte att läggas till.`}{' '}
+                Avbryt och acceptera, avvisa eller begär tillägg för dem först
+                om du vill ha med dem.
+              </div>
+            )}
           </DialogHeader>
           <div
             className={cn(

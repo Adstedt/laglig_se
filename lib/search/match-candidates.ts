@@ -177,6 +177,7 @@ export async function findMatchCandidates(
              similarity(title, ${titleTrim}) AS trgm_score
       FROM legal_documents
       WHERE similarity(title, ${titleTrim}) > ${TRIGRAM_THRESHOLD}
+        AND content_type::text <> 'SFS_AMENDMENT'
       ORDER BY trgm_score DESC
       LIMIT ${TRIGRAM_POOL}
     `
