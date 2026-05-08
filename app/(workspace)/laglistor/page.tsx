@@ -78,7 +78,7 @@ export default async function DocumentListsPage() {
     hasPermission(ctx.role, 'tasks:edit') && lists.length > 0
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <PageHeader
         title="Laglistor"
         subtitle="Hantera dina listor och håll koll på relevanta rättsliga krav."
@@ -110,6 +110,7 @@ export default async function DocumentListsPage() {
             publishedTemplates={publishedTemplates}
             complianceReadOnly={complianceReadOnly}
             hasPendingImports={pendingImports.length > 0}
+            initialChangeCount={initialChangeCount}
           />
         </Suspense>
       </LawListTabs>

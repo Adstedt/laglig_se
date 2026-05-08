@@ -51,6 +51,7 @@ import { Settings } from 'lucide-react'
 import { LawListToolbar } from './law-list-toolbar'
 import { ViewMenu } from './view-menu'
 import { FilterBar } from './filter-bar'
+import { LawListTabsStrip } from '@/components/features/changes/law-list-tabs-strip'
 import type {
   DocumentListSummary,
   WorkspaceMemberOption,
@@ -78,6 +79,8 @@ interface DocumentListPageContentProps {
    * state so we don't double up with conflicting "what to do next" copy.
    */
   hasPendingImports?: boolean
+  /** Unacknowledged change count for the Ändringar tab badge (rendered inline in the toolbar). */
+  initialChangeCount?: number
 }
 
 export function DocumentListPageContent({
@@ -86,6 +89,7 @@ export function DocumentListPageContent({
   publishedTemplates,
   complianceReadOnly,
   hasPendingImports = false,
+  initialChangeCount = 0,
 }: DocumentListPageContentProps) {
   const [isManageModalOpen, setIsManageModalOpen] = useState(false)
   const [manageModalMode, setManageModalMode] = useState<'create' | 'edit'>(
@@ -744,14 +748,20 @@ export function DocumentListPageContent({
   return (
     <div className="flex flex-col gap-4">
       {hasNoLists ? (
-        <EmptyLawListState
-          onCreateList={handleCreateList}
-          onOpenImport={handleOpenImport}
-        />
+        <>
+          <div className="border-b border-border/60 py-2">
+            <LawListTabsStrip changeCount={initialChangeCount} />
+          </div>
+          <EmptyLawListState
+            onCreateList={handleCreateList}
+            onOpenImport={handleOpenImport}
+          />
+        </>
       ) : (
         <>
           {/* Toolbar redesign: single-row toolbar + collapsible filter bar */}
           <LawListToolbar
+            tabsSlot={<LawListTabsStrip changeCount={initialChangeCount} />}
             listSwitcher={
               <DocumentListSwitcher
                 lists={lists}

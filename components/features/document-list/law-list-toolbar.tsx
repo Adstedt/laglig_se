@@ -15,6 +15,7 @@ import { SlidersHorizontal } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface LawListToolbarProps {
+  tabsSlot?: React.ReactNode
   listSwitcher: React.ReactNode
   search: React.ReactNode
   filterCount: number
@@ -26,6 +27,7 @@ interface LawListToolbarProps {
 }
 
 export function LawListToolbar({
+  tabsSlot,
   listSwitcher,
   search,
   filterCount,
@@ -38,6 +40,16 @@ export function LawListToolbar({
   return (
     <div className="border-b border-border/60">
       <div className="flex items-center gap-2 py-2 flex-wrap">
+        {tabsSlot && (
+          <>
+            <div className="shrink-0">{tabsSlot}</div>
+            <div
+              className="h-6 w-px bg-border shrink-0 mx-1"
+              aria-hidden="true"
+            />
+          </>
+        )}
+
         {/* Left: List selector */}
         <div className="shrink-0">{listSwitcher}</div>
 
