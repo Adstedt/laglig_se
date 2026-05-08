@@ -287,7 +287,7 @@ export function ImportUploadStep({ onSuccess }: ImportUploadStepProps) {
               'flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/30 px-6 py-12 text-center transition-colors',
               'hover:border-primary/50 hover:bg-muted/50',
               isDragging && 'border-primary bg-primary/5',
-              file && 'border-green-500/50 bg-green-50/50'
+              file && 'border-green-500/50 bg-green-500/10'
             )}
           >
             <input

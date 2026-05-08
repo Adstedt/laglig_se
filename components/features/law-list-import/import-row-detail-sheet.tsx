@@ -7,8 +7,8 @@
  * of the table itself lets the table stay dense.
  */
 
-import { useState, useTransition } from 'react'
-import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react'
+import { useEffect, useState, useTransition } from 'react'
+import { Check, ChevronDown, ChevronRight, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Sheet,
@@ -68,6 +68,16 @@ export function ImportRowDetailSheet({
   const [showSourceDetails, setShowSourceDetails] = useState(false)
   const [catalogDialogOpen, setCatalogDialogOpen] = useState(false)
   const [catalogNote, setCatalogNote] = useState('')
+  // Stage-and-confirm: clicking an alt candidate selects it locally but does
+  // NOT mutate the row. The staged id is committed when the user clicks
+  // "Acceptera". Reset whenever the sheet shows a different row or closes.
+  const [stagedCandidateId, setStagedCandidateId] = useState<string | null>(
+    null
+  )
+
+  useEffect(() => {
+    setStagedCandidateId(null)
+  }, [row?.id, open])
 
   if (!row) return null
 
@@ -75,6 +85,7 @@ export function ImportRowDetailSheet({
   const otherCandidates = row.match_candidates.filter(
     (c) => c.document_id !== row.matched_document_id
   )
+  const hasStaging = stagedCandidateId !== null
 
   function runMutation(
     fn: () => Promise<{ success: boolean; error?: string }>,
@@ -94,6 +105,13 @@ export function ImportRowDetailSheet({
 
   function handleAccept() {
     if (!row) return
+    if (stagedCandidateId) {
+      runMutation(
+        () => replaceRowMatch(row.id, stagedCandidateId),
+        'Kunde inte byta matchning'
+      )
+      return
+    }
     runMutation(() => acceptRow(row.id), 'Kunde inte acceptera raden')
   }
   function handleReject() {
@@ -106,13 +124,6 @@ export function ImportRowDetailSheet({
       () => undoRowDecision(row.id),
       'Kunde inte ångra beslutet',
       false
-    )
-  }
-  function handleReplace(candidateDocId: string) {
-    if (!row) return
-    runMutation(
-      () => replaceRowMatch(row.id, candidateDocId),
-      'Kunde inte byta matchning'
     )
   }
   function handleCatalogRequest() {
@@ -257,26 +268,47 @@ export function ImportRowDetailSheet({
                   </p>
                 )}
                 <div className="mt-2 space-y-2">
-                  {otherCandidates.map((c) => (
-                    <button
-                      key={c.document_id}
-                      type="button"
-                      onClick={() => handleReplace(c.document_id)}
-                      disabled={isPending}
-                      className="group flex w-full items-center gap-3 rounded-md border bg-card px-3 py-2 text-left text-sm transition-colors hover:bg-muted/50 disabled:opacity-50"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate font-medium leading-tight">
-                          {c.title}
+                  {otherCandidates.map((c) => {
+                    const isStaged = c.document_id === stagedCandidateId
+                    return (
+                      <button
+                        key={c.document_id}
+                        type="button"
+                        onClick={() =>
+                          setStagedCandidateId(isStaged ? null : c.document_id)
+                        }
+                        disabled={isPending}
+                        aria-pressed={isStaged}
+                        className={`group flex w-full items-center gap-3 rounded-md border bg-card px-3 py-2 text-left text-sm transition-colors disabled:opacity-50 ${
+                          isStaged
+                            ? 'border-primary bg-primary/10 ring-1 ring-primary'
+                            : 'hover:bg-muted/50'
+                        }`}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate font-medium leading-tight">
+                            {c.title}
+                          </div>
+                          <div className="mt-1 truncate text-xs text-muted-foreground">
+                            {c.document_number ?? c.content_type}
+                          </div>
                         </div>
-                        <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-                          <span>{c.document_number ?? c.content_type}</span>
-                          <span>{Math.round(c.fuzzy_score * 100)}%</span>
-                        </div>
-                      </div>
-                      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-                    </button>
-                  ))}
+                        {c.fuzzy_score >= 0.45 && (
+                          <span className="shrink-0 rounded-full border bg-muted/50 px-2 py-0.5 text-xs font-medium tabular-nums text-muted-foreground">
+                            {Math.round(c.fuzzy_score * 100)}%
+                          </span>
+                        )}
+                        {isStaged ? (
+                          <Check
+                            className="h-4 w-4 shrink-0 text-primary"
+                            aria-label="Vald"
+                          />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
               </section>
             )}
@@ -294,12 +326,18 @@ export function ImportRowDetailSheet({
                   >
                     Avvisa
                   </Button>
-                  <Button
-                    onClick={() => setCatalogDialogOpen(true)}
-                    disabled={isPending}
-                  >
-                    Begär tillägg
-                  </Button>
+                  {hasStaging ? (
+                    <Button onClick={handleAccept} disabled={isPending}>
+                      Acceptera
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => setCatalogDialogOpen(true)}
+                      disabled={isPending}
+                    >
+                      Begär tillägg
+                    </Button>
+                  )}
                 </>
               ) : (
                 <>
