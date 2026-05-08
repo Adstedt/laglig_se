@@ -124,6 +124,9 @@ export const KNOWN_ACTIONS = [
   // Banner cancel action — hard-deletes an in-flight import (24.x follow-up)
   'law_list_import.discarded',
 
+  // Story 24.7 — LLM-suggested groupings on the granska page
+  'law_list_import.groupings_proposed',
+
   // Story 24.5 — catalog-requests admin queue
   'catalog_request.fulfilled',
   'catalog_request.rejected',

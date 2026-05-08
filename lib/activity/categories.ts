@@ -112,6 +112,10 @@ export const ACTION_TO_CATEGORY: Record<KnownAction, ActivityCategory> = {
   'law_list_import.bulk_accepted_high': 'andringar',
   // Discard is a lifecycle event (terminates the import)
   'law_list_import.discarded': 'livscykel',
+  // Story 24.7 — AI-suggested groupings on the granska commit dialog.
+  // Surfaced as an "andringar" event because it represents a user-visible
+  // proposal the dev/QA can replay from the activity feed.
+  'law_list_import.groupings_proposed': 'andringar',
 
   // Story 24.5 — catalog-requests admin queue (ops fulfilment loop)
   'catalog_request.fulfilled': 'livscykel',

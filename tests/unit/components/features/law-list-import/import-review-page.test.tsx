@@ -17,6 +17,7 @@ vi.mock('@/app/actions/law-list-import', () => ({
   acceptAllHigh: vi.fn(),
   commitImport: vi.fn(),
   getImport: vi.fn(),
+  proposeGroupings: vi.fn(),
 }))
 
 vi.mock('sonner', () => ({
@@ -45,11 +46,16 @@ vi.mock(
 )
 
 import { ImportReviewPage } from '@/components/features/law-list-import/import-review-page'
-import { acceptAllHigh, commitImport } from '@/app/actions/law-list-import'
+import {
+  acceptAllHigh,
+  commitImport,
+  proposeGroupings,
+} from '@/app/actions/law-list-import'
 import type { ImportSummary } from '@/app/actions/law-list-import'
 
 const mockAcceptAllHigh = vi.mocked(acceptAllHigh)
 const mockCommitImport = vi.mocked(commitImport)
+const mockProposeGroupings = vi.mocked(proposeGroupings)
 
 function makeImport(overrides: Partial<ImportSummary> = {}): ImportSummary {
   return {
@@ -393,5 +399,311 @@ describe('<ImportReviewPage> — batch accept', () => {
     await screen.findByText(/Acceptera 1 höga matchningar utan granskning?/)
     await user.click(screen.getByRole('button', { name: 'Acceptera' }))
     expect(mockAcceptAllHigh).toHaveBeenCalledWith('imp-1')
+  })
+})
+
+// ============================================================================
+// Story 24.7 — grouping suggestion panel
+// ============================================================================
+
+function makeBigImport(
+  acceptedCount: number,
+  overrides: Partial<ImportSummary> = {}
+): ImportSummary {
+  // Build N committable rows pointing at a stub matched_document so the
+  // panel's row-meta lookup has something to render. matched_document_id
+  // is needed; matched_document is left null (the panel falls back to
+  // source_titel for display).
+  const rows = Array.from({ length: acceptedCount }, (_, i) => ({
+    id: `row-${i + 1}`,
+    row_index: i,
+    source_titel: `Row ${i + 1}`,
+    source_sfs_nummer: null,
+    source_omrade: i < 5 ? 'Arbetsmiljö' : null,
+    source_lagansvarig: null,
+    source_kommentar: null,
+    match_status: 'ACCEPTED_BY_USER' as const,
+    matched_document_id: `doc-${i + 1}`,
+    matched_document: null,
+    confidence_score: 0.95,
+    match_candidates: [],
+    match_reasoning: null,
+  }))
+  return makeImport({
+    rows,
+    counts: {
+      total: acceptedCount,
+      matched_high: 0,
+      matched_medium: 0,
+      unmatched: 0,
+      accepted: acceptedCount,
+      replaced: 0,
+      rejected: 0,
+      catalog_requested: 0,
+      catalog_fulfilled: 0,
+    },
+    ...overrides,
+  })
+}
+
+describe('<ImportReviewPage> — Story 24.7 grouping panel', () => {
+  it('does NOT render "Föreslå grupper" CTA below 15 committable rows', async () => {
+    const user = userEvent.setup()
+    render(<ImportReviewPage initialImport={makeBigImport(14)} />)
+    await user.click(
+      screen.getByRole('button', { name: 'Bekräfta och skapa lista' })
+    )
+    expect(screen.queryByTestId('grouping-cta')).not.toBeInTheDocument()
+  })
+
+  it('renders "Föreslå grupper" CTA when ≥15 committable rows; clicking it triggers proposeGroupings + renders panel', async () => {
+    mockProposeGroupings.mockResolvedValueOnce({
+      success: true,
+      data: {
+        groups: [
+          { name: 'Arbetsmiljö', rowIds: ['row-1', 'row-2'], source: 'omrade' },
+          { name: 'Miljö', rowIds: ['row-3', 'row-4'], source: 'llm' },
+        ],
+        unassigned: ['row-5'],
+        generatedAt: '2026-05-08T10:00:00.000Z',
+        llmUsed: true,
+      },
+    })
+    const user = userEvent.setup()
+    render(<ImportReviewPage initialImport={makeBigImport(15)} />)
+    await user.click(
+      screen.getByRole('button', { name: 'Bekräfta och skapa lista' })
+    )
+
+    const cta = await screen.findByTestId('grouping-cta')
+    await user.click(cta)
+    expect(mockProposeGroupings).toHaveBeenCalledWith('imp-1')
+
+    await screen.findByTestId('grouping-panel')
+    expect(screen.getByText(/Område$/)).toBeInTheDocument()
+    expect(screen.getByText(/AI-förslag/)).toBeInTheDocument()
+  })
+
+  it('Bekräfta with edited groups commits with the edited payload', async () => {
+    mockProposeGroupings.mockResolvedValueOnce({
+      success: true,
+      data: {
+        groups: [
+          { name: 'Arbetsmiljö', rowIds: ['row-1', 'row-2'], source: 'omrade' },
+        ],
+        unassigned: [],
+        generatedAt: '2026-05-08T10:00:00.000Z',
+        llmUsed: true,
+      },
+    })
+    const user = userEvent.setup()
+    render(<ImportReviewPage initialImport={makeBigImport(15)} />)
+    await user.click(
+      screen.getByRole('button', { name: 'Bekräfta och skapa lista' })
+    )
+    await user.click(await screen.findByTestId('grouping-cta'))
+    await screen.findByTestId('grouping-panel')
+
+    await user.click(screen.getByRole('button', { name: 'Bekräfta' }))
+
+    expect(mockCommitImport).toHaveBeenCalledWith(
+      expect.objectContaining({
+        importId: 'imp-1',
+        groupAssignments: expect.objectContaining({
+          groups: [
+            expect.objectContaining({
+              name: 'Arbetsmiljö',
+              rowIds: ['row-1', 'row-2'],
+            }),
+          ],
+        }),
+      })
+    )
+  })
+
+  it('"Hoppa över grupper" commits with groupAssignments=undefined', async () => {
+    mockProposeGroupings.mockResolvedValueOnce({
+      success: true,
+      data: {
+        groups: [
+          { name: 'Arbetsmiljö', rowIds: ['row-1', 'row-2'], source: 'omrade' },
+        ],
+        unassigned: [],
+        generatedAt: '2026-05-08T10:00:00.000Z',
+        llmUsed: true,
+      },
+    })
+    const user = userEvent.setup()
+    render(<ImportReviewPage initialImport={makeBigImport(15)} />)
+    await user.click(
+      screen.getByRole('button', { name: 'Bekräfta och skapa lista' })
+    )
+    await user.click(await screen.findByTestId('grouping-cta'))
+    await screen.findByTestId('grouping-panel')
+
+    await user.click(screen.getByTestId('grouping-skip'))
+    await user.click(screen.getByRole('button', { name: 'Bekräfta' }))
+
+    const callArgs = mockCommitImport.mock.calls[0]?.[0]
+    expect(callArgs).toBeDefined()
+    expect(
+      callArgs && 'groupAssignments' in callArgs
+        ? callArgs.groupAssignments
+        : undefined
+    ).toBeUndefined()
+  })
+
+  it('LLM-failed proposal still renders Tier 1 groups + an info banner', async () => {
+    mockProposeGroupings.mockResolvedValueOnce({
+      success: true,
+      data: {
+        groups: [
+          { name: 'Arbetsmiljö', rowIds: ['row-1', 'row-2'], source: 'omrade' },
+        ],
+        unassigned: ['row-3', 'row-4'],
+        generatedAt: '2026-05-08T10:00:00.000Z',
+        llmUsed: false,
+        llmFailureReason: 'timeout',
+      },
+    })
+    const user = userEvent.setup()
+    render(<ImportReviewPage initialImport={makeBigImport(15)} />)
+    await user.click(
+      screen.getByRole('button', { name: 'Bekräfta och skapa lista' })
+    )
+    await user.click(await screen.findByTestId('grouping-cta'))
+
+    await screen.findByTestId('grouping-degraded-banner')
+    expect(
+      screen.getByTestId('grouping-degraded-banner').textContent
+    ).toContain('AI-förslag kunde inte hämtas')
+  })
+
+  it('All-singletons LLM response → panel renders with Tier 1 + Övriga only', async () => {
+    mockProposeGroupings.mockResolvedValueOnce({
+      success: true,
+      data: {
+        // Adapter dropped all LLM clusters as singletons.
+        groups: [
+          { name: 'Arbetsmiljö', rowIds: ['row-1', 'row-2'], source: 'omrade' },
+        ],
+        unassigned: ['row-3', 'row-4'],
+        generatedAt: '2026-05-08T10:00:00.000Z',
+        llmUsed: true,
+      },
+    })
+    const user = userEvent.setup()
+    render(<ImportReviewPage initialImport={makeBigImport(15)} />)
+    await user.click(
+      screen.getByRole('button', { name: 'Bekräfta och skapa lista' })
+    )
+    await user.click(await screen.findByTestId('grouping-cta'))
+
+    await screen.findByTestId('grouping-panel')
+    // Tier 1 group rendered — input is the canonical name carrier.
+    const nameInput = screen.getByLabelText('Gruppnamn') as HTMLInputElement
+    expect(nameInput.value).toBe('Arbetsmiljö')
+    // Övriga bucket rendered with the 2 unassigned rows.
+    const unassigned = screen.getByTestId('grouping-panel-unassigned')
+    expect(unassigned.textContent).toContain('Övriga (utan grupp)')
+    expect(unassigned.textContent).toContain('2 rader')
+  })
+
+  it('removing a group moves its rows to Övriga', async () => {
+    mockProposeGroupings.mockResolvedValueOnce({
+      success: true,
+      data: {
+        groups: [
+          { name: 'Arbetsmiljö', rowIds: ['row-1', 'row-2'], source: 'omrade' },
+          { name: 'Miljö', rowIds: ['row-3'], source: 'llm' },
+        ],
+        unassigned: [],
+        generatedAt: '2026-05-08T10:00:00.000Z',
+        llmUsed: true,
+      },
+    })
+    const user = userEvent.setup()
+    render(<ImportReviewPage initialImport={makeBigImport(15)} />)
+    await user.click(
+      screen.getByRole('button', { name: 'Bekräfta och skapa lista' })
+    )
+    await user.click(await screen.findByTestId('grouping-cta'))
+    await screen.findByTestId('grouping-panel')
+
+    // Click the trash button on the second group (Miljö).
+    const removeButtons = screen.getAllByRole('button', {
+      name: 'Ta bort gruppen',
+    })
+    expect(removeButtons.length).toBeGreaterThanOrEqual(2)
+    await user.click(removeButtons[1]!)
+
+    // Övriga should now have row-3
+    const unassigned = screen.getByTestId('grouping-panel-unassigned')
+    expect(unassigned.textContent).toContain('1 rad')
+  })
+
+  it('closing the dialog mid-LLM-call does not error toast on result', async () => {
+    let resolveProposal: (_v: never) => void = () => {}
+    mockProposeGroupings.mockImplementationOnce(
+      () =>
+        new Promise<never>((resolve) => {
+          resolveProposal = resolve
+        })
+    )
+    const user = userEvent.setup()
+    render(<ImportReviewPage initialImport={makeBigImport(15)} />)
+    await user.click(
+      screen.getByRole('button', { name: 'Bekräfta och skapa lista' })
+    )
+    await user.click(await screen.findByTestId('grouping-cta'))
+
+    // Close the dialog while the proposal call is still pending.
+    await user.click(screen.getByRole('button', { name: 'Avbryt' }))
+
+    // Now resolve. The component should ignore the result (AbortController).
+    resolveProposal({
+      success: true,
+      data: {
+        groups: [],
+        unassigned: [],
+        generatedAt: '2026-05-08T10:00:00.000Z',
+        llmUsed: true,
+      },
+    } as never)
+
+    // No toast.error should have been called.
+    const { toast } = await import('sonner')
+    expect(toast.error).not.toHaveBeenCalled()
+  })
+
+  it('Editing a group name updates local state without server call', async () => {
+    mockProposeGroupings.mockResolvedValueOnce({
+      success: true,
+      data: {
+        groups: [
+          { name: 'Arbetsmiljö', rowIds: ['row-1', 'row-2'], source: 'omrade' },
+        ],
+        unassigned: [],
+        generatedAt: '2026-05-08T10:00:00.000Z',
+        llmUsed: true,
+      },
+    })
+    const user = userEvent.setup()
+    render(<ImportReviewPage initialImport={makeBigImport(15)} />)
+    await user.click(
+      screen.getByRole('button', { name: 'Bekräfta och skapa lista' })
+    )
+    await user.click(await screen.findByTestId('grouping-cta'))
+    await screen.findByTestId('grouping-panel')
+
+    const nameInput = screen.getByLabelText('Gruppnamn') as HTMLInputElement
+    expect(nameInput.value).toBe('Arbetsmiljö')
+
+    await user.clear(nameInput)
+    await user.type(nameInput, 'HMS')
+
+    expect(nameInput.value).toBe('HMS')
+    // commitImport should NOT have been called yet.
+    expect(mockCommitImport).not.toHaveBeenCalled()
   })
 })

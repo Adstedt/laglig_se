@@ -19,11 +19,12 @@
  * surfaces only.
  */
 
-import { useState, useTransition } from 'react'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import useSWR from 'swr'
 import { toast } from 'sonner'
+import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import {
   AlertCircle,
   ArrowLeft,
@@ -57,11 +58,13 @@ import {
   acceptAllHigh,
   commitImport,
   getImport,
+  proposeGroupings,
   type ImportRowSummary,
   type ImportSummary,
 } from '@/app/actions/law-list-import'
 import { ImportTableRow } from './import-table-row'
 import { ImportRowDetailSheet } from './import-row-detail-sheet'
+import { GroupingPanel, type EditableGroup } from './grouping-panel'
 import {
   Table,
   TableBody,
@@ -97,6 +100,19 @@ export function ImportReviewPage({ initialImport }: ImportReviewPageProps) {
   const [detailRowId, setDetailRowId] = useState<string | null>(null)
   const [detailSheetOpen, setDetailSheetOpen] = useState(false)
 
+  // Story 24.7: grouping suggestion panel state. Toggled by "Föreslå grupper"
+  // CTA inside the commit dialog. `editedGroups` holds the user-edited
+  // proposal; `unassignedRowIds` is the Övriga bucket. Both reset on dialog
+  // close (state lives in the dialog, not URL).
+  const [groupingOpen, setGroupingOpen] = useState(false)
+  const [groupingLoading, setGroupingLoading] = useState(false)
+  const [groupingError, setGroupingError] = useState<string | null>(null)
+  const [groupingDegraded, setGroupingDegraded] = useState<string | null>(null)
+  const [editedGroups, setEditedGroups] = useState<EditableGroup[]>([])
+  const [unassignedRowIds, setUnassignedRowIds] = useState<string[]>([])
+  const [groupingHasEdits, setGroupingHasEdits] = useState(false)
+  const groupingAbortRef = useRef<AbortController | null>(null)
+
   // SWR for polling-while-MATCHING (AC 12). refreshInterval is a function
   // returning 0 once status is no longer MATCHING — mirrors the
   // LawListGenerationProgress pattern.
@@ -123,6 +139,40 @@ export function ImportReviewPage({ initialImport }: ImportReviewPageProps) {
     counts.rejected +
     counts.catalog_requested +
     counts.catalog_fulfilled
+
+  // Story 24.7: hooks must precede the conditional early-return branches
+  // below (rules-of-hooks). Both depend only on state that exists from
+  // first render.
+
+  // Reset grouping state when dialog closes; abort any in-flight LLM call.
+  useEffect(() => {
+    if (!commitDialogOpen) {
+      groupingAbortRef.current?.abort()
+      groupingAbortRef.current = null
+      setGroupingOpen(false)
+      setGroupingLoading(false)
+      setGroupingError(null)
+      setGroupingDegraded(null)
+      setEditedGroups([])
+      setUnassignedRowIds([])
+      setGroupingHasEdits(false)
+    }
+  }, [commitDialogOpen])
+
+  // Lookup map for the panel — title + document_number per rowId.
+  const rowMetaById = useMemo(() => {
+    const map = new Map<
+      string,
+      { title: string | null; documentNumber: string | null }
+    >()
+    for (const r of importData.rows) {
+      map.set(r.id, {
+        title: r.matched_document?.title ?? r.source_titel ?? null,
+        documentNumber: r.matched_document?.document_number ?? null,
+      })
+    }
+    return map
+  }, [importData.rows])
 
   // ----------------------------------------------------------------------
   // Edge states (AC 11, 12, 13)
@@ -266,9 +316,23 @@ export function ImportReviewPage({ initialImport }: ImportReviewPageProps) {
     }
     setIsCommitting(true)
     try {
+      // Story 24.7: only send groupAssignments when the panel has been opened
+      // AND the resulting `editedGroups` has at least one populated group.
+      // Otherwise fall through to flat-list commit (24.4 behaviour).
+      const groupAssignments =
+        groupingOpen && editedGroups.length > 0
+          ? {
+              groups: editedGroups
+                .filter((g) => g.rowIds.length > 0)
+                .map((g) => ({ name: g.name, rowIds: g.rowIds })),
+              asSuggested: !groupingHasEdits,
+            }
+          : undefined
+
       const result = await commitImport({
         importId: importData.id,
         listName: listName.trim(),
+        ...(groupAssignments ? { groupAssignments } : {}),
       })
       if (!result.success || !result.data) {
         toast.error('Kunde inte bekräfta importen', {
@@ -286,8 +350,55 @@ export function ImportReviewPage({ initialImport }: ImportReviewPageProps) {
     }
   }
 
+  // Story 24.7: fetch grouping proposal. Wires AbortController so dialog-close
+  // cancellation discards the result client-side. Server-side request keeps
+  // running but its outcome is irrelevant.
+  async function handleProposeGroupings(opts?: { confirmOverwrite?: boolean }) {
+    if (groupingHasEdits && !opts?.confirmOverwrite) {
+      const ok = window.confirm('Detta ersätter dina ändringar. Fortsätt?')
+      if (!ok) return
+    }
+    // Cancel any in-flight call.
+    groupingAbortRef.current?.abort()
+    const controller = new AbortController()
+    groupingAbortRef.current = controller
+
+    setGroupingLoading(true)
+    setGroupingError(null)
+    setGroupingDegraded(null)
+    try {
+      const result = await proposeGroupings(importData.id)
+      // Discard if the dialog closed mid-call.
+      if (controller.signal.aborted) return
+      if (!result.success || !result.data) {
+        setGroupingError(result.error ?? 'Kunde inte föreslå grupper')
+        return
+      }
+      setEditedGroups(
+        result.data.groups.map((g) => ({
+          name: g.name,
+          rowIds: g.rowIds,
+          source: g.source,
+        }))
+      )
+      setUnassignedRowIds(result.data.unassigned)
+      setGroupingHasEdits(false)
+      if (result.data.llmUsed === false) {
+        setGroupingDegraded(
+          'AI-förslag kunde inte hämtas; visar grupper baserade på Område-kolumnen.'
+        )
+      }
+    } finally {
+      setGroupingLoading(false)
+    }
+  }
+
   const pendingHighCount = counts.matched_high
   const canCommit = isReviewable && acceptedCount > 0
+  // Story 24.7 AC 1 — size gate at ≥15 committable rows. Re-evaluated when
+  // commit dialog opens so the user gets the latest count after any acceptance
+  // mutations during this session.
+  const groupingGateMet = acceptedCount >= 15
 
   // ----------------------------------------------------------------------
   // Render
@@ -436,7 +547,14 @@ export function ImportReviewPage({ initialImport }: ImportReviewPageProps) {
 
       {/* Commit dialog */}
       <Dialog open={commitDialogOpen} onOpenChange={setCommitDialogOpen}>
-        <DialogContent>
+        <DialogContent
+          className={cn(
+            'sm:max-w-[560px]',
+            // Story 24.7: when the grouping panel is open, widen the dialog
+            // so groups + per-row "Flytta till" pickers don't squeeze.
+            groupingOpen && 'sm:max-w-3xl'
+          )}
+        >
           <DialogHeader>
             <DialogTitle>Bekräfta och skapa lista</DialogTitle>
             <DialogDescription>
@@ -446,26 +564,86 @@ export function ImportReviewPage({ initialImport }: ImportReviewPageProps) {
               manuell registrering, {counts.rejected} avvisas.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
-            <label htmlFor="listName" className="text-sm font-medium">
-              Namn på listan
-            </label>
-            <Input
-              id="listName"
-              value={listName}
-              onChange={(e) => setListName(e.target.value)}
-              placeholder="t.ex. Importerad lista 2026"
-              autoFocus
-            />
+          <div
+            className={cn(
+              'space-y-3',
+              // Constrain the panel area when expanded so the dialog stays
+              // within the viewport. Tailwind max-h gives a scroll fallback.
+              groupingOpen && 'max-h-[60vh] overflow-y-auto pr-1'
+            )}
+          >
+            <div className="space-y-2">
+              <label htmlFor="listName" className="text-sm font-medium">
+                Namn på listan
+              </label>
+              <Input
+                id="listName"
+                value={listName}
+                onChange={(e) => setListName(e.target.value)}
+                placeholder="t.ex. Importerad lista 2026"
+                autoFocus={!groupingOpen}
+              />
+            </div>
+
+            {/* Story 24.7 — Föreslå grupper entry point + inline panel */}
+            {groupingGateMet && !groupingOpen && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  setGroupingOpen(true)
+                  void handleProposeGroupings({ confirmOverwrite: true })
+                }}
+                data-testid="grouping-cta"
+              >
+                Föreslå grupper
+              </Button>
+            )}
+            {groupingOpen && (
+              <div className="rounded-md border bg-background p-3">
+                <GroupingPanel
+                  loading={groupingLoading}
+                  error={groupingError}
+                  degraded={groupingDegraded}
+                  groups={editedGroups}
+                  unassignedRowIds={unassignedRowIds}
+                  rowMetaById={rowMetaById}
+                  onChangeGroups={setEditedGroups}
+                  onChangeUnassigned={setUnassignedRowIds}
+                  onMarkEdited={() => setGroupingHasEdits(true)}
+                  onReProposeClick={() =>
+                    void handleProposeGroupings({ confirmOverwrite: false })
+                  }
+                />
+              </div>
+            )}
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex flex-wrap gap-2 sm:flex-nowrap">
             <Button
               variant="outline"
               onClick={() => setCommitDialogOpen(false)}
               disabled={isCommitting}
+              className="sm:mr-auto"
             >
               Avbryt
             </Button>
+            {groupingOpen && (
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setGroupingOpen(false)
+                  setEditedGroups([])
+                  setUnassignedRowIds([])
+                  setGroupingHasEdits(false)
+                  setGroupingDegraded(null)
+                }}
+                disabled={isCommitting}
+                data-testid="grouping-skip"
+              >
+                Hoppa över grupper
+              </Button>
+            )}
             <Button
               onClick={handleCommit}
               disabled={isCommitting || listName.trim().length === 0}
@@ -523,15 +701,25 @@ function BreakdownTile({
 }
 
 // ============================================================================
-// ImportRowTable — shadcn Table layout, no virtualisation.
+// ImportRowTable — shadcn Table layout with optional row virtualisation.
 //
-// At 1000 rows max (parser cap) and ~5 cells per row, plain DOM rendering
-// stays well under 16 ms reconcile time on modern browsers. The previous
-// TanStack-Virtual implementation was needed when each row was a 180-px
-// Card with rich content; with the compact Table row (~52 px, 5 cells)
-// it's no longer load-bearing. If perf becomes an issue beyond ~2000
-// rows, swap in a virtual-table wrapper here.
+// Story 24.4 QA gate PERF-001: real customer files can run up to 1000 rows
+// (parser cap from 24.2). The compact shadcn TableRow (~56 px, 4 cells) is
+// much cheaper than the original 180-px ImportRowCard, but at 1000 rows the
+// reconcile cost on filter-chip clicks still degrades interaction latency.
+// `useWindowVirtualizer` mirrors the cycle-items-tab.tsx pattern but tracks
+// page-level scroll instead of an internal scroll container — preserves the
+// existing UX where users scroll the whole page rather than a nested table.
+//
+// Threshold of 100 rows matches the cycle-items-tab convention. Below 100,
+// the array .map is fine and avoids the virtualizer's measurement overhead.
+// Above the threshold, render a top + bottom spacer `<tr>` with the offset
+// height; only the visible window of rows materialises in the DOM.
 // ============================================================================
+
+const VIRTUALIZATION_THRESHOLD = 100
+const ESTIMATED_ROW_HEIGHT = 56
+const OVERSCAN_COUNT = 5
 
 interface ImportRowTableProps {
   rows: ImportRowSummary[]
@@ -565,6 +753,72 @@ function ImportRowTable({
           amending references) don't blow the layout out — they truncate
           inside the cell instead. Hover surfaces the full title via the
           `title` attribute on each cell's content span. */}
+      {rows.length > VIRTUALIZATION_THRESHOLD ? (
+        <VirtualisedRowTable
+          rows={rows}
+          importId={importId}
+          readOnly={readOnly}
+          onOpenDetail={onOpenDetail}
+          onMutated={onMutated}
+        />
+      ) : (
+        <Table className="table-fixed">
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[32%]">Din rad</TableHead>
+              <TableHead className="w-[36%]">I vår katalog</TableHead>
+              <TableHead className="w-[200px]">Status</TableHead>
+              <TableHead className="w-[200px] text-right">Åtgärd</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <ImportTableRow
+                key={row.id}
+                row={row}
+                importId={importId}
+                readOnly={readOnly}
+                onOpenDetail={() => onOpenDetail(row.id)}
+                onMutated={onMutated}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      )}
+    </Card>
+  )
+}
+
+// ----------------------------------------------------------------------------
+// Window-virtualised variant for >100 rows. Spacer-row pattern keeps the
+// shadcn Table layout intact (real <tr> elements; column widths still align
+// with the header). Window scroll preserves the page-level UX.
+// ----------------------------------------------------------------------------
+function VirtualisedRowTable({
+  rows,
+  importId,
+  readOnly,
+  onOpenDetail,
+  onMutated,
+}: ImportRowTableProps) {
+  const parentRef = useRef<HTMLDivElement>(null)
+  const virtualizer = useWindowVirtualizer({
+    count: rows.length,
+    estimateSize: () => ESTIMATED_ROW_HEIGHT,
+    overscan: OVERSCAN_COUNT,
+    scrollMargin: parentRef.current?.offsetTop ?? 0,
+  })
+
+  const virtualItems = virtualizer.getVirtualItems()
+  const totalSize = virtualizer.getTotalSize()
+  const paddingTop = virtualItems.length > 0 ? virtualItems[0]!.start : 0
+  const paddingBottom =
+    virtualItems.length > 0
+      ? totalSize - virtualItems[virtualItems.length - 1]!.end
+      : 0
+
+  return (
+    <div ref={parentRef} data-testid="import-rows-virtualized">
       <Table className="table-fixed">
         <TableHeader>
           <TableRow>
@@ -575,18 +829,32 @@ function ImportRowTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.map((row) => (
-            <ImportTableRow
-              key={row.id}
-              row={row}
-              importId={importId}
-              readOnly={readOnly}
-              onOpenDetail={() => onOpenDetail(row.id)}
-              onMutated={onMutated}
-            />
-          ))}
+          {paddingTop > 0 && (
+            <tr aria-hidden>
+              <td colSpan={4} style={{ height: `${paddingTop}px` }} />
+            </tr>
+          )}
+          {virtualItems.map((virtualRow) => {
+            const row = rows[virtualRow.index]
+            if (!row) return null
+            return (
+              <ImportTableRow
+                key={row.id}
+                row={row}
+                importId={importId}
+                readOnly={readOnly}
+                onOpenDetail={() => onOpenDetail(row.id)}
+                onMutated={onMutated}
+              />
+            )
+          })}
+          {paddingBottom > 0 && (
+            <tr aria-hidden>
+              <td colSpan={4} style={{ height: `${paddingBottom}px` }} />
+            </tr>
+          )}
         </TableBody>
       </Table>
-    </Card>
+    </div>
   )
 }
