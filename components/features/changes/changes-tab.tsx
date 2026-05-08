@@ -22,6 +22,7 @@ import {
 import { ChangeRow } from './change-row'
 import { ChangeAssessmentModal } from './change-assessment-modal'
 import { PriorityFilter } from './priority-filter'
+import { LawListTabsStrip } from './law-list-tabs-strip'
 import type {
   UnacknowledgedChange,
   ChangePriority,
@@ -31,9 +32,13 @@ import type { AssessmentStatus } from '@prisma/client'
 
 interface ChangesTabProps {
   initialChanges?: UnacknowledgedChange[]
+  changeCount?: number
 }
 
-export function ChangesTab({ initialChanges = [] }: ChangesTabProps) {
+export function ChangesTab({
+  initialChanges = [],
+  changeCount = 0,
+}: ChangesTabProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [statusMap, setStatusMap] = useState<Record<string, AssessmentStatus>>(
@@ -99,25 +104,35 @@ export function ChangesTab({ initialChanges = [] }: ChangesTabProps) {
   // Empty state
   if (initialChanges.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-        <div className="rounded-full bg-muted p-4">
-          <CheckCircle className="h-8 w-8 text-muted-foreground" />
+      <div className="space-y-4">
+        <div className="border-b border-border/60 py-2">
+          <LawListTabsStrip changeCount={changeCount} />
         </div>
-        <p className="text-sm text-muted-foreground">
-          Inga olästa lagändringar
-        </p>
+        <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+          <div className="rounded-full bg-muted p-4">
+            <CheckCircle className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Inga olästa lagändringar
+          </p>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      {/* Info row + Priority filter */}
+      <div className="flex items-center gap-2 border-b border-border/60 py-2 flex-wrap">
+        <LawListTabsStrip changeCount={changeCount} />
+        <div className="flex-1" />
+        <PriorityFilter />
+      </div>
+
+      {/* Info row */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           {filteredChanges.length} av {initialChanges.length} ändringar
         </p>
-        <PriorityFilter />
       </div>
 
       {/* Filtered empty state */}
