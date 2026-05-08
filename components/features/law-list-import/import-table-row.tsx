@@ -161,6 +161,24 @@ export function ImportTableRow({
               {row.matched_document.document_number}
             </span>
           </div>
+        ) : row.match_status === 'UNMATCHED' && row.match_candidates[0] ? (
+          // Surface the top candidate as a hint so users notice the matcher
+          // found something plausible (often the correct law under a
+          // different SFS-number) before they jump to "Begär tillägg".
+          <div className="flex min-w-0 max-w-full flex-col gap-0.5">
+            <span
+              className="truncate text-sm leading-tight text-muted-foreground"
+              title={row.match_candidates[0].title}
+            >
+              Närmaste: {row.match_candidates[0].title}
+            </span>
+            <span className="truncate text-xs text-muted-foreground/70">
+              {row.match_candidates[0].document_number ??
+                row.match_candidates[0].content_type}
+              {' · '}
+              {Math.round(row.match_candidates[0].fuzzy_score * 100)}% likhet
+            </span>
+          </div>
         ) : (
           <span className="text-sm italic text-muted-foreground">
             {row.match_status === 'CATALOG_REQUEST_PENDING'
@@ -256,9 +274,14 @@ function RowActions({
     )
   }
 
-  // UNMATCHED: opening the Sheet is the path to "Begär tillägg" (note +
-  // confirm dialog lives there). Keep the row action surface tight.
+  // UNMATCHED: opening the Sheet is the path to both candidate selection
+  // and "Begär tillägg". When the matcher returned plausible candidates
+  // (i.e. the user supplied a wrong SFS but the title fuzzy-matched
+  // something), the primary CTA points at the candidates instead of at
+  // catalog-request — that's the higher-leverage action since the doc
+  // probably already exists in our catalogue.
   if (row.match_status === 'UNMATCHED') {
+    const hasCandidates = row.match_candidates.length > 0
     return (
       <div className="inline-flex items-center gap-1">
         <Button
@@ -267,7 +290,7 @@ function RowActions({
           onClick={onOpenDetail}
           disabled={isPending}
         >
-          Begär tillägg
+          {hasCandidates ? 'Granska kandidater' : 'Begär tillägg'}
         </Button>
         <Button
           size="sm"

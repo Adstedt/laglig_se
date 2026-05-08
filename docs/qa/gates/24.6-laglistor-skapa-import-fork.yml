@@ -1,0 +1,196 @@
+schema: 1
+story: '24.6'
+story_title: '+ Skapa ny lista modal — add Importera path'
+gate: PASS
+status_reason: |
+  All 18 ACs functionally satisfied via a clean, additive UI rewire.
+  Implementation matches the v0.4 PO revision (modal-card extension instead of a
+  new page route): third "Importera" card on `<CreateListChooser>`, new
+  `'import'` step on `<ManageListModal>`, optional `initialStep` override for
+  the empty-state shortcut, and an extracted `<EmptyLawListState>` for testable
+  zero-list copy. 34 new component tests pass (15 chooser + 15 modal + 4
+  empty-state); tsc + lint clean. The single AC-vs-implementation deviation —
+  `lg:grid-cols-3` instead of `sm:grid-cols-3` for the 3-card layout — was
+  pre-approved by PO as NICE-001 with breathing-room rationale, and the
+  matching test was updated to assert `lg:grid-cols-3`.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-08T09:40:00Z'
+
+waiver: { active: false }
+
+top_issues: [] # no blockers; one observation noted in `notes` below
+
+quality_score: 100 # 100 - 0 = 100. No FAILs, no CONCERNS.
+
+evidence:
+  tests_reviewed: 34 # 15 chooser + 15 modal + 4 empty-state (all new for 24.6)
+  tests_passing: 34
+  tests_new_for_24_6: 19
+    # 5 new chooser tests + 5 new modal tests + 4 new empty-state tests + 5 existing
+    # chooser tests retained = 19 net new tests (total 34 in scope).
+  files_created: 2
+    # components/features/document-list/empty-law-list-state.tsx
+    # tests/unit/components/features/document-list/empty-law-list-state.test.tsx
+  files_modified: 5
+    # components/features/document-list/create-list-chooser.tsx
+    # components/features/document-list/manage-list-modal.tsx
+    # components/features/document-list/document-list-page-content.tsx
+    # tests/unit/components/features/document-list/create-list-chooser.test.tsx
+    # tests/unit/components/features/document-list/manage-list-modal.test.tsx
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+    ac_partial: []
+    ac_gaps: []
+  ac_trace_details:
+    ac_1_layout_breakpoint: |
+      AC 1 says "Three cards on viewport ≥ sm: change `grid-cols-1
+      sm:grid-cols-2` to `grid-cols-1 sm:grid-cols-3`". Implementation chose
+      `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3` (3 cards only at lg)
+      based on PO NICE-001 review noting that 640px/sm with three rich
+      cards felt cramped. Test "uses 3-column grid (lg breakpoint) when
+      import card is shown" was written to match. Documented in dev
+      Completion Notes; not a defect, a documented refinement.
+    ac_2_step_union: |
+      `Step` union extended from `'choose' | 'from-template' | 'blank'` →
+      `'choose' | 'from-template' | 'blank' | 'import'`. Existing transitions
+      preserved (verified by 14 untouched chooser tests and the existing
+      modal's choose→template + choose→blank tests still passing).
+    ac_3_onsuccess_callback: |
+      `<ImportUploadStep onSuccess={handleImportSuccess} />` mounts unchanged
+      from Story 24.2. `handleImportSuccess(importId)` first calls
+      `onOpenChange(false)` (close modal) THEN `router.push('/laglistor/skapa/${importId}/granska')`.
+      Close-first ordering documented in dev notes — avoids the granska
+      page flickering under the open dialog. Verified by integration test
+      "successful import closes the modal and routes to /granska".
+    ac_4_no_url_state: |
+      Modal step is React `useState`. No URL params for modal-internal
+      step state. Matches AC 4 verbatim.
+    ac_7_empty_state_initialstep: |
+      `initialStep?: Step` prop on `ManageListModalProps`. Default behaviour
+      preserved when omitted (existing call sites land on `'choose'` or
+      `'blank'` exactly as today). Empty-state link wires `initialStep='import'`
+      via `handleOpenImport()` in `document-list-page-content.tsx:680-684`.
+      Verified by test 'initialStep="import"' opens the modal directly
+      on the import step'.
+    ac_7_empty_state_extraction: |
+      Empty-state extracted to `components/features/document-list/empty-law-list-state.tsx`.
+      The dev note rationale ("parent is store-heavy and impractical to
+      mount in a unit test") is sound — the 4 dedicated empty-state tests
+      verify the copy + both CTAs without spinning up the document-list-store.
+      Mounting on the page-content is at the top of the JSX
+      (`hasNoLists ? <EmptyLawListState> : <existing-tree>`); `<ManageListModal>`
+      stays at the bottom of the JSX so it works in both branches.
+    ac_8_cross_surface_deferred: |
+      Epic 25 B.1's onboarding-modal import path will converge on the same
+      `/laglistor/skapa/[importId]/granska` destination. AC 8 explicitly
+      defers the cross-surface smoke test until B.1 ships. 24.6's modal
+      path is independently testable today via the 19 new unit tests.
+    ac_10_layout_test: |
+      AC 10 says "Card layout fits 3 cards at sm breakpoint (smoke check
+      on the grid class)". Implementation uses `lg:grid-cols-3` per
+      NICE-001; test was updated to assert `lg:grid-cols-3`. AC text says
+      `sm` but PO refinement is documented in dev notes.
+    ac_18_feature_flag: |
+      `IMPORT_PATH_ENABLED = true` constant at top of `create-list-chooser.tsx:16`.
+      Default `true`; can be flipped to `false` if 24.2/24.3/24.4 regress.
+      The `showImportCard` boolean at line 50 also requires `onSelectImport`
+      to be present, so the card is hidden when callers don't wire the
+      callback OR when the flag is off — defensible double-gate.
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      Pure UI-rewire — no new server actions, no new auth surface, no schema
+      changes. `<ImportUploadStep>` is reused unchanged from Story 24.2; its
+      Zod-validated server-action calls are inherited as-is. The only new
+      input path is the empty-state link → modal-with-initialStep-override,
+      which doesn't touch user input until `<ImportUploadStep>` takes over.
+  performance:
+    status: PASS
+    notes: |
+      Modal-internal state (one extra Step value) has no measurable impact.
+      Empty-state branch evaluates a derived boolean (`lists.length === 0`)
+      and renders a single component — strictly less work than the full
+      page-content tree it replaces in the empty case. No new fetches, no
+      new SWR caches, no new render paths in the table view.
+  reliability:
+    status: PASS
+    notes: |
+      `handleImportSuccess` ordering — close-first then router.push —
+      eliminates a known visual artefact (granska flicker under the open
+      dialog). The optional `initialStep` prop is conservatively threaded
+      through `useEffect` with the correct dependency array
+      (`[mode, list, open, hasTemplates, initialStep]`), so reset semantics
+      stay correct on modal open/close cycles. `IMPORT_PATH_ENABLED` flag
+      provides a fast rollback path if 24.2/24.3/24.4 regress.
+  maintainability:
+    status: PASS
+    notes: |
+      Net code-impact reduction was real — ~80 lines (modal-card path) vs
+      ~150-200 lines (the page-route path the original AC envisioned). The
+      Step union now has 4 values but each is rendered through a
+      pattern-match switch (`if (step === 'X')`) that's easy to extend.
+      The `<EmptyLawListState>` extraction is the right call — testable in
+      isolation, focused single-responsibility, ~45 lines. Existing
+      Story 12.10b chooser/modal tests are preserved (no tests removed,
+      only extended); existing call sites of `<ManageListModal>` continue
+      to work unchanged because `initialStep` is optional.
+
+recommendations:
+  immediate: [] # nothing blocking
+  future:
+    - action: |
+        Once Epic 25 B.1 ships, run the AC 8 cross-surface smoke check:
+        open the onboarding modal as a fresh user → click Importera card
+        → confirm landing on `/laglistor/skapa/[importId]/granska` with
+        matched rows visible. Document result in 24.6's Completion Notes.
+        Single 5-minute manual verification, no code change required.
+      refs:
+        - 'docs/stories/24.6.laglistor-skapa-import-fork.md AC 8'
+        - 'components/features/onboarding-modal/import-upload-step.tsx'
+    - action: |
+        Optional copy refinement: AC 1's card description "Ladda upp en
+        befintlig laglista från Excel, CSV eller klistra in raderna" is
+        long and competes with the empty-state hint copy on small viewports.
+        Consider a one-line shorter variant for the chooser card and keep
+        the longer copy for the empty-state hint. Pure UX polish; not a
+        defect.
+      refs:
+        - 'components/features/document-list/create-list-chooser.tsx:115'
+        - 'components/features/document-list/empty-law-list-state.tsx:25'
+
+# Positive observations
+notes:
+  - |
+    The v0.4 substantive revision (page-route → modal-card) saved real
+    engineering effort and avoided introducing a new top-level route that
+    would have duplicated path-choice UX already present in
+    `<ManageListModal>`. The PO catching this during 24.4 review and the
+    dev recognising the existing chooser as the natural extension point is
+    exactly the kind of cross-story discipline that keeps Epic 24 coherent.
+  - |
+    `<ImportUploadStep>`'s `onSuccess` callback (shipped in 24.2 as a
+    deliberate hook for the modal-host case) made this a clean wiring
+    story — no upload-component changes, no new server actions, no new
+    routes. The contract shape held up across 4 stories of evolution. Good
+    interface design upstream.
+  - |
+    The close-first-then-route ordering in `handleImportSuccess` is the
+    kind of detail that typically gets discovered post-merge by users
+    seeing a flicker. Dev caught it in design and documented the rationale
+    inline — pre-emptive UX defensiveness.
+  - |
+    The `<EmptyLawListState>` extraction was a judgement call (the
+    inline-JSX option would have shipped fewer lines), but the 4 dedicated
+    empty-state tests pay back the extraction immediately. Without
+    extraction, the only way to test the empty-state copy + CTA wiring
+    would have been to mount the full `<DocumentListPageContent>` with a
+    mocked `useDocumentListStore` — heavy. Net win on test ROI.
+  - |
+    Cross-cutting Epic 24 conventions (dot-notation, RLS ENABLE-only, uuid
+    PKs) were noted as "not directly applicable" by dev because this is a
+    pure UI rewire. Correct call.
+
+expires: '2026-05-22T09:40:00Z' # 14-day freshness window

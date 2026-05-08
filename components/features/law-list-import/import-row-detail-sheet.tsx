@@ -8,7 +8,7 @@
  */
 
 import { useState, useTransition } from 'react'
-import { ChevronDown, ExternalLink } from 'lucide-react'
+import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Sheet,
@@ -244,8 +244,18 @@ export function ImportRowDetailSheet({
             {otherCandidates.length > 0 && !readOnly && !decided && (
               <section>
                 <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Andra kandidater ({otherCandidates.length})
+                  {row.match_status === 'UNMATCHED'
+                    ? `Föreslagna kandidater (${otherCandidates.length})`
+                    : `Andra kandidater (${otherCandidates.length})`}
                 </p>
+                {row.match_status === 'UNMATCHED' && (
+                  <p className="mt-2 rounded-md border border-amber-500/40 bg-amber-50/40 px-3 py-2 text-xs leading-relaxed text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+                    Innan du begär tillägg — kontrollera dessa förslag. Lagen
+                    kan finnas i katalogen under ett annat SFS-nummer än det
+                    källraden refererar till. Klicka på en kandidat för att
+                    använda den i stället.
+                  </p>
+                )}
                 <div className="mt-2 space-y-2">
                   {otherCandidates.map((c) => (
                     <button
@@ -253,13 +263,18 @@ export function ImportRowDetailSheet({
                       type="button"
                       onClick={() => handleReplace(c.document_id)}
                       disabled={isPending}
-                      className="block w-full rounded-md border bg-card px-3 py-2 text-left text-sm transition-colors hover:bg-muted/50 disabled:opacity-50"
+                      className="group flex w-full items-center gap-3 rounded-md border bg-card px-3 py-2 text-left text-sm transition-colors hover:bg-muted/50 disabled:opacity-50"
                     >
-                      <div className="font-medium leading-tight">{c.title}</div>
-                      <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{c.document_number ?? c.content_type}</span>
-                        <span>{Math.round(c.fuzzy_score * 100)}%</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-medium leading-tight">
+                          {c.title}
+                        </div>
+                        <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+                          <span>{c.document_number ?? c.content_type}</span>
+                          <span>{Math.round(c.fuzzy_score * 100)}%</span>
+                        </div>
                       </div>
+                      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                     </button>
                   ))}
                 </div>

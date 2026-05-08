@@ -318,7 +318,7 @@ function RequestRow({
         </TableCell>
         <TableCell>
           <Link
-            href={`/admin/workspaces?search=${request.workspace.id}`}
+            href={`/admin/workspaces?search=${encodeURIComponent(request.workspace.name)}`}
             className="text-sm hover:underline"
             onClick={(e) => e.stopPropagation()}
           >
@@ -393,7 +393,7 @@ function DetailPanel({ request, sla, onFulfill, onReject }: DetailPanelProps) {
             label="Workspace"
             value={
               <Link
-                href={`/admin/workspaces?search=${request.workspace.id}`}
+                href={`/admin/workspaces?search=${encodeURIComponent(request.workspace.name)}`}
                 className="hover:underline"
               >
                 {request.workspace.name}
