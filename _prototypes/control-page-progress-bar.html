@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <title>Kontroll – Progress Bar Treatments</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --bg: #0b0b0d;
+        --surface: #15151a;
+        --surface-2: #1c1c22;
+        --border: #2a2a30;
+        --border-soft: #22222a;
+        --text: #ededed;
+        --muted: #8b8b94;
+        --muted-2: #6a6a72;
+        --accent: #6ee7b7;
+        --accent-soft: rgba(110, 231, 183, 0.25);
+        --accent-dim: rgba(110, 231, 183, 0.55);
+        --pending: rgba(255, 255, 255, 0.08);
+        --pending-2: rgba(255, 255, 255, 0.04);
+        --warn: #fbbf24;
+        --danger: #f87171;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      }
+      .surface {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: rgba(96, 165, 250, 0.15);
+        color: #93c5fd;
+        letter-spacing: 0.02em;
+      }
+      .meta {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .num {
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* ===================================================================
+         BAR PRIMITIVES
+         =================================================================== */
+
+      /* Track */
+      .track {
+        background: var(--pending);
+        border-radius: 999px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      /* Fill — for single-metric and inner-segment uses */
+      .fill {
+        height: 100%;
+        background: var(--accent);
+        border-radius: inherit;
+      }
+      .fill-dim {
+        background: var(--accent-dim);
+      }
+      .fill-soft {
+        background: var(--accent-soft);
+      }
+
+      /* Dual-segment composition */
+      .track-dual {
+        position: relative;
+      }
+      .track-dual .seg-assessed {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        background: var(--accent-soft);
+      }
+      .track-dual .seg-signed {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        background: var(--accent);
+      }
+
+      /* Tooltip on hover (CSS-only sketch) */
+      .hover-tip {
+        position: relative;
+      }
+      .hover-tip:hover .tip {
+        opacity: 1;
+      }
+      .tip {
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #000;
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 120ms ease;
+      }
+
+      .legend-dot {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        border-radius: 999px;
+      }
+      .crumb {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .crumb-sep {
+        color: var(--muted-2);
+        margin: 0 6px;
+      }
+    </style>
+  </head>
+  <body class="px-8 py-8">
+    <div class="mx-auto max-w-7xl space-y-10">
+      <!-- ============================================================== -->
+      <!-- INTRO                                                          -->
+      <!-- ============================================================== -->
+      <header>
+        <h1 class="text-xl font-semibold">Kontroll – Progress Bar Treatments</h1>
+        <p class="meta mt-1">
+          Five candidate treatments for the audit progress signal on
+          <code class="rounded bg-white/10 px-1">/laglistor/[id]/kontroller/[cid]</code>.
+          Same data — “2 av 68 bedömda, 2 av 68 signerade” — visualised five
+          different ways. Reference: parent “Kontroller” list modal already
+          uses a similar bar.
+        </p>
+      </header>
+
+      <!-- ============================================================== -->
+      <!-- VARIANT 1 — Current state (for reference)                       -->
+      <!-- ============================================================== -->
+      <section>
+        <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-400">
+          0 · Nuläge (för referens)
+        </h2>
+        <div class="surface px-6 py-5">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="crumb mb-1">
+                Almåsa Havshotell AB
+                <span class="crumb-sep">›</span>Laglistor
+                <span class="crumb-sep">›</span>Kontroller
+                <span class="crumb-sep">›</span>Testkontroll
+              </div>
+              <h3 class="flex items-center gap-2 text-xl font-semibold">
+                Testkontroll <span class="badge">Pågående</span>
+              </h3>
+              <p class="meta mt-1 max-w-2xl">
+                Triggad av ny kontroll av våra bilar, där vi har upptäckt
+                diskrepans mellan mätvärden och faktiska värden.
+              </p>
+            </div>
+            <div class="text-right">
+              <div class="grid grid-cols-2 gap-x-6">
+                <div>
+                  <div class="meta uppercase tracking-wider">Bedömda</div>
+                  <div class="num text-xl font-semibold">2 av 68</div>
+                </div>
+                <div>
+                  <div class="meta uppercase tracking-wider">Signerade</div>
+                  <div class="num text-xl font-semibold">2 av 68</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- VARIANT 1 — Dual-segment single bar (my recommendation)          -->
+      <!-- ============================================================== -->
+      <section>
+        <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-400">
+          1 · Dual-segment single bar
+          <span class="ml-2 rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] text-emerald-300">
+            recommended
+          </span>
+        </h2>
+        <div class="surface px-6 py-5">
+          <div class="flex items-start justify-between gap-8">
+            <div class="min-w-0 flex-1">
+              <div class="crumb mb-1">
+                Almåsa Havshotell AB
+                <span class="crumb-sep">›</span>Laglistor
+                <span class="crumb-sep">›</span>Kontroller
+                <span class="crumb-sep">›</span>Testkontroll
+              </div>
+              <h3 class="flex items-center gap-2 text-xl font-semibold">
+                Testkontroll <span class="badge">Pågående</span>
+              </h3>
+              <p class="meta mt-1 max-w-2xl">
+                Triggad av ny kontroll av våra bilar.
+              </p>
+            </div>
+            <div class="w-[300px] shrink-0">
+              <div class="flex items-baseline justify-between text-xs">
+                <span class="meta">Framsteg</span>
+                <span class="num font-medium">2 / 68</span>
+              </div>
+              <div class="track track-dual mt-2 h-2">
+                <!-- Assessed: 2/68 ≈ 2.9% (light) -->
+                <div class="seg-assessed" style="width: 2.9%"></div>
+                <!-- Signed: 2/68 ≈ 2.9% (full color, sits on top of assessed) -->
+                <div class="seg-signed" style="width: 2.9%"></div>
+              </div>
+              <div class="mt-2 flex items-center gap-4 text-xs">
+                <span class="meta flex items-center gap-1.5">
+                  <span class="legend-dot" style="background: var(--accent)"></span>
+                  Signerade <span class="num text-zinc-300">2</span>
+                </span>
+                <span class="meta flex items-center gap-1.5">
+                  <span class="legend-dot" style="background: var(--accent-soft)"></span>
+                  Bedömda <span class="num text-zinc-300">2</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="meta mt-3 max-w-3xl">
+          Single bar shows both metrics in one glance: the lighter segment
+          grows when a user assesses a row, the solid segment grows when they
+          sign it. Sequential by design (you bedöm before you signera), so
+          the segments stack naturally. Mirrors the modal treatment from
+          the Kontroller list.
+        </p>
+
+        <!-- Sub-example with more realistic mid-cycle data -->
+        <div class="surface mt-4 px-6 py-5">
+          <div class="flex items-start justify-between gap-8">
+            <div class="min-w-0 flex-1">
+              <h3 class="text-base font-medium text-zinc-300">
+                Exempel — mitten av en cykel (44 bedömda, 18 signerade)
+              </h3>
+            </div>
+            <div class="w-[300px] shrink-0">
+              <div class="flex items-baseline justify-between text-xs">
+                <span class="meta">Framsteg</span>
+                <span class="num font-medium">18 / 68</span>
+              </div>
+              <div class="track track-dual mt-2 h-2">
+                <div class="seg-assessed" style="width: 64.7%"></div>
+                <div class="seg-signed" style="width: 26.5%"></div>
+              </div>
+              <div class="mt-2 flex items-center gap-4 text-xs">
+                <span class="meta flex items-center gap-1.5">
+                  <span class="legend-dot" style="background: var(--accent)"></span>
+                  Signerade <span class="num text-zinc-300">18</span>
+                </span>
+                <span class="meta flex items-center gap-1.5">
+                  <span class="legend-dot" style="background: var(--accent-soft)"></span>
+                  Bedömda <span class="num text-zinc-300">44</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- VARIANT 2 — Stacked dual bars                                   -->
+      <!-- ============================================================== -->
+      <section>
+        <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-400">
+          2 · Stacked dual bars
+        </h2>
+        <div class="surface px-6 py-5">
+          <div class="flex items-start justify-between gap-8">
+            <div class="min-w-0 flex-1">
+              <h3 class="flex items-center gap-2 text-xl font-semibold">
+                Testkontroll <span class="badge">Pågående</span>
+              </h3>
+              <p class="meta mt-1">Mitten av en cykel — 44 bedömda, 18 signerade av 68</p>
+            </div>
+            <div class="w-[300px] shrink-0 space-y-3">
+              <div>
+                <div class="flex items-baseline justify-between text-xs">
+                  <span class="meta">Bedömda</span>
+                  <span class="num text-zinc-300">44 / 68</span>
+                </div>
+                <div class="track mt-1 h-1.5">
+                  <div class="fill fill-soft" style="width: 64.7%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-baseline justify-between text-xs">
+                  <span class="meta">Signerade</span>
+                  <span class="num text-zinc-300">18 / 68</span>
+                </div>
+                <div class="track mt-1 h-1.5">
+                  <div class="fill" style="width: 26.5%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="meta mt-3 max-w-3xl">
+          More explicit — each metric has its own bar. Easier to read for new
+          users but takes more vertical space and doesn't communicate that
+          the two metrics are sequential.
+        </p>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- VARIANT 3 — Single signed-only bar                              -->
+      <!-- ============================================================== -->
+      <section>
+        <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-400">
+          3 · Single bar — slutmål (signerade)
+        </h2>
+        <div class="surface px-6 py-5">
+          <div class="flex items-start justify-between gap-8">
+            <div class="min-w-0 flex-1">
+              <h3 class="flex items-center gap-2 text-xl font-semibold">
+                Testkontroll <span class="badge">Pågående</span>
+              </h3>
+              <p class="meta mt-1">Endast slutmålet — “signerat = klart”</p>
+            </div>
+            <div class="w-[300px] shrink-0">
+              <div class="flex items-baseline justify-between text-xs">
+                <span class="meta">Signerat</span>
+                <span class="num font-medium">18 av 68 · 26 %</span>
+              </div>
+              <div class="track mt-2 h-2">
+                <div class="fill" style="width: 26.5%"></div>
+              </div>
+              <p class="meta mt-2 text-[11px]">
+                44 av 68 bedömda — 26 kvar att signera
+              </p>
+            </div>
+          </div>
+        </div>
+        <p class="meta mt-3 max-w-3xl">
+          Simplest. Shows the only metric that really matters for "är vi
+          klara?". The Bedömda count drops to a sub-label. Tradeoff: hides
+          the in-between progress signal — a user who has assessed 60/68
+          rows but signed none still looks like they're 0 % done.
+        </p>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- VARIANT 4 — Full-width sticky bar above the table               -->
+      <!-- ============================================================== -->
+      <section>
+        <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-400">
+          4 · Full-width — sticky band ovanför tabellen
+        </h2>
+        <div class="surface px-6 py-5">
+          <div>
+            <div class="crumb mb-1">
+              Almåsa Havshotell AB
+              <span class="crumb-sep">›</span>Kontroller
+              <span class="crumb-sep">›</span>Testkontroll
+            </div>
+            <h3 class="flex items-center gap-2 text-xl font-semibold">
+              Testkontroll <span class="badge">Pågående</span>
+            </h3>
+            <p class="meta mt-1 max-w-2xl">
+              Triggad av ny kontroll av våra bilar.
+            </p>
+          </div>
+
+          <!-- The sticky progress band -->
+          <div class="mt-6 rounded-lg border border-white/5 bg-white/[0.02] px-4 py-3">
+            <div class="flex items-center gap-4">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-baseline justify-between text-xs">
+                  <span class="meta">Kontrollens framsteg</span>
+                  <span class="meta">
+                    <span class="text-zinc-300">18</span> signerade ·
+                    <span class="text-zinc-300">44</span> bedömda ·
+                    <span class="text-zinc-300">68</span> totalt
+                  </span>
+                </div>
+                <div class="track track-dual mt-2 h-2.5">
+                  <div class="seg-assessed" style="width: 64.7%"></div>
+                  <div class="seg-signed" style="width: 26.5%"></div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="num text-2xl font-semibold leading-none">26 %</div>
+                <div class="meta mt-1 text-[10px] uppercase tracking-wider">
+                  klart
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stand-in for the data table -->
+          <div class="mt-4 grid grid-cols-[1fr_120px_120px_60px] gap-3 px-4 py-2 text-xs uppercase tracking-wider text-zinc-500">
+            <span>Dokument</span><span>Nuvarande status</span><span>Bedömning</span><span class="text-right">Signerad</span>
+          </div>
+          <div class="space-y-1">
+            <div class="rounded bg-white/[0.02] px-4 py-3 grid grid-cols-[1fr_120px_120px_60px] gap-3 text-sm">
+              <span>Årsredovisningslag (1995:1554)</span><span class="meta">Ej påbörjad</span><span class="meta">—</span><span class="text-right meta">—</span>
+            </div>
+            <div class="rounded bg-white/[0.02] px-4 py-3 grid grid-cols-[1fr_120px_120px_60px] gap-3 text-sm">
+              <span>Bokföringslag (1999:1078)</span><span class="meta">Ej påbörjad</span><span class="text-emerald-300">Uppfylld</span><span class="text-right text-emerald-300">✓</span>
+            </div>
+            <div class="rounded bg-white/[0.02] px-4 py-3 grid grid-cols-[1fr_120px_120px_60px] gap-3 text-sm">
+              <span>Aktiebolagslag (2005:551)</span><span class="meta">Ej påbörjad</span><span class="text-rose-300">Ej uppfylld</span><span class="text-right meta">—</span>
+            </div>
+          </div>
+        </div>
+        <p class="meta mt-3 max-w-3xl">
+          Full-width band, intended to be <code class="rounded bg-white/10 px-1">position: sticky</code>
+          under the page header so the progress signal stays visible while the
+          user scrolls through 68 rows. Stronger “status command center” feel.
+          Tradeoff: takes more vertical real estate up-front.
+        </p>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- VARIANT 5 — Inline pill with mini bar                           -->
+      <!-- ============================================================== -->
+      <section>
+        <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-400">
+          5 · Inline pill — kompakt
+        </h2>
+        <div class="surface px-6 py-5">
+          <div class="flex items-start justify-between gap-8">
+            <div>
+              <div class="crumb mb-1">
+                Almåsa Havshotell AB
+                <span class="crumb-sep">›</span>Kontroller
+                <span class="crumb-sep">›</span>Testkontroll
+              </div>
+              <h3 class="flex items-center gap-3 text-xl font-semibold">
+                Testkontroll
+                <span class="badge">Pågående</span>
+                <span class="hover-tip inline-flex items-center gap-2 rounded-full bg-white/[0.04] px-2.5 py-1 text-xs font-medium text-zinc-300">
+                  <span class="num text-zinc-200">26 %</span>
+                  <span class="block h-1 w-16 overflow-hidden rounded-full bg-white/10">
+                    <span class="block h-full bg-emerald-300/80" style="width: 26.5%"></span>
+                  </span>
+                  <span class="tip">18 av 68 signerade · 44 bedömda</span>
+                </span>
+              </h3>
+              <p class="meta mt-1">
+                Mini-bar lever som en pill bredvid titeln. Hover för detalj.
+              </p>
+            </div>
+          </div>
+        </div>
+        <p class="meta mt-3 max-w-3xl">
+          Most compact. Becomes a single visual element next to the title,
+          fits into smaller surfaces (modals, list summaries) and feels
+          immediately scannable. Tradeoff: needs a hover/click to reveal the
+          two underlying metrics, so it's less informative at first glance.
+        </p>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- DESIGN NOTES                                                    -->
+      <!-- ============================================================== -->
+      <section class="surface p-6">
+        <h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+          Design notes
+        </h2>
+        <ul class="mt-3 list-disc space-y-2 pl-5 text-sm text-zinc-300">
+          <li>
+            <strong>Sequential semantics.</strong> The audit flow is
+            bedöm → signera. A signed row is also (by definition) assessed.
+            Single-bar variants encode that order via stacked segments;
+            two-bar variants don't.
+          </li>
+          <li>
+            <strong>Colour.</strong> Emerald reads as “progress / klart” in
+            our existing palette (matches the “Uppfylld” pill on the rows).
+            Track is muted white at 8 % so it sits quietly in the dark UI.
+          </li>
+          <li>
+            <strong>Status badge interaction.</strong> When status flips to
+            <em>Klar</em>, the bar can hold at 100 % and the colour shifts
+            from emerald to the muted “locked” treatment used elsewhere for
+            completed states.
+          </li>
+          <li>
+            <strong>Empty state.</strong> 0 / 68 still renders the empty
+            track — the absence of fill is itself the progress signal.
+          </li>
+          <li>
+            <strong>Accessibility.</strong> Each bar gets
+            <code class="rounded bg-white/10 px-1">role="progressbar"</code>
+            + <code class="rounded bg-white/10 px-1">aria-valuenow / valuemax</code>
+            + a hidden text fallback (“X of Y rader signerade”).
+          </li>
+        </ul>
+      </section>
+    </div>
+  </body>
+</html>

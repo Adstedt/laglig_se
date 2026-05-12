@@ -15,20 +15,12 @@
 import { format } from 'date-fns'
 import { sv } from 'date-fns/locale'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { BreadcrumbOverride } from '@/components/layout/breadcrumb-override'
 import { PageHeader } from '@/components/ui/page-header'
 import { CycleStatusBadge } from './cycle-status-badge'
 import { CycleActionsDropdown } from './cycle-actions-dropdown'
-import { useCycleItems } from './cycle-items-context'
 import type { CycleDetail } from '@/app/actions/compliance-audit-cycle'
 import { AuditType } from '@prisma/client'
-import { cn } from '@/lib/utils'
 
 interface CycleDetailHeaderProps {
   cycle: CycleDetail
@@ -107,10 +99,6 @@ export function CycleDetailHeader({
         badge={<CycleStatusBadge status={cycle.status} />}
         {...(description ? { subtitle: description } : {})}
         meta={meta}
-        stats={[
-          { label: 'Bedömda', value: <BedomdaCell /> },
-          { label: 'Signerade', value: <SignearadeCell /> },
-        ]}
         primaryAction={
           <CycleActionsDropdown
             cycle={cycle}
@@ -123,81 +111,5 @@ export function CycleDetailHeader({
         }
       />
     </>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Stat cells — interactive (click to jump to first unbedömt / unsigned doc).
-// Live inside <PageHeader stats={...}>'s value slot; consume cycle-items
-// context for the count + jump handlers.
-// ---------------------------------------------------------------------------
-
-function BedomdaCell() {
-  const ctx = useCycleItems()
-  const { bedomdaCount, totalCount, jumpToFirstUnbedomd, ready } = ctx
-  const allBedomda = ready && bedomdaCount === totalCount && totalCount > 0
-  const empty = totalCount === 0
-  const disabled = !ready || allBedomda || empty
-  const btn = (
-    <button
-      type="button"
-      onClick={jumpToFirstUnbedomd}
-      disabled={disabled}
-      aria-label="Hoppa till första obedömda dokumentet"
-      className={cn(
-        'rounded-md text-sm font-semibold text-foreground',
-        !disabled &&
-          'hover:underline focus-visible:ring-2 focus-visible:ring-ring',
-        disabled && 'cursor-not-allowed opacity-60'
-      )}
-    >
-      {bedomdaCount} av {totalCount}
-    </button>
-  )
-  if (!allBedomda) return btn
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span>{btn}</span>
-        </TooltipTrigger>
-        <TooltipContent>Alla dokument bedömda</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  )
-}
-
-function SignearadeCell() {
-  const ctx = useCycleItems()
-  const { signeradeCount, totalCount, jumpToFirstUnsigned, ready } = ctx
-  const allSignerade = ready && signeradeCount === totalCount && totalCount > 0
-  const empty = totalCount === 0
-  const disabled = !ready || allSignerade || empty
-  const btn = (
-    <button
-      type="button"
-      onClick={jumpToFirstUnsigned}
-      disabled={disabled}
-      aria-label="Hoppa till första osignerade dokumentet"
-      className={cn(
-        'rounded-md text-sm font-semibold text-foreground',
-        !disabled &&
-          'hover:underline focus-visible:ring-2 focus-visible:ring-ring',
-        disabled && 'cursor-not-allowed opacity-60'
-      )}
-    >
-      {signeradeCount} av {totalCount}
-    </button>
-  )
-  if (!allSignerade) return btn
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span>{btn}</span>
-        </TooltipTrigger>
-        <TooltipContent>Alla dokument signerade</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
   )
 }

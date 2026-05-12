@@ -33,6 +33,7 @@ import { withWorkspace } from '@/lib/auth/workspace-context'
 import { logActivity } from '@/lib/services/activity-logger'
 import { sendEmail } from '@/lib/email/email-service'
 import ImportReviewReadyEmail from '@/emails/import-review-ready'
+import CatalogRequestReceivedInternalEmail from '@/emails/catalog-request-received-internal'
 import {
   detectColumns,
   parseCsv,
@@ -805,6 +806,64 @@ export async function requestCatalogAdd(
         null,
         { row_id: rowId, request_id: created.id, has_note: note != null }
       )
+
+      // Notify the ops team so the request gets manual triage (ingest the
+      // doc, or set up a pipeline for a new agency / content type, then
+      // contact the customer directly). Fail-safe — the request is the
+      // source of truth, the email is a convenience nudge.
+      try {
+        const recipient =
+          process.env.CATALOG_REQUEST_NOTIFICATION_EMAIL || 'dev@laglig.se'
+        const [fullRow, workspace, requester] = await Promise.all([
+          prisma.lawListImportRow.findUnique({
+            where: { id: rowId },
+            select: {
+              source_titel: true,
+              source_sfs_nummer: true,
+              source_omrade: true,
+              source_lagansvarig: true,
+              source_kommentar: true,
+              import: { select: { filename: true } },
+            },
+          }),
+          prisma.workspace.findUnique({
+            where: { id: ctx.workspaceId },
+            select: { name: true },
+          }),
+          prisma.user.findUnique({
+            where: { id: ctx.userId },
+            select: { name: true, email: true },
+          }),
+        ])
+        if (fullRow && workspace && requester?.email) {
+          const subjectAnchor = fullRow.source_sfs_nummer
+            ? `${fullRow.source_titel ?? 'okänd titel'} (${fullRow.source_sfs_nummer})`
+            : (fullRow.source_titel ?? 'okänt dokument')
+          await sendEmail({
+            to: recipient,
+            subject: `[Katalog] Begäran om tillägg: ${subjectAnchor}`,
+            react: CatalogRequestReceivedInternalEmail({
+              requestId: created.id,
+              requesterName: requester.name,
+              requesterEmail: requester.email,
+              workspaceName: workspace.name,
+              sourceTitel: fullRow.source_titel,
+              sourceSfsNummer: fullRow.source_sfs_nummer,
+              sourceOmrade: fullRow.source_omrade,
+              sourceLagansvarig: fullRow.source_lagansvarig,
+              sourceKommentar: fullRow.source_kommentar,
+              adminNote: note ?? null,
+              importFilename: fullRow.import.filename,
+            }),
+            from: 'notifications',
+          })
+        }
+      } catch (emailErr) {
+        console.error(
+          'requestCatalogAdd internal email send failed (non-fatal):',
+          emailErr
+        )
+      }
 
       revalidatePath(`/laglistor/skapa/${row.import.id}/granska`)
       return { success: true, data: { requestId: created.id } }

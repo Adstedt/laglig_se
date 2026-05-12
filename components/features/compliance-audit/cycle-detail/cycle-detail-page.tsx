@@ -15,6 +15,7 @@ import useSWR, { useSWRConfig } from 'swr'
 import { toast } from 'sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CycleDetailHeader } from './cycle-detail-header'
+import { CycleProgressBar } from './cycle-progress-bar'
 import { CycleItemsTab } from './cycle-items-tab'
 import { CycleFindingsTab } from './cycle-findings-tab'
 import { CompleteCycleDialog } from './complete-cycle-dialog'
@@ -488,6 +489,8 @@ export function CycleDetailPage({
           onCompleteClick={() => setCompleteDialogOpen(true)}
           onRevertClick={() => setRevertDialogOpen(true)}
         />
+
+        <CycleProgressBar />
 
         {localCycle.status === 'AVSLUTAD' ? (
           <div
