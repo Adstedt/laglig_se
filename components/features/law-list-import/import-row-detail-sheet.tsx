@@ -8,7 +8,13 @@
  */
 
 import { useEffect, useState, useTransition } from 'react'
-import { Check, ChevronDown, ChevronRight, ExternalLink } from 'lucide-react'
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  ExternalLink,
+  SearchX,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Sheet,
@@ -196,48 +202,67 @@ export function ImportRowDetailSheet({
               </section>
             )}
 
-            {/* Matched document */}
-            <section>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                Matchat dokument
-              </p>
-              {row.matched_document ? (
-                <div className="mt-2 rounded-lg border bg-muted/30 p-3">
-                  <p className="font-medium leading-tight">
-                    {row.matched_document.title}
-                  </p>
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
-                    <span className="text-muted-foreground">
-                      {row.matched_document.document_number}
-                    </span>
-                    <Badge variant="outline" className="text-xs">
-                      {getContentTypeLabel(
-                        row.matched_document.content_type as ContentType
-                      )}
-                    </Badge>
-                    <a
-                      href={getDocumentUrl(
-                        row.matched_document.content_type as ContentType,
-                        row.matched_document.slug,
-                        true
-                      )}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-primary underline-offset-4 hover:underline"
-                    >
-                      Visa i katalogen
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
+            {/* Status — UNMATCHED rows lead with a prominent banner so the
+                user understands the situation before scanning candidates. */}
+            {row.match_status === 'UNMATCHED' ? (
+              <section>
+                <div className="flex gap-3 rounded-lg border border-amber-500/40 bg-amber-50/40 p-4 dark:bg-amber-950/30">
+                  <SearchX className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
+                      Ingen exakt matchning hittades
+                    </p>
+                    <p className="text-xs leading-relaxed text-amber-900/80 dark:text-amber-300">
+                      Lagen kan finnas i katalogen under ett annat SFS-nummer än
+                      det källraden refererar till. Kontrollera kandidaterna
+                      nedan innan du begär tillägg.
+                    </p>
                   </div>
                 </div>
-              ) : (
-                <p className="mt-2 text-sm italic text-muted-foreground">
-                  {row.match_status === 'CATALOG_REQUEST_PENDING'
-                    ? 'Skickad till vår katalogsredaktion'
-                    : 'Inget matchande dokument hittades'}
+              </section>
+            ) : (
+              <section>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Matchat dokument
                 </p>
-              )}
-            </section>
+                {row.matched_document ? (
+                  <div className="mt-2 rounded-lg border bg-muted/30 p-3">
+                    <p className="font-medium leading-tight">
+                      {row.matched_document.title}
+                    </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
+                      <span className="text-muted-foreground">
+                        {row.matched_document.document_number}
+                      </span>
+                      <Badge variant="outline" className="text-xs">
+                        {getContentTypeLabel(
+                          row.matched_document.content_type as ContentType
+                        )}
+                      </Badge>
+                      <a
+                        href={getDocumentUrl(
+                          row.matched_document.content_type as ContentType,
+                          row.matched_document.slug,
+                          true
+                        )}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-primary underline-offset-4 hover:underline"
+                      >
+                        Visa i katalogen
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="mt-2 text-sm italic text-muted-foreground">
+                    {row.match_status === 'CATALOG_REQUEST_PENDING'
+                      ? 'Skickad till vår katalogsredaktion'
+                      : 'Inget matchande dokument hittades'}
+                  </p>
+                )}
+              </section>
+            )}
 
             {/* Reasoning */}
             {row.match_reasoning && (
@@ -254,17 +279,11 @@ export function ImportRowDetailSheet({
             {/* Alt candidates */}
             {otherCandidates.length > 0 && !readOnly && !decided && (
               <section>
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                  {row.match_status === 'UNMATCHED'
-                    ? `Föreslagna kandidater (${otherCandidates.length})`
-                    : `Andra kandidater (${otherCandidates.length})`}
-                </p>
-                {row.match_status === 'UNMATCHED' && (
-                  <p className="mt-2 rounded-md border border-amber-500/40 bg-amber-50/40 px-3 py-2 text-xs leading-relaxed text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
-                    Innan du begär tillägg — kontrollera dessa förslag. Lagen
-                    kan finnas i katalogen under ett annat SFS-nummer än det
-                    källraden refererar till. Klicka på en kandidat för att
-                    använda den i stället.
+                {row.match_status === 'UNMATCHED' ? (
+                  <p className="text-sm font-medium">Stämmer någon av dessa?</p>
+                ) : (
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                    Andra kandidater ({otherCandidates.length})
                   </p>
                 )}
                 <div className="mt-2 space-y-2">
