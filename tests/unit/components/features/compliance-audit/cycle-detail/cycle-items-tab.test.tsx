@@ -526,9 +526,12 @@ describe('CycleDetailPage — items tab', () => {
     )
     expect(bedomdaBtn).toBeDisabled()
     expect(signeradeBtn).toBeDisabled()
-    // Counts appear within the progress buttons.
-    expect(bedomdaBtn.textContent).toContain('2 av 2')
-    expect(signeradeBtn.textContent).toContain('2 av 2')
+    // Counts appear within the progress buttons; the total is rendered
+    // separately in the bar's right-side metadata.
+    expect(bedomdaBtn.textContent).toContain('2')
+    expect(bedomdaBtn.textContent).toContain('bedömda')
+    expect(signeradeBtn.textContent).toContain('2')
+    expect(signeradeBtn.textContent).toContain('signerade')
   })
 
   it('progress jump — clicking "Hoppa till obedömda" calls scrollIntoView on first unbedömd row', () => {

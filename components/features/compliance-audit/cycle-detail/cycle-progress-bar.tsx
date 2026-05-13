@@ -56,6 +56,7 @@ export function CycleProgressBar() {
               <JumpCount
                 count={signeradeCount}
                 label="signerade"
+                ariaLabel="Hoppa till första osignerade dokumentet"
                 onClick={jumpToFirstUnsigned}
                 disabled={!ready || allSigned}
                 {...(allSigned ? { tooltip: 'Alla dokument signerade' } : {})}
@@ -64,6 +65,7 @@ export function CycleProgressBar() {
               <JumpCount
                 count={bedomdaCount}
                 label="bedömda"
+                ariaLabel="Hoppa till första obedömda dokumentet"
                 onClick={jumpToFirstUnbedomd}
                 disabled={!ready || allAssessed}
                 {...(allAssessed ? { tooltip: 'Alla dokument bedömda' } : {})}
@@ -108,6 +110,7 @@ export function CycleProgressBar() {
 interface JumpCountProps {
   count: number
   label: string
+  ariaLabel: string
   onClick: () => void
   disabled: boolean
   tooltip?: string
@@ -116,6 +119,7 @@ interface JumpCountProps {
 function JumpCount({
   count,
   label,
+  ariaLabel,
   onClick,
   disabled,
   tooltip,
@@ -125,7 +129,7 @@ function JumpCount({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      aria-label={`Hoppa till första o${label.replace(/de$/, 'da')} dokumentet`}
+      aria-label={ariaLabel}
       className={cn(
         'rounded text-foreground transition-colors',
         !disabled &&
