@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <title>Task Card Priority Treatments — 2026 UI Exploration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --bg: #0b0b0d;
+        --card: #15151a;
+        --card-hover: #1c1c22;
+        --border: #2a2a30;
+        --text: #ededed;
+        --muted: #8b8b94;
+        --critical: #ef4444;
+        --critical-deep: #dc2626;
+        --high: #f87171;
+        --medium: #f59e0b;
+        --low: #94a3b8;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      }
+      .swatch-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        position: relative;
+        overflow: hidden;
+        transition:
+          transform 120ms ease,
+          background 120ms ease,
+          box-shadow 200ms ease;
+      }
+      .swatch-card:hover {
+        background: var(--card-hover);
+      }
+      .badge {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 9px;
+        border-radius: 999px;
+        white-space: nowrap;
+        letter-spacing: 0.01em;
+      }
+      .badge-low {
+        background: rgba(148, 163, 184, 0.18);
+        color: #cbd5e1;
+      }
+      .badge-medium {
+        background: rgba(245, 158, 11, 0.18);
+        color: #fbbf24;
+      }
+      .badge-high {
+        background: rgba(239, 68, 68, 0.18);
+        color: #fca5a5;
+      }
+      .badge-critical {
+        background: var(--critical);
+        color: #1a0a0a;
+      }
+      .meta {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .avatar {
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        background: #2d2d36;
+        color: #d4d4dc;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+      }
+
+      /* === Treatment 1 — Current (left border) === */
+      .t1 {
+        border-left-width: 4px;
+      }
+      .t1.low {
+        border-left-color: var(--low);
+      }
+      .t1.medium {
+        border-left-color: var(--medium);
+      }
+      .t1.high {
+        border-left-color: var(--high);
+      }
+      .t1.critical {
+        border-left-color: var(--critical-deep);
+      }
+
+      /* === Treatment 2 — Soft glow halo (Linear-ish) === */
+      .t2 {
+        border: 1px solid var(--border);
+      }
+      .t2.low {
+        box-shadow:
+          0 0 0 1px rgba(148, 163, 184, 0.15),
+          0 8px 24px -16px rgba(148, 163, 184, 0.4);
+      }
+      .t2.medium {
+        box-shadow:
+          0 0 0 1px rgba(245, 158, 11, 0.25),
+          0 8px 28px -14px rgba(245, 158, 11, 0.55);
+      }
+      .t2.high {
+        box-shadow:
+          0 0 0 1px rgba(239, 68, 68, 0.25),
+          0 10px 30px -14px rgba(239, 68, 68, 0.55);
+      }
+      .t2.critical {
+        box-shadow:
+          0 0 0 1px rgba(239, 68, 68, 0.45),
+          0 14px 36px -14px rgba(239, 68, 68, 0.7);
+      }
+
+      /* === Treatment 3 — Corner bloom (top-right gradient) === */
+      .t3::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 70%;
+        height: 70%;
+        pointer-events: none;
+        opacity: 0.7;
+        background: radial-gradient(
+          circle at top right,
+          var(--bloom, transparent) 0%,
+          transparent 60%
+        );
+      }
+      .t3.low {
+        --bloom: rgba(148, 163, 184, 0.12);
+      }
+      .t3.medium {
+        --bloom: rgba(245, 158, 11, 0.22);
+      }
+      .t3.high {
+        --bloom: rgba(239, 68, 68, 0.25);
+      }
+      .t3.critical {
+        --bloom: rgba(239, 68, 68, 0.4);
+      }
+
+      /* === Treatment 4 — Priority pips (info-dense, no color tint) === */
+      .pip-row {
+        display: inline-flex;
+        gap: 3px;
+        align-items: center;
+      }
+      .pip {
+        width: 4px;
+        height: 12px;
+        border-radius: 1px;
+        background: rgba(255, 255, 255, 0.12);
+      }
+      .pip.on.low {
+        background: var(--low);
+      }
+      .pip.on.medium {
+        background: var(--medium);
+      }
+      .pip.on.high {
+        background: var(--high);
+      }
+      .pip.on.critical {
+        background: var(--critical);
+      }
+
+      /* === Treatment 5 — Top edge gradient bar (full width) === */
+      .t5::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--top, transparent) 50%,
+          transparent
+        );
+      }
+      .t5.low {
+        --top: rgba(148, 163, 184, 0.55);
+      }
+      .t5.medium {
+        --top: rgba(245, 158, 11, 0.75);
+      }
+      .t5.high {
+        --top: rgba(239, 68, 68, 0.75);
+      }
+      .t5.critical {
+        --top: rgba(239, 68, 68, 0.95);
+      }
+
+      /* === Treatment 6 — Critical-only treatment (everything else neutral) === */
+      .t6 {
+        border: 1px solid var(--border);
+      }
+      .t6.critical {
+        border-color: rgba(239, 68, 68, 0.55);
+        box-shadow:
+          inset 0 0 0 1px rgba(239, 68, 68, 0.25),
+          0 0 24px -10px rgba(239, 68, 68, 0.5);
+      }
+      .t6.critical::after {
+        content: '';
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: var(--critical);
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+        animation: pulse 1.8s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.6;
+          transform: scale(1.3);
+        }
+      }
+
+      /* === Treatment 7 — Whole-card tint (subtle wash) === */
+      .t7 {
+        border: 1px solid var(--border);
+      }
+      .t7.low {
+        background: linear-gradient(
+          180deg,
+          rgba(148, 163, 184, 0.04),
+          var(--card)
+        );
+      }
+      .t7.medium {
+        background: linear-gradient(
+          180deg,
+          rgba(245, 158, 11, 0.07),
+          var(--card)
+        );
+      }
+      .t7.high {
+        background: linear-gradient(
+          180deg,
+          rgba(239, 68, 68, 0.08),
+          var(--card)
+        );
+      }
+      .t7.critical {
+        background: linear-gradient(
+          180deg,
+          rgba(239, 68, 68, 0.14),
+          var(--card)
+        );
+        border-color: rgba(239, 68, 68, 0.3);
+      }
+
+      .grid-cards {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+      h2.section {
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin-top: 36px;
+        margin-bottom: 6px;
+      }
+      .pitch {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 14px;
+        max-width: 64ch;
+      }
+      .label-tag {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #6b7280;
+        background: rgba(255, 255, 255, 0.04);
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-left: 6px;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen px-10 py-12">
+    <div class="max-w-6xl mx-auto">
+      <header class="mb-12">
+        <div class="text-xs uppercase tracking-widest text-zinc-500 mb-2">
+          Prototype
+        </div>
+        <h1 class="text-3xl font-semibold mb-2">Task card priority — 2026 UI</h1>
+        <p class="text-zinc-400 max-w-2xl text-sm leading-relaxed">
+          The current left border bar is the same priority pattern Linear / Asana
+          / Trello / every Next.js dashboard template ship by default. Below
+          are 6 alternative treatments that read more deliberate and 2026.
+          Same 4 cards (Låg / Medel / Hög / Kritisk) repeated for each so you
+          can compare at a glance.
+        </p>
+      </header>
+
+      <!-- === T1 baseline === -->
+      <h2 class="section">
+        Treatment 1 — Current (left border)
+        <span class="label-tag">today</span>
+      </h2>
+      <p class="pitch">
+        Reference. The thing we're trying to improve. Reads as "framework
+        default." Works, but no signature.
+      </p>
+      <div class="grid-cards">
+        <div class="swatch-card t1 low">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Skicka årlig rapport
+            </div>
+            <span class="badge badge-low">Låg</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 om 3 v</span>
+          </div>
+        </div>
+        <div class="swatch-card t1 medium">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Identifiera kravpunkter
+            </div>
+            <span class="badge badge-medium">Medel</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 två dagar</span>
+          </div>
+        </div>
+        <div class="swatch-card t1 high">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Granska systematik för avvikelser
+            </div>
+            <span class="badge badge-high">Hög</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 i morgon</span>
+          </div>
+        </div>
+        <div class="swatch-card t1 critical">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Dokumentera nödläge
+            </div>
+            <span class="badge badge-critical">Kritisk</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 idag</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- === T2 glow === -->
+      <h2 class="section">
+        Treatment 2 — Soft glow halo
+        <span class="label-tag">linear-style</span>
+      </h2>
+      <p class="pitch">
+        Card emits a soft outer light in the priority color. Critical glows
+        most; Låg barely at all. Reads as ambient — the card itself is
+        important, not just a stripe of paint glued to its side. Best in dark
+        mode (which is your default).
+      </p>
+      <div class="grid-cards">
+        <div class="swatch-card t2 low">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Skicka årlig rapport
+            </div>
+            <span class="badge badge-low">Låg</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 om 3 v</span>
+          </div>
+        </div>
+        <div class="swatch-card t2 medium">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Identifiera kravpunkter
+            </div>
+            <span class="badge badge-medium">Medel</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 två dagar</span>
+          </div>
+        </div>
+        <div class="swatch-card t2 high">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Granska systematik för avvikelser
+            </div>
+            <span class="badge badge-high">Hög</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 i morgon</span>
+          </div>
+        </div>
+        <div class="swatch-card t2 critical">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Dokumentera nödläge
+            </div>
+            <span class="badge badge-critical">Kritisk</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 idag</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- === T3 corner bloom === -->
+      <h2 class="section">
+        Treatment 3 — Corner bloom
+        <span class="label-tag">organic</span>
+      </h2>
+      <p class="pitch">
+        A radial gradient fades inward from the top-right corner. Feels
+        atmospheric — closer to physical light than digital paint. Subtle but
+        unmistakable on Hög/Kritisk; nearly invisible on Låg.
+      </p>
+      <div class="grid-cards">
+        <div class="swatch-card t3 low">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Skicka årlig rapport
+            </div>
+            <span class="badge badge-low">Låg</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 om 3 v</span>
+          </div>
+        </div>
+        <div class="swatch-card t3 medium">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Identifiera kravpunkter
+            </div>
+            <span class="badge badge-medium">Medel</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 två dagar</span>
+          </div>
+        </div>
+        <div class="swatch-card t3 high">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Granska systematik för avvikelser
+            </div>
+            <span class="badge badge-high">Hög</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 i morgon</span>
+          </div>
+        </div>
+        <div class="swatch-card t3 critical">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Dokumentera nödläge
+            </div>
+            <span class="badge badge-critical">Kritisk</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 idag</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- === T4 pips === -->
+      <h2 class="section">
+        Treatment 4 — Priority pips
+        <span class="label-tag">info-dense</span>
+      </h2>
+      <p class="pitch">
+        4 vertical bars, fill count = priority. No color tint on the card at
+        all. Communicates ordinality (1 < 2 < 3 < 4) instead of just
+        category — a 4-bar fill literally <em>looks</em> more urgent than a
+        2-bar fill. Bauhaus / pro-tool aesthetic.
+      </p>
+      <div class="grid-cards">
+        <div class="swatch-card">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Skicka årlig rapport
+            </div>
+            <span class="pip-row" aria-label="Prioritet: Låg">
+              <span class="pip on low"></span><span class="pip"></span
+              ><span class="pip"></span><span class="pip"></span>
+            </span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 om 3 v</span>
+          </div>
+        </div>
+        <div class="swatch-card">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Identifiera kravpunkter
+            </div>
+            <span class="pip-row" aria-label="Prioritet: Medel">
+              <span class="pip on medium"></span
+              ><span class="pip on medium"></span><span class="pip"></span
+              ><span class="pip"></span>
+            </span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 två dagar</span>
+          </div>
+        </div>
+        <div class="swatch-card">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Granska systematik för avvikelser
+            </div>
+            <span class="pip-row" aria-label="Prioritet: Hög">
+              <span class="pip on high"></span><span class="pip on high"></span
+              ><span class="pip on high"></span><span class="pip"></span>
+            </span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 i morgon</span>
+          </div>
+        </div>
+        <div class="swatch-card">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Dokumentera nödläge
+            </div>
+            <span class="pip-row" aria-label="Prioritet: Kritisk">
+              <span class="pip on critical"></span
+              ><span class="pip on critical"></span
+              ><span class="pip on critical"></span
+              ><span class="pip on critical"></span>
+            </span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 idag</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- === T5 top edge === -->
+      <h2 class="section">
+        Treatment 5 — Top-edge gradient bar
+        <span class="label-tag">subtle</span>
+      </h2>
+      <p class="pitch">
+        Same bar idea as today, but rotated 90° to the top edge and faded out
+        at both ends so it reads as light rather than paint. Less aggressive
+        than a solid 4px slab. Doesn't compete with the badge.
+      </p>
+      <div class="grid-cards">
+        <div class="swatch-card t5 low">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Skicka årlig rapport
+            </div>
+            <span class="badge badge-low">Låg</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 om 3 v</span>
+          </div>
+        </div>
+        <div class="swatch-card t5 medium">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Identifiera kravpunkter
+            </div>
+            <span class="badge badge-medium">Medel</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 två dagar</span>
+          </div>
+        </div>
+        <div class="swatch-card t5 high">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Granska systematik för avvikelser
+            </div>
+            <span class="badge badge-high">Hög</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 i morgon</span>
+          </div>
+        </div>
+        <div class="swatch-card t5 critical">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Dokumentera nödläge
+            </div>
+            <span class="badge badge-critical">Kritisk</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 idag</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- === T6 critical only === -->
+      <h2 class="section">
+        Treatment 6 — Critical-only signal (signal-to-noise)
+        <span class="label-tag">opinionated</span>
+      </h2>
+      <p class="pitch">
+        Strongest opinion: Låg / Medel / Hög get <em>nothing</em> on the card
+        chrome — only the badge tells you. Kritisk is the only thing the
+        board itself shouts about, with a soft ring + a quietly pulsing dot.
+        Result: when the board is loud, it actually means something. The
+        rest of the time it's calm.
+      </p>
+      <div class="grid-cards">
+        <div class="swatch-card t6 low">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Skicka årlig rapport
+            </div>
+            <span class="badge badge-low">Låg</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 om 3 v</span>
+          </div>
+        </div>
+        <div class="swatch-card t6 medium">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Identifiera kravpunkter
+            </div>
+            <span class="badge badge-medium">Medel</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 två dagar</span>
+          </div>
+        </div>
+        <div class="swatch-card t6 high">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Granska systematik för avvikelser
+            </div>
+            <span class="badge badge-high">Hög</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 i morgon</span>
+          </div>
+        </div>
+        <div class="swatch-card t6 critical">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Dokumentera nödläge
+            </div>
+            <span class="badge badge-critical">Kritisk</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 idag</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- === T7 whole card tint === -->
+      <h2 class="section">
+        Treatment 7 — Whole-card tint wash
+        <span class="label-tag">cohesive</span>
+      </h2>
+      <p class="pitch">
+        Subtle vertical gradient washes the entire card in the priority hue,
+        fading to neutral at the bottom. The card itself is the signal — no
+        added affordance. Reads as material, not paint.
+      </p>
+      <div class="grid-cards">
+        <div class="swatch-card t7 low">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Skicka årlig rapport
+            </div>
+            <span class="badge badge-low">Låg</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 om 3 v</span>
+          </div>
+        </div>
+        <div class="swatch-card t7 medium">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Identifiera kravpunkter
+            </div>
+            <span class="badge badge-medium">Medel</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 två dagar</span>
+          </div>
+        </div>
+        <div class="swatch-card t7 high">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Granska systematik för avvikelser
+            </div>
+            <span class="badge badge-high">Hög</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 i morgon</span>
+          </div>
+        </div>
+        <div class="swatch-card t7 critical">
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="font-semibold text-[14px] leading-snug">
+              Dokumentera nödläge
+            </div>
+            <span class="badge badge-critical">Kritisk</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="avatar">AL</div>
+            <span class="meta">📅 idag</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- === Side-by-side mini board === -->
+      <h2 class="section mt-20">
+        Bonus — Mini "board" view: how each treatment looks at scale
+      </h2>
+      <p class="pitch">
+        4 cards stacked in one column, like a real "Att göra" lane. Compare
+        chrome density across treatments.
+      </p>
+      <div class="grid grid-cols-3 gap-6 mt-4">
+        <div>
+          <div class="text-xs uppercase tracking-widest text-zinc-500 mb-3">
+            T2 · glow
+          </div>
+          <div class="space-y-3">
+            <div class="swatch-card t2 critical">
+              <div class="font-semibold text-[13px] mb-2">Dokumentera nödläge</div>
+              <div class="flex items-center justify-between">
+                <span class="badge badge-critical">Kritisk</span
+                ><span class="meta">idag</span>
+              </div>
+            </div>
+            <div class="swatch-card t2 high">
+              <div class="font-semibold text-[13px] mb-2">
+                Granska systematik
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="badge badge-high">Hög</span
+                ><span class="meta">i morgon</span>
+              </div>
+            </div>
+            <div class="swatch-card t2 medium">
+              <div class="font-semibold text-[13px] mb-2">
+                Identifiera kravpunkter
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="badge badge-medium">Medel</span
+                ><span class="meta">2 dagar</span>
+              </div>
+            </div>
+            <div class="swatch-card t2 low">
+              <div class="font-semibold text-[13px] mb-2">Skicka rapport</div>
+              <div class="flex items-center justify-between">
+                <span class="badge badge-low">Låg</span
+                ><span class="meta">3 v</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-widest text-zinc-500 mb-3">
+            T6 · critical-only
+          </div>
+          <div class="space-y-3">
+            <div class="swatch-card t6 critical">
+              <div class="font-semibold text-[13px] mb-2">Dokumentera nödläge</div>
+              <div class="flex items-center justify-between">
+                <span class="badge badge-critical">Kritisk</span
+                ><span class="meta">idag</span>
+              </div>
+            </div>
+            <div class="swatch-card t6 high">
+              <div class="font-semibold text-[13px] mb-2">
+                Granska systematik
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="badge badge-high">Hög</span
+                ><span class="meta">i morgon</span>
+              </div>
+            </div>
+            <div class="swatch-card t6 medium">
+              <div class="font-semibold text-[13px] mb-2">
+                Identifiera kravpunkter
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="badge badge-medium">Medel</span
+                ><span class="meta">2 dagar</span>
+              </div>
+            </div>
+            <div class="swatch-card t6 low">
+              <div class="font-semibold text-[13px] mb-2">Skicka rapport</div>
+              <div class="flex items-center justify-between">
+                <span class="badge badge-low">Låg</span
+                ><span class="meta">3 v</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-widest text-zinc-500 mb-3">
+            T7 · tint
+          </div>
+          <div class="space-y-3">
+            <div class="swatch-card t7 critical">
+              <div class="font-semibold text-[13px] mb-2">Dokumentera nödläge</div>
+              <div class="flex items-center justify-between">
+                <span class="badge badge-critical">Kritisk</span
+                ><span class="meta">idag</span>
+              </div>
+            </div>
+            <div class="swatch-card t7 high">
+              <div class="font-semibold text-[13px] mb-2">
+                Granska systematik
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="badge badge-high">Hög</span
+                ><span class="meta">i morgon</span>
+              </div>
+            </div>
+            <div class="swatch-card t7 medium">
+              <div class="font-semibold text-[13px] mb-2">
+                Identifiera kravpunkter
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="badge badge-medium">Medel</span
+                ><span class="meta">2 dagar</span>
+              </div>
+            </div>
+            <div class="swatch-card t7 low">
+              <div class="font-semibold text-[13px] mb-2">Skicka rapport</div>
+              <div class="flex items-center justify-between">
+                <span class="badge badge-low">Låg</span
+                ><span class="meta">3 v</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- === Recommendation === -->
+      <h2 class="section mt-20">My read</h2>
+      <div
+        class="text-sm text-zinc-300 leading-relaxed max-w-3xl space-y-3 pb-20"
+      >
+        <p>
+          <strong class="text-white">If you want one strong opinion:</strong>
+          <span class="text-zinc-400">→</span> <strong>T6 critical-only</strong>.
+          The board is calm by default and the only thing screaming at you is
+          the thing that should. It's the most "AI-era" answer because it
+          treats screen real estate as expensive — most cards earn no chrome.
+        </p>
+        <p>
+          <strong class="text-white">If you want something safe and pretty:</strong>
+          <span class="text-zinc-400">→</span> <strong>T2 soft glow</strong>.
+          Reads as Linear-tier polish without being aggressive. Zero learning
+          curve — users still understand instantly.
+        </p>
+        <p>
+          <strong class="text-white">If you want the badge to do all the heavy lifting and the card to add meaning beyond it:</strong>
+          <span class="text-zinc-400">→</span> <strong>T4 pips</strong>.
+          The pip count is ordinal info you can't get from a single-color
+          badge. Slightly busier, but each card teaches you the priority
+          system without you having to memorise the colour palette.
+        </p>
+        <p>
+          <strong class="text-white">Worth ruling out:</strong> T3 corner
+          bloom looks great but is hard to do well at low-priority — too
+          subtle to register; T5 top-edge bar is a small refinement of T1
+          rather than a real shift; T7 whole-card tint risks visual chaos
+          when the column is dense.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
