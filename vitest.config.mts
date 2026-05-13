@@ -27,12 +27,7 @@ export default defineConfig({
     // integration suite to run in a single fork so all integration tests
     // serialise on one prisma client. Unit tests keep the default thread
     // pool — only the matched integration files take the slow path.
-    poolMatchGlobs: [
-      [
-        '**/tests/integration/**',
-        'forks',
-      ],
-    ],
+    poolMatchGlobs: [['**/tests/integration/**', 'forks']],
     poolOptions: {
       forks: {
         singleFork: true,
