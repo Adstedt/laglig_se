@@ -41,7 +41,7 @@ What it does cover:
 | Generation banner | `components/features/dashboard/law-list-generation-progress.tsx` | Polls `/api/workspace/generation-status` every 3s. Renders three states: in-progress (Card with step), completed (CompletedCard with dismiss), failed (FailedCard). |
 | Generation API | `app/api/workspace/generate-law-list/route.ts` (POST) and `/api/workspace/generation-status` (GET, DELETE) | Kicks off generation, polls status, dismisses completed. |
 | Workspace status field | `prisma/schema.prisma:Workspace.law_list_generation_status` (String?) | Free-form string today: `'pending' \| 'in_progress' \| 'completed' \| 'failed' \| null`. |
-| Wizard → dashboard handoff | `app/onboarding/_components/confirm-step.tsx` → `createWorkspace()` | After workspace creation, fires generation API and redirects to `/dashboard`. **This is the silent auto-fire we are replacing.** |
+| Wizard → dashboard handoff | `app/actions/workspace.ts` (`createWorkspace`, lines 347–364) | After workspace insert + transaction commit, fires `POST /api/workspace/generate-law-list` via raw `fetch()` and revalidates `/`. Block labelled `// Story 16.4: Trigger law list generation (fire-and-forget)`. **This is the silent auto-fire we are replacing.** `confirm-step.tsx` is not involved — it only calls `onSubmit()` (a prop). |
 
 ### 2.2 Existing patterns we will follow
 
@@ -65,7 +65,9 @@ What it does cover:
 | Slot | What ships | When |
 |---|---|---|
 | **Story B.0** | Minimal modal: 3 buttons (Generera / Importera (disabled) / Hoppa över), dismiss handling, schema additions. **Prevents the silent auto-fire.** | First — independent of Epic A. |
-| **Story B.1–B.5** | Full modal: brand chrome, path-choice cards, kickoff confirm, tutorial-while-working with 6 tabs, done states (4a/4b), Hjälp menu re-entry. | After Epic A's review surface exists (B.4 hands off to it). |
+| **Stories B.1–B.4** | Full modal: brand chrome, path-choice cards, kickoff confirm, tutorial-while-working with 6 tabs, done states for all three paths. | After Epic A's review surface exists (B.4 hands off to it). |
+| **Story B.5** | Feedback form (7th tab) → emails dev@laglig.se. Independent of Epic A. | After B.4. |
+| **Story B.6** | Re-entry layers: corner FAB, Hjälp sidebar, `tutorial_only` mode, URL deep-link. | After B.5. |
 
 B.0 is the **wedge** — it stops token waste and validates the modal pattern with minimal investment. Everything in B.1+ replaces B.0's UI but reuses its trigger logic, schema, and dismissal contract.
 
@@ -103,9 +105,16 @@ All work uses the existing stack:
 model Workspace {
   // ... existing fields ...
 
-  // CHANGE: extend status semantics. No enum migration; this is String? today.
+  // CHANGE: extend status semantics + DROP the @default("pending"). No enum migration; this is String? today.
   // New possible value: 'skipped' (user explicitly opted out of generation).
   // Keeps existing 'pending' | 'in_progress' | 'completed' | 'failed' | null.
+  //
+  // ⚠ Schema-default drop is REQUIRED in the same migration.
+  // Today's schema (`prisma/schema.prisma:172`) declares `@default("pending")`. With the
+  // auto-fire removed (§3.2), new workspaces must land at NULL so the `firstRunOpen` guard
+  // in `getOnboardingState` (§6.4) — which checks `law_list_generation_status === null` —
+  // actually fires. Existing workspaces with a non-null value are unaffected; defaults
+  // only apply to new rows. Migration name: `add_first_run_modal_columns`.
   law_list_generation_status String?
 
   // NEW: timestamp set when user closes / minimises the first-run modal.
@@ -120,7 +129,7 @@ model Workspace {
   // simply minimising the modal back to the corner.
   tutorial_fab_dismissed_at  DateTime?
 
-  // NEW (Story B.5 — defer to Epic B v1, NOT B.0):
+  // NEW (Story B.6 — defer to Epic B v1, NOT B.0):
   // tracks which tutorial tabs the user has viewed.
   // Stored as a JSONB array of tab IDs: `["laglista", "kravpunkter", ...]`.
   // Used by FAB unread indicator + tutorial-only mode to optionally pick up
@@ -166,7 +175,7 @@ model OnboardingEvent {
 | `tab_viewed` | `{ tab_id: 'laglista' \| 'kravpunkter' \| 'uppgifter' \| 'kontroller' \| 'lagandringar' \| 'ai_agent' }` |
 | `modal_minimised` | `{ from_state: 'path_choice' \| 'kickoff' \| 'tutorial' \| 'done' \| 'tutorial_only' }` |
 | `fab_dismissed` | `{ from_state: 'visible_idle' \| 'visible_working' \| 'visible_done' }` |
-| `feedback_submitted` | `{ sentiment: 'positive' \| 'negative', message?: string }` *(future — see §14)* |
+| `feedback_submitted` | `{ sentiment: 'positive' \| 'negative', message?: string, email?: string }` *(Story B.5 — in-scope MVP; see §7.1 and §14)* |
 
 **Fail-safe pattern:** event writes wrapped in try/catch, logged as `[ONBOARDING_EVENT_WRITE_FAIL]` via `console.error`, never re-thrown. (Mirrors Story 14.27's pattern at `app/api/chat/route.ts`.)
 
@@ -194,6 +203,7 @@ components/features/onboarding-modal/
 │   └── tab-ai-agent.tsx                 # Tab 6 content
 ├── done-generate-step.tsx               # Step ④a — celebrate + reveal CTA
 ├── done-import-step.tsx                 # Step ④b — confidence breakdown + handoff CTA
+├── feedback-step.tsx                    # Story B.5 — 7th tab; thumbs + msg + email → dev@laglig.se
 ├── progress-strip.tsx                   # Reusable strip; wraps LawListGenerationProgress data
 └── help-menu-trigger.tsx                # Sidebar entry — fallback after FAB dismissed
 ```
@@ -277,7 +287,7 @@ return (
 
 **Three surfaces, one data source.** The modal owns full attention when open. The FAB is the docked re-entry when minimised. The banner is the inline fallback for users who never engaged with the modal at all (edge case: support manually set `first_run_dismissed_at` for them, or workspace pre-dates Epic B). All three read from the same SWR key for generation status — no double-fetching.
 
-**The modal supersedes the banner.** When the modal is open, the banner is hidden (the modal's own progress strip is the source of truth). When minimised, the FAB takes the foreground role; the banner can either hide or remain depending on UX call (defer to B.5 — my recommendation: hide banner whenever FAB is visible, since the FAB already signals "work in progress").
+**The modal supersedes the banner.** When the modal is open, the banner is hidden (the modal's own progress strip is the source of truth). When minimised, the FAB takes the foreground role; the banner can either hide or remain depending on UX call (defer to B.6 — my recommendation: hide banner whenever FAB is visible, since the FAB already signals "work in progress").
 
 ### 6.4 Onboarding state — derived server-side
 
@@ -394,12 +404,69 @@ export async function recordOnboardingEvent(
   payload?: Record<string, unknown>,
 ): Promise<void>
 
-// FUTURE — feedback loop on the same modal substrate. See §14.
-// export async function submitOnboardingFeedback(
-//   sentiment: 'positive' | 'negative',
-//   message?: string,
-// ): Promise<void>
+// Story B.5 — feedback form submission.
+// 1. Writes an OnboardingEvent row (event_type='feedback_submitted').
+// 2. Emails dev@laglig.se via lib/email/email-service (Resend transport).
+// Email failure does NOT block the user submit; row is written first.
+// Mirrors app/actions/catalog-ingest-request.ts (Story 24.5 ops-email pattern).
+export async function submitOnboardingFeedback(input: {
+  sentiment: 'positive' | 'negative'
+  message?: string  // ≤500 chars
+  email?: string    // optional reply-to; prefilled from session.user.email client-side
+}): Promise<{ ok: true } | { ok: false; error: string }>
 ```
+
+**`submitOnboardingFeedback` implementation contract (Story B.5):**
+
+```ts
+// app/actions/onboarding-modal.ts (excerpt)
+'use server'
+
+import { sendEmail } from '@/lib/email/email-service'
+import { withWorkspace } from '@/lib/auth/with-workspace'
+
+export const submitOnboardingFeedback = withWorkspace(async ({ workspace, user, prisma }, input) => {
+  const message = input.message?.slice(0, 500) ?? null
+  const email = input.email?.trim() || user.email
+
+  // Step 1 — write the event row first. This is the durable record.
+  await prisma.onboardingEvent.create({
+    data: {
+      workspace_id: workspace.id,
+      user_id: user.id,
+      event_type: 'feedback_submitted',
+      payload: { sentiment: input.sentiment, message, email },
+    },
+  }).catch((e) => console.error('[ONBOARDING_FEEDBACK_EVENT_FAIL]', e))
+
+  // Step 2 — fire the email. Fail-safe: do not throw on email failure.
+  try {
+    const emoji = input.sentiment === 'positive' ? '👍' : '👎'
+    await sendEmail({
+      to: 'dev@laglig.se',
+      subject: `[Onboarding feedback] ${emoji} från ${workspace.name}`,
+      html: `
+        <h2>Onboarding feedback ${emoji}</h2>
+        <p><strong>Workspace:</strong> ${workspace.name} (<code>${workspace.id}</code>)</p>
+        <p><strong>User:</strong> ${user.name} &lt;${email}&gt;</p>
+        <p><strong>Sentiment:</strong> ${input.sentiment}</p>
+        ${message ? `<p><strong>Message:</strong></p><blockquote>${escapeHtml(message)}</blockquote>` : '<p><em>(no message)</em></p>'}
+        <hr/>
+        <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/workspaces/${workspace.id}">Admin view</a></p>
+      `,
+    })
+  } catch (e) {
+    console.error('[ONBOARDING_FEEDBACK_EMAIL_FAIL]', e)
+    // intentionally swallow — user sees success, we just lose this email
+  }
+
+  return { ok: true as const }
+})
+```
+
+**Why event-write before email-send:** the DB row is the durable record. If we sent email first and the DB write failed, the email would arrive with no audit trail. The reverse failure mode (row written, email lost) is recoverable from the admin surface (`/admin/workspaces/{id}` can show recent `OnboardingEvent` rows).
+
+**Why no rate-limit at v1:** feedback volume is naturally throttled by the form itself (one workspace, one user, manual click). If we see spam, add a per-workspace cooldown later.
 
 All actions use the existing `withWorkspace(cb)` wrapper for auth + workspace context. No new permission scopes — actions only touch the user's own workspace.
 
@@ -416,12 +483,10 @@ laglig_se/
 ├── app/
 │   ├── (workspace)/
 │   │   └── dashboard/
-│   │       └── page.tsx                      # Modified — adds shouldShowFirstRunModal call
-│   ├── actions/
-│   │   └── onboarding-modal.ts               # NEW
-│   └── onboarding/
-│       └── _components/
-│           └── confirm-step.tsx              # Modified — drops auto-fire of generate-law-list
+│   │       └── page.tsx                      # Modified — adds getOnboardingState call
+│   └── actions/
+│       ├── onboarding-modal.ts               # NEW
+│       └── workspace.ts                      # Modified — drops auto-fire block at lines 347–364 from createWorkspace
 ├── components/
 │   └── features/
 │       ├── dashboard/
@@ -437,11 +502,12 @@ laglig_se/
 │           │   └── tab-*.tsx (×6)
 │           ├── done-generate-step.tsx
 │           ├── done-import-step.tsx
+│           ├── feedback-step.tsx                       # NEW (Story B.5)
 │           ├── progress-strip.tsx
 │           └── help-menu-trigger.tsx
 ├── lib/
 │   └── onboarding/
-│       └── should-show-first-run-modal.ts    # NEW
+│       └── get-onboarding-state.ts           # NEW (returns {firstRunOpen, fabVisible, fabState} per §6.4)
 └── prisma/
     ├── schema.prisma                         # Modified — Workspace + OnboardingEvent
     └── migrations/
@@ -474,7 +540,7 @@ laglig_se/
 
 **Effort estimate:** ~1.5 days. Single component, single action file, one prisma migration.
 
-### Stories B.1–B.5 — Full modal (after Epic A.4 ships)
+### Stories B.1–B.6 — Full modal (after Epic A.4 ships)
 
 | Story | What it ships |
 |---|---|
@@ -482,8 +548,8 @@ laglig_se/
 | B.2 | `progress-strip.tsx` + `tutorial-step.tsx` shell. Reuses `LawListGenerationProgress` SWR key. Tab navigation chrome ("X av 6" counter, scroll on narrow viewports). Minimera affordance. |
 | B.3 | All 6 tab content panels. Each tab is its own file under `tutorial-tabs/`. Records `tab_viewed` events. **Can split into B.3a (3 tabs) + B.3b (3 tabs)** if velocity demands — drop Kontroller, Lagändringar, AI-agenten to a follow-up. |
 | B.4 | `done-generate-step.tsx` + `done-import-step.tsx`. Generate path: sage success ring, group-breakdown chips, "Visa min laglista →". Import path: confidence breakdown card, hand-off CTA → Epic A.4 review surface. |
-| B.5 | **Re-entry layers + tutorial-only mode.** `onboarding-fab.tsx` (corner FAB with three visual states: working / done / idle, tiny X to dismiss). `help-menu-trigger.tsx` sidebar entry as fallback after FAB dismissed. `tutorial_only` mode in `tutorial-step.tsx` (hides progress strip, just renders tabs). URL-driven Hjälp re-entry (`?onboarding=tutorial[&tab=...]`). Wires `first_run_tabs_viewed` for FAB unread indicator. |
-| B.6 *(future)* | **Feedback loop on the same modal.** New `feedback-step.tsx` step + `submitOnboardingFeedback` server action. Surfaces as either a 7th "Feedback" tab or a banner above tutorial content. Reuses `OnboardingEvent` (`feedback_submitted` event type — already in §5.2 table). No new schema. See §14. |
+| B.5 | **Feedback form (in-scope MVP).** `feedback-step.tsx` rendered as the rightmost (7th) tab in the tutorial-tabs strip — sentiment (thumbs) + optional 500-char message + optional email (prefilled from session). `submitOnboardingFeedback` server action writes one `OnboardingEvent` row AND emails dev@laglig.se via existing Resend transport (`lib/email/email-service`), mirroring Story 24.5's `catalog-ingest-request.ts`. No new schema. No admin dashboard. ~0.5–1 day. |
+| B.6 | **Re-entry layers + tutorial-only mode.** `onboarding-fab.tsx` (corner FAB with three visual states: working / done / idle, tiny X to dismiss). `help-menu-trigger.tsx` sidebar entry as fallback after FAB dismissed. `tutorial_only` mode in `tutorial-step.tsx` (hides progress strip, just renders tabs — including the B.5 Feedback tab). URL-driven Hjälp re-entry (`?onboarding=tutorial[&tab=...]`). Wires `first_run_tabs_viewed` for FAB unread indicator. |
 
 ---
 
@@ -502,7 +568,7 @@ laglig_se/
 
 ### Unit (Vitest, existing)
 
-- `lib/onboarding/should-show-first-run-modal.ts` — pure function, easy to cover. Test all four guard branches.
+- `lib/onboarding/get-onboarding-state.ts` — pure function, easy to cover. Test all four guard branches.
 - Server actions in `app/actions/onboarding-modal.ts` — mock Prisma, assert column writes + event records.
 
 ### Component (Vitest + React Testing Library, existing)
@@ -515,12 +581,12 @@ laglig_se/
 
 - New scenario: signup → workspace created → first dashboard visit → modal opens → click "Hoppa över" → modal closes → banner does NOT show → reload → modal does NOT re-open.
 - New scenario: signup → click "Generera" → modal closes → banner appears → wait for completion → banner shows completed card.
-- B.5 scenario: dismiss modal → click Hjälp menu → modal opens in tutorial mode (no path-choice) → close → URL param cleared.
+- B.6 scenario: dismiss modal → click Hjälp menu → modal opens in tutorial mode (no path-choice) → close → URL param cleared.
 
 ### Regression coverage to maintain
 
 - Existing `LawListGenerationProgress` component tests — must still pass unchanged.
-- Existing wizard tests in `tests/unit/components/onboarding/confirm-step.test.tsx` — needs update for the auto-fire removal. Story B.0 includes this test edit.
+- Existing tests for `createWorkspace` in `tests/unit/actions/workspace.test.ts` — needs an updated/new assertion that `fetch` is NOT called with `/api/workspace/generate-law-list` after a successful `createWorkspace` (regression guard on the auto-fire removal). Story B.0 includes this test edit. **Note:** `tests/unit/components/onboarding/confirm-step.test.tsx` covers Story 5.12's tier-aware copy only; it has no auto-fire assertion and is **not** the right file to edit for this change.
 
 ---
 
@@ -544,24 +610,26 @@ laglig_se/
 ## 14. Open Questions for PO
 
 1. **Epic numbering.** I've named the doc `first-run-onboarding-modal.md` (no number). PO assigns the official epic number when they shard the brief into the registry — likely 24 (Import) and 25 (this), but I'm not committing to those.
-2. **Hjälp menu placement.** Sidebar bottom? Top-right user dropdown? Both? Affects B.5 only — defer the call.
+2. **Hjälp menu placement.** Sidebar bottom? Top-right user dropdown? Both? Affects B.6 only — defer the call.
 3. **First-run age cap.** I picked 24h as the defensive cap. Could be 7 days (gives more re-signin tolerance) or 1h (tighter). 24h is the safe middle.
 4. **FAB scope.** Render only on `/dashboard`, or on every workspace route? My take: every workspace route (so users can re-open tutorial mid-task), but the visual gets less prominent on non-dashboard pages — small icon, no expanded "Genererar laglista..." pill text.
 5. **Banner ↔ FAB visibility.** When FAB is visible, should we also render the existing dashboard banner? My recommendation: hide banner when FAB is visible (FAB already signals work-in-progress). PM call.
 6. **`OnboardingEvent` retention.** No prune policy needed at v1 (low write volume, ~5 events per signup). Worth a 90-day prune cron at scale.
 7. **Tutorial-only mode tab seeding.** When user re-opens via Hjälp menu, start at tab 1 always, OR pick up at last viewed tab? I'd default to tab 1 for predictability; PM can call.
 
-### Future extension — feedback loop (post-B.5)
+### Feedback form — Story B.5 (in-scope MVP, no longer future)
 
-The user has flagged a feedback loop as a desired follow-on. The architecture supports it without schema changes:
+**Status (2026-05-13):** Promoted from future to in-scope MVP. PO decision: ship a standard feedback form, no admin dashboard, email-only delivery to dev@laglig.se.
 
-- **Surface:** Either a 7th "Feedback" tab in the tutorial-tabs strip, or a banner above tutorial content saying "Hur går det? Skicka feedback" with thumbs up/down + optional free-text.
-- **Trigger:** Could fire passively (visible after N tab views, or after path completion), or actively (modal re-opens with feedback step after a delay).
-- **Storage:** `OnboardingEvent` table already accommodates this — `event_type='feedback_submitted'`, `payload={sentiment, message}`. No new table.
-- **Server action:** `submitOnboardingFeedback(sentiment, message?)` — already stubbed (commented) in §7.1.
-- **Story slot:** B.6 in the sequencing table.
+- **Surface:** 7th "Feedback" tab in the tutorial-tabs strip (rightmost, `MessageCircle` icon, no "Ny" chip — quiet entry, not pushy). Same component is reachable both in `tutorial` mode and `tutorial_only` mode (after B.6 ships the FAB/Hjälp re-entry).
+- **Trigger:** None — user opens the tab when they want to. No passive nag, no auto-pop. Friction is deliberately low: anyone reaching the tab gets a one-screen form.
+- **Form fields:** thumbs up/down (required) + optional 500-char message + optional email (prefilled from `session.user.email`, editable).
+- **Storage:** `OnboardingEvent` (already in §5.2) — `event_type='feedback_submitted'`, `payload={sentiment, message, email}`. No new schema.
+- **Delivery:** `submitOnboardingFeedback` server action (see §7.1) writes the event row, then emails dev@laglig.se via `lib/email/email-service` (Resend). Fail-safe: email failure does not break the user submit; row is the durable record.
+- **No admin surface at v1.** The dev@laglig.se inbox is the surface. If volume grows past what an inbox can absorb, add an admin tile in a follow-up (low priority).
+- **Story slot:** B.5 in §9 sequencing table.
 
-When PO is ready to scope this, the architectural lift is small: one new step component, one new action, copy work. The hard part will be deciding *when* to surface it without feeling like a modal-overlay-on-modal-overlay nag.
+**Why no rate-limit at v1:** form-driven submission is naturally throttled by manual user action. Spam pattern is unlikely from authenticated workspace users; revisit if we see it.
 
 ---
 
@@ -575,7 +643,7 @@ When PO is ready to scope this, the architectural lift is small: one new step co
 >
 > Key integration check during B.0: existing `LawListGenerationProgress` tests must pass unchanged. Existing wizard tests need update for the auto-fire removal — that's part of B.0's scope.
 >
-> B.1–B.5 wait for Epic A.4 (review surface) since B.4 hands off to it.
+> B.1–B.4 wait for Epic A.4 (review surface) since B.4 hands off to it. B.5 (feedback form → dev@laglig.se) and B.6 (re-entry layers + tutorial-only mode) are independent of Epic A and can ship as soon as B.4 lands.
 
 ## 16. Developer Handoff
 
@@ -586,9 +654,9 @@ When PO is ready to scope this, the architectural lift is small: one new step co
 > 1. **Schema first.** Add three columns to `Workspace`: `first_run_dismissed_at` (DateTime?), `tutorial_fab_dismissed_at` (DateTime?), `first_run_tabs_viewed` (Json default `[]`). Add `OnboardingEvent` model per §5.2. Generate one migration: `add_first_run_modal_columns`. **Do not** rename `law_list_generation_status` to a Prisma enum — keep it `String?`. The `'skipped'` value is just a new accepted string, not an enum migration.
 > 2. **Server actions next.** Create `app/actions/onboarding-modal.ts` with the five functions in §7.1: `minimiseFirstRunModal`, `skipLawListGeneration`, `dismissOnboardingFab`, `recordTabViewed`, `recordOnboardingEvent`. Use `withWorkspace(cb)` wrapper. Telemetry writes wrapped in try/catch.
 > 3. **State derivation.** `lib/onboarding/get-onboarding-state.ts` — pure function returning `{firstRunOpen, fabVisible, fabState}` per §6.4. Test all derivation branches.
-> 4. **Modal shell.** `components/features/onboarding-modal/first-run-modal.tsx` + `path-choice-step.tsx`. Use `Dialog` from `components/ui`. Three buttons → three handlers (`generate` → fire gen API + minimise; `import` → record event + minimise + toast; `skip` → call `skipLawListGeneration`). **No FAB in B.0** — FAB ships in B.5.
+> 4. **Modal shell.** `components/features/onboarding-modal/first-run-modal.tsx` + `path-choice-step.tsx`. Use `Dialog` from `components/ui`. Three buttons → three handlers (`generate` → fire gen API + minimise; `import` → record event + minimise + toast; `skip` → call `skipLawListGeneration`). **No FAB in B.0** — FAB ships in B.6.
 > 5. **Dashboard wiring.** Modify `app/(workspace)/dashboard/page.tsx` to call `getOnboardingState` and pass result to `<HemPage>`. Modify `hem-page.tsx` to mount `<FirstRunModal>` when `onboardingState.firstRunOpen === true`.
-> 6. **Wizard change.** Remove the auto-fire of `POST /api/workspace/generate-law-list` from `app/onboarding/_components/confirm-step.tsx`. Update existing test to assert the call is NOT made.
+> 6. **Wizard change.** Remove the auto-fire of `POST /api/workspace/generate-law-list` from `app/actions/workspace.ts` (the `createWorkspace` server action, lines ~347–364, block labelled `// Story 16.4: Trigger law list generation (fire-and-forget)`). Add/update an assertion in `tests/unit/actions/workspace.test.ts` that `fetch` is NOT called with `/api/workspace/generate-law-list` after `createWorkspace`. `app/onboarding/_components/confirm-step.tsx` is NOT touched — it only calls `onSubmit()` and has no knowledge of generation.
 > 7. **Smoke check.** Manual: sign up → land on dashboard → modal opens → click each button → verify post-conditions (status set correctly, `first_run_dismissed_at` set, modal stays closed on reload).
 >
 > Do not build tab content, kickoff confirm, done states, or the FAB in B.0 — those are B.1+. The import button stays disabled with "Kommer snart" badge until Epic A.4 ships.
