@@ -4,7 +4,18 @@
  * failure retry, and open-set agency support via parseDocumentNumber.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest'
+
+// matcher.ts:getAnthropicClient reads process.env.ANTHROPIC_API_KEY and
+// throws when unset BEFORE the SDK constructor runs — so the vi.mock below
+// never gets a chance to intercept on a clean CI env. Stub a dummy value so
+// the env-check passes; the MockAnthropic constructor (vi.mock'd below)
+// ignores the value entirely.
+beforeAll(() => {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    process.env.ANTHROPIC_API_KEY = 'test-mock-key'
+  }
+})
 
 // Mock findMatchCandidates so we can drive matchRow without a real DB.
 vi.mock('@/lib/search/match-candidates', async () => {
