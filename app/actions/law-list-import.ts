@@ -855,7 +855,7 @@ export async function requestCatalogAdd(
               adminNote: note ?? null,
               importFilename: fullRow.import.filename,
             }),
-            from: 'notifications',
+            from: 'no-reply',
           })
         }
       } catch (emailErr) {
