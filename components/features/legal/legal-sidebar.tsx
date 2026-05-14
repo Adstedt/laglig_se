@@ -12,9 +12,9 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { toast } from 'sonner'
 
 import { LEGAL_DOCS, type LegalDocSlug } from './legal-doc-registry'
+import { useConsent } from '@/components/providers/consent-provider'
 
 const ICONS: Record<LegalDocSlug, LucideIcon> = {
   villkor: FileText,
@@ -25,6 +25,7 @@ const ICONS: Record<LegalDocSlug, LucideIcon> = {
 }
 
 export function LegalSidebar() {
+  const { openSettings } = useConsent()
   const pathname = usePathname()
 
   return (
@@ -57,16 +58,7 @@ export function LegalSidebar() {
 
         <div className="legal-sidebar-divider" />
 
-        <button
-          type="button"
-          className="legal-nav-item"
-          onClick={() => {
-            console.warn('[CONSENT_STUB_CLICKED]')
-            toast('Cookie-bannern är inte aktiverad än', {
-              description: 'Vi rullar ut samtyckeshantering inom kort.',
-            })
-          }}
-        >
+        <button type="button" className="legal-nav-item" onClick={openSettings}>
           <span className="legal-nav-icon">
             <Cookie className="h-3.5 w-3.5" />
           </span>

@@ -4,11 +4,11 @@ import * as React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Cookie, Mail } from 'lucide-react'
-import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
+import { useConsent } from '@/components/providers/consent-provider'
 
 const menuLinks = [
   { href: '#how-it-works', label: 'Så fungerar det' },
@@ -29,6 +29,7 @@ const legalLinks = [
 ]
 
 export function Footer() {
+  const { openSettings } = useConsent()
   const [email, setEmail] = React.useState('')
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
@@ -93,12 +94,7 @@ export function Footer() {
                 <button
                   type="button"
                   className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-                  onClick={() => {
-                    console.warn('[CONSENT_STUB_CLICKED]')
-                    toast('Cookie-bannern är inte aktiverad än', {
-                      description: 'Vi rullar ut samtyckeshantering inom kort.',
-                    })
-                  }}
+                  onClick={openSettings}
                 >
                   <Cookie className="h-3.5 w-3.5" />
                   Cookieinställningar
