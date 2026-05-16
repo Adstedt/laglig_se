@@ -30,6 +30,7 @@ import { useLayoutStore } from '@/lib/stores/layout-store'
 import { useState, useEffect } from 'react'
 import { WorkspaceSwitcher } from './workspace-switcher'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { BetaBadge } from '@/components/shared/beta-badge'
 import { Separator } from '@/components/ui/separator'
 import { getUnacknowledgedChangeCount } from '@/app/actions/change-events'
 
@@ -316,7 +317,7 @@ export function MobileSidebar({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="left" className="w-[280px] p-0">
         <SheetHeader className="border-b p-4">
-          <SheetTitle className="flex items-center gap-3">
+          <SheetTitle className="flex items-center gap-2">
             <Link href="/dashboard" onClick={handleLinkClick}>
               <Image
                 src="/images/logo-final.png"
@@ -326,6 +327,7 @@ export function MobileSidebar({
                 className="h-6 w-auto invert dark:invert-0"
               />
             </Link>
+            <BetaBadge />
           </SheetTitle>
         </SheetHeader>
 
