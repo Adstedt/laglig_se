@@ -439,4 +439,60 @@ describe('createWorkspace', () => {
       expect(capturedSlug).toMatch(/^foretag-ab-co-[a-z0-9]{6}$/)
     })
   })
+
+  /**
+   * Story 25.0 (Epic 25): the law-list generation auto-fire was removed from
+   * createWorkspace — the first-run path-choice modal on /dashboard now gates
+   * generation. These are regression guards on the no-auto-fire contract.
+   */
+  describe('Story 25.0: no generation auto-fire', () => {
+    it('does NOT fetch /api/workspace/generate-law-list after createWorkspace', async () => {
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValue(new Response(null, { status: 200 }))
+
+      const formData = new FormData()
+      formData.append('name', 'My Company')
+
+      const result = await createWorkspace(formData)
+
+      expect(result.success).toBe(true)
+      // The auto-fire block is gone — nothing in createWorkspace should hit
+      // the generation endpoint anymore.
+      const calledGenerate = fetchSpy.mock.calls.some(([url]) =>
+        String(url).includes('/api/workspace/generate-law-list')
+      )
+      expect(calledGenerate).toBe(false)
+
+      fetchSpy.mockRestore()
+    })
+
+    it('does not set law_list_generation_status — new workspaces rely on the dropped DB default (NULL)', async () => {
+      const captureBox: { value: Record<string, unknown> } = { value: {} }
+      vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
+        const tx = {
+          workspace: {
+            create: vi.fn().mockImplementation((data) => {
+              captureBox.value = data.data
+              return Promise.resolve(mockWorkspace)
+            }),
+          },
+          workspaceMember: {
+            create: vi.fn().mockResolvedValue({ id: 'member_123' }),
+          },
+        }
+        return callback(tx as never)
+      })
+
+      const formData = new FormData()
+      formData.append('name', 'My Company')
+
+      await createWorkspace(formData)
+
+      // createWorkspace must not write this column — with the @default("pending")
+      // dropped in migration 20260514000000, the column lands NULL, which is
+      // what getOnboardingState keys on to open the first-run modal.
+      expect(captureBox.value.law_list_generation_status).toBeUndefined()
+    })
+  })
 })

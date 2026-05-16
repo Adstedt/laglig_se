@@ -202,7 +202,11 @@ export async function createWorkspace(formData: FormData): Promise<{
           subscription_tier: 'TRIAL',
           trial_ends_at: trialEndsAt,
           status: 'ACTIVE',
-          law_list_generation_status: 'pending',
+          // Story 25.0 (Epic 25): law_list_generation_status is intentionally
+          // NOT set here — it lands NULL (the schema @default was dropped),
+          // which is what getOnboardingState keys on to open the first-run
+          // path-choice modal. The user picks a path there; generation only
+          // fires if they choose "Generera laglista nu".
           // Story 5.12: trial limits cap at the picked tier (or Team for
           // Enterprise picks — see enterpriseInquiryAt below).
           trial_picked_tier: trialPickedTier,
@@ -344,24 +348,14 @@ export async function createWorkspace(formData: FormData): Promise<{
       }
     }
 
-    // Story 16.4: Trigger law list generation (fire-and-forget)
-    try {
-      const headersList = await headers()
-      const protocol = headersList.get('x-forwarded-proto') ?? 'http'
-      const host = headersList.get('host') ?? 'localhost:3000'
-      const cookie = headersList.get('cookie') ?? ''
-      const baseUrl = `${protocol}://${host}`
-
-      fetch(`${baseUrl}/api/workspace/generate-law-list`, {
-        method: 'POST',
-        headers: { cookie },
-      }).catch(() => {
-        // Fire-and-forget — failure doesn't block workspace creation.
-        // Dashboard retry logic (AC 22) will pick up 'pending' status.
-      })
-    } catch {
-      // If fetch itself fails to fire, status remains 'pending'
-    }
+    // Story 25.0 (Epic 25): the law-list generation auto-fire that used to
+    // live here has been removed. Generation is no longer triggered silently
+    // on workspace creation — the first-run path-choice modal on /dashboard
+    // now gates it, so the user intentionally picks Generera / Mall / Import /
+    // Hoppa över. New workspaces land on /dashboard with
+    // law_list_generation_status = null (the schema @default was dropped in
+    // migration 20260514000000_add_first_run_modal_columns), which is what
+    // getOnboardingState keys on to open the modal.
 
     revalidatePath('/')
 
