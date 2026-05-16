@@ -59,9 +59,20 @@ interface ImportUploadStepProps {
    * Story 24.6 may pass a different path; Epic 25 B.1 keeps the default.
    */
   onSuccess?: (_importId: string) => void
+  /**
+   * When true, suppresses the internal header (the "Ladda upp er befintliga
+   * lista" h2 + description). Used by Story 25.1's first-run modal where the
+   * surrounding <DialogTitle> already names the surface, so the internal
+   * header would duplicate it (QA UX-DUPL-001). Defaults to false — Story
+   * 24.6's standalone `/laglistor/skapa` page keeps the header.
+   */
+  hideHeader?: boolean
 }
 
-export function ImportUploadStep({ onSuccess }: ImportUploadStepProps) {
+export function ImportUploadStep({
+  onSuccess,
+  hideHeader = false,
+}: ImportUploadStepProps) {
   const router = useRouter()
   const [mode, setMode] = useState<Mode>('fil')
   const [file, setFile] = useState<File | null>(null)
@@ -247,15 +258,17 @@ export function ImportUploadStep({ onSuccess }: ImportUploadStepProps) {
 
   return (
     <div className="space-y-6">
-      <header className="space-y-2">
-        <h2 className="text-2xl font-semibold tracking-tight">
-          Ladda upp er befintliga lista
-        </h2>
-        <p className="text-muted-foreground">
-          Vi läser in raderna och försöker matcha dem mot vår katalog. Du får
-          granska resultatet innan listan blir aktiv.
-        </p>
-      </header>
+      {!hideHeader && (
+        <header className="space-y-2">
+          <h2 className="text-2xl font-semibold tracking-tight">
+            Ladda upp er befintliga lista
+          </h2>
+          <p className="text-muted-foreground">
+            Vi läser in raderna och försöker matcha dem mot vår katalog. Du får
+            granska resultatet innan listan blir aktiv.
+          </p>
+        </header>
+      )}
 
       <Tabs
         value={mode}
