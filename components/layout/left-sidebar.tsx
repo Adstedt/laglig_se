@@ -45,6 +45,7 @@ import {
 } from '@/components/ui/popover'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
+import { BetaBadge } from '@/components/shared/beta-badge'
 import { getUnacknowledgedChangeCount } from '@/app/actions/change-events'
 import {
   DropdownMenu,
@@ -548,6 +549,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
               />
             )}
           </Link>
+          {!collapsed && <BetaBadge className="ml-2" />}
           <div className="absolute bottom-0 left-3 right-3 h-px bg-border" />
         </div>
 
