@@ -88,6 +88,9 @@ model User {
   catalog_requests_made    CatalogIngestRequest[] @relation("CatalogRequestedBy")
   catalog_requests_handled CatalogIngestRequest[] @relation("CatalogRequestHandler")
 
+  // Story 25.0 (Epic 25): First-run onboarding modal telemetry
+  onboarding_events OnboardingEvent[]
+
   @@index([email])
   @@map("users")
 }
@@ -169,9 +172,17 @@ model Workspace {
   change_assessments ChangeAssessment[]
 
   // Story 16.4: Law list generation
-  law_list_generation_status   String? @default("pending")
+  // Story 25.0: dropped @default("pending") — with the wizard auto-fire removed,
+  // new workspaces must land at NULL so getOnboardingState's null-check opens the
+  // first-run modal. Existing rows keep whatever value they already have.
+  law_list_generation_status   String?
   law_list_generation_error    String?
   law_list_generation_progress Json?
+
+  // Story 25.0 (Epic 25): First-run onboarding modal
+  first_run_dismissed_at    DateTime?
+  tutorial_fab_dismissed_at DateTime?
+  first_run_tabs_viewed     Json?     @default("[]")
 
   // Epic 17: Document management
   workspace_documents WorkspaceDocument[]
@@ -182,6 +193,9 @@ model Workspace {
   // Epic 24: Import existing law list
   law_list_imports        LawListImport[]
   catalog_ingest_requests CatalogIngestRequest[]
+
+  // Story 25.0 (Epic 25): First-run onboarding modal telemetry
+  onboarding_events OnboardingEvent[]
 
   @@index([owner_id])
   @@index([org_number])
@@ -1498,6 +1512,28 @@ model ChatUsageEvent {
   @@index([workspace_id, user_id, created_at])
   @@index([context_type, created_at])
   @@map("chat_usage_events")
+}
+
+// Story 25.0 (Epic 25): First-run onboarding modal telemetry.
+// Workspace-scoped product-event log with a polymorphic JSON payload.
+// event_type is a free-form string (no DB enum) so new event types ship
+// without a migration — same additive philosophy as ChatUsageEvent.
+// Known event_type values: 'modal_opened' | 'path_chosen' | 'tab_viewed'
+// | 'modal_dismissed' | 'fab_dismissed' | 'feedback_submitted'.
+model OnboardingEvent {
+  id           String   @id @default(uuid())
+  workspace_id String
+  user_id      String
+  event_type   String
+  payload      Json?
+  created_at   DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id, created_at])
+  @@index([event_type])
+  @@map("onboarding_events")
 }
 
 // Story 14.10: Assessment status for change acknowledgement

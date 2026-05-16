@@ -1,0 +1,98 @@
+schema: 1
+story: '25.0'
+story_title: 'First-run path-choice gate (token-saver MVP)'
+gate: PASS
+status_reason: 'Re-review after v0.6 QA-fix pass — the one medium item (TEST-001, emergency-disable flag coverage) is closed with a tested pure helper; two low items closed; three low items are correctly scoped as documented B.1/B.3 deferrals. No blocking issues.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-14T18:20:00Z'
+
+# Gate history:
+#   2026-05-14T18:15 — CONCERNS (initial deep review; 1 medium + 5 low)
+#   2026-05-14T18:20 — PASS (re-review post v0.6 QA-fix pass)
+
+top_issues:
+  - id: ROBUST-001
+    severity: low
+    status: deferred
+    summary: 'Fire-and-forget server actions on skip/template/import — a failed skipLawListGeneration() silently breaks the AC 22 "modal does not re-open" guarantee (benign: user re-picks, failure logged server-side).'
+    suggested_owner: dev
+    target: 'B.1'
+    refs: ['components/features/onboarding-modal/path-choice-step.tsx']
+    suggested_action: 'await the action + surface an error toast when B.1 reworks this surface. Accepted as a B.1 deferral — documented in story Completion Notes.'
+  - id: A11Y-001
+    severity: low
+    status: deferred
+    summary: 'Disabled Importera card has aria-disabled="true" but is fully interactive (per AC 21 design). Mixed signal for screen-reader users.'
+    suggested_owner: dev
+    target: 'B.1'
+    refs: ['components/features/onboarding-modal/path-choice-step.tsx']
+    suggested_action: 'Revisit when B.1 un-disables the card. Accepted as a B.1 deferral — documented in story Completion Notes.'
+  - id: DEBT-001
+    severity: low
+    status: deferred
+    summary: 'recordTabViewed read-then-write on first_run_tabs_viewed is not atomic (TOCTOU). B.3 stub, zero B.0 traffic.'
+    suggested_owner: dev
+    target: 'B.3'
+    refs: ['app/actions/onboarding-modal.ts:137']
+    suggested_action: 'Fold an atomic jsonb append (or $transaction) into B.3 when the tutorial tabs wire it. Accepted as a B.3 deferral — documented in story Completion Notes.'
+
+resolved_issues:
+  - id: TEST-001
+    severity: medium
+    summary: 'FIRST_RUN_MODAL_V0 emergency-disable flag logic had no automated test.'
+    resolution: 'v0.6 — predicate extracted to lib/onboarding/first-run-modal-flag.ts (isFirstRunModalEnabled, behaviour-preserving); new first-run-modal-flag.test.ts covers the 8-case matrix. Verified behaviour-identical to the original inline expression.'
+  - id: ROBUST-002
+    severity: low
+    summary: 'modal_opened telemetry could double-fire under dev StrictMode.'
+    resolution: 'v0.6 — useRef guard added in first-run-modal.tsx; directly tested under <StrictMode> in first-run-modal.test.tsx.'
+  - id: TEST-002
+    severity: low
+    summary: '<FirstRunModal> shell was untested.'
+    resolution: 'v0.6 — new first-run-modal.test.tsx (4 tests): render, mount telemetry, StrictMode fires-once, open=false renders nothing.'
+
+waiver: { active: false }
+
+quality_score: 95
+expires: '2026-05-28T18:20:00Z'
+
+evidence:
+  tests_reviewed: 46
+  risks_identified: 6
+  risks_resolved: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 22, 23, 27, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41]
+    ac_gaps: [16, 24, 25, 26, 28, 29, 35, 36]
+    notes: >-
+      ac_gaps lists ACs without a dedicated automated test, NOT unmet ACs — all
+      41 are implemented. v0.6 closed the two notable gaps from the initial
+      review: AC 30 (feature flag) now has dedicated matrix coverage via
+      first-run-modal-flag.test.ts, and AC 23 (no-dismiss chrome) is now
+      covered by first-run-modal.test.tsx. Remaining: 16/24/25/26/28/29
+      verified by inspection + tsc (dashboard wiring / telemetry-absence — no
+      precedent tests existed and the story did not require new ones); 35-36
+      are inherently-manual smoke / post-merge verification, explicitly
+      deferred with a documented procedure in Completion Notes.
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Unchanged from v0.5 — all 5 actions withWorkspace-wrapped; auth failure propagates; no PII in payloads; same-origin fetch; RLS enabled on onboarding_events; auto-fire removal reduces attack surface. v0.6 changes (helper extraction, useRef guard, tests) introduce no new surface.'
+  performance:
+    status: PASS
+    notes: 'Unchanged from v0.5 — getOnboardingState is one PK-indexed findUnique run in parallel. The extracted flag helper is a pure string check at module load.'
+  reliability:
+    status: PASS
+    notes: 'Improved — the useRef guard removes dev-StrictMode telemetry double-counting; the flag helper now has regression coverage protecting the production emergency-disable lever.'
+  maintainability:
+    status: PASS
+    notes: 'Improved — the flag predicate is now a tested, documented pure helper instead of an inline expression; the FirstRunModal shell has render coverage.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'When B.1 reworks the path-choice surface: await the server actions + surface error toasts (ROBUST-001), revisit the disabled-card a11y (A11Y-001).'
+      refs: ['components/features/onboarding-modal/path-choice-step.tsx']
+    - action: 'Fold an atomic jsonb append into recordTabViewed when B.3 wires the tutorial tabs (DEBT-001).'
+      refs: ['app/actions/onboarding-modal.ts']
+    - action: 'Run the deferred AC 35 staging smoke + AC 36 post-merge verification per the documented procedure in Completion Notes.'
+      refs: ['docs/stories/25.0.path-choice-gate.md']
