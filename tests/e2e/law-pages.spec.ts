@@ -61,8 +61,24 @@ test.describe('Law Pages', () => {
     await expect(page.locator('text=404')).toBeVisible()
   })
 
-  test('sitemap.xml is accessible and valid', async ({ request }) => {
-    const response = await request.get('/sitemap.xml')
+  test('sitemap-index.xml is accessible and references chunk sitemaps', async ({
+    request,
+  }) => {
+    const response = await request.get('/sitemap-index.xml')
+
+    expect(response.status()).toBe(200)
+    expect(response.headers()['content-type']).toContain('xml')
+
+    const text = await response.text()
+    expect(text).toContain('<?xml')
+    expect(text).toContain('<sitemapindex')
+    // At minimum the first chunk must always exist.
+    expect(text).toMatch(/<loc>[^<]*\/sitemap\/0\.xml<\/loc>/)
+    expect(text).toMatch(/<lastmod>/)
+  })
+
+  test('sitemap/0.xml is accessible and valid', async ({ request }) => {
+    const response = await request.get('/sitemap/0.xml')
 
     expect(response.status()).toBe(200)
     expect(response.headers()['content-type']).toContain('xml')
@@ -70,7 +86,8 @@ test.describe('Law Pages', () => {
     const text = await response.text()
     expect(text).toContain('<?xml')
     expect(text).toContain('<urlset')
-    expect(text).toContain('alla-lagar')
+    // Chunk 0 always includes the static `/lagar` listing page.
+    expect(text).toMatch(/<loc>[^<]*\/lagar<\/loc>/)
   })
 
   test('robots.txt is accessible and valid', async ({ request }) => {
