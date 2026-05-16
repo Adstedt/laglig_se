@@ -18,6 +18,7 @@ import {
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { BetaBadge } from '@/components/shared/beta-badge'
 import {
   Sheet,
   SheetContent,
@@ -142,16 +143,19 @@ export function Navbar() {
     >
       <nav className="container mx-auto flex h-16 items-center justify-between px-4 md:h-[72px]">
         {/* Logo */}
-        <Link href="/" className="ml-2 transition-opacity hover:opacity-90">
-          <Image
-            src="/images/logo-final.png"
-            alt="Laglig.se"
-            width={176}
-            height={67}
-            className="my-2 h-6 md:h-8 w-auto invert dark:invert-0"
-            priority
-          />
-        </Link>
+        <div className="ml-2 flex items-center gap-2">
+          <Link href="/" className="transition-opacity hover:opacity-90">
+            <Image
+              src="/images/logo-final.png"
+              alt="Laglig.se"
+              width={176}
+              height={67}
+              className="my-2 h-6 md:h-8 w-auto invert dark:invert-0"
+              priority
+            />
+          </Link>
+          <BetaBadge />
+        </div>
 
         {/* Desktop Navigation - only render after mount to avoid Radix hydration mismatch */}
         {mounted ? (
@@ -309,7 +313,7 @@ export function Navbar() {
               className="w-[300px] overflow-y-auto sm:w-[340px]"
             >
               <SheetHeader>
-                <SheetTitle className="ml-2">
+                <SheetTitle className="ml-2 flex items-center gap-2">
                   <Image
                     src="/images/logo-final.png"
                     alt="Laglig.se"
@@ -317,6 +321,7 @@ export function Navbar() {
                     height={55}
                     className="my-2 h-6 w-auto invert dark:invert-0"
                   />
+                  <BetaBadge />
                 </SheetTitle>
               </SheetHeader>
               <div className="mt-8 flex flex-col">
