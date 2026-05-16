@@ -35,11 +35,21 @@ export async function POST() {
       )
     }
 
-    // Atomic idempotency guard — conditional update avoids TOCTOU race
+    // Atomic idempotency guard — conditional update avoids TOCTOU race.
+    //
+    // IMPORTANT: SQL three-valued logic gotcha. Using `NOT: { field: value }`
+    // alone translates to `field != value`, which evaluates to NULL (not TRUE)
+    // when `field` is NULL — so NULL-status rows would be excluded from the
+    // match and the route would always return 409 for clean workspaces. We
+    // explicitly include the NULL case via `OR` so workspaces in any state
+    // EXCEPT `'in_progress'` (including NULL) match and get updated.
     const updated = await prisma.workspace.updateMany({
       where: {
         id: workspaceId,
-        NOT: { law_list_generation_status: 'in_progress' },
+        OR: [
+          { law_list_generation_status: null },
+          { law_list_generation_status: { not: 'in_progress' } },
+        ],
       },
       data: {
         law_list_generation_status: 'in_progress',

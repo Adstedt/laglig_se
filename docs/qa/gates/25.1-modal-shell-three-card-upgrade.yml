@@ -1,0 +1,197 @@
+schema: 1
+story: '25.1'
+story_title: 'Modal shell + four-card path-choice upgrade'
+gate: PASS
+status_reason: >-
+  Re-review after Dev v1.2 pass (PO-driven visual polish + Generera UX hardening
+  + a latent Story 16.4 bug fix uncovered during smoke testing). 117 onboarding
+  unit tests pass (up from 114); tsc + eslint clean. Quality score stays at 100.
+  Four AC overrides (1, 3, 5, 8) are PO-authorised during smoke testing and
+  documented in Change Log v1.2 — not regressions.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-16T22:40:00Z'
+
+# Gate history:
+#   2026-05-16T21:05 — CONCERNS (initial deep review post-Dev pass v1.0;
+#     2 medium + 3 low issues open)
+#   2026-05-16T21:14 — PASS (re-review post Dev QA-fix pass v1.1;
+#     all 5 issues resolved)
+#   2026-05-16T22:40 — PASS (re-review post Dev visual-polish + smoke-test
+#     pass v1.2; latent Story 16.4 bug found + fixed in-flight, AC overrides
+#     PO-authorised)
+
+top_issues: []
+
+resolved_issues:
+  # From v1.0 review
+  - id: DARK-001
+    severity: medium
+    summary: >-
+      Local overlay used `bg-foreground/40` which inverted in dark mode
+      (rendered as a light wash instead of a dim).
+    resolution: >-
+      v1.1 — Dev swapped to `bg-black/50 backdrop-blur-sm`, theme-stable.
+  - id: UX-DUPL-001
+    severity: medium
+    summary: >-
+      Mounted <ImportUploadStep> rendered its own h2 directly beneath the
+      modal's <DialogTitle>, producing duplicate semantic headings.
+    resolution: >-
+      v1.1 — Dev added strictly-additive `hideHeader?: boolean` prop to
+      <ImportUploadStep> (default false; Story 24.6 unchanged).
+  - id: ROBUST-001
+    severity: low
+    summary: >-
+      Story 25.0 carry-forward — fire-and-forget pattern on primary-write
+      server actions.
+    resolution: >-
+      v1.1 — Dev extracted `run-dismiss-action.ts` helper. All five
+      primary-write call-sites now await + toast on failure.
+  - id: TEST-COV-001
+    severity: low
+    summary: >-
+      handleImportSuccess (AC 23) verified only by inspection — the
+      ImportUploadStep mock was a no-op stub.
+    resolution: >-
+      v1.1 — Dev extended the mock to expose onSuccess; added happy +
+      failure path tests.
+  - id: A11Y-002
+    severity: low
+    summary: >-
+      "Hoppa över guiden" tertiary button had no focus-visible ring.
+    resolution: >-
+      v1.1 — Dev added comprehensive focus-visible styling (ring + offset
+      + underline + colour shift).
+  - id: A11Y-001
+    severity: low
+    summary: >-
+      Story 25.0 carry-forward — disabled Importera card had aria-disabled
+      but was fully interactive.
+    resolution: >-
+      Closed by B.1 AC 31 — Importera card is now active in B.1.
+  # From v1.2 polish + smoke pass
+  - id: STORY-16-4-NULL-BUG
+    severity: high  # would have been HIGH had it not been fixed in-flight
+    summary: >-
+      Latent bug in `POST /api/workspace/generate-law-list`: SQL three-valued
+      logic in `NOT: { law_list_generation_status: 'in_progress' }` excluded
+      NULL-status rows, causing every Generera click on a clean workspace to
+      return 409 (no actual generation kicked off). Latent until Story 25.0
+      dropped the createWorkspace auto-fire that used to pre-populate
+      status to 'pending'.
+    resolution: >-
+      v1.2 — Dev replaced the WHERE clause with explicit
+      `OR: [{ field: null }, { field: { not: 'in_progress' } }]`.
+      Diagnosis + before/after code documented in Completion Notes
+      "Latent Story 16.4 bug uncovered during smoke testing" subsection.
+      File: `app/api/workspace/generate-law-list/route.ts`.
+
+# PO-authorised AC overrides made during smoke testing (NOT regressions):
+ac_overrides:
+  - ac: 1
+    spec: 'max-w-[720px]'
+    actual: 'max-w-[760px]'
+    rationale: '40px wider for richer body copy + CTA lines'
+  - ac: 3
+    spec: '.shadow-modal warm-tinted utility'
+    actual: 'shadow-lg (shadcn default)'
+    rationale: 'PO direction — align with typical modal styling across the app'
+  - ac: 5
+    spec: 'Safiro brand bar at top of DialogContent'
+    actual: 'Removed'
+    rationale: 'PO direction — "thick black line on top, looks horrible"'
+  - ac: 8
+    spec: 'Mall card retains recommended visual treatment'
+    actual: 'Generera card is now the recommended (dark inverted) card'
+    rationale: 'PO direction — "I want to recommend AI generation instead of template"'
+
+waiver: { active: false }
+
+quality_score: 100
+expires: '2026-05-30T22:40:00Z'
+
+evidence:
+  tests_reviewed: 117
+  tests_new_or_updated_v1_0: 20
+  tests_new_in_v1_1_qa_fix: 6
+  tests_new_in_v1_2_smoke: 3  # welcome header, fallback name, 409-as-success
+  risks_identified: 7  # 5 from v1.0 + 1 latent route bug + 1 carry-forward
+  risks_resolved: 7
+  trace:
+    ac_covered:
+      [
+        2, 4, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+        21, 22, 23, 24, 25, 26, 27, '27a', '27b', '27c', '27d', 28, 29, 30, 31,
+        33, 34, 35, 36, 37, 38, 39, 40, 41
+      ]
+    ac_overrides_pa: [1, 3, 5, 8]
+    ac_gaps: [32, 42, 43]
+    notes: >-
+      ac_covered: all 43 ACs implemented; 4 of them with PO-authorised
+      overrides (see ac_overrides_pa). ac_gaps lists ACs with weaker
+      automated coverage, NOT unmet ACs: AC 32 (focus management, JSDOM-flaky,
+      omitted by design), AC 42 + 43 (manual smoke + post-merge production
+      check, inherently deferred).
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      Unchanged. The route-handler bug fix doesn't touch auth, just the
+      WHERE clause. The new Generera loading state + double-click guard
+      reduces concurrent-request risk.
+  performance:
+    status: PASS
+    notes: >-
+      Improved. Synchronous ref-based double-click guard prevents concurrent
+      fetches. Dashboard prefetch gating unchanged.
+  reliability:
+    status: PASS
+    notes: >-
+      Improved. The 409-as-soft-success treatment + the
+      router.refresh()+push() banner-mount fallback for Next.js 16 +
+      Turbopack dev mean the Generera flow now ends correctly even when
+      a generation is already in flight. ROBUST-001 fixes from v1.1 retained.
+  maintainability:
+    status: PASS
+    notes: >-
+      Strong. The latent Story 16.4 bug + its diagnosis sequence are
+      documented in Completion Notes — prevents future cycles. PO-driven
+      visual overrides are tagged in Change Log v1.2 so future contributors
+      see "explicit decision, not regression."
+
+recommendations:
+  immediate: []
+  future:
+    - action: >-
+        File a Story 16.4 follow-up ticket — add an integration test against
+        `POST /api/workspace/generate-law-list` with initial
+        `law_list_generation_status = NULL` so the SQL three-valued logic
+        regression can't silently re-appear.
+      refs: ['app/api/workspace/generate-law-list/route.ts']
+    - action: >-
+        Optional housekeeping — amend Story 25.1 AC text (1, 3, 5, 8) to
+        reflect the PO-authorised overrides, OR explicitly note that
+        Change Log v1.2 supersedes those AC bullets. (Currently the
+        documented PO decisions live in Change Log v1.2 + the v1.2 review
+        block; the original AC text reads as un-met without that context.)
+      refs: ['docs/stories/25.1.modal-shell-three-card-upgrade.md']
+    - action: >-
+        B.2 / B.4 architectural follow-up — the modal blocks during the full
+        LLM generation duration because the API is synchronous. B.2's
+        in-modal progress strip + B.4's done_generate celebration are the
+        designed solution. Optionally consider a fire-and-forget band-aid
+        before B.2 ships (Dev sketched the trade-offs in Completion Notes).
+      refs:
+        - 'app/api/workspace/generate-law-list/route.ts'
+        - 'docs/architecture/first-run-onboarding-modal.md'
+    - action: >-
+        Nice-to-have (non-blocking): make the `STEG X AV 2` progress
+        indicator conditional — direct-action paths (Generera, Tom lista)
+        have no step 2, so the indicator slightly mis-promises a 2-step
+        flow. Defer until B.2 reshapes this anyway.
+      refs: ['components/features/onboarding-modal/first-run-modal.tsx']
+    - action: >-
+        Run the deferred AC 42 staging smoke + AC 43 post-merge production
+        check per the procedure documented in the story's Completion Notes.
+      refs: ['docs/stories/25.1.modal-shell-three-card-upgrade.md']
