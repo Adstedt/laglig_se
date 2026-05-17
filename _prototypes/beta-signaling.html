@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <title>Beta Signaling — Badge + Banner Treatments</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Brand tokens lifted from app/globals.css (light = marketing site) */
+      :root {
+        --bg: hsl(40 20% 98%);
+        --card: hsl(40 15% 99%);
+        --fg: hsl(30 10% 10%);
+        --muted: hsl(40 12% 94%);
+        --muted-fg: hsl(30 8% 45%);
+        --border: hsl(35 10% 88%);
+        --primary: hsl(30 15% 12%);
+        --primary-fg: hsl(40 20% 98%);
+        --section-sage: hsl(140 25% 95%);
+        --sage: hsl(140 35% 45%);
+        --amber: hsl(35 80% 52%);
+        /* dark = the authenticated app */
+        --d-bg: hsl(0 0% 13%);
+        --d-card: hsl(0 0% 12%);
+        --d-fg: hsl(0 0% 93%);
+        --d-border: hsl(0 0% 22%);
+        --d-muted-fg: hsl(0 0% 60%);
+      }
+      body {
+        background: #ebe8e1;
+        color: var(--fg);
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      }
+      /* Safiro stand-in — the real font loads in-app; here we just bold the wordmark */
+      .wordmark {
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+      .panel {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+      }
+      .panel-dark {
+        background: var(--d-bg);
+        border: 1px solid var(--d-border);
+        border-radius: 14px;
+        color: var(--d-fg);
+      }
+      .label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted-fg);
+        font-weight: 600;
+      }
+      .note {
+        font-size: 13px;
+        color: var(--muted-fg);
+        line-height: 1.6;
+      }
+
+      /* ---- Badge treatments ---- */
+      .beta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        padding: 2px 7px;
+        border-radius: 999px;
+        line-height: 1.4;
+        white-space: nowrap;
+      }
+      /* A — muted/neutral */
+      .beta-neutral {
+        background: var(--muted);
+        color: var(--muted-fg);
+        border: 1px solid var(--border);
+      }
+      /* B — sage accent (brand's "warmer accent" per globals.css) */
+      .beta-sage {
+        background: var(--section-sage);
+        color: var(--sage);
+        border: 1px solid hsl(140 25% 80%);
+      }
+      /* C — solid dark (high contrast, matches --primary) */
+      .beta-solid {
+        background: var(--primary);
+        color: var(--primary-fg);
+      }
+      /* D — outline-dot */
+      .beta-dot {
+        background: transparent;
+        color: var(--muted-fg);
+        border: 1px solid var(--border);
+      }
+      .beta-dot::before {
+        content: '';
+        width: 5px;
+        height: 5px;
+        border-radius: 999px;
+        background: var(--sage);
+      }
+      /* dark-mode pill variants for the in-app nav */
+      .beta-neutral-d {
+        background: hsl(0 0% 20%);
+        color: var(--d-muted-fg);
+        border: 1px solid var(--d-border);
+      }
+      .beta-sage-d {
+        background: hsl(140 30% 16%);
+        color: hsl(140 40% 65%);
+        border: 1px solid hsl(140 25% 28%);
+      }
+
+      .logo-dot {
+        width: 26px;
+        height: 26px;
+        border-radius: 7px;
+        background: var(--primary);
+        color: var(--primary-fg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 15px;
+      }
+      .logo-dot-d {
+        background: var(--d-fg);
+        color: var(--d-bg);
+      }
+
+      /* ---- Banner treatments ---- */
+      .banner {
+        border-radius: 10px;
+        font-size: 13.5px;
+        line-height: 1.5;
+      }
+      .banner-link {
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        font-weight: 600;
+      }
+      .x-btn {
+        opacity: 0.5;
+        cursor: pointer;
+        font-size: 16px;
+        line-height: 1;
+      }
+      .x-btn:hover {
+        opacity: 1;
+      }
+      .rec {
+        background: var(--section-sage);
+        border: 1px solid hsl(140 25% 80%);
+        border-radius: 12px;
+      }
+    </style>
+  </head>
+  <body class="px-8 py-10">
+    <div class="mx-auto max-w-5xl space-y-12">
+      <header>
+        <h1 class="text-xl font-semibold">
+          Beta Signaling — Badge + Banner Treatments
+        </h1>
+        <p class="note mt-1 max-w-2xl">
+          Four-week open beta. Two surfaces: a persistent
+          <strong>badge</strong> next to the wordmark (everywhere) and a
+          dismissible <strong>banner</strong> (marketing pages only — never
+          inside the app). Brand tokens pulled from
+          <code class="rounded bg-black/5 px-1">app/globals.css</code>.
+        </p>
+      </header>
+
+      <!-- ============================================ -->
+      <!-- 1 · BADGE — light (marketing nav)             -->
+      <!-- ============================================ -->
+      <section>
+        <p class="label mb-3">1 · Badge — light nav (marketing site)</p>
+        <div class="panel divide-y" style="border-color: var(--border)">
+          <!-- A -->
+          <div class="flex items-center justify-between px-6 py-4">
+            <div class="flex items-center gap-2.5">
+              <span class="logo-dot">L</span>
+              <span class="wordmark text-lg">Laglig.se</span>
+              <span class="beta-pill beta-neutral">Beta</span>
+            </div>
+            <span class="note">A — Neutral / muted</span>
+          </div>
+          <!-- B -->
+          <div class="flex items-center justify-between px-6 py-4">
+            <div class="flex items-center gap-2.5">
+              <span class="logo-dot">L</span>
+              <span class="wordmark text-lg">Laglig.se</span>
+              <span class="beta-pill beta-sage">Beta</span>
+            </div>
+            <span class="note">B — Sage accent (brand secondary)</span>
+          </div>
+          <!-- C -->
+          <div class="flex items-center justify-between px-6 py-4">
+            <div class="flex items-center gap-2.5">
+              <span class="logo-dot">L</span>
+              <span class="wordmark text-lg">Laglig.se</span>
+              <span class="beta-pill beta-solid">Beta</span>
+            </div>
+            <span class="note">C — Solid dark (high contrast)</span>
+          </div>
+          <!-- D -->
+          <div class="flex items-center justify-between px-6 py-4">
+            <div class="flex items-center gap-2.5">
+              <span class="logo-dot">L</span>
+              <span class="wordmark text-lg">Laglig.se</span>
+              <span class="beta-pill beta-dot">Öppen beta</span>
+            </div>
+            <span class="note">D — Dot + "Öppen beta" (longer copy)</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- 2 · BADGE — dark (in-app nav)                 -->
+      <!-- ============================================ -->
+      <section>
+        <p class="label mb-3">2 · Badge — dark nav (authenticated app)</p>
+        <div class="panel-dark divide-y" style="border-color: var(--d-border)">
+          <div class="flex items-center justify-between px-6 py-4">
+            <div class="flex items-center gap-2.5">
+              <span class="logo-dot logo-dot-d">L</span>
+              <span class="wordmark text-lg">Laglig.se</span>
+              <span class="beta-pill beta-neutral-d">Beta</span>
+            </div>
+            <span class="note" style="color: var(--d-muted-fg)"
+              >A — Neutral (dark)</span
+            >
+          </div>
+          <div class="flex items-center justify-between px-6 py-4">
+            <div class="flex items-center gap-2.5">
+              <span class="logo-dot logo-dot-d">L</span>
+              <span class="wordmark text-lg">Laglig.se</span>
+              <span class="beta-pill beta-sage-d">Beta</span>
+            </div>
+            <span class="note" style="color: var(--d-muted-fg)"
+              >B — Sage accent (dark)</span
+            >
+          </div>
+        </div>
+        <p class="note mt-2">
+          In-app the badge is the <em>only</em> beta signal — no banner. Daily
+          beta users already know; a persistent in-app banner is just friction.
+        </p>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- 3 · BANNER — marketing pages only             -->
+      <!-- ============================================ -->
+      <section>
+        <p class="label mb-3">3 · Banner — marketing pages only (dismissible)</p>
+        <div class="space-y-4">
+          <!-- A — top strip, sage -->
+          <div>
+            <div
+              class="banner flex items-center justify-between gap-4 px-5 py-2.5"
+              style="
+                background: var(--section-sage);
+                border: 1px solid hsl(140 25% 80%);
+              "
+            >
+              <p>
+                <strong>Laglig.se är i öppen beta.</strong>
+                Vissa funktioner är fortfarande under utveckling — din feedback
+                hjälper oss bli bättre.
+                <a href="#" class="banner-link" style="color: var(--sage)"
+                  >Dela feedback →</a
+                >
+              </p>
+              <span class="x-btn">✕</span>
+            </div>
+            <p class="note mt-1.5">
+              A — Thin top strip, sage. Sits above the nav. Quietest option.
+            </p>
+          </div>
+
+          <!-- B — top strip, dark/inverted -->
+          <div>
+            <div
+              class="banner flex items-center justify-between gap-4 px-5 py-2.5"
+              style="background: var(--primary); color: var(--primary-fg)"
+            >
+              <p>
+                <span
+                  class="beta-pill"
+                  style="
+                    background: rgba(255, 255, 255, 0.15);
+                    color: #fff;
+                    margin-right: 6px;
+                  "
+                  >Beta</span
+                >
+                Du är tidigt ute — hjälp oss forma produkten.
+                <a
+                  href="#"
+                  class="banner-link"
+                  style="color: #fff; opacity: 0.95"
+                  >Lämna feedback</a
+                >
+              </p>
+              <span class="x-btn" style="color: #fff">✕</span>
+            </div>
+            <p class="note mt-1.5">
+              B — Dark inverted strip. More presence; frames beta as
+              "you're early" (positive).
+            </p>
+          </div>
+
+          <!-- C — card-style, below hero -->
+          <div>
+            <div
+              class="banner flex items-start gap-3 px-5 py-4"
+              style="
+                background: var(--card);
+                border: 1px solid var(--border);
+              "
+            >
+              <span
+                class="beta-pill beta-sage mt-0.5"
+                style="flex-shrink: 0"
+                >Beta</span
+              >
+              <div class="flex-1">
+                <p class="font-medium">
+                  Vi är i öppen beta i fyra veckor framåt
+                </p>
+                <p class="note mt-0.5">
+                  Du kan använda allt fullt ut. Stöter du på något som skaver,
+                  eller saknar en funktion?
+                  <a href="#" class="banner-link" style="color: var(--sage)"
+                    >Hör av dig →</a
+                  >
+                </p>
+              </div>
+              <span class="x-btn">✕</span>
+            </div>
+            <p class="note mt-1.5">
+              C — Card below the hero, not a strip. Most informative; doesn't
+              compete with the nav. Best for a first-visit explainer.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- 4 · IN CONTEXT                                -->
+      <!-- ============================================ -->
+      <section>
+        <p class="label mb-3">4 · In context — recommended combination</p>
+        <div
+          class="overflow-hidden rounded-xl"
+          style="border: 1px solid var(--border)"
+        >
+          <!-- banner strip -->
+          <div
+            class="flex items-center justify-between gap-4 px-5 py-2.5"
+            style="
+              background: var(--section-sage);
+              border-bottom: 1px solid hsl(140 25% 80%);
+              font-size: 13.5px;
+            "
+          >
+            <p>
+              <strong>Laglig.se är i öppen beta.</strong>
+              Vissa funktioner är under utveckling — din feedback hjälper oss.
+              <a href="#" class="banner-link" style="color: var(--sage)"
+                >Dela feedback →</a
+              >
+            </p>
+            <span class="x-btn">✕</span>
+          </div>
+          <!-- nav -->
+          <div
+            class="flex items-center justify-between px-6 py-3.5"
+            style="background: var(--bg)"
+          >
+            <div class="flex items-center gap-2.5">
+              <span class="logo-dot">L</span>
+              <span class="wordmark text-lg">Laglig.se</span>
+              <span class="beta-pill beta-sage">Beta</span>
+            </div>
+            <div class="flex items-center gap-5 note">
+              <span>Regelverk</span><span>Produkt</span><span>Priser</span>
+              <span
+                class="rounded-md px-3 py-1.5"
+                style="background: var(--primary); color: var(--primary-fg)"
+                >Kom igång</span
+              >
+            </div>
+          </div>
+          <!-- page body stub -->
+          <div
+            class="px-6 py-10 text-center"
+            style="background: var(--bg)"
+          >
+            <p class="text-2xl wordmark">Ha koll på lagarna. Utan krångel.</p>
+            <p class="note mt-1">— marketing page content —</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!-- RECOMMENDATION                                -->
+      <!-- ============================================ -->
+      <section class="rec p-6">
+        <p class="label mb-2" style="color: var(--sage)">Recommendation</p>
+        <ul class="space-y-2 text-sm" style="line-height: 1.6">
+          <li>
+            <strong>Badge: B — Sage accent</strong>, copy = <code>Beta</code>.
+            On-brand (uses the secondary sage), visible without shouting,
+            short enough not to crowd the wordmark. Same pill in light + dark.
+          </li>
+          <li>
+            <strong>Banner: A — thin sage top strip</strong>, marketing pages
+            only, dismissible (localStorage-once, same pattern as the cookie
+            banner). Quiet, on-brand, gets out of the way after one read.
+          </li>
+          <li>
+            <strong>In-app: badge only</strong> — no banner. Combination shown
+            in §4.
+          </li>
+          <li>
+            <strong>Both link to feedback</strong> — the badge to a feedback
+            route/mailto, the banner says it explicitly. Beta's whole point is
+            signal collection.
+          </li>
+          <li>
+            <strong>One flag</strong> —
+            <code>NEXT_PUBLIC_BETA_MODE</code> + a
+            <code>BETA_END_DATE</code> constant so it self-expires after the
+            four weeks. Sunset = flip one value.
+          </li>
+        </ul>
+      </section>
+    </div>
+  </body>
+</html>
