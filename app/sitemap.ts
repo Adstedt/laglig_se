@@ -10,17 +10,35 @@ export const revalidate = 86_400
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://laglig.se'
 
-// Map ContentType to URL path
-function getUrlPath(contentType: ContentType, slug: string): string {
+// Map ContentType to URL path. Returns null for content types that have no
+// public route yet — those rows are omitted from the sitemap entirely rather
+// than being mapped to a route that 404s. The `_exhaustive: never` line in the
+// default arm makes a future ContentType addition a TS build error instead of
+// a silent 404 (the bug this function previously had via a string fallthrough).
+function getUrlPath(contentType: ContentType, slug: string): string | null {
   switch (contentType) {
     case ContentType.SFS_LAW:
       return `/lagar/${slug}`
+    case ContentType.SFS_AMENDMENT:
+      return `/lagar/andringar/${slug}`
+    case ContentType.AGENCY_REGULATION:
+      return `/foreskrifter/${slug}`
     case ContentType.EU_REGULATION:
       return `/eu/forordningar/${slug}`
     case ContentType.EU_DIRECTIVE:
       return `/eu/direktiv/${slug}`
-    default:
-      return `/lagar/${slug}`
+    case ContentType.COURT_CASE_AD:
+    case ContentType.COURT_CASE_HD:
+    case ContentType.COURT_CASE_HOVR:
+    case ContentType.COURT_CASE_HFD:
+    case ContentType.COURT_CASE_MOD:
+    case ContentType.COURT_CASE_MIG:
+      return null
+    default: {
+      const _exhaustive: never = contentType
+      void _exhaustive
+      return null
+    }
   }
 }
 
@@ -64,12 +82,18 @@ export default async function sitemap(props: {
     take: SITEMAP_CHUNK_SIZE,
   })
 
-  const documentUrls: MetadataRoute.Sitemap = documents.map((doc) => ({
-    url: `${baseUrl}${getUrlPath(doc.content_type, doc.slug)}`,
-    lastModified: doc.updated_at,
-    changeFrequency: 'weekly' as const,
-    priority: getPriority(doc.content_type),
-  }))
+  const documentUrls: MetadataRoute.Sitemap = documents.flatMap((doc) => {
+    const path = getUrlPath(doc.content_type, doc.slug)
+    if (path === null) return []
+    return [
+      {
+        url: `${baseUrl}${path}`,
+        lastModified: doc.updated_at,
+        changeFrequency: 'weekly' as const,
+        priority: getPriority(doc.content_type),
+      },
+    ]
+  })
 
   // Static + legal-registry pages only ride in the first chunk so they
   // never get duplicated across child sitemaps.
