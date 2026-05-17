@@ -37,6 +37,7 @@ export async function GET() {
         law_list_generation_status: true,
         law_list_generation_error: true,
         law_list_generation_progress: true,
+        law_list_generation_started_at: true,
         updated_at: true,
       },
     })
@@ -128,6 +129,10 @@ export async function GET() {
       itemCount,
       groups,
       error: workspace.law_list_generation_error ?? null,
+      // Story 25.3 polish: ISO string for client-side asymptotic % computation
+      // in <ProgressStrip>. Null when generation hasn't started yet.
+      startedAt:
+        workspace.law_list_generation_started_at?.toISOString() ?? null,
     })
   } catch {
     return NextResponse.json(

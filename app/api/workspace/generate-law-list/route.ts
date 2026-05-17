@@ -67,6 +67,10 @@ export async function POST() {
       data: {
         law_list_generation_status: 'in_progress',
         law_list_generation_error: null,
+        // Story 25.3 polish: capture the moment generation started so the
+        // modal's <ProgressStrip> can compute an asymptotic % progress.
+        // Overwritten on every successful kickoff (re-runs start fresh).
+        law_list_generation_started_at: new Date(),
       },
     })
 

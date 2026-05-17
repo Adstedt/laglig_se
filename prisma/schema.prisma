@@ -175,9 +175,13 @@ model Workspace {
   // Story 25.0: dropped @default("pending") — with the wizard auto-fire removed,
   // new workspaces must land at NULL so getOnboardingState's null-check opens the
   // first-run modal. Existing rows keep whatever value they already have.
-  law_list_generation_status   String?
-  law_list_generation_error    String?
-  law_list_generation_progress Json?
+  law_list_generation_status     String?
+  law_list_generation_error      String?
+  law_list_generation_progress   Json?
+  // Story 25.3 polish: set on every successful atomic claim in
+  // generate-law-list/route.ts. Used by <ProgressStrip> to compute an
+  // asymptotic % progress, and by B.4's done-state UI for "Klart på Xm Ys".
+  law_list_generation_started_at DateTime?
 
   // Story 25.0 (Epic 25): First-run onboarding modal
   first_run_dismissed_at    DateTime?
