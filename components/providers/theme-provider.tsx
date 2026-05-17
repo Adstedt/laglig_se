@@ -20,6 +20,7 @@ const PUBLIC_ROUTE_PREFIXES = [
   '/personuppgiftsbitradesavtal',
   '/rattskallor',
   '/reset-password',
+  '/select-workspace',
   '/signup',
   '/sok',
   '/underbitraden',
