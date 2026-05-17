@@ -10,6 +10,7 @@
  *  - <ProgressStrip> is mounted inside the step body (AC 14)
  */
 
+import { StrictMode } from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 
@@ -21,6 +22,19 @@ vi.mock('@/app/actions/onboarding-modal', () => ({
 // Stub <ProgressStrip> so this test does not need to wire up SWR.
 vi.mock('@/components/features/onboarding-modal/progress-strip', () => ({
   ProgressStrip: () => <div data-testid="progress-strip-stub" />,
+}))
+
+// Story 25.3 (B.3): stub the tab content components so this shell-level
+// test stays focused on tab-switching behaviour, not on each tab's content.
+vi.mock('@/components/features/onboarding-modal/tutorial-tabs', () => ({
+  TUTORIAL_TAB_COMPONENTS: {
+    laglista: () => <div data-testid="tab-stub-laglista" />,
+    kravpunkter: () => <div data-testid="tab-stub-kravpunkter" />,
+    uppgifter: () => <div data-testid="tab-stub-uppgifter" />,
+    kontroller: () => <div data-testid="tab-stub-kontroller" />,
+    lagandringar: () => <div data-testid="tab-stub-lagandringar" />,
+    'ai-agent': () => <div data-testid="tab-stub-ai-agent" />,
+  },
 }))
 
 import { TutorialStep } from '@/components/features/onboarding-modal/tutorial-step'
@@ -105,6 +119,42 @@ describe('<TutorialStep>', () => {
   it('<ProgressStrip> renders inside the step body', () => {
     render(<TutorialStep onMinimise={vi.fn()} />)
     expect(screen.getByTestId('progress-strip-stub')).toBeInTheDocument()
+  })
+
+  // Story 25.3 (B.3): tab body renders the active tab's component from
+  // TUTORIAL_TAB_COMPONENTS — replaces the B.2 "Innehåll kommer snart"
+  // placeholder.
+  it('renders the active tab content component (laglista by default)', () => {
+    render(<TutorialStep onMinimise={vi.fn()} />)
+    expect(screen.getByTestId('tab-stub-laglista')).toBeInTheDocument()
+    expect(screen.queryByTestId('tab-stub-uppgifter')).not.toBeInTheDocument()
+  })
+
+  it('swaps the rendered tab component when the active tab changes', () => {
+    render(<TutorialStep onMinimise={vi.fn()} />)
+    expect(screen.getByTestId('tab-stub-laglista')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('tab', { name: /Uppgifter/ }))
+
+    expect(screen.getByTestId('tab-stub-uppgifter')).toBeInTheDocument()
+    expect(screen.queryByTestId('tab-stub-laglista')).not.toBeInTheDocument()
+  })
+
+  // QA recommendation (post-25.3 review): lock in the no-double-fire invariant
+  // for the active-tab swap under StrictMode. StrictMode double-invokes mount
+  // effects in dev — the initial-mount tab_viewed useRef guard from Story 25.2
+  // protects against duplicate fires; this test ensures that guard still works
+  // after Story 25.3's swap to dynamic component rendering.
+  it('fires tab_viewed exactly once under StrictMode (no double-fire from active-tab swap)', () => {
+    render(
+      <StrictMode>
+        <TutorialStep onMinimise={vi.fn()} />
+      </StrictMode>
+    )
+    // Initial mount fires once for the default tab (laglista). StrictMode's
+    // double-invoke must NOT cause a second fire.
+    expect(mockRecordTabViewed).toHaveBeenCalledTimes(1)
+    expect(mockRecordTabViewed).toHaveBeenCalledWith('laglista')
   })
 
   // QA-A11Y-001: ARIA tabs roving tabindex requires arrow-key handling so

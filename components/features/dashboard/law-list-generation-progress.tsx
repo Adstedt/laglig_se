@@ -37,6 +37,10 @@ interface GenerationStatusResponse {
   itemCount?: number
   groups?: GroupSummary[]
   error: string | null
+  // Story 25.3 polish: type-shape sync only — the banner doesn't render
+  // startedAt, but the API returns it. Keeping types in sync prevents
+  // future Dev from accidentally accessing a "phantom" field.
+  startedAt?: string | null
 }
 
 const fetcher = (url: string) =>

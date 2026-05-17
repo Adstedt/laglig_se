@@ -1,0 +1,116 @@
+schema: 1
+story: '25.3'
+story_title: 'Six tutorial tab content panels (B.3)'
+gate: PASS
+status_reason: 'Re-validated after Dev applied 2 of 5 optional future recommendations via apply-qa-fixes: (1) DRIFT-NOTES.md relocated from components/ to docs/architecture/onboarding-modal/tutorial-tabs-drift.md with JSDoc references updated in 2 tab files; (2) StrictMode test added for the active-tab swap, locks in the no-double-fire invariant. Test count rose 89 → 90 (4,723 → 4,724 total). All original v1 strengths hold: 33 ACs implemented, lookup-map architecture clean, Task 0''s CSS variables retroactively fix Story 25.2''s Ny-chip. tsc + eslint clean, zero regressions. Skipped recommendations (3-5) are correctly out of Dev scope (future stories + product judgment). Two of the four original low-severity observations resolved; two remain (gap-8 deviation, decorative success-fg icon color) — both require product/design judgment beyond Dev scope.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-17T19:53:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 98
+expires: '2026-05-31T19:53:00Z'
+
+evidence:
+  tests_reviewed: 90
+  risks_identified: 2
+  trace:
+    ac_covered:
+      [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        '11 (partial — gap-8 vs gap-10)',
+        12,
+        12.5,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+      ]
+    ac_gaps: []
+    ac_documented_but_no_code: [31, 32]
+  files_reviewed:
+    - 'components/features/onboarding-modal/tutorial-tabs/tab-laglista.tsx (218 lines)'
+    - 'components/features/onboarding-modal/tutorial-tabs/tab-kravpunkter.tsx (218 lines)'
+    - 'components/features/onboarding-modal/tutorial-tabs/tab-uppgifter.tsx (186 lines)'
+    - 'components/features/onboarding-modal/tutorial-tabs/tab-kontroller.tsx (194 lines)'
+    - 'components/features/onboarding-modal/tutorial-tabs/tab-lagandringar.tsx (159 lines)'
+    - 'components/features/onboarding-modal/tutorial-tabs/tab-ai-agent.tsx (199 lines)'
+    - 'components/features/onboarding-modal/tutorial-tabs/index.ts (36 lines)'
+    - 'components/features/onboarding-modal/tutorial-tabs/DRIFT-NOTES.md'
+    - 'components/features/onboarding-modal/tutorial-step.tsx (modified)'
+    - 'app/globals.css (modified)'
+    - '7 test files'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Static content; no user input flows; no server actions; no env vars. The decorative <button type="button"> elements are non-functional and have no handlers — zero attack surface beyond static JSX rendering.'
+  performance:
+    status: PASS
+    notes: 'No network calls. Six small components (~150-220 lines each) loaded as part of the modal bundle. Tab body re-mounts on activeTab change (different component instance) — cheap given the static JSX. No useEffect, no useState, no hooks in any of the 6 tab components.'
+  reliability:
+    status: PASS
+    notes: 'Zero runtime branches inside the tab components (pure-presentation). Lookup map runtime fallback covered by the barrel contract test (catches accidental undefined exports). No async, no error states. Per accept-risk note in Dev Notes: no ErrorBoundary wrap — accepted because the panels are static JSX with zero logic.'
+  maintainability:
+    status: PASS
+    notes: 'TypeScript strict throughout (no any). Lookup map keyed by the exported TutorialTabId union — adding a 7th tab (B.5 feedback) requires a 1-line union extension + 1-line map entry + 1 new file. Tab files are co-located under tutorial-tabs/ per arch §6.1. Per-tab test files mirror the source structure. DRIFT-NOTES.md captures the grounding decisions for future re-grounding stories.'
+
+risk_summary:
+  totals: { critical: 0, high: 0, medium: 0, low: 2 }
+  recommendations:
+    must_fix: []
+    monitor:
+      - 'AC 11 deviation: Dev used gap-8 instead of the AC-specified gap-10 inside the 2-col panel grid. Acceptable visually (modal max-w-[760px] context) but a documented unagreed deviation from spec. Requires product/design judgment to resolve.'
+      - 'Decorative icon color uses --tone-success-soft-fg in benefit-list icons across all 6 tabs. Semantically loose (the icons are not status-success indicators) but visually correct.'
+
+history:
+  - at: '2026-05-17T18:38:00Z'
+    gate: PASS
+    note: 'Initial review. 33 ACs implemented, 17 new tests passing, full suite 4,723 tests pass with 0 regressions. tsc + eslint clean. Hybrid-grounding approach correctly executed via Task 0.5 audit with documented per-tab decisions. Task 0 retroactively fixes Story 25.2''s Ny-chip rendering as a side benefit. Only observations are 4 low-severity polish notes — no Should-Fix items, no Must-Fix items.'
+  - at: '2026-05-17T19:53:00Z'
+    gate: PASS
+    note: 'Re-validation after Dev''s apply-qa-fixes pass. Verified: (1) DRIFT-NOTES.md relocated to docs/architecture/onboarding-modal/tutorial-tabs-drift.md (75 lines preserved); (2) JSDoc references in tab-laglista.tsx + tab-ai-agent.tsx updated to the new path; (3) StrictMode test added in tutorial-step.test.tsx:148 with comment explaining the no-double-fire invariant. 90 onboarding-modal tests pass (was 89), 4,724 total (was 4,723). tsc + eslint clean. No regressions. Quality score 95 → 98 (2 of 4 v1 monitor items resolved). Skipped fixes (3-5) correctly out of Dev scope. Conservative, well-targeted fix pass.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'When B.4 lands the done-state UI, the modal will need to handle the case where generation completes while the user is on the tutorial step. The current state is per AC 13: strip silently disappears. B.4 will likely add a new ''done_generate'' value to the Step union and auto-transition.'
+      refs:
+        [
+          'components/features/onboarding-modal/tutorial-step.tsx',
+          'components/features/onboarding-modal/first-run-modal.tsx',
+        ]
+    - action: 'When B.5 lands the feedback tab, extend TUTORIAL_TAB_COMPONENTS with the ''feedback'' key + add ''feedback'' to the TutorialTabId union in tutorial-step.tsx. The lookup-map architecture from this story makes the extension a 3-file change.'
+      refs:
+        [
+          'components/features/onboarding-modal/tutorial-step.tsx',
+          'components/features/onboarding-modal/tutorial-tabs/index.ts',
+        ]
+    - action: 'AC 11 deviation: Dev shipped gap-8 instead of the spec gap-10. If product reviews the visual and wants the larger gap, raising tutorial-step.tsx tab body min-h could fit it. Document the choice if accepted.'
+      refs: ['components/features/onboarding-modal/tutorial-tabs/*.tsx']

@@ -56,6 +56,16 @@
     --section-warm: 45 30% 96%;
     --section-sage: 140 25% 95%;
     --section-cream: 35 40% 97%;
+    /* Tone tokens — soft (subtle bg + readable fg) for chips/pills/diff blocks.
+       Story 25.3: ported from _prototypes/onboarding-tutorial-modal.html:52-61. */
+    --tone-success-soft-bg: 152 76% 90%;
+    --tone-success-soft-fg: 161 94% 24%;
+    --tone-warning-soft-bg: 48 96% 89%;
+    --tone-warning-soft-fg: 27 91% 36%;
+    --tone-danger-soft-bg: 350 100% 95%;
+    --tone-danger-soft-fg: 348 83% 41%;
+    --tone-info-soft-bg: 214 95% 92%;
+    --tone-info-soft-fg: 224 76% 48%;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -93,6 +103,15 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    /* Tone tokens — dark mode (desaturated bg, bright fg) */
+    --tone-success-soft-bg: 152 30% 18%;
+    --tone-success-soft-fg: 152 70% 70%;
+    --tone-warning-soft-bg: 27 30% 18%;
+    --tone-warning-soft-fg: 38 80% 70%;
+    --tone-danger-soft-bg: 348 30% 20%;
+    --tone-danger-soft-fg: 350 80% 75%;
+    --tone-info-soft-bg: 224 30% 22%;
+    --tone-info-soft-fg: 214 90% 75%;
     --sidebar-background: 0 0% 9%;
     --sidebar-foreground: 0 0% 87%;
     --sidebar-primary: 0 0% 93%;
@@ -122,6 +141,38 @@ html {
 @layer utilities {
   .font-safiro {
     font-family: 'Safiro', system-ui, sans-serif !important;
+  }
+
+  /* Story 25.3: scroll-shadow technique (Lea Verou pattern). Subtle shadow
+     appears at the top of a scrollable region ONLY when there's content
+     scrolled above the viewport; bottom shadow ONLY when there's content
+     below. Pure CSS — `background-attachment: local` makes the cover masks
+     scroll with content (so they only hide the shadow at the edges when
+     you're actually at that edge), while `scroll` keeps the shadow itself
+     fixed to the scroll container. */
+  .scroll-shadows {
+    background:
+      /* Cover masks — same color as modal background, hide shadow at the
+         extremes when you've scrolled to that end. */
+      linear-gradient(hsl(var(--background)) 33%, transparent) 0 0 / 100% 32px
+        no-repeat,
+      linear-gradient(transparent, hsl(var(--background)) 66%) 0 100% / 100%
+        32px no-repeat,
+      /* Actual shadows — radial gradients pinned to top and bottom. */
+        radial-gradient(
+          farthest-side at 50% 0,
+          rgba(0, 0, 0, 0.12),
+          rgba(0, 0, 0, 0)
+        )
+        0 0 / 100% 10px no-repeat,
+      radial-gradient(
+          farthest-side at 50% 100%,
+          rgba(0, 0, 0, 0.12),
+          rgba(0, 0, 0, 0)
+        )
+        0 100% / 100% 10px no-repeat;
+    background-color: hsl(var(--background));
+    background-attachment: local, local, scroll, scroll;
   }
 
   /* Story 25.2: Onboarding modal progress strip — active step dot pulse + indeterminate shimmer.

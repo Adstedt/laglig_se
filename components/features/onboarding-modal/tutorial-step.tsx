@@ -16,7 +16,7 @@
  */
 
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
-import { Minimize2 } from 'lucide-react'
+import { ChevronDown, Minimize2 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils'
 import { recordTabViewed } from '@/app/actions/onboarding-modal'
 
 import { ProgressStrip, type GenerationStatus } from './progress-strip'
+import { TUTORIAL_TAB_COMPONENTS } from './tutorial-tabs'
 
 export type TutorialTabId =
   | 'laglista'
@@ -112,8 +113,47 @@ export function TutorialStep({ initialStatus, onMinimise }: TutorialStepProps) {
 
   const activeIndex = TABS.findIndex((t) => t.id === activeTab)
 
+  const ActiveTabComponent = TUTORIAL_TAB_COMPONENTS[activeTab]
+
+  // Scroll-to-bottom affordance: a floating chevron button that appears in
+  // the bottom-right of the tab body when there's more content below the
+  // visible area. Mirrors the ChatGPT / Slack / Claude long-conversation
+  // pattern — explicit signal that scrolling is available + one-click jump.
+  const scrollRef = useRef<HTMLDivElement | null>(null)
+  const [showScrollHint, setShowScrollHint] = useState(false)
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+    const check = () => {
+      const overflows = el.scrollHeight > el.clientHeight + 4 // 4px tolerance
+      const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 8
+      setShowScrollHint(overflows && !atBottom)
+    }
+    check()
+    el.addEventListener('scroll', check, { passive: true })
+    // Re-check on resize (modal may grow/shrink with viewport)
+    const ro = new ResizeObserver(check)
+    ro.observe(el)
+    return () => {
+      el.removeEventListener('scroll', check)
+      ro.disconnect()
+    }
+  }, [activeTab])
+
+  function scrollDown() {
+    const el = scrollRef.current
+    if (!el) return
+    // Smooth scroll by ~80% of visible height — lets user iteratively page
+    // through long panels without jumping straight to the bottom.
+    el.scrollBy({ top: el.clientHeight * 0.8, behavior: 'smooth' })
+  }
+
   return (
-    <div className="flex flex-col gap-5">
+    // flex-1 + min-h-0 lets the parent's max-h cap propagate so the tab body
+    // (the only child with flex-1 + overflow-y-auto below) can be the modal's
+    // scroll boundary. Chrome above + Minimera below stay pinned.
+    <div className="flex min-h-0 flex-1 flex-col gap-5">
       <ProgressStrip initialStatus={initialStatus} />
 
       {/* Tab bar — horizontal scroll on narrow viewports. Underline on active
@@ -176,14 +216,45 @@ export function TutorialStep({ initialStatus, onMinimise }: TutorialStepProps) {
         </span>
       </div>
 
-      {/* Tab body — placeholder in B.2; B.3 fills with real per-tab content. */}
-      <div
-        id="tutorial-tabpanel"
-        role="tabpanel"
-        aria-labelledby={`tutorial-tab-${activeTab}`}
-        className="min-h-[280px] px-1 pt-2 pb-2"
-      >
-        <p className="text-sm text-muted-foreground">Innehåll kommer snart</p>
+      {/* Tab body region — wrapper is relative so the floating scroll-down
+          button can absolute-position bottom-right. Header above (chrome +
+          DialogHeader + ProgressStrip + tab bar) and footer below (Separator
+          + Minimera) stay pinned via the parent flex layout. */}
+      <div className="relative min-h-0 flex-1">
+        <div
+          // key={activeTab}: remounting the panel on tab change resets the
+          // scroll position to top. Without this, scrolling deep into one
+          // tab and switching to another would land you mid-content.
+          key={activeTab}
+          ref={scrollRef}
+          id="tutorial-tabpanel"
+          role="tabpanel"
+          aria-labelledby={`tutorial-tab-${activeTab}`}
+          className="h-full overflow-y-auto px-1 pt-2 pb-4"
+        >
+          <ActiveTabComponent />
+        </div>
+
+        {/* Floating scroll-down chevron — visible only when content extends
+            below the viewport. Click smooth-scrolls by ~80% of visible
+            height. Mirrors ChatGPT / Slack / Claude long-conversation
+            patterns. */}
+        {showScrollHint && (
+          <button
+            type="button"
+            onClick={scrollDown}
+            aria-label="Bläddra ner för mer innehåll"
+            className={cn(
+              'absolute bottom-3 right-4 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full',
+              'border border-border bg-background text-foreground shadow-md',
+              'transition-all hover:bg-accent hover:shadow-lg',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+              'animate-in fade-in-50 duration-200'
+            )}
+          >
+            <ChevronDown className="h-4 w-4" aria-hidden="true" />
+          </button>
+        )}
       </div>
 
       <Separator />
