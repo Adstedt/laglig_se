@@ -37,15 +37,32 @@ vi.mock('@/components/features/onboarding-modal/path-choice-step', () => ({
     onClose,
     onPickTemplate,
     onPickImport,
+    onPickGenerate,
   }: {
     onClose: () => void
     onPickTemplate: () => void
     onPickImport: () => void
+    onPickGenerate: () => void
   }) => (
     <div data-testid="path-choice-step">
       <button onClick={onPickTemplate}>stub-pick-template</button>
       <button onClick={onPickImport}>stub-pick-import</button>
+      <button onClick={onPickGenerate}>stub-pick-generate</button>
       <button onClick={onClose}>stub-close</button>
+    </div>
+  ),
+}))
+
+// Story 25.2: stub TutorialStep so the shell test stays focused on the
+// shell behaviour (header copy + Minimera handoff).
+vi.mock('@/components/features/onboarding-modal/tutorial-step', () => ({
+  TutorialStep: ({
+    onMinimise,
+  }: {
+    onMinimise: () => void | Promise<void>
+  }) => (
+    <div data-testid="tutorial-step">
+      <button onClick={() => void onMinimise()}>stub-minimise</button>
     </div>
   ),
 }))
@@ -250,6 +267,78 @@ describe('<FirstRunModal>', () => {
         '/laglistor/skapa/import-test-123/granska'
       )
     })
+  })
+
+  // ------------------------------------------------------------------
+  // Story 25.2 (B.2): tutorial-step transition coverage
+  // ------------------------------------------------------------------
+
+  it('B.2: clicking Generera-success transitions header copy to "Vi skapar er personliga laglista"', () => {
+    render(<FirstRunModal open={true} userFirstName="Alexander" />)
+    expect(screen.getByText('Välkommen, Alexander')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('stub-pick-generate'))
+
+    expect(
+      screen.getByText('Vi skapar er personliga laglista')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/Du kan stänga rutan — vi fortsätter i bakgrunden/)
+    ).toBeInTheDocument()
+  })
+
+  it('B.2: tutorial step shows the "STEG 2 AV 2" progress indicator', () => {
+    render(<FirstRunModal open={true} />)
+    fireEvent.click(screen.getByText('stub-pick-generate'))
+
+    expect(screen.getByText(/KOM IGÅNG · STEG 2 AV 2/)).toBeInTheDocument()
+  })
+
+  it('B.2: path-choice footer (Hoppa över guiden) is NOT rendered on the tutorial step', () => {
+    render(<FirstRunModal open={true} />)
+    fireEvent.click(screen.getByText('stub-pick-generate'))
+
+    expect(
+      screen.queryByRole('button', { name: /Hoppa över guiden/ })
+    ).not.toBeInTheDocument()
+  })
+
+  it('B.2: tutorial step mounts <TutorialStep> and Minimera handoff calls minimise + close + route', async () => {
+    render(<FirstRunModal open={true} />)
+    fireEvent.click(screen.getByText('stub-pick-generate'))
+
+    expect(screen.getByTestId('tutorial-step')).toBeInTheDocument()
+    expect(screen.queryByTestId('path-choice-step')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('stub-minimise'))
+
+    await waitFor(() => {
+      expect(mockMinimise).toHaveBeenCalled()
+    })
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/dashboard')
+    })
+  })
+
+  it('B.2: Minimera from tutorial — if minimise fails, modal stays on the tutorial step (no route)', async () => {
+    const { toast } = await import('sonner')
+    mockMinimise.mockResolvedValueOnce({
+      ok: false,
+      error: 'Kunde inte stänga guiden.',
+    })
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+    render(<FirstRunModal open={true} />)
+    fireEvent.click(screen.getByText('stub-pick-generate'))
+    fireEvent.click(screen.getByText('stub-minimise'))
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Något gick fel. Försök igen.')
+    })
+    expect(mockPush).not.toHaveBeenCalled()
+    expect(screen.getByTestId('tutorial-step')).toBeInTheDocument()
+
+    errSpy.mockRestore()
   })
 
   it('onSuccess from <ImportUploadStep>: if minimise fails, stays open and does NOT route (QA ROBUST-001)', async () => {

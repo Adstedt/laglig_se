@@ -1,0 +1,123 @@
+schema: 1
+story: '25.2'
+story_title: 'Progress strip + tab framework (B.2 shell)'
+gate: PASS
+status_reason: 'All 37 ACs implemented and traced to tests. One medium-severity a11y gap (keyboard nav via roving tabindex without arrow keys) was found during QA review and refactored — full ARIA tabs keyboard pattern now landed. Post-review iterative polish (Change Log v0.3) added: route fix unblocking the tutorial-while-waiting UX, strip refactor to two-line agent activity stream, thinking-phrase ticker, and three dev scripts. Gate remains PASS; all polish strengthens the agentic UX. Zero regressions across 4695 unit tests.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-17T16:00:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 100
+expires: '2026-05-31T15:08:00Z'
+
+evidence:
+  tests_reviewed: 69
+  risks_identified: 4
+  trace:
+    ac_covered:
+      [
+        1,
+        2,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+      ]
+    ac_gaps: []
+    ac_documented_but_no_code: [3, 36, 37]
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No new attack surface. Server actions (recordTabViewed, minimiseFirstRunModal) reuse existing `withWorkspace` context guard from Story 25.0. No raw user input flowing into Prisma. Tab IDs are a closed const enum, not user-controlled.'
+  performance:
+    status: PASS
+    notes: 'SWR cache deduplicates with the dashboard banner (same key `/api/workspace/generation-status`) — modal-to-banner handoff after Minimera is instant. Polling stops on completed/failed (refreshInterval returns 0). No N+1 queries; no new DB writes per render.'
+  reliability:
+    status: PASS
+    notes: 'StrictMode-safe via `useRef(false)` guard on initial-mount `tab_viewed` fire (mirrors Story 25.1 `openEventFired` pattern). Minimera failure path keeps the modal on the tutorial step (verified by new test). Generera 200 + 409 both correctly transition to tutorial; failure path stays on path-choice. No silent error swallowing.'
+  maintainability:
+    status: PASS
+    notes: 'TypeScript strict (no `any`, exactOptionalPropertyTypes-safe optional props). Kebab-case file naming matches project structure. Shared `GenerationStatus` type exported from progress-strip.tsx for downstream import. `DEFAULT_TAB_ID` const removes prior magic-string coupling. Local `GenerationStatusResponse` type duplicates the banner shape — deliberate decoupling per architecture §4.'
+
+risk_summary:
+  totals: { critical: 0, high: 0, medium: 0, low: 4 }
+  recommendations:
+    must_fix: []
+    monitor:
+      - 'Keep an eye on the SWR cache-warming claim in staging. If banner shows a loading flash after Minimera, the SWR key has drifted between the two surfaces.'
+      - 'Modal_dismissed.from_state stays hardcoded to "path_choice" even when fired from the tutorial step. Funnel analysts should know until B.6 fixes the server action signature.'
+
+history:
+  - at: '2026-05-17T14:55:00Z'
+    gate: CONCERNS
+    note: 'Initial review found A11Y-001 (tabIndex={-1} on inactive tabs blocks keyboard Tab navigation, violating AC 26).'
+  - at: '2026-05-17T15:08:00Z'
+    gate: PASS
+    note: 'QA active refactor: added ArrowLeft/ArrowRight/Home/End handlers, ref array for focus delegation, 4 new keyboard-navigation tests, pulse-dot assertion, and a DEFAULT_TAB_ID const. All 4695 unit tests pass.'
+  - at: '2026-05-17T16:00:00Z'
+    gate: PASS
+    note: 'Post-review iterative polish based on staging test against live Almåsa workspace (Change Log v0.3). Five refinements: (1) Route fix — generate-law-list/route.ts now uses next/server after() to return 202 immediately so the modal advances within ~200ms instead of hanging on the 2-5 min LLM job. (2) Strip dropped duplicate title+subhead. (3) Strip dropped misleading "Steg N av Y" counter in favour of truthful "N steg klara". (4) Strip restructured to two-line agent activity stream (focal: bouncing dots + active/thinking phrase + counter; context: muted ✓ last done step) — replaces AC 9 chevron-trail spec that wrapped on long Swedish labels. (5) Thinking-phrase ticker rotating 5 Swedish phrases on 5s cadence with text-shimmer + fade-on-rotation — agentic feel modelled on Vercel AI SDK / Claude / Cursor. Test count: 21 strip + 9 tutorial (up from 10 + 6). Three dev scripts shipped under scripts/ (reset, force-in-progress, surgical wipe). Gate still PASS — no functional regressions, all polish strengthens the agentic UX.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add a StrictMode test for TutorialStep mirroring first-run-modal.test.tsx:113-123, so the initial-mount tab_viewed guard is regression-protected end-to-end.'
+      refs:
+        ['tests/unit/components/features/onboarding-modal/tutorial-step.test.tsx']
+    - action: 'When B.6 lands the FAB + tutorial-only mode, extend minimiseFirstRunModal to accept a from_state param so funnel reports can distinguish path-choice vs tutorial dismisses.'
+      refs:
+        [
+          'app/actions/onboarding-modal.ts:60-77',
+          'components/features/onboarding-modal/first-run-modal.tsx:161-170',
+        ]
+    - action: 'Skill should seed all expected steps upfront with status=pending before starting work, so the strip can show a meaningful "Steg N av Y" counter (currently shows "N steg klara" only because the skill writes done as it goes, never seeding total). This is a Story 16.4 follow-up — when fixed, the strip''s counter would gain the denominator.'
+      refs:
+        [
+          'lib/agent/skills/generate-law-list.ts:200-244',
+          'components/features/onboarding-modal/progress-strip.tsx:82-100',
+        ]
+    - action: 'Skill should also write status=active before starting each step (currently only writes status=done after each step completes). This would let the strip show the prototype''s pulse-dot pill on the current step instead of always falling back to the rotating thinking ticker.'
+      refs: ['lib/agent/skills/generate-law-list.ts:243']
+    - action: 'B.4 — done-state for tutorial modal: when generation completes while the user is on the tutorial step, replace the silently-disappearing strip with an explicit celebration UI (new done_generate sub-step + "Visa laglistan" CTA). Already scoped as B.4 per AC 13.'
+      refs: ['components/features/onboarding-modal/progress-strip.tsx:60-67']
+    - action: 'When the generation API gains an "expected total rows" field, render "N / M rader" in the strip (currently shows "N rader" only per AC 12). Same Story 16.4 follow-up.'
+      refs:
+        ['components/features/onboarding-modal/progress-strip.tsx:121-129']
+    - action: 'Consider extracting the SWR fetcher + GenerationStatusResponse type to a shared lib (lib/queries/generation-status.ts) so the banner + strip share the type definition. Currently duplicated — intentional per arch §4 but a low-cost refactor.'
+      refs:
+        [
+          'components/features/dashboard/law-list-generation-progress.tsx:34-43',
+          'components/features/onboarding-modal/progress-strip.tsx:32-45',
+        ]
