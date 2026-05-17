@@ -3,24 +3,16 @@
 /**
  * Story 25.2 (Epic 25, B.2): Onboarding modal — progress strip.
  *
- * Compact "latest-step" pattern: shimmer bar (always animating while in
- * progress) + a single-line row with the most recent step's label and a
- * "N steg klara" counter.
+ * Two-row layout: determinate %-filled bar with the percent + rader counter
+ * inline on the right, and a context line below showing the most recent done
+ * step's label (when one exists).
  *
- * Why not the prototype's full chevron-separated trail (AC 9): the LLM skill
- * writes long Swedish step labels (e.g. "Söker branschspecifika regler") and
- * the trail wraps onto multiple lines after 3-4 steps, looking cluttered.
- * The single-line pattern mirrors the dashboard banner
- * (<LawListGenerationProgress>) and never wraps.
- *
- * Why no "Steg N av Y" denominator: the skill in
- * `lib/agent/skills/generate-law-list.ts` writes each step's status=done as
- * it completes — it never seeds the total expected steps upfront. So
- * `progress.length` always equals `doneCount`, making "Steg N av Y" always
- * read "Steg N av N" (misleading). Showing just "N steg klara" tells the
- * truth: how many steps the skill has reported as complete so far.
- * Fix-upstream: seed all expected steps upfront in the skill (Story 16.4
- * follow-up).
+ * Post-25.4 polish (2026-05-17): dropped the "Tänker / Söker / Analyserar"
+ * thinking-phrase ticker + bouncing-dots focal row. Once the asymptotic %
+ * bar landed in 25.3 v0.5, the "we're working" signal was already conveyed
+ * by the steadily-creeping bar — the ticker became redundant decorative
+ * noise. The context line (latest done step) keeps the "what just happened"
+ * thread intact.
  *
  * Data wiring: SWR-shares the `/api/workspace/generation-status` cache with
  * `<LawListGenerationProgress>` — same key, same fetcher shape, same poll
@@ -35,24 +27,27 @@ import useSWR from 'swr'
 import { useEffect, useState } from 'react'
 import { Check } from 'lucide-react'
 
-import { cn } from '@/lib/utils'
+// Story 25.3 polish: asymptotic % progress.
+// EXPECTED_DURATION_MS = ~5 min average for a cold-start generation (kept as
+// documented intent; the curve shape is actually controlled by TAU_MS).
+// TAU_MS = time-constant of `1 - e^(-elapsed/tau)`; ~3 min gives a curve
+// that feels organic: rises fast in the first minute, slows toward 99%.
+// Cap at 99 — never claim 100% until real completion (status flips to
+// 'completed', at which point the strip unmounts entirely per AC 13).
+const EXPECTED_DURATION_MS = 300_000
+const TAU_MS = 180_000
+const POLL_PCT_MS = 2_000
 
-/**
- * Swedish "thinking" phrases that rotate beside the latest done step's label
- * when no step is currently 'active' — simulates the chat-agent thinking
- * pattern (ChatGPT/Claude's "Searching the web…", etc.) so the strip feels
- * alive between reported skill steps. Skill currently only writes
- * status='done' (no 'active' writes), so the ticker is what fills the
- * between-steps gaps where there'd otherwise be a static label for many seconds.
- */
-const THINKING_PHRASES = [
-  'Tänker',
-  'Söker',
-  'Analyserar',
-  'Bedömer relevans',
-  'Förbereder nästa steg',
-] as const
-const THINKING_INTERVAL_MS = 5000
+export function computePercent(startedAt: string | null | undefined): number {
+  if (!startedAt) return 0
+  const elapsed = Date.now() - new Date(startedAt).getTime()
+  if (elapsed <= 0) return 0
+  const ratio = 1 - Math.exp(-elapsed / TAU_MS)
+  return Math.min(99, Math.round(ratio * 100))
+}
+
+// Suppress "unused" warning for the documented constant.
+void EXPECTED_DURATION_MS
 
 export type GenerationStatus =
   | 'pending'
@@ -70,6 +65,9 @@ interface GenerationStatusResponse {
   progress: ProgressStep[] | null
   itemCount?: number
   error: string | null
+  // Story 25.3 polish: ISO string set server-side when the atomic claim
+  // in generate-law-list/route.ts succeeds. Drives the asymptotic % bar.
+  startedAt?: string | null
 }
 
 const fetcher = (url: string) =>
@@ -96,28 +94,25 @@ export function ProgressStrip({ initialStatus }: ProgressStripProps) {
   const progress = data?.progress ?? null
   const itemCount = data?.itemCount
 
-  const doneCount = progress?.filter((s) => s.status === 'done').length ?? 0
-  const activeStep = progress?.find((s) => s.status === 'active')
   // findLast: most recently reported done step (last in the array order).
   const latestDoneStep =
     progress && progress.length > 0
       ? [...progress].reverse().find((s) => s.status === 'done')
       : undefined
 
-  // Thinking ticker fills the focal line ANY time there's no real active
-  // step. The skill rarely writes status='active' (it only writes 'done'
-  // post-step), so the ticker is the focal indicator most of the time.
-  // Hooks MUST be called before any early-return — keeping them above the
-  // status guard below.
-  const showTicker = !activeStep
-  const [tickerIdx, setTickerIdx] = useState(0)
+  // Story 25.3 polish: asymptotic % progress. Re-compute every 2s while
+  // mounted so the filled bar visibly creeps even without new SWR data
+  // (the only data needed is `startedAt`, which doesn't change after the
+  // initial in_progress observation).
+  const startedAt = data?.startedAt
+  const [percent, setPercent] = useState(() => computePercent(startedAt))
   useEffect(() => {
-    if (!showTicker) return
+    setPercent(computePercent(startedAt))
     const id = setInterval(() => {
-      setTickerIdx((i) => (i + 1) % THINKING_PHRASES.length)
-    }, THINKING_INTERVAL_MS)
+      setPercent(computePercent(startedAt))
+    }, POLL_PCT_MS)
     return () => clearInterval(id)
-  }, [showTicker])
+  }, [startedAt])
 
   // Per AC 13 — completed/failed/null all hide the strip. Done state is B.4.
   // Early return MUST come after all hooks (rules-of-hooks).
@@ -125,72 +120,40 @@ export function ProgressStrip({ initialStatus }: ProgressStripProps) {
     return null
   }
 
-  // Swedish singular/plural: "1 steg klart" / "N steg klara".
-  const klaraText =
-    doneCount === 0
-      ? ''
-      : doneCount === 1
-        ? '1 steg klart'
-        : `${doneCount} steg klara`
-
   return (
     <div
       aria-live="polite"
-      className="rounded-xl border border-border bg-section-warm px-5 py-4"
+      className="rounded-xl border border-border bg-section-warm px-5 py-3"
     >
-      <div className="shimmer-track h-1 w-full rounded-full" aria-hidden="true">
-        <div className="fill" />
-      </div>
-
-      {/* FOCAL LINE — live agent activity. Three bouncing dots lead the
-          phrase (either the active step's label or the rotating thinking
-          phrase). Visual weight: high (foreground, font-medium). */}
-      <div
-        className="mt-3 flex items-center gap-2.5 text-[13px]"
-        data-testid="strip-focal"
-      >
-        <span
-          className="inline-flex shrink-0 items-end gap-[3px] text-foreground/85"
-          aria-hidden="true"
+      {/* Bar + % counter on the same row. The bar conveys the live
+          "we're working" signal that the dropped ticker used to carry; the
+          % counter is the precise read of the same data. Two decisive
+          signals: % (time-based, smooth) + rader (concrete output count). */}
+      <div className="flex items-center gap-3">
+        <div
+          className="h-1 flex-1 overflow-hidden rounded-full bg-muted"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={percent}
+          aria-label="Lagliste-generering"
         >
-          <span className="thinking-dot" />
-          <span className="thinking-dot" />
-          <span className="thinking-dot" />
-        </span>
-        {activeStep ? (
-          <span className="min-w-0 truncate font-medium text-foreground">
-            {activeStep.label}
-          </span>
-        ) : (
-          <span
-            key={tickerIdx}
-            className="thinking-shimmer-text min-w-0 truncate font-medium animate-in fade-in-50 duration-500"
-            data-testid="thinking-ticker"
-          >
-            {THINKING_PHRASES[tickerIdx]}
-          </span>
-        )}
-        <span
-          className={cn(
-            'ml-auto shrink-0 font-mono text-[11.5px] text-muted-foreground'
-          )}
-        >
-          {klaraText}
-          {typeof itemCount === 'number' && (
-            <>
-              {klaraText && ' · '}
-              {itemCount} rader
-            </>
-          )}
+          <div
+            className="h-full rounded-full bg-foreground/85 transition-[width] duration-500 ease-out"
+            style={{ width: `${percent}%` }}
+          />
+        </div>
+        <span className="shrink-0 text-[11.5px] tabular-nums text-muted-foreground">
+          {percent}%{typeof itemCount === 'number' && ` · ${itemCount} rader`}
         </span>
       </div>
 
-      {/* CONTEXT LINE — most recent completed step. Visual weight: low
-          (muted-foreground/65, smaller). Demoted to "what just happened",
-          not the focal point. Omitted entirely when no done steps yet. */}
+      {/* CONTEXT LINE — most recent completed step. The "what just happened"
+          thread. Omitted entirely when no done steps yet — the bar alone is
+          fine for the first few seconds. */}
       {latestDoneStep && (
         <div
-          className="mt-1.5 flex items-center gap-2 text-[11.5px] text-muted-foreground/70"
+          className="mt-2 flex items-center gap-2 text-[12.5px] text-muted-foreground/80"
           data-testid="strip-context"
         >
           <Check className="h-3 w-3 shrink-0" aria-hidden="true" />

@@ -171,11 +171,13 @@ model OnboardingEvent {
 | `event_type` | `payload` shape |
 |---|---|
 | `modal_opened` | `{ trigger: 'first_run' \| 'fab' \| 'help_menu' }` |
-| `path_chosen` | `{ path: 'generate' \| 'import' \| 'skipped' }` |
+| `path_chosen` | `{ path: 'generate' \| 'import' \| 'skipped' \| 'template', template_slug?: string, list_id?: string, import_id?: string }` |
 | `tab_viewed` | `{ tab_id: 'laglista' \| 'kravpunkter' \| 'uppgifter' \| 'kontroller' \| 'lagandringar' \| 'ai_agent' }` |
 | `modal_minimised` | `{ from_state: 'path_choice' \| 'kickoff' \| 'tutorial' \| 'done' \| 'tutorial_only' }` |
 | `fab_dismissed` | `{ from_state: 'visible_idle' \| 'visible_working' \| 'visible_done' }` |
 | `feedback_submitted` | `{ sentiment: 'positive' \| 'negative', message?: string, email?: string }` *(Story B.5 — in-scope MVP; see §7.1 and §14)* |
+| `done_shown` | `{ path: 'generate' \| 'import' \| 'template', mode?: 'success' \| 'failed' }` *(see Story 25.4 AC 22 — fires once per done-step entry, StrictMode-guarded)* |
+| `done_cta_clicked` | `{ path: 'generate' \| 'import' \| 'template', cta: 'show_list' \| 'go_to_review' \| 'keep_exploring' \| 'retry' \| 'close_failure' }` *(see Story 25.4 AC 22 — `'keep_exploring'` is reserved-but-unfired in B.4 since the button is disabled per owner decision v0.4; will start firing in B.6 when the tutorial_only mode lands)* |
 
 **Fail-safe pattern:** event writes wrapped in try/catch, logged as `[ONBOARDING_EVENT_WRITE_FAIL]` via `console.error`, never re-thrown. (Mirrors Story 14.27's pattern at `app/api/chat/route.ts`.)
 
@@ -258,8 +260,9 @@ Re-entry from outside the modal:
 
 - **Minimise is the default close.** The X button on the modal is "minimise to corner" — not "destroy". `first_run_dismissed_at` records that the modal has been seen at least once, but the FAB stays visible.
 - **`tutorial_only` mode** strips the progress strip from `tutorial-step.tsx` (conditional render based on whether work is still running). Same component, different sub-rendering.
-- **Done states transition to `tutorial_only`** rather than directly to closed. After celebrating completion, the user can keep exploring the tutorial — they don't lose access just because the work finished.
+- **Done states transition to `tutorial_only`** rather than directly to closed. After celebrating completion, the user can keep exploring the tutorial — they don't lose access just because the work finished. *(Story 25.4 B.4 caveat: in B.4 the "Fortsätt utforska" secondary CTA is rendered DISABLED with a "Kommer snart" tooltip per owner decision v0.4 — `tutorial_only` mode is B.6 scope. The callback prop is plumbed through but never invoked in B.4; B.6 enables the button with a one-line per-component swap.)*
 - **"Hoppa över" is the only path that hides the FAB.** Skipping means the user wants nothing; we don't pester them with a corner widget.
+- **Done states fire `done_shown` once on mount (StrictMode-guarded) and `done_cta_clicked` on every CTA click** (Story 25.4 B.4 — see §5.2 event taxonomy).
 
 State lives in `first-run-modal.tsx`. Steps are pure presentation; they receive callbacks for transitions. FAB visibility is derived server-side and passed as a prop.
 

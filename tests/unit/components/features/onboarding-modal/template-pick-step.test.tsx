@@ -1,8 +1,8 @@
 /**
- * Story 25.1 (Epic 25): component test for <TemplatePickStep> — the inline
- * template-pick sub-step of the first-run modal. Exercises the render shape
- * (cards + empty fallback), the select handler (event + minimise + close +
- * route), and the Tillbaka revert (no server actions, no route).
+ * Story 25.1 (Epic 25): component test for <TemplatePickStep>.
+ * Story 25.4 (B.4): updated for the inline-apply pivot — template selection
+ * now calls adoptTemplate server-side and bubbles the result via
+ * onTemplateApplied (instead of minimise + close + route to /mallar/{slug}).
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
@@ -13,11 +13,15 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush, refresh: vi.fn() }),
 }))
 
-const mockMinimise = vi.fn().mockResolvedValue({ ok: true })
 const mockRecordEvent = vi.fn().mockResolvedValue({ ok: true })
 vi.mock('@/app/actions/onboarding-modal', () => ({
-  minimiseFirstRunModal: () => mockMinimise(),
   recordOnboardingEvent: (...args: unknown[]) => mockRecordEvent(...args),
+}))
+
+// Story 25.4: control adoptTemplate's resolution from each test.
+const mockAdoptTemplate = vi.fn()
+vi.mock('@/app/actions/template-adoption', () => ({
+  adoptTemplate: (input: unknown) => mockAdoptTemplate(input),
 }))
 
 vi.mock('sonner', () => ({
@@ -49,6 +53,15 @@ function template(
 describe('<TemplatePickStep>', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Default: adoptTemplate succeeds.
+    mockAdoptTemplate.mockResolvedValue({
+      success: true,
+      data: {
+        listId: 'list-applied-1',
+        listName: 'Applied: Bygg',
+        itemCount: 92,
+      },
+    })
   })
 
   it('renders one card per template + a Tillbaka button', () => {
@@ -63,6 +76,7 @@ describe('<TemplatePickStep>', () => {
         templates={templates}
         onBack={vi.fn()}
         onClose={vi.fn()}
+        onTemplateApplied={vi.fn()}
       />
     )
 
@@ -74,7 +88,12 @@ describe('<TemplatePickStep>', () => {
 
   it('renders the empty-state fallback when no templates are passed', () => {
     render(
-      <TemplatePickStep templates={[]} onBack={vi.fn()} onClose={vi.fn()} />
+      <TemplatePickStep
+        templates={[]}
+        onBack={vi.fn()}
+        onClose={vi.fn()}
+        onTemplateApplied={vi.fn()}
+      />
     )
 
     expect(
@@ -83,7 +102,8 @@ describe('<TemplatePickStep>', () => {
     expect(screen.getByRole('button', { name: /Tillbaka/ })).toBeInTheDocument()
   })
 
-  it('clicking a template card → records path_chosen with slug, minimises, closes, routes', async () => {
+  it('B.4: clicking a template → calls adoptTemplate, records path_chosen with list_id, invokes onTemplateApplied (NOT router.push)', async () => {
+    const onTemplateApplied = vi.fn()
     const onClose = vi.fn()
     const templates = [template({ id: 't1', name: 'Bygg', slug: 'bygg' })]
 
@@ -92,58 +112,109 @@ describe('<TemplatePickStep>', () => {
         templates={templates}
         onBack={vi.fn()}
         onClose={onClose}
+        onTemplateApplied={onTemplateApplied}
       />
     )
 
     fireEvent.click(screen.getByText('Bygg'))
 
+    await waitFor(() => {
+      expect(mockAdoptTemplate).toHaveBeenCalledWith({
+        templateSlug: 'bygg',
+      })
+    })
     await waitFor(() => {
       expect(mockRecordEvent).toHaveBeenCalledWith('path_chosen', {
         path: 'template',
         template_slug: 'bygg',
+        list_id: 'list-applied-1',
       })
     })
     await waitFor(() => {
-      expect(mockMinimise).toHaveBeenCalled()
+      expect(onTemplateApplied).toHaveBeenCalledWith({
+        listId: 'list-applied-1',
+        listName: 'Applied: Bygg',
+        itemCount: 92,
+      })
     })
-    await waitFor(() => {
-      expect(onClose).toHaveBeenCalled()
-    })
-    expect(mockPush).toHaveBeenCalledWith('/laglistor/mallar/bygg')
+    // B.4 pivot: no router.push from this component (parent handles routing
+    // via the done-template step's CTA).
+    expect(mockPush).not.toHaveBeenCalled()
+    expect(onClose).not.toHaveBeenCalled()
   })
 
-  it('clicking a template card → if minimise fails, toasts and does NOT close or route (QA ROBUST-001)', async () => {
-    const { toast } = await import('sonner')
-    mockMinimise.mockResolvedValueOnce({
-      ok: false,
-      error: 'Kunde inte stänga guiden.',
-    })
-    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const onClose = vi.fn()
+  it('B.4: renders inline loader during apply', async () => {
+    // Hold the adoptTemplate promise open so we can assert the loader.
+    let resolveApply: (_v: unknown) => void = () => {}
+    mockAdoptTemplate.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveApply = resolve
+        })
+    )
     const templates = [template({ id: 't1', name: 'Bygg', slug: 'bygg' })]
 
     render(
       <TemplatePickStep
         templates={templates}
         onBack={vi.fn()}
-        onClose={onClose}
+        onClose={vi.fn()}
+        onTemplateApplied={vi.fn()}
       />
     )
 
     fireEvent.click(screen.getByText('Bygg'))
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Något gick fel. Försök igen.')
+      expect(screen.getByText(/Skapar er laglista/)).toBeInTheDocument()
     })
-    expect(onClose).not.toHaveBeenCalled()
-    expect(mockPush).not.toHaveBeenCalled()
+    // Cards are replaced by the loader.
+    expect(screen.queryByText('Bygg')).not.toBeInTheDocument()
 
-    errSpy.mockRestore()
+    // Resolve so the test cleans up without dangling promises.
+    resolveApply({
+      success: true,
+      data: { listId: 'l', listName: 'L', itemCount: 0 },
+    })
   })
 
-  it('Tillbaka → calls onBack and does NOT fire any server action or route', () => {
+  it('B.4: shows toast.error on adoptTemplate failure + stays mounted', async () => {
+    const { toast } = await import('sonner')
+    mockAdoptTemplate.mockResolvedValueOnce({
+      success: false,
+      error: 'Mallen kunde inte aktiveras (testfel)',
+    })
+    const onTemplateApplied = vi.fn()
+    const templates = [template({ id: 't1', name: 'Bygg', slug: 'bygg' })]
+
+    render(
+      <TemplatePickStep
+        templates={templates}
+        onBack={vi.fn()}
+        onClose={vi.fn()}
+        onTemplateApplied={onTemplateApplied}
+      />
+    )
+
+    fireEvent.click(screen.getByText('Bygg'))
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        'Mallen kunde inte aktiveras (testfel)'
+      )
+    })
+    // Loader cleared; cards re-rendered so the user can pick again.
+    await waitFor(() => {
+      expect(screen.getByText('Bygg')).toBeInTheDocument()
+    })
+    expect(onTemplateApplied).not.toHaveBeenCalled()
+    expect(mockPush).not.toHaveBeenCalled()
+  })
+
+  it('Tillbaka → calls onBack and does NOT fire any server action', () => {
     const onBack = vi.fn()
     const onClose = vi.fn()
+    const onTemplateApplied = vi.fn()
     const templates = [template()]
 
     render(
@@ -151,6 +222,7 @@ describe('<TemplatePickStep>', () => {
         templates={templates}
         onBack={onBack}
         onClose={onClose}
+        onTemplateApplied={onTemplateApplied}
       />
     )
 
@@ -158,8 +230,8 @@ describe('<TemplatePickStep>', () => {
 
     expect(onBack).toHaveBeenCalled()
     expect(mockRecordEvent).not.toHaveBeenCalled()
-    expect(mockMinimise).not.toHaveBeenCalled()
-    expect(onClose).not.toHaveBeenCalled()
+    expect(mockAdoptTemplate).not.toHaveBeenCalled()
+    expect(onTemplateApplied).not.toHaveBeenCalled()
     expect(mockPush).not.toHaveBeenCalled()
   })
 })

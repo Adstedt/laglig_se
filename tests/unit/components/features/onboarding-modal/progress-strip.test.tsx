@@ -29,6 +29,13 @@ function setSWRResponse(data: unknown) {
   } as unknown as ReturnType<typeof useSWR>)
 }
 
+// Story 25.3 polish: startedAt added to all mocks so the new
+// asymptotic-% logic computes a deterministic value. 60s ago = ~28%
+// per the curve `1 - e^(-elapsed/180000)`. Tests that don't care
+// about the exact % can ignore it; tests that DO care override
+// startedAt explicitly via setSWRResponse({ ..., startedAt: ... }).
+const STARTED_60S_AGO = new Date(Date.now() - 60_000).toISOString()
+
 const inProgressWithActive = {
   status: 'in_progress',
   progress: [
@@ -40,6 +47,7 @@ const inProgressWithActive = {
   ],
   itemCount: 47,
   error: null,
+  startedAt: STARTED_60S_AGO,
 }
 
 const inProgressAllDone = {
@@ -51,6 +59,7 @@ const inProgressAllDone = {
   ],
   itemCount: undefined,
   error: null,
+  startedAt: STARTED_60S_AGO,
 }
 
 describe('<ProgressStrip>', () => {
@@ -59,41 +68,22 @@ describe('<ProgressStrip>', () => {
     setSWRResponse(inProgressWithActive)
   })
 
-  // FOCAL line ----------------------------------------------------------
+  // Focal line removed (post-25.4 polish, 2026-05-17) — the asymptotic %
+  // bar from 25.3 v0.5 already carries the "we're working" signal that the
+  // bouncing-dots + Tänker/Söker ticker used to carry, so it became visual
+  // noise. The 4 prior focal-line tests were dropped along with the row.
 
-  it('focal line shows the active step label when one is active', () => {
-    render(<ProgressStrip />)
-    const focal = screen.getByTestId('strip-focal')
-    expect(focal).toHaveTextContent('Matchar mot SFS-katalog')
-    // Ticker hidden when there's a real active step
-    expect(screen.queryByTestId('thinking-ticker')).not.toBeInTheDocument()
-  })
-
-  it('focal line shows the rotating thinking phrase when no step is active', () => {
+  it('does NOT render the focal "Tänker / Söker / Analyserar" ticker (dropped post-25.4)', () => {
     setSWRResponse(inProgressAllDone)
     render(<ProgressStrip />)
-    const ticker = screen.getByTestId('thinking-ticker')
-    expect(ticker).toBeInTheDocument()
-    expect(ticker.textContent).toMatch(/Tänker/)
+    expect(screen.queryByTestId('strip-focal')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('thinking-ticker')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Tänker/)).not.toBeInTheDocument()
   })
 
-  it('focal line shows the thinking phrase even before any done steps', () => {
-    setSWRResponse({
-      ...inProgressAllDone,
-      progress: [],
-    })
-    render(<ProgressStrip />)
-    expect(screen.getByTestId('thinking-ticker')).toBeInTheDocument()
-  })
-
-  it('focal line renders three CSS-drawn bouncing dots (not text dots)', () => {
+  it('does NOT render the three CSS-drawn bouncing dots (dropped with focal row)', () => {
     const { container } = render(<ProgressStrip />)
-    const dots = container.querySelectorAll('.thinking-dot')
-    expect(dots).toHaveLength(3)
-    // Should be empty spans (CSS handles the visual), not text dots
-    for (const dot of dots) {
-      expect(dot.textContent).toBe('')
-    }
+    expect(container.querySelectorAll('.thinking-dot')).toHaveLength(0)
   })
 
   // CONTEXT line --------------------------------------------------------
@@ -114,39 +104,25 @@ describe('<ProgressStrip>', () => {
     expect(screen.queryByTestId('strip-context')).not.toBeInTheDocument()
   })
 
-  it('context line shows the latest done step even when focal shows the active step', () => {
+  it('context line shows the latest done step even when an active step exists', () => {
     render(<ProgressStrip />) // has both active + done steps
-    expect(screen.getByTestId('strip-focal')).toHaveTextContent(
-      'Matchar mot SFS-katalog'
-    )
-    // Latest done step (last 'done' in array order) is Område-mapping
+    // Latest done step (last 'done' in array order) is Område-mapping;
+    // active-step label no longer surfaces anywhere (focal row dropped).
     expect(screen.getByTestId('strip-context')).toHaveTextContent(
       'Område-mapping'
     )
+    expect(
+      screen.queryByText('Matchar mot SFS-katalog')
+    ).not.toBeInTheDocument()
   })
 
   // Counter -------------------------------------------------------------
 
-  it('shows "N steg klara" (plural) when more than 1 step done', () => {
-    render(<ProgressStrip />)
-    // 2 done in inProgressWithActive
-    expect(screen.getByText(/2 steg klara/)).toBeInTheDocument()
-  })
-
-  it('shows "1 steg klart" (Swedish neutrum singular) when exactly 1 step done', () => {
-    setSWRResponse({
-      ...inProgressAllDone,
-      progress: [{ label: 'Profil', status: 'done' }],
-    })
-    render(<ProgressStrip />)
-    expect(screen.getByText(/1 steg klart/)).toBeInTheDocument()
-  })
-
-  it('shows nothing in the counter when 0 steps done', () => {
-    setSWRResponse({
-      ...inProgressAllDone,
-      progress: [{ label: 'Profil', status: 'active' }],
-    })
+  // Story 25.3 polish: the "N steg klara" / "1 steg klart" counter was
+  // dropped — "step" was implementation jargon without meaning to the user,
+  // and its jump-y count between polls undermined trust. The counter row
+  // now shows just `{percent}%` (+ optional `· N rader`).
+  it('does NOT render the "N steg klara" / "1 steg klart" counter (dropped post-polish)', () => {
     render(<ProgressStrip />)
     expect(screen.queryByText(/steg klara/)).not.toBeInTheDocument()
     expect(screen.queryByText(/steg klart/)).not.toBeInTheDocument()
@@ -217,10 +193,57 @@ describe('<ProgressStrip>', () => {
     expect(firstCall?.[0]).toBe('/api/workspace/generation-status')
   })
 
-  it('renders the shimmer bar even when SWR returns no progress data but initialStatus="in_progress"', () => {
+  it('renders the determinate progress bar even when SWR returns no progress data but initialStatus="in_progress"', () => {
     setSWRResponse(undefined)
     const { container } = render(<ProgressStrip initialStatus="in_progress" />)
     expect(container.firstChild).not.toBeNull()
-    expect(container.querySelector('.shimmer-track')).not.toBeNull()
+    // Story 25.3 polish: replaced indeterminate shimmer with a determinate
+    // bar marked role=progressbar.
+    expect(container.querySelector('[role="progressbar"]')).not.toBeNull()
+  })
+
+  // ---------------------------------------------------------------------
+  // Story 25.3 polish: asymptotic % progress
+  // ---------------------------------------------------------------------
+
+  it('shows 0% when startedAt is null', () => {
+    setSWRResponse({ ...inProgressAllDone, startedAt: null })
+    render(<ProgressStrip />)
+    expect(screen.getByText(/0%/)).toBeInTheDocument()
+  })
+
+  it('shows ~28% when startedAt is 60s ago (asymptotic curve, tau=180s)', () => {
+    setSWRResponse({
+      ...inProgressAllDone,
+      startedAt: new Date(Date.now() - 60_000).toISOString(),
+    })
+    const { container } = render(<ProgressStrip />)
+    // Curve: 1 - e^(-60/180) ≈ 0.2835 → 28%. Allow ±2 to absorb sub-ms drift.
+    const progressbar = container.querySelector('[role="progressbar"]')
+    const aria = Number(progressbar?.getAttribute('aria-valuenow') ?? -1)
+    expect(aria).toBeGreaterThanOrEqual(26)
+    expect(aria).toBeLessThanOrEqual(30)
+  })
+
+  it('caps at 99% even when startedAt is 1 hour ago', () => {
+    setSWRResponse({
+      ...inProgressAllDone,
+      startedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    })
+    const { container } = render(<ProgressStrip />)
+    const progressbar = container.querySelector('[role="progressbar"]')
+    expect(progressbar?.getAttribute('aria-valuenow')).toBe('99')
+  })
+
+  it('progress bar inner div width matches the computed percent', () => {
+    setSWRResponse({
+      ...inProgressAllDone,
+      startedAt: new Date(Date.now() - 60_000).toISOString(),
+    })
+    const { container } = render(<ProgressStrip />)
+    const progressbar = container.querySelector('[role="progressbar"]')
+    const aria = progressbar?.getAttribute('aria-valuenow')
+    const inner = progressbar?.querySelector('div')
+    expect(inner?.style.width).toBe(`${aria}%`)
   })
 })
