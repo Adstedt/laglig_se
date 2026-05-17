@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>
+      Done-generate prototype — side-by-side using laglistor-tab pattern
+    </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+      @font-face {
+        font-family: 'Safiro';
+        src:
+          url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'),
+          url('../public/fonts/safiro-medium-webfont.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Google Sans Flex';
+        src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype');
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      :root {
+        --background: 40 20% 98%;
+        --foreground: 30 10% 10%;
+        --card: 40 15% 99%;
+        --primary: 30 15% 12%;
+        --primary-foreground: 40 20% 98%;
+        --muted: 40 12% 94%;
+        --muted-foreground: 30 8% 45%;
+        --border: 35 10% 88%;
+        --section-warm: 45 30% 96%;
+        --section-sage: 140 25% 95%;
+        --section-cream: 35 40% 97%;
+        --tone-success-soft-bg: #d1fae5;
+        --tone-success-soft-fg: #047857;
+        --tone-warning-soft-bg: #fef3c7;
+        --tone-warning-soft-fg: #b45309;
+        --tone-info-soft-bg: #dbeafe;
+        --tone-info-soft-fg: #1d4ed8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family:
+          'Google Sans Flex', ui-sans-serif, system-ui, -apple-system, sans-serif;
+        font-size: 15px;
+        line-height: 1.55;
+        color: hsl(var(--foreground));
+        background: hsl(40 12% 90%);
+        -webkit-font-smoothing: antialiased;
+        padding: 32px 16px;
+      }
+      .font-safiro {
+        font-family: 'Safiro', system-ui, sans-serif;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+      }
+      .shadow-modal {
+        box-shadow:
+          0 30px 60px -20px rgba(30, 25, 20, 0.12),
+          0 10px 25px -8px rgba(30, 25, 20, 0.08);
+      }
+      .shadow-soft {
+        box-shadow: 0 1px 2px rgba(30, 25, 20, 0.06);
+      }
+      .eyebrow {
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: hsl(var(--muted-foreground));
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11.5px;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .pill--info {
+        background: var(--tone-info-soft-bg);
+        color: var(--tone-info-soft-fg);
+      }
+      .pill--neutral {
+        background: hsl(var(--muted));
+        color: hsl(var(--muted-foreground));
+      }
+      .pill--success {
+        background: var(--tone-success-soft-bg);
+        color: var(--tone-success-soft-fg);
+      }
+      .pill--warning {
+        background: var(--tone-warning-soft-bg);
+        color: var(--tone-warning-soft-fg);
+      }
+      .bg-sage {
+        background: hsl(var(--section-sage));
+      }
+      .bg-warm {
+        background: hsl(var(--section-warm));
+      }
+      .bg-cream {
+        background: hsl(var(--section-cream));
+      }
+      .avatar {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 22px;
+        width: 22px;
+        border-radius: 999px;
+        background: hsl(var(--muted));
+        color: hsl(var(--muted-foreground));
+        font-size: 9.5px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              background: 'hsl(var(--background))',
+              foreground: 'hsl(var(--foreground))',
+              card: 'hsl(var(--card))',
+              border: 'hsl(var(--border))',
+              muted: {
+                DEFAULT: 'hsl(var(--muted))',
+                foreground: 'hsl(var(--muted-foreground))',
+              },
+            },
+          },
+        },
+      }
+    </script>
+  </head>
+  <body>
+    <!-- ==================================================================
+         Prototype frame label
+         ================================================================== -->
+    <div
+      class="mx-auto mb-4 max-w-[1200px] text-[11px] uppercase tracking-[0.08em] text-muted-foreground"
+    >
+      Prototype · Done-generate (side-by-side, mirrors laglistor tab) ·
+      Owner-feedback iteration 2026-05-17
+    </div>
+
+    <!-- ==================================================================
+         Modal shell
+         ================================================================== -->
+    <div
+      class="mx-auto max-w-[1200px] overflow-hidden rounded-2xl border border-border bg-background shadow-modal"
+    >
+      <!-- Top chrome: logo + progress -->
+      <div class="flex items-center justify-between px-8 pt-7">
+        <div class="flex items-center gap-1.5">
+          <!-- Faux logo bracket -->
+          <span class="font-safiro text-[20px] tracking-tight">Laglig</span>
+        </div>
+        <span
+          class="text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground"
+        >
+          KLAR · 2 AV 2
+        </span>
+      </div>
+
+      <!-- DialogHeader: title + description -->
+      <div class="space-y-2 px-8 pt-6">
+        <h2 class="font-safiro text-[28px] font-medium leading-tight">
+          Er laglista är klar
+        </h2>
+        <p class="text-[15px] text-muted-foreground leading-relaxed">
+          Genererad utifrån er företagsprofil.
+        </p>
+      </div>
+
+      <!-- ==================================================================
+           2-col body: copy + benefits left, /laglistor preview right.
+           Mirrors the laglistor tab's grid-cols-5 / col-span-2 + col-span-3.
+           ================================================================== -->
+      <div class="grid grid-cols-5 gap-10 px-8 pb-7 pt-6">
+        <!-- ====================================================
+             LEFT COL — explainer + benefits + hedging + CTA
+             ==================================================== -->
+        <div class="col-span-2 flex flex-col">
+          <div class="eyebrow mb-3">Översikt</div>
+
+          <!-- Hero: number + unit inline, duration tight below -->
+          <p class="mb-1">
+            <span class="font-safiro text-[40px] font-medium leading-none">
+              98
+            </span>
+            <span class="ml-2 text-[16px] text-muted-foreground">
+              regelverk
+            </span>
+          </p>
+          <p class="mb-5 text-[12px] text-muted-foreground/70">
+            identifierade på 4 min 3 s
+          </p>
+
+          <p class="mb-5 text-[14px] text-muted-foreground leading-relaxed">
+            Vi har gått igenom Sveriges och EU:s lagstiftning och plockat ut
+            regelverk som bedöms vara relevanta för er verksamhet utifrån
+            företagsprofilen ni lämnade.
+          </p>
+
+          <!-- Benefits — sage icon containers, mirrors laglistor tab -->
+          <ul class="mb-6 space-y-3">
+            <li class="flex gap-3 text-[13.5px]">
+              <span
+                class="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-sage"
+              >
+                <i
+                  data-lucide="target"
+                  class="h-3 w-3"
+                  style="color: var(--tone-success-soft-fg)"
+                ></i>
+              </span>
+              <span>
+                <span class="font-medium">Skräddarsytt urval</span>
+                <span class="block text-muted-foreground">
+                  Filtrerat på bransch, antal anställda och verksamhetsflaggor
+                  — bara det som faktiskt rör er.
+                </span>
+              </span>
+            </li>
+            <li class="flex gap-3 text-[13.5px]">
+              <span
+                class="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-sage"
+              >
+                <i
+                  data-lucide="user-round-cog"
+                  class="h-3 w-3"
+                  style="color: var(--tone-success-soft-fg)"
+                ></i>
+              </span>
+              <span>
+                <span class="font-medium">Ansvar och bevis per regelverk</span>
+                <span class="block text-muted-foreground">
+                  Tilldela ansvariga, lägg till bevis och dokumentera ert
+                  systematiska arbete.
+                </span>
+              </span>
+            </li>
+            <li class="flex gap-3 text-[13.5px]">
+              <span
+                class="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-sage"
+              >
+                <i
+                  data-lucide="bell-ring"
+                  class="h-3 w-3"
+                  style="color: var(--tone-success-soft-fg)"
+                ></i>
+              </span>
+              <span>
+                <span class="font-medium">AI bevakar lagändringar</span>
+                <span class="block text-muted-foreground">
+                  Ni notifieras när något ändras och kan göra en bedömning av
+                  påverkan på er verksamhet.
+                </span>
+              </span>
+            </li>
+          </ul>
+
+          <p class="mb-5 text-[12px] text-muted-foreground">
+            Bedöms vara relevanta utifrån er företagsprofil — granska och
+            justera fritt.
+          </p>
+
+          <!-- CTAs -->
+          <div class="mt-auto flex items-center gap-3">
+            <button
+              class="inline-flex items-center gap-1.5 rounded-md bg-foreground px-4 py-2 text-[13px] font-medium text-background"
+            >
+              Visa min laglista
+              <i data-lucide="arrow-right" class="h-3.5 w-3.5"></i>
+            </button>
+            <button
+              class="text-[13px] text-muted-foreground/50 cursor-not-allowed"
+              disabled
+            >
+              Fortsätt utforska
+            </button>
+          </div>
+        </div>
+
+        <!-- ====================================================
+             RIGHT COL — realistic preview of /laglistor with the
+             freshly generated content. Mirrors the laglistor tab's
+             preview pattern: toolbar + group headers + rows.
+             ==================================================== -->
+        <div class="col-span-3">
+          <div class="eyebrow mb-3">Förhandsvisning · /laglistor</div>
+          <div
+            class="overflow-hidden rounded-xl border border-border bg-background shadow-soft"
+          >
+            <!-- Toolbar -->
+            <div
+              class="flex items-center gap-2 border-b border-border bg-card px-3 py-2"
+            >
+              <div
+                class="flex w-44 items-center gap-1.5 rounded-md border border-border bg-background px-2 py-1 text-[11.5px] text-muted-foreground"
+              >
+                <i data-lucide="search" class="h-3 w-3"></i>
+                Sök i laglistan…
+              </div>
+              <span class="pill pill--info">98 regelverk</span>
+              <span class="pill pill--neutral">7 områden</span>
+              <button
+                class="ml-auto inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[11.5px] text-muted-foreground"
+              >
+                <i data-lucide="filter" class="h-3 w-3"></i>
+                Filter
+              </button>
+            </div>
+
+            <!-- Group: Arbetsmiljö (open) -->
+            <div
+              class="flex items-center gap-2 border-b border-border bg-warm px-3 py-2"
+              style="background: hsl(45 30% 96% / 0.6)"
+            >
+              <i data-lucide="chevron-down" class="h-3.5 w-3.5"></i>
+              <span class="font-safiro text-[13px]">Arbetsmiljö</span>
+              <span class="text-[11.5px] text-muted-foreground">
+                · 26 regelverk · ej granskat
+              </span>
+            </div>
+
+            <!-- Rows under Arbetsmiljö -->
+            <div class="border-b border-border px-3 py-2.5">
+              <div class="flex items-start gap-2">
+                <div class="min-w-0 flex-1">
+                  <div class="text-[13px] font-medium">
+                    Arbetsmiljölag (1977:1160)
+                  </div>
+                  <div class="mt-0.5 text-[11.5px] text-muted-foreground">
+                    Skräddarsydd kontext: Ni omfattas som arbetsgivare inom
+                    hotellbranschen med 12 anställda…
+                  </div>
+                </div>
+                <span class="avatar shrink-0">+</span>
+                <span class="pill pill--neutral shrink-0">Ej granskad</span>
+              </div>
+            </div>
+
+            <div class="border-b border-border px-3 py-2.5">
+              <div class="flex items-start gap-2">
+                <div class="min-w-0 flex-1">
+                  <div class="text-[13px] font-medium">
+                    AFS 2020:1 — Arbetsplatsens utformning
+                  </div>
+                  <div class="mt-0.5 text-[11.5px] text-muted-foreground">
+                    Skräddarsydd kontext: Reglerar utformningen av era
+                    arbetsplatser, omklädningsrum och köksutrymmen…
+                  </div>
+                </div>
+                <span class="avatar shrink-0">+</span>
+                <span class="pill pill--neutral shrink-0">Ej granskad</span>
+              </div>
+            </div>
+
+            <div class="border-b border-border px-3 py-2.5">
+              <div class="flex items-start gap-2">
+                <div class="min-w-0 flex-1">
+                  <div class="text-[13px] font-medium">
+                    AFS 2015:4 — Organisatorisk och social arbetsmiljö
+                  </div>
+                  <div class="mt-0.5 text-[11.5px] text-muted-foreground">
+                    Skräddarsydd kontext: Skyldighet att arbeta med stress och
+                    psykosociala faktorer för er personal…
+                  </div>
+                </div>
+                <span class="avatar shrink-0">+</span>
+                <span class="pill pill--neutral shrink-0">Ej granskad</span>
+              </div>
+            </div>
+
+            <!-- Group: Miljö (collapsed) -->
+            <div
+              class="flex items-center gap-2 border-b border-border px-3 py-2"
+              style="background: hsl(45 30% 96% / 0.6)"
+            >
+              <i data-lucide="chevron-right" class="h-3.5 w-3.5"></i>
+              <span class="font-safiro text-[13px]">Miljö &amp; Kemikalier</span>
+              <span class="text-[11.5px] text-muted-foreground">
+                · 9 regelverk · ej granskat
+              </span>
+            </div>
+
+            <!-- Group: Brandskydd (collapsed) -->
+            <div
+              class="flex items-center gap-2 border-b border-border px-3 py-2"
+              style="background: hsl(45 30% 96% / 0.6)"
+            >
+              <i data-lucide="chevron-right" class="h-3.5 w-3.5"></i>
+              <span class="font-safiro text-[13px]">Brandskydd</span>
+              <span class="text-[11.5px] text-muted-foreground">
+                · 9 regelverk · ej granskat
+              </span>
+            </div>
+
+            <!-- Group: Livsmedel (collapsed) -->
+            <div
+              class="flex items-center gap-2 border-b border-border px-3 py-2"
+              style="background: hsl(45 30% 96% / 0.6)"
+            >
+              <i data-lucide="chevron-right" class="h-3.5 w-3.5"></i>
+              <span class="font-safiro text-[13px]">
+                Livsmedel &amp; Restaurang
+              </span>
+              <span class="text-[11.5px] text-muted-foreground">
+                · 5 regelverk · ej granskat
+              </span>
+            </div>
+
+            <!-- Footer hint: more below -->
+            <div
+              class="flex items-center justify-center gap-1 px-3 py-2 text-[11px] text-muted-foreground/70"
+            >
+              <i data-lucide="chevron-down" class="h-3 w-3"></i>
+              3 områden till nedanför · scrolla på riktiga sidan
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================================================================
+         Footnotes
+         ================================================================== -->
+    <div class="mx-auto mt-6 max-w-[1200px] text-[12px] text-muted-foreground">
+      <p class="mb-2">
+        <span class="font-medium">Why side-by-side:</span> mirrors the
+        laglistor-tab pattern the user just spent 4 min reading during the
+        tutorial. The eye learns "left = explanation, right = real product
+        surface" — and now sees the actual generated list previewed on the
+        right with the explanation/CTA on the left.
+      </p>
+      <p class="mb-2">
+        <span class="font-medium">Trust signals on the left:</span> hero
+        number anchors the "what we did" claim; the 3 sage-icon benefits
+        pitch product value (skräddarsytt, ansvar/bevis, AI-bevakning)
+        rather than just listing what the agent did; hedging line keeps the
+        "bedöms" legal cover; "Bedöms vara relevanta… granska och justera
+        fritt" frames it as user-reviewable, not user-binding.
+      </p>
+      <p class="mb-2">
+        <span class="font-medium">Realistic preview on the right:</span>
+        toolbar with the actual generated count + område count, one open
+        group (Arbetsmiljö) with 3 rows showing how the
+        <code>businessContext</code> field reads ("Skräddarsydd kontext:
+        Ni omfattas som arbetsgivare inom hotellbranschen…"), 3 collapsed
+        groups, footer hint indicating more below. This previews the surface
+        the primary CTA leads to.
+      </p>
+      <p>
+        <span class="font-medium">Trade-offs vs current centered card:</span>
+        more horizontal real estate used (good for the 1200px modal),
+        product-pitch tone (vs. process-pitch in current "Detta gjorde vi /
+        Detta händer nu"), no Områden chip-row needed (the preview IS the
+        breakdown), preview makes the modal feel substantial without
+        synthetic content.
+      </p>
+    </div>
+
+    <script>
+      lucide.createIcons()
+    </script>
+  </body>
+</html>
