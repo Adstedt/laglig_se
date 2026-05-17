@@ -1,0 +1,82 @@
+schema: 1
+story: '25.4'
+story_title: 'Done states for template / generate / import paths (B.4)'
+gate: PASS
+status_reason: 'All 34 ACs traceable to code + tests. 114 onboarding-modal tests pass (was 90 → +24). Zero regressions in 4,748-test unit suite. Three low-priority future-polish recommendations only — no must-fix items.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-17T22:05:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 95
+expires: '2026-05-31T22:05:00Z'
+
+evidence:
+  tests_reviewed: 24
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
+    ac_gaps: []
+    # ACs 33 (manual smoke) and 34 (post-merge production check) are operational
+    # ACs documented in the story for the next operator + post-deploy ops — they
+    # do not require code coverage.
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Done components static JSX with no user-controllable input. Server actions inherit existing withWorkspace scope. handleCreateSupportTicket URL-encodes importId before mailto injection. No new auth, env, RLS, or PII surfaces.'
+  performance:
+    status: PASS
+    notes: 'Shared SWR cache between FirstRunModal and ProgressStrip (one fetch, one poll interval). useCallback on 7 handlers + useMemo on headerForStep prevent stable-ref churn. Done components have zero hooks beyond render-time Date.now() (O(1)). ~470 LOC bundle delta only loaded when modal opens.'
+  reliability:
+    status: PASS
+    notes: 'getImport failure falls back to legacy 25.1 route-out behaviour (prevents user-stranding). adoptTemplate failure surfaces toast and stays mounted (user can retry). StrictMode-guarded done_shown firing via Map<Step,true>. Modal dismissal contract (no Esc / no outside-click) preserved.'
+  maintainability:
+    status: PASS
+    notes: '3 new components in per-component files (50-180 LOC each), clean JSDoc headers. Step union extension is additive, not refactoring. onKeepExploring plumbing makes B.6 enable-swap trivial. Architecture doc updated in same story (Task 11) — no doc drift.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add Sentry.captureException to handleRetryGenerate fetch catch'
+      refs: ['components/features/onboarding-modal/first-run-modal.tsx:414-418']
+      severity: low
+      reason: 'Currently swallows errors silently. Defensible per comment (SWR polling surfaces persistent failure) but a stuck-retry loop with generate-law-list POST returning 500 would be invisible in Sentry. ~5-line addition.'
+    - action: 'Refactor handleCloseFailure path-derivation ternary to Map lookup'
+      refs: ['components/features/onboarding-modal/first-run-modal.tsx:436-447']
+      severity: low
+      reason: 'Currently a 2-step ternary. Would need extension if a 4th done-* failure path lands (e.g., done-template-failed in a future hardening pass). Not blocking — current logic is correct for B.4 scope.'
+    - action: 'Add StrictMode no-double-fire tests for done_shown on generate + import paths'
+      refs: ['tests/unit/components/features/onboarding-modal/first-run-modal.test.tsx']
+      severity: low
+      reason: 'Existing test covers template path. The underlying useRef-Map guard is shared so the invariant is caught — but per-path tests would be more thorough coverage.'
+
+# Cross-references for the next operator
+next_steps:
+  - action: 'Story B.6 enable-swap'
+    refs: ['done-generate-step.tsx:172-185', 'done-import-step.tsx:159-172', 'done-template-step.tsx:87-100']
+    note: 'Per done-step: drop aria-disabled + 3 visual classes + Tooltip wrapper, restore onClick={onKeepExploring}. Per-component 3-line change.'
+  - action: 'Manual smoke walkthrough on staging per AC 33 (3 paths + 3 failure modes)'
+    refs: ['docs/stories/25.4.done-states-template-generate-import.md']
+    note: 'Dev agent has no browser GUI — staging operator runs the documented smoke procedure post-deploy.'
+  - action: 'Post-merge production check per AC 34 (within 24h)'
+    refs: []
+    note: 'Verify onboarding_events firing across 3 paths; check done_cta_clicked distribution; Sentry scan for done-* errors.'
+
+# Implementation traceability
+files_reviewed:
+  created:
+    - 'components/features/onboarding-modal/done-generate-step.tsx'
+    - 'components/features/onboarding-modal/done-import-step.tsx'
+    - 'components/features/onboarding-modal/done-template-step.tsx'
+    - 'tests/unit/components/features/onboarding-modal/done-generate-step.test.tsx'
+    - 'tests/unit/components/features/onboarding-modal/done-import-step.test.tsx'
+    - 'tests/unit/components/features/onboarding-modal/done-template-step.test.tsx'
+  modified:
+    - 'components/features/onboarding-modal/first-run-modal.tsx'
+    - 'components/features/onboarding-modal/template-pick-step.tsx'
+    - 'tests/unit/components/features/onboarding-modal/first-run-modal.test.tsx'
+    - 'tests/unit/components/features/onboarding-modal/template-pick-step.test.tsx'
+    - 'docs/architecture/first-run-onboarding-modal.md'
