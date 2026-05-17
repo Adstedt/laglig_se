@@ -40,12 +40,14 @@ function renderStep(
     onClose: () => void
     onPickTemplate: () => void
     onPickImport: () => void
+    onPickGenerate: () => void
   }> = {}
 ) {
   const props = {
     onClose: vi.fn(),
     onPickTemplate: vi.fn(),
     onPickImport: vi.fn(),
+    onPickGenerate: vi.fn(),
     ...overrides,
   }
   render(<PathChoiceStep {...props} />)
@@ -105,12 +107,13 @@ describe('<PathChoiceStep>', () => {
     expect(mockPush).not.toHaveBeenCalled()
   })
 
-  it('Generera card → fires POST, records path_chosen=generate, minimises, closes', async () => {
+  it('Generera card → fires POST, records path_chosen=generate, calls onPickGenerate (B.2: no longer minimises/closes here)', async () => {
     const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
       .mockResolvedValue(new Response(null, { status: 200 }))
     const onClose = vi.fn()
-    renderStep({ onClose })
+    const onPickGenerate = vi.fn()
+    renderStep({ onClose, onPickGenerate })
 
     fireEvent.click(screen.getByRole('button', { name: /Generera ny lista/ }))
 
@@ -128,29 +131,28 @@ describe('<PathChoiceStep>', () => {
       })
     })
     await waitFor(() => {
-      expect(mockMinimise).toHaveBeenCalled()
+      expect(onPickGenerate).toHaveBeenCalled()
     })
-    await waitFor(() => {
-      expect(onClose).toHaveBeenCalled()
-    })
+    // B.2: minimise + close + route move to the modal-shell's Minimera handler.
+    expect(mockMinimise).not.toHaveBeenCalled()
+    expect(onClose).not.toHaveBeenCalled()
+    expect(mockPush).not.toHaveBeenCalled()
 
     fetchSpy.mockRestore()
   })
 
-  it('Generera 409 (already in progress) → treat as success: close + minimise but do NOT record duplicate path_chosen', async () => {
+  it('Generera 409 (already in progress) → treat as success: calls onPickGenerate, no duplicate path_chosen', async () => {
     const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
       .mockResolvedValue(new Response(null, { status: 409 }))
     const onClose = vi.fn()
-    renderStep({ onClose })
+    const onPickGenerate = vi.fn()
+    renderStep({ onClose, onPickGenerate })
 
     fireEvent.click(screen.getByRole('button', { name: /Generera ny lista/ }))
 
     await waitFor(() => {
-      expect(mockMinimise).toHaveBeenCalled()
-    })
-    await waitFor(() => {
-      expect(onClose).toHaveBeenCalled()
+      expect(onPickGenerate).toHaveBeenCalled()
     })
     // 409 means generation is already running — re-recording path_chosen would
     // double-count the funnel.
@@ -158,17 +160,22 @@ describe('<PathChoiceStep>', () => {
       path: 'generate',
     })
     expect(toast.error).not.toHaveBeenCalled()
+    // B.2: minimise + close move to the modal-shell.
+    expect(mockMinimise).not.toHaveBeenCalled()
+    expect(onClose).not.toHaveBeenCalled()
+    expect(mockPush).not.toHaveBeenCalled()
 
     fetchSpy.mockRestore()
   })
 
-  it('Generera fetch failure → toast.error, modal stays open, no path_chosen event', async () => {
+  it('Generera fetch failure → toast.error, modal stays on path-choice, no path_chosen event, onPickGenerate not called', async () => {
     const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
       .mockResolvedValue(new Response(null, { status: 500 }))
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const onClose = vi.fn()
-    renderStep({ onClose })
+    const onPickGenerate = vi.fn()
+    renderStep({ onClose, onPickGenerate })
 
     fireEvent.click(screen.getByRole('button', { name: /Generera ny lista/ }))
 
@@ -176,6 +183,7 @@ describe('<PathChoiceStep>', () => {
       expect(toast.error).toHaveBeenCalledWith('Något gick fel. Försök igen.')
     })
     expect(onClose).not.toHaveBeenCalled()
+    expect(onPickGenerate).not.toHaveBeenCalled()
     expect(mockMinimise).not.toHaveBeenCalled()
     expect(mockRecordEvent).not.toHaveBeenCalledWith('path_chosen', {
       path: 'generate',

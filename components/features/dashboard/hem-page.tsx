@@ -90,6 +90,14 @@ export function HemPage({
           open={true}
           templates={firstRunTemplates}
           userFirstName={userName}
+          initialStatus={
+            generationStatus === 'pending' ||
+            generationStatus === 'in_progress' ||
+            generationStatus === 'completed' ||
+            generationStatus === 'failed'
+              ? generationStatus
+              : null
+          }
         />
       )}
       {showGenerationProgress && (

@@ -42,16 +42,28 @@ import {
 import { PathChoiceStep } from './path-choice-step'
 import { TemplatePickStep } from './template-pick-step'
 import { ImportUploadStep } from './import-upload-step'
+import { TutorialStep } from './tutorial-step'
 import { runDismissAction } from './run-dismiss-action'
 import type { PublishedTemplate } from '@/lib/db/queries/template-catalog'
 
-type Step = 'path-choice' | 'template-pick' | 'import-upload'
+type Step = 'path-choice' | 'template-pick' | 'import-upload' | 'tutorial'
+
+/**
+ * Story 25.2: locally-defined 4-string union so the modal does not depend on
+ * `<LawListGenerationProgress>` internals. Matches the API contract directly.
+ */
+type GenerationStatus = 'pending' | 'in_progress' | 'completed' | 'failed'
 
 interface FirstRunModalProps {
   open: boolean
   templates?: PublishedTemplate[] | undefined
   /** User's first name for the personalised "Välkommen, {name}" headline. */
   userFirstName?: string | undefined
+  /**
+   * Story 25.2: server-derived initial generation status, passed through to
+   * the tutorial step's <ProgressStrip> so the first paint is non-empty.
+   */
+  initialStatus?: GenerationStatus | null | undefined
 }
 
 function headerForStep(step: Step, userFirstName: string | undefined) {
@@ -75,6 +87,13 @@ function headerForStep(step: Step, userFirstName: string | undefined) {
         description: 'Ladda upp en .xlsx / .csv eller klistra in raderna.',
         progress: 'KOM IGÅNG · STEG 2 AV 2',
       }
+    case 'tutorial':
+      return {
+        title: 'Vi skapar er personliga laglista',
+        description:
+          'Du kan stänga rutan — vi fortsätter i bakgrunden och notifierar när det är klart.',
+        progress: 'KOM IGÅNG · STEG 2 AV 2',
+      }
   }
 }
 
@@ -82,6 +101,7 @@ export function FirstRunModal({
   open: initialOpen,
   templates,
   userFirstName,
+  initialStatus,
 }: FirstRunModalProps) {
   const router = useRouter()
   const [open, setOpen] = useState(initialOpen)
@@ -125,6 +145,28 @@ export function FirstRunModal({
       return
     }
     handleClose()
+  }
+
+  /**
+   * Story 25.2 (B.2): Minimera handler called from the tutorial step body.
+   * Same shape as handleSkip per Story 25.1 polish — on success, close +
+   * router.refresh() + router.push('/dashboard') so the dashboard server
+   * component re-renders and mounts <LawListGenerationProgress>.
+   *
+   * Note: minimiseFirstRunModal still hardcodes `from_state: 'path_choice'`
+   * in its OnboardingEvent write (see app/actions/onboarding-modal.ts:72-74).
+   * B.2 leaves this as-is — funnel reports will conflate path-choice and
+   * tutorial dismisses until B.6 reworks the server action signature.
+   */
+  async function handleMinimiseFromTutorial() {
+    if (
+      !(await runDismissAction(minimiseFirstRunModal, 'minimiseFirstRunModal'))
+    ) {
+      return
+    }
+    handleClose()
+    router.refresh()
+    router.push('/dashboard')
   }
 
   async function handleImportSuccess(importId: string) {
@@ -198,6 +240,7 @@ export function FirstRunModal({
                 onClose={handleClose}
                 onPickTemplate={() => setStep('template-pick')}
                 onPickImport={() => setStep('import-upload')}
+                onPickGenerate={() => setStep('tutorial')}
               />
             )}
 
@@ -223,6 +266,13 @@ export function FirstRunModal({
                 </div>
                 <ImportUploadStep onSuccess={handleImportSuccess} hideHeader />
               </div>
+            )}
+
+            {step === 'tutorial' && (
+              <TutorialStep
+                initialStatus={initialStatus}
+                onMinimise={handleMinimiseFromTutorial}
+              />
             )}
           </div>
 

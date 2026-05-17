@@ -37,12 +37,19 @@ interface PathChoiceStepProps {
   onClose: () => void
   onPickTemplate: () => void
   onPickImport: () => void
+  /**
+   * Story 25.2 (B.2): Generera success now transitions the modal to the
+   * tutorial step instead of closing it. The parent shell owns the
+   * step state; this prop signals "Generera succeeded, please advance."
+   */
+  onPickGenerate: () => void
 }
 
 export function PathChoiceStep({
   onClose,
   onPickTemplate,
   onPickImport,
+  onPickGenerate,
 }: PathChoiceStepProps) {
   const router = useRouter()
   // Track in-flight click on Generera so the card visibly disables + shows
@@ -102,26 +109,10 @@ export function PathChoiceStep({
     if (!alreadyInProgress) {
       void recordOnboardingEvent('path_chosen', { path: 'generate' })
     }
-    if (
-      !(await runDismissAction(minimiseFirstRunModal, 'minimiseFirstRunModal'))
-    ) {
-      isGeneratingRef.current = false
-      setIsGenerating(false)
-      return
-    }
-    onClose()
-    // Re-render the dashboard server component so <HemPage> picks up the
-    // new `law_list_generation_status` and mounts the
-    // <LawListGenerationProgress> banner (it polls its own SWR endpoint
-    // once mounted, but the initial mount is gated by the server-derived
-    // prop).
-    //
-    // We call router.refresh() AND fall back to router.push('/dashboard') —
-    // in Next.js 16 + Turbopack dev mode, router.refresh() alone can fail
-    // to re-invalidate the RSC cache for the current route. push() to the
-    // same path forces a re-navigation that reliably re-renders.
-    router.refresh()
-    router.push('/dashboard')
+    // Story 25.2 (B.2): hand off to the parent shell to advance the modal to
+    // the tutorial step. The modal-shell now owns minimise + close + route
+    // (deferred to the Minimera affordance inside the tutorial step).
+    onPickGenerate()
   }
 
   async function handleManual() {
