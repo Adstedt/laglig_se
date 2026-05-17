@@ -2,11 +2,24 @@
  * POST /api/workspace/generate-law-list
  * Story 16.4, Task 5 (AC: 8-13)
  *
- * Authenticated endpoint that runs the headless law list generation skill.
+ * Authenticated endpoint that kicks off the headless law list generation skill.
  * Idempotent: returns 409 if already in_progress.
+ *
+ * Story 25.2 follow-up: the LLM job is now run via Next.js `after()` so the
+ * route returns IMMEDIATELY after the atomic claim. The client (Story 25.2
+ * tutorial step + Story 16.4 dashboard banner) polls `/generation-status`
+ * via SWR for live progress. Previously the route awaited the 2-5 min LLM
+ * job synchronously, which left the modal/banner spinning on a hung fetch
+ * and prevented the tutorial-while-waiting UX from ever rendering.
+ *
+ * Background-job lifetime: `after()` keeps the serverless function alive
+ * until the callback completes or maxDuration (300s) hits, regardless of
+ * whether the client disconnects. Same risk profile as the previous
+ * synchronous version (LLM > 5 min still leaves status stuck on
+ * 'in_progress'); no infra change.
  */
 
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import * as Sentry from '@sentry/nextjs'
 import { getServerSession } from '@/lib/auth/session'
 import { getWorkspaceContext } from '@/lib/auth/workspace-context'
@@ -64,58 +77,60 @@ export async function POST() {
       )
     }
 
-    try {
-      const result = await generateLawList(workspaceId, userId)
+    // Story 25.2: schedule the LLM job in `after()` so the response returns
+    // immediately. The DB's `law_list_generation_status='in_progress'` is
+    // already set by the atomic claim above — the modal's progress strip +
+    // dashboard banner both pick it up via SWR polling.
+    after(async () => {
+      try {
+        const result = await generateLawList(workspaceId, userId)
 
-      // Mark completed
-      await prisma.workspace.update({
-        where: { id: workspaceId },
-        data: { law_list_generation_status: 'completed' },
-      })
-
-      // Log to Sentry as a custom transaction
-      Sentry.withScope((scope) => {
-        scope.setTag('skill', 'generate-law-list')
-        scope.setContext('generation_result', {
-          listId: result.listId,
-          itemCount: result.itemCount,
-          groups: result.groups,
-          inputTokens: result.tokensUsed.input,
-          outputTokens: result.tokensUsed.output,
-          durationMs: result.durationMs,
+        await prisma.workspace.update({
+          where: { id: workspaceId },
+          data: { law_list_generation_status: 'completed' },
         })
-        Sentry.captureMessage('Law list generation completed', 'info')
-      })
 
-      return NextResponse.json({
-        success: true,
-        listId: result.listId,
-        itemCount: result.itemCount,
-        groups: result.groups,
-        durationMs: result.durationMs,
-      })
-    } catch (skillError) {
-      const errorMessage =
-        skillError instanceof Error ? skillError.message : String(skillError)
+        Sentry.withScope((scope) => {
+          scope.setTag('skill', 'generate-law-list')
+          scope.setContext('generation_result', {
+            listId: result.listId,
+            itemCount: result.itemCount,
+            groups: result.groups,
+            inputTokens: result.tokensUsed.input,
+            outputTokens: result.tokensUsed.output,
+            durationMs: result.durationMs,
+          })
+          Sentry.captureMessage('Law list generation completed', 'info')
+        })
+      } catch (skillError) {
+        const errorMessage =
+          skillError instanceof Error ? skillError.message : String(skillError)
 
-      // Mark failed
-      await prisma.workspace.update({
-        where: { id: workspaceId },
-        data: {
-          law_list_generation_status: 'failed',
-          law_list_generation_error: errorMessage,
-        },
-      })
+        // Best-effort failure write — if THIS write also throws, log + bail.
+        // The status will be stuck on 'in_progress' until a manual reset, but
+        // we cannot do anything else from a background callback.
+        try {
+          await prisma.workspace.update({
+            where: { id: workspaceId },
+            data: {
+              law_list_generation_status: 'failed',
+              law_list_generation_error: errorMessage,
+            },
+          })
+        } catch (writeErr) {
+          console.error(
+            '[generate-law-list] failed to mark status=failed after skill error',
+            writeErr
+          )
+        }
 
-      Sentry.captureException(skillError, {
-        tags: { skill: 'generate-law-list' },
-      })
+        Sentry.captureException(skillError, {
+          tags: { skill: 'generate-law-list' },
+        })
+      }
+    })
 
-      return NextResponse.json(
-        { error: 'Generation failed', details: errorMessage },
-        { status: 500 }
-      )
-    }
+    return NextResponse.json({ kicked_off: true }, { status: 202 })
   } catch (error) {
     Sentry.captureException(error)
     return NextResponse.json(
