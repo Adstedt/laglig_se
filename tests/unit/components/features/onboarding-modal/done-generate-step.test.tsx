@@ -29,19 +29,42 @@ function renderStep(
 }
 
 describe('<DoneGenerateStep>', () => {
-  it('renders itemCount subheadline + group chips in success mode (heading owned by DialogTitle, not body)', () => {
+  it('renders hero + 2-column trust card + hedging note in success mode', () => {
     renderStep()
 
-    // Heading is owned by <DialogTitle> in <FirstRunModal>; the body itself
-    // does NOT render an h3 (post-cleanup copy-pass — see story 25.4 polish).
+    // Heading owned by <DialogTitle>; body has no h3.
     expect(
       screen.queryByRole('heading', { name: 'Er laglista är klar' })
     ).not.toBeInTheDocument()
+    // Hero: number + unit label baseline-aligned.
+    expect(screen.getByText('42')).toBeInTheDocument()
+    expect(screen.getByText('regelverk')).toBeInTheDocument()
+    // 2-column trust card: methodology (left) + next steps (right).
+    expect(screen.getByText('Detta gjorde vi')).toBeInTheDocument()
+    expect(screen.getByText('Detta händer nu')).toBeInTheDocument()
+    expect(screen.getByText('Läste er företagsprofil')).toBeInTheDocument()
+    // SFS = svensk författningssamling, AFS = AV's föreskrifter. Including
+    // EU-direktiv explicitly because the catalog covers EU docs too.
     expect(
-      screen.getByText(/42 regelverk har lagts till\./)
+      screen.getByText(/Sökte mot SFS, AFS, EU-direktiv och andra föreskrifter/)
     ).toBeInTheDocument()
-    expect(screen.getByText(/20 Miljö/)).toBeInTheDocument()
-    expect(screen.getByText(/22 Arbetsmiljö/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/Skrev kort affärskontext per regelverk/)
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/Granska listan och justera vid behov/)
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/Vi håller koll på lagändringar åt er/)
+    ).toBeInTheDocument()
+    // Hedging note (demoted but still present for legal cover).
+    expect(
+      screen.getByText(/Bedöms vara relevanta utifrån er företagsprofil/)
+    ).toBeInTheDocument()
+    // Områden breakdown was removed post-smoke (redundant with /laglistor +
+    // surfaced the LLM-grouping bug). Verify it's gone.
+    expect(screen.queryByText('Områden:')).not.toBeInTheDocument()
+    expect(screen.queryByText(/20 Miljö/)).not.toBeInTheDocument()
   })
 
   it('renders error message + retry CTA in failed mode (heading is owned by DialogTitle)', () => {
@@ -81,47 +104,26 @@ describe('<DoneGenerateStep>', () => {
     expect(button).toHaveAttribute('aria-disabled', 'true')
   })
 
-  it("renders '—' fallback when itemCount is null", () => {
+  it("renders '—' hero fallback when itemCount is null", () => {
     renderStep({ itemCount: null })
 
-    expect(screen.getByText(/— regelverk har lagts till\./)).toBeInTheDocument()
+    // Hero shows em-dash; unit + trust card + hedging still render.
+    expect(screen.getByText('—')).toBeInTheDocument()
+    expect(screen.getByText('regelverk')).toBeInTheDocument()
+    expect(screen.getByText('Detta gjorde vi')).toBeInTheDocument()
+    expect(screen.getByText(/Bedöms vara relevanta/)).toBeInTheDocument()
   })
 
-  it('renders no group-chip row when groups is null or empty', () => {
-    const { rerender } = render(
-      <DoneGenerateStep
-        itemCount={42}
-        groups={null}
-        startedAt={null}
-        onShowList={vi.fn()}
-        onKeepExploring={vi.fn()}
-      />
-    )
-    // No group chips appear when groups is null.
-    expect(screen.queryByText(/Miljö/)).not.toBeInTheDocument()
-
-    rerender(
-      <DoneGenerateStep
-        itemCount={42}
-        groups={[]}
-        startedAt={null}
-        onShowList={vi.fn()}
-        onKeepExploring={vi.fn()}
-      />
-    )
-    expect(screen.queryByText(/Miljö/)).not.toBeInTheDocument()
-  })
-
-  it("renders 'Klart på Xm Ys' duration line when startedAt is non-null", () => {
+  it("renders 'identifierade på Xm Ys' duration line when startedAt is non-null", () => {
     const fourMinutesAgo = new Date(Date.now() - 4 * 60 * 1000).toISOString()
     renderStep({ startedAt: fourMinutesAgo })
 
-    expect(screen.getByText(/Klart på 4 min/i)).toBeInTheDocument()
+    expect(screen.getByText(/identifierade på 4 min/i)).toBeInTheDocument()
   })
 
   it('omits duration line when startedAt is null', () => {
     renderStep({ startedAt: null })
 
-    expect(screen.queryByText(/Klart på/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/identifierade på/i)).not.toBeInTheDocument()
   })
 })

@@ -100,6 +100,12 @@ async function main() {
       law_list_generation_status: null,
       law_list_generation_error: null,
       law_list_generation_progress: null,
+      // Backdate created_at to "now" so the FRESH (≤24h) guard in
+      // lib/onboarding/get-onboarding-state.ts passes. Without this, repeated
+      // smoke tests over multiple days fail to re-open the first-run modal
+      // even after clearing the dismissal flags. Dev-only helper — no
+      // production impact.
+      created_at: new Date(),
     },
   })
 
@@ -111,6 +117,16 @@ async function main() {
     deletedEvents = result.count
   }
 
+  // Wipe the existing default LawList so re-running generation produces a
+  // fresh list instead of appending. Without this, LLM variance across runs
+  // (each run picks a slightly different set of laws) makes the count grow
+  // every cycle (87 → 98 → 102). Cascade kills LawListItems via the schema's
+  // onDelete: Cascade on LawListItem.law_list_id.
+  const deletedLists = await prisma.lawList.deleteMany({
+    where: { workspace_id: workspaceId, is_default: true },
+  })
+
+  console.log(`  Default LawList(s) wiped:     ${deletedLists.count}`)
   console.log('After reset:')
   console.log('  first_run_dismissed_at:       null')
   console.log('  first_run_tabs_viewed:        []')
