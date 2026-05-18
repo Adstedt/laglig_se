@@ -218,7 +218,26 @@ export async function generateLawList(
 
   const result = await generateText({
     model: anthropic('claude-sonnet-4-6'),
-    system: SYSTEM_PROMPT,
+    // Anthropic prompt caching v1. Wrap the system prompt in a
+    // SystemModelMessage so we can attach `cacheControl: { type: 'ephemeral' }`
+    // (5-min TTL). The Anthropic provider reads cache_control from
+    // message-level providerOptions — top-level options aren't sufficient.
+    //
+    // Why this matters: the agent loop runs UP TO 20 steps (stepCountIs(20)
+    // below) and each step re-sends the system prompt + tool definitions at
+    // full price. SYSTEM_PROMPT is ~7700 chars (~2350 tokens, well above the
+    // 1024-token minimum Sonnet 4.6 requires for caching) — caching cuts
+    // 30-40% off per-generation cost. Mirrors the same pattern in
+    // app/api/chat/route.ts:241-252.
+    system: {
+      role: 'system' as const,
+      content: SYSTEM_PROMPT,
+      providerOptions: {
+        anthropic: {
+          cacheControl: { type: 'ephemeral' as const },
+        },
+      },
+    },
     messages: [
       {
         role: 'user',
