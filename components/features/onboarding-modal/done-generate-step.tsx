@@ -21,7 +21,14 @@
  */
 
 import { useState } from 'react'
-import { Sparkles, ArrowRight, AlertTriangle, Check } from 'lucide-react'
+import {
+  Sparkles,
+  ArrowRight,
+  AlertTriangle,
+  Target,
+  UserRoundCog,
+  BellRing,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Tooltip,
@@ -29,6 +36,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { LawListPreview } from './law-list-preview'
 
 interface DoneGenerateStepProps {
   mode?: 'success' | 'failed'
@@ -132,197 +140,157 @@ export function DoneGenerateStep({
   }
 
   return (
-    <div className="flex flex-col overflow-y-auto px-1 py-2">
-      {/* Success ring — sage tint behind sparkles icon. */}
-      <div
-        className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-section-sage"
-        aria-hidden="true"
-      >
-        <Sparkles className="h-7 w-7 text-foreground/80" />
-      </div>
-
-      {/* Hero cluster: Safiro number + unit label baseline-aligned. Pattern
-          matches dashboard "1,234 kr" stat treatments — the unit anchors what
-          the number counts so the eye doesn't have to scan to learn. */}
-      <p className="mb-1 text-center">
-        <span className="font-safiro text-5xl font-medium text-foreground">
-          {itemCount ?? '—'}
+    <div className="grid grid-cols-5 gap-10 overflow-y-auto px-1 py-2">
+      {/* ====================================================
+          LEFT col-span-2 — explainer, benefits, hedging, CTAs.
+          ==================================================== */}
+      <div className="col-span-2 flex flex-col">
+        <span className="mb-3 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+          Översikt
         </span>
-        <span className="ml-2 text-[16px] text-muted-foreground">
-          regelverk
-        </span>
-      </p>
 
-      {durationMs !== null && durationMs >= 0 && (
-        <p className="mb-5 text-center text-[12px] text-muted-foreground/70">
-          identifierade på {formatDuration(durationMs)}
+        {/* Sage success ring + hero number + unit — anchors the celebration. */}
+        <div className="mb-3 flex items-center gap-3">
+          <div
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-section-sage"
+            aria-hidden="true"
+          >
+            <Sparkles className="h-6 w-6 text-foreground/80" />
+          </div>
+          <p>
+            <span className="font-safiro text-[40px] font-medium leading-none text-foreground">
+              {itemCount ?? '—'}
+            </span>
+            <span className="ml-2 text-[15px] text-muted-foreground">
+              regelverk
+            </span>
+          </p>
+        </div>
+
+        {durationMs !== null && durationMs >= 0 && (
+          <p className="mb-4 text-[12px] text-muted-foreground/70">
+            identifierade på {formatDuration(durationMs)}
+          </p>
+        )}
+
+        <p className="mb-5 text-[14px] leading-relaxed text-muted-foreground">
+          Vi har gått igenom Sveriges och EU:s lagstiftning och plockat ut
+          regelverk som bedöms vara relevanta för er verksamhet utifrån
+          företagsprofilen ni lämnade.
         </p>
-      )}
 
-      {/* Two-column trust + guidance card. LEFT explains methodology (trust
-          signal — naming SFS/AFS signals domain expertise, "affärskontext"
-          references the agent's businessContext field). RIGHT previews the
-          natural next-step product features (collaboration, kravpunkter,
-          change-events) — soft cross-sell. Mirrors the tutorial-tab 2-col
-          visual language so the post-generation surface feels like the
-          natural payoff of what the user just watched.
+        {/* Benefits — sage icon containers (mirrors tab-laglista.tsx).
+            Three benefit-focused items (vs the previous process-focused
+            "Detta gjorde vi / händer nu" pair): Skräddarsytt urval,
+            Ansvar/bevis per regelverk, AI bevakar lagändringar. */}
+        <ul className="mb-6 space-y-3">
+          <li className="flex gap-3 text-[13.5px]">
+            <span
+              className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-section-sage"
+              aria-hidden="true"
+            >
+              <Target
+                className="h-3 w-3"
+                style={{ color: 'hsl(var(--tone-success-soft-fg))' }}
+              />
+            </span>
+            <span>
+              <span className="font-medium">Skräddarsytt urval</span>
+              <span className="block text-muted-foreground">
+                Filtrerat på bransch, antal anställda och verksamhetsflaggor —
+                bara det som faktiskt rör er.
+              </span>
+            </span>
+          </li>
+          <li className="flex gap-3 text-[13.5px]">
+            <span
+              className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-section-sage"
+              aria-hidden="true"
+            >
+              <UserRoundCog
+                className="h-3 w-3"
+                style={{ color: 'hsl(var(--tone-success-soft-fg))' }}
+              />
+            </span>
+            <span>
+              <span className="font-medium">
+                Ansvar och bevis per regelverk
+              </span>
+              <span className="block text-muted-foreground">
+                Tilldela ansvariga, lägg till bevis och dokumentera ert
+                systematiska arbete.
+              </span>
+            </span>
+          </li>
+          <li className="flex gap-3 text-[13.5px]">
+            <span
+              className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-section-sage"
+              aria-hidden="true"
+            >
+              <BellRing
+                className="h-3 w-3"
+                style={{ color: 'hsl(var(--tone-success-soft-fg))' }}
+              />
+            </span>
+            <span>
+              <span className="font-medium">AI bevakar lagändringar</span>
+              <span className="block text-muted-foreground">
+                Ni notifieras när något ändras och kan göra en bedömning av
+                påverkan på er verksamhet.
+              </span>
+            </span>
+          </li>
+        </ul>
 
-          Each bullet has a sub-line of 1-line elaboration to add depth
-          without losing scannability. */}
-      <div className="mx-auto mb-5 w-full max-w-4xl rounded-xl border bg-card">
-        <div className="grid grid-cols-1 md:grid-cols-2">
-          <div className="border-b border-border p-6 md:border-b-0 md:border-r">
-            <h4 className="mb-4 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-              Detta gjorde vi
-            </h4>
-            <ul className="space-y-4 text-[13.5px] text-foreground">
-              <li className="flex gap-2.5">
-                <Check
-                  className="mt-0.5 h-4 w-4 shrink-0 text-foreground/60"
-                  aria-hidden="true"
-                />
-                <div>
-                  <p>Läste er företagsprofil</p>
-                  <p className="mt-0.5 text-[12px] text-muted-foreground">
-                    Bransch, antal anställda, verksamhetsflaggor
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-2.5">
-                <Check
-                  className="mt-0.5 h-4 w-4 shrink-0 text-foreground/60"
-                  aria-hidden="true"
-                />
-                <div>
-                  <p>Sökte mot SFS, AFS, EU-direktiv och andra föreskrifter</p>
-                  <p className="mt-0.5 text-[12px] text-muted-foreground">
-                    Svensk och europeisk lagstiftning
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-2.5">
-                <Check
-                  className="mt-0.5 h-4 w-4 shrink-0 text-foreground/60"
-                  aria-hidden="true"
-                />
-                <div>
-                  <p>
-                    Filtrerade till bransch- och verksamhetsspecifika regelverk
-                  </p>
-                  <p className="mt-0.5 text-[12px] text-muted-foreground">
-                    Bara det som faktiskt rör er
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-2.5">
-                <Check
-                  className="mt-0.5 h-4 w-4 shrink-0 text-foreground/60"
-                  aria-hidden="true"
-                />
-                <div>
-                  <p>Skrev kort affärskontext per regelverk</p>
-                  <p className="mt-0.5 text-[12px] text-muted-foreground">
-                    Varför denna lag bör gälla er
-                  </p>
-                </div>
-              </li>
-            </ul>
-          </div>
+        {/* Hedging note — small framing-line as an invitation rather than
+            a bare disclaimer. */}
+        <p className="mb-5 text-[12px] text-muted-foreground">
+          Bedöms vara relevanta utifrån er företagsprofil — granska och justera
+          fritt.
+        </p>
 
-          <div className="p-6">
-            <h4 className="mb-4 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
-              Detta händer nu
-            </h4>
-            <ul className="space-y-4 text-[13.5px] text-foreground">
-              <li className="flex gap-2.5">
-                <ArrowRight
-                  className="mt-0.5 h-4 w-4 shrink-0 text-foreground/60"
-                  aria-hidden="true"
-                />
-                <div>
-                  <p>Granska listan och justera vid behov</p>
-                  <p className="mt-0.5 text-[12px] text-muted-foreground">
-                    Lägg till, ta bort eller byt grupp
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-2.5">
-                <ArrowRight
-                  className="mt-0.5 h-4 w-4 shrink-0 text-foreground/60"
-                  aria-hidden="true"
-                />
-                <div>
-                  <p>Bjud in kollegor och tilldela ansvariga</p>
-                  <p className="mt-0.5 text-[12px] text-muted-foreground">
-                    Dela arbetet och bevisföringen
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-2.5">
-                <ArrowRight
-                  className="mt-0.5 h-4 w-4 shrink-0 text-foreground/60"
-                  aria-hidden="true"
-                />
-                <div>
-                  <p>Lägg till bevis och dokumentera efterlevnad</p>
-                  <p className="mt-0.5 text-[12px] text-muted-foreground">
-                    Bygg ert systematiska arbete
-                  </p>
-                </div>
-              </li>
-              <li className="flex gap-2.5">
-                <ArrowRight
-                  className="mt-0.5 h-4 w-4 shrink-0 text-foreground/60"
-                  aria-hidden="true"
-                />
-                <div>
-                  <p>Vi håller koll på lagändringar åt er</p>
-                  <p className="mt-0.5 text-[12px] text-muted-foreground">
-                    Notifieras när något ändras
-                  </p>
-                </div>
-              </li>
-            </ul>
-          </div>
+        {/* CTAs anchored to bottom of LEFT col via mt-auto */}
+        <div className="mt-auto flex items-center gap-3">
+          <Button
+            onClick={onShowList}
+            className="gap-1.5"
+            data-onboarding-focus-target="true"
+          >
+            <span>Visa min laglista</span>
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Button>
+          {/* "Fortsätt utforska" — DISABLED in B.4 per owner decision v0.4.
+              aria-disabled + no onClick lets the tooltip fire on hover
+              (HTML `disabled` swallows pointer events). B.6 will drop
+              aria-disabled + the Tooltip wrapper and wire onClick. */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  aria-disabled="true"
+                  className="cursor-not-allowed opacity-50 hover:bg-transparent hover:text-current"
+                >
+                  Fortsätt utforska
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">Kommer snart</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
 
-      {/* Hedging note — small framing-line below the card. Phrased as an
-          invitation ("granska och justera fritt") rather than a bare
-          disclaimer. */}
-      <p className="mx-auto mb-6 max-w-prose text-center text-[12.5px] text-muted-foreground">
-        Bedöms vara relevanta utifrån er företagsprofil — granska och justera
-        fritt.
-      </p>
-
-      <div className="flex items-center justify-center gap-3">
-        <Button
-          onClick={onShowList}
-          className="gap-1.5"
-          data-onboarding-focus-target="true"
-        >
-          <span>Visa min laglista</span>
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        </Button>
-        {/* "Fortsätt utforska" — DISABLED in B.4 per owner decision v0.4.
-            We use aria-disabled + no onClick rather than the `disabled` HTML
-            attribute so the tooltip still fires on hover (disabled buttons
-            swallow pointer events). B.6 will drop aria-disabled + the
-            <Tooltip> wrapper and wire onClick={onKeepExploring}. */}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                aria-disabled="true"
-                className="cursor-not-allowed opacity-50 hover:bg-transparent hover:text-current"
-              >
-                Fortsätt utforska
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top">Kommer snart</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+      {/* ====================================================
+          RIGHT col-span-3 — realistic preview of /laglistor
+          with the user's just-generated content. Self-fetches
+          via SWR inside <LawListPreview>; parent props stay
+          unchanged. Mirrors the laglistor-tab tutorial pattern.
+          ==================================================== */}
+      <div className="col-span-3 flex flex-col">
+        <span className="mb-3 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+          Förhandsvisning · /laglistor
+        </span>
+        <LawListPreview />
       </div>
     </div>
   )

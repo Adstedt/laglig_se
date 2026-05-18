@@ -1,12 +1,21 @@
 /**
  * Story 25.4 (Epic 25, B.4): component test for <DoneGenerateStep>.
  *
- * Static presentation component with no external dependencies (no SWR, no
- * server actions, no router) — tests are pure render + callback assertions.
+ * v0.6 (2026-05-18): rewired for the side-by-side layout. The success-mode
+ * body is now a 5-col grid with LEFT col explainer/CTAs and RIGHT col
+ * mounting <LawListPreview> which self-fetches via SWR. The child SWR
+ * is mocked here so the parent tests stay focused on the LEFT col copy +
+ * callback contract.
  */
 
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+
+// Story 25.4 v0.6: <LawListPreview> child uses SWR. Mock returns no data
+// so the preview renders its loading skeleton (out of scope for these
+// tests). The dedicated law-list-preview.test.tsx covers the preview's
+// own behaviour.
+vi.mock('swr', () => ({ default: vi.fn(() => ({ isLoading: true })) }))
 
 import { DoneGenerateStep } from '@/components/features/onboarding-modal/done-generate-step'
 
@@ -29,42 +38,44 @@ function renderStep(
 }
 
 describe('<DoneGenerateStep>', () => {
-  it('renders hero + 2-column trust card + hedging note in success mode', () => {
+  it('renders LEFT col with eyebrow, hero, 3 sage-icon benefits, hedging + preview placeholder on RIGHT', () => {
     renderStep()
 
     // Heading owned by <DialogTitle>; body has no h3.
     expect(
       screen.queryByRole('heading', { name: 'Er laglista är klar' })
     ).not.toBeInTheDocument()
-    // Hero: number + unit label baseline-aligned.
+    // Eyebrow framing on LEFT col.
+    expect(screen.getByText('Översikt')).toBeInTheDocument()
+    // Hero: number + unit label paired.
     expect(screen.getByText('42')).toBeInTheDocument()
     expect(screen.getByText('regelverk')).toBeInTheDocument()
-    // 2-column trust card: methodology (left) + next steps (right).
-    expect(screen.getByText('Detta gjorde vi')).toBeInTheDocument()
-    expect(screen.getByText('Detta händer nu')).toBeInTheDocument()
-    expect(screen.getByText('Läste er företagsprofil')).toBeInTheDocument()
-    // SFS = svensk författningssamling, AFS = AV's föreskrifter. Including
-    // EU-direktiv explicitly because the catalog covers EU docs too.
+    // Explainer paragraph anchors what we did.
     expect(
-      screen.getByText(/Sökte mot SFS, AFS, EU-direktiv och andra föreskrifter/)
+      screen.getByText(/Vi har gått igenom Sveriges och EU:s lagstiftning/)
     ).toBeInTheDocument()
+    // Three benefit items (sage-icon containers — same pattern as
+    // tab-laglista.tsx). Benefit-focused (not process-focused like the
+    // previous "Detta gjorde vi / Detta händer nu" pair).
+    expect(screen.getByText('Skräddarsytt urval')).toBeInTheDocument()
     expect(
-      screen.getByText(/Skrev kort affärskontext per regelverk/)
+      screen.getByText('Ansvar och bevis per regelverk')
     ).toBeInTheDocument()
-    expect(
-      screen.getByText(/Granska listan och justera vid behov/)
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText(/Vi håller koll på lagändringar åt er/)
-    ).toBeInTheDocument()
-    // Hedging note (demoted but still present for legal cover).
+    expect(screen.getByText('AI bevakar lagändringar')).toBeInTheDocument()
+    // Hedging note (legal cover, framed as invitation).
     expect(
       screen.getByText(/Bedöms vara relevanta utifrån er företagsprofil/)
     ).toBeInTheDocument()
-    // Områden breakdown was removed post-smoke (redundant with /laglistor +
-    // surfaced the LLM-grouping bug). Verify it's gone.
-    expect(screen.queryByText('Områden:')).not.toBeInTheDocument()
-    expect(screen.queryByText(/20 Miljö/)).not.toBeInTheDocument()
+    // RIGHT col: preview eyebrow + LawListPreview mounted.
+    expect(
+      screen.getByText(/Förhandsvisning · \/laglistor/)
+    ).toBeInTheDocument()
+    // SWR mock returns isLoading=true so preview shows skeleton (covered
+    // dedicated in law-list-preview.test.tsx).
+    expect(screen.getByTestId('law-list-preview-skeleton')).toBeInTheDocument()
+    // Previous "Detta gjorde vi / Detta händer nu" structure is gone.
+    expect(screen.queryByText('Detta gjorde vi')).not.toBeInTheDocument()
+    expect(screen.queryByText('Detta händer nu')).not.toBeInTheDocument()
   })
 
   it('renders error message + retry CTA in failed mode (heading is owned by DialogTitle)', () => {
@@ -87,6 +98,9 @@ describe('<DoneGenerateStep>', () => {
     expect(
       screen.getByRole('button', { name: /Stäng guiden/ })
     ).toBeInTheDocument()
+    // Failed mode does NOT mount the preview (the side-by-side layout is
+    // success-mode only).
+    expect(screen.queryByText(/Förhandsvisning/)).not.toBeInTheDocument()
   })
 
   it('calls onShowList when primary CTA clicked (success mode)', () => {
@@ -107,10 +121,10 @@ describe('<DoneGenerateStep>', () => {
   it("renders '—' hero fallback when itemCount is null", () => {
     renderStep({ itemCount: null })
 
-    // Hero shows em-dash; unit + trust card + hedging still render.
+    // Hero shows em-dash; unit + benefits + hedging still render.
     expect(screen.getByText('—')).toBeInTheDocument()
     expect(screen.getByText('regelverk')).toBeInTheDocument()
-    expect(screen.getByText('Detta gjorde vi')).toBeInTheDocument()
+    expect(screen.getByText('Skräddarsytt urval')).toBeInTheDocument()
     expect(screen.getByText(/Bedöms vara relevanta/)).toBeInTheDocument()
   })
 
