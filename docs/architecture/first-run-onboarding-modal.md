@@ -175,7 +175,7 @@ model OnboardingEvent {
 | `tab_viewed` | `{ tab_id: 'laglista' \| 'kravpunkter' \| 'uppgifter' \| 'kontroller' \| 'lagandringar' \| 'ai_agent' }` |
 | `modal_minimised` | `{ from_state: 'path_choice' \| 'kickoff' \| 'tutorial' \| 'done' \| 'tutorial_only' }` |
 | `fab_dismissed` | `{ from_state: 'visible_idle' \| 'visible_working' \| 'visible_done' }` |
-| `feedback_submitted` | `{ sentiment: 'positive' \| 'negative', message?: string, email?: string }` *(Story B.5 — in-scope MVP; see §7.1 and §14)* |
+| `feedback_submitted` | `{ sentiment: 'positive' \| 'negative', message: string \| null, email: string \| null, source: string }` *(Story B.5 — in-scope MVP; see §7.1 and §14. `source` is a forward-compat discriminator — B.5 ships with `'onboarding_modal_feedback_tab'`; future surfaces (settings page, dashboard footer, Hjälp menu, etc.) write their own values so the team can filter by `payload->>'source'`. Open-ended string — not enum.)* |
 | `done_shown` | `{ path: 'generate' \| 'import' \| 'template', mode?: 'success' \| 'failed' }` *(see Story 25.4 AC 22 — fires once per done-step entry, StrictMode-guarded)* |
 | `done_cta_clicked` | `{ path: 'generate' \| 'import' \| 'template', cta: 'show_list' \| 'go_to_review' \| 'keep_exploring' \| 'retry' \| 'close_failure' }` *(see Story 25.4 AC 22 — `'keep_exploring'` is reserved-but-unfired in B.4 since the button is disabled per owner decision v0.4; will start firing in B.6 when the tutorial_only mode lands)* |
 
@@ -407,64 +407,99 @@ export async function recordOnboardingEvent(
   payload?: Record<string, unknown>,
 ): Promise<void>
 
-// Story B.5 — feedback form submission.
-// 1. Writes an OnboardingEvent row (event_type='feedback_submitted').
-// 2. Emails dev@laglig.se via lib/email/email-service (Resend transport).
+// Story B.5 — product-feedback form submission.
+// 1. Writes an OnboardingEvent row (event_type='feedback_submitted', with a
+//    `source` discriminator so future surfaces can be filtered).
+// 2. Emails dev@laglig.se via lib/email/email-service (Resend transport) using
+//    the <ProductFeedbackInternalEmail> React Email template.
 // Email failure does NOT block the user submit; row is written first.
-// Mirrors app/actions/catalog-ingest-request.ts (Story 24.5 ops-email pattern).
-export async function submitOnboardingFeedback(input: {
+// Mirrors app/actions/law-list-import.ts (Story 24.5 ops-email pattern).
+//
+// *Renamed from `submitOnboardingFeedback` in Story 25.5 — feedback form
+// captures product-wide feedback, not modal-specific. See Story 25.5 "Scope
+// framing" + Owner-ack'd decision 6.*
+export async function submitProductFeedback(input: {
   sentiment: 'positive' | 'negative'
   message?: string  // ≤500 chars
-  email?: string    // optional reply-to; prefilled from session.user.email client-side
+  email?: string    // optional reply-to; server falls back to session.user.email when empty
 }): Promise<{ ok: true } | { ok: false; error: string }>
 ```
 
-**`submitOnboardingFeedback` implementation contract (Story B.5):**
+**`submitProductFeedback` implementation contract (Story B.5):**
+
+The real implementation lives at `app/actions/onboarding-modal.ts` (see the file for the canonical source). The pseudo-code below shows the *shape* of the contract — the real code uses the existing `writeOnboardingEvent` helper + React Email components (NOT raw HTML — the `sendEmail` signature requires `react: React.ReactElement` per `lib/email/email-service.ts:27-36`).
 
 ```ts
 // app/actions/onboarding-modal.ts (excerpt)
 'use server'
 
 import { sendEmail } from '@/lib/email/email-service'
-import { withWorkspace } from '@/lib/auth/with-workspace'
+import { withWorkspace } from '@/lib/auth/workspace-context'
+import { ProductFeedbackInternalEmail } from '@/emails/product-feedback-internal'
 
-export const submitOnboardingFeedback = withWorkspace(async ({ workspace, user, prisma }, input) => {
-  const message = input.message?.slice(0, 500) ?? null
-  const email = input.email?.trim() || user.email
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-  // Step 1 — write the event row first. This is the durable record.
-  await prisma.onboardingEvent.create({
-    data: {
-      workspace_id: workspace.id,
-      user_id: user.id,
-      event_type: 'feedback_submitted',
-      payload: { sentiment: input.sentiment, message, email },
-    },
-  }).catch((e) => console.error('[ONBOARDING_FEEDBACK_EVENT_FAIL]', e))
-
-  // Step 2 — fire the email. Fail-safe: do not throw on email failure.
-  try {
-    const emoji = input.sentiment === 'positive' ? '👍' : '👎'
-    await sendEmail({
-      to: 'dev@laglig.se',
-      subject: `[Onboarding feedback] ${emoji} från ${workspace.name}`,
-      html: `
-        <h2>Onboarding feedback ${emoji}</h2>
-        <p><strong>Workspace:</strong> ${workspace.name} (<code>${workspace.id}</code>)</p>
-        <p><strong>User:</strong> ${user.name} &lt;${email}&gt;</p>
-        <p><strong>Sentiment:</strong> ${input.sentiment}</p>
-        ${message ? `<p><strong>Message:</strong></p><blockquote>${escapeHtml(message)}</blockquote>` : '<p><em>(no message)</em></p>'}
-        <hr/>
-        <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/workspaces/${workspace.id}">Admin view</a></p>
-      `,
-    })
-  } catch (e) {
-    console.error('[ONBOARDING_FEEDBACK_EMAIL_FAIL]', e)
-    // intentionally swallow — user sees success, we just lose this email
+export async function submitProductFeedback(input: {
+  sentiment: 'positive' | 'negative'
+  message?: string
+  email?: string
+}): Promise<ActionResult> {
+  // Validate up-front, before any DB work.
+  if (input.sentiment !== 'positive' && input.sentiment !== 'negative') {
+    return { ok: false, error: 'Välj en tumme upp eller ner.' }
   }
+  const trimmedEmailInput = input.email?.trim() ?? ''
+  if (trimmedEmailInput.length > 0 && !EMAIL_REGEX.test(trimmedEmailInput)) {
+    return { ok: false, error: 'Ogiltig e-postadress.' }
+  }
+  const trimmedMessage = input.message?.trim().slice(0, 500) ?? ''
+  const messageForPayload = trimmedMessage.length > 0 ? trimmedMessage : null
 
-  return { ok: true as const }
-})
+  return withWorkspace(async (ctx) => {
+    // ctx exposes workspaceId + userId + workspaceName; user.email/name require a separate query.
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.userId },
+      select: { email: true, name: true },
+    })
+    const sessionEmail = user?.email ?? ''
+    const replyToEmail = trimmedEmailInput.length > 0 ? trimmedEmailInput : sessionEmail
+
+    // Step 1 — durable record. writeOnboardingEvent is fail-safe (logs +
+    // swallows, never throws). source discriminator enables future surface
+    // filtering via payload->>'source'.
+    await writeOnboardingEvent(ctx.workspaceId, ctx.userId, 'feedback_submitted', {
+      sentiment: input.sentiment,
+      message: messageForPayload,
+      email: replyToEmail.length > 0 ? replyToEmail : null,
+      source: 'onboarding_modal_feedback_tab',
+    })
+
+    // Step 2 — email. Fail-safe: log + swallow on transport failure.
+    try {
+      const recipient = process.env.PRODUCT_FEEDBACK_NOTIFICATION_EMAIL || 'dev@laglig.se'
+      const emoji = input.sentiment === 'positive' ? '👍' : '👎'
+      await sendEmail({
+        to: recipient,
+        subject: `[Produkt-feedback] ${emoji} från ${ctx.workspaceName}`,
+        react: ProductFeedbackInternalEmail({
+          sentiment: input.sentiment,
+          workspaceName: ctx.workspaceName,
+          workspaceId: ctx.workspaceId,
+          userName: user?.name ?? null,
+          userEmail: sessionEmail,
+          replyToEmail,
+          message: messageForPayload,
+          source: 'onboarding_modal_feedback_tab',
+        }),
+        from: 'no-reply',
+      })
+    } catch (err) {
+      console.error('[PRODUCT_FEEDBACK_EMAIL_FAIL]', err)
+    }
+
+    return { ok: true }
+  })
+}
 ```
 
 **Why event-write before email-send:** the DB row is the durable record. If we sent email first and the DB write failed, the email would arrive with no audit trail. The reverse failure mode (row written, email lost) is recoverable from the admin surface (`/admin/workspaces/{id}` can show recent `OnboardingEvent` rows).
@@ -624,15 +659,20 @@ laglig_se/
 
 **Status (2026-05-13):** Promoted from future to in-scope MVP. PO decision: ship a standard feedback form, no admin dashboard, email-only delivery to dev@laglig.se.
 
-- **Surface:** 7th "Feedback" tab in the tutorial-tabs strip (rightmost, `MessageCircle` icon, no "Ny" chip — quiet entry, not pushy). Same component is reachable both in `tutorial` mode and `tutorial_only` mode (after B.6 ships the FAB/Hjälp re-entry).
-- **Trigger:** None — user opens the tab when they want to. No passive nag, no auto-pop. Friction is deliberately low: anyone reaching the tab gets a one-screen form.
-- **Form fields:** thumbs up/down (required) + optional 500-char message + optional email (prefilled from `session.user.email`, editable).
-- **Storage:** `OnboardingEvent` (already in §5.2) — `event_type='feedback_submitted'`, `payload={sentiment, message, email}`. No new schema.
-- **Delivery:** `submitOnboardingFeedback` server action (see §7.1) writes the event row, then emails dev@laglig.se via `lib/email/email-service` (Resend). Fail-safe: email failure does not break the user submit; row is the durable record.
+**Scope re-framed (2026-05-18, Story 25.5):** the form captures **product-wide feedback**, not feedback *about* the onboarding modal specifically. The modal is just the **first surface** that hosts it — future stories may surface the same form (or a deep-link to it) from the settings page, the dashboard footer, or a "Skicka feedback" link in the Hjälp menu. All future surfaces route through the same `submitProductFeedback` server action with a different `source` discriminator in the event payload.
+
+- **Surface (first):** 7th "Feedback" tab in the tutorial-tabs strip (rightmost, `MessageCircle` icon, no "Ny" chip — quiet entry, not pushy). Same component is reachable both in `tutorial` mode and `tutorial_only` mode (after B.6 ships the FAB/Hjälp re-entry).
+- **Future surfaces:** any new surface writes `feedback_submitted` rows with its own `source` value (e.g. `'settings_feedback_link'`, `'dashboard_footer_feedback'`, `'help_menu_feedback'`) so the team can filter `payload->>'source'` to route or prioritize. Naming convention `{surface}_{location}`; open-ended string (no enum) to keep ad-hoc surfaces cheap.
+- **Trigger:** None — user opens the tab when they want to. No passive nag, no auto-pop. Friction is deliberately low: anyone reaching the surface gets a one-screen form.
+- **Form fields:** thumbs up/down (required) + optional 500-char message + optional email. **Email is NOT prefilled in the client** (deliberate simplification from the v1 spec — see Story 25.5 Owner-ack'd decision 1); the server action falls back to `session.user.email` when the email field is empty, and the placeholder text tells the user this happens. UX: a blank field "just works" silently; the user can still type a different reply-to if they want.
+- **Storage:** `OnboardingEvent` (already in §5.2) — `event_type='feedback_submitted'`, `payload={sentiment, message, email, source}`. **No new schema.** The `source` discriminator is the v0.2 addition described above.
+- **Delivery:** `submitProductFeedback` server action (see §7.1) writes the event row (durable record), then emails `PRODUCT_FEEDBACK_NOTIFICATION_EMAIL` (default `dev@laglig.se`) via `lib/email/email-service` (Resend) with the `<ProductFeedbackInternalEmail>` React Email component (NOT raw HTML — the `sendEmail` signature requires `react: React.ReactElement`). Fail-safe: email failure does not break the user submit; row is the durable record. Log prefix: `[PRODUCT_FEEDBACK_EMAIL_FAIL]`.
 - **No admin surface at v1.** The dev@laglig.se inbox is the surface. If volume grows past what an inbox can absorb, add an admin tile in a follow-up (low priority).
 - **Story slot:** B.5 in §9 sequencing table.
 
 **Why no rate-limit at v1:** form-driven submission is naturally throttled by manual user action. Spam pattern is unlikely from authenticated workspace users; revisit if we see it.
+
+**Action file home:** stays in `app/actions/onboarding-modal.ts` for now even though the action name is product-wide. The single caller (B.5's `<FeedbackStep>`) lives in the onboarding modal; when (if) a second caller surface ships, the file can be renamed at that point with a simple find-and-replace.
 
 ---
 

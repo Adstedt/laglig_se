@@ -33,6 +33,7 @@ export type TutorialTabId =
   | 'kontroller'
   | 'lagandringar'
   | 'ai-agent'
+  | 'feedback'
 
 interface TabDef {
   id: TutorialTabId
@@ -47,6 +48,7 @@ const TABS: TabDef[] = [
   { id: 'kontroller', label: 'Kontroller' },
   { id: 'lagandringar', label: 'Lagändringar' },
   { id: 'ai-agent', label: 'AI-agenten', hasNyChip: true },
+  { id: 'feedback', label: 'Feedback' },
 ]
 
 interface TutorialStepProps {
@@ -65,6 +67,7 @@ export function TutorialStep({ initialStatus, onMinimise }: TutorialStepProps) {
     kontroller: null,
     lagandringar: null,
     'ai-agent': null,
+    feedback: null,
   })
 
   // Mount fire: record the initial tab view once. The ref guard matches the

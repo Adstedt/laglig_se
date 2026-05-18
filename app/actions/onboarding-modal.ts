@@ -22,6 +22,8 @@
 import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { withWorkspace } from '@/lib/auth/workspace-context'
+import { sendEmail } from '@/lib/email/email-service'
+import { ProductFeedbackInternalEmail } from '@/emails/product-feedback-internal'
 
 type ActionResult = { ok: true } | { ok: false; error: string }
 
@@ -182,6 +184,98 @@ export async function recordOnboardingEvent(
 ): Promise<ActionResult> {
   return withWorkspace(async (ctx) => {
     await writeOnboardingEvent(ctx.workspaceId, ctx.userId, eventType, payload)
+    return { ok: true }
+  })
+}
+
+/**
+ * Story 25.5 (B.5): submit product-feedback from the in-modal Feedback tab.
+ *
+ * **Scope (product-wide, not modal-specific).** The form captures general
+ * product feedback that just *happens to live in the modal* as its first
+ * surface. Future stories may surface the same form (or a deep-link) from
+ * settings, the dashboard footer, or a Hjälp-menu link — all calling this
+ * action with a different `source` discriminator in the event payload.
+ *
+ * Sequence (mirrors the catalog-request ops-email pattern from Story 24.5
+ * at `app/actions/law-list-import.ts:810-862`):
+ *   1. Validate input (sentiment required; email regex if provided).
+ *   2. Fetch user.email + user.name for the email body (ctx doesn't carry them).
+ *   3. Resolve reply-to: user-entered email → session email → null.
+ *   4. Write the `OnboardingEvent` row with `event_type='feedback_submitted'`
+ *      (durable record; fail-safe via writeOnboardingEvent helper).
+ *   5. Send email to `PRODUCT_FEEDBACK_NOTIFICATION_EMAIL` (default dev@laglig.se)
+ *      with `<ProductFeedbackInternalEmail>` body. Failure logged as
+ *      `[PRODUCT_FEEDBACK_EMAIL_FAIL]` and SWALLOWED — user sees "Tack"
+ *      regardless of transport state.
+ *
+ * Email failure does NOT block the user submit because the durable record
+ * is the OnboardingEvent row; email is a convenience nudge.
+ */
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+export async function submitProductFeedback(input: {
+  sentiment: 'positive' | 'negative'
+  message?: string
+  email?: string
+}): Promise<ActionResult> {
+  if (input.sentiment !== 'positive' && input.sentiment !== 'negative') {
+    return { ok: false, error: 'Välj en tumme upp eller ner.' }
+  }
+
+  const trimmedEmailInput = input.email?.trim() ?? ''
+  if (trimmedEmailInput.length > 0 && !EMAIL_REGEX.test(trimmedEmailInput)) {
+    return { ok: false, error: 'Ogiltig e-postadress.' }
+  }
+
+  const trimmedMessage = input.message?.trim().slice(0, 500) ?? ''
+  const messageForPayload = trimmedMessage.length > 0 ? trimmedMessage : null
+
+  return withWorkspace(async (ctx) => {
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.userId },
+      select: { email: true, name: true },
+    })
+    const sessionEmail = user?.email ?? ''
+    const replyToEmail =
+      trimmedEmailInput.length > 0 ? trimmedEmailInput : sessionEmail
+
+    await writeOnboardingEvent(
+      ctx.workspaceId,
+      ctx.userId,
+      'feedback_submitted',
+      {
+        sentiment: input.sentiment,
+        message: messageForPayload,
+        email: replyToEmail.length > 0 ? replyToEmail : null,
+        source: 'onboarding_modal_feedback_tab',
+      }
+    )
+
+    try {
+      const recipient =
+        process.env.PRODUCT_FEEDBACK_NOTIFICATION_EMAIL || 'dev@laglig.se'
+      const emoji = input.sentiment === 'positive' ? '👍' : '👎'
+      await sendEmail({
+        to: recipient,
+        subject: `[Produkt-feedback] ${emoji} från ${ctx.workspaceName}`,
+        react: ProductFeedbackInternalEmail({
+          sentiment: input.sentiment,
+          workspaceName: ctx.workspaceName,
+          workspaceId: ctx.workspaceId,
+          userName: user?.name ?? null,
+          userEmail: sessionEmail,
+          replyToEmail,
+          message: messageForPayload,
+          source: 'onboarding_modal_feedback_tab',
+        }),
+        from: 'no-reply',
+      })
+    } catch (err) {
+      console.error('[PRODUCT_FEEDBACK_EMAIL_FAIL]', err)
+      // intentionally swallow — durable record already written
+    }
+
     return { ok: true }
   })
 }
