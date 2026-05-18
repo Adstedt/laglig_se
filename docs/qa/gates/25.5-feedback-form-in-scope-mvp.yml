@@ -1,0 +1,85 @@
+schema: 1
+story: '25.5'
+story_title: 'Feedback form — in-scope MVP (B.5)'
+gate: PASS
+status_reason: 'All 38 ACs traceable to code + tests. 147 onboarding-modal tests pass (was 130 → +17). Zero regressions in 5,614-test unit suite. Two low-priority future-polish recommendations only — no must-fix items. Two ACs (37/38) are operational, owner-driven by design and fully documented for handoff.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-18T22:05:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 100
+expires: '2026-06-01T22:05:00Z'
+
+evidence:
+  tests_reviewed: 17
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]
+    ac_gaps: []
+    # ACs 37 (manual staging smoke) and 38 (post-merge production check) are
+    # operational ACs documented in the story for owner execution post-deploy —
+    # they do not require automated code coverage. Identical pattern to
+    # Story 25.4 (ACs 33 + 34) which gated PASS with the same handling.
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Server action wrapped in withWorkspace (workspace-self-write only). Server-side validation on sentiment + email regex. Defence-in-depth slice-to-500 on message. No XSS surface (React Email + Tailwind, no dangerouslySetInnerHTML). No SQL injection (Prisma + structured payload). No PII concerns (privacy posture surfaced in RIGHT-column context card). No new auth surface, no new env-var required (PRODUCT_FEEDBACK_NOTIFICATION_EMAIL is optional override with dev@laglig.se fallback). Minor NIT: pre-auth validation could disclose validation rules to unauthenticated callers — captured as future polish, NEGLIGIBLE impact since messages reveal nothing beyond the UI.'
+  performance:
+    status: PASS
+    notes: 'Single Prisma query per submit (user.findUnique). One sendEmail call (Resend with built-in retry-backoff). No N+1, no double-fetches. React Email component invoked only at send time (server-only — does not ship to client). Bundle delta ~270 LOC client + ~100 LOC email + ~70 LOC action append — well within tree-shaking budget. No new SWR caches, no new polling intervals. Form is event-driven (no mount-fire useEffects) so no StrictMode-double-fire concerns.'
+  reliability:
+    status: PASS
+    notes: 'Fail-safe pattern correctly implemented: event write before email, email failure logged ([PRODUCT_FEEDBACK_EMAIL_FAIL]) + swallowed, action returns {ok: true} regardless. Verified by the "email-transport failure" test case (mockSendEmail.mockRejectedValueOnce). Matches existing pattern (Story 14.27 + 24.5). User-facing UX is graceful — failed submit toast + field preservation, no spinner-stuck state.'
+  maintainability:
+    status: PASS
+    notes: 'Clean code, no dead exports, kebab-case + project-structure compliant, docstrings explain WHY (scope framing) not WHAT. Tests cleanly isolated via vi.mock. Arch doc (§5.2 + §7.1 + §14) updated inline in the same PR so code-truth and doc-truth stay aligned — mirrors Story 25.4 Task 11 precedent. Two test-mock additions (mockUserFindUnique + mockEmailComponent sentinel pattern) are reusable for future product-feedback-surface stories.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Move input validation INSIDE withWorkspace for pattern consistency'
+      refs: ['app/actions/onboarding-modal.ts:222-232']
+      severity: low
+      reason: 'Other 5 actions in this file validate inside the wrapper. Pre-auth validation could theoretically disclose validation rules to unauthenticated callers probing the Server Action endpoint. Realistic information leak: NEGLIGIBLE (rules are also visible in the UI), but moving validation inside makes the pattern uniform. Trade-off: one extra DB roundtrip on obviously-invalid input.'
+    - action: 'Add a test that asserts the RIGHT-column privacy disclosure copy'
+      refs: ['tests/unit/components/features/onboarding-modal/feedback-step.test.tsx']
+      severity: low
+      reason: 'The privacy note ("Vi sparar din e-post, ditt meddelande... Inga session-IDs, ingen analytik.") carries a GDPR-adjacent user-facing surface. If accidentally rewritten or removed during a future polish pass, no current test would fail. A 1-line `expect(screen.getByText(/Inga session-IDs/)).toBeInTheDocument()` would lock the invariant.'
+    - action: 'Verify Feedback tab works unchanged after B.6 ships tutorial_only mode'
+      refs: ['components/features/onboarding-modal/feedback-step.tsx']
+      severity: low
+      reason: 'Form is mode-agnostic — no FAB-mode-specific code needed. Should be a no-op once B.6 lands the FAB / Hjälp re-entry, but worth a manual confirmation walkthrough.'
+
+# Operational handoff (owner-driven, not blocking gate)
+next_steps:
+  - action: 'Manual staging smoke per AC 37 (8 steps, ~5 min)'
+    refs: ['docs/stories/25.5.feedback-form-in-scope-mvp.md']
+    note: 'Open Feedback tab → thumbs-down + message → Skicka → verify Tack confirmation + email arrives at dev@laglig.se with [Produkt-feedback] subject + correct source field. Optional step 8 unsets RESEND_API_KEY to verify fail-safe pattern.'
+  - action: 'Post-merge production check per AC 38 (within 24h)'
+    refs: []
+    note: 'SQL: select count(*), payload->>''sentiment'', payload->>''source'' from "OnboardingEvent" where event_type=''feedback_submitted'' and created_at > now() - interval ''24 hour'' group by 2, 3. Confirms end-to-end transport + new source discriminator populated. Sentry scan for feedback-step.tsx / submitProductFeedback errors.'
+  - action: 'Story B.6 — Feedback tab gains second entry point (no B.5 code change needed)'
+    refs: ['components/features/onboarding-modal/feedback-step.tsx', 'components/features/onboarding-modal/tutorial-step.tsx']
+    note: 'Form is mode-agnostic. B.6 only needs to ensure tutorial_only mode keeps the Feedback tab in the strip — automatic from the existing TUTORIAL_TAB_COMPONENTS map.'
+
+# Implementation traceability
+files_reviewed:
+  created:
+    - 'components/features/onboarding-modal/feedback-step.tsx'
+    - 'emails/product-feedback-internal.tsx'
+    - 'tests/unit/components/features/onboarding-modal/feedback-step.test.tsx'
+  modified:
+    - 'components/features/onboarding-modal/tutorial-step.tsx'
+    - 'components/features/onboarding-modal/tutorial-tabs/index.ts'
+    - 'app/actions/onboarding-modal.ts'
+    - 'tests/unit/app/actions/onboarding-modal.test.ts'
+    - 'tests/unit/components/features/onboarding-modal/tutorial-step.test.tsx'
+    - 'tests/unit/components/features/onboarding-modal/tutorial-tabs/index.test.ts'
+    - 'docs/architecture/first-run-onboarding-modal.md'
+
+# Schema notes
+schema_changes: 'NONE — no Prisma migration. event_type is String (new accepted value); source is a new key in the existing Json? payload column. Verified via Dev Notes "No Prisma migration in this story" subsection and git status of prisma/ directory.'

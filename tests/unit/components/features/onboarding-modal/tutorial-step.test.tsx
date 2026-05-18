@@ -1,8 +1,11 @@
 /**
  * Story 25.2 (Epic 25, B.2): component test for <TutorialStep>.
+ * Story 25.5 (Epic 25, B.5): tab count bumped from 6 → 7 with the Feedback
+ * tab added as the rightmost entry. Existing test expectations updated to
+ * read "av 7" / "AI-agenten → Feedback" for arrow-key wrap-around / etc.
  *
  * Verifies the tab shell behaviour:
- *  - 6 tab buttons rendered with the correct labels (AC 16)
+ *  - 7 tab buttons rendered with the correct labels (AC 16 + Story 25.5 AC 33)
  *  - default tab is active on mount, fires tab_viewed for the default tab (AC 18)
  *  - switching tabs updates active styling, counter, and fires tab_viewed (AC 18)
  *  - re-clicking the active tab does NOT re-fire tab_viewed (AC 18)
@@ -34,6 +37,7 @@ vi.mock('@/components/features/onboarding-modal/tutorial-tabs', () => ({
     kontroller: () => <div data-testid="tab-stub-kontroller" />,
     lagandringar: () => <div data-testid="tab-stub-lagandringar" />,
     'ai-agent': () => <div data-testid="tab-stub-ai-agent" />,
+    feedback: () => <div data-testid="tab-stub-feedback" />,
   },
 }))
 
@@ -44,7 +48,7 @@ describe('<TutorialStep>', () => {
     vi.clearAllMocks()
   })
 
-  it('renders 6 tab buttons with the correct labels', () => {
+  it('renders 7 tab buttons with the correct labels (incl. Feedback per Story 25.5)', () => {
     render(<TutorialStep onMinimise={vi.fn()} />)
 
     expect(
@@ -59,7 +63,8 @@ describe('<TutorialStep>', () => {
       screen.getByRole('tab', { name: /Lagändringar/ })
     ).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: /AI-agenten/ })).toBeInTheDocument()
-    expect(screen.getAllByRole('tab')).toHaveLength(6)
+    expect(screen.getByRole('tab', { name: /Feedback/ })).toBeInTheDocument()
+    expect(screen.getAllByRole('tab')).toHaveLength(7)
   })
 
   it('first tab is active on mount and fires tab_viewed once for the default tab', () => {
@@ -73,8 +78,8 @@ describe('<TutorialStep>', () => {
     expect(mockRecordTabViewed).toHaveBeenCalledTimes(1)
     expect(mockRecordTabViewed).toHaveBeenCalledWith('laglista')
 
-    // Counter shows "1 av 6" initially
-    expect(screen.getByText(/1 av 6/i)).toBeInTheDocument()
+    // Counter shows "1 av 7" initially (post-Story-25.5)
+    expect(screen.getByText(/1 av 7/i)).toBeInTheDocument()
   })
 
   it('clicking a different tab updates active styling, fires tab_viewed, and updates the counter', () => {
@@ -94,7 +99,7 @@ describe('<TutorialStep>', () => {
     expect(mockRecordTabViewed).toHaveBeenCalledTimes(2)
     expect(mockRecordTabViewed).toHaveBeenLastCalledWith('uppgifter')
 
-    expect(screen.getByText(/3 av 6/i)).toBeInTheDocument()
+    expect(screen.getByText(/3 av 7/i)).toBeInTheDocument()
   })
 
   it('clicking the already-active tab does NOT re-fire tab_viewed (debounce)', () => {
@@ -173,33 +178,52 @@ describe('<TutorialStep>', () => {
     expect(mockRecordTabViewed).toHaveBeenLastCalledWith('kravpunkter')
   })
 
-  it('ArrowLeft wraps from the first tab to the last (AI-agenten)', () => {
+  it('ArrowLeft wraps from the first tab to the last (Feedback per Story 25.5)', () => {
     render(<TutorialStep onMinimise={vi.fn()} />)
     const firstTab = screen.getByRole('tab', { name: /Vad är en laglista\?/ })
 
     fireEvent.keyDown(firstTab, { key: 'ArrowLeft' })
 
-    expect(screen.getByRole('tab', { name: /AI-agenten/ })).toHaveAttribute(
+    expect(screen.getByRole('tab', { name: /Feedback/ })).toHaveAttribute(
       'aria-selected',
       'true'
     )
-    expect(mockRecordTabViewed).toHaveBeenLastCalledWith('ai-agent')
+    expect(mockRecordTabViewed).toHaveBeenLastCalledWith('feedback')
   })
 
-  it('End moves selection to the last tab; Home returns to the first', () => {
+  it('End moves selection to the last tab (Feedback); Home returns to the first', () => {
     render(<TutorialStep onMinimise={vi.fn()} />)
     const firstTab = screen.getByRole('tab', { name: /Vad är en laglista\?/ })
 
     fireEvent.keyDown(firstTab, { key: 'End' })
-    expect(screen.getByRole('tab', { name: /AI-agenten/ })).toHaveAttribute(
+    expect(screen.getByRole('tab', { name: /Feedback/ })).toHaveAttribute(
       'aria-selected',
       'true'
     )
 
-    const lastTab = screen.getByRole('tab', { name: /AI-agenten/ })
+    const lastTab = screen.getByRole('tab', { name: /Feedback/ })
     fireEvent.keyDown(lastTab, { key: 'Home' })
     expect(
       screen.getByRole('tab', { name: /Vad är en laglista\?/ })
     ).toHaveAttribute('aria-selected', 'true')
+  })
+
+  // Story 25.5 (B.5) AC 33 — new test cases for the Feedback tab.
+  it('Feedback tab is reachable as the 7th tab', () => {
+    render(<TutorialStep onMinimise={vi.fn()} />)
+    const tabs = screen.getAllByRole('tab')
+    expect(tabs).toHaveLength(7)
+    expect(tabs[6]).toHaveTextContent('Feedback')
+  })
+
+  it('clicking the Feedback tab fires recordTabViewed("feedback")', () => {
+    render(<TutorialStep onMinimise={vi.fn()} />)
+    // initial mount fires once for the default (laglista)
+    expect(mockRecordTabViewed).toHaveBeenCalledTimes(1)
+
+    fireEvent.click(screen.getByRole('tab', { name: /Feedback/ }))
+
+    expect(mockRecordTabViewed).toHaveBeenCalledTimes(2)
+    expect(mockRecordTabViewed).toHaveBeenLastCalledWith('feedback')
   })
 })
