@@ -76,9 +76,9 @@ const areaPath = `${linePath} L ${lastPt.x} ${yPos(0)} L ${firstPt.x} ${yPos(0)}
 
 export function WhySectionGraph() {
   return (
-    <section className="relative overflow-hidden border-b py-20 md:py-28">
+    <section className="relative overflow-hidden border-b py-12 md:py-20">
       <div className="container relative mx-auto px-4">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-7xl">
           <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
             Compliance vid skala
           </p>
