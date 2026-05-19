@@ -205,7 +205,7 @@ function CollapsedAccordionItem({
               aria-label={item.title}
               className={cn(
                 'relative mx-auto flex h-9 w-9 items-center justify-center rounded-lg transition-colors',
-                'hover:bg-accent hover:text-accent-foreground',
+                'hover:bg-foreground/10 hover:text-accent-foreground',
                 item.disabled ? 'opacity-50 cursor-not-allowed' : '',
                 'text-foreground/60 hover:text-foreground'
               )}
@@ -219,7 +219,7 @@ function CollapsedAccordionItem({
         </PopoverTrigger>
         <TooltipContent
           side="right"
-          sideOffset={8}
+          sideOffset={24}
           className="px-2.5 py-1 text-xs font-medium"
         >
           {item.title}
@@ -229,7 +229,7 @@ function CollapsedAccordionItem({
         <PopoverContent
           side="right"
           align="start"
-          sideOffset={8}
+          sideOffset={24}
           className="w-48 p-1.5 shadow-lg"
         >
           <div className="px-2 py-1.5 text-xs font-semibold text-foreground/70 uppercase tracking-wider">
@@ -249,8 +249,8 @@ function CollapsedAccordionItem({
                 className={cn(
                   'flex items-center rounded-md px-2 py-1.5 text-sm transition-colors',
                   isActive(subItem.href)
-                    ? 'text-foreground font-medium bg-accent'
-                    : 'text-foreground/70 hover:text-foreground hover:bg-accent'
+                    ? 'text-foreground font-medium bg-foreground/10'
+                    : 'text-foreground/70 hover:text-foreground hover:bg-foreground/10'
                 )}
               >
                 {subItem.title}
@@ -343,7 +343,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
               onClick={toggleRightSidebar}
               aria-label={collapsed ? item.title : undefined}
               className={cn(
-                'transition-colors hover:bg-accent hover:text-foreground text-foreground/60',
+                'transition-colors hover:bg-foreground/10 hover:text-foreground text-foreground/60',
                 collapsed
                   ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
                   : 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm'
@@ -358,7 +358,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
           {collapsed && (
             <TooltipContent
               side="right"
-              sideOffset={8}
+              sideOffset={24}
               className="px-2.5 py-1 text-xs font-medium"
             >
               {item.title}
@@ -389,7 +389,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
             disabled={item.disabled}
             className={cn(
               'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-              'hover:bg-accent hover:text-foreground',
+              'hover:bg-foreground/10 hover:text-foreground',
               item.disabled ? 'opacity-50 cursor-not-allowed' : '',
               'text-foreground/60'
             )}
@@ -416,7 +416,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
                   className={cn(
                     'flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm transition-colors',
                     isActive(subItem.href)
-                      ? 'text-foreground font-medium bg-accent'
+                      ? 'text-foreground font-medium bg-foreground/10'
                       : 'text-foreground/60 hover:text-foreground'
                   )}
                 >
@@ -463,7 +463,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
           {collapsed && (
             <TooltipContent
               side="right"
-              sideOffset={8}
+              sideOffset={24}
               className="px-2.5 py-1 text-xs font-medium"
             >
               {item.title}
@@ -489,8 +489,8 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
                 ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
                 : 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm',
               active
-                ? 'bg-accent text-foreground'
-                : 'text-foreground/60 hover:bg-accent hover:text-foreground'
+                ? 'bg-foreground/10 text-foreground'
+                : 'text-foreground/60 hover:bg-foreground/10 hover:text-foreground'
             )}
           >
             <Icon className="h-4 w-4 shrink-0" />
@@ -500,7 +500,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
         {collapsed && (
           <TooltipContent
             side="right"
-            sideOffset={8}
+            sideOffset={24}
             className="px-2.5 py-1 text-xs font-medium"
           >
             {item.title}
@@ -514,7 +514,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
     <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
-          'flex h-full flex-col overflow-hidden border-r bg-background transition-all duration-200',
+          'flex h-full flex-col overflow-hidden bg-muted/60 transition-all duration-200',
           'hidden md:flex',
           collapsed ? 'w-16' : 'w-[240px]'
         )}
@@ -536,7 +536,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
                 alt="Laglig.se"
                 width={24}
                 height={28}
-                className="h-7 w-auto invert dark:invert-0"
+                className="h-[25px] w-auto invert dark:invert-0"
                 priority
               />
             ) : (
@@ -545,13 +545,12 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
                 alt="Laglig.se"
                 width={160}
                 height={62}
-                className="h-7 w-auto invert dark:invert-0"
+                className="h-[25px] w-auto invert dark:invert-0"
                 priority
               />
             )}
           </Link>
           {!collapsed && <BetaBadge className="ml-2" />}
-          <div className="absolute bottom-0 left-3 right-3 h-px bg-border" />
         </div>
 
         {/* Navigation */}
@@ -595,8 +594,8 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
                     ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
                     : 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm',
                   searchParams?.get('onboarding') === 'tutorial'
-                    ? 'bg-accent text-foreground'
-                    : 'text-foreground/60 hover:bg-accent hover:text-foreground'
+                    ? 'bg-foreground/10 text-foreground'
+                    : 'text-foreground/60 hover:bg-foreground/10 hover:text-foreground'
                 )}
               >
                 {collapsed ? (
@@ -614,7 +613,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
             {collapsed && (
               <TooltipContent
                 side="right"
-                sideOffset={8}
+                sideOffset={24}
                 className="px-2.5 py-1 text-xs font-medium"
               >
                 Guide
@@ -635,8 +634,8 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
                     ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
                     : 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm',
                   pathname.startsWith('/settings')
-                    ? 'bg-accent text-foreground'
-                    : 'text-foreground/60 hover:bg-accent hover:text-foreground'
+                    ? 'bg-foreground/10 text-foreground'
+                    : 'text-foreground/60 hover:bg-foreground/10 hover:text-foreground'
                 )}
               >
                 {collapsed ? (
@@ -654,7 +653,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
             {collapsed && (
               <TooltipContent
                 side="right"
-                sideOffset={8}
+                sideOffset={24}
                 className="px-2.5 py-1 text-xs font-medium"
               >
                 Inställningar
@@ -680,7 +679,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
                           : undefined
                       }
                       className={cn(
-                        'transition-colors text-foreground/60 hover:bg-accent hover:text-foreground',
+                        'transition-colors text-foreground/60 hover:bg-foreground/10 hover:text-foreground',
                         collapsed
                           ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
                           : 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm'
@@ -711,7 +710,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
                 {collapsed && (
                   <TooltipContent
                     side="right"
-                    sideOffset={8}
+                    sideOffset={24}
                     className="px-2.5 py-1 text-xs font-medium"
                   >
                     {user?.name || user?.email || 'Konto'}
@@ -783,7 +782,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
                     collapsed ? 'Expandera sidofält' : 'Dölj sidofält'
                   }
                   className={cn(
-                    'transition-colors text-foreground/60 hover:bg-accent hover:text-foreground',
+                    'transition-colors text-foreground/60 hover:bg-foreground/10 hover:text-foreground',
                     collapsed
                       ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
                       : 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm'
@@ -804,7 +803,7 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
               {collapsed && (
                 <TooltipContent
                   side="right"
-                  sideOffset={8}
+                  sideOffset={24}
                   className="px-2.5 py-1 text-xs font-medium"
                 >
                   Expandera sidofält

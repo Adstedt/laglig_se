@@ -107,20 +107,6 @@ describe('GroupTableSection', () => {
     expect(screen.getByText('GDPR')).toBeInTheDocument()
   })
 
-  it('renders item count badge', () => {
-    renderWithDnd(<GroupTableSection {...defaultProps} />)
-
-    expect(screen.getByText('1 dokument')).toBeInTheDocument()
-  })
-
-  it('shows "0 dokument" badge for empty groups', () => {
-    renderWithDnd(
-      <GroupTableSection {...defaultProps} items={[]} itemCount={0} />
-    )
-
-    expect(screen.getByText('0 dokument')).toBeInTheDocument()
-  })
-
   it('shows empty state message when expanded with no items', () => {
     renderWithDnd(
       <GroupTableSection {...defaultProps} items={[]} itemCount={0} />

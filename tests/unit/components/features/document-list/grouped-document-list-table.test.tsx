@@ -189,17 +189,7 @@ describe('GroupedDocumentListTable', () => {
     expect(screen.getByText('Ogrupperade')).toBeInTheDocument()
   })
 
-  it('shows item count badges with correct counts', () => {
-    render(<GroupedDocumentListTable {...defaultProps} />)
-
-    // GDPR has 2 items
-    expect(screen.getByText('2 dokument')).toBeInTheDocument()
-    // Arbetsmiljö and Ungrouped both have 1 item each
-    const oneDocumentBadges = screen.getAllByText('1 dokument')
-    expect(oneDocumentBadges.length).toBe(2) // Arbetsmiljö + Ungrouped
-  })
-
-  it('renders empty groups with 0 dokument badge', () => {
+  it('renders empty groups without removing the row', () => {
     const emptyGroup: ListGroupSummary = {
       id: 'empty-group',
       name: 'Empty Group',
@@ -215,7 +205,6 @@ describe('GroupedDocumentListTable', () => {
     )
 
     expect(screen.getByText('Empty Group')).toBeInTheDocument()
-    expect(screen.getByText('0 dokument')).toBeInTheDocument()
   })
 
   it('shows expand all and collapse all buttons when groups exist', () => {

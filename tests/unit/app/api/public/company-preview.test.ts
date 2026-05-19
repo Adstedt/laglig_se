@@ -128,6 +128,35 @@ describe('POST /api/public/company-preview', () => {
     expect(data.error).toBe('service_unavailable')
   })
 
+  it('retries on transient timeout and succeeds on later attempt', async () => {
+    mockFetchWithTimeout
+      .mockRejectedValueOnce(new DOMException('Aborted', 'AbortError'))
+      .mockRejectedValueOnce(new DOMException('Aborted', 'AbortError'))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ name: 'Test AB', orgnr: '5564521234' }), {
+          status: 200,
+        })
+      )
+    mockMapBolagsApiToProfile.mockReturnValue({
+      company_name: 'Test AB',
+      org_number: '556452-1234',
+      legal_form: 'AB',
+    })
+    mockAnalyzeCompany.mockResolvedValue({
+      activityFlags: {},
+      companySummary: null,
+      confidence: 'low',
+    })
+    mockMapRegulatoryAreas.mockReturnValue(['Bolagsrätt'])
+
+    const res = await POST(makeRequest({ orgNumber: '556452-1234' }))
+    const data = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(data.company.name).toBe('Test AB')
+    expect(mockFetchWithTimeout).toHaveBeenCalledTimes(3)
+  })
+
   it('returns 400 on invalid org number format', async () => {
     const res = await POST(makeRequest({ orgNumber: 'abc' }))
     const data = await res.json()

@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Law modal — AI-sammanfattning placement (prototype)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+      @font-face {
+        font-family: 'Safiro';
+        src:
+          url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'),
+          url('../public/fonts/safiro-medium-webfont.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Google Sans Flex';
+        src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype');
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: 'Google Sans Flex', ui-sans-serif, system-ui, -apple-system, sans-serif;
+        font-size: 14px;
+        line-height: 1.55;
+        background: #1a1815;
+        color: #e6e1d8;
+        -webkit-font-smoothing: antialiased;
+        padding: 40px 24px 80px;
+      }
+      .font-safiro {
+        font-family: 'Safiro', system-ui, sans-serif;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+      }
+      .eyebrow {
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #a39684;
+      }
+
+      /* Modal-like surface — mirrors the dark theme from the screenshot */
+      .modal-surface {
+        background: #232017;
+        border: 1px solid #3a3528;
+        border-radius: 16px;
+        padding: 28px 32px;
+        box-shadow: 0 20px 50px -15px rgba(0,0,0,0.5);
+      }
+      .modal-surface.compact { padding: 20px 24px; }
+
+      /* Accordion row (matches the existing accordion styling roughly) */
+      .accordion {
+        background: rgba(255,255,255,0.02);
+        border: 1px solid #3a3528;
+        border-radius: 10px;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: #e6e1d8;
+      }
+      .accordion + .accordion { margin-top: 8px; }
+      .accordion-title {
+        display: flex; align-items: center; gap: 10px;
+        font-weight: 500;
+      }
+      .accordion-body {
+        background: rgba(255,255,255,0.02);
+        border: 1px solid #3a3528;
+        border-top: none;
+        border-radius: 0 0 10px 10px;
+        padding: 14px 16px 18px;
+        margin-top: -9px;
+        font-size: 13.5px;
+        color: #c9bfae;
+      }
+      .accordion-body.attached { margin-top: -8px; border-radius: 0 0 10px 10px; }
+      .accordion.expanded { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+
+      /* Pill / badge */
+      .pill {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-size: 12px; padding: 4px 10px; border-radius: 999px;
+        font-weight: 500;
+      }
+      .pill .dot { width: 7px; height: 7px; border-radius: 50%; }
+      .pill-status { background: #2c3340; color: #9fb1c9; }
+      .pill-status .dot { background: #6b7f97; }
+      .pill-priority { background: #3a2f15; color: #d9a544; }
+
+      /* Old (current) blue card */
+      .blue-card {
+        background: rgba(30, 64, 175, 0.18);
+        border: 1px solid rgba(59, 130, 246, 0.45);
+        border-radius: 12px;
+        padding: 16px 18px;
+        color: #cfddfb;
+        font-size: 13.5px;
+        line-height: 1.55;
+      }
+      .blue-card strong { color: #e5edff; font-weight: 500; }
+
+      /* Recommended — inline meta prose */
+      .inline-summary {
+        font-size: 13.5px;
+        color: #b3a994;
+        line-height: 1.55;
+        padding: 4px 0 0;
+        max-width: 70ch;
+      }
+      .inline-summary .label {
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #8a7f6c;
+        margin-right: 6px;
+      }
+      .inline-summary .toggle {
+        color: #d4b896;
+        font-weight: 500;
+        cursor: pointer;
+        margin-left: 4px;
+      }
+      .inline-summary .toggle:hover { color: #e8cea8; text-decoration: underline; }
+
+      /* Variant — right sidebar info icon */
+      .sidebar-card {
+        background: #1f1c14;
+        border: 1px solid #3a3528;
+        border-radius: 12px;
+        padding: 18px 20px;
+        font-size: 13px;
+        color: #c9bfae;
+        min-width: 220px;
+      }
+      .sidebar-card .label { font-size: 11px; color: #8a7f6c; text-transform: uppercase; letter-spacing: 0.06em; }
+      .sidebar-card .value { color: #e6e1d8; margin-top: 4px; }
+
+      /* Variant — accordion preamble */
+      .preamble {
+        background: rgba(212, 184, 150, 0.07);
+        border-left: 2px solid #a8865a;
+        padding: 10px 14px;
+        border-radius: 4px;
+        font-size: 13px;
+        color: #b3a994;
+        margin-bottom: 12px;
+      }
+      .preamble strong { color: #d4b896; font-weight: 500; }
+
+      .annotation {
+        background: #2a2618;
+        border: 1px dashed #5a4f2a;
+        color: #d4b896;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        margin-top: 12px;
+      }
+      .annotation strong { color: #e8cea8; }
+
+      .verdict-pill {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-size: 11px; padding: 3px 10px; border-radius: 999px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .verdict-recommended { background: #1f3a1e; color: #86d976; }
+      .verdict-alt { background: #2a2618; color: #d4b896; }
+      .verdict-reject { background: #3a1f1f; color: #e98a8a; }
+
+      .grid-section { display: grid; grid-template-columns: 1fr; gap: 28px; max-width: 1100px; margin: 0 auto; }
+      .section-header {
+        display: flex; align-items: baseline; gap: 12px;
+        margin-bottom: 14px;
+        padding-top: 8px;
+      }
+      .section-header h2 { font-size: 17px; font-weight: 500; margin: 0; color: #f0e8d8; }
+      .section-header .ref { font-size: 12px; color: #8a7f6c; }
+      h1 { font-size: 24px; font-weight: 500; margin: 0 0 6px; color: #f0e8d8; }
+      .lede { color: #b3a994; max-width: 760px; margin-bottom: 28px; font-size: 14.5px; }
+      .icon-row { display: inline-flex; align-items: center; gap: 8px; }
+    </style>
+  </head>
+  <body>
+    <div class="grid-section">
+      <header>
+        <div class="eyebrow">Prototype · law-list item modal</div>
+        <h1 class="font-safiro">AI-sammanfattning — placering</h1>
+        <p class="lede">
+          Idag dominerar <strong>AI-sammanfattning</strong> modalens
+          översta yta som ett tungt blått kort. Användarens egna ytor
+          (<em>Hur påverkar detta oss?</em>, <em>Hur efterlever vi kraven?</em>,
+          <em>Kravpunkter</em>) konkurrerar om uppmärksamhet och hamnar längre
+          ned. Ny accordion skulle göra rad-räkningen ännu längre (vi har redan
+          minst fyra). Förslag nedan: <strong>behåll innehållet, men avlasta visuellt</strong>.
+        </p>
+      </header>
+
+      <!-- BEFORE -->
+      <section>
+        <div class="section-header">
+          <h2>Nu (problem)</h2>
+          <span class="ref">law-header.tsx:91-99 · blue-50 card</span>
+          <span class="verdict-pill verdict-reject">behåll inte</span>
+        </div>
+        <div class="modal-surface">
+          <!-- Breadcrumb -->
+          <div style="font-size: 12px; color: #8a7f6c; margin-bottom: 16px;">
+            Arbetsmiljö <span style="margin: 0 6px;">›</span> SFS 1977:1160
+          </div>
+          <h2 class="font-safiro" style="font-size: 22px; margin: 0 0 12px; color: #f0e8d8;">
+            Arbetsmiljölag (1977:1160)
+          </h2>
+          <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+            <span class="pill pill-status"><span class="dot"></span>Ej påbörjad</span>
+            <span class="pill pill-priority"><i data-lucide="flag" style="width:11px;height:11px;"></i>Medel</span>
+          </div>
+          <!-- Wall-of-prose blue card -->
+          <div class="blue-card">
+            <strong>AI-sammanfattning:</strong> Arbetsmiljölagen (AML, 1977:1160) är en
+            ramlag som syftar till att förebygga ohälsa och olycksfall i arbetet samt
+            att uppnå en god arbetsmiljö. Lagen gäller varje verksamhet där arbetstagare
+            utför arbete för en arbetsgivares räkning och likställer även bland annat
+            studerande och totalförsvarspliktiga med arbetstagare. Centrala bestämmelser
+            rör arbetsgivarens skyldighet att bedriva systematiskt arbetsmiljöarbete,
+            utreda arbetsskador, anpassa arbetsförhållandena till individuella förutsättningar,
+            anmäla dödsfall och allvarliga tillbud utan dröjsmål samt tillhandahålla
+            företagshälsovård. Lagen ställer krav på samverkan mellan arbetsgivare och
+            arbetstagare — skyddsombud ska utses på arbetsställen med minst 5 arbetstagare
+            och skyddskommitté ska finnas vid arbetsställen med minst 50 arbetstagare.
+            Särskilda regler gäller för minderåriga, byggnads- och anläggningsarbete samt
+            för den som tillverkar, importerar eller överlåter tekniska anordningar och
+            kemiska ämnen. Sanktionsavgifter vid överträdelse av meddelade föreskrifter
+            kan uppgå till mellan 1 000 och 1 000 000 kronor. Lagen kompletteras av
+            arbetsmiljöförordningen och Arbetsmiljöverkets föreskrifter, bland annat
+            AFS 2023:1 om systematiskt arbetsmiljöarbete.
+          </div>
+          <div style="margin-top: 18px;">
+            <div class="accordion"><span class="accordion-title"><i data-lucide="scale" style="width:16px;height:16px;color:#8a7f6c;"></i>Författningstext</span><i data-lucide="chevron-down" style="width:16px;height:16px;color:#8a7f6c;"></i></div>
+            <div class="accordion expanded"><span class="accordion-title"><i data-lucide="help-circle" style="width:16px;height:16px;color:#8a7f6c;"></i>Hur påverkar detta oss?</span><i data-lucide="chevron-up" style="width:16px;height:16px;color:#8a7f6c;"></i></div>
+            <div class="accordion-body attached" style="font-style: italic; color: #6f6651;">Ingen beskrivning</div>
+            <div class="accordion"><span class="accordion-title"><i data-lucide="clipboard-list" style="width:16px;height:16px;color:#8a7f6c;"></i>Hur efterlever vi kraven?</span><i data-lucide="chevron-down" style="width:16px;height:16px;color:#8a7f6c;"></i></div>
+            <div class="accordion"><span class="accordion-title"><i data-lucide="list-checks" style="width:16px;height:16px;color:#8a7f6c;"></i>Kravpunkter</span><i data-lucide="chevron-down" style="width:16px;height:16px;color:#8a7f6c;"></i></div>
+          </div>
+          <div class="annotation">
+            <strong>Vad som skaver:</strong> Det blå kortet är ~10 rader tät prosa direkt
+            ovanför användarens egna arbetsytor. Hierarkin är omvänd — AI-text dominerar,
+            användarens compliance-arbete trycks ned. Att lägga till en femte accordion
+            ("AI-sammanfattning") skulle göra raden ännu längre.
+          </div>
+        </div>
+      </section>
+
+      <!-- RECOMMENDED -->
+      <section>
+        <div class="section-header">
+          <h2>Förslag A — inline meta, trunkerad</h2>
+          <span class="ref">ersätter blue-card · ingen ny accordion</span>
+          <span class="verdict-pill verdict-recommended">rekommenderad</span>
+        </div>
+        <div class="modal-surface">
+          <div style="font-size: 12px; color: #8a7f6c; margin-bottom: 16px;">
+            Arbetsmiljö <span style="margin: 0 6px;">›</span> SFS 1977:1160
+          </div>
+          <h2 class="font-safiro" style="font-size: 22px; margin: 0 0 12px; color: #f0e8d8;">
+            Arbetsmiljölag (1977:1160)
+          </h2>
+          <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+            <span class="pill pill-status"><span class="dot"></span>Ej påbörjad</span>
+            <span class="pill pill-priority"><i data-lucide="flag" style="width:11px;height:11px;"></i>Medel</span>
+          </div>
+
+          <!-- The recommendation — inline, subtle, truncated -->
+          <p class="inline-summary" id="rec-summary">
+            <span class="label icon-row"><i data-lucide="sparkles" style="width:11px;height:11px;color:#a8865a;"></i>AI-sammanfattning</span>
+            <span id="rec-text-short">
+              Ramlag som förebygger ohälsa och olycksfall — gäller all verksamhet med arbetstagare och kräver systematiskt arbetsmiljöarbete, skyddsombud och anmälan av tillbud.
+            </span>
+            <span id="rec-text-long" style="display:none;">
+              Ramlag som förebygger ohälsa och olycksfall — gäller all verksamhet med arbetstagare och kräver systematiskt arbetsmiljöarbete, skyddsombud och anmälan av tillbud. Skyddsombud ska utses vid minst 5 anställda, skyddskommitté vid minst 50. Särskilda regler för minderåriga, bygg och kemiska ämnen. Sanktionsavgifter mellan 1 000 och 1 000 000 kr. Kompletteras av arbetsmiljöförordningen och AFS-föreskrifter (bl.a. AFS 2023:1).
+            </span>
+            <span class="toggle" id="rec-toggle" onclick="toggleRec()">Visa mer</span>
+          </p>
+
+          <div style="margin-top: 20px;">
+            <div class="accordion"><span class="accordion-title"><i data-lucide="scale" style="width:16px;height:16px;color:#8a7f6c;"></i>Författningstext</span><i data-lucide="chevron-down" style="width:16px;height:16px;color:#8a7f6c;"></i></div>
+            <div class="accordion expanded"><span class="accordion-title"><i data-lucide="help-circle" style="width:16px;height:16px;color:#8a7f6c;"></i>Hur påverkar detta oss?</span><i data-lucide="chevron-up" style="width:16px;height:16px;color:#8a7f6c;"></i></div>
+            <div class="accordion-body attached" style="font-style: italic; color: #6f6651;">Ingen beskrivning</div>
+            <div class="accordion"><span class="accordion-title"><i data-lucide="clipboard-list" style="width:16px;height:16px;color:#8a7f6c;"></i>Hur efterlever vi kraven?</span><i data-lucide="chevron-down" style="width:16px;height:16px;color:#8a7f6c;"></i></div>
+            <div class="accordion"><span class="accordion-title"><i data-lucide="list-checks" style="width:16px;height:16px;color:#8a7f6c;"></i>Kravpunkter</span><i data-lucide="chevron-down" style="width:16px;height:16px;color:#8a7f6c;"></i></div>
+          </div>
+
+          <div class="annotation">
+            <strong>Varför:</strong> ~150 tecken/2 meningar ger omedelbar orientering utan
+            att kapa skärmen. Sparkles-ikon + label signalerar AI-ursprung subtilt. "Visa mer"
+            håller hela texten ett klick bort — användare som vill ha hela förklaringen får
+            den. Inga nya accordions. Stilen följer "supportive AI" — användarens egna ytor
+            behåller hierarkin.
+          </div>
+        </div>
+      </section>
+
+      <!-- ALT 1 — accordion preamble -->
+      <section>
+        <div class="section-header">
+          <h2>Förslag B — preamble i Författningstext</h2>
+          <span class="ref">tar bort från toppen helt</span>
+          <span class="verdict-pill verdict-alt">alternativ</span>
+        </div>
+        <div class="modal-surface">
+          <div style="font-size: 12px; color: #8a7f6c; margin-bottom: 16px;">
+            Arbetsmiljö <span style="margin: 0 6px;">›</span> SFS 1977:1160
+          </div>
+          <h2 class="font-safiro" style="font-size: 22px; margin: 0 0 12px; color: #f0e8d8;">
+            Arbetsmiljölag (1977:1160)
+          </h2>
+          <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+            <span class="pill pill-status"><span class="dot"></span>Ej påbörjad</span>
+            <span class="pill pill-priority"><i data-lucide="flag" style="width:11px;height:11px;"></i>Medel</span>
+          </div>
+
+          <div>
+            <div class="accordion expanded">
+              <span class="accordion-title"><i data-lucide="scale" style="width:16px;height:16px;color:#8a7f6c;"></i>Författningstext</span>
+              <i data-lucide="chevron-up" style="width:16px;height:16px;color:#8a7f6c;"></i>
+            </div>
+            <div class="accordion-body attached">
+              <div class="preamble">
+                <strong>AI-sammanfattning ·</strong> Ramlag som förebygger ohälsa och olycksfall.
+                Gäller all verksamhet med arbetstagare. Kräver systematiskt arbetsmiljöarbete,
+                skyddsombud (≥5 anställda), skyddskommitté (≥50), och anmälan av tillbud.
+                Sanktionsavgifter 1 000–1 000 000 kr. Kompletteras av AFS-föreskrifter.
+              </div>
+              <div style="color: #6f6651; font-style: italic;">Lagtexten visas här…</div>
+            </div>
+            <div class="accordion"><span class="accordion-title"><i data-lucide="help-circle" style="width:16px;height:16px;color:#8a7f6c;"></i>Hur påverkar detta oss?</span><i data-lucide="chevron-down" style="width:16px;height:16px;color:#8a7f6c;"></i></div>
+            <div class="accordion"><span class="accordion-title"><i data-lucide="clipboard-list" style="width:16px;height:16px;color:#8a7f6c;"></i>Hur efterlever vi kraven?</span><i data-lucide="chevron-down" style="width:16px;height:16px;color:#8a7f6c;"></i></div>
+            <div class="accordion"><span class="accordion-title"><i data-lucide="list-checks" style="width:16px;height:16px;color:#8a7f6c;"></i>Kravpunkter</span><i data-lucide="chevron-down" style="width:16px;height:16px;color:#8a7f6c;"></i></div>
+          </div>
+
+          <div class="annotation">
+            <strong>Trade-off:</strong> Ingen visuell kostnad på toppen. Men: AI-texten gömd
+            tills man expanderar Författningstext — orienteringsvärdet tappas. Bra om vi tror
+            att <em>Hur påverkar detta oss?</em> alltid kommer vara fyllt (Story 16.4 sköter det).
+            Mindre bra för existerande listor där det fältet är tomt (se skärmbilden — "Ingen beskrivning").
+          </div>
+        </div>
+      </section>
+
+      <!-- ALT 2 — sidebar info -->
+      <section>
+        <div class="section-header">
+          <h2>Förslag C — info-ikon i höger sidpanel</h2>
+          <span class="ref">flyttar helt ur huvudflödet</span>
+          <span class="verdict-pill verdict-alt">alternativ</span>
+        </div>
+        <div class="modal-surface" style="display: grid; grid-template-columns: 1fr 240px; gap: 24px;">
+          <div>
+            <div style="font-size: 12px; color: #8a7f6c; margin-bottom: 16px;">
+              Arbetsmiljö <span style="margin: 0 6px;">›</span> SFS 1977:1160
+            </div>
+            <h2 class="font-safiro" style="font-size: 22px; margin: 0 0 12px; color: #f0e8d8;">
+              Arbetsmiljölag (1977:1160)
+            </h2>
+            <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+              <span class="pill pill-status"><span class="dot"></span>Ej påbörjad</span>
+              <span class="pill pill-priority"><i data-lucide="flag" style="width:11px;height:11px;"></i>Medel</span>
+            </div>
+            <div>
+              <div class="accordion"><span class="accordion-title"><i data-lucide="scale" style="width:16px;height:16px;color:#8a7f6c;"></i>Författningstext</span><i data-lucide="chevron-down" style="width:16px;height:16px;color:#8a7f6c;"></i></div>
+              <div class="accordion"><span class="accordion-title"><i data-lucide="help-circle" style="width:16px;height:16px;color:#8a7f6c;"></i>Hur påverkar detta oss?</span><i data-lucide="chevron-down" style="width:16px;height:16px;color:#8a7f6c;"></i></div>
+              <div class="accordion"><span class="accordion-title"><i data-lucide="clipboard-list" style="width:16px;height:16px;color:#8a7f6c;"></i>Hur efterlever vi kraven?</span><i data-lucide="chevron-down" style="width:16px;height:16px;color:#8a7f6c;"></i></div>
+              <div class="accordion"><span class="accordion-title"><i data-lucide="list-checks" style="width:16px;height:16px;color:#8a7f6c;"></i>Kravpunkter</span><i data-lucide="chevron-down" style="width:16px;height:16px;color:#8a7f6c;"></i></div>
+            </div>
+          </div>
+          <aside style="display: flex; flex-direction: column; gap: 12px;">
+            <div class="sidebar-card">
+              <div class="label">Detaljer</div>
+              <div class="value">SFS 1977:1160</div>
+              <div class="value" style="margin-top: 10px; font-size: 12px; color: #8a7f6c;">Senast uppdaterad: 2024-01-15</div>
+            </div>
+            <div class="sidebar-card" style="cursor: pointer;">
+              <div class="label icon-row"><i data-lucide="sparkles" style="width:11px;height:11px;color:#a8865a;"></i>AI-sammanfattning</div>
+              <div class="value" style="font-size: 12.5px; color: #b3a994; margin-top: 6px; line-height: 1.5;">
+                Ramlag som förebygger ohälsa och olycksfall…
+                <span style="color: #d4b896; display: block; margin-top: 6px;">Visa hela ›</span>
+              </div>
+            </div>
+          </aside>
+          <div class="annotation" style="grid-column: 1 / -1;">
+            <strong>Trade-off:</strong> Helt borta från huvudflödet — minimal påverkan på
+            primär hierarki. Men: sidopanelen är redan tätt packad ("Detaljer", "Snabblänkar"),
+            och AI-texten är värdefull just som översikt — gömd i sidofält kan kännas
+            sekundärt och underanvändas. Bra på desktop, sämre på smalare viewports
+            där sidopanelen kollapsar.
+          </div>
+        </div>
+      </section>
+
+      <!-- Summary -->
+      <section>
+        <div class="section-header">
+          <h2>Sammanfattning</h2>
+        </div>
+        <div class="modal-surface compact">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13.5px;">
+            <thead>
+              <tr style="text-align: left; color: #8a7f6c; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;">
+                <th style="padding: 8px 12px; border-bottom: 1px solid #3a3528;">Förslag</th>
+                <th style="padding: 8px 12px; border-bottom: 1px solid #3a3528;">Top-yta</th>
+                <th style="padding: 8px 12px; border-bottom: 1px solid #3a3528;">+ Accordion?</th>
+                <th style="padding: 8px 12px; border-bottom: 1px solid #3a3528;">Orientering</th>
+                <th style="padding: 8px 12px; border-bottom: 1px solid #3a3528;">Implementation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 10px 12px;"><span class="verdict-pill verdict-recommended">A · inline</span></td>
+                <td style="padding: 10px 12px;">~2 rader</td>
+                <td style="padding: 10px 12px;">Nej</td>
+                <td style="padding: 10px 12px;">Direkt (1–2 meningar)</td>
+                <td style="padding: 10px 12px;">law-header.tsx · 1 component, state toggle</td>
+              </tr>
+              <tr style="background: rgba(255,255,255,0.02);">
+                <td style="padding: 10px 12px;"><span class="verdict-pill verdict-alt">B · preamble</span></td>
+                <td style="padding: 10px 12px;">0 rader</td>
+                <td style="padding: 10px 12px;">Nej</td>
+                <td style="padding: 10px 12px;">Gömd tills expanderad</td>
+                <td style="padding: 10px 12px;">law-header.tsx + författningstext-accordion</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 12px;"><span class="verdict-pill verdict-alt">C · sidofält</span></td>
+                <td style="padding: 10px 12px;">0 rader</td>
+                <td style="padding: 10px 12px;">Nej</td>
+                <td style="padding: 10px 12px;">Perifer</td>
+                <td style="padding: 10px 12px;">Detaljer-panel + popover</td>
+              </tr>
+              <tr style="background: rgba(255,255,255,0.02);">
+                <td style="padding: 10px 12px;"><span class="verdict-pill verdict-reject">Nu · blue card</span></td>
+                <td style="padding: 10px 12px;">~10 rader</td>
+                <td style="padding: 10px 12px;">Nej</td>
+                <td style="padding: 10px 12px;">Skriker</td>
+                <td style="padding: 10px 12px;">Befintlig — behöver bytas ut</td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="margin-top: 18px; color: #b3a994;">
+            <strong style="color: #e8cea8;">Rekommendation: A.</strong> Behåller orienteringsvärdet
+            (instant "vad är detta?") utan att kapa hierarkin. Inga nya accordions. Plats för
+            framtida förbättringar: om Story 16.4:s <em>businessContext</em> alltid är populerad
+            kan A degraderas ytterligare eller smältas med <em>Hur påverkar detta oss?</em>-accordion.
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      lucide.createIcons();
+      function toggleRec() {
+        const short = document.getElementById('rec-text-short');
+        const long = document.getElementById('rec-text-long');
+        const toggle = document.getElementById('rec-toggle');
+        if (long.style.display === 'none') {
+          short.style.display = 'none';
+          long.style.display = '';
+          toggle.textContent = 'Visa mindre';
+        } else {
+          short.style.display = '';
+          long.style.display = 'none';
+          toggle.textContent = 'Visa mer';
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -237,12 +237,6 @@ export const GroupTableSection = memo(function GroupTableSection({
               </TooltipProvider>
             </div>
           )}
-
-          {/* Item count badge */}
-          <span className="text-xs sm:text-sm text-muted-foreground bg-muted px-2 py-0.5 rounded-full whitespace-nowrap">
-            <span className="sm:hidden">{itemCount}</span>
-            <span className="hidden sm:inline">{itemCount} dokument</span>
-          </span>
         </div>
 
         {/* Group content. No horizontal padding — keeps the table flush with
