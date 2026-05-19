@@ -15,6 +15,7 @@ import { AiAgentSection } from '@/components/features/landing-v3/ai-agent-sectio
 import { OpenDatabaseV3 } from '@/components/features/landing-v3/open-database-v3'
 import { InfrastructureSection } from '@/components/features/landing-v3/infrastructure-section'
 import { ByraerSection } from '@/components/features/landing-v3/byraer-section'
+import { TryNowSection } from '@/components/features/landing-v3/try-now-section'
 import { CtaV3 } from '@/components/features/landing-v3/cta-v3'
 
 export const metadata = {
@@ -49,6 +50,7 @@ export default function LandingV3Page() {
         <OpenDatabaseV3 />
         <InfrastructureSection />
         <ByraerSection />
+        <TryNowSection />
         <PricingSection />
         <FaqSection />
         <CtaV3 />
