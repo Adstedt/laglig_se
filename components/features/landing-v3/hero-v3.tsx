@@ -55,9 +55,8 @@ export function HeroV3() {
             </h1>
 
             <p className="mb-8 max-w-xl text-lg text-muted-foreground md:text-xl">
-              Operativsystemet för efterlevnad — bevaka lagändringar, fördela
-              ansvar och visa spårbarhet på ett ställe. Byggt för svenska bolag
-              som hellre fattar beslut än sammanställer kalkylblad.
+              Operativsystemet för efterlevnad. Bevaka lagändringar, fördela
+              ansvar och visa spårbarhet — på ett ställe.
             </p>
 
             {/* Trust strip — only verifiable claims */}
