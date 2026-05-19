@@ -26,25 +26,26 @@ export function HeroV3() {
       <div className="container relative mx-auto px-4 pb-12 pt-12 md:pb-16 md:pt-16 lg:pb-20 lg:pt-20">
         <div className="mx-auto max-w-7xl">
           {/* H1 — left-aligned, spans wide, second line muted for rhythm.
-              "Team och agenter" mirrors Linear's "teams and agents" framing:
-              names AI agents as first-class users alongside humans. */}
+              Names the primary audience (växande bolag / SMB) directly;
+              compliance teams come in as the secondary audience in the sub.
+              AI is a feature inside the product, not a user, so it stays
+              out of the audience phrase. */}
           <h1
             className="mb-8 max-w-5xl text-[2.5rem] font-medium leading-[1.05] tracking-tight sm:text-5xl md:text-6xl lg:text-[4.75rem]"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
           >
             <span className="block">Compliance, byggt</span>
-            <span className="block text-foreground/45">
-              för team och agenter.
-            </span>
+            <span className="block text-foreground/45">för växande bolag.</span>
           </h1>
 
           {/* Sub on the left + small "live" callout on the right — Linear's
               dot-and-link pattern. Aligns to the same baseline as the sub at
               lg+, stacks below on mobile. */}
           <div className="mb-10 flex flex-col items-start gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <p className="max-w-xl text-lg text-muted-foreground md:text-xl">
-              Operativsystemet för efterlevnad — designat för AI-eran. Bevaka
-              lagändringar, fördela ansvar och visa spårbarhet på ett ställe.
+            <p className="max-w-2xl text-lg text-muted-foreground md:text-xl">
+              Operativsystemet för efterlevnad — designat för AI-eran. För
+              svenska SMB och compliance-team som vill bevaka, fördela ansvar
+              och visa spårbarhet på ett ställe.
             </p>
             <Link
               href="/sok"
