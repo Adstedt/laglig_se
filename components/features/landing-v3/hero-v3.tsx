@@ -25,27 +25,25 @@ export function HeroV3() {
     <section className="relative overflow-hidden">
       <div className="container relative mx-auto px-4 pb-12 pt-12 md:pb-16 md:pt-16 lg:pb-20 lg:pt-20">
         <div className="mx-auto max-w-7xl">
-          {/* H1 — left-aligned, spans wide, second line muted for rhythm.
-              Names the primary audience (växande bolag / SMB) directly;
-              compliance teams come in as the secondary audience in the sub.
-              AI is a feature inside the product, not a user, so it stays
-              out of the audience phrase. */}
+          {/* H1 — bold category claim. The "OS for X" move (cf. Notion's
+              "OS for work", Ramp's "finance OS"). Second line muted to keep
+              the visual rhythm we already use elsewhere on the page. */}
           <h1
             className="mb-8 max-w-5xl text-[2.5rem] font-medium leading-[1.05] tracking-tight sm:text-5xl md:text-6xl lg:text-[4.75rem]"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
           >
-            <span className="block">Compliance, byggt</span>
-            <span className="block text-foreground/45">för växande bolag.</span>
+            <span className="block">Det nya operativsystemet</span>
+            <span className="block text-foreground/45">för efterlevnad.</span>
           </h1>
 
-          {/* Sub on the left + small "live" callout on the right — Linear's
-              dot-and-link pattern. Aligns to the same baseline as the sub at
-              lg+, stacks below on mobile. */}
+          {/* Sub names the ICP explicitly (SMB primary, compliance-team
+              secondary) and the AI-era category. Workflow pillars after the
+              em-dash. Same dot-and-link callout pattern as Linear. */}
           <div className="mb-10 flex flex-col items-start gap-6 lg:flex-row lg:items-end lg:justify-between">
             <p className="max-w-2xl text-lg text-muted-foreground md:text-xl">
-              Operativsystemet för efterlevnad — designat för AI-eran. För
-              svenska SMB och compliance-team som vill bevaka, fördela ansvar
-              och visa spårbarhet på ett ställe.
+              Byggt för svenska SMB och compliance-team. Designat för AI-eran —
+              så ni bevakar lagändringar, fördelar ansvar och visar spårbarhet
+              på ett ställe.
             </p>
             <Link
               href="/sok"
