@@ -42,13 +42,17 @@ export function HeroV3() {
             </div>
           </div>
 
-          {/* H1 — left-aligned, spans wide, second line muted for rhythm */}
+          {/* H1 — left-aligned, spans wide, second line muted for rhythm.
+              "Team och agenter" mirrors Linear's "teams and agents" framing:
+              names AI agents as first-class users alongside humans. */}
           <h1
             className="mb-8 max-w-5xl text-[2.5rem] font-medium leading-[1.05] tracking-tight sm:text-5xl md:text-6xl lg:text-[4.75rem]"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
           >
             <span className="block">Compliance, byggt</span>
-            <span className="block text-foreground/45">för moderna team.</span>
+            <span className="block text-foreground/45">
+              för team och agenter.
+            </span>
           </h1>
 
           {/* Sub on the left + small "live" callout on the right — Linear's
@@ -56,8 +60,8 @@ export function HeroV3() {
               lg+, stacks below on mobile. */}
           <div className="mb-10 flex flex-col items-start gap-6 lg:flex-row lg:items-end lg:justify-between">
             <p className="max-w-xl text-lg text-muted-foreground md:text-xl">
-              Operativsystemet för efterlevnad. Bevaka lagändringar, fördela
-              ansvar och visa spårbarhet — på ett ställe.
+              Operativsystemet för efterlevnad — designat för AI-eran. Bevaka
+              lagändringar, fördela ansvar och visa spårbarhet på ett ställe.
             </p>
             <Link
               href="/sok"
