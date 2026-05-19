@@ -1,12 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import {
-  MapPin,
-  Database,
-  ShieldCheck,
-  Sparkles,
-  ArrowRight,
-} from 'lucide-react'
+import { MapPin, Database, ShieldCheck, ArrowRight } from 'lucide-react'
 
 const trustClaims = [
   {
@@ -31,17 +25,6 @@ export function HeroV3() {
     <section className="relative overflow-hidden">
       <div className="container relative mx-auto px-4 pb-12 pt-12 md:pb-16 md:pt-16 lg:pb-20 lg:pt-20">
         <div className="mx-auto max-w-7xl">
-          {/* Eyebrow */}
-          <div className="mb-7">
-            <div
-              className="inline-flex items-center gap-2 rounded-full border border-foreground/10 bg-background/50 px-3.5 py-1.5 text-xs font-medium backdrop-blur"
-              style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
-            >
-              <Sparkles className="h-3 w-3 text-foreground/60" />
-              <span>Compliance OS · Öppen beta</span>
-            </div>
-          </div>
-
           {/* H1 — left-aligned, spans wide, second line muted for rhythm.
               "Team och agenter" mirrors Linear's "teams and agents" framing:
               names AI agents as first-class users alongside humans. */}
