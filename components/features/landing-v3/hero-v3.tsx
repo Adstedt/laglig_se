@@ -30,7 +30,7 @@ const trustClaims = [
 export function HeroV3() {
   return (
     <section className="relative overflow-hidden">
-      <div className="container relative mx-auto px-4 pb-16 pt-24 md:pb-24 md:pt-28 lg:pb-28 lg:pt-32">
+      <div className="container relative mx-auto px-4 pb-16 pt-12 md:pb-24 md:pt-16 lg:pb-28 lg:pt-20">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-10 xl:gap-16">
           {/* Left: positioning */}
           <div>
