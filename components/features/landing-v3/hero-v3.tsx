@@ -40,7 +40,7 @@ export function HeroV3() {
                 style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
               >
                 <Sparkles className="h-3 w-3 text-foreground/60" />
-                <span>Gör det enkelt att följa lagen</span>
+                <span>Compliance OS · Öppen beta</span>
               </div>
             </div>
 
@@ -48,18 +48,16 @@ export function HeroV3() {
               className="mb-7 text-[2.5rem] font-medium leading-[1.05] tracking-tight sm:text-5xl md:text-6xl lg:text-[4.5rem]"
               style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
             >
-              <span className="block">Allt regelverk.</span>
-              <span className="block text-foreground/70">
-                Alla kravpunkter.
+              <span className="block">Compliance, byggt</span>
+              <span className="block text-foreground/45">
+                för moderna team.
               </span>
-              <span className="block">All efterlevnad.</span>
-              <span className="block text-foreground/40">På ett ställe.</span>
             </h1>
 
             <p className="mb-8 max-w-xl text-lg text-muted-foreground md:text-xl">
-              Laglig.se samlar alla lagar och regler som gäller ert företag på
-              ett ställe – så ni vet vad ni ska göra, vem som gör det, och kan
-              visa att det blev gjort. Att söka i lagboken är alltid gratis.
+              Operativsystemet för efterlevnad — bevaka lagändringar, fördela
+              ansvar och visa spårbarhet på ett ställe. Byggt för svenska bolag
+              som hellre fattar beslut än sammanställer kalkylblad.
             </p>
 
             {/* Trust strip — only verifiable claims */}
