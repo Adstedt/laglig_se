@@ -342,13 +342,13 @@ export function FirstRunModal({
     void recordOnboardingEvent('done_shown', { path, mode })
   }, [step, generationStatus, importFailureMode])
 
-  function handleClose() {
+  const handleClose = useCallback(() => {
     setOpen(false)
     // Story 25.6 (B.6): URL-deep-link parents use this to strip
     // `?onboarding=...` via `router.replace('/dashboard')` so the modal
     // doesn't re-open on reload.
     onClose?.()
-  }
+  }, [onClose])
 
   async function handleSkip() {
     if (
@@ -436,7 +436,7 @@ export function FirstRunModal({
     }
     handleClose()
     router.push('/laglistor')
-  }, [router])
+  }, [router, handleClose])
 
   const handleGoToReview = useCallback(async () => {
     if (!importIdState) return
@@ -451,7 +451,7 @@ export function FirstRunModal({
     }
     handleClose()
     router.push(`/laglistor/skapa/${importIdState}/granska`)
-  }, [importIdState, router])
+  }, [importIdState, router, handleClose])
 
   const handleShowTemplateList = useCallback(async () => {
     if (!templateApplyResult) return
@@ -469,7 +469,7 @@ export function FirstRunModal({
     // from Story 4.13 Task 0 to land on the newly-adopted list directly.
     // There is NO `/laglistor/[listId]` route — that would 404.
     router.push(`/laglistor?list=${templateApplyResult.listId}`)
-  }, [templateApplyResult, router])
+  }, [templateApplyResult, router, handleClose])
 
   // Story 25.6 (B.6): "Fortsätt utforska" is now enabled. Transition the
   // modal to tutorial-only mode + fire `done_cta_clicked.cta='keep_exploring'`
@@ -526,7 +526,7 @@ export function FirstRunModal({
       return
     }
     handleClose()
-  }, [step])
+  }, [step, handleClose])
 
   const handleTemplateApplied = useCallback((result: TemplateApplyResult) => {
     setTemplateApplyResult(result)
