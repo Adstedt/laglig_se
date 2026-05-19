@@ -647,13 +647,13 @@ laglig_se/
 
 ## 14. Open Questions for PO
 
-1. **Epic numbering.** I've named the doc `first-run-onboarding-modal.md` (no number). PO assigns the official epic number when they shard the brief into the registry — likely 24 (Import) and 25 (this), but I'm not committing to those.
-2. **Hjälp menu placement.** Sidebar bottom? Top-right user dropdown? Both? Affects B.6 only — defer the call.
-3. **First-run age cap.** I picked 24h as the defensive cap. Could be 7 days (gives more re-signin tolerance) or 1h (tighter). 24h is the safe middle.
-4. **FAB scope.** Render only on `/dashboard`, or on every workspace route? My take: every workspace route (so users can re-open tutorial mid-task), but the visual gets less prominent on non-dashboard pages — small icon, no expanded "Genererar laglista..." pill text.
-5. **Banner ↔ FAB visibility.** When FAB is visible, should we also render the existing dashboard banner? My recommendation: hide banner when FAB is visible (FAB already signals work-in-progress). PM call.
+1. **Epic numbering.** I've named the doc `first-run-onboarding-modal.md` (no number). PO assigns the official epic number when they shard the brief into the registry — likely 24 (Import) and 25 (this), but I'm not committing to those. **RESOLVED:** Epic 24 (Import) + Epic 25 (this).
+2. **Hjälp menu placement.** Sidebar bottom? Top-right user dropdown? Both? Affects B.6 only — defer the call. **RESOLVED (Story 25.6):** sidebar bottom, labelled "Guide" with `LifeBuoy` icon, rendered just above "Inställningar" (left-sidebar.tsx lower cluster).
+3. **First-run age cap.** I picked 24h as the defensive cap. Could be 7 days (gives more re-signin tolerance) or 1h (tighter). 24h is the safe middle. **RESOLVED:** 24h ships as v1.
+4. **FAB scope.** Render only on `/dashboard`, or on every workspace route? My take: every workspace route (so users can re-open tutorial mid-task), but the visual gets less prominent on non-dashboard pages — small icon, no expanded "Genererar laglista..." pill text. **RESOLVED (Story 25.6):** dashboard-only via `<HemPage>` mount. Reasoning: the existing `getOnboardingState` is called in the dashboard page server component, so FAB visibility is already computed there; lifting it to `app/(workspace)/layout.tsx` would expand scope. Future enhancement if signals show users want FAB access from other workspace routes.
+5. **Banner ↔ FAB visibility.** When FAB is visible, should we also render the existing dashboard banner? My recommendation: hide banner when FAB is visible (FAB already signals work-in-progress). PM call. **RESOLVED (Story 25.6 AC 32):** banner hidden when FAB visible. Implementation: `showGenerationProgress = !onboardingState.fabVisible && (generationStatus === 'pending' | ...)` in `hem-page.tsx`. Edge cases (FAB dismissed → banner re-appears; skipped path → neither) covered by AC 33's 3-row matrix.
 6. **`OnboardingEvent` retention.** No prune policy needed at v1 (low write volume, ~5 events per signup). Worth a 90-day prune cron at scale.
-7. **Tutorial-only mode tab seeding.** When user re-opens via Hjälp menu, start at tab 1 always, OR pick up at last viewed tab? I'd default to tab 1 for predictability; PM can call.
+7. **Tutorial-only mode tab seeding.** When user re-opens via Hjälp menu, start at tab 1 always, OR pick up at last viewed tab? I'd default to tab 1 for predictability; PM can call. **RESOLVED (Story 25.6 AC 25):** default to `'laglista'` (tab 1); URL `?tab=<id>` param overrides. Future enhancement: remember last-viewed tab via `first_run_tabs_viewed` schema column (already exists from B.0), deferred to a future hardening pass.
 
 ### Feedback form — Story B.5 (in-scope MVP, no longer future)
 

@@ -24,12 +24,6 @@
 
 import { ListChecks, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 
 interface DoneTemplateStepProps {
   /** Returned by adoptTemplate. Used by onShowList for the route. */
@@ -39,8 +33,9 @@ interface DoneTemplateStepProps {
   /** Primary CTA. Parent closes the modal + routes to /laglistor/{listId}. */
   onShowList: () => void
   /**
-   * "Fortsätt utforska" callback — plumbed but unused in B.4 (button is
-   * disabled per AC 18 owner decision). B.6 will enable + invoke.
+   * "Fortsätt utforska" callback — Story 25.6 (B.6) enabled this so clicking
+   * transitions the modal to `tutorial-only` mode. Parent fires
+   * `done_cta_clicked.cta='keep_exploring'` telemetry.
    */
   onKeepExploring: () => void
 }
@@ -50,7 +45,7 @@ export function DoneTemplateStep({
   listName,
   itemCount,
   onShowList,
-  onKeepExploring: _onKeepExploring,
+  onKeepExploring,
 }: DoneTemplateStepProps) {
   return (
     <div className="flex flex-col px-1 py-4">
@@ -78,22 +73,11 @@ export function DoneTemplateStep({
           <span>Visa min laglista</span>
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Button>
-        {/* "Fortsätt utforska" disabled in B.4 — see done-generate-step.tsx
-            for the rationale + B.6 swap pattern. */}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                aria-disabled="true"
-                className="cursor-not-allowed opacity-50 hover:bg-transparent hover:text-current"
-              >
-                Fortsätt utforska
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top">Kommer snart</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        {/* Story 25.6 (B.6): "Fortsätt utforska" enabled — parent transitions
+            the modal to tutorial-only mode + fires keep_exploring telemetry. */}
+        <Button variant="ghost" onClick={onKeepExploring}>
+          Fortsätt utforska
+        </Button>
       </div>
     </div>
   )

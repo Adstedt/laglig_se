@@ -31,8 +31,9 @@ vi.mock('sonner', () => ({
 }))
 
 const mockPush = vi.fn()
+const mockRefresh = vi.fn()
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: mockPush, refresh: vi.fn() }),
+  useRouter: () => ({ push: mockPush, refresh: mockRefresh }),
 }))
 
 // Story 25.4: getImport drives the import-success → done-import transition.
@@ -153,16 +154,19 @@ vi.mock('@/components/features/onboarding-modal/done-generate-step', () => ({
     mode,
     itemCount,
     onShowList,
+    onKeepExploring,
     onRetry,
   }: {
     mode?: 'success' | 'failed'
     itemCount: number | null
     onShowList: () => void
+    onKeepExploring: () => void
     onRetry?: () => void
   }) => (
     <div data-testid="done-generate-step" data-mode={mode ?? 'success'}>
       <span data-testid="done-generate-count">{itemCount ?? ''}</span>
       <button onClick={onShowList}>stub-show-list</button>
+      <button onClick={onKeepExploring}>stub-keep-exploring</button>
       {mode === 'failed' && onRetry && (
         <button onClick={onRetry}>stub-retry</button>
       )}
@@ -404,7 +408,7 @@ describe('<FirstRunModal>', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('B.2: tutorial step mounts <TutorialStep> and Minimera handoff calls minimise + close + route', async () => {
+  it('B.2: tutorial step mounts <TutorialStep> and Minimera handoff calls minimise + close + refresh', async () => {
     render(<FirstRunModal open={true} />)
     fireEvent.click(screen.getByText('stub-pick-generate'))
 
@@ -416,9 +420,13 @@ describe('<FirstRunModal>', () => {
     await waitFor(() => {
       expect(mockMinimise).toHaveBeenCalled()
     })
+    // Story 25.6 polish: handler calls router.refresh() (not router.push) so
+    // the dashboard server component re-runs getOnboardingState and the new
+    // B.6 corner FAB visibility derivation re-fires.
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith('/dashboard')
+      expect(mockRefresh).toHaveBeenCalled()
     })
+    expect(mockPush).not.toHaveBeenCalledWith('/dashboard')
   })
 
   it('B.2: Minimera from tutorial — if minimise fails, modal stays on the tutorial step (no route)', async () => {
@@ -623,5 +631,67 @@ describe('<FirstRunModal>', () => {
         (payload as { path?: string })?.path === 'template'
     )
     expect(calls).toHaveLength(1)
+  })
+
+  // Story 25.6 (B.6) — tutorial-only step + Fortsätt utforska transition.
+  it('B.6: initialStep="tutorial-only" mounts modal at tutorial-only step', () => {
+    render(<FirstRunModal open={true} initialStep="tutorial-only" />)
+
+    // Tutorial-only header copy
+    expect(
+      screen.getByRole('heading', { name: 'Onboarding-guide' })
+    ).toBeInTheDocument()
+    // TutorialStep stub renders — path-choice does NOT
+    expect(screen.queryByTestId('path-choice-step')).not.toBeInTheDocument()
+  })
+
+  it('B.6: openTrigger="fab" fires modal_opened with trigger:"fab"', () => {
+    render(
+      <FirstRunModal
+        open={true}
+        initialStep="tutorial-only"
+        openTrigger="fab"
+      />
+    )
+
+    expect(mockRecordEvent).toHaveBeenCalledWith('modal_opened', {
+      trigger: 'fab',
+    })
+  })
+
+  it('B.6: clicking Fortsätt utforska on done-generate transitions to tutorial-only + fires keep_exploring telemetry', async () => {
+    mockUseSWR.mockReturnValue({
+      data: {
+        status: 'completed',
+        itemCount: 88,
+        groups: [],
+        error: null,
+      },
+    })
+
+    render(<FirstRunModal open={true} />)
+
+    // Click Generera → tutorial → SWR sees completed → auto-transition to
+    // done-generate.
+    fireEvent.click(screen.getByText('stub-pick-generate'))
+    await waitFor(() => {
+      expect(screen.getByTestId('done-generate-step')).toBeInTheDocument()
+    })
+
+    // Click "Fortsätt utforska" stub on the done-generate component.
+    fireEvent.click(screen.getByText('stub-keep-exploring'))
+
+    // Modal transitions to tutorial-only header
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: 'Onboarding-guide' })
+      ).toBeInTheDocument()
+    })
+
+    // done_cta_clicked event fired with keep_exploring + generate path
+    expect(mockRecordEvent).toHaveBeenCalledWith('done_cta_clicked', {
+      path: 'generate',
+      cta: 'keep_exploring',
+    })
   })
 })

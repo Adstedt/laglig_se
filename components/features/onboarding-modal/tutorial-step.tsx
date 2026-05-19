@@ -54,12 +54,30 @@ const TABS: TabDef[] = [
 interface TutorialStepProps {
   initialStatus?: GenerationStatus | null | undefined
   onMinimise: () => void | Promise<void>
+  /**
+   * Story 25.6 (B.6): `'tutorial'` (default) shows the <ProgressStrip>;
+   * `'tutorial-only'` hides it (used by FAB / Hjälp re-entry where there
+   * is no in-flight work to track).
+   */
+  mode?: 'tutorial' | 'tutorial-only'
+  /**
+   * Story 25.6 (B.6): starting tab for URL deep-link mounts (e.g.
+   * `?onboarding=tutorial&tab=ai-agent`). Falls back to `'laglista'`.
+   */
+  initialTab?: TutorialTabId
 }
 
 const DEFAULT_TAB_ID: TutorialTabId = 'laglista'
 
-export function TutorialStep({ initialStatus, onMinimise }: TutorialStepProps) {
-  const [activeTab, setActiveTab] = useState<TutorialTabId>(DEFAULT_TAB_ID)
+export function TutorialStep({
+  initialStatus,
+  onMinimise,
+  mode = 'tutorial',
+  initialTab,
+}: TutorialStepProps) {
+  const [activeTab, setActiveTab] = useState<TutorialTabId>(
+    initialTab ?? DEFAULT_TAB_ID
+  )
   const tabRefs = useRef<Record<TutorialTabId, HTMLButtonElement | null>>({
     laglista: null,
     kravpunkter: null,
@@ -157,7 +175,9 @@ export function TutorialStep({ initialStatus, onMinimise }: TutorialStepProps) {
     // (the only child with flex-1 + overflow-y-auto below) can be the modal's
     // scroll boundary. Chrome above + Minimera below stay pinned.
     <div className="flex min-h-0 flex-1 flex-col gap-5">
-      <ProgressStrip initialStatus={initialStatus} />
+      {mode !== 'tutorial-only' && (
+        <ProgressStrip initialStatus={initialStatus} />
+      )}
 
       {/* Tab bar — horizontal scroll on narrow viewports. Underline on active
           tab matches the prototype at _prototypes/onboarding-tutorial-modal.html:877-884. */}
