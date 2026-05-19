@@ -86,10 +86,17 @@ export function LoginForm() {
       // Validate with Zod
       const validated = LoginSchema.parse(data)
 
+      // Pass an explicit callbackUrl so next-auth/react does not fall back
+      // to window.location.href. If the user landed here via /auth/verify's
+      // failure redirect (/login?error=verification_failed), that fallback
+      // would echo the `?error=` back in the success-redirect URL, which
+      // next-auth/react then misreads as a CredentialsSignin failure even
+      // though the session cookie was set.
       const result = await signIn('credentials', {
         email: validated.email,
         password: validated.password,
         redirect: false,
+        callbackUrl,
       })
 
       if (result?.error) {

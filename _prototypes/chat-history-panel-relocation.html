@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chat history — relocated panel (prototype)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        background: #0a0a0a;
+        color: #ededed;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Token approximations — mirror globals.css dark mode after the recent
+         shift (background 10%, muted 17%, card 9%, sidebar-bg 6%, border 19%). */
+      :root {
+        --bg:         #1a1a1a;   /* bg-background — content card */
+        --muted:      #2b2b2b;   /* L-shape tone (single layer ≈ doubled /60) */
+        --card:       #171717;   /* bg-card */
+        --sidebar-bg: #0f0f0f;
+        --border:     #303030;   /* border (~19%) */
+        --border-soft:#262626;
+        --fg:         #ededed;
+        --fg-muted:   #9a9a9a;
+        --fg-dim:     #6a6a6a;
+        --accent:     rgba(255,255,255,0.06);
+      }
+
+      .frame { background: var(--muted); border-radius: 12px; overflow: hidden; }
+      .l-shape { background: var(--muted); }
+      .content-card {
+        background: var(--bg);
+        border-top: 1px solid var(--border);
+        border-left: 1px solid var(--border);
+        border-top-left-radius: 12px;
+        overflow: hidden;
+      }
+      .sidebar-icon {
+        display: flex; align-items: center; justify-content: center;
+        width: 36px; height: 36px; border-radius: 8px;
+        color: var(--fg-muted);
+      }
+      .sidebar-icon.active { background: rgba(255,255,255,0.10); color: var(--fg); }
+      .chip { background: rgba(255,255,255,0.06); border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--fg-muted); display:inline-flex; align-items:center; gap:6px; }
+
+      /* The relocated chat-history card */
+      .history-card {
+        background: var(--card);
+        border: 1px solid var(--border-soft);
+        border-radius: 14px;
+        box-shadow: 0 8px 24px -12px rgba(0,0,0,0.5);
+      }
+
+      .conv-row { padding: 10px 12px; border-radius: 8px; cursor: pointer; }
+      .conv-row:hover { background: rgba(255,255,255,0.04); }
+      .conv-row.active { background: rgba(255,255,255,0.08); }
+
+      .search-input {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid transparent;
+        border-radius: 8px;
+        padding: 8px 10px 8px 32px;
+        color: var(--fg);
+        width: 100%;
+        font-size: 13px;
+      }
+      .search-input::placeholder { color: var(--fg-dim); }
+
+      .label-eyebrow {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--fg-dim);
+      }
+
+      .annotation {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: rgba(255,255,255,0.04);
+        border: 1px dashed var(--border);
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        color: var(--fg-muted);
+      }
+
+      .arrow {
+        position: absolute;
+        color: #f59e0b;
+        font-size: 13px;
+        font-weight: 500;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body class="p-10">
+    <div class="max-w-[1400px] mx-auto">
+      <!-- Header -->
+      <header class="mb-8">
+        <p class="label-eyebrow mb-2">Prototype · Chat history relocation</p>
+        <h1 class="text-2xl font-semibold tracking-tight">Standalone history panel inside the content viewport</h1>
+        <p class="text-sm text-[color:var(--fg-muted)] mt-2 max-w-2xl">
+          Moves the chat history out from being a sidebar-nested aside and into the content card as
+          a "floating card" — similar to HubSpot's nav popover, but full-height and persistent. Main
+          content reflows (pushes) rather than overlays, since history browsing is a longer-lived task.
+        </p>
+      </header>
+
+      <!-- ============== State 1: history OPEN, proposed layout ============== -->
+      <section class="mb-12">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <p class="label-eyebrow mb-1">State A · proposed</p>
+            <h2 class="text-base font-medium">History card sits inside the content area, ~16px inset from the frame</h2>
+          </div>
+          <span class="annotation"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Push, not overlay</span>
+        </div>
+
+        <div class="frame l-shape relative" style="height: 620px;">
+          <div class="flex h-full">
+            <!-- Left sidebar (collapsed) -->
+            <aside class="w-16 shrink-0 flex flex-col items-center py-3 gap-2">
+              <div class="sidebar-icon" style="border-radius: 6px;">
+                <!-- L logo placeholder -->
+                <div class="w-6 h-6 bg-white" style="clip-path: polygon(0 0, 50% 0, 50% 70%, 100% 100%, 0 100%);"></div>
+              </div>
+              <div class="h-px w-8 bg-[color:var(--border-soft)] my-2"></div>
+              <div class="sidebar-icon active"><i data-lucide="home" class="w-4 h-4"></i></div>
+              <div class="sidebar-icon"><i data-lucide="message-square" class="w-4 h-4"></i></div>
+              <div class="sidebar-icon"><i data-lucide="scale" class="w-4 h-4"></i></div>
+              <div class="sidebar-icon"><i data-lucide="clipboard-check" class="w-4 h-4"></i></div>
+              <div class="sidebar-icon"><i data-lucide="book-open" class="w-4 h-4"></i></div>
+              <div class="h-px w-8 bg-[color:var(--border-soft)] my-2"></div>
+              <div class="sidebar-icon"><i data-lucide="check-square" class="w-4 h-4"></i></div>
+              <div class="sidebar-icon"><i data-lucide="file-text" class="w-4 h-4"></i></div>
+              <div class="sidebar-icon"><i data-lucide="folder" class="w-4 h-4"></i></div>
+            </aside>
+
+            <!-- Right column: header + content card -->
+            <div class="flex-1 flex flex-col min-w-0">
+              <!-- Header -->
+              <div class="h-[60px] shrink-0 flex items-center px-4 gap-3">
+                <div class="flex-1"></div>
+                <button class="px-3 py-1.5 bg-white text-black rounded-md text-xs font-medium flex items-center gap-1">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i> Skapa
+                </button>
+                <div class="relative w-64">
+                  <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[color:var(--fg-dim)]"></i>
+                  <input class="search-input" placeholder="Sök lagar, föreskrifter…" />
+                </div>
+                <div class="sidebar-icon relative">
+                  <i data-lucide="bell" class="w-4 h-4"></i>
+                  <span class="absolute -top-0.5 -right-0.5 bg-red-500 text-[10px] text-white font-medium rounded-full w-4 h-4 flex items-center justify-center">3</span>
+                </div>
+              </div>
+
+              <!-- Content card with rounded-tl + history card inside -->
+              <div class="content-card flex-1 flex gap-3 p-3 min-h-0 relative">
+                <!-- History card -->
+                <aside class="history-card w-[320px] shrink-0 flex flex-col overflow-hidden">
+                  <!-- Card header -->
+                  <div class="flex items-center justify-between px-4 py-3 border-b border-[color:var(--border-soft)]">
+                    <div class="flex items-center gap-2">
+                      <button class="text-[color:var(--fg-muted)] hover:text-white">
+                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                      </button>
+                      <span class="text-sm font-medium">Tidigare konversationer</span>
+                    </div>
+                    <button class="text-[color:var(--fg-muted)] hover:text-white" title="Stäng">
+                      <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+
+                  <!-- Search inside the panel -->
+                  <div class="px-4 pt-3 pb-2">
+                    <div class="relative">
+                      <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[color:var(--fg-dim)]"></i>
+                      <input class="search-input" placeholder="Sök i konversationer…" />
+                    </div>
+                  </div>
+
+                  <!-- Conversations list -->
+                  <div class="flex-1 overflow-auto px-2 py-2">
+                    <div class="label-eyebrow px-3 mb-1.5">Idag</div>
+                    <div class="conv-row active">
+                      <div class="text-sm truncate">Vad gäller för GDPR-incidenter inom 72 h?</div>
+                      <div class="text-xs text-[color:var(--fg-dim)] mt-0.5">14:32 · 8 meddelanden</div>
+                    </div>
+                    <div class="conv-row">
+                      <div class="text-sm truncate">Sammanfatta hotellsäkerhetsförordningen</div>
+                      <div class="text-xs text-[color:var(--fg-dim)] mt-0.5">11:15 · 4 meddelanden</div>
+                    </div>
+
+                    <div class="label-eyebrow px-3 mt-3 mb-1.5">Igår</div>
+                    <div class="conv-row">
+                      <div class="text-sm truncate">Är allergeninformation obligatorisk på menyer?</div>
+                      <div class="text-xs text-[color:var(--fg-dim)] mt-0.5">17:08 · 6 meddelanden</div>
+                    </div>
+                    <div class="conv-row">
+                      <div class="text-sm truncate">Brandskyddsdokumentation för hotell</div>
+                      <div class="text-xs text-[color:var(--fg-dim)] mt-0.5">10:42 · 12 meddelanden</div>
+                    </div>
+
+                    <div class="label-eyebrow px-3 mt-3 mb-1.5">Förra veckan</div>
+                    <div class="conv-row">
+                      <div class="text-sm truncate">Lex Sarah-anmälningar — vem ansvarar?</div>
+                      <div class="text-xs text-[color:var(--fg-dim)] mt-0.5">2 dgr · 3 meddelanden</div>
+                    </div>
+                    <div class="conv-row">
+                      <div class="text-sm truncate">Skillnaden mellan GDPR och datalagen</div>
+                      <div class="text-xs text-[color:var(--fg-dim)] mt-0.5">4 dgr · 17 meddelanden</div>
+                    </div>
+                    <div class="conv-row">
+                      <div class="text-sm truncate">Restaurangregler för alkoholservering</div>
+                      <div class="text-xs text-[color:var(--fg-dim)] mt-0.5">6 dgr · 5 meddelanden</div>
+                    </div>
+                  </div>
+                </aside>
+
+                <!-- Main content (pushed right) -->
+                <main class="flex-1 min-w-0 overflow-hidden">
+                  <div class="p-4">
+                    <p class="text-xs text-[color:var(--fg-muted)] mb-2">Almåsa Havshotell AB &nbsp;›&nbsp; Laglistor</p>
+                    <h1 class="text-3xl font-semibold">Laglistor</h1>
+                    <p class="text-sm text-[color:var(--fg-muted)] mt-1">Hantera dina listor och håll koll på relevanta rättsliga krav.</p>
+
+                    <div class="flex items-center gap-2 mt-5 flex-wrap">
+                      <span class="chip"><i data-lucide="book-open" class="w-3 h-3"></i> Laglistor</span>
+                      <span class="chip"><i data-lucide="history" class="w-3 h-3"></i> Ändringar</span>
+                      <span class="chip"><i data-lucide="bookmark" class="w-3 h-3"></i> Er laglista (67)</span>
+                      <span class="chip"><i data-lucide="search" class="w-3 h-3"></i> Sök dokument…</span>
+                      <span class="chip"><i data-lucide="sliders-horizontal" class="w-3 h-3"></i> Filter</span>
+                      <span class="chip"><i data-lucide="clipboard-check" class="w-3 h-3"></i> Efterlevnad</span>
+                    </div>
+
+                    <div class="mt-5 space-y-2">
+                      <div class="flex items-center justify-between p-3 border border-[color:var(--border-soft)] rounded-lg">
+                        <div class="flex items-center gap-3"><i data-lucide="folder" class="w-4 h-4 text-[color:var(--fg-muted)]"></i> <span class="text-sm">Bolagsrätt</span></div>
+                        <span class="text-xs text-[color:var(--fg-muted)]">0/3 ▬▬▬</span>
+                      </div>
+                      <div class="flex items-center justify-between p-3 border border-[color:var(--border-soft)] rounded-lg">
+                        <div class="flex items-center gap-3"><i data-lucide="folder" class="w-4 h-4 text-[color:var(--fg-muted)]"></i> <span class="text-sm">Arbetsrätt</span></div>
+                        <span class="text-xs text-[color:var(--fg-muted)]">0/19 ▬▬▬</span>
+                      </div>
+                      <div class="flex items-center justify-between p-3 border border-[color:var(--border-soft)] rounded-lg">
+                        <div class="flex items-center gap-3"><i data-lucide="folder" class="w-4 h-4 text-[color:var(--fg-muted)]"></i> <span class="text-sm">Skatt & Redovisning</span></div>
+                        <span class="text-xs text-[color:var(--fg-muted)]">0/4 ▬▬▬</span>
+                      </div>
+                    </div>
+                  </div>
+                </main>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Annotations -->
+        <div class="mt-4 grid grid-cols-3 gap-3 text-xs text-[color:var(--fg-muted)]">
+          <div class="p-3 rounded-lg border border-[color:var(--border-soft)]">
+            <p class="font-medium text-white mb-1">1. Outside the sidebar</p>
+            <p>The history aside is no longer a sibling of the left nav. It lives inside the content card, so the L-shape stays uninterrupted.</p>
+          </div>
+          <div class="p-3 rounded-lg border border-[color:var(--border-soft)]">
+            <p class="font-medium text-white mb-1">2. Floating card, 16px inset</p>
+            <p>All four corners rounded · <code>bg-card</code> (slightly darker than main's <code>bg-background</code>) · subtle border for definition.</p>
+          </div>
+          <div class="p-3 rounded-lg border border-[color:var(--border-soft)]">
+            <p class="font-medium text-white mb-1">3. Push, not overlay</p>
+            <p>Main reflows when the panel opens — no content trapped underneath. 300ms slide-in from the left.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== State 2: closed (current main untouched) ============== -->
+      <section class="mb-12">
+        <p class="label-eyebrow mb-1">State B · closed</p>
+        <h2 class="text-base font-medium mb-3">No history panel — main fills the content card edge-to-edge</h2>
+
+        <div class="frame l-shape relative" style="height: 380px;">
+          <div class="flex h-full">
+            <aside class="w-16 shrink-0 flex flex-col items-center py-3 gap-2">
+              <div class="sidebar-icon" style="border-radius: 6px;">
+                <div class="w-6 h-6 bg-white" style="clip-path: polygon(0 0, 50% 0, 50% 70%, 100% 100%, 0 100%);"></div>
+              </div>
+              <div class="h-px w-8 bg-[color:var(--border-soft)] my-2"></div>
+              <div class="sidebar-icon active"><i data-lucide="home" class="w-4 h-4"></i></div>
+              <div class="sidebar-icon"><i data-lucide="message-square" class="w-4 h-4"></i></div>
+              <div class="sidebar-icon"><i data-lucide="scale" class="w-4 h-4"></i></div>
+              <div class="sidebar-icon"><i data-lucide="clipboard-check" class="w-4 h-4"></i></div>
+            </aside>
+
+            <div class="flex-1 flex flex-col min-w-0">
+              <div class="h-[60px] shrink-0 flex items-center px-4 gap-3">
+                <div class="flex-1"></div>
+                <div class="w-64 h-9 rounded-md" style="background: rgba(255,255,255,0.06);"></div>
+              </div>
+              <div class="content-card flex-1 p-4 min-h-0">
+                <p class="text-xs text-[color:var(--fg-muted)] mb-2">Almåsa Havshotell AB &nbsp;›&nbsp; Laglistor</p>
+                <h1 class="text-3xl font-semibold">Laglistor</h1>
+                <p class="text-sm text-[color:var(--fg-muted)] mt-1">Hantera dina listor och håll koll på relevanta rättsliga krav.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== Implementation notes ============== -->
+      <section class="mt-10 p-5 rounded-lg border border-[color:var(--border-soft)]">
+        <p class="label-eyebrow mb-2">Implementation notes</p>
+        <ul class="text-sm text-[color:var(--fg-muted)] space-y-1.5 list-disc pl-5">
+          <li>Remove the chat-history <code>&lt;aside&gt;</code> currently sitting between <code>LeftSidebar</code> and the right column in <code>workspace-shell.tsx</code>.</li>
+          <li>Add a new <code>&lt;aside&gt;</code> inside the content-row (the <code>rounded-tl-xl</code> wrapper), as the leftmost child of <code>main</code>'s parent.</li>
+          <li>Content-row gets <code>gap-3 p-3</code> so both the new card and <code>main</code> sit with a 12px inset from the frame.</li>
+          <li>History card: <code>w-[320px] bg-card border border-border/60 rounded-xl shadow-sm</code> — all four corners rounded.</li>
+          <li>Main loses its <code>p-4 md:p-6</code> outer padding (the new wrapper provides it); inner pages compensate if needed.</li>
+          <li>Keyboard shortcut + trigger from sidebar still toggles <code>chatHistoryOpen</code> in <code>useLayoutStore</code> — no store change required.</li>
+          <li>Transition: <code>transition-all duration-300 ease-in-out</code> on the new aside; closed state is <code>w-0 mr-0</code> (collapse to zero with the gap removed) so main reclaims the space smoothly.</li>
+        </ul>
+      </section>
+    </div>
+
+    <script>lucide.createIcons();</script>
+  </body>
+</html>

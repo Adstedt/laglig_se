@@ -114,34 +114,14 @@ export function WorkspaceShell({
     <WorkspaceProvider>
       <Toaster position="bottom-center" />
       {/* Row-first layout: sidebar | column(header + content) */}
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-screen overflow-hidden bg-muted/60">
         {/* Left Sidebar - full height, desktop only */}
         <LeftSidebar user={user} />
 
-        {/* Chat history panel — nested beside left nav */}
-        <aside
-          className={cn(
-            'hidden md:flex flex-col border-r bg-background transition-all duration-300 ease-in-out overflow-hidden',
-            chatHistoryOpen ? 'w-[300px]' : 'w-0'
-          )}
-        >
-          {chatHistoryOpen && (
-            <ConversationHistory
-              onSelectConversation={(id) => {
-                window.dispatchEvent(
-                  new CustomEvent('laglig:load-conversation', {
-                    detail: { conversationId: id },
-                  })
-                )
-                setChatHistoryOpen(false)
-              }}
-              onBack={() => setChatHistoryOpen(false)}
-            />
-          )}
-        </aside>
-
-        {/* Right column: header + content */}
-        <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Right column: header + content. Matching bg-muted/60 here makes the
+            rounded-tl cutout reveal the same double-layered tint as the
+            sidebar+header L-shape (otherwise a 90° edge bleeds through). */}
+        <div className="flex flex-1 flex-col overflow-hidden bg-muted/60">
           {/* Header - starts where sidebar ends */}
           <Header
             user={user}
@@ -157,10 +137,38 @@ export function WorkspaceShell({
             user={user}
           />
 
-          {/* Content area below header */}
-          <div className="flex flex-1 overflow-hidden">
+          {/* Content area below header — rounded top-left forms the inner
+              corner where the L-shape (sidebar + header) meets the content. */}
+          <div className="flex flex-1 overflow-hidden rounded-tl-xl border-t border-l bg-background">
+            {/* Chat history card — only on Hem (where the main chat lives).
+                Outer aside animates width; inner div is the floating card. */}
+            {isHemPage && (
+              <aside
+                className={cn(
+                  'hidden md:flex flex-col shrink-0 overflow-hidden transition-all duration-300 ease-in-out',
+                  chatHistoryOpen ? 'w-[320px]' : 'w-0'
+                )}
+              >
+                <div className="flex-1 m-3 min-h-0 bg-card border border-border/60 dark:border-t-white/[0.06] dark:border-l-white/[0.06] rounded-xl shadow-sm overflow-hidden flex flex-col">
+                  {chatHistoryOpen && (
+                    <ConversationHistory
+                      onSelectConversation={(id) => {
+                        window.dispatchEvent(
+                          new CustomEvent('laglig:load-conversation', {
+                            detail: { conversationId: id },
+                          })
+                        )
+                        setChatHistoryOpen(false)
+                      }}
+                      onBack={() => setChatHistoryOpen(false)}
+                    />
+                  )}
+                </div>
+              </aside>
+            )}
+
             {/* Main content */}
-            <main className="flex-1 overflow-auto bg-muted/30 p-4 md:p-6">
+            <main className="flex-1 overflow-auto bg-background p-4 md:p-6">
               <Breadcrumbs />
               {children}
             </main>

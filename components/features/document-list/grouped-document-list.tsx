@@ -356,7 +356,6 @@ export function GroupedDocumentList({
                   key={group.id}
                   groupId={group.id}
                   name={group.name}
-                  itemCount={groupItems.length}
                   isExpanded={isExpanded}
                   onToggle={() => onToggleGroup(group.id)}
                   onFilter={
@@ -378,7 +377,6 @@ export function GroupedDocumentList({
               <GroupAccordion
                 groupId={UNGROUPED_ID}
                 name="Ogrupperade"
-                itemCount={ungroupedItems.length}
                 isExpanded={expandedGroups[UNGROUPED_ID] ?? false}
                 onToggle={() => onToggleGroup(UNGROUPED_ID)}
                 onFilter={
@@ -443,7 +441,6 @@ export function GroupedDocumentList({
 interface GroupAccordionProps {
   groupId: string
   name: string
-  itemCount: number
   isExpanded: boolean
   onToggle: () => void
   onFilter?: (() => void) | undefined // Story 4.13 Task 11: Filter by group click
@@ -459,7 +456,6 @@ interface GroupAccordionProps {
 const GroupAccordion = memo(function GroupAccordion({
   groupId,
   name,
-  itemCount,
   isExpanded,
   onToggle,
   onFilter,
@@ -573,12 +569,6 @@ const GroupAccordion = memo(function GroupAccordion({
               </TooltipProvider>
             </div>
           )}
-
-          {/* Item count badge - simplified on mobile */}
-          <span className="text-xs sm:text-sm text-muted-foreground bg-muted px-2 py-0.5 rounded-full whitespace-nowrap">
-            <span className="sm:hidden">{itemCount}</span>
-            <span className="hidden sm:inline">{itemCount} dokument</span>
-          </span>
         </div>
 
         {/* Group content - Story 4.13 Task 12: Mobile responsive padding */}

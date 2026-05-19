@@ -101,7 +101,7 @@ export function Header({
 
   return (
     <>
-      <header className="sticky top-0 z-50 flex h-[60px] shrink-0 items-center border-b bg-background px-4">
+      <header className="sticky top-0 z-50 flex h-[60px] shrink-0 items-center px-4">
         {/* Mobile menu toggle */}
         <Button
           variant="ghost"
@@ -165,7 +165,7 @@ export function Header({
           <Input
             type="search"
             placeholder="Sök lagar, föreskrifter..."
-            className="h-9 pl-9 bg-muted/50 border-0 focus-visible:bg-background focus-visible:ring-1"
+            className="h-9 pl-9 bg-foreground/[0.06] border-0 focus-visible:bg-background focus-visible:ring-1"
             disabled
             title="Sökning kommer snart"
           />

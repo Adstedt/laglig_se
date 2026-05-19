@@ -48,7 +48,7 @@ export function FilterBar({
   return (
     <Collapsible open={isOpen}>
       <CollapsibleContent>
-        <div className="border-b border-border/60 bg-muted/20 py-2">
+        <div className="-mt-4 py-2">
           <div className="flex items-center gap-2 flex-wrap">
             <ContentTypeFilter
               activeFilter={contentTypeFilter}

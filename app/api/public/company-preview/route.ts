@@ -18,8 +18,39 @@ const RequestSchema = z.object({
 })
 
 const BOLAGSAPI_BASE_URL = 'https://api.bolagsapi.se'
-const BOLAGSAPI_TIMEOUT_MS = 5000
+const BOLAGSAPI_TIMEOUT_MS = 7000
+// Three attempts total (initial + 2 retries). Total worst-case wall time:
+// 3×7s timeout + 300ms + 900ms ≈ 22.2s, fits under maxDuration=30s alongside
+// the downstream Anthropic + Jina calls in analyzeCompany.
+const BOLAGSAPI_RETRY_DELAYS_MS = [300, 900]
 const CACHE_TTL_SECONDS = 30 * 60 // 30 minutes
+
+async function fetchBolagsApiWithRetry(
+  url: string,
+  headers: Record<string, string>
+): Promise<Response | null> {
+  const schedule = [0, ...BOLAGSAPI_RETRY_DELAYS_MS]
+  for (const delayMs of schedule) {
+    if (delayMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs))
+    }
+
+    let response: Response
+    try {
+      response = await fetchWithTimeout(url, { headers }, BOLAGSAPI_TIMEOUT_MS)
+    } catch {
+      continue
+    }
+
+    if (response.status === 429 || response.status >= 500) {
+      continue
+    }
+
+    return response
+  }
+
+  return null
+}
 
 const ipRatelimit = isRedisConfigured()
   ? new Ratelimit({
@@ -103,28 +134,17 @@ export async function POST(request: NextRequest) {
   const digits = orgNumber.replace(/\D/g, '')
   const url = `${BOLAGSAPI_BASE_URL}/v1/company/${digits}`
 
-  let response: Response
-  try {
-    response = await fetchWithTimeout(
-      url,
-      {
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          Accept: 'application/json',
-        },
-      },
-      BOLAGSAPI_TIMEOUT_MS
-    )
-  } catch {
+  const response = await fetchBolagsApiWithRetry(url, {
+    Authorization: `Bearer ${apiKey}`,
+    Accept: 'application/json',
+  })
+
+  if (!response) {
     return NextResponse.json({ error: 'service_unavailable' }, { status: 503 })
   }
 
   if (response.status === 404 || response.status === 400) {
     return NextResponse.json({ error: 'company_not_found' }, { status: 404 })
-  }
-
-  if (response.status === 429 || response.status >= 500) {
-    return NextResponse.json({ error: 'service_unavailable' }, { status: 503 })
   }
 
   if (!response.ok) {

@@ -147,21 +147,21 @@ export function ConversationHistory({
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center gap-2 border-b px-4 py-3">
+      <div className="flex items-center gap-1.5 border-b px-3 py-2">
         <Button
           variant="ghost"
           size="icon"
           onClick={onBack}
-          className="h-8 w-8 shrink-0"
+          className="h-7 w-7 shrink-0"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-3.5 w-3.5" />
           <span className="sr-only">Tillbaka</span>
         </Button>
-        <h2 className="text-sm font-semibold">Tidigare konversationer</h2>
+        <h2 className="text-[13px] font-semibold">Tidigare konversationer</h2>
       </div>
 
       {/* Search input */}
-      <div className="px-4 py-2 border-b">
+      <div className="px-3 py-2 border-b">
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
@@ -206,33 +206,33 @@ export function ConversationHistory({
                   key={result.conversationId ?? `active-${index}`}
                   onClick={() => handleSelectSearchResult(result)}
                   className={cn(
-                    'flex w-full items-start gap-3 px-4 py-3 text-left transition-colors',
+                    'flex w-full items-start gap-2 px-3 py-2 text-left transition-colors',
                     'hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
                   )}
                 >
-                  <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                  <MessageSquare className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm line-clamp-2">
+                    <p className="text-[13px] leading-tight line-clamp-2">
                       {highlightSnippet(result.snippet)}
                     </p>
-                    <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground truncate">
                       {!result.conversationId && (
                         <>
-                          <span className="text-primary font-medium">
+                          <span className="text-primary font-medium whitespace-nowrap">
                             Aktiv
                           </span>
                           <span>&middot;</span>
                         </>
                       )}
-                      <Clock className="h-3 w-3" />
-                      <span>
+                      <Clock className="h-3 w-3 shrink-0" />
+                      <span className="whitespace-nowrap">
                         {formatDistanceToNow(new Date(result.createdAt), {
                           addSuffix: true,
                           locale: sv,
                         })}
                       </span>
                       <span>&middot;</span>
-                      <span>
+                      <span className="whitespace-nowrap">
                         {result.messageCount}{' '}
                         {result.messageCount === 1
                           ? 'meddelande'
@@ -260,25 +260,25 @@ export function ConversationHistory({
                   onSelectConversation(conversation.conversationId)
                 }
                 className={cn(
-                  'flex w-full items-start gap-3 px-4 py-3 text-left transition-colors',
+                  'flex w-full items-start gap-2 px-3 py-2 text-left transition-colors',
                   'hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
                 )}
               >
-                <MessageSquare className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <MessageSquare className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm">
+                  <p className="truncate text-[13px] leading-tight">
                     {conversation.firstMessage}
                   </p>
-                  <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                    <Clock className="h-3 w-3" />
-                    <span>
+                  <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground truncate">
+                    <Clock className="h-3 w-3 shrink-0" />
+                    <span className="whitespace-nowrap">
                       {formatDistanceToNow(new Date(conversation.createdAt), {
                         addSuffix: true,
                         locale: sv,
                       })}
                     </span>
                     <span>&middot;</span>
-                    <span>
+                    <span className="whitespace-nowrap">
                       {conversation.messageCount}{' '}
                       {conversation.messageCount === 1
                         ? 'meddelande'

@@ -15,7 +15,13 @@ import { useCallback, useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { toast } from 'sonner'
 import type { UIMessage } from 'ai'
-import { LexaIcon } from '@/components/ui/lexa-icon'
+import { MessageSquare } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { ChatPanel } from '@/components/features/ai-chat/chat-panel'
 import { ChatPanelChrome } from '@/components/features/ai-chat/chat-panel-chrome'
@@ -109,15 +115,24 @@ export function RightSidebar({ isOpen, onToggle }: RightSidebarProps) {
 
   return (
     <>
-      {/* Toggle button when sidebar is folded - hidden on mobile and on Hem page */}
+      {/* Toggle FAB when sidebar is folded - desktop only, hidden on Hem
+          (Hem renders the onboarding FAB in the same corner). */}
       {!isOpen && !isHemPage && (
-        <button
-          onClick={onToggle}
-          className="hidden lg:flex fixed right-0 top-1/2 z-40 h-14 w-8 -translate-y-1/2 items-center justify-center rounded-l-lg border border-r-0 bg-primary text-primary-foreground shadow-lg transition-all hover:w-10 hover:bg-primary/90"
-          aria-label="Öppna assistent"
-        >
-          <LexaIcon size={16} className="invert-0" />
-        </button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={onToggle}
+                aria-label="Öppna assistent"
+                className="hidden lg:inline-flex fixed bottom-6 right-6 z-40 h-11 w-11 items-center justify-center rounded-full border border-border bg-background text-foreground shadow-md transition-shadow hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <MessageSquare className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="left">Lexa</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
 
       {/* Sidebar container - hidden on mobile */}
