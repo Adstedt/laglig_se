@@ -8,7 +8,7 @@ import { NavbarV2 } from '@/components/features/landing-v2/navbar-v2'
 import { ForceLightTheme } from '@/components/features/landing-v2/force-light-theme'
 
 import { HeroV3 } from '@/components/features/landing-v3/hero-v3'
-import { WhySection } from '@/components/features/landing-v3/why-section'
+import { WhySectionGraph as WhySection } from '@/components/features/landing-v3/why-section-graph'
 import { BreadthSection } from '@/components/features/landing-v3/breadth-section'
 import { RolesSection } from '@/components/features/landing-v3/roles-section'
 import { AiAgentSection } from '@/components/features/landing-v3/ai-agent-section'
