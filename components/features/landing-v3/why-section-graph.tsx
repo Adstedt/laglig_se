@@ -87,15 +87,22 @@ export function WhySectionGraph() {
             {/* LEFT — editorial copy block */}
             <div className="lg:col-span-5">
               <h2
-                className="mb-10 text-4xl font-medium leading-[1.05] tracking-tight md:text-5xl lg:text-[3.25rem]"
+                className="mb-6 text-4xl font-medium leading-[1.1] tracking-tight md:text-5xl lg:text-[3rem]"
                 style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
               >
-                Mer skala.
+                Ni har koll på bokföringen.
                 <br />
-                <span className="text-foreground/35">Fler regler.</span>
+                <span className="text-foreground/40">
+                  Vem har koll på lagarna?
+                </span>
               </h2>
 
-              <div className="space-y-7">
+              <p className="mb-10 max-w-md text-base leading-relaxed text-muted-foreground">
+                Varje företag har skyldigheter enligt lag — från enskild firma
+                till koncern. Det som skiljer är hur många, inte om.
+              </p>
+
+              <div className="space-y-6">
                 <BigNumber
                   value="3"
                   caption="regelområden"
@@ -274,35 +281,38 @@ export function WhySectionGraph() {
                   ))}
                 </svg>
 
-                {/* Category footnotes — small grid below the chart, grouped
-                    under each tier; the last column gets the warm accent so
-                    the destination story carries through */}
+                {/* Category footnotes — list of categories under each tier,
+                    each prefixed with "+" so the "added at this tier" framing
+                    is carried by the items themselves rather than a header.
+                    Last column gets the warm accent so the destination story
+                    carries through. */}
                 <div className="mt-1 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-foreground/5 pt-4 text-[11px] leading-snug md:grid-cols-4">
                   {tiers.map((t, i) => {
                     const last = i === tiers.length - 1
                     return (
-                      <div key={`foot-${t.label}`} className="px-1">
-                        <p
-                          className={cn(
-                            'mb-1.5 text-[10px] uppercase tracking-wider',
-                            last ? 'text-amber-900/70' : 'text-muted-foreground'
-                          )}
-                        >
-                          + {t.total - (tiers[i - 1]?.total ?? 0)} nya
-                        </p>
-                        <ul
-                          className={cn(
-                            'space-y-0.5',
-                            last ? 'text-amber-950' : 'text-foreground/70'
-                          )}
-                        >
-                          {t.newAreas.map((area) => (
-                            <li key={area} className="leading-snug">
-                              {area}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                      <ul
+                        key={`foot-${t.label}`}
+                        className={cn(
+                          'space-y-1 px-1',
+                          last ? 'text-amber-950' : 'text-foreground/75'
+                        )}
+                      >
+                        {t.newAreas.map((area) => (
+                          <li key={area} className="flex gap-1.5 leading-snug">
+                            <span
+                              className={cn(
+                                'select-none',
+                                last
+                                  ? 'text-amber-700/80'
+                                  : 'text-muted-foreground/60'
+                              )}
+                            >
+                              +
+                            </span>
+                            <span>{area}</span>
+                          </li>
+                        ))}
+                      </ul>
                     )
                   })}
                 </div>
