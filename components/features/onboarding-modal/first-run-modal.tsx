@@ -55,6 +55,7 @@ import { PathChoiceStep } from './path-choice-step'
 import { TemplatePickStep } from './template-pick-step'
 import { ImportUploadStep } from './import-upload-step'
 import { TutorialStep } from './tutorial-step'
+import type { TutorialTabId } from './tutorial-step'
 import { DoneGenerateStep } from './done-generate-step'
 import { DoneImportStep } from './done-import-step'
 import { DoneTemplateStep } from './done-template-step'
@@ -66,6 +67,7 @@ type Step =
   | 'template-pick'
   | 'import-upload'
   | 'tutorial'
+  | 'tutorial-only'
   | 'done-generate'
   | 'done-import'
   | 'done-template'
@@ -103,6 +105,35 @@ interface FirstRunModalProps {
    * the tutorial step's <ProgressStrip> so the first paint is non-empty.
    */
   initialStatus?: GenerationStatus | null | undefined
+  /**
+   * Story 25.6 (B.6): mount the modal directly at this step instead of the
+   * default `'path-choice'`. Used by FAB / Hjälp re-entry to land users on
+   * `'tutorial-only'` mode without re-walking the first-run flow.
+   */
+  initialStep?: Step | undefined
+  /**
+   * Story 25.6 (B.6): when `initialStep === 'tutorial-only'`, start the
+   * <TutorialStep>'s tab strip at this tab. Falls back to `'laglista'`.
+   */
+  initialTutorialTab?: TutorialTabId | undefined
+  /**
+   * Story 25.6 (B.6): which surface opened the modal — drives the
+   * `modal_opened` event's `trigger` field. Defaults to `'first_run'`.
+   */
+  openTrigger?: 'first_run' | 'fab' | 'help_menu' | undefined
+  /**
+   * Story 25.6 (B.6): called after the modal's `open` flips to false. Parent
+   * uses this to strip the `?onboarding=...` query param for URL-deep-link
+   * mounts (via `router.replace('/dashboard')`).
+   */
+  onClose?: (() => void) | undefined
+  /**
+   * Story 25.6 v1.1 polish: fired once when <DoneGenerateStep> mounts in
+   * success mode. Parent (<HemPage>) uses this to write the per-workspace
+   * `laglig:done-generate-shown:{workspaceId}` localStorage flag that
+   * demotes the FAB celebrate variant on subsequent dashboard visits.
+   */
+  onDoneGenerateShown?: (() => void) | undefined
 }
 
 function headerForStep(
@@ -136,6 +167,13 @@ function headerForStep(
         description:
           'Du kan stänga rutan — vi fortsätter i bakgrunden och notifierar när det är klart.',
         progress: 'KOM IGÅNG · STEG 2 AV 2',
+      }
+    case 'tutorial-only':
+      return {
+        title: 'Onboarding-guide',
+        description:
+          'Bläddra mellan flikarna för att se vad Laglig.se kan göra. Du kan stänga rutan när du vill.',
+        progress: undefined,
       }
     case 'done-generate':
       return mode === 'failed'
@@ -188,10 +226,15 @@ export function FirstRunModal({
   templates,
   userFirstName,
   initialStatus,
+  initialStep,
+  initialTutorialTab,
+  openTrigger,
+  onClose,
+  onDoneGenerateShown,
 }: FirstRunModalProps) {
   const router = useRouter()
   const [open, setOpen] = useState(initialOpen)
-  const [step, setStep] = useState<Step>('path-choice')
+  const [step, setStep] = useState<Step>(initialStep ?? 'path-choice')
 
   // B.4 state — payloads for the three done steps.
   const [importIdState, setImportIdState] = useState<string | null>(null)
@@ -226,11 +269,16 @@ export function FirstRunModal({
   }, [step])
 
   // QA ROBUST-002: ref guard so modal_opened fires exactly once.
+  // Story 25.6 (B.6): trigger comes from the parent (`'first_run' | 'fab' |
+  // 'help_menu'`); defaults to `'first_run'` so the existing first-run mount
+  // path is unchanged.
   const openEventFired = useRef(false)
   useEffect(() => {
     if (openEventFired.current) return
     openEventFired.current = true
-    void recordOnboardingEvent('modal_opened', { trigger: 'first_run' })
+    void recordOnboardingEvent('modal_opened', {
+      trigger: openTrigger ?? 'first_run',
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -296,6 +344,10 @@ export function FirstRunModal({
 
   function handleClose() {
     setOpen(false)
+    // Story 25.6 (B.6): URL-deep-link parents use this to strip
+    // `?onboarding=...` via `router.replace('/dashboard')` so the modal
+    // doesn't re-open on reload.
+    onClose?.()
   }
 
   async function handleSkip() {
@@ -309,14 +361,19 @@ export function FirstRunModal({
 
   /**
    * Story 25.2 (B.2): Minimera handler called from the tutorial step body.
-   * Same shape as handleSkip per Story 25.1 polish — on success, close +
-   * router.refresh() + router.push('/dashboard') so the dashboard server
-   * component re-renders and mounts <LawListGenerationProgress>.
+   * Story 25.6 polish (2026-05-18): dropped the trailing
+   * `router.push('/dashboard')` — calling push() to the same URL is a no-op
+   * that ALSO aborts the in-flight `router.refresh()`, so the server's
+   * `getOnboardingState` never re-fetches and the new B.6 corner FAB never
+   * appears after a tutorial-step Minimera. With push removed, refresh runs
+   * to completion: server re-renders dashboard, FAB visibility flips to true,
+   * banner-supersession kicks in, FAB mounts. Verified via reset → Generera
+   * → Minimera flow.
    *
    * Note: minimiseFirstRunModal still hardcodes `from_state: 'path_choice'`
    * in its OnboardingEvent write (see app/actions/onboarding-modal.ts:72-74).
-   * B.2 leaves this as-is — funnel reports will conflate path-choice and
-   * tutorial dismisses until B.6 reworks the server action signature.
+   * B.2 left this as-is — funnel reports will conflate path-choice and
+   * tutorial dismisses until a future story reworks the action signature.
    */
   async function handleMinimiseFromTutorial() {
     if (
@@ -326,7 +383,6 @@ export function FirstRunModal({
     }
     handleClose()
     router.refresh()
-    router.push('/dashboard')
   }
 
   /**
@@ -415,13 +471,22 @@ export function FirstRunModal({
     router.push(`/laglistor?list=${templateApplyResult.listId}`)
   }, [templateApplyResult, router])
 
-  // B.4 owner decision v0.4: the "Fortsätt utforska" CTA is rendered DISABLED
-  // in each done step (handler plumbed but never invoked). B.6 will swap one
-  // line per step to enable + invoke. Kept as a no-op so a future copy-edit
-  // doesn't accidentally remove the prop.
+  // Story 25.6 (B.6): "Fortsätt utforska" is now enabled. Transition the
+  // modal to tutorial-only mode + fire `done_cta_clicked.cta='keep_exploring'`
+  // telemetry. `path` discriminates which done-step the click came from.
   const handleKeepExploring = useCallback(() => {
-    /* intentionally no-op until B.6 enables the button. */
-  }, [])
+    const path: 'generate' | 'import' | 'template' =
+      step === 'done-generate'
+        ? 'generate'
+        : step === 'done-import'
+          ? 'import'
+          : 'template'
+    void recordOnboardingEvent('done_cta_clicked', {
+      path,
+      cta: 'keep_exploring',
+    })
+    setStep('tutorial-only')
+  }, [step])
 
   const handleRetryGenerate = useCallback(async () => {
     void recordOnboardingEvent('done_cta_clicked', {
@@ -503,7 +568,7 @@ export function FirstRunModal({
             // jarring resize from tutorial → done) but drops the fixed
             // height since it's size-to-content. done-import + done-template
             // stay at 760px (continue from import-upload + template-pick).
-            step === 'tutorial'
+            step === 'tutorial' || step === 'tutorial-only'
               ? 'h-[760px] max-h-[90vh] max-w-[1200px]'
               : step === 'done-generate'
                 ? 'max-h-[90vh] max-w-[1200px]'
@@ -558,7 +623,8 @@ export function FirstRunModal({
             ref={stepRef}
             className={cn(
               'px-8 pt-6',
-              step === 'tutorial' && 'flex min-h-0 flex-1 flex-col'
+              (step === 'tutorial' || step === 'tutorial-only') &&
+                'flex min-h-0 flex-1 flex-col'
             )}
           >
             {step === 'path-choice' && (
@@ -598,7 +664,24 @@ export function FirstRunModal({
             {step === 'tutorial' && (
               <TutorialStep
                 initialStatus={initialStatus}
-                onMinimise={handleMinimiseFromTutorial}
+                onMinimise={
+                  // Story 25.6 polish: when the modal was opened via FAB or
+                  // Hjälp (re-entry paths), `first_run_dismissed_at` is
+                  // already set — re-firing minimiseFirstRunModal + router.push
+                  // would be redundant. Just close the modal locally; FAB
+                  // visibility is unaffected.
+                  openTrigger === 'fab' || openTrigger === 'help_menu'
+                    ? handleClose
+                    : handleMinimiseFromTutorial
+                }
+              />
+            )}
+
+            {step === 'tutorial-only' && (
+              <TutorialStep
+                mode="tutorial-only"
+                {...(initialTutorialTab && { initialTab: initialTutorialTab })}
+                onMinimise={handleClose}
               />
             )}
 
@@ -613,6 +696,7 @@ export function FirstRunModal({
                 onKeepExploring={handleKeepExploring}
                 onRetry={handleRetryGenerate}
                 onCloseFailure={handleCloseFailure}
+                {...(onDoneGenerateShown && { onShown: onDoneGenerateShown })}
               />
             )}
 

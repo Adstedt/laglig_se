@@ -111,11 +111,15 @@ describe('<DoneGenerateStep>', () => {
     expect(onShowList).toHaveBeenCalledTimes(1)
   })
 
-  it('Fortsätt utforska button is disabled in B.4', () => {
-    renderStep()
+  // Story 25.6 (B.6) — "Fortsätt utforska" is now enabled and calls
+  // onKeepExploring on click (was disabled-with-tooltip in B.4).
+  it('Fortsätt utforska fires onKeepExploring on click', () => {
+    const onKeepExploring = vi.fn()
+    renderStep({ onKeepExploring })
 
-    const button = screen.getByRole('button', { name: /Fortsätt utforska/i })
-    expect(button).toHaveAttribute('aria-disabled', 'true')
+    fireEvent.click(screen.getByRole('button', { name: /Fortsätt utforska/i }))
+
+    expect(onKeepExploring).toHaveBeenCalledTimes(1)
   })
 
   it("renders '—' hero fallback when itemCount is null", () => {
@@ -139,5 +143,21 @@ describe('<DoneGenerateStep>', () => {
     renderStep({ startedAt: null })
 
     expect(screen.queryByText(/identifierade på/i)).not.toBeInTheDocument()
+  })
+
+  // Story 25.6 v1.1 — onShown callback drives the FAB celebrate-variant
+  // demotion via a per-workspace localStorage flag set in <HemPage>.
+  it('fires onShown once on mount in success mode', () => {
+    const onShown = vi.fn()
+    renderStep({ onShown })
+
+    expect(onShown).toHaveBeenCalledTimes(1)
+  })
+
+  it('does NOT fire onShown in failed mode (failure is not a celebration)', () => {
+    const onShown = vi.fn()
+    renderStep({ mode: 'failed', errorMessage: 'boom', onShown })
+
+    expect(onShown).not.toHaveBeenCalled()
   })
 })

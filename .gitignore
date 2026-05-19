@@ -88,5 +88,8 @@ scripts/tmp-*.tsx
 scripts/tmp-*.mjs
 scripts/tmp-*.js
 
+# Transient MCP-driven smoke screenshots (one-off proof; not durable test assets)
+tests/e2e-smoke-screenshots/
+
 # npm lockfile (project uses pnpm)
 package-lock.json

@@ -103,6 +103,15 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    /* Section tints — dark mode (subtle hue over near-black background).
+       Story 25.6 polish (2026-05-18): the :root values (45 30% 96% etc.)
+       are near-white creams that fell through to dark mode and rendered
+       jarringly against the dark background. Dark-mode values are dark
+       grays with the same hue at lower saturation, slightly lighter than
+       --background (0 0% 13%) so they read as subtle section accents. */
+    --section-warm: 30 10% 16%;
+    --section-sage: 140 10% 16%;
+    --section-cream: 35 12% 17%;
     /* Tone tokens — dark mode (desaturated bg, bright fg) */
     --tone-success-soft-bg: 152 30% 18%;
     --tone-success-soft-fg: 152 70% 70%;

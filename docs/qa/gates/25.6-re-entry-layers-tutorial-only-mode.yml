@@ -1,0 +1,123 @@
+schema: 1
+story: '25.6'
+story_title: 'Re-entry layers + tutorial-only mode (B.6)'
+gate: PASS
+status_reason: 'All 50 planned ACs traceable to code + tests; v1.1 polish round (7 additional behaviors from post-smoke iteration) has test coverage where not purely visual. 296 onboarding-modal + dashboard + onboarding-lib tests pass (was 280 at v1.0 baseline → +16 net from v1.1). Zero new regressions in 5,656-test unit suite. Seven low-priority future-polish recommendations; none blocking.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-19T10:25:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 100
+expires: '2026-06-02T10:25:00Z'
+
+evidence:
+  tests_reviewed: 30
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48]
+    ac_gaps: []
+    # ACs 49 (manual staging smoke) and 50 (post-merge production check) are
+    # operational ACs documented in the story for owner execution post-deploy —
+    # they do not require automated code coverage. Same handling as
+    # 25.4 ACs 33/34 and 25.5 ACs 37/38.
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No new auth surface; no new permission scope (FAB visibility derives from existing Workspace columns). LocalStorage stores plain "1" — no PII, no session tokens. SWR poll uses existing /api/workspace/generation-status endpoint (Story 16.4 workspace-scoped via withWorkspace). No XSS surface (React + Tailwind, no dangerouslySetInnerHTML). URL deep-link uses useSearchParams + type-guarded ?tab validation — no injection vectors. No new env vars, no schema migration.'
+  performance:
+    status: PASS
+    notes: 'SWR cache-shared with TutorialStep + FirstRunModal (dedupe). Conditional polling via null key when !fabVisible || !workInFlight — no idle polling. One-shot router.refresh() via completedDetectedRef guard prevents render-loop. Auto-stop on completion (workInFlight flips false → polling stops). Bundle delta ~240 LOC across the new component + util + HemPage extensions. Note (non-blocking): 3s poll interval = ~100 req per 5-min generation window; could relax to 5s if production volume warrants.'
+  reliability:
+    status: PASS
+    notes: 'Fail-safe localStorage writes (try/catch for private-browsing + quota). SSR-safe hydration via useState(true) initial + useEffect read (mirrors trial-countdown-banner.tsx:37-49 precedent). completedDetectedRef one-shot guard prevents render-loop on the SWR refresh. router.refresh() after router.replace() in handleDeepLinkClose ensures FAB visibility re-derives correctly. Per-trigger onMinimise resolution prevents redundant minimiseFirstRunModal DB write. SWR has built-in retry-on-failure. Null key disables SWR cleanly.'
+  maintainability:
+    status: PASS
+    notes: 'Code is well-commented (WHY-only, no obvious-WHAT noise). New util lib/onboarding/done-generate-shown.ts mirrors lib/consent/storage.ts pattern exactly — no new conventions introduced. Test isolation via vi.mock at module level for SWR / next/navigation / storage util. v1.1 Change Log entry comprehensively captures the post-smoke polish work. Arch doc §14 open questions Q2/Q4/Q5/Q7 resolved inline per Task 16.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Consider relaxing SWR poll interval from 3s to 5s if production data shows req volume matters'
+      refs: ['components/features/dashboard/hem-page.tsx:159-164']
+      severity: low
+      reason: '~20 req/min during the in-flight window. Acceptable for 5-min average generations but a tunable knob if production load is high. Negligible UX impact (1-2s extra latency to celebrate transition).'
+    - action: 'Wrap handleClose in useCallback to silence 4 pre-existing ESLint warnings'
+      refs: ['components/features/onboarding-modal/first-run-modal.tsx:439,454,472,529']
+      severity: low
+      reason: 'handleClose is non-memoized; 4 useCallback hooks that reference it have missing-dep warnings. Pre-existing (predates B.6 per 25.6 v1.0 Debug Log), but a 5-line cleanup in a future story would silence them.'
+    - action: 'Mitigate multi-tab interaction (SWR polls independently in each tab)'
+      refs: ['components/features/dashboard/hem-page.tsx:157-175']
+      severity: low
+      reason: 'If user opens /dashboard in 2 tabs, both poll the generation-status endpoint independently. BroadcastChannel API could share state across tabs. Edge case; minor extra network. Accept as-is for v1.'
+    - action: 'Consider toast notification when SWR auto-refresh detects completion'
+      refs: ['components/features/dashboard/hem-page.tsx:166-175']
+      severity: low
+      reason: 'Users not looking at the bottom-right corner may miss the FAB visual flip from working pill → Sparkles celebrate. A small toast ("Er laglista är klar!") would be more discoverable. UX polish, not a defect.'
+    - action: 'Migrate localStorage seen-flag to DB column if cross-device matters in production'
+      refs: ['lib/onboarding/done-generate-shown.ts']
+      severity: low
+      reason: 'Currently per-device — users on a new device see celebrate again. Was deferred per Owner-ack''d decision 7 (arguably a feature). Revisit if production signals suggest cross-device persistence matters.'
+    - action: 'Future stories: anticipate post-smoke polish rounds in AC count'
+      refs: ['docs/stories/25.6.re-entry-layers-tutorial-only-mode.md']
+      severity: low
+      reason: '25.6 was approved with 50 ACs at v0.4. v1.1 polish added 7 net behaviors not in those ACs (dark-mode tokens, smart open-target, FAB disappearing fix, redundant-write fixes, celebrate variant, SWR auto-refresh). All captured in v1.1 Change Log but the original ACs understate delivered surface. Process question: widen AC count to anticipate polish OR accept that Change Log is the canonical post-merge record.'
+
+# Operational handoff (owner-driven, not blocking gate)
+next_steps:
+  - action: 'Manual staging smoke per AC 49 (13 steps, ~15 min)'
+    refs: ['docs/stories/25.6.re-entry-layers-tutorial-only-mode.md']
+    note: 'Reset Almåsa → first-run path → Generera → Minimera → wait for completion → verify celebrate FAB appears AUTOMATICALLY (without manual refresh, via SWR auto-refresh) → click celebrate FAB → see done-generate surface → close → verify FAB demotes to plain done. Also test Guide sidebar entry + URL deep-link paths.'
+  - action: 'Post-merge production check per AC 50 (within 24h)'
+    refs: []
+    note: '4 SQL queries: modal_opened.trigger="fab"|"help_menu" counts; done_cta_clicked.cta="keep_exploring" counts; tutorial_fab_dismissed_at non-null counts; Sentry scan for new component errors.'
+  - action: 'Epic 25 commit'
+    refs: []
+    note: 'Stories B.0–B.6 all shipped to staging-ready code. Owner can commit 25.6 v1.0 + v1.1 together as a single feature commit, or split if preferred for review granularity.'
+
+# Implementation traceability
+files_reviewed:
+  created:
+    - 'components/features/onboarding-modal/onboarding-fab.tsx'
+    - 'lib/onboarding/done-generate-shown.ts'
+    - 'tests/unit/components/features/onboarding-modal/onboarding-fab.test.tsx'
+    - 'tests/unit/components/features/dashboard/hem-page.test.tsx'
+    - 'tests/unit/lib/onboarding/done-generate-shown.test.ts'
+  modified:
+    - 'lib/onboarding/get-onboarding-state.ts'
+    - 'components/features/onboarding-modal/first-run-modal.tsx'
+    - 'components/features/onboarding-modal/tutorial-step.tsx'
+    - 'components/features/onboarding-modal/done-generate-step.tsx'
+    - 'components/features/onboarding-modal/done-import-step.tsx'
+    - 'components/features/onboarding-modal/done-template-step.tsx'
+    - 'components/features/dashboard/hem-page.tsx'
+    - 'components/layout/left-sidebar.tsx'
+    - 'app/(workspace)/dashboard/page.tsx'
+    - 'app/globals.css'
+    - 'docs/architecture/first-run-onboarding-modal.md'
+    - 'tests/unit/lib/onboarding/get-onboarding-state.test.ts'
+    - 'tests/unit/components/features/onboarding-modal/first-run-modal.test.tsx'
+    - 'tests/unit/components/features/onboarding-modal/tutorial-step.test.tsx'
+    - 'tests/unit/components/features/onboarding-modal/done-generate-step.test.tsx'
+    - 'tests/unit/components/features/onboarding-modal/done-import-step.test.tsx'
+    - 'tests/unit/components/features/onboarding-modal/done-template-step.test.tsx'
+
+# Schema notes
+schema_changes: 'NONE — no Prisma migration. All schema columns (tutorial_fab_dismissed_at, first_run_dismissed_at, law_list_generation_status) shipped in B.0. All event-type values (modal_opened.trigger, done_cta_clicked.cta) shipped or extended via 25.4 Task 11. The new "seen done-generate" flag is per-device localStorage, not a DB column — deferred per 25.6 Owner-ack''d decision 7.'
+
+# Scope expansion note
+scope_expansion:
+  original_acs: 50
+  v1_1_polish_behaviors: 7
+  polish_summary:
+    - 'Dark-mode CSS variables for --section-warm / --section-sage / --section-cream'
+    - 'Smart FAB+Guide open-target ("tutorial" when work in flight, "tutorial-only" when done, "done-generate" when celebrate-eligible)'
+    - 'FAB-disappearing-on-minimize fix (router.refresh after router.replace)'
+    - 'router.push("/dashboard") removal from handleMinimiseFromTutorial (was aborting router.refresh)'
+    - 'Per-trigger onMinimise resolution in tutorial step (FAB/Help uses handleClose, not handleMinimiseFromTutorial)'
+    - 'FAB celebrate Sparkles variant with localStorage "seen done-generate" persistence'
+    - 'SWR-driven auto-refresh on completion (no more manual hard-reload needed)'
+  note: 'All v1.1 polish work has test coverage (where not purely visual) and is captured in the story Change Log v1.1 entry. The original 50 ACs at v0.4 approval understate the actual delivered surface, but the polish round was driven by smoke and addresses real UX gaps — not scope creep for its own sake.'

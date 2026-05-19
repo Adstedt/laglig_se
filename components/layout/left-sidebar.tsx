@@ -16,6 +16,7 @@ import {
   FolderOpen,
   Users,
   Settings,
+  LifeBuoy,
   ChevronRight,
   Lock,
   PanelLeftClose,
@@ -580,6 +581,47 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
 
         {/* Bottom section */}
         <div className="border-t px-2 py-2">
+          {/* Story 25.6 (B.6): Guide entry — always rendered, opens the
+              first-run-modal at tutorial-only mode via URL deep-link. Layer
+              3 of the re-entry hierarchy per arch §6.5. */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                href="/dashboard?onboarding=tutorial"
+                aria-label={collapsed ? 'Guide' : undefined}
+                className={cn(
+                  'transition-colors',
+                  collapsed
+                    ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
+                    : 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm',
+                  searchParams?.get('onboarding') === 'tutorial'
+                    ? 'bg-accent text-foreground'
+                    : 'text-foreground/60 hover:bg-accent hover:text-foreground'
+                )}
+              >
+                {collapsed ? (
+                  <LifeBuoy className="h-4 w-4" />
+                ) : (
+                  <>
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center">
+                      <LifeBuoy className="h-4 w-4" />
+                    </span>
+                    <span className="truncate">Guide</span>
+                  </>
+                )}
+              </Link>
+            </TooltipTrigger>
+            {collapsed && (
+              <TooltipContent
+                side="right"
+                sideOffset={8}
+                className="px-2.5 py-1 text-xs font-medium"
+              >
+                Guide
+              </TooltipContent>
+            )}
+          </Tooltip>
+
           {/* Inställningar */}
           <Tooltip>
             <TooltipTrigger asChild>

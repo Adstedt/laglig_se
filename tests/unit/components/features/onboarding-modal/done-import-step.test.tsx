@@ -50,11 +50,14 @@ describe('<DoneImportStep>', () => {
     expect(onGoToReview).toHaveBeenCalledTimes(1)
   })
 
-  it('Fortsätt utforska button is disabled in B.4', () => {
-    renderStep()
+  // Story 25.6 (B.6) — "Fortsätt utforska" is now enabled.
+  it('Fortsätt utforska fires onKeepExploring on click', () => {
+    const onKeepExploring = vi.fn()
+    renderStep({ onKeepExploring })
 
-    const button = screen.getByRole('button', { name: /Fortsätt utforska/i })
-    expect(button).toHaveAttribute('aria-disabled', 'true')
+    fireEvent.click(screen.getByRole('button', { name: /Fortsätt utforska/i }))
+
+    expect(onKeepExploring).toHaveBeenCalledTimes(1)
   })
 
   it('renders failure card in failed mode with support-ticket CTA (heading owned by DialogTitle)', () => {

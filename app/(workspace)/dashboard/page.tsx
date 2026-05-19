@@ -125,6 +125,7 @@ export default async function DashboardPage({
       initialView={params.view === 'amendments' ? 'amendments' : undefined}
       generationStatus={generationStatus}
       onboardingState={onboardingState}
+      workspaceId={context.workspaceId}
       firstRunModalEnabled={FIRST_RUN_MODAL_V0_ENABLED}
       firstRunTemplates={firstRunTemplates}
     />

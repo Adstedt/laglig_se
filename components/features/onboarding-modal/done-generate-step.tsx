@@ -20,7 +20,7 @@
  * Telemetry is fired by <FirstRunModal>, not here.
  */
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Sparkles,
   ArrowRight,
@@ -30,12 +30,6 @@ import {
   BellRing,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { LawListPreview } from './law-list-preview'
 
 interface DoneGenerateStepProps {
@@ -56,15 +50,22 @@ interface DoneGenerateStepProps {
   /** Primary CTA in success mode. */
   onShowList: () => void
   /**
-   * "Fortsätt utforska" callback — plumbed but unused in B.4 (button is
-   * disabled per AC 6 owner decision). B.6 enables the button + invokes
-   * this for the tutorial_only mode transition.
+   * "Fortsätt utforska" callback — Story 25.6 (B.6) enabled this so clicking
+   * transitions the modal to `tutorial-only` mode. Parent fires
+   * `done_cta_clicked.cta='keep_exploring'` telemetry.
    */
   onKeepExploring: () => void
   /** Primary CTA in failed mode — re-fires the generation API. */
   onRetry?: () => void
   /** Secondary CTA in failed mode — closes the modal. */
   onCloseFailure?: () => void
+  /**
+   * Story 25.6 v1.1: fired once on mount in `mode='success'` so the parent
+   * can persist a per-workspace "user has seen the celebration" flag (drives
+   * the FAB celebrate-variant demotion on subsequent dashboard visits).
+   * NOT fired in `mode='failed'` — the failure card isn't a celebration.
+   */
+  onShown?: () => void
 }
 
 /**
@@ -94,10 +95,22 @@ export function DoneGenerateStep({
   startedAt,
   errorMessage,
   onShowList,
-  onKeepExploring: _onKeepExploring,
+  onKeepExploring,
   onRetry,
   onCloseFailure,
+  onShown,
 }: DoneGenerateStepProps) {
+  // Story 25.6 v1.1: fire onShown once when this surface is actually rendered
+  // in success mode — drives the per-workspace localStorage flag in
+  // <HemPage> that demotes the FAB celebrate variant. Guard against firing
+  // in failed mode (failure isn't a celebration; a future retry should still
+  // get the celebrate FAB). Deps include `mode` so a rare in-place failed→
+  // success flip (no remount) still fires once.
+  useEffect(() => {
+    if (mode === 'success') {
+      onShown?.()
+    }
+  }, [mode, onShown])
   // Freeze the duration on first mount so it doesn't drift upward as the
   // component re-renders. Without this, Date.now() would be recomputed on
   // every render and the displayed "Klart på Xm Ys" would tick up as the
@@ -259,24 +272,11 @@ export function DoneGenerateStep({
             <span>Visa min laglista</span>
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Button>
-          {/* "Fortsätt utforska" — DISABLED in B.4 per owner decision v0.4.
-              aria-disabled + no onClick lets the tooltip fire on hover
-              (HTML `disabled` swallows pointer events). B.6 will drop
-              aria-disabled + the Tooltip wrapper and wire onClick. */}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  aria-disabled="true"
-                  className="cursor-not-allowed opacity-50 hover:bg-transparent hover:text-current"
-                >
-                  Fortsätt utforska
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">Kommer snart</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          {/* Story 25.6 (B.6): "Fortsätt utforska" enabled — parent transitions
+              the modal to tutorial-only mode + fires keep_exploring telemetry. */}
+          <Button variant="ghost" onClick={onKeepExploring}>
+            Fortsätt utforska
+          </Button>
         </div>
       </div>
 

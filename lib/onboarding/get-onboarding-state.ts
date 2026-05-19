@@ -1,13 +1,11 @@
 /**
  * Story 25.0 (Epic 25): First-run onboarding modal — server-side state derivation.
+ * Story 25.6 (Epic 25, B.6): `fabVisible` + `fabState` derivation lit up.
  *
- * Pure read: given a workspace id, decides whether the dashboard should auto-open
- * the first-run path-choice modal. No writes, no telemetry, no side effects — safe
- * to call on every dashboard render.
- *
- * B.0 scope: only `firstRunOpen` is derived. `fabVisible` / `fabState` are
- * hardcoded to their idle defaults — the corner FAB and its full derivation
- * (arch §6.4) ship in Story B.6.
+ * Pure read: given a workspace id, decides which onboarding surfaces the
+ * dashboard should render (first-run modal, corner FAB, FAB visual state).
+ * No writes, no telemetry, no side effects — safe to call on every dashboard
+ * render.
  */
 
 import { prisma } from '@/lib/prisma'
@@ -15,9 +13,9 @@ import { prisma } from '@/lib/prisma'
 export type OnboardingState = {
   /** true → dashboard auto-opens the first-run modal at the path-choice step */
   firstRunOpen: boolean
-  /** false in B.0 — the corner FAB ships in Story B.6 */
+  /** true → dashboard mounts <OnboardingFab> in the corner */
   fabVisible: boolean
-  /** 'idle' in B.0 — full working/done/idle derivation ships in Story B.6 */
+  /** Drives the FAB visual: working pill / lightbulb / lightbulb */
   fabState: 'working' | 'done' | 'idle'
 }
 
@@ -38,7 +36,16 @@ const DEFAULT_STATE: OnboardingState = {
  *  3. no path has been chosen yet (`law_list_generation_status` is null —
  *     works because Story 25.0's migration drops the `@default("pending")`)
  *
- * Any workspace-not-found or DB error returns the safe default (modal closed).
+ * `fabVisible` is true when the inverse holds (modal HAS been dismissed at
+ * least once) AND the FAB itself hasn't been dismissed AND the user didn't
+ * hit Hoppa över. The 24h FRESH cap deliberately does NOT apply — once the
+ * user is in the loop, the FAB stays as long as they want it (arch §6.4 line 353).
+ *
+ * `fabState` mirrors `law_list_generation_status`: pending/in_progress →
+ * 'working' (pill + spinner); completed → 'done' (lightbulb); else 'idle'
+ * (same lightbulb, included for symmetry).
+ *
+ * Any workspace-not-found or DB error returns the safe default (all closed).
  */
 export async function getOnboardingState(
   workspaceId: string
@@ -63,12 +70,20 @@ export async function getOnboardingState(
       ws.first_run_dismissed_at === null &&
       ws.law_list_generation_status === null
 
-    // fabVisible / fabState are deferred to Story B.6 — idle defaults for now.
-    return {
-      firstRunOpen,
-      fabVisible: false,
-      fabState: 'idle',
-    }
+    const fabVisible =
+      ws.first_run_dismissed_at !== null &&
+      ws.tutorial_fab_dismissed_at === null &&
+      ws.law_list_generation_status !== 'skipped'
+
+    const fabState: OnboardingState['fabState'] =
+      ws.law_list_generation_status === 'pending' ||
+      ws.law_list_generation_status === 'in_progress'
+        ? 'working'
+        : ws.law_list_generation_status === 'completed'
+          ? 'done'
+          : 'idle'
+
+    return { firstRunOpen, fabVisible, fabState }
   } catch {
     // Non-critical — a derivation failure must never break the dashboard render.
     return DEFAULT_STATE

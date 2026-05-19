@@ -208,6 +208,30 @@ describe('<TutorialStep>', () => {
     ).toHaveAttribute('aria-selected', 'true')
   })
 
+  // Story 25.6 (B.6) — mode + initialTab prop tests.
+  it('mode="tutorial-only" hides the <ProgressStrip>', () => {
+    render(<TutorialStep mode="tutorial-only" onMinimise={vi.fn()} />)
+
+    expect(screen.queryByTestId('progress-strip-stub')).not.toBeInTheDocument()
+  })
+
+  it('default mode (no prop) still renders <ProgressStrip> — regression guard', () => {
+    render(<TutorialStep onMinimise={vi.fn()} />)
+
+    expect(screen.getByTestId('progress-strip-stub')).toBeInTheDocument()
+  })
+
+  it('initialTab="ai-agent" mounts at the AI-agent tab + fires recordTabViewed("ai-agent")', () => {
+    render(<TutorialStep initialTab="ai-agent" onMinimise={vi.fn()} />)
+
+    expect(screen.getByRole('tab', { name: /AI-agenten/ })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    )
+    expect(mockRecordTabViewed).toHaveBeenCalledTimes(1)
+    expect(mockRecordTabViewed).toHaveBeenCalledWith('ai-agent')
+  })
+
   // Story 25.5 (B.5) AC 33 — new test cases for the Feedback tab.
   it('Feedback tab is reachable as the 7th tab', () => {
     render(<TutorialStep onMinimise={vi.fn()} />)
