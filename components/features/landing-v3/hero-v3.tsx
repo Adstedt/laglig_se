@@ -41,7 +41,7 @@ export function HeroV3() {
               em-dash. Same dot-and-link callout pattern as Linear. */}
           <div className="mb-10 flex flex-col items-start gap-6 lg:flex-row lg:items-end lg:justify-between">
             <p className="max-w-2xl text-lg text-muted-foreground md:text-xl">
-              Byggt för svenska SMB och compliance-team. Designat för AI-eran —
+              Byggt för svenska företag, stora som små. Designat för AI-eran —
               så ni bevakar lagändringar, fördelar ansvar och visar spårbarhet
               på ett ställe.
             </p>
