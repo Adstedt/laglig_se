@@ -42,8 +42,7 @@ export function HeroV3() {
           <div className="mb-10 flex flex-col items-start gap-6 lg:flex-row lg:items-end lg:justify-between">
             <p className="max-w-2xl text-lg text-muted-foreground md:text-xl">
               Byggt för svenska företag, stora som små. Designat för AI-eran —
-              så ni bevakar lagändringar, fördelar ansvar och visar spårbarhet
-              på ett ställe.
+              där efterlevnad arbetar för er, inte tvärtom.
             </p>
             <Link
               href="/sok"
