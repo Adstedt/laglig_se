@@ -43,11 +43,14 @@ export async function signupAction(
     const supabase = await createServerSupabaseClient()
 
     // Build emailRedirectTo so verification returns the user to the right
-    // place. For invite-bound signups, embed the invite callback as `next`
-    // which /auth/verify forwards as the login `callbackUrl`.
+    // place. Always pass this — when omitted, Supabase falls back to the
+    // dashboard Site URL (production), which breaks verification from any
+    // non-production deployment (Vercel previews, staging, localhost).
+    // For invite-bound signups, embed the invite callback as `next` which
+    // /auth/verify forwards as the login `callbackUrl`.
     const emailRedirectTo = options.inviteToken
       ? `${getAppUrl()}/auth/verify?next=${encodeURIComponent(`/invite/${options.inviteToken}`)}`
-      : undefined
+      : `${getAppUrl()}/auth/verify`
 
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -56,7 +59,7 @@ export async function signupAction(
         data: {
           name,
         },
-        ...(emailRedirectTo ? { emailRedirectTo } : {}),
+        emailRedirectTo,
       },
     })
 
