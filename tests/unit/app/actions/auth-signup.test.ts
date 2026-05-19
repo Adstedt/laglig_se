@@ -35,13 +35,18 @@ beforeEach(() => {
 })
 
 describe('signupAction — invite-bound emailRedirectTo', () => {
-  it('omits emailRedirectTo when no invite token is provided', async () => {
+  it('sets emailRedirectTo to /auth/verify when no invite token is provided', async () => {
+    // Always pass emailRedirectTo so Supabase doesn't fall back to its
+    // dashboard Site URL (production), which breaks verification on
+    // previews/staging/localhost.
     const result = await signupAction(validInput)
     expect(result.success).toBe(true)
 
     const args = mockSignUp.mock.calls[0][0]
     expect(args.options).toBeDefined()
-    expect(args.options.emailRedirectTo).toBeUndefined()
+    expect(args.options.emailRedirectTo).toBe(
+      'https://test.example.com/auth/verify'
+    )
   })
 
   it('sets emailRedirectTo with the next-param when inviteToken is provided', async () => {
