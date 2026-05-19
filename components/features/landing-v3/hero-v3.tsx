@@ -76,15 +76,34 @@ export function HeroV3() {
             </Link>
           </div>
 
-          {/* Product screenshot — the visual anchor. Sits below the title block
-              with a subtle warm halo and a soft frame, matching the floating-
-              window aesthetic Linear uses for its hero capture. */}
+          {/* Product screenshot — the visual anchor. Linear-style edge:
+              multi-layer drop shadow simulating real-world light falloff
+              (near + mid + far), a hairline top-edge highlight catching
+              "light", and a soft ring instead of a hard border so the frame
+              feels like polished glass rather than a stroked rectangle. */}
           <div className="relative">
+            {/* Soft warm halo behind the frame */}
             <div
               aria-hidden
-              className="pointer-events-none absolute -inset-x-8 -inset-y-8 rounded-[2rem] bg-gradient-to-br from-amber-100/40 via-orange-50/20 to-transparent blur-3xl"
+              className="pointer-events-none absolute -inset-x-16 -inset-y-12 rounded-[3rem] bg-gradient-to-br from-amber-100/45 via-orange-50/25 to-transparent blur-3xl"
             />
-            <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl ring-1 ring-foreground/5">
+            <div
+              className="relative overflow-hidden rounded-[1.25rem] bg-card ring-1 ring-foreground/[0.07]"
+              style={{
+                boxShadow: [
+                  '0 1px 2px 0 rgb(0 0 0 / 0.03)',
+                  '0 8px 16px -4px rgb(0 0 0 / 0.05)',
+                  '0 24px 48px -12px rgb(0 0 0 / 0.10)',
+                  '0 56px 112px -28px rgb(0 0 0 / 0.16)',
+                ].join(', '),
+              }}
+            >
+              {/* Top-edge highlight — thin gradient line that gives the
+                  illusion of light catching the rounded top edge */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent"
+              />
               <Image
                 src="/landing-v3/hero-laglistor.png"
                 alt="Laglig.se laglistor — översikt över alla regelområden och dokument för Almåsa Havshotell AB"
