@@ -5,6 +5,7 @@
  * Breadcrumb navigation, share/actions buttons, and close button
  */
 
+import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,7 +17,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import {
   X,
-  ChevronRight,
   Share2,
   MoreHorizontal,
   ExternalLink,
@@ -29,6 +29,7 @@ import { useSplitPanelModalOptional } from '@/components/shared/split-panel-moda
 
 interface ModalHeaderProps {
   listName: string
+  listId: string
   documentNumber: string
   slug: string
   onClose: () => void
@@ -36,6 +37,7 @@ interface ModalHeaderProps {
 
 export function ModalHeader({
   listName,
+  listId,
   documentNumber,
   slug,
   onClose,
@@ -73,13 +75,18 @@ export function ModalHeader({
 
   return (
     <div className="flex items-center justify-between border-b px-6 py-3 bg-background shrink-0">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1 text-sm min-w-0">
-        <span className="text-muted-foreground truncate max-w-[200px]">
+      {/* Parent link — the laglista this law belongs to. The doc number is NOT
+          repeated here (it already lives in the title's parenthetical and in
+          Detaljer → Dokumentnummer); this is a real "up to the list" link
+          rather than a dead two-step breadcrumb. */}
+      <nav className="flex min-w-0 items-center text-sm" aria-label="Brödsmula">
+        <Link
+          href={`/laglistor/${listId}`}
+          onClick={onClose}
+          className="max-w-[260px] truncate text-muted-foreground transition-colors hover:text-foreground hover:underline"
+        >
           {listName}
-        </span>
-        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-        <span className="font-medium">{documentNumber}</span>
+        </Link>
       </nav>
 
       {/* Action buttons */}
