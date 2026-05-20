@@ -312,12 +312,12 @@ export function LinkedArtifactsPanel({
         highlighted && 'ring-2 ring-amber-400/70 shadow-lg'
       )}
     >
-      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
+      <AccordionTrigger className="group/trigger px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
         <div className="flex items-center gap-2 text-base font-semibold text-foreground flex-1">
           <Paperclip className="h-4 w-4" />
           <span>Länkade filer & dokument</span>
           {totalCount > 0 && (
-            <span className="ml-auto mr-2 text-xs text-muted-foreground tabular-nums font-normal">
+            <span className="ml-auto mr-2 text-xs text-muted-foreground tabular-nums font-normal group-data-[state=open]/trigger:hidden">
               {totalCount}
             </span>
           )}

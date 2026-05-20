@@ -184,6 +184,36 @@
       .group-label::after { content: ""; flex: 1; height: 1px; background: var(--border-soft); }
       .group-label:first-of-type { margin-top: 4px; }
 
+      /* Collapsible group (Variant A2) — group header is itself a <details> */
+      .cgroup { margin-top: 18px; }
+      .cgroup:first-of-type { margin-top: 4px; }
+      .cgroup > summary {
+        list-style: none; cursor: pointer;
+        display: flex; align-items: center; gap: 10px; padding: 6px 2px;
+      }
+      .cgroup > summary::-webkit-details-marker { display: none; }
+      .cgroup-label {
+        font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em;
+        color: var(--accent-dim);
+      }
+      .cgroup > summary:hover .cgroup-label { color: var(--accent); }
+      .cgroup-rule { flex: 1; height: 1px; background: var(--border-soft); }
+      .cgroup-count {
+        min-width: 18px; height: 18px; padding: 0 6px; border-radius: 6px;
+        background: var(--neutral-bg); color: var(--fg-dim);
+        font-size: 11px; font-weight: 600;
+        display: inline-flex; align-items: center; justify-content: center;
+      }
+      .cgroup-chev { width: 15px; height: 15px; color: var(--fg-dim); transition: transform .18s; }
+      .cgroup[open] > summary .cgroup-chev { transform: rotate(180deg); }
+      .cgroup-items { padding-top: 8px; }
+      .cgroup:not([open]) > summary { opacity: 0.72; }
+
+      /* Typografi-jämförelse: statiska grupprader + Safiro på etiketten
+         (behåller versal-spärrningen, byter bara family + vikt) */
+      .tg-grouprow { display: flex; align-items: center; gap: 10px; padding: 7px 2px; }
+      .cgroup-label.is-safiro { font-family: 'Safiro', system-ui, sans-serif; font-weight: 500; }
+
       /* rich collapsed preview line */
       .preview-line { color: var(--fg-dim); font-size: 12.5px; max-width: 30ch; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -274,8 +304,51 @@
         <span><i class="swatch" style="background:var(--accent)"></i> brand-accent</span>
       </div>
 
-      <!-- ════════════════ CURRENT ════════════════ -->
+      <!-- ════════════════ TYPOGRAFI — Safiro på titeln ════════════════ -->
       <div class="variant-head first">
+        <span class="eyebrow">Typografi</span>
+        <h2 class="variant-title">Titeln i Safiro? <span class="variant-tag rec">brand-moment</span></h2>
+        <p class="variant-desc">
+          Modalen är 100&nbsp;% Google Sans Flex idag. Här jämförs både lagtiteln <em>och</em>
+          grupprubrikerna i Safiro Medium (500) mot nuläget. Titeln blir elegant medium istället
+          för fet. Safiro på de versala smårubrikerna är subtilt (versal-spärrningen behålls, bara
+          family + vikt byts) — döm själv om det känns mer brand eller bara stökigare.
+        </p>
+
+        <div style="display:grid; gap:14px; margin-top:16px;">
+          <!-- Nuvarande -->
+          <div>
+            <div class="eyebrow" style="margin-bottom:8px;">Nuvarande · Google Sans Flex</div>
+            <div class="frame"><div class="panel-pad" style="padding:20px 24px;">
+              <h3 class="law-title" style="margin-bottom:12px;">Aktiebolagslag (2005:551)</h3>
+              <div class="badges" style="margin-bottom:14px;">
+                <span class="pill pill-status"><i class="dot"></i> Ej påbörjad</span>
+                <span class="pill pill-priority"><i data-lucide="flag" class="ic"></i> Medel</span>
+              </div>
+              <div class="tg-grouprow"><span class="cgroup-label">Efterlevnad</span><span class="cgroup-rule"></span><span class="cgroup-count">3</span><i data-lucide="chevron-down" class="cgroup-chev"></i></div>
+              <div class="tg-grouprow"><span class="cgroup-label">Referens</span><span class="cgroup-rule"></span><span class="cgroup-count">1</span><i data-lucide="chevron-down" class="cgroup-chev"></i></div>
+              <div class="tg-grouprow"><span class="cgroup-label">Uppgifter &amp; filer</span><span class="cgroup-rule"></span><span class="cgroup-count">2</span><i data-lucide="chevron-down" class="cgroup-chev"></i></div>
+            </div></div>
+          </div>
+          <!-- Safiro -->
+          <div>
+            <div class="eyebrow" style="margin-bottom:8px; color:var(--accent);">Förslag · Safiro Medium (titel + grupprubriker)</div>
+            <div class="frame"><div class="panel-pad" style="padding:20px 24px;">
+              <h3 class="law-title font-safiro" style="margin-bottom:12px; font-weight:500;">Aktiebolagslag (2005:551)</h3>
+              <div class="badges" style="margin-bottom:14px;">
+                <span class="pill pill-status"><i class="dot"></i> Ej påbörjad</span>
+                <span class="pill pill-priority"><i data-lucide="flag" class="ic"></i> Medel</span>
+              </div>
+              <div class="tg-grouprow"><span class="cgroup-label is-safiro">Efterlevnad</span><span class="cgroup-rule"></span><span class="cgroup-count">3</span><i data-lucide="chevron-down" class="cgroup-chev"></i></div>
+              <div class="tg-grouprow"><span class="cgroup-label is-safiro">Referens</span><span class="cgroup-rule"></span><span class="cgroup-count">1</span><i data-lucide="chevron-down" class="cgroup-chev"></i></div>
+              <div class="tg-grouprow"><span class="cgroup-label is-safiro">Uppgifter &amp; filer</span><span class="cgroup-rule"></span><span class="cgroup-count">2</span><i data-lucide="chevron-down" class="cgroup-chev"></i></div>
+            </div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════ CURRENT ════════════════ -->
+      <div class="variant-head">
         <span class="eyebrow">Nuläge</span>
         <h2 class="variant-title">Sex dragspel + aktivitet</h2>
         <p class="variant-desc">
@@ -423,6 +496,134 @@
             </summary>
             <div class="body">
               <div class="obj-row"><i data-lucide="file-text"></i><span class="name">Bolagsordning_2024.pdf</span><span class="sub">PDF · 240 kB</span></div>
+            </div>
+          </details>
+
+          <div class="activity">
+            <p class="activity-h">Aktivitet</p>
+            <div class="act-tabs"><span class="on">Alla</span><span>Kommentarer</span><span>Historik</span></div>
+            <div class="act-empty"><div><i data-lucide="history"></i></div>Ingen aktivitet ännu</div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- ════════════════ VARIANT A2 (collapsible groups) ════════════════ -->
+      <div class="variant-head">
+        <span class="eyebrow">Riktning A2</span>
+        <h2 class="variant-title">A, men med hopfällbara grupper</h2>
+        <p class="variant-desc">
+          Som A — fast varje grupprubrik är klickbar och fäller ihop hela gruppen. Siffran vid
+          rubriken visar hur många rader som göms. Här är <b>Referens</b> ihopfällt (lagtexten
+          undanstoppad efter läsning). Notera de <em>två</em> nivåerna av chevroner.
+        </p>
+        <ul class="wins">
+          <li><i data-lucide="check"></i> Fäll undan ett helt område</li>
+          <li><i data-lucide="check"></i> Antal visar dolda rader</li>
+        </ul>
+        <div class="note">
+          <b>Avvägning:</b> nu finns två nivåer av öppna/stäng — grupp <em>och</em> rad. En dold
+          rad kan vara dold av två skäl, och det tillkommer state (fokus-scroll måste auto-öppna
+          en hopfälld grupp; "expandera alla" får ny innebörd). Värt det bara om "fokusera på ett
+          område" är ett verkligt behov — annars gör flikar (Riktning B nedan) det renare.
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="frame-bar">
+          <span class="crumb">Er laglista</span><i data-lucide="chevron-right"></i><span class="crumb"><b>SFS 2005:551</b></span>
+          <span class="spacer"></span><i data-lucide="share-2"></i><i data-lucide="more-horizontal"></i><i data-lucide="x"></i>
+        </div>
+        <div class="panel-pad">
+          <h3 class="law-title">Aktiebolagslag (2005:551)</h3>
+          <div class="badges">
+            <span class="pill pill-status"><i class="dot"></i> Ej påbörjad</span>
+            <span class="pill pill-priority"><i data-lucide="flag" class="ic"></i> Medel</span>
+            <button class="toggle-all"><i data-lucide="chevrons-up-down"></i></button>
+          </div>
+
+          <!-- Group: Efterlevnad (open) -->
+          <details class="cgroup" open>
+            <summary>
+              <span class="cgroup-label">Efterlevnad</span>
+              <span class="cgroup-rule"></span>
+              <span class="cgroup-count">3</span>
+              <i data-lucide="chevron-down" class="cgroup-chev"></i>
+            </summary>
+            <div class="cgroup-items">
+              <details class="acc">
+                <summary>
+                  <span class="ttl"><i data-lucide="circle-help" class="lead"></i> Hur påverkar detta oss?</span>
+                  <span class="meta"><span class="preview-line">Vi är ett aktiebolag och omfa…</span><i data-lucide="chevron-down" class="chev"></i></span>
+                </summary>
+                <div class="body"><p>Vi är ett aktiebolag och omfattas av reglerna om bolagsstyrning, styrelsens ansvar och årsredovisning.</p></div>
+              </details>
+              <details class="acc">
+                <summary>
+                  <span class="ttl"><i data-lucide="file-text" class="lead"></i> Hur efterlever vi kraven?</span>
+                  <span class="meta"><span class="empty-tag">ej ifylld</span><i data-lucide="chevron-down" class="chev"></i></span>
+                </summary>
+                <div class="body"><p class="empty-tag">Beskriv hur ni efterlever lagen.</p></div>
+              </details>
+              <details class="acc">
+                <summary>
+                  <span class="ttl"><i data-lucide="clipboard-check" class="lead"></i> Kravpunkter</span>
+                  <span class="meta"><span class="prog"><span class="track"><span class="fill" style="width:33%"></span></span><span class="lbl">1/3</span></span><i data-lucide="chevron-down" class="chev"></i></span>
+                </summary>
+                <div class="body" style="padding-right:8px">
+                  <div class="krav-row done"><span class="krav-box done"><i data-lucide="check"></i></span><span class="krav-txt">Registrerad bolagsordning hos Bolagsverket</span></div>
+                  <div class="krav-row"><span class="krav-box"></span><span class="krav-txt">Styrelseprotokoll förs vid varje sammanträde</span></div>
+                  <div class="krav-row"><span class="krav-box"></span><span class="krav-txt">Årsredovisning upprättas enligt ÅRL och ABL</span></div>
+                </div>
+              </details>
+            </div>
+          </details>
+
+          <!-- Group: Referens (collapsed — items hidden) -->
+          <details class="cgroup">
+            <summary>
+              <span class="cgroup-label">Referens</span>
+              <span class="cgroup-rule"></span>
+              <span class="cgroup-count">1</span>
+              <i data-lucide="chevron-down" class="cgroup-chev"></i>
+            </summary>
+            <div class="cgroup-items">
+              <details class="acc">
+                <summary>
+                  <span class="ttl"><i data-lucide="scale" class="lead"></i> Författningstext</span>
+                  <span class="meta"><span style="color:var(--fg-dim)">SFS 2005:551</span><i data-lucide="arrow-up-right" class="chev"></i></span>
+                </summary>
+                <div class="body"><p>Öppnas i fokuserad läsvy. <span style="color:var(--accent);cursor:pointer">Visa fullständig lag →</span></p></div>
+              </details>
+            </div>
+          </details>
+
+          <!-- Group: Underlag (open) -->
+          <details class="cgroup" open>
+            <summary>
+              <span class="cgroup-label">Underlag</span>
+              <span class="cgroup-rule"></span>
+              <span class="cgroup-count">2</span>
+              <i data-lucide="chevron-down" class="cgroup-chev"></i>
+            </summary>
+            <div class="cgroup-items">
+              <details class="acc">
+                <summary>
+                  <span class="ttl"><i data-lucide="list-checks" class="lead"></i> Uppgifter</span>
+                  <span class="meta"><span class="empty-tag">inga än</span><i data-lucide="chevron-down" class="chev"></i></span>
+                </summary>
+                <div class="body"><p class="empty-tag">Inga uppgifter kopplade.</p></div>
+              </details>
+              <details class="acc">
+                <summary>
+                  <span class="ttl"><i data-lucide="paperclip" class="lead"></i> Länkade filer &amp; dokument</span>
+                  <span class="meta"><span class="preview-line">Bolagsordning_2024.pdf</span><span class="count-chip">1</span><i data-lucide="chevron-down" class="chev"></i></span>
+                </summary>
+                <div class="body">
+                  <div class="obj-row"><i data-lucide="file-text"></i><span class="name">Bolagsordning_2024.pdf</span><span class="sub">PDF · 240 kB</span></div>
+                </div>
+              </details>
             </div>
           </details>
 

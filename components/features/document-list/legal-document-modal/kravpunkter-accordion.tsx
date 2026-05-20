@@ -106,13 +106,13 @@ export function KravpunkterAccordion({
     >
       <AccordionTrigger
         ref={triggerRef}
-        className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg"
+        className="group/trigger px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg"
       >
         <div className="flex items-center gap-2 text-base font-semibold text-foreground flex-1">
           <ClipboardCheck className="h-4 w-4" />
           <span>Kravpunkter</span>
           {progress.total > 0 && (
-            <div className="flex items-center gap-2 ml-auto mr-2 font-normal">
+            <div className="flex items-center gap-2 ml-auto mr-2 font-normal group-data-[state=open]/trigger:hidden">
               <span className="text-xs text-muted-foreground tabular-nums">
                 {progress.fulfilled}/{progress.total} uppfyllda
               </span>

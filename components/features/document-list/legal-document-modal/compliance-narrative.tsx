@@ -186,11 +186,24 @@ export function ComplianceNarrative({
     >
       <AccordionTrigger
         ref={triggerRef}
-        className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg"
+        className="group/trigger px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg"
       >
-        <div className="flex items-center gap-2 text-base font-semibold text-foreground flex-1">
-          <BookText className="h-4 w-4" />
-          <span>Hur efterlever vi kraven?</span>
+        <div className="flex items-center gap-2 text-base font-semibold text-foreground flex-1 min-w-0">
+          <BookText className="h-4 w-4 shrink-0" />
+          <span className="shrink-0">Hur efterlever vi kraven?</span>
+          {/* Collapsed-state meta: 1-line preview when filled, "Ej ifylld" when empty */}
+          {hasContent ? (
+            <span className="ml-auto mr-2 max-w-[22ch] truncate text-xs font-normal text-muted-foreground group-data-[state=open]/trigger:hidden">
+              {content
+                .replace(/<[^>]*>/g, '')
+                .replace(/\s+/g, ' ')
+                .trim()}
+            </span>
+          ) : (
+            <span className="ml-auto mr-2 shrink-0 text-xs font-normal italic text-muted-foreground/70 group-data-[state=open]/trigger:hidden">
+              Ej ifylld
+            </span>
+          )}
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4">
