@@ -127,6 +127,16 @@ This transforms Laglig from a passive law registry into an active compliance par
 | **14.26** | Anthropic Prompt Caching v1 — Chat Route | Done |
 | **14.27** | Chat Usage Telemetry (`ChatUsageEvent`) | Done |
 
+### Phase 7: Agent Action Card Extensions (sibling work for Epic 19)
+| # | Story | Status |
+|---|-------|--------|
+| **14.28** | `update_requirement` approval (`UPDATE_REQUIREMENT`) | Planned |
+| **14.29** | `add_task_comment` approval (`ADD_TASK_COMMENT`) | Planned |
+| **14.30** | `transition_document_status` approval (`TRANSITION_DOCUMENT_STATUS`) | Planned |
+| **14.31** | Proposal staleness protection (entity-version re-read guard) | Planned |
+
+These extend the `PendingAgentAction` / `AgentActionCard` pattern (14.22–14.24) with write tools that Epic 19's skills consume. Originally drafted as 14.26–14.29 in the Epic 19 PRD, renumbered to 14.28–14.31 (2026-05-20) after Phase 6 claimed 14.26/14.27. Full descriptions live in [`docs/prd/epic-19-agent-partner-skills-subagents.md`](../prd/epic-19-agent-partner-skills-subagents.md) under "Sibling Work."
+
 ---
 
 ## Phase 1: Data Foundation
@@ -569,6 +579,11 @@ Phase 5 (Agent Approval Cards)
 **Superseded stories (archived 2026-03-01):** The following earlier stories have been fully superseded by Epic 14 and moved to `docs/stories/archived/`:
 - **2.10a** (Design Chunking Experiments), **2.10b** (Execute Experiments), **2.10c** (Implement Chunking Strategy) → Superseded by 14.2 (ContentChunk + three-tier chunking) + 14.3 (228K embeddings + Cohere Rerank v4). The experimental approach was replaced by an informed architectural decision documented in `docs/architecture/chunking-strategy.md`.
 - **3.1** (Setup Vector Database for Chat), **3.2** (Implement RAG Query Pipeline) → Superseded by 14.2 (ContentChunk + HNSW index) + 14.3 (embeddings) + 14.7 (agent tools) + 14.8 (retrieval pipeline) + 14.9 (system prompt). The simple RAG pipeline was redesigned as an agentic architecture with tool-based retrieval.
+
+**Superseded stories (archived 2026-05-20):** Superseded by the newer Epic 17 DMS pipeline and Epic 19 tool taxonomy, moved to `docs/stories/archived/`:
+- **14.6** (File Knowledge Extraction & Embedding) → Superseded by Epic 17 **17.8** (text extraction → `WorkspaceFile.extracted_text`) + **17.9** (chunk & embed workspace documents into `ContentChunk`). Same scope, newer and more specific pipeline that Epic 19 depends on.
+- **14.7d** (File Search & Compliance History Tools) → Superseded by Epic 19 **19.2** (`read_file`), **19.3** (diagnostic tools), **19.4** (entity-read tools). The older tool sketch predates the Epic 19 tool taxonomy.
+- **14.12** (Smart Context Cards — Tool-Backed Responses) → Superseded by Epic 19 **19.12** (proactive hem-chat cards driven by the 19.3 diagnostic tools). The diagnostic-tool-backed approach replaces static prompt rewrites; any still-wanted scope folds into 19.12.
 
 ---
 
