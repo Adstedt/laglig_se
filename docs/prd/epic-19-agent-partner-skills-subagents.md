@@ -139,20 +139,22 @@ Third subagent `parallel-assessor.ts` — fan-out helper invoked by the `assess_
 New Prisma model `Reminder` (id, workspace_id, subject, trigger_at, kind: DOCUMENT_REVIEW | BEVIS_RECHECK | CUSTOM, entity_id, status: PENDING | FIRED | DISMISSED, created_by, via_agent). Two new scheduling tools: `schedule_review(documentId, cadence)` (sets `WorkspaceDocument.review_date` + Reminder row), `schedule_bevis_recheck(requirementId, cadence)` (Reminder row only). New cron endpoint `app/api/cron/fire-reminders/route.ts` (follows existing `sync-sfs-updates/route.ts` pattern) scans PENDING reminders past `trigger_at` and posts workspace notifications. New cron `app/api/cron/weekly-pulse/route.ts` runs `gap_analysis` skill per workspace weekly via a non-interactive subagent; result posted as a `Notification` row surfaced in hem-chat on next open. **Deps:** 19.7 (gap_analysis skill), 19.9 (subagent runner).
 
 **19.12 — `AgentFeedback` model + thumbs UI + proactive hem-chat cards**
-New Prisma model `AgentFeedback` (turn_id, tool_call_id?, rating: UP | DOWN, comment, created_by, workspace_id, created_at). Thumbs-up/down UI added to assistant messages and tool result rows in `chat-message.tsx`. `components/features/dashboard/hem-chat.tsx` extended: on mount, server component calls the four diagnostic tools from 19.3 and renders "du har N bevisluckor, M obedömda ändringar, P överfallna uppgifter, Q styrdokument att granska" as clickable cards. Each card pre-fills a chat prompt that activates the relevant skill (gap_analysis → full report; assess_change → jump into first unassessed). **Deps:** 19.3, 19.6, 19.7.
+New Prisma model `AgentFeedback` (turn_id, tool_call_id?, rating: UP | DOWN, comment, created_by, workspace_id, created_at). Thumbs-up/down UI added to assistant messages and tool result rows in `chat-message.tsx`. `components/features/dashboard/hem-chat.tsx` extended: on mount, server component calls the four diagnostic tools from 19.3 and renders "du har N bevisluckor, M obedömda ändringar, P överfallna uppgifter, Q styrdokument att granska" as clickable cards. Each card pre-fills a chat prompt that activates the relevant skill (gap_analysis → full report; assess_change → jump into first unassessed). **Supersedes** the archived Story 14.12 (Smart Context Cards) — this story owns the Hem context-card behavior via diagnostic tools rather than static prompt rewrites; any still-wanted scope from 14.12 (e.g. upgrading the existing four 14.11 cards to structured tool-backed output) is folded in here. **Deps:** 19.3, 19.6, 19.7.
 
 ---
 
 ## Sibling Work (Epic 14 additions, tracked separately)
 
-These stories are tactical write-tool additions that slot into Epic 14's `PendingAgentAction` pattern. They don't belong in Epic 19 because they're straightforward extensions of the 14.22–14.24 approval-card system. Listed here for traceability:
+These stories are tactical write-tool additions that slot into Epic 14's `PendingAgentAction` pattern. They don't belong in Epic 19 because they're straightforward extensions of the 14.22–14.24 approval-card system. Listed here for traceability.
 
-- **14.26** — `update_requirement` approval (text / is_fulfilled / comment / bevis_required). Adds `UPDATE_REQUIREMENT` to `PendingAgentActionType`. New renderer `update-requirement-renderer.tsx` with old→new diff.
-- **14.27** — `add_task_comment` approval. Adds `ADD_TASK_COMMENT` type.
-- **14.28** — `transition_document_status` approval (DRAFT→IN_REVIEW→APPROVED→SUPERSEDED→ARCHIVED). Adds `TRANSITION_DOCUMENT_STATUS` type. Server-side guard rejects agent-initiated APPROVED transitions (separation of duties — agent can draft but not approve).
-- **14.29** — Proposal staleness protection. Every `PendingAgentAction` accept path re-reads the target entity, compares a `params.entity_version` snapshot against current `updated_at`, fails with Swedish error ("datan har ändrats sedan förslaget gjordes") + re-propose button if drifted. Retroactively applied to all approval types.
+> **Numbering note (2026-05-20):** These sibling stories were originally drafted as 14.26–14.29, but Epic 14 has since shipped 14.26 (Anthropic Prompt Caching v1) and 14.27 (Chat Usage Telemetry) under its Phase 6. The sibling work is therefore renumbered to **14.28–14.31** and owned in Epic 14's new "Phase 7: Agent Action Card Extensions" section.
 
-These can be drafted and scheduled independently of Epic 19. Recommend scheduling 14.26 and 14.29 alongside 19.7 so `assess_change` skill has the full write-tool palette available.
+- **14.28** — `update_requirement` approval (text / is_fulfilled / comment / bevis_required). Adds `UPDATE_REQUIREMENT` to `PendingAgentActionType`. New renderer `update-requirement-renderer.tsx` with old→new diff.
+- **14.29** — `add_task_comment` approval. Adds `ADD_TASK_COMMENT` type.
+- **14.30** — `transition_document_status` approval (DRAFT→IN_REVIEW→APPROVED→SUPERSEDED→ARCHIVED). Adds `TRANSITION_DOCUMENT_STATUS` type. Server-side guard rejects agent-initiated APPROVED transitions (separation of duties — agent can draft but not approve).
+- **14.31** — Proposal staleness protection. Every `PendingAgentAction` accept path re-reads the target entity, compares a `params.entity_version` snapshot against current `updated_at`, fails with Swedish error ("datan har ändrats sedan förslaget gjordes") + re-propose button if drifted. Retroactively applied to all approval types.
+
+These can be drafted and scheduled independently of Epic 19. Recommend scheduling 14.28 (`update_requirement`) and 14.31 (staleness protection) alongside 19.7 so `assess_change` skill has the full write-tool palette available.
 
 ---
 
@@ -174,7 +176,7 @@ These can be drafted and scheduled independently of Epic 19. Recommend schedulin
 
 **Primary Risk 1 — Hallucinated legal interpretation.** The agent could confidently assert "kravpunkt X is fulfilled by policy Y" when it isn't, the user accepts, and the auditor disagrees. This is the existential failure mode for a compliance product.
 
-- **Mitigation:** `is_fulfilled = true` transitions are always Tier-2 proposals (sibling Story 14.26), never auto-applied. Every legal claim in agent output must carry a structured `[Källa: SFS ...]` citation that the model copies verbatim from tool output, not paraphrases. System prompt guardrails forbid "I believe this covers…" phrasings in favor of "this references §X which requires Y — you may want to verify Z." `LegalReasoner` subagent (19.9) is consulted for any interpretation question with meaningful stakes.
+- **Mitigation:** `is_fulfilled = true` transitions are always Tier-2 proposals (sibling Story 14.28), never auto-applied. Every legal claim in agent output must carry a structured `[Källa: SFS ...]` citation that the model copies verbatim from tool output, not paraphrases. System prompt guardrails forbid "I believe this covers…" phrasings in favor of "this references §X which requires Y — you may want to verify Z." `LegalReasoner` subagent (19.9) is consulted for any interpretation question with meaningful stakes.
 - **Rollback:** All agent writes carry `via_agent = true` and `AgentDecisionLog` rows. Bulk query can list every agent-mediated state change in a workspace and roll them back if systematic issue discovered.
 
 **Primary Risk 2 — Skill procedures go stale.** PROCEDURE.md files encode how to do compliance work well, but Swedish law evolves. If a PROCEDURE.md references a repealed SFS or outdated methodology, the agent follows it anyway.
@@ -202,7 +204,7 @@ These can be drafted and scheduled independently of Epic 19. Recommend schedulin
 ## Definition of Done
 
 - [ ] All 12 stories completed with their ACs met
-- [ ] Sibling Stories 14.26–14.29 completed (coordinated with Epic 14)
+- [ ] Sibling Stories 14.28–14.31 completed (coordinated with Epic 14)
 - [ ] Prisma migrations merged: `AgentDecisionLog`, `Reminder`, `AgentFeedback`, `FileCategory` enum extension, `via_agent` columns on affected tables
 - [ ] Three skills live: `assess_change` (migrated), `gap_analysis` (new), `draft_policy` (new)
 - [ ] Three subagents live: `LegalReasoner`, `DocumentReader`, `ParallelAssessor`

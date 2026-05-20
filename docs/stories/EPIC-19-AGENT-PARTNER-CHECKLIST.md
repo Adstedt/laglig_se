@@ -38,13 +38,15 @@
 
 ## 🔌 Sibling write-tool additions to Epic 14 (new — coordinated with Epic 19)
 
-- [ ] **14.26** — `update_requirement` approval
+> **Numbering note (2026-05-20):** renumbered from 14.26–14.29 to **14.28–14.31** because Epic 14 shipped 14.26 (Anthropic Prompt Caching v1) and 14.27 (Chat Usage Telemetry) under its Phase 6. These are owned in Epic 14's "Phase 7: Agent Action Card Extensions" section.
+
+- [ ] **14.28** — `update_requirement` approval
   *text / is_fulfilled / comment / bevis_required; new `UPDATE_REQUIREMENT` action type + diff renderer*
-- [ ] **14.27** — `add_task_comment` approval
+- [ ] **14.29** — `add_task_comment` approval
   *New `ADD_TASK_COMMENT` action type*
-- [ ] **14.28** — `transition_document_status` approval
+- [ ] **14.30** — `transition_document_status` approval
   *Ladder guard DRAFT→IN_REVIEW→APPROVED→SUPERSEDED→ARCHIVED; agent cannot APPROVE (separation of duties)*
-- [ ] **14.29** — Proposal staleness protection
+- [ ] **14.31** — Proposal staleness protection
   *entity_version snapshot + re-read check + Swedish error toast; retrofit across all approval types*
 
 ---
@@ -97,7 +99,7 @@
 | Bucket | Count | Gate |
 |---|---|---|
 | Prerequisites (Epic 14 + 17) | 7 | Must ship first or in parallel — blocks most of 19 |
-| Sibling Epic 14 additions | 4 | Schedule 14.26 + 14.29 alongside 19.7 |
+| Sibling Epic 14 additions | 4 | Schedule 14.28 + 14.31 alongside 19.7 |
 | Epic 19 | 12 | Foundation track (19.1–19.5) unblocks all other tracks |
 | **Total** | **23 stories** | ~8–10 weeks with 2 devs |
 
@@ -108,7 +110,7 @@
 ### Shortest route to a usable "agent that does work" (10 stories, ~5 weeks)
 
 ```
-17.8 → 17.9 → 14.22 → 19.1 → 19.2 → 19.5 → 19.6 → 19.7 → 14.26 → 19.3
+17.8 → 17.9 → 14.22 → 19.1 → 19.2 → 19.5 → 19.6 → 19.7 → 14.28 → 19.3
 ```
 
 After this sequence, the core loop is live: agent reads attachments + bevis, diagnoses gaps, proposes fixes via approval cards, runs skills per context. Every remaining story adds capability but the product value is established.
@@ -144,7 +146,7 @@ Agent drafts styrdokument from templates, user reviews in Tiptap preview, approv
 ## 🔒 Definition of Done for the full vision
 
 - [ ] All 7 prerequisite stories shipped (17.8, 17.9, 17.10, 17.11, 14.22, 14.23, 14.24)
-- [ ] All 4 sibling stories shipped (14.26, 14.27, 14.28, 14.29)
+- [ ] All 4 sibling stories shipped (14.28, 14.29, 14.30, 14.31)
 - [ ] All 12 Epic 19 stories shipped
 - [ ] Composite feature flag `agent_partner_v2` enabled in ≥1 customer workspace for ≥2 weeks with no regressions
 - [ ] AUDITOR role verified read-only end-to-end
