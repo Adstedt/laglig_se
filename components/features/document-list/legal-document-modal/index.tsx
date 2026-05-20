@@ -235,6 +235,7 @@ export function LegalDocumentModal({
         listItem ? (
           <ModalHeader
             listName={listItem.lawList.name}
+            listId={listItem.lawList.id}
             documentNumber={listItem.legalDocument.documentNumber}
             slug={listItem.legalDocument.slug}
             onClose={onClose}
