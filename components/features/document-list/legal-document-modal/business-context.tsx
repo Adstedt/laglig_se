@@ -130,10 +130,26 @@ export function BusinessContext({
       value="business-context"
       className="border rounded-lg border-border/60"
     >
-      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
-        <div className="flex items-center gap-2 text-base font-semibold text-foreground">
-          <HelpCircle className="h-4 w-4" />
-          <span>Hur påverkar detta oss?</span>
+      <AccordionTrigger className="group/trigger px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
+        <div className="flex items-center gap-2 text-base font-semibold text-foreground flex-1 min-w-0">
+          <HelpCircle className="h-4 w-4 shrink-0" />
+          <span className="shrink-0">Hur påverkar detta oss?</span>
+          {/* Collapsed-state meta: 1-line preview when filled, "Ej ifylld" when empty */}
+          {(() => {
+            const preview = content
+              .replace(/<[^>]*>/g, '')
+              .replace(/\s+/g, ' ')
+              .trim()
+            return preview ? (
+              <span className="ml-auto mr-2 max-w-[22ch] truncate text-xs font-normal text-muted-foreground group-data-[state=open]/trigger:hidden">
+                {preview}
+              </span>
+            ) : (
+              <span className="ml-auto mr-2 shrink-0 text-xs font-normal italic text-muted-foreground/70 group-data-[state=open]/trigger:hidden">
+                Ej ifylld
+              </span>
+            )
+          })()}
         </div>
       </AccordionTrigger>
       <AccordionContent className="px-4 pb-4">

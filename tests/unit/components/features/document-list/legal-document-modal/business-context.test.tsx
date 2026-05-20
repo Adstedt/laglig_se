@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BusinessContext } from '@/components/features/document-list/legal-document-modal/business-context'
 import { Accordion } from '@/components/ui/accordion'
@@ -102,8 +102,12 @@ describe('BusinessContext', () => {
       initialContent: 'This law affects our HR processes.',
     })
 
+    // Scope to the display — the collapsed-trigger preview also renders this
+    // text (CSS-hidden when open, but jsdom doesn't apply Tailwind).
     expect(
-      screen.getByText('This law affects our HR processes.')
+      within(screen.getByTestId('rich-text-display')).getByText(
+        'This law affects our HR processes.'
+      )
     ).toBeInTheDocument()
   })
 
@@ -195,8 +199,9 @@ describe('BusinessContext', () => {
 
     // Should be back in view mode showing original content
     await waitFor(() => {
-      expect(screen.getByTestId('rich-text-display')).toBeInTheDocument()
-      expect(screen.getByText('Original content')).toBeInTheDocument()
+      const display = screen.getByTestId('rich-text-display')
+      expect(display).toBeInTheDocument()
+      expect(within(display).getByText('Original content')).toBeInTheDocument()
     })
   })
 })

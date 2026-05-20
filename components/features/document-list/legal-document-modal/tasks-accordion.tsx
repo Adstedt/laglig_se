@@ -323,14 +323,14 @@ export function TasksAccordion({
 
   return (
     <AccordionItem value="tasks" className="border rounded-lg border-border/60">
-      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
+      <AccordionTrigger className="group/trigger px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg data-[state=closed]:rounded-lg">
         <div className="flex items-center gap-2 text-base font-semibold text-foreground flex-1">
           <ListTodo className="h-4 w-4" />
           <span>Uppgifter</span>
 
           {/* Progress indicator */}
           {totalCount > 0 && (
-            <div className="flex items-center gap-2 ml-auto mr-2 font-normal">
+            <div className="flex items-center gap-2 ml-auto mr-2 font-normal group-data-[state=open]/trigger:hidden">
               <span className="text-xs text-muted-foreground tabular-nums">
                 {totalCount - activeCount}/{totalCount} klara
               </span>

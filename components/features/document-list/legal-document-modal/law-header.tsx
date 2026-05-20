@@ -56,8 +56,12 @@ export function LawHeader({
 
   return (
     <div className="space-y-3">
-      {/* Title - aligned with Task Modal (text-xl) */}
-      <h2 className="text-xl font-semibold leading-tight">{title}</h2>
+      {/* Title — Safiro Medium for the brand/identity moment (Story 26.x).
+          Safiro ships at weight 500, so use font-medium (font-semibold would
+          trigger faux-bold and ruin the display face). */}
+      <h2 className="font-safiro text-xl font-medium leading-tight tracking-[-0.01em]">
+        {title}
+      </h2>
 
       {/* Status and Priority Badges */}
       <div className="flex flex-wrap items-center gap-2">
