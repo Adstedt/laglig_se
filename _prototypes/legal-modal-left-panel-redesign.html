@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Legal modal — left-panel redesign (prototype)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+      @font-face {
+        font-family: 'Safiro';
+        src:
+          url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'),
+          url('../public/fonts/safiro-medium-webfont.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Google Sans Flex';
+        src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype');
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      :root {
+        /* Dark tokens — matched to the real app screenshot (neutral-warm dark) */
+        --bg: #0a0a09;          /* page backdrop */
+        --modal: #100f0e;       /* modal surface */
+        --panel: #121110;       /* left panel base */
+        --card: #1a1917;        /* accordion row / card surface */
+        --card-hi: #201f1c;     /* hovered / active surface */
+        --border: #2b2a26;      /* visible border */
+        --border-soft: #232220; /* hairline border */
+        --fg: #ededea;          /* primary text */
+        --fg-muted: #a39f97;    /* secondary text */
+        --fg-dim: #6e6a62;      /* tertiary / empty-state text */
+        --accent: #d6bd97;      /* warm sand brand accent */
+        --accent-dim: #8a7a5e;
+        --emerald: #34d399;
+        --emerald-track: #2a3a30;
+        --amber-bg: rgba(245, 158, 11, 0.14);
+        --amber-fg: #f0c469;
+        --neutral-bg: #26251f;
+        --neutral-fg: #b8b4ab;
+        --neutral-dot: #7c8896;
+        --blue-bg: rgba(59, 130, 246, 0.12);
+        --blue-border: rgba(59, 130, 246, 0.32);
+        --blue-fg: #b9cdf2;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: 'Google Sans Flex', ui-sans-serif, system-ui, -apple-system, sans-serif;
+        font-size: 14px;
+        line-height: 1.55;
+        background:
+          radial-gradient(1200px 700px at 50% -10%, #15140f 0%, transparent 60%),
+          var(--bg);
+        color: var(--fg);
+        -webkit-font-smoothing: antialiased;
+        padding: 56px 24px 120px;
+      }
+      .font-safiro { font-family: 'Safiro', system-ui, sans-serif; font-weight: 500; letter-spacing: -0.01em; }
+
+      .wrap { max-width: 760px; margin: 0 auto; }
+
+      /* ── Page intro / section scaffolding ─────────────────────── */
+      .page-title { font-size: 26px; letter-spacing: -0.02em; margin: 0 0 6px; }
+      .page-sub { color: var(--fg-muted); font-size: 15px; margin: 0 0 8px; max-width: 64ch; }
+      .eyebrow {
+        font-size: 11px; font-weight: 600; text-transform: uppercase;
+        letter-spacing: 0.1em; color: var(--accent-dim);
+      }
+      .variant-head { margin: 72px 0 18px; }
+      .variant-head.first { margin-top: 40px; }
+      .variant-title { font-size: 20px; letter-spacing: -0.01em; margin: 6px 0 6px; display: flex; align-items: center; gap: 10px; }
+      .variant-tag {
+        font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+        background: var(--card); border: 1px solid var(--border); color: var(--fg-muted);
+      }
+      .variant-tag.rec { background: rgba(214,189,151,0.14); border-color: rgba(214,189,151,0.4); color: var(--accent); }
+      .variant-desc { color: var(--fg-muted); font-size: 14px; max-width: 66ch; margin: 0; }
+      .wins { list-style: none; padding: 0; margin: 12px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
+      .wins li {
+        font-size: 12px; color: var(--fg-muted);
+        background: var(--card); border: 1px solid var(--border-soft);
+        border-radius: 8px; padding: 5px 10px; display: inline-flex; align-items: center; gap: 6px;
+      }
+      .wins li svg { width: 13px; height: 13px; color: var(--emerald); }
+
+      /* ── Modal-left-panel frame ───────────────────────────────── */
+      .frame {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 24px 60px -20px rgba(0,0,0,0.6);
+        overflow: hidden;
+      }
+      .frame-bar {
+        display: flex; align-items: center; gap: 8px;
+        padding: 10px 16px; border-bottom: 1px solid var(--border-soft);
+        font-size: 12.5px; color: var(--fg-muted); background: var(--modal);
+      }
+      .frame-bar .crumb { color: var(--fg-muted); }
+      .frame-bar .crumb b { color: var(--fg); font-weight: 500; }
+      .frame-bar .spacer { flex: 1; }
+      .frame-bar svg { width: 14px; height: 14px; }
+      .panel-pad { padding: 22px 24px 26px; }
+
+      /* Header (title + badges) shared by all variants */
+      .law-title { font-size: 21px; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 12px; line-height: 1.25; }
+      .badges { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 18px; }
+      .pill {
+        display: inline-flex; align-items: center; gap: 7px;
+        font-size: 12.5px; font-weight: 500; padding: 4px 11px; border-radius: 999px;
+      }
+      .pill .dot { width: 8px; height: 8px; border-radius: 50%; }
+      .pill .ic { width: 13px; height: 13px; }
+      .pill-status { background: var(--neutral-bg); color: var(--neutral-fg); }
+      .pill-status .dot { background: var(--neutral-dot); }
+      .pill-priority { background: var(--amber-bg); color: var(--amber-fg); }
+      .toggle-all {
+        margin-left: auto; width: 28px; height: 28px; border-radius: 7px;
+        display: inline-flex; align-items: center; justify-content: center;
+        color: var(--fg-dim); border: 1px solid transparent; cursor: pointer; background: none;
+      }
+      .toggle-all:hover { color: var(--fg); background: var(--card); }
+      .toggle-all svg { width: 16px; height: 16px; }
+
+      /* ── Accordion primitives (native <details>) ──────────────── */
+      .acc { border: 1px solid var(--border-soft); border-radius: 11px; background: var(--card); overflow: hidden; }
+      .acc + .acc { margin-top: 8px; }
+      .acc > summary {
+        list-style: none; cursor: pointer; padding: 14px 15px;
+        display: flex; align-items: center; gap: 11px;
+      }
+      .acc > summary::-webkit-details-marker { display: none; }
+      .acc > summary:hover { background: var(--card-hi); }
+      .acc .ttl { display: flex; align-items: center; gap: 11px; font-weight: 500; font-size: 14.5px; color: var(--fg); }
+      .acc .ttl .lead { width: 17px; height: 17px; color: var(--fg-muted); }
+      .acc .meta { margin-left: auto; display: flex; align-items: center; gap: 12px; color: var(--fg-muted); font-size: 12.5px; }
+      .acc .chev { width: 17px; height: 17px; color: var(--fg-dim); transition: transform .18s ease; }
+      .acc[open] .chev { transform: rotate(180deg); }
+      .acc .body { padding: 2px 16px 18px 43px; color: var(--fg-muted); font-size: 13.5px; }
+      .acc .body p { margin: 0 0 10px; }
+
+      .empty-tag { color: var(--fg-dim); font-style: italic; }
+      .count-chip {
+        min-width: 20px; height: 20px; padding: 0 6px; border-radius: 6px;
+        background: var(--neutral-bg); color: var(--neutral-fg); font-size: 11.5px; font-weight: 600;
+        display: inline-flex; align-items: center; justify-content: center;
+      }
+
+      /* progress bar */
+      .prog { display: inline-flex; align-items: center; gap: 8px; }
+      .prog .track { width: 46px; height: 6px; border-radius: 999px; background: var(--emerald-track); overflow: hidden; }
+      .prog .fill { height: 100%; background: var(--emerald); border-radius: 999px; }
+      .prog .lbl { color: var(--fg-muted); font-size: 12px; }
+
+      /* krav checklist rows */
+      .krav-row { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; border-top: 1px solid var(--border-soft); }
+      .krav-row:first-child { border-top: none; }
+      .krav-box { width: 17px; height: 17px; border-radius: 5px; border: 1.5px solid var(--fg-dim); flex-shrink: 0; margin-top: 1px; display: inline-flex; align-items: center; justify-content: center; }
+      .krav-box.done { background: var(--emerald); border-color: var(--emerald); }
+      .krav-box.done svg { width: 12px; height: 12px; color: #0a0a09; }
+      .krav-txt { color: var(--fg); font-size: 13.5px; }
+      .krav-row.done .krav-txt { color: var(--fg-muted); }
+
+      /* file / task chips inside bodies */
+      .obj-row { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border: 1px solid var(--border-soft); border-radius: 9px; background: var(--modal); }
+      .obj-row svg { width: 15px; height: 15px; color: var(--fg-muted); }
+      .obj-row .name { color: var(--fg); font-size: 13px; }
+      .obj-row .sub { color: var(--fg-dim); font-size: 11.5px; margin-left: auto; }
+
+      /* group label (Variant A) */
+      .group-label {
+        display: flex; align-items: center; gap: 10px;
+        font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em;
+        color: var(--accent-dim); margin: 20px 2px 9px;
+      }
+      .group-label::after { content: ""; flex: 1; height: 1px; background: var(--border-soft); }
+      .group-label:first-of-type { margin-top: 4px; }
+
+      /* rich collapsed preview line */
+      .preview-line { color: var(--fg-dim); font-size: 12.5px; max-width: 30ch; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+      /* ── Tabs (Variant B) ─────────────────────────────────────── */
+      .tabbar { display: flex; gap: 2px; padding: 4px; background: var(--card); border: 1px solid var(--border-soft); border-radius: 11px; margin-bottom: 18px; }
+      .tab {
+        flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+        padding: 8px 10px; border-radius: 8px; font-size: 13.5px; font-weight: 500;
+        color: var(--fg-muted); cursor: pointer; border: none; background: none; transition: all .15s;
+      }
+      .tab svg { width: 15px; height: 15px; }
+      .tab:hover { color: var(--fg); }
+      .tab.active { background: var(--modal); color: var(--fg); box-shadow: 0 1px 0 rgba(0,0,0,0.4); }
+      .tab .badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 5px; background: var(--neutral-bg); color: var(--neutral-fg); font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; }
+      .tab.active .badge { background: rgba(214,189,151,0.16); color: var(--accent); }
+      .tabpane { display: none; }
+      .tabpane.active { display: block; animation: fade .2s ease; }
+      @keyframes fade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+      .field-label { font-size: 12.5px; font-weight: 600; color: var(--fg); margin: 18px 0 7px; display: flex; align-items: center; gap: 8px; }
+      .field-label:first-child { margin-top: 0; }
+      .field-label .lead { width: 15px; height: 15px; color: var(--fg-muted); }
+      .field-box { background: var(--card); border: 1px solid var(--border-soft); border-radius: 10px; padding: 12px 14px; color: var(--fg-muted); font-size: 13.5px; }
+      .field-box.empty { color: var(--fg-dim); font-style: italic; border-style: dashed; }
+      .lagtext-reader { background: var(--card); border: 1px solid var(--border-soft); border-radius: 10px; padding: 16px 18px; color: var(--fg-muted); font-size: 13.5px; line-height: 1.6; }
+      .lagtext-reader h4 { color: var(--fg); font-size: 13px; margin: 0 0 4px; font-weight: 600; }
+      .lagtext-reader .para { padding: 10px 0; border-bottom: 1px solid var(--border-soft); }
+      .lagtext-reader .para:last-child { border-bottom: none; }
+
+      /* ── Stepper (Variant C) ──────────────────────────────────── */
+      .step { position: relative; padding-left: 40px; padding-bottom: 8px; }
+      .step::before { /* connector line */
+        content: ""; position: absolute; left: 14px; top: 30px; bottom: -8px; width: 2px; background: var(--border-soft);
+      }
+      .step:last-child::before { display: none; }
+      .step-node {
+        position: absolute; left: 0; top: 2px; width: 29px; height: 29px; border-radius: 50%;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 13px; font-weight: 600; background: var(--card); border: 1.5px solid var(--border); color: var(--fg-muted); z-index: 1;
+      }
+      .step-node.done { background: var(--emerald); border-color: var(--emerald); color: #0a0a09; }
+      .step-node.active { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 4px rgba(214,189,151,0.1); }
+      .step-node svg { width: 15px; height: 15px; }
+      .step details { border-radius: 11px; }
+      .step summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 5px 0; }
+      .step summary::-webkit-details-marker { display: none; }
+      .step .s-ttl { font-weight: 600; font-size: 15px; color: var(--fg); }
+      .step .s-state { margin-left: auto; display: inline-flex; align-items: center; gap: 9px; font-size: 12.5px; }
+      .state-done { color: var(--emerald); }
+      .state-active { color: var(--accent); }
+      .state-todo { color: var(--fg-dim); }
+      .step .s-sub { color: var(--fg-dim); font-size: 12.5px; margin: 1px 0 0; }
+      .step .s-body { padding: 10px 0 14px; color: var(--fg-muted); font-size: 13.5px; }
+      .step .chev { width: 16px; height: 16px; color: var(--fg-dim); transition: transform .18s; }
+      .step details[open] .chev { transform: rotate(180deg); }
+
+      /* activity footer (current + A) */
+      .activity { margin-top: 22px; }
+      .activity-h { font-size: 13px; font-weight: 600; color: var(--fg); margin: 0 0 10px; }
+      .act-tabs { display: inline-flex; gap: 2px; padding: 3px; background: var(--card); border-radius: 9px; border: 1px solid var(--border-soft); margin-bottom: 14px; }
+      .act-tabs span { padding: 5px 12px; border-radius: 6px; font-size: 12.5px; color: var(--fg-muted); }
+      .act-tabs span.on { background: var(--modal); color: var(--fg); }
+      .act-empty { text-align: center; color: var(--fg-dim); padding: 22px 0; font-size: 13px; }
+      .act-empty svg { width: 26px; height: 26px; opacity: 0.5; margin-bottom: 8px; }
+
+      .note { background: var(--blue-bg); border: 1px solid var(--blue-border); color: var(--blue-fg); border-radius: 10px; padding: 12px 14px; font-size: 13px; margin: 14px 0 0; }
+      .note b { color: #d6e2fb; font-weight: 600; }
+      .divider { height: 1px; background: var(--border-soft); border: none; margin: 64px 0 0; }
+
+      .legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 14px 0 0; font-size: 12px; color: var(--fg-dim); }
+      .legend span { display: inline-flex; align-items: center; gap: 6px; }
+      .swatch { width: 11px; height: 11px; border-radius: 3px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <!-- ════════════════ INTRO ════════════════ -->
+      <p class="eyebrow">Prototype · Legal document modal</p>
+      <h1 class="page-title font-safiro">Vänsterpanelen — bort från väggen av dragspel</h1>
+      <p class="page-sub">
+        Sex visuellt identiska dragspel staplade på varandra ger ingen hierarki och inga statussignaler
+        i hopfällt läge. Nedan: nuläget, följt av tre riktningar. Allt är klickbart.
+      </p>
+      <div class="legend">
+        <span><i class="swatch" style="background:var(--emerald)"></i> klar / ifylld</span>
+        <span><i class="swatch" style="background:var(--amber-fg)"></i> prioritet</span>
+        <span><i class="swatch" style="background:var(--fg-dim)"></i> tom / ej ifylld</span>
+        <span><i class="swatch" style="background:var(--accent)"></i> brand-accent</span>
+      </div>
+
+      <!-- ════════════════ CURRENT ════════════════ -->
+      <div class="variant-head first">
+        <span class="eyebrow">Nuläge</span>
+        <h2 class="variant-title">Sex dragspel + aktivitet</h2>
+        <p class="variant-desc">
+          Alla rader väger lika. Lagtext (referens), din egen analys och underlag ligger blandade.
+          Hopfällt avslöjar bara Kravpunkter och Filer något — resten måste man öppna för att se om de är tomma.
+        </p>
+      </div>
+
+      <div class="frame">
+        <div class="frame-bar">
+          <span class="crumb">Er laglista</span>
+          <i data-lucide="chevron-right"></i>
+          <span class="crumb"><b>SFS 2005:551</b></span>
+          <span class="spacer"></span>
+          <i data-lucide="share-2"></i>
+          <i data-lucide="more-horizontal"></i>
+          <i data-lucide="x"></i>
+        </div>
+        <div class="panel-pad">
+          <h3 class="law-title">Aktiebolagslag (2005:551)</h3>
+          <div class="badges">
+            <span class="pill pill-status"><i class="dot"></i> Ej påbörjad</span>
+            <span class="pill pill-priority"><i data-lucide="flag" class="ic"></i> Medel</span>
+            <button class="toggle-all"><i data-lucide="chevrons-up-down"></i></button>
+          </div>
+
+          <details class="acc">
+            <summary><span class="ttl"><i data-lucide="scale" class="lead"></i> Författningstext</span><span class="meta"><i data-lucide="chevron-down" class="chev"></i></span></summary>
+            <div class="body"><p>Lagtexten laddas här…</p></div>
+          </details>
+          <details class="acc" open>
+            <summary><span class="ttl"><i data-lucide="circle-help" class="lead"></i> Hur påverkar detta oss?</span><span class="meta"><i data-lucide="chevron-down" class="chev"></i></span></summary>
+            <div class="body"><p>Vi är ett aktiebolag och omfattas av reglerna om bolagsstyrning, styrelsens ansvar och årsredovisning.</p></div>
+          </details>
+          <details class="acc">
+            <summary><span class="ttl"><i data-lucide="file-text" class="lead"></i> Hur efterlever vi kraven?</span><span class="meta"><i data-lucide="chevron-down" class="chev"></i></span></summary>
+            <div class="body"><p class="empty-tag">Inget skrivet ännu.</p></div>
+          </details>
+          <details class="acc">
+            <summary><span class="ttl"><i data-lucide="clipboard-check" class="lead"></i> Kravpunkter</span><span class="meta"><span class="prog"><span class="lbl">1/3 uppfyllda</span><span class="track"><span class="fill" style="width:33%"></span></span></span><i data-lucide="chevron-down" class="chev"></i></span></summary>
+            <div class="body"><p>Checklistan…</p></div>
+          </details>
+          <details class="acc">
+            <summary><span class="ttl"><i data-lucide="list-checks" class="lead"></i> Uppgifter</span><span class="meta"><i data-lucide="chevron-down" class="chev"></i></span></summary>
+            <div class="body"><p class="empty-tag">Inga uppgifter än.</p></div>
+          </details>
+          <details class="acc">
+            <summary><span class="ttl"><i data-lucide="paperclip" class="lead"></i> Länkade filer &amp; dokument</span><span class="meta"><span class="count-chip">1</span><i data-lucide="chevron-down" class="chev"></i></span></summary>
+            <div class="body"><p>Bolagsordning_2024.pdf</p></div>
+          </details>
+
+          <div class="activity">
+            <p class="activity-h">Aktivitet</p>
+            <div class="act-tabs"><span class="on">Alla</span><span>Kommentarer</span><span>Historik</span></div>
+            <div class="act-empty"><div><i data-lucide="history"></i></div>Ingen aktivitet ännu</div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- ════════════════ VARIANT A ════════════════ -->
+      <div class="variant-head">
+        <span class="eyebrow">Riktning A</span>
+        <h2 class="variant-title">Grupperat + rika rader <span class="variant-tag rec">rekommenderad</span></h2>
+        <p class="variant-desc">
+          Samma dragspel, men chunkat i tre namngivna grupper och varje hopfälld rad bär sin status:
+          förhandstext, progress, antal, eller "ej ifylld". Du ser hela bilden utan att öppna något.
+          Lägst risk, störst skanbarhetsvinst.
+        </p>
+        <ul class="wins">
+          <li><i data-lucide="check"></i> Slutar med öppna/stäng-jonglering</li>
+          <li><i data-lucide="check"></i> Skiljer arbete från referens</li>
+          <li><i data-lucide="check"></i> Behåller befintlig kod-struktur</li>
+        </ul>
+      </div>
+
+      <div class="frame">
+        <div class="frame-bar">
+          <span class="crumb">Er laglista</span><i data-lucide="chevron-right"></i><span class="crumb"><b>SFS 2005:551</b></span>
+          <span class="spacer"></span><i data-lucide="share-2"></i><i data-lucide="more-horizontal"></i><i data-lucide="x"></i>
+        </div>
+        <div class="panel-pad">
+          <h3 class="law-title">Aktiebolagslag (2005:551)</h3>
+          <div class="badges">
+            <span class="pill pill-status"><i class="dot"></i> Ej påbörjad</span>
+            <span class="pill pill-priority"><i data-lucide="flag" class="ic"></i> Medel</span>
+            <button class="toggle-all"><i data-lucide="chevrons-up-down"></i></button>
+          </div>
+
+          <div class="group-label">Efterlevnad</div>
+
+          <details class="acc" open>
+            <summary>
+              <span class="ttl"><i data-lucide="circle-help" class="lead"></i> Hur påverkar detta oss?</span>
+              <span class="meta"><i data-lucide="chevron-down" class="chev"></i></span>
+            </summary>
+            <div class="body"><p>Vi är ett aktiebolag och omfattas av reglerna om bolagsstyrning, styrelsens ansvar och årsredovisning. Särskilt relevant är kapitel 7–8 om bolagsstämma och styrelse.</p></div>
+          </details>
+
+          <details class="acc">
+            <summary>
+              <span class="ttl"><i data-lucide="file-text" class="lead"></i> Hur efterlever vi kraven?</span>
+              <span class="meta"><span class="empty-tag">ej ifylld</span><i data-lucide="chevron-down" class="chev"></i></span>
+            </summary>
+            <div class="body"><p class="empty-tag">Beskriv hur ni efterlever lagen. <span style="color:var(--accent);cursor:pointer">Lägg till →</span></p></div>
+          </details>
+
+          <details class="acc">
+            <summary>
+              <span class="ttl"><i data-lucide="clipboard-check" class="lead"></i> Kravpunkter</span>
+              <span class="meta"><span class="prog"><span class="track"><span class="fill" style="width:33%"></span></span><span class="lbl">1/3</span></span><i data-lucide="chevron-down" class="chev"></i></span>
+            </summary>
+            <div class="body" style="padding-right:8px">
+              <div class="krav-row done"><span class="krav-box done"><i data-lucide="check"></i></span><span class="krav-txt">Registrerad bolagsordning hos Bolagsverket</span></div>
+              <div class="krav-row"><span class="krav-box"></span><span class="krav-txt">Styrelseprotokoll förs vid varje sammanträde</span></div>
+              <div class="krav-row"><span class="krav-box"></span><span class="krav-txt">Årsredovisning upprättas enligt ÅRL och ABL</span></div>
+            </div>
+          </details>
+
+          <div class="group-label">Referens</div>
+
+          <details class="acc">
+            <summary>
+              <span class="ttl"><i data-lucide="scale" class="lead"></i> Författningstext</span>
+              <span class="meta"><span style="color:var(--fg-dim)">SFS 2005:551</span><i data-lucide="arrow-up-right" class="chev"></i></span>
+            </summary>
+            <div class="body"><p>Öppnas i fokuserad läsvy. <span style="color:var(--accent);cursor:pointer">Visa fullständig lag →</span></p></div>
+          </details>
+
+          <div class="group-label">Underlag</div>
+
+          <details class="acc">
+            <summary>
+              <span class="ttl"><i data-lucide="list-checks" class="lead"></i> Uppgifter</span>
+              <span class="meta"><span class="empty-tag">inga än</span><i data-lucide="chevron-down" class="chev"></i></span>
+            </summary>
+            <div class="body"><p class="empty-tag">Inga uppgifter kopplade. <span style="color:var(--accent);cursor:pointer">Skapa uppgift →</span></p></div>
+          </details>
+
+          <details class="acc">
+            <summary>
+              <span class="ttl"><i data-lucide="paperclip" class="lead"></i> Länkade filer &amp; dokument</span>
+              <span class="meta"><span class="preview-line">Bolagsordning_2024.pdf</span><span class="count-chip">1</span><i data-lucide="chevron-down" class="chev"></i></span>
+            </summary>
+            <div class="body">
+              <div class="obj-row"><i data-lucide="file-text"></i><span class="name">Bolagsordning_2024.pdf</span><span class="sub">PDF · 240 kB</span></div>
+            </div>
+          </details>
+
+          <div class="activity">
+            <p class="activity-h">Aktivitet</p>
+            <div class="act-tabs"><span class="on">Alla</span><span>Kommentarer</span><span>Historik</span></div>
+            <div class="act-empty"><div><i data-lucide="history"></i></div>Ingen aktivitet ännu</div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- ════════════════ VARIANT B ════════════════ -->
+      <div class="variant-head">
+        <span class="eyebrow">Riktning B</span>
+        <h2 class="variant-title">Flikar i vänsterpanelen</h2>
+        <p class="variant-desc">
+          De sex dragspelen kollapsar till tre flikar: <b>Efterlevnad</b> (ditt arbete, alltid synligt),
+          <b>Lagtext</b> (full läsvy) och <b>Underlag</b> (uppgifter + filer, med antal). Ingen vägg, ingen scroll-jakt.
+        </p>
+        <ul class="wins">
+          <li><i data-lucide="check"></i> Eliminerar väggen helt</li>
+          <li><i data-lucide="check"></i> Lagtext får egen läsyta</li>
+          <li><i data-lucide="check"></i> Antal syns på fliken</li>
+        </ul>
+      </div>
+
+      <div class="frame">
+        <div class="frame-bar">
+          <span class="crumb">Er laglista</span><i data-lucide="chevron-right"></i><span class="crumb"><b>SFS 2005:551</b></span>
+          <span class="spacer"></span><i data-lucide="share-2"></i><i data-lucide="more-horizontal"></i><i data-lucide="x"></i>
+        </div>
+        <div class="panel-pad" data-tabs>
+          <h3 class="law-title">Aktiebolagslag (2005:551)</h3>
+          <div class="badges">
+            <span class="pill pill-status"><i class="dot"></i> Ej påbörjad</span>
+            <span class="pill pill-priority"><i data-lucide="flag" class="ic"></i> Medel</span>
+          </div>
+
+          <div class="tabbar">
+            <button class="tab active" data-tab="eff"><i data-lucide="clipboard-check"></i> Efterlevnad</button>
+            <button class="tab" data-tab="law"><i data-lucide="scale"></i> Lagtext</button>
+            <button class="tab" data-tab="und"><i data-lucide="paperclip"></i> Underlag <span class="badge">1</span></button>
+          </div>
+
+          <!-- Efterlevnad -->
+          <div class="tabpane active" data-pane="eff">
+            <div class="field-label"><i data-lucide="circle-help" class="lead"></i> Hur påverkar detta oss?</div>
+            <div class="field-box">Vi är ett aktiebolag och omfattas av reglerna om bolagsstyrning, styrelsens ansvar och årsredovisning. Särskilt relevant är kapitel 7–8 om bolagsstämma och styrelse.</div>
+
+            <div class="field-label"><i data-lucide="file-text" class="lead"></i> Hur efterlever vi kraven?</div>
+            <div class="field-box empty">Inget skrivet ännu — klicka för att beskriva er efterlevnad.</div>
+
+            <div class="field-label" style="margin-top:22px;justify-content:space-between">
+              <span style="display:inline-flex;align-items:center;gap:8px"><i data-lucide="clipboard-check" class="lead"></i> Kravpunkter</span>
+              <span class="prog"><span class="track"><span class="fill" style="width:33%"></span></span><span class="lbl">1/3 uppfyllda</span></span>
+            </div>
+            <div class="field-box" style="padding:6px 14px">
+              <div class="krav-row done"><span class="krav-box done"><i data-lucide="check"></i></span><span class="krav-txt">Registrerad bolagsordning hos Bolagsverket</span></div>
+              <div class="krav-row"><span class="krav-box"></span><span class="krav-txt">Styrelseprotokoll förs vid varje sammanträde</span></div>
+              <div class="krav-row"><span class="krav-box"></span><span class="krav-txt">Årsredovisning upprättas enligt ÅRL och ABL</span></div>
+            </div>
+          </div>
+
+          <!-- Lagtext -->
+          <div class="tabpane" data-pane="law">
+            <div class="lagtext-reader">
+              <div class="para"><h4>1 kap. Inledande bestämmelser</h4>Denna lag innehåller bestämmelser om aktiebolag. Bestämmelserna avser bildande av aktiebolag, bolagsordning, aktier samt aktiebok.</div>
+              <div class="para"><h4>7 kap. Bolagsstämma</h4>Aktieägarnas rätt att besluta i bolagets angelägenheter utövas vid bolagsstämman. Bolagsstämman ska hållas inom sex månader från räkenskapsårets utgång.</div>
+              <div class="para"><h4>8 kap. Bolagets ledning</h4>Ett aktiebolag ska ha en styrelse med en eller flera ledamöter. Styrelsen svarar för bolagets organisation och förvaltningen av bolagets angelägenheter.</div>
+            </div>
+            <p style="text-align:center;margin:14px 0 0"><span style="color:var(--accent);cursor:pointer;font-size:13px">Visa fullständig lag →</span></p>
+          </div>
+
+          <!-- Underlag -->
+          <div class="tabpane" data-pane="und">
+            <div class="field-label"><i data-lucide="list-checks" class="lead"></i> Uppgifter <span class="empty-tag" style="margin-left:6px;font-weight:400">inga än</span></div>
+            <div class="field-box empty">Inga uppgifter kopplade till denna lag. Skapa en uppgift →</div>
+
+            <div class="field-label"><i data-lucide="paperclip" class="lead"></i> Länkade filer &amp; dokument</div>
+            <div class="obj-row"><i data-lucide="file-text"></i><span class="name">Bolagsordning_2024.pdf</span><span class="sub">PDF · 240 kB</span></div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- ════════════════ VARIANT C ════════════════ -->
+      <div class="variant-head">
+        <span class="eyebrow">Riktning C</span>
+        <h2 class="variant-title">Vägledd arbetsgång (stepper)</h2>
+        <p class="variant-desc">
+          Panelen blir ett numrerat compliance-flöde med status per steg (klar / pågår / att göra).
+          Lär ut den avsedda ordningen och visar progress på en blick. Störst konceptuellt skifte.
+        </p>
+        <ul class="wins">
+          <li><i data-lucide="check"></i> Synliggör arbetsordningen</li>
+          <li><i data-lucide="check"></i> Status per steg på en blick</li>
+          <li><i data-lucide="check"></i> Bra för nya användare</li>
+        </ul>
+      </div>
+
+      <div class="frame">
+        <div class="frame-bar">
+          <span class="crumb">Er laglista</span><i data-lucide="chevron-right"></i><span class="crumb"><b>SFS 2005:551</b></span>
+          <span class="spacer"></span><i data-lucide="share-2"></i><i data-lucide="more-horizontal"></i><i data-lucide="x"></i>
+        </div>
+        <div class="panel-pad">
+          <h3 class="law-title">Aktiebolagslag (2005:551)</h3>
+          <div class="badges">
+            <span class="pill pill-status"><i class="dot"></i> Ej påbörjad</span>
+            <span class="pill pill-priority"><i data-lucide="flag" class="ic"></i> Medel</span>
+          </div>
+
+          <div style="margin-top:6px">
+            <!-- Step 1 -->
+            <div class="step">
+              <span class="step-node done"><i data-lucide="check"></i></span>
+              <details>
+                <summary>
+                  <div><span class="s-ttl">Förstå lagen</span><p class="s-sub">Lagtext · hur den påverkar oss</p></div>
+                  <span class="s-state state-done">klar <i data-lucide="chevron-down" class="chev"></i></span>
+                </summary>
+                <div class="s-body">
+                  <p style="margin:0 0 8px">Vi är ett aktiebolag och omfattas av reglerna om bolagsstyrning, styrelsens ansvar och årsredovisning.</p>
+                  <span style="color:var(--accent);cursor:pointer;font-size:13px">Läs författningstexten →</span>
+                </div>
+              </details>
+            </div>
+
+            <!-- Step 2 (active, open) -->
+            <div class="step">
+              <span class="step-node active">2</span>
+              <details open>
+                <summary>
+                  <div><span class="s-ttl">Beskriv efterlevnad</span><p class="s-sub">Hur efterlever vi kraven?</p></div>
+                  <span class="s-state state-active">pågår <i data-lucide="chevron-down" class="chev"></i></span>
+                </summary>
+                <div class="s-body">
+                  <div class="field-box empty">Inget skrivet ännu — beskriv hur ni efterlever lagen.</div>
+                </div>
+              </details>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step">
+              <span class="step-node">3</span>
+              <details>
+                <summary>
+                  <div><span class="s-ttl">Kravpunkter</span><p class="s-sub">Bocka av konkreta krav</p></div>
+                  <span class="s-state state-active"><span class="prog"><span class="track"><span class="fill" style="width:33%"></span></span><span class="lbl">1/3</span></span> <i data-lucide="chevron-down" class="chev"></i></span>
+                </summary>
+                <div class="s-body">
+                  <div class="krav-row done"><span class="krav-box done"><i data-lucide="check"></i></span><span class="krav-txt">Registrerad bolagsordning hos Bolagsverket</span></div>
+                  <div class="krav-row"><span class="krav-box"></span><span class="krav-txt">Styrelseprotokoll förs vid varje sammanträde</span></div>
+                  <div class="krav-row"><span class="krav-box"></span><span class="krav-txt">Årsredovisning upprättas enligt ÅRL och ABL</span></div>
+                </div>
+              </details>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="step">
+              <span class="step-node">4</span>
+              <details>
+                <summary>
+                  <div><span class="s-ttl">Åtgärder &amp; bevis</span><p class="s-sub">Uppgifter och länkade filer</p></div>
+                  <span class="s-state state-todo">1 objekt <i data-lucide="chevron-down" class="chev"></i></span>
+                </summary>
+                <div class="s-body">
+                  <div class="obj-row" style="margin-bottom:8px"><i data-lucide="list-checks"></i><span class="name">Inga uppgifter än</span><span class="sub">skapa →</span></div>
+                  <div class="obj-row"><i data-lucide="file-text"></i><span class="name">Bolagsordning_2024.pdf</span><span class="sub">PDF · 240 kB</span></div>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="note">
+            <b>Obs:</b> Aktivitet (kommentarer/historik) flyttas lämpligen till höger panel eller en
+            egen flik i denna variant, så flödet på vänster sida förblir rent.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <script>
+      lucide.createIcons();
+      // Tab switching (Variant B)
+      document.querySelectorAll('[data-tabs]').forEach((root) => {
+        root.querySelectorAll('.tab').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const id = btn.dataset.tab;
+            root.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b === btn));
+            root.querySelectorAll('.tabpane').forEach((p) => p.classList.toggle('active', p.dataset.pane === id));
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

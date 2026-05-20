@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Split-screen login + förändringslogg (prototype)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+      /* Real brand fonts — loaded straight from /public like the other prototypes. */
+      @font-face {
+        font-family: 'Safiro';
+        src:
+          url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'),
+          url('../public/fonts/safiro-medium-webfont.woff') format('woff');
+        font-weight: 500; font-style: normal; font-display: swap;
+      }
+      @font-face {
+        font-family: 'Google Sans Flex';
+        src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype');
+        font-weight: 100 900; font-style: normal; font-display: swap;
+      }
+
+      /* Light-mode tokens — hex approximations of globals.css :root (warm palette). */
+      :root {
+        --background:        #fbfaf5;
+        --foreground:        #1c1916;
+        --card:              #fdfcfa;
+        --primary:           #231f1a;
+        --primary-fg:        #fbfaf5;
+        --secondary:         #f4f1eb;
+        --muted:             #f1eee8;
+        --muted-fg:          #7c756b;
+        --accent:            #efebe3;
+        --border:            #e5e0d8;
+        --input-border:      #ddd6cc;
+        --ring:              #231f1a;
+        --destructive:       #e0463b;
+        --section-warm:      #f6f1e7;
+        --sage:              #4a9b6e;   /* chart-2 */
+        --amber:             #c79433;   /* chart-1, darkened for light bg */
+        --info:              #2552d6;
+
+        /* Left panel — barely-warmer cream than the form side, like the v3 hero
+           background. The split reads from a hairline + a whisper of warmth, not
+           a colored slab. */
+        --panel:             #f4efe4;   /* soft warm cream */
+        --panel-deep:        #efe8da;   /* a touch deeper toward the corner */
+        --panel-fg:          #221d16;   /* warm near-black ink */
+        --panel-dim:         #6f685c;   /* warm muted */
+        --panel-dimmer:      #968d7d;
+        --panel-hair:        rgba(34, 29, 22, 0.10);
+        --panel-line:        rgba(34, 29, 22, 0.13);
+
+        /* Near-monochrome, like the v3 hero: warm ink + grays, with a single
+           amber accent reserved for the one "live" ping. Nothing else colored. */
+        --amber-600:         #d97706;   /* the only accent on the whole panel */
+      }
+
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; height: 100%; }
+      body {
+        font-family: 'Google Sans Flex', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        color: var(--foreground);
+        background:
+          radial-gradient(1100px 700px at 78% 18%, #f3ecdd 0%, transparent 60%),
+          radial-gradient(900px 600px at 12% 92%, #efe7d6 0%, transparent 55%),
+          var(--section-warm);
+        -webkit-font-smoothing: antialiased;
+        min-height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 24px;
+      }
+      .font-safiro { font-family: 'Safiro', system-ui, sans-serif; }
+
+      /* ---- The floating split card ---- */
+      .auth-card {
+        width: 100%;
+        max-width: 1120px;
+        min-height: 680px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 1.08fr 1fr;
+        box-shadow:
+          0 1px 0 rgba(255,255,255,0.7) inset,
+          0 28px 70px -32px rgba(40, 30, 16, 0.40),
+          0 8px 24px -16px rgba(40, 30, 16, 0.28);
+      }
+
+      /* ============ LEFT: changelog panel ============ */
+      .panel {
+        position: relative;
+        border-right: 1px solid var(--border);
+        /* Whisper-soft warm gradient only — a light top-right wash and a hair
+           more warmth in the bottom corner. No colored glow (matches the v3
+           hero's near-flat warm-cream field). */
+        background:
+          radial-gradient(700px 520px at 84% 4%, rgba(255, 255, 255, 0.6) 0%, transparent 58%),
+          radial-gradient(760px 660px at 98% 104%, rgba(231, 221, 199, 0.55) 0%, transparent 60%),
+          linear-gradient(160deg, var(--panel) 0%, var(--panel-deep) 100%);
+        color: var(--panel-fg);
+        padding: 40px 44px 36px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      /* One soft, oversized blob for organic depth — a Laglig "mesh" gesture. */
+      .panel::after {
+        content: "";
+        position: absolute;
+        width: 460px; height: 460px;
+        right: -160px; bottom: -180px;
+        border-radius: 50% 46% 54% 48%;
+        background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.5), transparent 62%);
+        filter: blur(2px);
+        pointer-events: none;
+      }
+      .panel > * { position: relative; z-index: 1; }
+
+      /* Black wordmark on the light panel (logo asset is white → flip to ink).
+         align-self:flex-start stops the column-flex from stretching the img. */
+      .panel__brand {
+        width: 104px; height: auto; display: block;
+        align-self: flex-start;
+        filter: brightness(0);
+      }
+
+      .panel__head { margin-top: 44px; }
+      .eyebrow {
+        display: inline-flex; align-items: center; gap: 7px;
+        font-size: 11px; font-weight: 600;
+        letter-spacing: 0.14em; text-transform: uppercase;
+        color: var(--panel-dim);
+      }
+      /* Amber ping — same gesture as the v3 hero's "10 000+ lagar" callout. */
+      .eyebrow .dot-pulse {
+        width: 7px; height: 7px; border-radius: 999px; background: var(--amber-600);
+        box-shadow: 0 0 0 0 rgba(245,158,11,0.6);
+        animation: pulse 2.6s ease-out infinite;
+      }
+      @keyframes pulse {
+        0%   { box-shadow: 0 0 0 0 rgba(245,158,11,0.5); }
+        70%  { box-shadow: 0 0 0 8px rgba(245,158,11,0); }
+        100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+      }
+      .panel__title {
+        font-family: 'Safiro', system-ui, sans-serif;
+        font-weight: 500;
+        font-size: 30px;
+        line-height: 1.12;
+        letter-spacing: -0.01em;
+        margin: 12px 0 6px;
+      }
+      .panel__sub { color: var(--panel-dim); font-size: 14px; max-width: 38ch; }
+
+      /* ---- shadcn-style vertical Timeline ---- */
+      .timeline {
+        list-style: none;
+        margin: 30px 0 0;
+        padding: 0;
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 18px), transparent 100%);
+        mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 18px), transparent 100%);
+        scrollbar-width: thin;
+        scrollbar-color: var(--panel-line) transparent;
+      }
+      .timeline::-webkit-scrollbar { width: 6px; }
+      .timeline::-webkit-scrollbar-thumb { background: var(--panel-line); border-radius: 999px; }
+
+      .t-item {
+        position: relative;
+        padding: 0 0 22px 30px;
+        opacity: 0;
+        animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      }
+      .t-item:last-child { padding-bottom: 4px; }
+      /* connecting line between dots */
+      .t-item::before {
+        content: "";
+        position: absolute;
+        left: 5px; top: 5px; bottom: -5px;
+        width: 1.5px;
+        background: var(--panel-line);
+      }
+      .t-item:last-child::before { display: none; }
+      /* Uniform monochrome ink dots — the pill label carries the category,
+         not colour. (No amber here; that's reserved for the eyebrow ping.) */
+      .t-dot {
+        position: absolute;
+        left: 0; top: 3px;
+        width: 10px; height: 10px;
+        border-radius: 999px;
+        background: var(--panel-fg);
+        box-shadow: 0 0 0 4px rgba(34,29,22,0.05);
+      }
+
+      .t-meta { display: flex; align-items: center; gap: 9px; margin-bottom: 4px; }
+      .t-date {
+        font-size: 11.5px;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.02em;
+        color: var(--panel-dimmer);
+      }
+      /* Uniform neutral outline pills — monochrome, the label carries the type.
+         (v3 restraint: amber is reserved for the dots, not sprayed on tags.) */
+      .tag {
+        font-size: 10.5px; font-weight: 600;
+        letter-spacing: 0.06em; text-transform: uppercase;
+        padding: 2px 9px; border-radius: 999px;
+        color: var(--panel-dim);
+        background: rgba(34, 29, 22, 0.02);
+        border: 1px solid var(--panel-line);
+      }
+
+      .t-title { font-size: 14.5px; font-weight: 600; margin: 0 0 3px; color: var(--panel-fg); }
+      .t-desc  { font-size: 13px; color: var(--panel-dim); margin: 0; max-width: 46ch; }
+
+      .panel__foot {
+        margin-top: 22px;
+        padding-top: 18px;
+        border-top: 1px solid var(--panel-hair);
+        display: flex; align-items: center; justify-content: space-between;
+      }
+      .panel__foot .ver { font-size: 12px; color: var(--panel-dimmer); }
+      .see-all {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-size: 13px; font-weight: 600; color: var(--panel-fg);
+        text-decoration: none; opacity: 0.9;
+        transition: gap 0.18s ease, opacity 0.18s ease;
+      }
+      .see-all:hover { opacity: 1; gap: 9px; }
+      .see-all svg { width: 15px; height: 15px; }
+
+      /* ============ RIGHT: login form ============ */
+      .form-wrap {
+        display: flex; align-items: center; justify-content: center;
+        padding: 48px 56px;
+      }
+      .form { width: 100%; max-width: 372px; }
+      .form__h1 {
+        font-family: 'Safiro', system-ui, sans-serif;
+        font-weight: 500;
+        font-size: 30px;
+        letter-spacing: -0.01em;
+        margin: 0 0 6px;
+        color: var(--foreground);
+      }
+      .form__sub { color: var(--muted-fg); font-size: 14.5px; margin: 0 0 28px; }
+
+      .field { margin-bottom: 16px; }
+      .field label {
+        display: block; font-size: 13px; font-weight: 500;
+        margin-bottom: 7px; color: var(--foreground);
+      }
+      .input-shell { position: relative; }
+      .input {
+        width: 100%; height: 44px;
+        padding: 0 14px;
+        background: #fff;
+        border: 1px solid var(--input-border);
+        border-radius: 10px;
+        font-size: 14px; color: var(--foreground);
+        outline: none;
+        transition: border-color 0.16s ease, box-shadow 0.16s ease;
+      }
+      .input::placeholder { color: #b3a99c; }
+      .input:focus {
+        border-color: var(--ring);
+        box-shadow: 0 0 0 3px rgba(35, 31, 26, 0.10);
+      }
+      .input.has-trail { padding-right: 44px; }
+      .trail-btn {
+        position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+        height: 32px; width: 32px;
+        display: flex; align-items: center; justify-content: center;
+        border: 0; background: transparent; cursor: pointer;
+        color: var(--muted-fg); border-radius: 8px;
+      }
+      .trail-btn:hover { background: var(--muted); color: var(--foreground); }
+      .trail-btn svg { width: 17px; height: 17px; }
+
+      .row-between { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 22px; }
+      .check { display: inline-flex; align-items: center; gap: 9px; cursor: pointer; user-select: none; }
+      .check input { position: absolute; opacity: 0; width: 0; height: 0; }
+      .check__box {
+        width: 17px; height: 17px; border-radius: 5px;
+        border: 1.5px solid var(--input-border); background: #fff;
+        display: inline-flex; align-items: center; justify-content: center;
+        transition: all 0.14s ease;
+      }
+      .check__box svg { width: 12px; height: 12px; color: var(--primary-fg); opacity: 0; }
+      .check input:checked + .check__box { background: var(--primary); border-color: var(--primary); }
+      .check input:checked + .check__box svg { opacity: 1; }
+      .check span { font-size: 13.5px; color: var(--foreground); }
+      .link { font-size: 13.5px; font-weight: 500; color: var(--foreground); text-decoration: none; }
+      .link:hover { color: var(--muted-fg); }
+
+      .btn-primary {
+        width: 100%; height: 46px;
+        background: var(--primary); color: var(--primary-fg);
+        border: 0; border-radius: 10px;
+        font-size: 14.5px; font-weight: 600; cursor: pointer;
+        box-shadow: 0 10px 24px -10px rgba(35, 31, 26, 0.45);
+        transition: transform 0.12s ease, box-shadow 0.16s ease, background 0.16s ease;
+      }
+      .btn-primary:hover { box-shadow: 0 14px 30px -10px rgba(35, 31, 26, 0.55); transform: translateY(-1px); }
+      .btn-primary:active { transform: translateY(0); }
+
+      .btn-google {
+        width: 100%; height: 46px;
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        background: #fff; color: var(--foreground);
+        border: 1px solid var(--input-border); border-radius: 10px;
+        font-size: 14px; font-weight: 500; cursor: pointer;
+        transition: background 0.14s ease, border-color 0.14s ease;
+      }
+      .btn-google:hover { background: var(--secondary); border-color: var(--border); }
+      .btn-google svg { width: 18px; height: 18px; }
+
+      .divider { display: flex; align-items: center; gap: 14px; margin: 20px 0; }
+      .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+      .divider span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted-fg); }
+
+      .signup-line { text-align: center; font-size: 14px; color: var(--muted-fg); margin: 26px 0 0; }
+      .signup-line a { color: var(--foreground); font-weight: 600; text-decoration: none; }
+      .signup-line a:hover { text-decoration: underline; }
+
+      .terms { text-align: center; font-size: 11.5px; line-height: 1.6; color: var(--muted-fg); margin: 22px 0 0; }
+      .terms a { color: var(--muted-fg); text-decoration: underline; }
+
+      /* entrance */
+      @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+      .form { animation: rise 0.6s cubic-bezier(0.22,1,0.36,1) both; }
+
+      /* annotation caption */
+      .caption {
+        position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%);
+        display: inline-flex; align-items: center; gap: 8px;
+        font-size: 12px; color: var(--muted-fg);
+        background: rgba(255,255,255,0.7); backdrop-filter: blur(6px);
+        border: 1px dashed var(--border); border-radius: 999px;
+        padding: 6px 14px;
+      }
+      .caption b { color: var(--foreground); font-weight: 600; }
+
+      /* ---- responsive: collapse to single-column form under lg ---- */
+      @media (max-width: 980px) {
+        body { padding: 24px 16px; align-items: stretch; }
+        .auth-card { grid-template-columns: 1fr; max-width: 440px; min-height: 0; margin: auto; }
+        .panel { display: none; }
+        .form-wrap { padding: 40px 32px; }
+        .caption { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="auth-card">
+      <!-- ============ LEFT: changelog / version history ============ -->
+      <aside class="panel">
+        <img class="panel__brand" src="../public/images/logo-final.png" alt="Laglig.se" />
+
+        <div class="panel__head">
+          <span class="eyebrow"><span class="dot-pulse"></span> Förändringslogg</span>
+          <h2 class="panel__title">Nytt i Laglig</h2>
+          <p class="panel__sub">Vi förbättrar plattformen varje vecka. Här är de senaste uppdateringarna.</p>
+        </div>
+
+        <ol class="timeline">
+          <li class="t-item" style="animation-delay: 0.05s">
+            <span class="t-dot new"></span>
+            <div class="t-meta">
+              <time class="t-date">20 maj 2026</time>
+              <span class="tag new">Nyhet</span>
+            </div>
+            <h4 class="t-title">AI-sammanfattning av lagändringar</h4>
+            <p class="t-desc">Få en kort, källhänvisad sammanfattning av vad varje ny föreskrift faktiskt innebär för er verksamhet.</p>
+          </li>
+
+          <li class="t-item" style="animation-delay: 0.12s">
+            <span class="t-dot improve"></span>
+            <div class="t-meta">
+              <time class="t-date">12 maj 2026</time>
+              <span class="tag improve">Förbättring</span>
+            </div>
+            <h4 class="t-title">Snabbare laglistor</h4>
+            <p class="t-desc">Laddningstiden för stora laglistor har mer än halverats — även med tusentals krav.</p>
+          </li>
+
+          <li class="t-item" style="animation-delay: 0.19s">
+            <span class="t-dot new"></span>
+            <div class="t-meta">
+              <time class="t-date">5 maj 2026</time>
+              <span class="tag new">Nyhet</span>
+            </div>
+            <h4 class="t-title">Efterlevnadspartnern i chatten</h4>
+            <p class="t-desc">Ställ frågor om era krav direkt till AI-partnern och få svar med hänvisning till rätt paragraf.</p>
+          </li>
+
+          <li class="t-item" style="animation-delay: 0.26s">
+            <span class="t-dot improve"></span>
+            <div class="t-meta">
+              <time class="t-date">28 apr 2026</time>
+              <span class="tag improve">Förbättring</span>
+            </div>
+            <h4 class="t-title">Versionshistorik på uppladdade filer</h4>
+            <p class="t-desc">Ladda upp underlag per krav och bläddra tillbaka till tidigare versioner när som helst.</p>
+          </li>
+
+          <li class="t-item" style="animation-delay: 0.33s">
+            <span class="t-dot fix"></span>
+            <div class="t-meta">
+              <time class="t-date">20 apr 2026</time>
+              <span class="tag fix">Åtgärdat</span>
+            </div>
+            <h4 class="t-title">Export till Excel</h4>
+            <p class="t-desc">Rättat ett fel där datumkolumner ibland exporterades i fel format vid stora urval.</p>
+          </li>
+        </ol>
+
+        <div class="panel__foot">
+          <span class="ver">Version 2.14</span>
+          <a class="see-all" href="#">Se alla uppdateringar <i data-lucide="arrow-right"></i></a>
+        </div>
+      </aside>
+
+      <!-- ============ RIGHT: login form ============ -->
+      <section class="form-wrap">
+        <form class="form" onsubmit="return false">
+          <h1 class="form__h1">Välkommen tillbaka</h1>
+          <p class="form__sub">Logga in för att fortsätta till Laglig.se</p>
+
+          <button type="button" class="btn-google">
+            <svg viewBox="0 0 48 48" aria-hidden="true">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            Fortsätt med Google
+          </button>
+
+          <div class="divider"><span>eller</span></div>
+
+          <div class="field">
+            <label for="email">E-postadress</label>
+            <div class="input-shell">
+              <input class="input" id="email" type="email" placeholder="namn@foretag.se" autocomplete="email" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="password">Lösenord</label>
+            <div class="input-shell">
+              <input class="input has-trail" id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+              <button type="button" class="trail-btn" id="togglePw" aria-label="Visa lösenord">
+                <i data-lucide="eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="row-between">
+            <label class="check">
+              <input type="checkbox" id="remember" />
+              <span class="check__box"><i data-lucide="check"></i></span>
+              <span>Kom ihåg min e-post</span>
+            </label>
+            <a class="link" href="#">Glömt lösenordet?</a>
+          </div>
+
+          <button type="submit" class="btn-primary">Logga in</button>
+
+          <p class="signup-line">Inget konto? <a href="#">Skapa ett konto</a></p>
+
+          <p class="terms">
+            Genom att logga in accepterar du Laglig.se:s
+            <a href="#">Användarvillkor</a> och <a href="#">Integritetspolicy</a>.
+          </p>
+        </form>
+      </section>
+    </main>
+
+    <div class="caption">
+      <b>Prototyp</b> · split-screen login · timeline = shadcn-style <b>Timeline</b>-komponent
+    </div>
+
+    <script>
+      lucide.createIcons();
+
+      // password show / hide
+      const pw = document.getElementById('password');
+      const toggle = document.getElementById('togglePw');
+      toggle.addEventListener('click', () => {
+        const show = pw.type === 'password';
+        pw.type = show ? 'text' : 'password';
+        toggle.innerHTML = show
+          ? '<i data-lucide="eye-off"></i>'
+          : '<i data-lucide="eye"></i>';
+        lucide.createIcons();
+      });
+    </script>
+  </body>
+</html>
