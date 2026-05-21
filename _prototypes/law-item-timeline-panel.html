@@ -372,6 +372,97 @@
   .callout.ok strong { color: hsl(var(--t-success-fg)); }
 
   @media (max-width: 900px) { .scene { padding: 12px; } .modal { width: 100%; height: calc(100vh - 130px); } .callouts { grid-template-columns: 1fr; } }
+
+  /* ==================================================================
+     AI-sammanfattning packaging variants — 2026-05-21
+     Goal: today the AI summary is a giant blue block that dwarfs the
+     action surface below it. Show four discreet alternatives so we can
+     pick one rather than letting the current treatment stand by default.
+     ================================================================== */
+  .ai-section { max-width: min(94vw, 1240px); margin: 48px auto 0; padding: 0 4px; }
+  .ai-section__head { margin-bottom: 20px; }
+  .ai-section__head h2 { margin: 0 0 6px; font-size: 22px; letter-spacing: -0.01em; color: hsl(var(--foreground)); }
+  .ai-section__head p { margin: 0; font-size: 13.5px; color: hsl(var(--muted-foreground)); max-width: 720px; line-height: 1.55; }
+  .ai-tag { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 7px; border-radius: 5px; background: hsl(var(--accent)); color: hsl(var(--muted-foreground)); font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; margin-right: 8px; }
+  .ai-tag--current { background: hsl(214 30% 22%); color: hsl(214 80% 75%); }
+  .ai-tag--rec { background: hsl(152 30% 18%); color: hsl(152 70% 70%); }
+
+  /* Reference (current) — the giant blue block */
+  .ai-ref { border: 1px solid hsl(var(--border)); border-radius: 12px; background: hsl(var(--card)); padding: 18px 18px 20px; margin-bottom: 28px; }
+  .ai-ref h3 { margin: 0 0 12px; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: hsl(var(--muted-foreground)); display: flex; align-items: center; }
+  .ai-mock { background: hsl(var(--background)); border-radius: 8px; padding: 16px 18px; }
+  .ai-mock__title { font-family: var(--font-display); font-weight: 500; font-size: 19px; margin: 0 0 10px; letter-spacing: -0.005em; }
+  .ai-mock__badges { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+  .ai-mock__pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; }
+  .ai-mock__pill .dot { width: 6px; height: 6px; border-radius: 999px; background: currentColor; opacity: .7; }
+  .ai-mock__pill--status { background: hsl(0 0% 17%); color: hsl(0 0% 80%); }
+  .ai-mock__pill--prio { background: hsl(var(--t-warning-bg)); color: hsl(var(--t-warning-fg)); }
+  .ai-mock__group { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-top: 1px solid hsl(var(--border)); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: hsl(var(--muted-foreground)); }
+  .ai-mock__group .line { flex: 1; height: 1px; background: hsl(var(--border)); }
+  .ai-mock__group .chev { width: 14px; height: 14px; color: hsl(var(--muted-foreground)); }
+
+  /* Today's giant block */
+  .ai-blob {
+    border: 1px solid hsl(214 40% 35%);
+    background: hsl(214 30% 14%);
+    color: hsl(214 80% 86%);
+    border-left: 3px solid hsl(214 80% 60%);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    font-size: 12.5px;
+    line-height: 1.55;
+  }
+  .ai-blob strong { color: hsl(214 90% 90%); }
+
+  /* Variants grid */
+  .ai-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  @media (max-width: 980px) { .ai-grid { grid-template-columns: 1fr; } }
+  .ai-card { border: 1px solid hsl(var(--border)); border-radius: 12px; background: hsl(var(--card)); padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+  .ai-card__head { display: flex; align-items: center; gap: 4px; }
+  .ai-card__head h3 { margin: 0; font-size: 14.5px; font-weight: 500; color: hsl(var(--foreground)); }
+  .ai-card__head .rec-tag { margin-left: 6px; }
+  .ai-card__body { background: hsl(var(--background)); border-radius: 8px; padding: 16px; min-height: 220px; position: relative; }
+  .ai-card__notes { font-size: 12.5px; color: hsl(var(--muted-foreground)); line-height: 1.55; margin: 0; }
+  .ai-card__notes b { color: hsl(0 0% 80%); font-weight: 500; }
+
+  /* Variant B — AI sparkle chip + popover */
+  .ai-spark-chip { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px 2px 6px; border-radius: 999px; font-size: 11.5px; color: hsl(214 80% 80%); background: hsl(214 30% 18%); border: 1px solid hsl(214 40% 30%); cursor: default; }
+  .ai-spark-chip svg { width: 12px; height: 12px; }
+  .ai-popover { position: absolute; top: 56px; left: 16px; right: 16px; background: hsl(var(--popover)); border: 1px solid hsl(var(--border)); border-radius: 10px; padding: 12px 14px; box-shadow: 0 12px 28px hsl(0 0% 0% / 0.55); }
+  .ai-popover__hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .ai-popover__hd .lbl { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: hsl(var(--muted-foreground)); display: inline-flex; align-items: center; gap: 5px; }
+  .ai-popover__hd .lbl svg { width: 11px; height: 11px; color: hsl(214 80% 75%); }
+  .ai-popover__body { font-size: 12.5px; line-height: 1.6; color: hsl(0 0% 80%); max-height: 130px; overflow: hidden; position: relative; }
+  .ai-popover__body::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 32px; background: linear-gradient(180deg, transparent, hsl(var(--popover))); pointer-events: none; }
+  .ai-popover__foot { display: flex; justify-content: flex-end; margin-top: 8px; }
+  .ai-popover__more { background: none; border: 0; padding: 0; color: hsl(214 80% 80%); font-size: 12px; cursor: pointer; }
+
+  /* Variant C — collapsible inline */
+  .ai-toggle { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 6px; background: transparent; border: 1px dashed hsl(var(--border)); color: hsl(var(--muted-foreground)); font-size: 11.5px; cursor: default; transition: background 120ms; }
+  .ai-toggle:hover { background: hsl(var(--accent)); color: hsl(var(--foreground)); }
+  .ai-toggle svg { width: 11px; height: 11px; color: hsl(214 80% 75%); }
+  .ai-toggle .chev { width: 11px; height: 11px; color: hsl(var(--muted-foreground)); transition: transform 200ms; }
+  .ai-toggle--open .chev { transform: rotate(180deg); }
+  .ai-inline { margin-top: 10px; padding: 12px 14px; border-radius: 8px; background: hsl(0 0% 12%); border-left: 2px solid hsl(214 60% 45%); font-size: 12.5px; line-height: 1.55; color: hsl(0 0% 80%); }
+
+  /* Variant D — right-panel snabblänk */
+  .ai-snab { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 10px; padding: 14px; position: absolute; right: 16px; top: 16px; width: 220px; }
+  .ai-snab h4 { margin: 0 0 10px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: hsl(var(--muted-foreground)); }
+  .ai-snab__item { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border-radius: 6px; background: hsl(0 0% 12%); font-size: 12px; color: hsl(0 0% 82%); margin-bottom: 4px; border: 1px solid transparent; }
+  .ai-snab__item--ai { color: hsl(214 80% 80%); border-color: hsl(214 30% 28%); background: hsl(214 25% 13%); }
+  .ai-snab__item svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+  /* Variant D — left side mini-modal scaled down so right rail fits */
+  .ai-card--with-rail .ai-card__body { padding-right: 250px; }
+
+  /* Variant A — minimal title area */
+  .ai-empty-note { margin-top: 16px; padding: 10px 12px; border-radius: 6px; border: 1px dashed hsl(var(--border)); color: hsl(var(--muted-foreground)); font-size: 11.5px; }
+
+  @media (max-width: 720px) {
+    .ai-card--with-rail .ai-card__body { padding-right: 16px; }
+    .ai-snab { position: static; width: 100%; margin-top: 14px; }
+  }
 </style>
 </head>
 <body>
@@ -754,6 +845,193 @@
   <div class="callout"><strong>2 · En typ-signal</strong>Ikonbrickan bär typ, pillret bär utfall, och tidslinjens prick är en neutral trådmarkör. Prova "Kompakt vy" (ikonen i panelhuvudet) för tätare rader.</div>
   <div class="callout ok"><strong>3 · Gles vy</strong>Växla "Innehåll → Ny lag" uppe till vänster för att se hur en nyss tillagd lag ser ut: bara startpunkten + en vänlig instruktion.</div>
 </div>
+
+<!-- ============================================================== -->
+<!-- AI-sammanfattning packaging variants                            -->
+<!-- ============================================================== -->
+<section class="ai-section">
+  <header class="ai-section__head">
+    <h2 class="font-safiro">Packaging the AI-sammanfattning</h2>
+    <p>
+      Today the AI-sammanfattning is rendered as a tall blue callout
+      between the title and the section accordions — visually the heaviest
+      thing in the modal, even though it's background context rather than
+      something the user needs to act on. Four ways to make it
+      discreet-by-default while keeping it one click away.
+    </p>
+  </header>
+
+  <!-- Today — for visual reference -->
+  <div class="ai-ref">
+    <h3><span class="ai-tag ai-tag--current">Idag</span>Hur det ser ut nu</h3>
+    <div class="ai-mock">
+      <h4 class="ai-mock__title">Arbetsmiljölag (1977:1160)</h4>
+      <div class="ai-mock__badges">
+        <span class="ai-mock__pill ai-mock__pill--status"><span class="dot"></span>Ej påbörjad</span>
+        <span class="ai-mock__pill ai-mock__pill--prio">⚑ Medel</span>
+      </div>
+      <div class="ai-blob">
+        <strong>AI-sammanfattning:</strong> Arbetsmiljölagen (AML, 1977:1160) är en ramlag som syftar till att förebygga ohälsa och olycksfall i arbetet samt att uppnå en god arbetsmiljö. Lagen gäller varje verksamhet där arbetstagare utför arbete för en arbetsgivares räkning och likställer även bland annat studerande och totalförsvarspliktiga med arbetstagare. Centrala bestämmelser rör arbetsgivarens skyldighet att bedriva systematiskt arbetsmiljöarbete, utreda arbetsskador, anpassa arbetsförhållandena till individuella förutsättningar… <em>(15 rader till)</em>
+      </div>
+      <div class="ai-mock__group"><span>EFTERLEVNAD</span><span class="line"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="ai-mock__group"><span>REFERENS</span><span class="line"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="ai-mock__group"><span>UPPGIFTER &amp; FILER</span><span class="line"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+    </div>
+  </div>
+
+  <!-- 4 variants -->
+  <div class="ai-grid">
+
+    <!-- A — Drop entirely -->
+    <article class="ai-card">
+      <header class="ai-card__head">
+        <span class="ai-tag">A</span>
+        <h3>Ta bort helt</h3>
+      </header>
+      <div class="ai-card__body">
+        <div class="ai-mock">
+          <h4 class="ai-mock__title">Arbetsmiljölag (1977:1160)</h4>
+          <div class="ai-mock__badges">
+            <span class="ai-mock__pill ai-mock__pill--status"><span class="dot"></span>Ej påbörjad</span>
+            <span class="ai-mock__pill ai-mock__pill--prio">⚑ Medel</span>
+          </div>
+          <div class="ai-mock__group"><span>EFTERLEVNAD</span><span class="line"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="ai-mock__group"><span>REFERENS</span><span class="line"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="ai-mock__group"><span>UPPGIFTER &amp; FILER</span><span class="line"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="ai-empty-note">Användare som vill ha sammanfattning frågar Lexa direkt: "Sammanfatta lagen".</div>
+        </div>
+      </div>
+      <p class="ai-card__notes">
+        <b>Pro:</b> Maximalt fokus på det användaren ska göra (efterlevnad,
+        kravpunkter, uppgifter). En klick mindre att scrolla förbi.<br>
+        <b>Con:</b> Förlorar en snabb orientering för nyligen tillagda lagar
+        där användaren inte hunnit läsa sig in. Lexa-knappen finns kvar som
+        utväg men det är ett mer aktivt steg.
+      </p>
+    </article>
+
+    <!-- B — AI sparkle chip + popover -->
+    <article class="ai-card">
+      <header class="ai-card__head">
+        <span class="ai-tag">B</span>
+        <h3>Diskret AI-chip i badge-raden</h3>
+      </header>
+      <div class="ai-card__body">
+        <div class="ai-mock">
+          <h4 class="ai-mock__title">Arbetsmiljölag (1977:1160)</h4>
+          <div class="ai-mock__badges">
+            <span class="ai-mock__pill ai-mock__pill--status"><span class="dot"></span>Ej påbörjad</span>
+            <span class="ai-mock__pill ai-mock__pill--prio">⚑ Medel</span>
+            <span class="ai-spark-chip">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2"/><path d="M12 19v2"/><path d="M5 12H3"/><path d="M21 12h-2"/><path d="M18.36 5.64l-1.41 1.41"/><path d="M7.05 16.95l-1.41 1.41"/><path d="M18.36 18.36l-1.41-1.41"/><path d="M7.05 7.05L5.64 5.64"/></svg>
+              Sammanfattning
+            </span>
+          </div>
+          <div class="ai-mock__group"><span>EFTERLEVNAD</span><span class="line"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="ai-mock__group"><span>REFERENS</span><span class="line"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="ai-mock__group"><span>UPPGIFTER &amp; FILER</span><span class="line"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <!-- Popover open (click state) -->
+          <div class="ai-popover">
+            <div class="ai-popover__hd">
+              <span class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2"/><path d="M12 19v2"/><path d="M5 12H3"/><path d="M21 12h-2"/></svg>AI-sammanfattning</span>
+            </div>
+            <div class="ai-popover__body">
+              Arbetsmiljölagen (AML, 1977:1160) är en ramlag som syftar till att förebygga ohälsa och olycksfall i arbetet samt att uppnå en god arbetsmiljö. Lagen gäller varje verksamhet där arbetstagare utför arbete för en arbetsgivares räkning…
+            </div>
+            <div class="ai-popover__foot">
+              <button class="ai-popover__more">Öppna i Lexa →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="ai-card__notes">
+        <b>Pro:</b> Sammanfattningen är synligt tillgänglig (chipet säger
+        "den finns") men kostar bara en rad i badge-raden. Popover är fritt
+        skalbar — kort eller lång, alltid samma chrome.<br>
+        <b>Con:</b> Chip-pattern kan tappas i alla andra pills. Popover
+        läggs ovanpå innehållet snarare än vid sidan om.
+      </p>
+    </article>
+
+    <!-- C — Collapsible inline -->
+    <article class="ai-card">
+      <header class="ai-card__head">
+        <span class="ai-tag">C</span>
+        <h3>"Visa AI-sammanfattning ▾" — fällbar inline <span class="ai-tag ai-tag--rec rec-tag">Rekommenderad</span></h3>
+      </header>
+      <div class="ai-card__body">
+        <div class="ai-mock">
+          <h4 class="ai-mock__title">Arbetsmiljölag (1977:1160)</h4>
+          <div class="ai-mock__badges">
+            <span class="ai-mock__pill ai-mock__pill--status"><span class="dot"></span>Ej påbörjad</span>
+            <span class="ai-mock__pill ai-mock__pill--prio">⚑ Medel</span>
+            <span class="ai-toggle ai-toggle--open">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2"/><path d="M12 19v2"/><path d="M5 12H3"/><path d="M21 12h-2"/></svg>
+              Visa AI-sammanfattning
+              <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </div>
+          <div class="ai-inline">
+            Arbetsmiljölagen (AML, 1977:1160) är en ramlag som syftar till att förebygga ohälsa och olycksfall i arbetet samt att uppnå en god arbetsmiljö. Lagen gäller varje verksamhet där arbetstagare utför arbete för en arbetsgivares räkning…
+          </div>
+          <div class="ai-mock__group"><span>EFTERLEVNAD</span><span class="line"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="ai-mock__group"><span>REFERENS</span><span class="line"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+        </div>
+      </div>
+      <p class="ai-card__notes">
+        <b>Pro:</b> Default-stängd → modalen öppnas direkt på det actionable.
+        Kompakt pill mellan badges. Fortfarande tydligt vad det är när
+        användaren vill ha det. Lägger noll vertikalt utrymme när stängd.<br>
+        <b>Con:</b> När öppen tar den fortfarande utrymme — men det är ett
+        aktivt val, inte default.
+      </p>
+    </article>
+
+    <!-- D — Right-panel Snabblänk -->
+    <article class="ai-card ai-card--with-rail">
+      <header class="ai-card__head">
+        <span class="ai-tag">D</span>
+        <h3>Flytta till Snabblänkar i högerpanelen</h3>
+      </header>
+      <div class="ai-card__body">
+        <div class="ai-mock">
+          <h4 class="ai-mock__title">Arbetsmiljölag (1977:1160)</h4>
+          <div class="ai-mock__badges">
+            <span class="ai-mock__pill ai-mock__pill--status"><span class="dot"></span>Ej påbörjad</span>
+            <span class="ai-mock__pill ai-mock__pill--prio">⚑ Medel</span>
+          </div>
+          <div class="ai-mock__group"><span>EFTERLEVNAD</span><span class="line"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="ai-mock__group"><span>REFERENS</span><span class="line"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+          <div class="ai-mock__group"><span>UPPGIFTER &amp; FILER</span><span class="line"></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+        </div>
+        <div class="ai-snab">
+          <h4>Snabblänkar</h4>
+          <div class="ai-snab__item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Visa fullständig lag
+          </div>
+          <div class="ai-snab__item ai-snab__item--ai">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2"/><path d="M12 19v2"/><path d="M5 12H3"/><path d="M21 12h-2"/><path d="M18.36 5.64l-1.41 1.41"/><path d="M7.05 16.95l-1.41 1.41"/></svg>
+            AI-sammanfattning
+          </div>
+          <div class="ai-snab__item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13a3 3 0 0 0 3 3h7"/></svg>
+            Fråga Lexa om lagen
+          </div>
+        </div>
+      </div>
+      <p class="ai-card__notes">
+        <b>Pro:</b> Helt borta från huvudflödet. Hamnar bland övriga
+        "background context"-länkar där det semantiskt hör hemma.<br>
+        <b>Con:</b> Höger-panelen blir längre, och länken är mindre
+        upptäckbar än ett inline-element nära titeln. Klick öppnar troligen
+        en popover eller liten drawer — extra interaktion utan stor vinst
+        jämfört med variant C.
+      </p>
+    </article>
+  </div>
+</section>
+
 <div style="height: 36px;"></div>
 
 <script>
