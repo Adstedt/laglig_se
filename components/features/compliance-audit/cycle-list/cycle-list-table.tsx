@@ -17,7 +17,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { sv } from 'date-fns/locale'
-import { Plus } from 'lucide-react'
+import { Plus, ClipboardCheck } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -257,24 +257,34 @@ function EmptyState({
   canCreate: boolean
 }) {
   const isActiveFilter = filter === 'aktiva'
+  if (isActiveFilter) {
+    return (
+      <SharedEmptyState
+        className="rounded-md border"
+        icon={
+          <SharedEmptyState.Icon>
+            <ClipboardCheck className="h-8 w-8 text-muted-foreground" />
+          </SharedEmptyState.Icon>
+        }
+        title="Inga kontroller ännu"
+        description="Skapa en efterlevnadskontroll för att visa att ni faktiskt lever upp till lagkraven — och få en delbar rapport på köpet."
+        action={
+          canCreate ? (
+            <Button asChild>
+              <Link href="/laglistor/kontroller/skapa">
+                <Plus className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                Skapa kontroll
+              </Link>
+            </Button>
+          ) : undefined
+        }
+      />
+    )
+  }
   return (
     <SharedEmptyState
       className="rounded-md border"
-      description={
-        isActiveFilter
-          ? 'Du har inga aktiva kontroller just nu.'
-          : 'Inga kontroller matchar det valda filtret.'
-      }
-      action={
-        isActiveFilter && canCreate ? (
-          <Button asChild>
-            <Link href="/laglistor/kontroller/skapa">
-              <Plus className="mr-1.5 h-4 w-4" aria-hidden="true" />
-              Skapa kontroll
-            </Link>
-          </Button>
-        ) : undefined
-      }
+      description="Inga kontroller matchar det valda filtret."
     />
   )
 }

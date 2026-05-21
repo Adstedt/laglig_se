@@ -10,6 +10,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSWRConfig } from 'swr'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -681,22 +682,34 @@ export default function DocumentsBrowser({
               ))}
             </div>
           ) : folders.length === 0 && files.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <FolderOpen className="h-16 w-16 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-medium">Tom mapp</h3>
-              <p className="text-sm text-muted-foreground mt-1 mb-4">
-                Ladda upp filer eller skapa en ny mapp för att komma igång.
-              </p>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  document.getElementById('file-upload-input')?.click()
-                }
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Ladda upp filer
-              </Button>
-            </div>
+            <EmptyState
+              icon={
+                <EmptyState.Icon>
+                  <FolderOpen className="h-8 w-8 text-muted-foreground" />
+                </EmptyState.Icon>
+              }
+              title="Inga filer ännu"
+              description="Ladda upp filer eller skapa en mapp för att börja organisera era dokument."
+              action={
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() =>
+                      document.getElementById('file-upload-input')?.click()
+                    }
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Ladda upp filer
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsCreatingFolder(true)}
+                  >
+                    <FolderPlus className="h-4 w-4 mr-2" />
+                    Ny mapp
+                  </Button>
+                </div>
+              }
+            />
           ) : viewMode === 'grid' ? (
             <div
               className="grid gap-5"

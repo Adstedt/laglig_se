@@ -399,6 +399,7 @@ export function TaskWorkspace({
         {currentTab === 'lista' && (
           <ListTab
             filteredTasks={filteredTasks}
+            totalTasks={tasks.length}
             columns={columns}
             workspaceMembers={workspaceMembers}
             columnSizing={columnSizing}
@@ -411,6 +412,7 @@ export function TaskWorkspace({
             onTaskClick={handleTaskClick}
             onTaskUpdate={handleTaskUpdate}
             onTasksDelete={handleTasksDelete}
+            onCreateTask={() => setCreateTaskModalOpen(true)}
           />
         )}
         {currentTab === 'kalender' && (

@@ -149,8 +149,11 @@ describe('CycleListTable', () => {
     ]
     render(<CycleListTable cycles={onlyClosed} canCreate />)
 
+    expect(screen.getByText('Inga kontroller ännu')).toBeInTheDocument()
     expect(
-      screen.getByText('Du har inga aktiva kontroller just nu.')
+      screen.getByText(
+        'Skapa en efterlevnadskontroll för att visa att ni faktiskt lever upp till lagkraven — och få en delbar rapport på köpet.'
+      )
     ).toBeInTheDocument()
     // CTA also rendered in the empty-state; there are two Skapa kontroll
     // links (header + empty state) when canCreate && empty.

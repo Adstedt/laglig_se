@@ -1,0 +1,1172 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Laglig — Empty-state consistency audit + unified pattern</title>
+
+  <style>
+    @font-face {
+      font-family: 'Safiro';
+      src:
+        url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'),
+        url('../public/fonts/safiro-medium-webfont.woff') format('woff');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Google Sans Flex';
+      src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* Dark theme tokens — mirrored from app/globals.css :root.dark */
+    :root {
+      --background: 0 0% 10%;
+      --foreground: 0 0% 93%;
+      --card: 0 0% 9%;
+      --card-foreground: 0 0% 93%;
+      --popover: 0 0% 14%;
+      --primary: 0 0% 93%;
+      --primary-foreground: 0 0% 10%;
+      --secondary: 0 0% 17%;
+      --muted: 0 0% 17%;
+      --muted-foreground: 0 0% 64%;
+      --accent: 0 0% 17%;
+      --border: 0 0% 19%;
+      --input: 0 0% 19%;
+      --ring: 0 0% 64%;
+      --radius: 0.5rem;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Google Sans Flex', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      color: hsl(var(--foreground));
+      background: hsl(var(--background));
+      -webkit-font-smoothing: antialiased;
+    }
+    .font-safiro { font-family: 'Safiro', system-ui, sans-serif; font-weight: 500; }
+
+    /* Page chrome */
+    .page {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 32px 80px;
+    }
+    .doc-header {
+      border-bottom: 1px solid hsl(var(--border));
+      padding-bottom: 24px;
+      margin-bottom: 32px;
+    }
+    .doc-header h1 {
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 32px;
+      letter-spacing: -0.01em;
+      margin: 0 0 8px;
+    }
+    .doc-header p {
+      margin: 0;
+      color: hsl(var(--muted-foreground));
+      font-size: 15px;
+      max-width: 720px;
+    }
+    .section {
+      margin-top: 56px;
+    }
+    .section > h2 {
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 20px;
+      margin: 0 0 6px;
+    }
+    .section > .lede {
+      color: hsl(var(--muted-foreground));
+      font-size: 13.5px;
+      margin: 0 0 24px;
+      max-width: 760px;
+    }
+    .kicker {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 11px;
+      color: hsl(var(--muted-foreground));
+      font-weight: 600;
+      margin: 0 0 8px;
+    }
+
+    /* Faux page surface mocking an in-app list page */
+    .surface {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .surface__crumb {
+      padding: 14px 20px;
+      border-bottom: 1px solid hsl(var(--border));
+      font-size: 12px;
+      color: hsl(var(--muted-foreground));
+    }
+    .surface__crumb strong {
+      color: hsl(var(--foreground));
+      font-weight: 500;
+    }
+    .surface__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 18px 20px 14px;
+      gap: 16px;
+    }
+    .surface__head h3 {
+      margin: 0 0 4px;
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 22px;
+      letter-spacing: -0.005em;
+    }
+    .surface__head .sub {
+      margin: 0;
+      font-size: 12.5px;
+      color: hsl(var(--muted-foreground));
+    }
+    .surface__head .actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .surface__toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      border-top: 1px solid hsl(var(--border));
+      border-bottom: 1px solid hsl(var(--border));
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .surface__toolbar-left,
+    .surface__toolbar-right {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .surface__body {
+      padding: 56px 20px 64px;
+      min-height: 280px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Generic chip / button / input chrome */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      color: hsl(var(--foreground));
+      background: hsl(var(--secondary));
+      border: 1px solid transparent;
+    }
+    .chip.muted { background: transparent; color: hsl(var(--muted-foreground)); }
+    .chip.active { background: hsl(var(--accent)); }
+    .chip .count {
+      background: hsl(var(--muted));
+      color: hsl(var(--muted-foreground));
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      margin-left: 2px;
+    }
+    .input {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 6px;
+      background: hsl(var(--secondary));
+      color: hsl(var(--muted-foreground));
+      font-size: 12.5px;
+      min-width: 180px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 32px;
+      padding: 0 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid hsl(var(--border));
+      background: transparent;
+      color: hsl(var(--foreground));
+      cursor: pointer;
+      transition: background 120ms ease;
+    }
+    .btn:hover { background: hsl(var(--accent)); }
+    .btn--primary {
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      border-color: hsl(var(--primary));
+    }
+    .btn--primary:hover { opacity: 0.92; background: hsl(var(--primary)); }
+    .btn--ghost { border-color: transparent; }
+    .btn--sm { height: 28px; padding: 0 10px; font-size: 12px; }
+
+    /* ---------- Current empty-state mimics (kept faithful to screenshots) ---------- */
+
+    /* Styrdokument */
+    .current-styr .icon-wrap {
+      width: 56px; height: 56px; border-radius: 999px;
+      background: hsl(var(--muted));
+      display: grid; place-items: center;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 18px;
+    }
+    .current-styr h4 {
+      margin: 0 0 4px;
+      font-size: 15px;
+      font-weight: 500;
+    }
+    .current-styr p {
+      margin: 0 0 18px;
+      font-size: 12.5px;
+      color: hsl(var(--muted-foreground));
+    }
+    .current-styr .ctas { display: flex; gap: 8px; justify-content: center; }
+    .center { display: flex; flex-direction: column; align-items: center; text-align: center; }
+
+    /* Uppgifter — smaller icon, no CTA */
+    .current-task .icon-wrap {
+      width: 44px; height: 44px; border-radius: 999px;
+      background: hsl(var(--muted));
+      display: grid; place-items: center;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 14px;
+    }
+    .current-task h4 { margin: 0 0 4px; font-size: 14px; font-weight: 500; }
+    .current-task p { margin: 0; font-size: 12px; color: hsl(var(--muted-foreground)); }
+
+    /* Laglistor — no title, smaller icon, inline copy */
+    .current-laglistor .icon-wrap {
+      width: 44px; height: 44px; border-radius: 999px;
+      background: hsl(var(--muted));
+      display: grid; place-items: center;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 14px;
+    }
+    .current-laglistor p {
+      margin: 0;
+      font-size: 12.5px;
+      color: hsl(var(--muted-foreground));
+      max-width: 280px;
+    }
+
+    /* Kontroller — no icon, has CTA */
+    .current-kontroller p {
+      margin: 0 0 14px;
+      font-size: 12.5px;
+      color: hsl(var(--muted-foreground));
+    }
+
+    /* Filer — folder icon + primary CTA */
+    .current-filer .icon-wrap {
+      width: 56px; height: 56px;
+      display: grid; place-items: center;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 14px;
+    }
+    .current-filer h4 { margin: 0 0 4px; font-size: 14px; font-weight: 500; }
+    .current-filer p { margin: 0 0 16px; font-size: 12.5px; color: hsl(var(--muted-foreground)); }
+
+    /* ---------- Variance call-outs ---------- */
+    .audit-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+    .audit-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+    @media (max-width: 900px) {
+      .audit-card { grid-template-columns: 1fr; }
+    }
+    .audit-meta {
+      padding: 18px 20px;
+      background: hsl(var(--secondary));
+      border: 1px solid hsl(var(--border));
+      border-radius: 12px;
+    }
+    .audit-meta h5 {
+      margin: 0 0 8px;
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 15px;
+    }
+    .audit-meta ul {
+      margin: 0;
+      padding-left: 18px;
+      color: hsl(var(--muted-foreground));
+      font-size: 13px;
+    }
+    .audit-meta ul li { margin-bottom: 4px; }
+    .audit-meta .tag {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: hsl(var(--background));
+      color: hsl(var(--muted-foreground));
+      margin-right: 6px;
+      margin-bottom: 8px;
+      border: 1px solid hsl(var(--border));
+    }
+    .audit-meta .tag.bad { color: #f87171; border-color: rgba(248,113,113,0.35); }
+    .audit-meta .tag.ok { color: #86efac; border-color: rgba(134,239,172,0.35); }
+
+    /* ---------- Unified empty-state primitive ---------- */
+    .empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 18px;
+      max-width: 460px;
+      margin: 0 auto;
+    }
+    .empty__icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 999px;
+      background: hsl(var(--muted));
+      display: grid;
+      place-items: center;
+      color: hsl(var(--muted-foreground));
+    }
+    .empty__text { display: flex; flex-direction: column; gap: 4px; }
+    .empty__title {
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 17px;
+      margin: 0;
+      letter-spacing: -0.003em;
+      color: hsl(var(--foreground));
+    }
+    .empty__sub {
+      margin: 0;
+      font-size: 13px;
+      color: hsl(var(--muted-foreground));
+      line-height: 1.55;
+    }
+    .empty__actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    /* Filtered variant — softer, no big primary */
+    .empty.filtered .empty__icon {
+      width: 44px;
+      height: 44px;
+      background: transparent;
+      border: 1px dashed hsl(var(--border));
+    }
+
+    /* ---------- Anatomy callouts ---------- */
+    .anatomy {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 24px;
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: 12px;
+      padding: 28px 28px 32px;
+    }
+    @media (max-width: 900px) {
+      .anatomy { grid-template-columns: 1fr; }
+    }
+    .anatomy__demo {
+      display: grid;
+      gap: 28px;
+    }
+    .anatomy__notes h4 {
+      margin: 0 0 10px;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: hsl(var(--muted-foreground));
+    }
+    .anatomy__notes ul {
+      margin: 0 0 18px;
+      padding-left: 18px;
+      font-size: 13.5px;
+    }
+    .anatomy__notes ul li { margin-bottom: 6px; }
+    .anatomy__notes code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      background: hsl(var(--muted));
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    /* ---------- Unified grid for the five pages, after ---------- */
+    .unified-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+    @media (max-width: 1100px) { .unified-grid { grid-template-columns: 1fr; } }
+    .unified-grid .surface { min-height: 360px; }
+
+    /* Filtered-empty section grid */
+    .filtered-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+    @media (max-width: 1100px) { .filtered-grid { grid-template-columns: 1fr; } }
+
+    /* svg icon size */
+    .icon-md svg { width: 22px; height: 22px; }
+    .icon-lg svg { width: 26px; height: 26px; }
+    .icon-sm svg { width: 14px; height: 14px; }
+
+    /* Section label */
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .badge-current {
+      background: rgba(248,113,113,0.12);
+      color: #f87171;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      letter-spacing: 0.04em;
+    }
+    .badge-after {
+      background: rgba(134,239,172,0.12);
+      color: #86efac;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      letter-spacing: 0.04em;
+    }
+
+    /* Principles list */
+    .principles {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    @media (max-width: 900px) { .principles { grid-template-columns: 1fr; } }
+    .principle {
+      padding: 18px 20px;
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: 10px;
+    }
+    .principle .pnum {
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      color: hsl(var(--muted-foreground));
+      font-size: 12px;
+      letter-spacing: 0.08em;
+    }
+    .principle h5 {
+      margin: 6px 0 8px;
+      font-family: 'Safiro', system-ui, sans-serif;
+      font-weight: 500;
+      font-size: 15px;
+    }
+    .principle p {
+      margin: 0;
+      font-size: 13px;
+      color: hsl(var(--muted-foreground));
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="doc-header">
+      <p class="kicker">Prototype · Empty states · 2026-05-21</p>
+      <h1>One empty state, five list pages</h1>
+      <p>
+        Today every list page in Laglig draws its own empty state. The visual weight,
+        icon, title voice, and CTA placement all differ. This prototype audits the
+        variance, names a single primitive (the existing <code>&lt;EmptyState&gt;</code>),
+        and shows the five pages re-rendered through it — with a clean split between
+        <strong>truly empty</strong> (first-run) and <strong>filtered empty</strong> (no matches).
+      </p>
+    </header>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 1 — Current state audit                              -->
+    <!-- ============================================================ -->
+    <section class="section">
+      <h2>1 — Today, five different empty states</h2>
+      <p class="lede">
+        Side-by-side snapshots of the five list pages. Each cell highlights what
+        differs from its neighbours.
+      </p>
+
+      <!-- Styrdokument -->
+      <div class="audit-row">
+        <div class="audit-card">
+          <div class="surface">
+            <div class="surface__crumb">Bygg &amp; Fastighet AB &nbsp;›&nbsp; <strong>Styrdokument</strong></div>
+            <div class="surface__head">
+              <div>
+                <h3>Styrdokument</h3>
+                <p class="sub">Policyer, rutiner och instruktioner med versionshistorik</p>
+              </div>
+              <div class="actions">
+                <button class="btn"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Importera</button>
+                <button class="btn btn--primary"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Nytt dokument</button>
+              </div>
+            </div>
+            <div class="surface__toolbar">
+              <div class="surface__toolbar-left">
+                <span class="chip active"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Aktiva</span>
+                <span class="chip muted"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>Arkiverade</span>
+              </div>
+              <div class="surface__toolbar-right">
+                <span class="input"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Sök dokument…</span>
+                <span class="chip">Dokumenttyp</span>
+                <span class="chip">Status</span>
+              </div>
+            </div>
+            <div class="surface__body current-styr">
+              <div class="center">
+                <div class="icon-wrap icon-lg">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <h4>Inga styrdokument ännu</h4>
+                <p>Kom igång genom att skapa ett nytt styrdokument eller importera ett befintligt.</p>
+                <div class="ctas">
+                  <button class="btn btn--primary btn--sm"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Nytt dokument</button>
+                  <button class="btn btn--sm"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Importera</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="audit-meta">
+            <span class="badge-current">Current</span>
+            <h5 style="margin-top:8px">Styrdokument</h5>
+            <ul>
+              <li>Icon: 56px, rounded muted-bg</li>
+              <li>Title: "Inga X <em>ännu</em>"</li>
+              <li>Body CTAs: primary <strong>+</strong> secondary</li>
+              <li>Same CTAs duplicated in toolbar</li>
+            </ul>
+            <span class="tag ok">Title voice ✓</span>
+            <span class="tag ok">Dual CTA ✓</span>
+            <span class="tag bad">No filtered-empty variant</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Uppgifter -->
+      <div class="audit-row">
+        <div class="audit-card">
+          <div class="surface">
+            <div class="surface__crumb">Bygg &amp; Fastighet AB &nbsp;›&nbsp; <strong>Uppgifter</strong></div>
+            <div class="surface__head">
+              <div>
+                <h3>Uppgifter</h3>
+                <p class="sub">Hantera och spåra efterlevnadsuppgifter för din organisation.</p>
+              </div>
+              <div class="actions">
+                <button class="btn btn--primary">+ Ny uppgift</button>
+              </div>
+            </div>
+            <div class="surface__toolbar">
+              <div class="surface__toolbar-left">
+                <span class="chip muted">Sammanfattning</span>
+                <span class="chip muted">Aktiva</span>
+                <span class="chip active">Lista</span>
+                <span class="chip muted">Kalender</span>
+                <span class="chip muted">Alla uppgifter</span>
+              </div>
+            </div>
+            <div class="surface__toolbar" style="border-top:none">
+              <div class="surface__toolbar-left">
+                <span class="input">🔍 Sök uppgifter…</span>
+                <span class="chip">Status ▾</span>
+                <span class="chip">Prioritet ▾</span>
+                <span class="chip">Förfallodatum ▾</span>
+                <span class="chip">Alla ▾</span>
+              </div>
+              <div class="surface__toolbar-right">
+                <span class="chip muted">⇄ Kolumner</span>
+              </div>
+            </div>
+            <div class="surface__body current-task">
+              <div class="center">
+                <div class="icon-wrap">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 10h8M8 14h6"/></svg>
+                </div>
+                <h4>Inga uppgifter matchar</h4>
+                <p>Justera dina filter eller skapa en ny uppgift</p>
+              </div>
+            </div>
+          </div>
+          <div class="audit-meta">
+            <span class="badge-current">Current</span>
+            <h5 style="margin-top:8px">Uppgifter</h5>
+            <ul>
+              <li>Icon: 44px (smaller than Styr)</li>
+              <li>Title: "Inga X <em>matchar</em>" — implies filter context, but…</li>
+              <li>…no way to clear the filters from here</li>
+              <li>Body CTA: <strong>none</strong> — must move to toolbar</li>
+            </ul>
+            <span class="tag bad">Mixed truly-empty/filtered semantics</span>
+            <span class="tag bad">No body CTA</span>
+            <span class="tag bad">Icon smaller than peers</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Laglistor -->
+      <div class="audit-row">
+        <div class="audit-card">
+          <div class="surface">
+            <div class="surface__crumb">Bygg &amp; Fastighet AB &nbsp;›&nbsp; <strong>Laglistor</strong></div>
+            <div class="surface__head">
+              <div>
+                <h3>Laglistor</h3>
+                <p class="sub">Hantera dina listor och håll koll på relevanta rättsliga krav.</p>
+              </div>
+              <div class="actions">
+                <button class="btn">Skapa kontroll</button>
+                <button class="btn btn--primary">+ Lägg till dokument</button>
+              </div>
+            </div>
+            <div class="surface__toolbar">
+              <div class="surface__toolbar-left">
+                <span class="chip active">📖 Laglistor</span>
+                <span class="chip muted">⟳ Ändringar</span>
+              </div>
+              <div class="surface__toolbar-right">
+                <span class="chip">Huvudlista (0) ▾</span>
+                <span class="input">🔍 Sök dokument…</span>
+                <span class="chip">Filter</span>
+                <span class="chip">Efterlevnad ▾</span>
+                <span class="chip">⚙</span>
+              </div>
+            </div>
+            <div class="surface__body current-laglistor">
+              <div class="center">
+                <div class="icon-wrap">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <p>Inga dokument i denna lista. Lägg till dokument för att komma igång.</p>
+              </div>
+            </div>
+          </div>
+          <div class="audit-meta">
+            <span class="badge-current">Current</span>
+            <h5 style="margin-top:8px">Laglistor</h5>
+            <ul>
+              <li>Icon: 44px, muted-bg circle</li>
+              <li>Title: <strong>missing entirely</strong></li>
+              <li>Body: one inline paragraph</li>
+              <li>Body CTA: <strong>none</strong></li>
+            </ul>
+            <span class="tag bad">No title</span>
+            <span class="tag bad">No body CTA</span>
+            <span class="tag bad">Smaller icon than Styr</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kontroller -->
+      <div class="audit-row">
+        <div class="audit-card">
+          <div class="surface">
+            <div class="surface__crumb">Bygg &amp; Fastighet AB &nbsp;›&nbsp; Laglistor &nbsp;›&nbsp; <strong>Kontroller</strong></div>
+            <div class="surface__head">
+              <div>
+                <h3>Kontroller</h3>
+                <p class="sub">Hantera pågående och tidigare efterlevnadskontroller.</p>
+              </div>
+              <div class="actions">
+                <button class="btn btn--primary">+ Skapa kontroll</button>
+              </div>
+            </div>
+            <div class="surface__toolbar">
+              <div class="surface__toolbar-left">
+                <span class="chip active">Aktiva <span class="count">0</span></span>
+                <span class="chip muted">Slutförda <span class="count">0</span></span>
+                <span class="chip muted">Alla <span class="count">0</span></span>
+              </div>
+            </div>
+            <div class="surface__body current-kontroller">
+              <div class="center">
+                <p>Du har inga aktiva kontroller just nu.</p>
+                <button class="btn btn--primary btn--sm">+ Skapa kontroll</button>
+              </div>
+            </div>
+          </div>
+          <div class="audit-meta">
+            <span class="badge-current">Current</span>
+            <h5 style="margin-top:8px">Kontroller</h5>
+            <ul>
+              <li>Icon: <strong>missing entirely</strong></li>
+              <li>Title voice: "Du har inga X just nu"</li>
+              <li>Body CTA: primary only</li>
+            </ul>
+            <span class="tag bad">No icon</span>
+            <span class="tag bad">Different title voice</span>
+            <span class="tag bad">No secondary CTA (e.g. mall)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filer -->
+      <div class="audit-row">
+        <div class="audit-card">
+          <div class="surface">
+            <div class="surface__crumb">Bygg &amp; Fastighet AB &nbsp;›&nbsp; <strong>Filer</strong></div>
+            <div class="surface__head">
+              <div>
+                <h3>Filer</h3>
+                <p class="sub">Hantera och organisera filer för din organisation.</p>
+              </div>
+              <div class="actions">
+                <button class="btn">📂 Ny mapp</button>
+                <button class="btn btn--primary">⬆ Ladda upp</button>
+              </div>
+            </div>
+            <div class="surface__toolbar">
+              <div class="surface__toolbar-left">
+                <span class="input">🔍 Sök filer…</span>
+              </div>
+              <div class="surface__toolbar-right">
+                <span class="chip">Senaste ▾</span>
+                <span class="chip">Alla kategorier ▾</span>
+                <span class="chip">Alla… ▾</span>
+                <span class="chip">▦ Välj</span>
+                <span class="chip active">▦</span>
+                <span class="chip muted">≡</span>
+              </div>
+            </div>
+            <div class="surface__body current-filer">
+              <div class="center">
+                <div class="icon-wrap">
+                  <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <h4>Tom mapp</h4>
+                <p>Ladda upp filer eller skapa en ny mapp för att komma igång.</p>
+                <button class="btn btn--primary btn--sm">⬆ Ladda upp filer</button>
+              </div>
+            </div>
+          </div>
+          <div class="audit-meta">
+            <span class="badge-current">Current</span>
+            <h5 style="margin-top:8px">Filer</h5>
+            <ul>
+              <li>Icon: 56px, <strong>no rounded muted-bg</strong></li>
+              <li>Title: "Tom mapp" — describes a state, not the entity</li>
+              <li>Body CTA: primary only (missing "Ny mapp")</li>
+            </ul>
+            <span class="tag bad">Title is the state, not the entity</span>
+            <span class="tag bad">No bg on icon → looks loose</span>
+            <span class="tag bad">Single CTA when toolbar offers two</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 2 — Diagnosis                                         -->
+    <!-- ============================================================ -->
+    <section class="section">
+      <h2>2 — Three things to fix</h2>
+      <p class="lede">
+        The chrome around the empty area (toolbar, breadcrumb, page title) is
+        already consistent. The empty state itself isn't.
+      </p>
+      <div class="principles">
+        <div class="principle">
+          <span class="pnum">01</span>
+          <h5>One anatomy, one voice</h5>
+          <p>
+            Every empty list uses the same icon container (56 × 56, rounded muted),
+            the same title voice ("Inga {entity} ännu"), and renders Safiro 500 on
+            the title. No more "Tom mapp" / "Du har inga X just nu" / missing titles.
+          </p>
+        </div>
+        <div class="principle">
+          <span class="pnum">02</span>
+          <h5>Body CTAs mirror the toolbar's primary action</h5>
+          <p>
+            If the toolbar has a primary + secondary, the empty state mirrors both.
+            Power users still skip the empty state and use the toolbar — keep both.
+            "Ny X" is primary; "Importera" / "Mall" is secondary.
+          </p>
+        </div>
+        <div class="principle">
+          <span class="pnum">03</span>
+          <h5>Truly-empty ≠ filtered-empty</h5>
+          <p>
+            Filtered-empty (filters applied, no matches) gets a softer treatment:
+            dashed-border icon, "Inga X matchar dina filter", and a "Rensa filter"
+            primary action. Create-flow CTA stays available but secondary.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 3 — The primitive                                     -->
+    <!-- ============================================================ -->
+    <section class="section">
+      <h2>3 — The primitive (already exists)</h2>
+      <p class="lede">
+        <code>components/ui/empty-state.tsx</code> is already in the repo but
+        unevenly adopted. Below: its anatomy + two render modes.
+      </p>
+
+      <div class="anatomy">
+        <div class="anatomy__demo">
+          <div>
+            <div class="section-label"><span class="badge-after">After</span> Truly empty (first-run)</div>
+            <div class="surface" style="min-height:300px">
+              <div class="surface__body">
+                <div class="empty">
+                  <div class="empty__icon icon-lg">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  </div>
+                  <div class="empty__text">
+                    <h4 class="empty__title">Inga styrdokument ännu</h4>
+                    <p class="empty__sub">Kom igång genom att skapa ett nytt styrdokument eller importera ett befintligt.</p>
+                  </div>
+                  <div class="empty__actions">
+                    <button class="btn btn--primary btn--sm"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Nytt dokument</button>
+                    <button class="btn btn--sm"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Importera</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="section-label"><span class="badge-after">After</span> Filtered empty (no matches)</div>
+            <div class="surface" style="min-height:300px">
+              <div class="surface__body">
+                <div class="empty filtered">
+                  <div class="empty__icon icon-md">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                  </div>
+                  <div class="empty__text">
+                    <h4 class="empty__title">Inga uppgifter matchar dina filter</h4>
+                    <p class="empty__sub">Justera filtren ovan eller börja om för att se alla uppgifter.</p>
+                  </div>
+                  <div class="empty__actions">
+                    <button class="btn btn--primary btn--sm">Rensa filter</button>
+                    <button class="btn btn--sm">+ Ny uppgift</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="anatomy__notes">
+          <h4>API</h4>
+          <ul>
+            <li><code>icon</code> — lucide icon, wrapped in <code>EmptyState.Icon</code></li>
+            <li><code>title</code> — "Inga {entity} ännu" (Safiro 500, 17px)</li>
+            <li><code>description</code> — one sentence, action-oriented</li>
+            <li><code>action</code> — JSX (one or two buttons)</li>
+            <li><code>variant</code> — <code>'empty'</code> (default) | <code>'filtered'</code></li>
+          </ul>
+          <h4>Title-voice rules</h4>
+          <ul>
+            <li>Truly empty → <code>Inga {entity} ännu</code></li>
+            <li>Filtered → <code>Inga {entity} matchar dina filter</code></li>
+            <li>Never: "Tom mapp", "Du har inga X just nu"</li>
+          </ul>
+          <h4>CTA rules</h4>
+          <ul>
+            <li>Truly empty → mirror the toolbar's primary (+ secondary if it exists)</li>
+            <li>Filtered → primary "Rensa filter", secondary preserves the create flow</li>
+            <li>Toolbar buttons stay either way</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 4 — Unified after                                     -->
+    <!-- ============================================================ -->
+    <section class="section">
+      <h2>4 — Five pages, after</h2>
+      <p class="lede">
+        Same five pages with the unified empty state. The toolbar chrome above
+        each surface is unchanged — only the body differs.
+      </p>
+
+      <div class="unified-grid">
+        <!-- Styrdokument -->
+        <div>
+          <div class="section-label"><span class="badge-after">After</span> Styrdokument</div>
+          <div class="surface">
+            <div class="surface__head">
+              <div><h3>Styrdokument</h3><p class="sub">Policyer, rutiner och instruktioner</p></div>
+              <div class="actions">
+                <button class="btn">Importera</button>
+                <button class="btn btn--primary">+ Nytt dokument</button>
+              </div>
+            </div>
+            <div class="surface__body">
+              <div class="empty">
+                <div class="empty__icon icon-lg">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div class="empty__text">
+                  <h4 class="empty__title">Inga styrdokument ännu</h4>
+                  <p class="empty__sub">Skapa ditt första styrdokument från grunden eller importera en befintlig version.</p>
+                </div>
+                <div class="empty__actions">
+                  <button class="btn btn--primary btn--sm">+ Nytt dokument</button>
+                  <button class="btn btn--sm">Importera</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Uppgifter (truly empty case) -->
+        <div>
+          <div class="section-label"><span class="badge-after">After</span> Uppgifter (inga uppgifter alls)</div>
+          <div class="surface">
+            <div class="surface__head">
+              <div><h3>Uppgifter</h3><p class="sub">Efterlevnadsuppgifter för organisationen</p></div>
+              <div class="actions"><button class="btn btn--primary">+ Ny uppgift</button></div>
+            </div>
+            <div class="surface__body">
+              <div class="empty">
+                <div class="empty__icon icon-lg">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 10h8M8 14h6"/></svg>
+                </div>
+                <div class="empty__text">
+                  <h4 class="empty__title">Inga uppgifter ännu</h4>
+                  <p class="empty__sub">Skapa en uppgift för att börja planera och spåra arbetet med er efterlevnad.</p>
+                </div>
+                <div class="empty__actions">
+                  <button class="btn btn--primary btn--sm">+ Ny uppgift</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Laglistor -->
+        <div>
+          <div class="section-label"><span class="badge-after">After</span> Laglistor</div>
+          <div class="surface">
+            <div class="surface__head">
+              <div><h3>Laglistor</h3><p class="sub">Lagar och krav som rör verksamheten</p></div>
+              <div class="actions">
+                <button class="btn">Skapa kontroll</button>
+                <button class="btn btn--primary">+ Lägg till dokument</button>
+              </div>
+            </div>
+            <div class="surface__body">
+              <div class="empty">
+                <div class="empty__icon icon-lg">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div class="empty__text">
+                  <h4 class="empty__title">Inga dokument i listan ännu</h4>
+                  <p class="empty__sub">Lägg till relevanta regelverk eller importera en befintlig laglista för att komma igång.</p>
+                </div>
+                <div class="empty__actions">
+                  <button class="btn btn--primary btn--sm">+ Lägg till dokument</button>
+                  <button class="btn btn--sm">Importera laglista</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kontroller -->
+        <div>
+          <div class="section-label"><span class="badge-after">After</span> Kontroller</div>
+          <div class="surface">
+            <div class="surface__head">
+              <div><h3>Kontroller</h3><p class="sub">Pågående och tidigare efterlevnadskontroller</p></div>
+              <div class="actions"><button class="btn btn--primary">+ Skapa kontroll</button></div>
+            </div>
+            <div class="surface__body">
+              <div class="empty">
+                <div class="empty__icon icon-lg">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="empty__text">
+                  <h4 class="empty__title">Inga kontroller ännu</h4>
+                  <p class="empty__sub">Skapa en efterlevnadskontroll för att visa att ni faktiskt lever upp till lagkraven — och få en delbar rapport på köpet.</p>
+                </div>
+                <div class="empty__actions">
+                  <button class="btn btn--primary btn--sm">+ Skapa kontroll</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filer -->
+        <div>
+          <div class="section-label"><span class="badge-after">After</span> Filer</div>
+          <div class="surface">
+            <div class="surface__head">
+              <div><h3>Filer</h3><p class="sub">Lagra och organisera filer för organisationen</p></div>
+              <div class="actions">
+                <button class="btn">+ Ny mapp</button>
+                <button class="btn btn--primary">⬆ Ladda upp</button>
+              </div>
+            </div>
+            <div class="surface__body">
+              <div class="empty">
+                <div class="empty__icon icon-lg">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div class="empty__text">
+                  <h4 class="empty__title">Inga filer ännu</h4>
+                  <p class="empty__sub">Ladda upp filer eller skapa en mapp för att börja organisera era dokument.</p>
+                </div>
+                <div class="empty__actions">
+                  <button class="btn btn--primary btn--sm">⬆ Ladda upp filer</button>
+                  <button class="btn btn--sm">+ Ny mapp</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 5 — Filtered-empty variant                            -->
+    <!-- ============================================================ -->
+    <section class="section">
+      <h2>5 — Filtered empty (the other half)</h2>
+      <p class="lede">
+        When data exists but filters return zero rows, the empty state has a
+        different job: tell the user why they see nothing, and let them recover in
+        one click. Same primitive, <code>variant="filtered"</code>.
+      </p>
+      <div class="filtered-grid">
+        <!-- Uppgifter filtered -->
+        <div>
+          <div class="section-label"><span class="badge-after">After</span> Uppgifter (filter aktiva)</div>
+          <div class="surface">
+            <div class="surface__head">
+              <div><h3>Uppgifter</h3><p class="sub">23 uppgifter totalt · 0 matchar filtren</p></div>
+              <div class="actions"><button class="btn btn--primary">+ Ny uppgift</button></div>
+            </div>
+            <div class="surface__toolbar">
+              <div class="surface__toolbar-left">
+                <span class="chip active">Status: Pågående ×</span>
+                <span class="chip active">Prioritet: Hög ×</span>
+                <span class="chip active">Förfaller: Denna vecka ×</span>
+              </div>
+            </div>
+            <div class="surface__body">
+              <div class="empty filtered">
+                <div class="empty__icon icon-md">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                </div>
+                <div class="empty__text">
+                  <h4 class="empty__title">Inga uppgifter matchar dina filter</h4>
+                  <p class="empty__sub">3 filter är aktiva. Rensa dem för att se alla uppgifter, eller skapa en ny direkt.</p>
+                </div>
+                <div class="empty__actions">
+                  <button class="btn btn--primary btn--sm">Rensa filter</button>
+                  <button class="btn btn--sm">+ Ny uppgift</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filer filtered -->
+        <div>
+          <div class="section-label"><span class="badge-after">After</span> Filer (sökning utan träffar)</div>
+          <div class="surface">
+            <div class="surface__head">
+              <div><h3>Filer</h3><p class="sub">418 filer · 0 matchar "miljöplan 2024"</p></div>
+              <div class="actions">
+                <button class="btn">+ Ny mapp</button>
+                <button class="btn btn--primary">⬆ Ladda upp</button>
+              </div>
+            </div>
+            <div class="surface__body">
+              <div class="empty filtered">
+                <div class="empty__icon icon-md">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </div>
+                <div class="empty__text">
+                  <h4 class="empty__title">Inga filer matchar "miljöplan 2024"</h4>
+                  <p class="empty__sub">Pröva en annan sökterm eller rensa filtren för att se alla filer.</p>
+                </div>
+                <div class="empty__actions">
+                  <button class="btn btn--primary btn--sm">Rensa sökning</button>
+                  <button class="btn btn--sm">⬆ Ladda upp ny fil</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 6 — Migration                                         -->
+    <!-- ============================================================ -->
+    <section class="section">
+      <h2>6 — How the rollout would land</h2>
+      <p class="lede">
+        Mechanically small. The primitive already exists; the work is mostly
+        copy + replacing one-off divs with <code>&lt;EmptyState&gt;</code>.
+      </p>
+      <ul style="max-width:760px; color:hsl(var(--muted-foreground)); font-size:14px;">
+        <li>1. Add <code>variant: 'empty' | 'filtered'</code> to <code>EmptyState</code>; introduce the dashed-border icon style for filtered.</li>
+        <li>2. Codify title-voice rules in a tiny copy doc (or as inline JSDoc on the primitive) so reviewers catch deviations.</li>
+        <li>3. Replace the bespoke empty markup on the five surfaces with <code>&lt;EmptyState&gt;</code> calls. Each page already has the data needed to choose <code>empty</code> vs <code>filtered</code> (filter state).</li>
+        <li>4. Audit pass: grep for any remaining "Tom mapp" / "Du har inga X just nu" / titleless paragraphs.</li>
+      </ul>
+      <p style="margin-top:20px; color:hsl(var(--muted-foreground)); font-size:13px;">
+        Estimated effort: half a day for the primitive + per-page swap, plus
+        copy review for each Swedish string. Could ride along the next epic-22
+        consistency story.
+      </p>
+    </section>
+  </div>
+</body>
+</html>

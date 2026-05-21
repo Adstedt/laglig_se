@@ -48,6 +48,7 @@ import {
   MoreHorizontal,
   MessageSquare,
   ListTodo,
+  Plus,
   Trash2,
   UserPlus,
   Flag,
@@ -129,6 +130,8 @@ const PINNED_COLUMN_IDS = new Set(['select', 'dragHandle', 'type', 'actions'])
 
 interface ListTabProps {
   filteredTasks: TaskWithRelations[]
+  /** Total unfiltered task count — used to distinguish truly-empty from filtered-empty in the empty state. */
+  totalTasks: number
   columns: TaskColumnWithCount[]
   workspaceMembers: WorkspaceMember[]
   // Column state from Zustand store
@@ -143,6 +146,7 @@ interface ListTabProps {
   onTaskClick?: (_taskId: string) => void
   onTaskUpdate: (_taskId: string, _updates: Partial<TaskWithRelations>) => void
   onTasksDelete: (_taskIds: string[]) => void
+  onCreateTask: () => void
 }
 
 // ============================================================================
@@ -151,6 +155,7 @@ interface ListTabProps {
 
 export function ListTab({
   filteredTasks,
+  totalTasks,
   columns: taskColumns,
   workspaceMembers,
   columnSizing,
@@ -163,6 +168,7 @@ export function ListTab({
   onTaskClick,
   onTaskUpdate,
   onTasksDelete,
+  onCreateTask,
 }: ListTabProps) {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
@@ -815,8 +821,28 @@ export function ListTab({
     }
   }
 
-  // Empty state
+  // Empty state — distinguish truly-empty (no tasks at all in the workspace)
+  // from filtered-empty (workspace has tasks but current filters return zero).
   if (filteredTasks.length === 0) {
+    if (totalTasks === 0) {
+      return (
+        <EmptyState
+          icon={
+            <EmptyState.Icon>
+              <ListTodo className="h-8 w-8 text-muted-foreground" />
+            </EmptyState.Icon>
+          }
+          title="Inga uppgifter ännu"
+          description="Skapa en uppgift för att börja planera och spåra arbetet med er efterlevnad."
+          action={
+            <Button onClick={onCreateTask}>
+              <Plus className="mr-2 h-4 w-4" />
+              Ny uppgift
+            </Button>
+          }
+        />
+      )
+    }
     return (
       <EmptyState
         icon={

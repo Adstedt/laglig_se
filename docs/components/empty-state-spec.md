@@ -1,8 +1,8 @@
 # `<EmptyState>` — Component Specification
 
-**Version:** 1.0
-**Last Updated:** 2026-05-04
-**Author:** Sarah (PO) — as-built from Story 22.7 implementation
+**Version:** 1.1
+**Last Updated:** 2026-05-21
+**Author:** Sarah (PO) — as-built from Story 22.7 implementation; extended for the doc-fixing branch empty-state consistency sweep (Slice A, 2026-05-21).
 **File:** `components/ui/empty-state.tsx`
 **Story of origin:** [22.7](../stories/completed/22.7.tasks-tabs-atom-alignment.md)
 
@@ -111,6 +111,14 @@ As of PR #60:
 - `components/features/templates/template-catalog-client.tsx` — three variants (full empty, community placeholder, per-domain empty)
 - `components/features/compliance-audit/cycle-list/cycle-list-table.tsx` — Kontroller list empty (with `className="rounded-md border"`)
 
+Added in the doc-fixing branch consistency sweep (Slice A, 2026-05-21):
+
+- `components/features/documents/document-browser-page.tsx` — Styrdokument (three branches: arkiverade / filtered / truly empty with primary+secondary CTAs)
+- `app/(workspace)/filer/_components/documents-browser.tsx` — Filer ("Inga filer ännu" + Ladda upp / Ny mapp)
+- `components/features/document-list/document-list-page-content.tsx` — Laglistor page-level truly-empty (when a list is selected but contains zero items, no filters) — renders `<LawListPrimaryAction />` + "Importera laglista"
+- `components/features/compliance-audit/cycle-list/cycle-list-table.tsx` — Kontroller "Aktiva" branch upgraded to title + icon + description ("Inga kontroller ännu" + new inspirational copy)
+- `components/features/tasks/task-workspace/list-tab.tsx` — Uppgifter now distinguishes truly-empty (`totalTasks === 0` → "Inga uppgifter ännu" + `+ Ny uppgift` action) from filtered-empty (existing "matchar" copy, no action — Slice B will refine to a dashed-border variant)
+
 ---
 
 ## 6. When NOT to use
@@ -150,3 +158,25 @@ The wrapper's `gap-4 py-12` replaces both the `py-N` and the per-element `mb-N`.
 ## 8. Test surface
 
 No dedicated unit test — presentational. Visual smoke when filtering each migrated surface to zero results.
+
+---
+
+## 9. Copy conventions (Slice A, 2026-05-21)
+
+To stop the variance the audit caught (`Tom mapp` vs `Du har inga X just nu` vs untitled paragraphs), all truly-empty list-page states follow one voice:
+
+| Slot | Convention | Example |
+|---|---|---|
+| Title (truly empty) | `Inga {entity} ännu` | `Inga styrdokument ännu`, `Inga filer ännu`, `Inga uppgifter ännu` |
+| Title (filtered with no matches) | `Inga {entity} matchar` (Slice B will refine) | `Inga uppgifter matchar`, `Inga dokument hittades` |
+| Description | One sentence. Lead with the create verb when there's an action; otherwise describe the state. | `Skapa en uppgift för att börja planera och spåra arbetet med er efterlevnad.` |
+| Primary action | Mirrors the page's toolbar primary verb. | `+ Ny uppgift`, `+ Nytt dokument`, `Ladda upp filer` |
+| Secondary action | If the page's toolbar has two actions, the empty state mirrors both. | `Importera`, `Ny mapp`, `Importera laglista` |
+| Icon | `<EmptyState.Icon>` with a lucide icon matching the entity (`h-8 w-8 text-muted-foreground`). | `<FileText />` for docs, `<FolderOpen />` for folders, `<ListTodo />` for tasks, `<ClipboardCheck />` for kontroller |
+
+Forbidden in new code:
+- State-as-title (`Tom mapp`, `Tomt`)
+- Person-perspective titles (`Du har inga X just nu`)
+- Title-less empty states (just a paragraph)
+
+Slice B (deferred): add a `variant: 'empty' | 'filtered'` prop on `<EmptyState>` for a dashed-border icon + "Rensa filter" recovery action; standardize Laglistor's five table-receiver components (compliance-detail-table, document-list-grid, grouped-*) which currently only fire for filtered-to-zero after the Slice A lift.
