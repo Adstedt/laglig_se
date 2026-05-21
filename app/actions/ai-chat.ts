@@ -188,6 +188,10 @@ export async function getChatHistory(
           user_id: ctx.userId,
           context_type: validated.contextType,
           context_id: validated.contextId ?? null,
+          // Story 14.22 / ADR-14.22-A: skip empty assistant stubs left behind by
+          // aborted/errored streams (the stub is written before the tool loop and
+          // only filled in onFinish; an interrupted turn leaves content === '').
+          content: { not: '' },
           // Only fetch active (non-archived) messages for GLOBAL context
           ...(validated.contextType === 'GLOBAL'
             ? { conversation_id: null }

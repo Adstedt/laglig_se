@@ -52,8 +52,8 @@ Rough total: **~12–14 weeks (1 dev) / ~8–10 weeks (2 devs)**.
 
 The numbering rename is **already done** in the checklist. Remaining:
 
-- [ ] Draft the four sibling stories **14.28 / 14.29 / 14.30 / 14.31** via `*create-story` (they're referenced but the files don't exist). They can be drafted just-in-time before the phase that consumes each.
-- [ ] Update **14.17** status note → *"Superseded-pending — concept absorbed by 19.7 `gap_analysis` + 19.12 proactive cards; the sidebar-inline-form mechanism is obsoleted by 14.23. Revisit (archive vs. salvage) after 19.12 ships."* **Do NOT archive yet** — it's the only written spec for the severity-aware multi-step-suggestion UX, and 19.12 may borrow from it.
+- [x] Draft the four sibling stories **14.28 / 14.29 / 14.30 / 14.31** via `*create-story` — drafted 2026-05-21 (Bob/SM), PO-validated (Sarah), fixes applied, all four status → **Approved** (blocked-for-implementation until 14.22 + 14.23 reach Done). Files: `docs/stories/14.28.update-requirement-approval.md`, `14.29.add-task-comment-approval.md`, `14.30.transition-document-status-approval.md`, `14.31.proposal-staleness-protection.md`.
+- [x] Update **14.17** status note → *"Superseded-pending — concept absorbed by 19.7 `gap_analysis` + 19.12 proactive cards; the sidebar-inline-form mechanism is obsoleted by 14.23. Revisit (archive vs. salvage) after 19.12 ships."* Done 2026-05-21. **NOT archived** — it's the only written spec for the severity-aware multi-step-suggestion UX, and 19.12 may borrow from it.
 
 ---
 

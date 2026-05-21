@@ -148,21 +148,13 @@ export function useChatInterface(
         durationMs: duration,
       })
 
-      // Persist assistant message to database (including citation metadata)
-      if (responseText && !pendingSaveRef.current.has(message.id)) {
-        pendingSaveRef.current.add(message.id)
-        const meta = message.metadata as Record<string, unknown> | undefined
-        saveChatMessage({
-          role: 'ASSISTANT',
-          content: responseText,
-          ...(meta && Object.keys(meta).length > 0 ? { metadata: meta } : {}),
-          contextType: toPrismaContextType(contextType),
-          contextId,
-        }).catch((err) => {
-          console.error('Failed to save assistant message:', err)
-          pendingSaveRef.current.delete(message.id)
-        })
-      }
+      // Story 14.22 / ADR-14.22-A: the assistant message is now persisted
+      // server-side in /api/chat/route.ts — a stub ChatMessage is written before
+      // the tool loop (so PendingAgentAction.chat_message_id has a valid FK
+      // target) and filled with final content + metadata in onFinish. The client
+      // no longer saves it, which avoids a double-write. The USER message is
+      // still persisted client-side in sendMessage(); pendingSaveRef remains in
+      // use for history-load dedup.
 
       onResponseComplete?.()
     },

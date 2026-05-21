@@ -10,6 +10,7 @@ import { useState, useMemo, useEffect, useId } from 'react'
 import type { UIMessage } from 'ai'
 import type { ChatContextType } from '@/lib/hooks/use-chat-interface'
 import { isTextUIPart, isReasoningUIPart, isToolUIPart } from 'ai'
+import { AgentActionCard } from './agent-action-card'
 import {
   ChevronRight,
   Search,
@@ -68,7 +69,14 @@ import type { ToolMeta, WriteToolResponse } from '@/lib/agent/tools/types'
 
 const TOOL_CONFIG: Record<
   string,
-  { label: string; doneLabel: string; icon: typeof Search; hidden?: boolean }
+  {
+    label: string
+    doneLabel: string
+    /** Done-state label when the output is a proposal (carries pendingActionId). */
+    proposalLabel?: string
+    icon: typeof Search
+    hidden?: boolean
+  }
 > = {
   search_laws: {
     label: 'Söker i lagdatabasen',
@@ -91,8 +99,9 @@ const TOOL_CONFIG: Record<
     icon: Building2,
   },
   create_task: {
-    label: 'Skapar uppgift',
+    label: 'Föreslår uppgift',
     doneLabel: 'Skapade uppgift',
+    proposalLabel: 'Föreslog uppgift',
     icon: ClipboardList,
   },
   update_compliance_status: {
@@ -164,6 +173,20 @@ type RenderItem =
   | { kind: 'part'; part: any; index: number; webSources?: WebSourceRef[] }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | { kind: 'tool-group'; items: Array<{ part: any; index: number }> }
+
+// Story 14.22: inline agent approval cards. Gated by the feature flag; when
+// off, proposals fall back to the sidebar write-preview (sidebarHint==='open').
+const INLINE_APPROVALS_ENABLED =
+  process.env.NEXT_PUBLIC_FEATURE_INLINE_AGENT_APPROVALS === 'true'
+
+/** Read `output.data.pendingActionId` from a tool result, if present. */
+function extractPendingActionId(output: unknown): string | null {
+  if (!output || typeof output !== 'object') return null
+  const data = (output as { data?: unknown }).data
+  if (!data || typeof data !== 'object') return null
+  const id = (data as { pendingActionId?: unknown }).pendingActionId
+  return typeof id === 'string' ? id : null
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function groupCompletedToolParts(parts: any[]): RenderItem[] {
@@ -245,6 +268,17 @@ function groupCompletedToolParts(parts: any[]): RenderItem[] {
 
     if (part.state === 'output-available') {
       hasSeenToolResult = true
+      // Story 14.22: a proposal-carrying tool part (pendingActionId in output)
+      // must NOT collapse into a group — the inline AgentActionCard renders
+      // beneath it and must stay visible. Flush + render it standalone.
+      if (
+        INLINE_APPROVALS_ENABLED &&
+        extractPendingActionId('output' in part ? part.output : undefined)
+      ) {
+        flushGroup()
+        result.push({ kind: 'part', part, index: i })
+        continue
+      }
       currentGroup.push({ part, index: i })
     } else {
       flushGroup()
@@ -525,6 +559,29 @@ export function ChatMessage({
   const parts = useMemo(() => message.parts ?? [], [message.parts])
   const renderItems = useMemo(() => groupCompletedToolParts(parts), [parts])
 
+  // Story 14.22: pending-approval ids for this message — union of live tool-part
+  // outputs and the persisted `metadata.pendingActionIds` (so the inline card is
+  // rediscoverable on history reload, where tool parts no longer exist). Rendered
+  // once at message level, gated on !isActive (see render below).
+  const pendingApprovalIds = useMemo(() => {
+    if (!INLINE_APPROVALS_ENABLED) return [] as string[]
+    const ids = new Set<string>()
+    for (const part of parts) {
+      if (
+        isToolUIPart(part) &&
+        part.state === 'output-available' &&
+        'output' in part
+      ) {
+        const id = extractPendingActionId(part.output)
+        if (id) ids.add(id)
+      }
+    }
+    const metaIds = (metadata as { pendingActionIds?: string[] } | undefined)
+      ?.pendingActionIds
+    if (Array.isArray(metaIds)) for (const id of metaIds) ids.add(id)
+    return Array.from(ids)
+  }, [parts, metadata])
+
   if (isUser) {
     const textParts = message.parts?.filter((p) => p.type === 'text') ?? []
     return (
@@ -584,6 +641,14 @@ export function ChatMessage({
               extractToolPartInfo(part, index)
             const config = TOOL_CONFIG[toolName]
             if (config?.hidden) return null
+            // Story 14.22: for a proposal tool (pendingActionId in output) with
+            // the flag on, suppress the sidebar auto-open — the inline
+            // AgentActionCard (rendered once at message level after streaming)
+            // is the approval surface. When off, the row keeps its sidebar fallback.
+            const isProposal =
+              INLINE_APPROVALS_ENABLED &&
+              part.state === 'output-available' &&
+              extractPendingActionId(toolOutput) !== null
             return (
               <ToolCallRow
                 key={`tool-${index}`}
@@ -592,6 +657,7 @@ export function ChatMessage({
                 state={part.state}
                 detail={getToolDetail(toolName, input)}
                 output={toolOutput}
+                autoOpen={!isProposal}
               />
             )
           }
@@ -620,6 +686,16 @@ export function ChatMessage({
 
           return null
         })}
+
+        {/* Story 14.22: inline approval card(s) — rendered once per message and
+            only after the turn finishes streaming (avoids the mid-stream mount +
+            SWR-fetch re-render that made post-tool streaming choppy). Sourced
+            from live tool parts ∪ persisted metadata so the card survives a
+            chat exit/reenter. */}
+        {!isActive &&
+          pendingApprovalIds.map((id) => (
+            <AgentActionCard key={`approval-${id}`} pendingActionId={id} />
+          ))}
 
         {!isActive && sourceMap.size > 0 && (
           <SourcesAccordion
@@ -1082,10 +1158,17 @@ function ToolCallRow({
     return () => clearTimeout(timer)
   }, [autoOpen, isDone, sidebarHint, chatDetail, toolCallId, toolName, output])
 
-  const label = isDone
-    ? (config?.doneLabel ?? toolName)
-    : isError
-      ? `${config?.label ?? toolName} misslyckades`
+  // Story 14.22: a completed create_task whose output is a proposal (carries a
+  // pendingActionId) reads "Föreslog uppgift", not "Skapade uppgift" — nothing
+  // was created until the user approves the card. The bare doneLabel still
+  // applies to the legacy execute:true path (actual creation, no pendingActionId).
+  const isProposalOutput = isDone && extractPendingActionId(output) !== null
+  const label = isError
+    ? `${config?.label ?? toolName} misslyckades`
+    : isDone
+      ? isProposalOutput && config?.proposalLabel
+        ? config.proposalLabel
+        : (config?.doneLabel ?? toolName)
       : (config?.label ?? toolName)
 
   const handleClick = (e: React.MouseEvent<HTMLElement>) => {

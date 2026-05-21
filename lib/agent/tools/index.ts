@@ -37,13 +37,32 @@ export {
  * streamText({ model, messages, tools, stopWhen: stepCountIs(5) })
  * ```
  */
-export function createAgentTools(workspaceId: string, userId: string) {
+/**
+ * Story 14.22: optional per-turn context threaded into write tools. `assistantMessageId`
+ * is the preallocated id of the stub assistant ChatMessage written before the tool loop
+ * (ADR-14.22-A) — write tools stamp it as `PendingAgentAction.chat_message_id`. The
+ * context_type/context_id/conversation_id scope the persisted proposal to the chat.
+ */
+export interface AgentToolContext {
+  assistantMessageId?: string
+  contextType?: 'GLOBAL' | 'TASK' | 'LAW' | 'CHANGE'
+  contextId?: string | null
+  conversationId?: string | null
+}
+
+export function createAgentTools(
+  workspaceId: string,
+  userId: string,
+  context?: AgentToolContext
+) {
+  // userId is required by write tools that persist a PendingAgentAction.
+  const writeContext = { userId, ...context }
   return {
     search_laws: createSearchLawsTool(workspaceId),
     get_document_details: createGetDocumentDetailsTool(),
     get_change_details: createGetChangeDetailsTool(),
     get_company_context: createGetCompanyContextTool(workspaceId),
-    create_task: createCreateTaskTool(workspaceId),
+    create_task: createCreateTaskTool(workspaceId, writeContext),
     update_compliance_status: createUpdateComplianceStatusTool(workspaceId),
     save_assessment: createSaveAssessmentTool(workspaceId, userId),
     add_context_note: createAddContextNoteTool(workspaceId),

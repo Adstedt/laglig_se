@@ -7,6 +7,8 @@
  */
 
 import type { RetrievalResult } from '@/lib/agent/retrieval'
+import { prisma } from '@/lib/prisma'
+import type { PendingAgentAction } from '@prisma/client'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -130,6 +132,129 @@ export function assembleAgentContext(
       chunksExcluded: chunks.length - included.length,
     },
   }
+}
+
+// ---------------------------------------------------------------------------
+// Story 14.22: Agent feedback loop — pending-action context block
+// ---------------------------------------------------------------------------
+
+const PENDING_PRIORITY_LABELS: Record<string, string> = {
+  LOW: 'Låg',
+  MEDIUM: 'Medel',
+  HIGH: 'Hög',
+  CRITICAL: 'Kritisk',
+}
+
+/** Short Swedish summary of a pending action, derived from action_type + params. */
+function summarizePendingAction(action: PendingAgentAction): string {
+  if (action.action_type === 'CREATE_TASK') {
+    const p = (action.params ?? {}) as { title?: string; priority?: string }
+    const label = PENDING_PRIORITY_LABELS[p.priority ?? 'MEDIUM'] ?? 'Medel'
+    return `Skapa uppgift: "${p.title ?? ''}" (prioritet ${label})`
+  }
+  return action.action_type
+}
+
+/**
+ * Build the `<pending_agent_actions>` system-prompt block (AC 24-27). Lists
+ * still-pending proposals plus those approved/rejected since the previous
+ * assistant message (the "since last turn" cutoff). Returns null when there is
+ * nothing to report. Caps each bucket to the 5 most recent. Scoped by
+ * workspace + user + conversation + chat context.
+ */
+export async function buildPendingActionsContext(params: {
+  workspaceId: string
+  userId: string
+  conversationId?: string | null
+  contextType: 'GLOBAL' | 'TASK' | 'LAW' | 'CHANGE'
+  contextId?: string | null
+}): Promise<string | null> {
+  const {
+    workspaceId,
+    userId,
+    conversationId = null,
+    contextType,
+    contextId = null,
+  } = params
+
+  // Cutoff = the previous turn's assistant message (content != '' excludes the
+  // not-yet-filled stub for the current turn). Null on the first turn → the
+  // completed/rejected "since last turn" buckets stay empty (AC 26).
+  const lastAssistant = await prisma.chatMessage.findFirst({
+    where: {
+      workspace_id: workspaceId,
+      user_id: userId,
+      role: 'ASSISTANT',
+      context_type: contextType,
+      context_id: contextId,
+      conversation_id: conversationId,
+      content: { not: '' },
+    },
+    orderBy: { created_at: 'desc' },
+    select: { created_at: true },
+  })
+  const cutoff = lastAssistant?.created_at ?? null
+
+  const rows = await prisma.pendingAgentAction.findMany({
+    where: {
+      workspace_id: workspaceId,
+      user_id: userId,
+      conversation_id: conversationId,
+      context_type: contextType,
+      context_id: contextId,
+    },
+    orderBy: { created_at: 'desc' },
+    take: 50,
+  })
+
+  const pending = rows.filter((r) => r.status === 'PENDING').slice(0, 5)
+  const completed = cutoff
+    ? rows
+        .filter(
+          (r) =>
+            r.status === 'APPROVED' && r.decided_at && r.decided_at > cutoff
+        )
+        .slice(0, 5)
+    : []
+  const rejected = cutoff
+    ? rows
+        .filter(
+          (r) =>
+            r.status === 'REJECTED' && r.decided_at && r.decided_at > cutoff
+        )
+        .slice(0, 5)
+    : []
+
+  if (pending.length === 0 && completed.length === 0 && rejected.length === 0) {
+    return null
+  }
+
+  const pendingJson = pending.map((r) => ({
+    id: r.id,
+    action_type: r.action_type,
+    created_at: r.created_at.toISOString(),
+    summary: summarizePendingAction(r),
+  }))
+  const completedJson = completed.map((r) => ({
+    id: r.id,
+    action_type: r.action_type,
+    result_ref: r.result_ref,
+    decided_at: r.decided_at?.toISOString() ?? null,
+    summary: summarizePendingAction(r),
+  }))
+  const rejectedJson = rejected.map((r) => ({
+    id: r.id,
+    action_type: r.action_type,
+    decided_at: r.decided_at?.toISOString() ?? null,
+  }))
+
+  return [
+    '<pending_agent_actions>',
+    `Väntar på beslut: ${JSON.stringify(pendingJson)}`,
+    `Godkända sedan senaste svar: ${JSON.stringify(completedJson)}`,
+    `Avvisade sedan senaste svar: ${JSON.stringify(rejectedJson)}`,
+    '</pending_agent_actions>',
+  ].join('\n')
 }
 
 function formatSourceLabel(chunk: RetrievalResult): string {

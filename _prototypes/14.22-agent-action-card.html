@@ -1,0 +1,755 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Story 14.22 — AgentActionCard (inline godkännande) · prototyp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script>
+      // Token mapping — colors resolve to the CSS variables mirrored from
+      // app/globals.css below. The `<alpha-value>` form lets utility opacity
+      // modifiers (bg-muted/40, border-border/50, …) work like in the app.
+      tailwind.config = {
+        darkMode: ['class'],
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Google Sans Flex', 'system-ui', 'sans-serif'],
+              safiro: ['Safiro', 'system-ui', 'sans-serif'],
+            },
+            colors: {
+              border: 'hsl(var(--border) / <alpha-value>)',
+              input: 'hsl(var(--input) / <alpha-value>)',
+              ring: 'hsl(var(--ring) / <alpha-value>)',
+              background: 'hsl(var(--background) / <alpha-value>)',
+              foreground: 'hsl(var(--foreground) / <alpha-value>)',
+              primary: {
+                DEFAULT: 'hsl(var(--primary) / <alpha-value>)',
+                foreground: 'hsl(var(--primary-foreground) / <alpha-value>)',
+              },
+              secondary: {
+                DEFAULT: 'hsl(var(--secondary) / <alpha-value>)',
+                foreground: 'hsl(var(--secondary-foreground) / <alpha-value>)',
+              },
+              destructive: {
+                DEFAULT: 'hsl(var(--destructive) / <alpha-value>)',
+                foreground: 'hsl(var(--destructive-foreground) / <alpha-value>)',
+              },
+              muted: {
+                DEFAULT: 'hsl(var(--muted) / <alpha-value>)',
+                foreground: 'hsl(var(--muted-foreground) / <alpha-value>)',
+              },
+              accent: {
+                DEFAULT: 'hsl(var(--accent) / <alpha-value>)',
+                foreground: 'hsl(var(--accent-foreground) / <alpha-value>)',
+              },
+              popover: {
+                DEFAULT: 'hsl(var(--popover) / <alpha-value>)',
+                foreground: 'hsl(var(--popover-foreground) / <alpha-value>)',
+              },
+              card: {
+                DEFAULT: 'hsl(var(--card) / <alpha-value>)',
+                foreground: 'hsl(var(--card-foreground) / <alpha-value>)',
+              },
+            },
+            borderRadius: {
+              lg: 'var(--radius)',
+              md: 'calc(var(--radius) - 2px)',
+              sm: 'calc(var(--radius) - 4px)',
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      /* Brand fonts — relative to /public/fonts like design-language.html */
+      @font-face {
+        font-family: 'Safiro';
+        src:
+          url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'),
+          url('../public/fonts/safiro-medium-webfont.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Google Sans Flex';
+        src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype');
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      /* Tokens — mirrored verbatim from app/globals.css (:root + .dark). */
+      :root {
+        --background: 40 20% 98%;
+        --foreground: 30 10% 10%;
+        --card: 40 15% 99%;
+        --card-foreground: 30 10% 10%;
+        --popover: 40 20% 98%;
+        --popover-foreground: 30 10% 10%;
+        --primary: 30 15% 12%;
+        --primary-foreground: 40 20% 98%;
+        --secondary: 40 15% 95%;
+        --secondary-foreground: 30 10% 15%;
+        --muted: 40 12% 94%;
+        --muted-foreground: 30 8% 45%;
+        --accent: 40 15% 93%;
+        --accent-foreground: 30 10% 15%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 35 10% 88%;
+        --input: 35 10% 88%;
+        --ring: 30 15% 12%;
+        --radius: 0.5rem;
+      }
+      .dark {
+        --background: 0 0% 10%;
+        --foreground: 0 0% 93%;
+        --card: 0 0% 9%;
+        --card-foreground: 0 0% 93%;
+        --popover: 0 0% 14%;
+        --popover-foreground: 0 0% 93%;
+        --primary: 0 0% 93%;
+        --primary-foreground: 0 0% 10%;
+        --secondary: 0 0% 17%;
+        --secondary-foreground: 0 0% 93%;
+        --muted: 0 0% 17%;
+        --muted-foreground: 0 0% 64%;
+        --accent: 0 0% 17%;
+        --accent-foreground: 0 0% 93%;
+        --destructive: 0 62.8% 50%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 19%;
+        --input: 0 0% 19%;
+        --ring: 0 0% 64%;
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        font-family: 'Google Sans Flex', system-ui, -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      .font-safiro { font-family: 'Safiro', system-ui, sans-serif; }
+
+      /* Spinner for the loader-2 icon used during the "approving" state */
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .animate-spin { animation: spin 0.8s linear infinite; }
+
+      /* Fake select: hide native chevron, we draw our own */
+      select.proto-select {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: none;
+      }
+
+      /* The "Lexa" avatar mark stand-in (no PNG asset in the prototype folder) */
+      .lexa-mark {
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+      }
+
+      /* subtle entrance for swapped cards */
+      @keyframes cardIn {
+        from { opacity: 0; transform: translateY(4px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .card-in { animation: cardIn 180ms ease-out; }
+    </style>
+  </head>
+
+  <body class="bg-background text-foreground antialiased">
+    <!-- ===================== Prototype chrome ===================== -->
+    <header
+      class="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70"
+    >
+      <div class="mx-auto flex max-w-[1180px] flex-wrap items-center gap-x-6 gap-y-3 px-6 py-3">
+        <div class="flex items-center gap-2.5">
+          <span class="lexa-mark grid h-7 w-7 place-items-center rounded-md font-safiro text-sm">L</span>
+          <div class="leading-tight">
+            <div class="font-safiro text-[15px]">Laglig · prototyp</div>
+            <div class="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+              Story 14.22 — AgentActionCard
+            </div>
+          </div>
+        </div>
+
+        <div class="ml-auto flex flex-wrap items-center gap-2">
+          <!-- Variant toggle -->
+          <div class="flex items-center gap-0.5 rounded-lg border border-border bg-card p-0.5" id="variant-toggle">
+            <button data-variant="A" class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors">
+              Egen design · A
+            </button>
+            <button data-variant="B" class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors">
+              AI Elements · B
+            </button>
+          </div>
+
+          <!-- State toggle -->
+          <div class="flex items-center gap-0.5 rounded-lg border border-border bg-card p-0.5" id="state-toggle">
+            <button data-state="PENDING"  class="rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors">Väntar</button>
+            <button data-state="APPROVED" class="rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors">Godkänd</button>
+            <button data-state="REJECTED" class="rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors">Avvisad</button>
+            <button data-state="EXPIRED"  class="rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors">Utgången</button>
+          </div>
+
+          <button
+            id="reset-btn"
+            class="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-2.5 py-1.5 text-xs font-medium shadow-sm transition-colors hover:bg-accent"
+          >
+            <i data-lucide="rotate-ccw" class="h-3.5 w-3.5"></i> Återställ
+          </button>
+          <button
+            id="theme-btn"
+            class="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-2.5 py-1.5 text-xs font-medium shadow-sm transition-colors hover:bg-accent"
+          >
+            <i data-lucide="moon" class="h-3.5 w-3.5"></i> <span id="theme-label">Mörkt</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-[1180px] px-6 pb-28 pt-10">
+      <!-- ===================== Intro ===================== -->
+      <section class="mb-10 max-w-3xl">
+        <p class="mb-2 text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
+          Prototyp · inline godkännandekort i Lexa-chatten
+        </p>
+        <h1 class="font-safiro text-2xl tracking-tight">
+          Förslag på uppgift — direkt i chatten, inte i sidopanelen
+        </h1>
+        <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
+          Idag öppnas agentens uppgiftsförslag i höger sidopanel
+          (<code class="rounded bg-muted px-1 py-0.5 text-[12px]">write-preview-task.tsx</code>) och försvinner
+          om du stänger chatten. Story 14.22 ersätter det med ett <strong class="text-foreground">beständigt
+          kort som renderas inline</strong> i meddelandeflödet — redigerbart, och kvar även om du stänger och
+          öppnar chatten. Nedan ser du hur det ter sig i den faktiska chatten, i två varianter du valt att jämföra.
+        </p>
+
+        <div class="mt-5 flex flex-wrap gap-2 text-xs">
+          <span class="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-muted-foreground">
+            <i data-lucide="check" class="h-3.5 w-3.5 text-emerald-600"></i> Redigerbart i väntläge
+          </span>
+          <span class="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-muted-foreground">
+            <i data-lucide="database" class="h-3.5 w-3.5"></i> Sparas i DB (PendingAgentAction)
+          </span>
+          <span class="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 text-muted-foreground">
+            <i data-lucide="git-branch" class="h-3.5 w-3.5"></i> 4 tillstånd: väntar / godkänd / avvisad / utgången
+          </span>
+        </div>
+      </section>
+
+      <!-- ===================== Live chat ===================== -->
+      <section class="mb-14">
+        <div class="mb-3 flex items-end justify-between">
+          <h2 class="text-base font-semibold">Så ser det ut i chatten</h2>
+          <p class="text-xs text-muted-foreground">
+            Variant <span id="active-variant-label" class="font-medium text-foreground">A</span> ·
+            tillstånd <span id="active-state-label" class="font-medium text-foreground">Väntar</span>
+            — redigera fälten och tryck Godkänn/Avvisa
+          </p>
+        </div>
+
+        <!-- Chat panel chrome — mirrors components/features/ai-chat/chat-panel.tsx -->
+        <div
+          class="mx-auto flex h-[640px] w-full max-w-[760px] flex-col overflow-hidden rounded-xl border border-border bg-background shadow-sm"
+        >
+          <!-- header -->
+          <div class="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
+            <div class="flex items-center gap-1.5">
+              <span class="lexa-mark grid h-5 w-5 place-items-center rounded font-safiro text-[11px]">L</span>
+              <span class="text-sm font-medium">Lexa</span>
+              <span class="text-muted-foreground/40">·</span>
+              <span class="text-xs text-muted-foreground">Efterlevnadsassistent</span>
+            </div>
+            <div class="flex items-center gap-1 text-muted-foreground">
+              <i data-lucide="download" class="h-4 w-4"></i>
+              <i data-lucide="x" class="h-4 w-4"></i>
+            </div>
+          </div>
+
+          <!-- messages -->
+          <div class="flex-1 space-y-4 overflow-y-auto px-4 py-4">
+            <!-- date sep -->
+            <div class="flex items-center gap-3 py-1">
+              <div class="h-px flex-1 bg-border"></div>
+              <span class="shrink-0 text-xs text-muted-foreground">Idag</span>
+              <div class="h-px flex-1 bg-border"></div>
+            </div>
+
+            <!-- user message -->
+            <div class="flex flex-row-reverse items-start gap-2">
+              <div class="flex-1 overflow-hidden text-right">
+                <div class="inline-block rounded-xl bg-primary px-4 py-2.5 text-left text-sm text-primary-foreground">
+                  Vi behöver uppdatera brandskyddsrutinerna efter den nya föreskriften. Kan du lägga upp en
+                  uppgift för det?
+                </div>
+              </div>
+            </div>
+
+            <!-- assistant message -->
+            <div class="space-y-3 pt-0.5 text-left">
+              <!-- collapsed tool group (Story 14.18) — shows the card coexists with collapsing -->
+              <div class="flex min-w-0 items-center gap-2 rounded-md bg-muted/40 px-2.5 py-1.5">
+                <i data-lucide="check" class="h-3 w-3 shrink-0 text-emerald-600" stroke-width="2.5"></i>
+                <div class="flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 text-left">
+                  <span class="text-xs font-medium text-muted-foreground">Sökte i lagdatabasen</span>
+                  <span class="select-none text-xs text-muted-foreground/40">·</span>
+                  <span class="text-xs font-medium text-muted-foreground">Hämtade dokument</span>
+                </div>
+                <i data-lucide="chevron-right" class="h-3 w-3 shrink-0 text-muted-foreground/50"></i>
+              </div>
+
+              <!-- prose -->
+              <div class="text-sm leading-loose">
+                Baserat på <span class="font-medium">AFS 2020:1</span> har jag förberett ett förslag. Granska och
+                justera gärna innan du godkänner — då skapar jag uppgiften på tavlan.
+              </div>
+
+              <!-- INLINE CARD SLOT -->
+              <div id="chat-card-slot"></div>
+            </div>
+          </div>
+
+          <!-- input bar (visual only) -->
+          <div class="shrink-0 border-t border-border p-3">
+            <div class="flex items-center gap-2 rounded-xl border border-input bg-card px-3 py-2.5 text-sm text-muted-foreground">
+              <span class="flex-1">Skriv din fråga…</span>
+              <span class="grid h-7 w-7 place-items-center rounded-lg bg-primary text-primary-foreground">
+                <i data-lucide="arrow-up" class="h-4 w-4"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== Side-by-side (PENDING) ===================== -->
+      <section class="mb-14">
+        <h2 class="mb-1 text-base font-semibold">Variant A vs B — sida vid sida (väntläge)</h2>
+        <p class="mb-5 max-w-3xl text-sm text-muted-foreground">
+          Samma fältyta i båda. Skillnaden ligger i <em>skalet</em>: A är ett mjukt
+          <code class="rounded bg-muted px-1 py-0.5 text-[12px]">Card</code> som smälter in i flödet (likt dagens
+          sidopanelskort); B använder AI Elements <code class="rounded bg-muted px-1 py-0.5 text-[12px]">Confirmation</code>,
+          byggt på <code class="rounded bg-muted px-1 py-0.5 text-[12px]">Alert</code> — en tydligare "systemnotis"
+          med ikon och högerställda knappar.
+        </p>
+
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div>
+            <div class="mb-2 flex items-center gap-2">
+              <span class="inline-flex h-5 items-center rounded-md bg-primary px-2 text-[11px] font-semibold text-primary-foreground">A</span>
+              <span class="text-sm font-medium">Egen AgentActionCard</span>
+              <span class="text-xs text-muted-foreground">— rekommenderad</span>
+            </div>
+            <div id="sbs-a"></div>
+            <ul class="mt-3 space-y-1 text-xs text-muted-foreground">
+              <li class="flex gap-1.5"><i data-lucide="plus" class="mt-0.5 h-3 w-3 shrink-0 text-emerald-600"></i> Förstklassiga redigerbara fält + autospar</li>
+              <li class="flex gap-1.5"><i data-lucide="plus" class="mt-0.5 h-3 w-3 shrink-0 text-emerald-600"></i> Stöder alla 4 tillstånd inkl. utgånget</li>
+              <li class="flex gap-1.5"><i data-lucide="plus" class="mt-0.5 h-3 w-3 shrink-0 text-emerald-600"></i> Matchar dagens kortspråk i chatten</li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="mb-2 flex items-center gap-2">
+              <span class="inline-flex h-5 items-center rounded-md border border-border bg-card px-2 text-[11px] font-semibold">B</span>
+              <span class="text-sm font-medium">AI Elements Confirmation</span>
+            </div>
+            <div id="sbs-b"></div>
+            <ul class="mt-3 space-y-1 text-xs text-muted-foreground">
+              <li class="flex gap-1.5"><i data-lucide="minus" class="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground"></i> "Officiell" Vercel-look, men inga inbyggda fält</li>
+              <li class="flex gap-1.5"><i data-lucide="minus" class="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground"></i> API bundet till SDK:ns approval-state, inte vår DB-modell</li>
+              <li class="flex gap-1.5"><i data-lucide="minus" class="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground"></i> Saknar utgånget-tillstånd (se nedan)</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== State gallery ===================== -->
+      <section class="mb-14">
+        <h2 class="mb-1 text-base font-semibold">Alla tillstånd</h2>
+        <p class="mb-5 max-w-3xl text-sm text-muted-foreground">
+          Hur kortet ser ut efter beslut. Notera: AI Elements Confirmation har inget eget utgånget-läge —
+          B nedan visar hur vi skulle behöva tänja på primitiven (gråtonat) för att täcka det.
+        </p>
+        <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          <div>
+            <div class="mb-3 flex items-center gap-2">
+              <span class="inline-flex h-5 items-center rounded-md bg-primary px-2 text-[11px] font-semibold text-primary-foreground">A</span>
+              <span class="text-sm font-medium">Egen AgentActionCard</span>
+            </div>
+            <div class="space-y-4">
+              <div><p class="mb-1.5 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Godkänd</p><div data-gallery="A:APPROVED"></div></div>
+              <div><p class="mb-1.5 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Avvisad</p><div data-gallery="A:REJECTED"></div></div>
+              <div><p class="mb-1.5 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Utgången</p><div data-gallery="A:EXPIRED"></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="mb-3 flex items-center gap-2">
+              <span class="inline-flex h-5 items-center rounded-md border border-border bg-card px-2 text-[11px] font-semibold">B</span>
+              <span class="text-sm font-medium">AI Elements Confirmation</span>
+            </div>
+            <div class="space-y-4">
+              <div><p class="mb-1.5 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Godkänd</p><div data-gallery="B:APPROVED"></div></div>
+              <div><p class="mb-1.5 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Avvisad</p><div data-gallery="B:REJECTED"></div></div>
+              <div><p class="mb-1.5 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Utgången (tänjd primitiv)</p><div data-gallery="B:EXPIRED"></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== Notes ===================== -->
+      <section class="max-w-3xl rounded-lg border border-border bg-card p-5">
+        <h2 class="mb-3 flex items-center gap-2 text-sm font-semibold">
+          <i data-lucide="info" class="h-4 w-4 text-muted-foreground"></i> Anteckningar för beslut
+        </h2>
+        <ul class="space-y-2.5 text-sm leading-relaxed text-muted-foreground">
+          <li>
+            <strong class="text-foreground">Blockeraren för B:</strong> AI Elements
+            <code class="rounded bg-muted px-1 py-0.5 text-[12px]">Confirmation</code> är ett binärt
+            godkänn/avvisa-skal utan fältyta, och dess props är bundna till SDK:ns in-memory approval-maskin.
+            Story 14.22 (AC 15–16) kräver redigerbara fält + DB-beständighet via
+            <code class="rounded bg-muted px-1 py-0.5 text-[12px]">PendingAgentAction</code>. B kan därför inte vara
+            hela kortet — men dess anatomi (Request / Accepted / Rejected / Actions) är en bra ritning.
+          </li>
+          <li>
+            <strong class="text-foreground">Rekommendation:</strong> bygg eget (A) med era befintliga shadcn-primitiver,
+            men låna strukturen från B. Chatten är redan handrullad i
+            <code class="rounded bg-muted px-1 py-0.5 text-[12px]">chat-message.tsx</code> och använder
+            <code class="rounded bg-muted px-1 py-0.5 text-[12px]">streamdown</code> (samma motor som AI Elements),
+            så eget kort håller ihop med resten.
+          </li>
+          <li>
+            <strong class="text-foreground">Inte med i prototypen:</strong> SWR-hämtning, server actions, riktig
+            debounce, samt feature-flaggan <code class="rounded bg-muted px-1 py-0.5 text-[12px]">FEATURE_INLINE_AGENT_APPROVALS</code>.
+            Detta är enbart en UI-prototyp i <code class="rounded bg-muted px-1 py-0.5 text-[12px]">_prototypes/</code> — inte kopplad till appen.
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <script>
+      // ----------------------------------------------------------------
+      // State
+      // ----------------------------------------------------------------
+      const DEFAULTS = {
+        title: 'Uppdatera brandskyddsrutiner enligt AFS 2020:1',
+        description:
+          'Gå igenom och revidera rutinerna för utrymning och brandskyddsansvar så att de uppfyller den uppdaterade föreskriften. Förankra med skyddsombud före publicering.',
+        priority: 'HIGH',
+        relatedDoc: 'AFS 2020:1 — Arbetsplatsens utformning',
+      }
+      const state = {
+        variant: 'A',
+        cardState: 'PENDING',
+        data: { ...DEFAULTS },
+      }
+
+      const PRIORITY = {
+        LOW: { label: 'Låg', badge: 'border-transparent bg-secondary text-secondary-foreground' },
+        MEDIUM: { label: 'Medel', badge: 'border-transparent bg-primary text-primary-foreground' },
+        HIGH: { label: 'Hög', badge: 'border-transparent bg-destructive text-destructive-foreground' },
+        CRITICAL: { label: 'Kritisk', badge: 'border-transparent bg-destructive text-destructive-foreground' },
+      }
+
+      const esc = (s) =>
+        String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+      // shared class fragments (shadcn-equivalent)
+      const C = {
+        input:
+          'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+        textarea:
+          'flex min-h-[76px] w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+        label: 'mb-1 block text-xs text-muted-foreground',
+        btnPrimary:
+          'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-sm font-medium h-9 px-4 bg-primary text-primary-foreground shadow transition-colors hover:bg-primary/90',
+        btnGhost:
+          'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-sm font-medium h-9 px-3 transition-colors hover:bg-accent hover:text-accent-foreground',
+        btnOutline:
+          'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-sm font-medium h-9 px-3 border border-input bg-background shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground',
+        btnOutlineSm:
+          'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-xs font-medium h-8 px-3 border border-input bg-background shadow-sm transition-colors hover:bg-accent',
+      }
+
+      // Editable fields block (interactive only when `live` is true)
+      function fieldsBlock(d, { live }) {
+        const dis = live ? '' : 'disabled'
+        const opts = Object.entries(PRIORITY)
+          .map(
+            ([v, o]) =>
+              `<option value="${v}" ${v === d.priority ? 'selected' : ''}>${o.label}</option>`
+          )
+          .join('')
+        return `
+          <div class="space-y-3">
+            <div>
+              <span class="${C.label}">Titel</span>
+              <input ${dis} ${live ? 'data-field="title"' : ''} class="${C.input}" value="${esc(d.title)}" />
+            </div>
+            <div>
+              <span class="${C.label}">Beskrivning</span>
+              <textarea ${dis} ${live ? 'data-field="description"' : ''} class="${C.textarea}">${esc(d.description)}</textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <span class="${C.label}">Prioritet</span>
+                <div class="relative">
+                  <select ${dis} ${live ? 'data-field="priority"' : ''} class="proto-select ${C.input} pr-8">${opts}</select>
+                  <i data-lucide="chevron-down" class="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"></i>
+                </div>
+              </div>
+              <div>
+                <span class="${C.label}">Relaterat dokument</span>
+                <div class="flex h-9 items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2.5 text-xs text-muted-foreground">
+                  <i data-lucide="file-text" class="h-3.5 w-3.5 shrink-0"></i>
+                  <span class="truncate">${esc(d.relatedDoc)}</span>
+                </div>
+              </div>
+            </div>
+          </div>`
+      }
+
+      // Read-only summary box (approved / rejected / expired)
+      function summaryBox(d, { muted } = {}) {
+        const tone = muted ? 'opacity-70' : ''
+        return `
+          <div class="space-y-2 rounded-lg border border-border bg-muted/30 p-3 ${tone}">
+            <p class="text-sm font-medium">${esc(d.title)}</p>
+            <p class="text-sm text-muted-foreground">${esc(d.description)}</p>
+            <div class="flex items-center gap-2 pt-0.5">
+              <span class="inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium ${PRIORITY[d.priority].badge}">${PRIORITY[d.priority].label}</span>
+              <span class="inline-flex items-center gap-1 text-xs text-muted-foreground"><i data-lucide="file-text" class="h-3 w-3"></i> ${esc(d.relatedDoc.split(' — ')[0])}</span>
+            </div>
+          </div>`
+      }
+
+      // ----------------------------------------------------------------
+      // Variant A — AgentActionCard (Card primitive)
+      // ----------------------------------------------------------------
+      function cardA(d, st, { live } = {}) {
+        const header = `
+          <div class="flex items-center justify-between gap-2">
+            <span class="inline-flex items-center gap-1.5 rounded-md border border-amber-200/70 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-400">
+              <i data-lucide="clipboard-list" class="h-3.5 w-3.5"></i> Förslag · Uppgift
+            </span>
+            <span class="text-[11px] text-muted-foreground">Föreslaget av Lexa · nyss</span>
+          </div>`
+
+        let body = ''
+        if (st === 'PENDING') {
+          body = `
+            ${fieldsBlock(d, { live })}
+            <div class="flex items-center justify-between pt-1">
+              <div class="flex items-center gap-2">
+                <button data-action="approve" class="${C.btnPrimary}"><i data-lucide="check" class="h-4 w-4"></i> Godkänn</button>
+                <button data-action="reject" class="${C.btnGhost}"><i data-lucide="x" class="h-4 w-4"></i> Avvisa</button>
+              </div>
+              <span class="inline-flex items-center gap-1 text-[11px] text-muted-foreground"><i data-lucide="check" class="h-3 w-3"></i> Ändringar sparas automatiskt</span>
+            </div>`
+        } else if (st === 'APPROVING') {
+          body = `
+            ${fieldsBlock(d, { live: false })}
+            <div class="flex items-center gap-2 pt-1">
+              <button class="${C.btnPrimary} opacity-90" disabled><i data-lucide="loader-circle" class="h-4 w-4 animate-spin"></i> Skapar uppgift…</button>
+            </div>`
+        } else if (st === 'APPROVED') {
+          body = `
+            <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+              <i data-lucide="circle-check" class="h-4 w-4"></i><span class="text-sm font-medium">Godkänt — uppgift skapad</span>
+            </div>
+            ${summaryBox(d)}
+            <div><a href="#" class="${C.btnOutlineSm}">Visa uppgift <i data-lucide="external-link" class="h-3 w-3"></i></a></div>`
+        } else if (st === 'REJECTED') {
+          body = `
+            <div class="flex items-center gap-2 text-muted-foreground">
+              <span class="inline-flex items-center gap-1 rounded-md border border-border bg-muted px-2 py-0.5 text-xs font-medium"><i data-lucide="x" class="h-3 w-3"></i> Avvisat</span>
+              <span class="text-xs">Förslaget skapades aldrig.</span>
+            </div>
+            ${summaryBox(d, { muted: true })}`
+        } else if (st === 'EXPIRED') {
+          body = `
+            <div class="flex items-center gap-2 text-muted-foreground">
+              <i data-lucide="clock" class="h-4 w-4"></i><span class="text-sm font-medium">Förslaget har gått ut</span>
+            </div>
+            ${summaryBox(d, { muted: true })}
+            <p class="text-xs text-muted-foreground">Be Lexa att föreslå uppgiften igen om den fortfarande är aktuell.</p>`
+        }
+
+        const dim = st === 'REJECTED' || st === 'EXPIRED' ? 'opacity-95' : ''
+        return `
+          <div class="card-in space-y-4 rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm ${dim}">
+            ${header}
+            ${body}
+          </div>`
+      }
+
+      // ----------------------------------------------------------------
+      // Variant B — AI Elements Confirmation shell (Alert primitive)
+      // ----------------------------------------------------------------
+      function cardB(d, st, { live } = {}) {
+        // The "alert" frame: left icon badge + title + body + right-aligned actions
+        function frame(iconName, iconTone, title, inner, frameTone = '') {
+          return `
+            <div class="card-in rounded-lg border border-border bg-card p-4 shadow-sm ${frameTone}">
+              <div class="flex gap-3">
+                <span class="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full ${iconTone}">
+                  <i data-lucide="${iconName}" class="h-4 w-4"></i>
+                </span>
+                <div class="min-w-0 flex-1 space-y-3">
+                  <div class="flex items-center justify-between gap-2">
+                    <p class="text-sm font-medium leading-tight">${title}</p>
+                    <span class="shrink-0 text-[11px] uppercase tracking-wide text-muted-foreground">Bekräftelse</span>
+                  </div>
+                  ${inner}
+                </div>
+              </div>
+            </div>`
+        }
+
+        if (st === 'PENDING') {
+          const inner = `
+            ${fieldsBlock(d, { live })}
+            <div class="flex items-center justify-end gap-2 pt-1">
+              <button data-action="reject" class="${C.btnOutline}"><i data-lucide="x" class="h-4 w-4"></i> Avvisa</button>
+              <button data-action="approve" class="${C.btnPrimary}"><i data-lucide="check" class="h-4 w-4"></i> Godkänn</button>
+            </div>`
+          return frame('sparkles', 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400', 'Lexa vill skapa en uppgift', inner)
+        }
+        if (st === 'APPROVING') {
+          const inner = `
+            ${fieldsBlock(d, { live: false })}
+            <div class="flex items-center justify-end gap-2 pt-1">
+              <button class="${C.btnPrimary} opacity-90" disabled><i data-lucide="loader-circle" class="h-4 w-4 animate-spin"></i> Skapar…</button>
+            </div>`
+          return frame('sparkles', 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400', 'Lexa vill skapa en uppgift', inner)
+        }
+        if (st === 'APPROVED') {
+          const inner = `${summaryBox(d)}<div><a href="#" class="${C.btnOutlineSm}">Visa uppgift <i data-lucide="external-link" class="h-3 w-3"></i></a></div>`
+          return frame('check', 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400', 'Godkänt — uppgift skapad', inner, 'border-emerald-300/50 dark:border-emerald-500/30')
+        }
+        if (st === 'REJECTED') {
+          const inner = `${summaryBox(d, { muted: true })}<p class="text-xs text-muted-foreground">Förslaget skapades aldrig.</p>`
+          return frame('x', 'bg-muted text-muted-foreground', 'Avvisat', inner)
+        }
+        // EXPIRED — Confirmation has no native expired state; show the stretch.
+        const inner = `
+          <div class="rounded-md border border-dashed border-amber-300/60 bg-amber-50/60 px-2.5 py-1.5 text-[11px] text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/5 dark:text-amber-400">
+            <i data-lucide="alert-triangle" class="mr-1 inline h-3 w-3 align-[-2px]"></i> AI Elements Confirmation saknar utgånget-läge — eget tillstånd krävs
+          </div>
+          ${summaryBox(d, { muted: true })}`
+        return frame('clock', 'bg-muted text-muted-foreground', 'Förslaget har gått ut', inner, 'opacity-80')
+      }
+
+      function renderCard(variant, st, opts) {
+        return variant === 'A' ? cardA(state.data, st, opts) : cardB(state.data, st, opts)
+      }
+
+      // ----------------------------------------------------------------
+      // Rendering / wiring
+      // ----------------------------------------------------------------
+      const slot = document.getElementById('chat-card-slot')
+
+      function paintToggles() {
+        document.querySelectorAll('#variant-toggle button').forEach((b) => {
+          const on = b.dataset.variant === state.variant
+          b.className =
+            'rounded-md px-3 py-1.5 text-xs font-medium transition-colors ' +
+            (on ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground')
+        })
+        document.querySelectorAll('#state-toggle button').forEach((b) => {
+          const on = b.dataset.state === state.cardState
+          b.className =
+            'rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ' +
+            (on ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground')
+        })
+        document.getElementById('active-variant-label').textContent = state.variant
+        const labels = { PENDING: 'Väntar', APPROVED: 'Godkänd', REJECTED: 'Avvisad', EXPIRED: 'Utgången' }
+        document.getElementById('active-state-label').textContent = labels[state.cardState]
+      }
+
+      function renderChat() {
+        slot.innerHTML = renderCard(state.variant, state.cardState, { live: state.cardState === 'PENDING' })
+        lucide.createIcons()
+        paintToggles()
+      }
+
+      function renderStatic() {
+        // side-by-side (pending), uses default data so it stays stable
+        const sbsData = { ...DEFAULTS }
+        const savedData = state.data
+        state.data = sbsData
+        document.getElementById('sbs-a').innerHTML = cardA(sbsData, 'PENDING', { live: false })
+        document.getElementById('sbs-b').innerHTML = cardB(sbsData, 'PENDING', { live: false })
+        document.querySelectorAll('[data-gallery]').forEach((el) => {
+          const [v, s] = el.dataset.gallery.split(':')
+          el.innerHTML = v === 'A' ? cardA(sbsData, s, { live: false }) : cardB(sbsData, s, { live: false })
+        })
+        state.data = savedData
+        lucide.createIcons()
+      }
+
+      // delegated input handling on the live chat card
+      slot.addEventListener('input', (e) => {
+        const f = e.target.dataset.field
+        if (f) state.data[f] = e.target.value
+      })
+      slot.addEventListener('change', (e) => {
+        const f = e.target.dataset.field
+        if (f) state.data[f] = e.target.value
+      })
+      slot.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]')
+        if (!btn) return
+        const action = btn.dataset.action
+        if (action === 'approve') {
+          slot.innerHTML = renderCard(state.variant, 'APPROVING', { live: false })
+          lucide.createIcons()
+          setTimeout(() => {
+            state.cardState = 'APPROVED'
+            renderChat()
+          }, 850)
+        } else if (action === 'reject') {
+          state.cardState = 'REJECTED'
+          renderChat()
+        }
+      })
+
+      // toggles
+      document.getElementById('variant-toggle').addEventListener('click', (e) => {
+        const b = e.target.closest('button')
+        if (!b) return
+        state.variant = b.dataset.variant
+        renderChat()
+      })
+      document.getElementById('state-toggle').addEventListener('click', (e) => {
+        const b = e.target.closest('button')
+        if (!b) return
+        state.cardState = b.dataset.state
+        renderChat()
+      })
+      document.getElementById('reset-btn').addEventListener('click', () => {
+        state.data = { ...DEFAULTS }
+        state.cardState = 'PENDING'
+        renderChat()
+      })
+
+      // theme
+      const themeBtn = document.getElementById('theme-btn')
+      themeBtn.addEventListener('click', () => {
+        const dark = document.documentElement.classList.toggle('dark')
+        themeBtn.innerHTML =
+          '<i data-lucide="' + (dark ? 'sun' : 'moon') + '" class="h-3.5 w-3.5"></i> ' +
+          '<span>' + (dark ? 'Ljust' : 'Mörkt') + '</span>'
+        lucide.createIcons()
+      })
+
+      // init
+      renderChat()
+      renderStatic()
+      lucide.createIcons()
+    </script>
+  </body>
+</html>

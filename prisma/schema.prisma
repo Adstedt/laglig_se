@@ -54,6 +54,9 @@ model User {
   // Story 14.27: Chat usage telemetry
   chat_usage_events ChatUsageEvent[]
 
+  // Story 14.22: Agent approval cards
+  pending_agent_actions PendingAgentAction[]
+
   // Epic 12: Template relations
   created_templates LawListTemplate[] @relation("TemplateCreator")
   reviewed_items    TemplateItem[]    @relation("TemplateItemReviewer")
@@ -164,6 +167,9 @@ model Workspace {
 
   // Story 14.27: Chat usage telemetry
   chat_usage_events ChatUsageEvent[]
+
+  // Story 14.22: Agent approval cards
+  pending_agent_actions PendingAgentAction[]
 
   // Story 5.5c: AI token quota counter (one row per workspace)
   workspace_usage WorkspaceUsage?
@@ -1457,6 +1463,9 @@ model ChatMessage {
   workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  // Story 14.22: Agent approval cards anchored to the assistant message that proposed them
+  pending_agent_actions PendingAgentAction[]
+
   @@index([workspace_id, user_id, context_type, context_id])
   @@index([workspace_id, user_id, created_at])
   @@index([conversation_id])
@@ -1516,6 +1525,52 @@ model ChatUsageEvent {
   @@index([workspace_id, user_id, created_at])
   @@index([context_type, created_at])
   @@map("chat_usage_events")
+}
+
+// ============================================================================
+// AGENT APPROVAL CARDS — Story 14.22
+// Persistent, inline agent action proposals (replaces the ephemeral sidebar
+// write-preview pattern). Workspace-scoped. chat_message_id is non-null: the FK
+// target is guaranteed by the pre-loop stub ChatMessage written in
+// app/api/chat/route.ts before the tool loop (see ADR-14.22-A). expires_at is
+// application-set to now()+7d at creation time (no DB default for now()+interval).
+// ============================================================================
+model PendingAgentAction {
+  id              String                   @id @default(uuid())
+  workspace_id    String
+  user_id         String
+  conversation_id String? // null = active conversation
+  chat_message_id String // FK to the assistant ChatMessage that proposed this action
+  context_type    ChatContextType          @default(GLOBAL)
+  context_id      String? // task_id or law_list_item_id depending on context_type
+  action_type     PendingAgentActionType
+  status          PendingAgentActionStatus @default(PENDING)
+  params          Json // editable snapshot of proposal parameters
+  result_ref      Json? // e.g. { taskId } after approve
+  created_at      DateTime                 @default(now())
+  decided_at      DateTime?
+  expires_at      DateTime // application-set to now()+7d at creation
+
+  // Relations
+  workspace    Workspace   @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  user         User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  chat_message ChatMessage @relation(fields: [chat_message_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id, user_id, conversation_id, status], map: "pending_agent_actions_scope_idx")
+  @@index([chat_message_id])
+  @@index([expires_at])
+  @@map("pending_agent_actions")
+}
+
+enum PendingAgentActionType {
+  CREATE_TASK
+}
+
+enum PendingAgentActionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
 }
 
 // Story 25.0 (Epic 25): First-run onboarding modal telemetry.

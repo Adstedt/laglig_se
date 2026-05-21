@@ -28,6 +28,10 @@ export interface SystemPromptOptions {
   sfsNumber?: string | undefined
   summary?: string | undefined
   thinkingEnabled?: boolean | undefined
+  // Story 14.22: pre-formatted <pending_agent_actions> workflow-state block
+  // (built by buildPendingActionsContext). Injected after company context and
+  // before subject context so the agent treats it as workflow state.
+  pendingActionsBlock?: string | undefined
 }
 
 // ---------------------------------------------------------------------------
@@ -230,6 +234,12 @@ export async function buildSystemPrompt(
     sections.push(
       `<company_context>\n## Om företaget\n${options.companyContext}\n</company_context>`
     )
+  }
+
+  // Story 14.22: agent feedback loop — pending/decided action proposals.
+  // Injected as workflow state (after company context, before subject context).
+  if (options?.pendingActionsBlock) {
+    sections.push(options.pendingActionsBlock)
   }
 
   // Task/law/change context injection

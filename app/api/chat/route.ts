@@ -24,7 +24,10 @@ import {
   buildSystemPrompt,
   formatCompanyContext,
 } from '@/lib/agent/system-prompt'
+import { buildPendingActionsContext } from '@/lib/agent/context-assembly'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
+import { randomUUID } from 'node:crypto'
 import {
   extractSourcesFromToolResult,
   type SourceInfo,
@@ -187,21 +190,68 @@ export async function POST(req: Request) {
     // Resolve thinking budget for this context
     const thinkingBudget = contextType ? (THINKING_BUDGET[contextType] ?? 0) : 0
 
+    const contextTypeUpper = (contextType ?? 'global').toUpperCase() as
+      | 'GLOBAL'
+      | 'TASK'
+      | 'LAW'
+      | 'CHANGE'
+
     // Build system prompt with company context
     const profile = await prisma.companyProfile.findFirst({
       where: { workspace_id: workspaceId },
     })
     const companyContext = formatCompanyContext(profile)
+
+    // Story 14.22: agent feedback loop — inject pending/decided action proposals
+    // as workflow state. Built before the stub message so it reflects the
+    // previous turn's state (the current stub is excluded by content != '').
+    const pendingActionsBlock =
+      workspaceId !== 'default'
+        ? await buildPendingActionsContext({
+            workspaceId,
+            userId,
+            contextType: contextTypeUpper,
+            contextId: contextId ?? null,
+          })
+        : null
+
     const systemPrompt = await buildSystemPrompt({
       companyContext,
       contextType,
       contextId,
       thinkingEnabled: thinkingBudget > 0,
+      ...(pendingActionsBlock ? { pendingActionsBlock } : {}),
       ...initialContext,
     })
 
-    // Create agent tools with workspace + user scoping
-    const tools = createAgentTools(workspaceId, userId)
+    // Story 14.22 / ADR-14.22-A: preallocate the assistant message id and write
+    // a STUB ChatMessage BEFORE streamText() so any PendingAgentAction created
+    // mid-tool-loop has a valid chat_message_id FK target. Its content is filled
+    // in onFinish (update, not create). The client no longer saves the assistant
+    // message — route.ts is the sole writer. Skip for the synthetic 'default'
+    // workspace fallback (FK to a non-existent workspace row would fail).
+    const assistantMessageId = randomUUID()
+    if (workspaceId !== 'default') {
+      await prisma.chatMessage.create({
+        data: {
+          id: assistantMessageId,
+          workspace_id: workspaceId,
+          user_id: userId,
+          role: 'ASSISTANT',
+          content: '',
+          context_type: contextTypeUpper,
+          context_id: contextId ?? null,
+        },
+      })
+    }
+
+    // Create agent tools with workspace + user scoping. assistantMessageId +
+    // chat context are threaded so write tools can persist a PendingAgentAction.
+    const tools = createAgentTools(workspaceId, userId, {
+      assistantMessageId,
+      contextType: contextTypeUpper,
+      contextId: contextId ?? null,
+    })
 
     // Select model based on environment variable
     const modelProvider = process.env.AI_CHAT_MODEL ?? 'openai'
@@ -273,7 +323,7 @@ export async function POST(req: Request) {
       // Story 14.27: persistent usage telemetry. Writes one ChatUsageEvent row per
       // successful chat turn. Fail-safe — telemetry write errors are logged but
       // never propagated to the stream response.
-      onFinish: async ({ totalUsage, steps }) => {
+      onFinish: async ({ text, totalUsage, steps, sources }) => {
         try {
           const inputTokens = totalUsage.inputTokens ?? 0
           const outputTokens = totalUsage.outputTokens ?? 0
@@ -306,11 +356,86 @@ export async function POST(req: Request) {
             reasoningTokens,
           })
 
-          const contextTypeUpper = (contextType ?? 'global').toUpperCase() as
-            | 'GLOBAL'
-            | 'TASK'
-            | 'LAW'
-            | 'CHANGE'
+          // Story 14.22 / ADR-14.22-A: derive the assistant message's citation
+          // metadata from the completed steps + sources (deterministic at
+          // onFinish — does NOT rely on the response-transform messageMetadata
+          // callback, whose timing relative to onFinish is not guaranteed). This
+          // is persisted on the stub so reloaded history renders citation pills
+          // identically to the live turn (which still streams via messageMetadata).
+          const finalCitationSources: Record<string, SourceInfo> = {}
+          for (const src of sources ?? []) {
+            const s = src as unknown as {
+              sourceType?: string
+              url?: string
+              title?: string
+            }
+            if (s.sourceType === 'url' && s.url) {
+              const key = `web:${s.url}`
+              if (!(key in finalCitationSources)) {
+                let domain: string
+                try {
+                  domain = new URL(s.url).hostname.replace(/^www\./, '')
+                } catch {
+                  domain = s.url
+                }
+                finalCitationSources[key] = {
+                  documentNumber: domain,
+                  title: s.title ?? null,
+                  snippet: null,
+                  slug: null,
+                  path: null,
+                  anchorId: null,
+                  url: s.url,
+                }
+              }
+            }
+          }
+          // Story 14.22: also collect any PendingAgentAction ids proposed this
+          // turn so the inline approval card is rediscoverable on history reload
+          // (tool parts are not persisted — only text + metadata are).
+          const pendingActionIds: string[] = []
+          for (const step of steps ?? []) {
+            const toolResults =
+              (
+                step as unknown as {
+                  toolResults?: Array<{
+                    toolName?: string
+                    output?: unknown
+                    result?: unknown
+                  }>
+                }
+              ).toolResults ?? []
+            for (const tr of toolResults) {
+              const out = tr.output ?? tr.result
+              const extracted = extractSourcesFromToolResult(
+                tr.toolName ?? '',
+                out
+              )
+              for (const [key, info] of Object.entries(extracted)) {
+                if (!(key in finalCitationSources)) {
+                  finalCitationSources[key] = info
+                }
+              }
+              const pid = (
+                out as { data?: { pendingActionId?: unknown } } | undefined
+              )?.data?.pendingActionId
+              if (typeof pid === 'string') pendingActionIds.push(pid)
+            }
+          }
+
+          const metaObj: Record<string, unknown> = {}
+          if (Object.keys(finalCitationSources).length > 0) {
+            metaObj.citationSources = finalCitationSources
+          }
+          if (pendingActionIds.length > 0) {
+            metaObj.pendingActionIds = pendingActionIds
+          }
+          const assistantMetadata:
+            | Prisma.InputJsonValue
+            | typeof Prisma.JsonNull =
+            Object.keys(metaObj).length > 0
+              ? (metaObj as unknown as Prisma.InputJsonValue)
+              : Prisma.JsonNull
 
           // Story 5.5c: ChatUsageEvent (Story 14.27 audit log) + WorkspaceUsage
           // (denormalised counter for quota check) MUST commit together so
@@ -358,6 +483,13 @@ export async function POST(req: Request) {
             })
 
             await prisma.$transaction([
+              // ADR-14.22-A: fill the pre-loop stub assistant message with the
+              // final content + citation metadata. Same transaction as the usage
+              // writes so a turn either fully persists or fully rolls back.
+              prisma.chatMessage.update({
+                where: { id: assistantMessageId },
+                data: { content: text ?? '', metadata: assistantMetadata },
+              }),
               prisma.chatUsageEvent.create({
                 data: {
                   workspace_id: workspaceId,
@@ -418,6 +550,11 @@ export async function POST(req: Request) {
     return result.toUIMessageStreamResponse({
       sendReasoning: true,
       sendSources: true,
+      // ADR-14.22-A: pin the assistant UI-message id to the pre-loop stub id so
+      // the client reconciles message.id to the persisted row — the inline
+      // AgentActionCard (keyed off the tool output's pendingActionId) and history
+      // reload both line up against the same ChatMessage.
+      generateMessageId: () => assistantMessageId,
       messageMetadata: ({
         part,
       }: {
