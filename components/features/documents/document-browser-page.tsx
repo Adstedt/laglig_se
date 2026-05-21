@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   AlertDialog,
@@ -278,53 +279,51 @@ export function DocumentBrowserPage() {
           ))}
         </div>
       ) : documents.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          {activeTab === 'arkiverade' ? (
-            <>
-              <Archive className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <h2 className="text-lg font-medium mb-1">
-                Inga arkiverade dokument
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Dokument som arkiveras hamnar här.
-              </p>
-            </>
-          ) : (
-            <>
-              <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
-              <h2 className="text-lg font-medium mb-1">
-                {filters.search ||
-                filters.types.length > 0 ||
-                filters.statuses.length > 0
-                  ? 'Inga dokument hittades'
-                  : 'Inga styrdokument ännu'}
-              </h2>
-              <p className="text-sm text-muted-foreground mb-4">
-                {filters.search ||
-                filters.types.length > 0 ||
-                filters.statuses.length > 0
-                  ? 'Ändra dina filter för att hitta dokument.'
-                  : 'Kom igång genom att skapa ett nytt styrdokument eller importera ett befintligt.'}
-              </p>
-              {!(
-                filters.search ||
-                filters.types.length > 0 ||
-                filters.statuses.length > 0
-              ) && (
-                <div className="flex gap-2">
-                  <Button onClick={() => setCreateOpen(true)}>
-                    <FilePlus className="mr-2 h-4 w-4" />
-                    Nytt dokument
-                  </Button>
-                  <Button variant="outline" onClick={() => setImportOpen(true)}>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Importera
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+        activeTab === 'arkiverade' ? (
+          <EmptyState
+            icon={
+              <EmptyState.Icon>
+                <Archive className="h-8 w-8 text-muted-foreground" />
+              </EmptyState.Icon>
+            }
+            title="Inga arkiverade dokument"
+            description="Dokument som arkiveras hamnar här."
+          />
+        ) : filters.search ||
+          filters.types.length > 0 ||
+          filters.statuses.length > 0 ? (
+          <EmptyState
+            icon={
+              <EmptyState.Icon>
+                <FileText className="h-8 w-8 text-muted-foreground" />
+              </EmptyState.Icon>
+            }
+            title="Inga dokument hittades"
+            description="Ändra dina filter för att hitta dokument."
+          />
+        ) : (
+          <EmptyState
+            icon={
+              <EmptyState.Icon>
+                <FileText className="h-8 w-8 text-muted-foreground" />
+              </EmptyState.Icon>
+            }
+            title="Inga styrdokument ännu"
+            description="Skapa ditt första styrdokument från grunden eller importera en befintlig version."
+            action={
+              <div className="flex gap-2">
+                <Button onClick={() => setCreateOpen(true)}>
+                  <FilePlus className="mr-2 h-4 w-4" />
+                  Nytt dokument
+                </Button>
+                <Button variant="outline" onClick={() => setImportOpen(true)}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Importera
+                </Button>
+              </div>
+            }
+          />
+        )
       ) : (
         <>
           <DocumentTable

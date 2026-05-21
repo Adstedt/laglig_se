@@ -45,8 +45,10 @@ import {
 import { FilterEmptyState } from './filter-empty-state'
 import { SearchInput } from './search-input'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
+import { LawListPrimaryAction } from './law-list-primary-action'
 import { ToolbarItemCount } from '@/components/ui/unified-toolbar'
-import { Settings } from 'lucide-react'
+import { FileText, Settings, Upload } from 'lucide-react'
 // Toolbar redesign
 import { LawListToolbar } from './law-list-toolbar'
 import { ViewMenu } from './view-menu'
@@ -871,6 +873,28 @@ export function DocumentListPageContent({
               searchQuery={searchQuery}
               hasActiveFilters={checkHasActiveFilters(complianceFilters)}
               onClearFilters={clearAllFiltersAndSearch}
+            />
+          ) : activeListId &&
+            total === 0 &&
+            !activeGroupFilter &&
+            !isLoadingItems ? (
+            <EmptyState
+              icon={
+                <EmptyState.Icon>
+                  <FileText className="h-8 w-8 text-muted-foreground" />
+                </EmptyState.Icon>
+              }
+              title="Inga dokument i listan ännu"
+              description="Lägg till relevanta regelverk eller importera en befintlig laglista för att komma igång."
+              action={
+                <div className="flex gap-2">
+                  <LawListPrimaryAction />
+                  <Button variant="outline" onClick={handleOpenImport}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Importera laglista
+                  </Button>
+                </div>
+              }
             />
           ) : viewMode === 'card' ? (
             <GroupedDocumentList
