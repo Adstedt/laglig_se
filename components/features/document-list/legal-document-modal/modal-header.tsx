@@ -81,7 +81,7 @@ export function ModalHeader({
           rather than a dead two-step breadcrumb. */}
       <nav className="flex min-w-0 items-center text-sm" aria-label="Brödsmula">
         <Link
-          href={`/laglistor/${listId}`}
+          href={`/laglistor?list=${listId}`}
           onClick={onClose}
           className="max-w-[260px] truncate text-muted-foreground transition-colors hover:text-foreground hover:underline"
         >
