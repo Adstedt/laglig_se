@@ -166,7 +166,7 @@
 
 ## Epic 14: Compliance Agent
 
-**Status:** Done (18 completed, 5 backlog — exceeded original 14-story estimate; Phase 6 added 2026-04-24 for prompt-caching + usage telemetry as 5.5 prereqs)
+**Status:** Core Done (18 completed). Phase 5 (Agent Approval Cards) in active development — 14.22 Ready for Review, 14.23/14.24/14.28–14.31 Approved, 14.32 Draft. Phase 6 (prompt-caching + usage telemetry, 14.26/14.27) Done (added 2026-04-24 as 5.5 prereqs). Original estimate was 14 stories.
 
 **Goal:** Build an AI compliance partner that provides contextual, cited legal guidance through conversational interaction with company-aware tooling.
 
@@ -250,7 +250,7 @@
 
 **Requirements covered:** FR4 (enhanced), FR5 (enhanced), FR7 (enhanced), FR25 (audit trail — agent decisions), NFR2 (accuracy), NFR3 (hallucination prevention), NFR24 (cite-first answers)
 
-**Dependencies:** Epic 14 (Agent — Done; Stories 14.22–14.24 Approved as pre-req for approval-card reuse), Epic 17 (DMS — Partial; Stories 17.8–17.11 Draft as pre-req for text extraction + RAG + document tools), Epic 11 (Admin shell — Done, for future monitoring views), Epic 6 (Kanban/Task — Done). Sibling stories 14.26–14.29 coordinated with Epic 14.
+**Dependencies:** Epic 14 (Agent — core Done; approval-card Phase 5 in flight — 14.22 Ready for Review, 14.23/14.24 Approved as pre-req for approval-card reuse), Epic 17 (DMS — Partial; Stories 17.8–17.11 Draft as pre-req for text extraction + RAG + document tools), Epic 11 (Admin shell — Done, for future monitoring views), Epic 6 (Kanban/Task — Done). Sibling stories 14.26–14.29 coordinated with Epic 14.
 
 **Note:** Brownfield enhancement. Self-hosted only — no Anthropic Files API, no managed Skills beta, no code execution tool. Keeps stack provider-neutral and ZDR-clean. Single composite feature flag `agent_partner_v2` per workspace gates the entire epic.
 
