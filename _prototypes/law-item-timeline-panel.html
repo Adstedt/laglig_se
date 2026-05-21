@@ -1,0 +1,867 @@
+<!doctype html>
+<html lang="sv" class="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Laglig · Tidslinje i lagmodalen (dark — v2)</title>
+<style>
+  /* ==================================================================
+     Fonts — Safiro (display, weight 500) + Google Sans Flex (body)
+     ================================================================== */
+  @font-face { font-family: 'Safiro'; src: url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'), url('../public/fonts/safiro-medium-webfont.woff') format('woff'); font-weight: 500; font-style: normal; font-display: swap; }
+  @font-face { font-family: 'Google Sans Flex'; src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
+
+  /* ==================================================================
+     Dark theme tokens — copied 1:1 from app/globals.css .dark
+     ================================================================== */
+  :root {
+    --background: 0 0% 10%; --foreground: 0 0% 93%; --card: 0 0% 9%;
+    --popover: 0 0% 14%; --primary: 0 0% 93%; --primary-foreground: 0 0% 10%;
+    --secondary: 0 0% 17%; --muted: 0 0% 17%; --muted-foreground: 0 0% 64%;
+    --accent: 0 0% 17%; --border: 0 0% 19%; --radius: 0.5rem;
+    --t-success-bg: 152 30% 18%; --t-success-fg: 152 70% 70%;
+    --t-warning-bg: 27 30% 18%;  --t-warning-fg: 38 80% 70%;
+    --t-danger-bg: 348 30% 20%;  --t-danger-fg: 350 80% 75%;
+    --t-info-bg: 224 30% 22%;    --t-info-fg: 214 90% 75%;
+    --gold: 40 45% 72%;
+    --font-sans: 'Google Sans Flex', system-ui, -apple-system, sans-serif;
+    --font-display: 'Safiro', 'Google Sans Flex', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); font-size: 14px; background: hsl(0 0% 6%); color: hsl(var(--foreground)); min-height: 100vh; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  .font-safiro { font-family: var(--font-display); font-weight: 500; }
+
+  /* ---- Prototype chrome -------------------------------------------- */
+  .proto-bar { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; gap: 16px; padding: 12px 22px; background: hsl(0 0% 8% / .82); backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%); border-bottom: 1px solid hsl(var(--border)); color: hsl(0 0% 80%); font-size: 13px; flex-wrap: wrap; }
+  .proto-brand { display: flex; align-items: center; gap: 10px; font-size: 14px; color: hsl(0 0% 92%); }
+  .proto-brand .font-safiro { font-size: 15px; }
+  .proto-brand .dot { width: 6px; height: 6px; border-radius: 999px; background: hsl(var(--gold)); box-shadow: 0 0 12px hsl(var(--gold) / .7); }
+  .seg-group { display: flex; gap: 4px; padding: 4px; background: hsl(0 0% 13%); border: 1px solid hsl(var(--border)); border-radius: 999px; }
+  .seg-group button { appearance: none; background: transparent; border: 0; color: hsl(0 0% 62%); font: inherit; font-size: 12px; font-weight: 500; padding: 7px 13px; border-radius: 999px; cursor: pointer; transition: all 160ms ease; display: flex; align-items: center; gap: 7px; }
+  .seg-group button .k { font-size: 10px; padding: 2px 5px; border-radius: 4px; background: hsl(0 0% 20%); color: hsl(0 0% 60%); font-variant-numeric: tabular-nums; font-weight: 600; }
+  .seg-group button:hover { color: hsl(0 0% 92%); }
+  .seg-group button.active { background: hsl(0 0% 92%); color: hsl(0 0% 12%); }
+  .seg-group button.active .k { background: hsl(0 0% 12%); color: hsl(0 0% 92%); }
+  .proto-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: hsl(0 0% 48%); }
+  .proto-spacer { margin-left: auto; }
+
+  /* ---- Scene ------------------------------------------------------- */
+  .scene { position: relative; min-height: calc(100vh - 51px); padding: 30px 40px 32px; display: flex; align-items: center; justify-content: center; }
+  .scene::after { content: ''; position: absolute; inset: 0; background: hsl(0 0% 3% / .55); pointer-events: none; }
+
+  /* ---- Modal shell ------------------------------------------------- */
+  .modal { position: relative; z-index: 1; width: min(94vw, 1240px); height: min(88vh, 880px); background: hsl(var(--background)); border: 1px solid hsl(var(--border)); border-radius: 12px; box-shadow: 0 30px 90px hsl(0 0% 0% / .55); display: flex; flex-direction: column; overflow: hidden; }
+  .modal-header { display: flex; align-items: center; gap: 10px; padding: 13px 18px; border-bottom: 1px solid hsl(var(--border)); flex-shrink: 0; min-height: 52px; }
+  .breadcrumb { font-size: 13.5px; color: hsl(var(--muted-foreground)); font-weight: 450; }
+  .breadcrumb a { color: inherit; text-decoration: none; transition: color 150ms; }
+  .breadcrumb a:hover { color: hsl(var(--foreground)); }
+  .header-actions { margin-left: auto; display: flex; align-items: center; gap: 2px; }
+  .icon-btn { appearance: none; background: transparent; border: 0; color: hsl(var(--muted-foreground)); width: 32px; height: 32px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 150ms ease; }
+  .icon-btn:hover { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
+  .icon-btn svg { width: 16px; height: 16px; }
+  .lexa-mark { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: hsl(var(--foreground)); }
+  .lexa-mark svg { width: 20px; height: 20px; }
+  .lexa-mark.sm svg { width: 15px; height: 15px; }
+  .lexa-mark.gold { color: hsl(var(--gold)); }
+
+  /* ---- State-3 strip ----------------------------------------------- */
+  .strip { max-height: 0; overflow: hidden; border-bottom: 1px solid transparent; transition: max-height 420ms cubic-bezier(.4,0,.2,1), border-color 220ms ease, padding 420ms cubic-bezier(.4,0,.2,1); background: hsl(var(--card)); padding: 0 22px; }
+  .state-3 .strip { max-height: 64px; border-bottom-color: hsl(var(--border)); padding: 12px 22px; }
+  .strip-inner { display: flex; align-items: center; gap: 14px; opacity: 0; transform: translateY(-4px); transition: opacity 240ms ease 180ms, transform 240ms ease 180ms; }
+  .state-3 .strip-inner { opacity: 1; transform: translateY(0); }
+  .strip-icon { width: 32px; height: 32px; border-radius: 8px; background: hsl(var(--muted)); display: inline-flex; align-items: center; justify-content: center; color: hsl(var(--muted-foreground)); flex-shrink: 0; }
+  .strip-title { font-weight: 600; font-size: 14px; color: hsl(var(--foreground)); }
+  .strip-meta { display: flex; gap: 8px; font-size: 12px; color: hsl(var(--muted-foreground)); align-items: center; }
+  .strip-return { margin-left: auto; appearance: none; background: transparent; border: 1px solid hsl(var(--border)); color: hsl(var(--foreground)); font: inherit; font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 150ms ease; }
+  .strip-return:hover { background: hsl(var(--muted)); }
+  .strip-return svg { width: 12px; height: 12px; }
+
+  /* ---- Body grid --------------------------------------------------- */
+  .modal-body { flex: 1; min-height: 0; display: flex; position: relative; }
+  .content-panel, .right-panel, .work-panel { flex-basis: 0; min-width: 0; overflow: hidden; position: relative; transition: flex-grow 480ms cubic-bezier(.4,0,.2,1), opacity 280ms ease; }
+  .content-panel { flex-grow: 3; }
+  .right-panel  { flex-grow: 2; border-left: 1px solid hsl(var(--border)); }
+  .work-panel   { flex-grow: 0; opacity: 0; border-left: 1px solid hsl(var(--border)); background: hsl(var(--card)); }
+  .state-2 .right-panel { flex-grow: 0; opacity: 0; }
+  .state-2 .work-panel  { flex-grow: 3; opacity: 1; }
+  .state-3 .content-panel { flex-grow: 0; opacity: 0; }
+  .state-3 .right-panel   { flex-grow: 0; opacity: 0; }
+  .state-3 .work-panel    { flex-grow: 1; opacity: 1; border-left: 0; background: hsl(var(--background)); }
+  .rail { width: 0; flex-shrink: 0; overflow: hidden; transition: width 480ms cubic-bezier(.4,0,.2,1); border-left: 1px solid transparent; background: hsl(var(--card)); }
+  .state-2 .rail { width: 44px; border-left-color: hsl(var(--border)); }
+
+  /* ---- LEFT CONTENT PANEL ------------------------------------------ */
+  .content-inner { height: 100%; overflow-y: auto; padding: 24px; scrollbar-width: thin; }
+  .content-inner::-webkit-scrollbar { width: 8px; }
+  .content-inner::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 8px; }
+  .law-title { font-size: 20px; line-height: 1.2; letter-spacing: -0.01em; margin: 0 0 12px; color: hsl(var(--foreground)); }
+  .badge-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 20px; }
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 7px; font-size: 12px; font-weight: 500; border: 1px solid hsl(var(--border)); background: hsl(var(--muted) / .5); color: hsl(var(--foreground)); }
+  .badge .dot { width: 8px; height: 8px; border-radius: 999px; }
+  .badge.neutral .dot { background: hsl(215 15% 55%); }
+  .badge.warning { background: hsl(var(--t-warning-bg)); border-color: hsl(var(--t-warning-fg) / .25); color: hsl(var(--t-warning-fg)); }
+  .badge.warning svg { width: 12px; height: 12px; }
+  .toggle-all { margin-left: auto; }
+
+  .group-label { display: flex; width: 100%; align-items: center; gap: 12px; padding: 12px 4px 4px; cursor: pointer; user-select: none; appearance: none; background: transparent; border: 0; }
+  .group-label .gl-text { font-family: var(--font-display); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: hsl(var(--muted-foreground)); transition: color 150ms; }
+  .group-label:hover .gl-text { color: hsl(var(--foreground)); }
+  .group-label .gl-line { height: 1px; flex: 1; background: hsl(var(--border)); }
+  .group-label .gl-count { display: inline-flex; height: 18px; min-width: 18px; align-items: center; justify-content: center; border-radius: 6px; background: hsl(var(--muted)); padding: 0 6px; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; color: hsl(var(--muted-foreground)); }
+  .group-label .gl-chev { width: 16px; height: 16px; color: hsl(var(--muted-foreground)); transition: transform 200ms ease; }
+  .group.collapsed .gl-chev { transform: rotate(-90deg); }
+  .group-content { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
+  .group.collapsed .group-content { display: none; }
+
+  .acc { border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--card)); overflow: hidden; }
+  .acc-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; font-weight: 500; font-size: 13.5px; color: hsl(var(--foreground)); transition: background 150ms ease; user-select: none; }
+  .acc-head:hover { background: hsl(var(--muted) / .4); }
+  .acc-head .ico { width: 18px; height: 18px; color: hsl(var(--muted-foreground)); flex-shrink: 0; display: inline-flex; }
+  .acc-head .ico svg { width: 16px; height: 16px; }
+  .acc-head .mc { margin-left: auto; font-size: 12px; color: hsl(var(--muted-foreground)); font-weight: 450; }
+  .acc-head .chev { width: 16px; height: 16px; color: hsl(var(--muted-foreground)); transition: transform 200ms ease; flex-shrink: 0; }
+  .acc.closed .chev { transform: rotate(-90deg); }
+  .acc-body { padding: 0 14px 14px 42px; font-size: 13px; color: hsl(var(--muted-foreground)); line-height: 1.6; }
+  .acc.closed .acc-body { display: none; }
+
+  /* Aktivitet → now comments only (history lives in the timeline) */
+  .activity { margin-top: 18px; }
+  .activity h3 { font-size: 15px; font-weight: 600; color: hsl(var(--foreground)); margin: 0 0 12px; }
+  .comment-box { display: flex; align-items: center; gap: 10px; border: 1px solid hsl(var(--border)); border-radius: 9px; padding: 10px 13px; color: hsl(var(--muted-foreground)); cursor: text; }
+  .comment-box .cb { font-size: 13px; }
+  .act-promo { margin-top: 12px; border: 1px solid hsl(var(--border)); border-radius: 9px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; background: hsl(var(--card)); }
+  .act-promo .ic { width: 34px; height: 34px; border-radius: 8px; background: hsl(var(--t-info-bg)); color: hsl(var(--t-info-fg)); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .act-promo .ic svg { width: 17px; height: 17px; }
+  .act-promo .txt { font-size: 12.5px; color: hsl(var(--muted-foreground)); line-height: 1.4; }
+  .act-promo .txt b { color: hsl(var(--foreground)); font-weight: 600; }
+  .act-promo button { margin-left: auto; }
+
+  /* ---- RIGHT PANEL ------------------------------------------------- */
+  .right-inner { height: 100%; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .right-inner::-webkit-scrollbar { width: 6px; }
+  .right-inner::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 6px; }
+  .card { border: 1px solid hsl(var(--border)); border-radius: 10px; background: hsl(var(--card)); padding: 16px 18px; }
+  .card h4 { margin: 0 0 14px; font-size: 15px; font-weight: 600; color: hsl(var(--foreground)); }
+  .field { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; font-size: 13.5px; min-height: 32px; }
+  .field .k { color: hsl(var(--muted-foreground)); font-weight: 450; display: inline-flex; align-items: center; gap: 5px; }
+  .field .k svg { width: 13px; height: 13px; opacity: .6; }
+  .field .v { color: hsl(var(--foreground)); font-weight: 600; display: inline-flex; align-items: center; gap: 7px; }
+  .v-pill { padding: 4px 9px; border-radius: 7px; font-size: 12.5px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; border: 1px solid hsl(var(--border)); }
+  .v-pill.neutral { background: hsl(var(--muted) / .5); }
+  .v-pill.neutral .dot { width: 8px; height: 8px; border-radius: 999px; background: hsl(215 15% 55%); }
+  .v-pill.warning { background: hsl(var(--t-warning-bg)); color: hsl(var(--t-warning-fg)); border-color: hsl(var(--t-warning-fg) / .25); }
+  .v-pill .chev { width: 13px; height: 13px; opacity: .7; }
+  .v-muted { color: hsl(var(--muted-foreground)); font-weight: 400; }
+  .badge-ny { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; background: hsl(var(--t-warning-bg)); color: hsl(var(--t-warning-fg)); font-size: 10.5px; font-weight: 600; }
+  .link-v { color: hsl(var(--foreground)); text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+  .link-v svg { width: 12px; height: 12px; opacity: .6; }
+  .ql-list { display: flex; flex-direction: column; gap: 8px; }
+  .ql { appearance: none; font: inherit; font-size: 13.5px; font-weight: 500; width: 100%; text-align: left; padding: 10px 13px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; transition: all 150ms ease; border: 1px solid hsl(var(--border)); background: transparent; color: hsl(var(--foreground)); }
+  .ql svg { width: 15px; height: 15px; color: hsl(var(--muted-foreground)); flex-shrink: 0; }
+  .ql:hover { background: hsl(var(--muted) / .5); }
+  .ql .ql-count { margin-left: auto; font-size: 11px; font-weight: 600; color: hsl(var(--muted-foreground)); background: hsl(var(--muted)); padding: 1px 7px; border-radius: 999px; }
+  .ql.solid { background: hsl(var(--foreground)); color: hsl(var(--background)); border-color: hsl(var(--foreground)); }
+  .ql.solid svg, .ql.solid .lexa-mark { color: hsl(var(--background)); }
+  .ql.solid:hover { background: hsl(var(--foreground) / .9); }
+  .overview-line { display: flex; align-items: center; gap: 9px; font-size: 13.5px; color: hsl(var(--muted-foreground)); }
+  .overview-line svg { width: 15px; height: 15px; }
+
+  /* ==================================================================
+     WORK PANEL — Timeline / Fråga Lexa
+     ================================================================== */
+  .work-panel { display: flex; flex-direction: column; }
+  .work-inner { display: flex; flex-direction: column; height: 100%; min-width: 0; }
+  .work-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid hsl(var(--border)); flex-shrink: 0; min-height: 52px; }
+  .mode-seg { display: flex; gap: 3px; padding: 3px; background: hsl(var(--muted) / .7); border-radius: 9px; }
+  .mode-seg button { appearance: none; border: 0; background: transparent; font: inherit; font-size: 12.5px; font-weight: 500; color: hsl(var(--muted-foreground)); padding: 6px 12px; border-radius: 7px; cursor: pointer; transition: all 150ms ease; display: inline-flex; align-items: center; gap: 7px; }
+  .mode-seg button svg { width: 14px; height: 14px; }
+  .mode-seg button:hover { color: hsl(var(--foreground)); }
+  .mode-seg button.active { background: hsl(var(--background)); color: hsl(var(--foreground)); box-shadow: 0 1px 2px hsl(0 0% 0% / .35); }
+  .work-actions { margin-left: auto; display: flex; align-items: center; gap: 1px; }
+  .work-actions .divider { width: 1px; height: 18px; background: hsl(var(--border)); margin: 0 6px; }
+  .icon-btn.on { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
+
+  .mode-pane { display: none; flex: 1; min-height: 0; flex-direction: column; }
+  .mode-pane.active { display: flex; }
+
+  /* filters — single scrollable row (no wrap) */
+  .tl-filterbar { display: flex; gap: 6px; padding: 11px 16px; flex-wrap: nowrap; overflow-x: auto; border-bottom: 1px solid hsl(var(--border)); flex-shrink: 0; scrollbar-width: none; }
+  .tl-filterbar::-webkit-scrollbar { display: none; }
+  .scene.sparse .tl-filterbar { display: none; }
+  .tl-filter { appearance: none; font: inherit; font-size: 12px; font-weight: 500; border: 1px solid hsl(var(--border)); background: transparent; color: hsl(var(--muted-foreground)); padding: 5px 11px; border-radius: 999px; cursor: pointer; transition: all 150ms ease; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0; }
+  .tl-filter:hover { background: hsl(var(--muted) / .5); color: hsl(var(--foreground)); }
+  .tl-filter.active { background: hsl(var(--foreground)); color: hsl(var(--background)); border-color: hsl(var(--foreground)); }
+  .tl-filter .cnt { font-variant-numeric: tabular-nums; opacity: .6; }
+
+  .tl-body { flex: 1; min-height: 0; display: flex; position: relative; overflow: hidden; }
+  .tl-list { flex: 1; min-width: 0; overflow-y: auto; padding: 0 0 28px; scrollbar-width: thin; }
+  .tl-list::-webkit-scrollbar { width: 8px; }
+  .tl-list::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 8px; }
+  .state-3 .tl-list { flex: 0 0 384px; border-right: 1px solid hsl(var(--border)); }
+
+  /* sparse-state hint (shown only when "Ny lag" content toggle is on) */
+  .tl-sparse-hint { display: none; flex-direction: column; gap: 6px; margin: 18px 16px 10px; padding: 16px; border: 1px dashed hsl(var(--border)); border-radius: 11px; background: hsl(var(--card)); }
+  .scene.sparse .tl-sparse-hint { display: flex; }
+  .tl-sparse-hint .sh-t { font-size: 13px; font-weight: 600; color: hsl(var(--foreground)); display: flex; align-items: center; gap: 8px; }
+  .tl-sparse-hint .sh-t svg { width: 15px; height: 15px; color: hsl(var(--t-info-fg)); }
+  .tl-sparse-hint .sh-h { font-size: 12.5px; color: hsl(var(--muted-foreground)); line-height: 1.5; }
+
+  /* "Kräver åtgärd" strip — open/actionable items, above the chronicle */
+  .tl-action-strip { padding: 14px 16px 6px; border-bottom: 1px solid hsl(var(--border)); margin-bottom: 4px; }
+  .scene.sparse .tl-action-strip { display: none; }
+  .tl-action-head { font-family: var(--font-display); font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: hsl(var(--t-warning-fg)); display: flex; align-items: center; gap: 8px; margin-bottom: 10px; padding-left: 2px; }
+  .tl-action-head .cnt { background: hsl(var(--t-warning-bg)); color: hsl(var(--t-warning-fg)); border-radius: 999px; padding: 1px 8px; font-size: 11px; }
+
+  .tl-month { font-family: var(--font-display); font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: hsl(var(--muted-foreground)); margin: 6px 0 10px 52px; padding-top: 6px; }
+  .scene.sparse .tl-month:not([data-keep]) { display: none; }
+
+  /* one continuous spine down the whole chronicle (months are side-markers,
+     not breaks). Lives on the stream wrapper so it spans every group. */
+  .tl-stream { position: relative; }
+  .tl-stream::before { content: ''; position: absolute; left: 28px; top: 34px; bottom: 16px; width: 2px; background: linear-gradient(to bottom, hsl(var(--border) / .25), hsl(var(--border)) 6%, hsl(var(--border)) 94%, hsl(var(--border) / .25)); }
+  .scene.sparse .tl-stream::before { display: none; }
+  .tl-track { position: relative; padding: 0 16px 0 52px; }
+  .scene.sparse .tl-track .tl-node:not([data-keep]) { display: none; }
+
+  .tl-node { position: relative; margin-bottom: 9px; cursor: pointer; border: 1px solid hsl(var(--border)); border-radius: 10px; background: hsl(var(--card)); padding: 14px 14px 13px; transition: all 150ms ease; }
+  .tl-node:hover { background: hsl(var(--muted) / .4); transform: translateX(1px); }
+  .tl-node.active { border-color: hsl(var(--gold) / .55); box-shadow: 0 0 0 2px hsl(var(--gold) / .14); }
+  /* (2) Single type-encoding: the rail dot is a NEUTRAL thread marker.
+         Type is carried by the icon tile; outcome by the verdict pill. */
+  .tl-track .tl-node::before { content: ''; box-sizing: border-box; position: absolute; left: -32px; top: 18px; width: 16px; height: 16px; border-radius: 999px; background: hsl(0 0% 38%); border: 3px solid hsl(var(--background)); box-shadow: 0 0 0 1px hsl(var(--border)); }
+  .tl-track .tl-node.active::before { background: hsl(var(--gold)); }
+
+  .tl-top { display: flex; align-items: flex-start; gap: 9px; }
+  .tl-kind { width: 25px; height: 25px; border-radius: 7px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); margin-top: 1px; }
+  .tl-kind svg { width: 14px; height: 14px; }
+  .t-amendment .tl-kind { background: hsl(var(--t-info-bg)); color: hsl(var(--t-info-fg)); }
+  .t-assessment .tl-kind { background: hsl(var(--t-success-bg)); color: hsl(var(--t-success-fg)); }
+  .t-action .tl-kind, .t-assessment-partial .tl-kind { background: hsl(var(--t-warning-bg)); color: hsl(var(--t-warning-fg)); }
+  .t-finding .tl-kind { background: hsl(var(--t-danger-bg)); color: hsl(var(--t-danger-fg)); }
+  .t-status .tl-kind { background: hsl(var(--t-success-bg)); color: hsl(var(--t-success-fg)); }
+
+  /* (7) eyebrow carries the TYPE, title carries the SUBJECT */
+  .tl-textcol { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .tl-eyebrow { font-family: var(--font-display); font-size: 10.5px; font-weight: 500; letter-spacing: .07em; text-transform: uppercase; color: hsl(var(--muted-foreground)); }
+  .tl-title { font-size: 13px; font-weight: 550; color: hsl(var(--foreground)); line-height: 1.3; }
+  .tl-date { font-size: 11.5px; color: hsl(var(--muted-foreground)); white-space: nowrap; margin-top: 1px; flex-shrink: 0; }
+  .tl-sub { margin: 7px 0 0 34px; font-size: 12.5px; color: hsl(var(--muted-foreground)); line-height: 1.5; }
+  .tl-tags { display: flex; gap: 6px; margin: 8px 0 0 34px; flex-wrap: wrap; align-items: center; }
+
+  /* (5) compact density — hide sub + tags, tighten */
+  .tl-list.compact .tl-sub, .tl-list.compact .tl-tags { display: none; }
+  .tl-list.compact .tl-node { padding: 8px 12px; margin-bottom: 5px; }
+  .tl-list.compact .tl-track .tl-node::before { top: 12px; }
+
+  /* (1) actionable node — left accent, no rail dot, action button */
+  .tl-actionable { border-left: 3px solid hsl(var(--t-warning-fg)); background: linear-gradient(to right, hsl(var(--t-warning-bg) / .4), transparent 60%); }
+  .tl-actionable .tl-cta { margin-left: auto; appearance: none; border: 0; font: inherit; font-size: 11.5px; font-weight: 600; padding: 4px 11px; border-radius: 7px; background: hsl(var(--t-warning-fg)); color: hsl(0 0% 10%); cursor: pointer; }
+
+  .verdict { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+  .verdict .vd { width: 6px; height: 6px; border-radius: 999px; }
+  .verdict.uppfylld { background: hsl(var(--t-success-bg)); color: hsl(var(--t-success-fg)); } .verdict.uppfylld .vd { background: hsl(var(--t-success-fg)); }
+  .verdict.delvis { background: hsl(var(--t-warning-bg)); color: hsl(var(--t-warning-fg)); } .verdict.delvis .vd { background: hsl(var(--t-warning-fg)); }
+  .verdict.ej { background: hsl(var(--t-danger-bg)); color: hsl(var(--t-danger-fg)); } .verdict.ej .vd { background: hsl(var(--t-danger-fg)); }
+  .verdict.info { background: hsl(var(--t-info-bg)); color: hsl(var(--t-info-fg)); } .verdict.info .vd { background: hsl(var(--t-info-fg)); }
+  .micro { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: hsl(var(--muted-foreground)); background: hsl(var(--muted) / .7); padding: 2px 8px; border-radius: 999px; }
+  .micro svg { width: 11px; height: 11px; }
+  .micro.danger { background: hsl(var(--t-danger-bg)); color: hsl(var(--t-danger-fg)); }
+  .avatar-xs { width: 16px; height: 16px; border-radius: 999px; font-size: 9px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; color: #fff; background: hsl(214 45% 45%); }
+
+  /* detail */
+  .tl-detail { position: absolute; inset: 0; background: hsl(var(--card)); transform: translateX(100%); transition: transform 360ms cubic-bezier(.4,0,.2,1); display: flex; flex-direction: column; overflow: hidden; z-index: 4; }
+  .tl-body.detail-open .tl-detail { transform: translateX(0); box-shadow: -16px 0 36px hsl(0 0% 0% / .35); }
+  .state-3 .tl-detail { position: static; transform: none; flex: 1; box-shadow: none; min-width: 0; }
+  .state-3 .tl-body.detail-open .tl-detail { box-shadow: none; }
+  .detail-head { display: flex; align-items: center; gap: 10px; padding: 11px 16px; border-bottom: 1px solid hsl(var(--border)); flex-shrink: 0; }
+  .detail-back { appearance: none; border: 1px solid hsl(var(--border)); background: transparent; color: hsl(var(--foreground)); font: inherit; font-size: 12px; font-weight: 500; padding: 6px 11px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 150ms ease; }
+  .detail-back:hover { background: hsl(var(--muted) / .5); }
+  .detail-back svg { width: 12px; height: 12px; }
+  .state-3 .detail-back { display: none; }
+  .detail-head .dh { font-size: 13px; font-weight: 600; color: hsl(var(--foreground)); }
+  .detail-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 22px 22px 30px; scrollbar-width: thin; }
+  .state-3 .detail-scroll { padding: 28px 40px 36px; max-width: 760px; margin: 0 auto; width: 100%; }
+  .detail-scroll::-webkit-scrollbar { width: 8px; }
+  .detail-scroll::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 8px; }
+  .detail-block { display: none; }
+  .detail-block.active { display: block; animation: fadeIn 260ms ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .d-eyebrow { font-family: var(--font-display); display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 500; letter-spacing: .07em; text-transform: uppercase; color: hsl(var(--muted-foreground)); margin-bottom: 10px; }
+  .d-eyebrow svg { width: 13px; height: 13px; }
+  .d-title { font-size: 21px; line-height: 1.2; letter-spacing: -0.01em; color: hsl(var(--foreground)); margin: 0 0 12px; }
+  .d-metarow { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin: 0 0 20px; padding-bottom: 18px; border-bottom: 1px solid hsl(var(--border)); }
+  .d-meta { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: hsl(var(--muted-foreground)); }
+  .d-meta .avatar-xs { width: 20px; height: 20px; font-size: 10px; }
+  .d-section { margin-bottom: 22px; }
+  .d-label { font-size: 12px; font-weight: 600; color: hsl(var(--foreground)); margin-bottom: 9px; display: flex; align-items: center; gap: 7px; }
+  .d-label svg { width: 13px; height: 13px; color: hsl(var(--muted-foreground)); }
+  .d-text { font-size: 13.5px; line-height: 1.65; color: hsl(var(--foreground)); }
+  .d-quote { border-left: 3px solid hsl(var(--border)); padding: 4px 0 4px 14px; font-size: 13.5px; line-height: 1.65; color: hsl(var(--foreground)); }
+  .krav-list { display: flex; flex-direction: column; gap: 7px; }
+  .krav { display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 9px 12px; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--background)); }
+  .krav .kbox { width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
+  .krav.done .kbox { background: hsl(var(--t-success-fg)); color: hsl(0 0% 10%); }
+  .krav.done .kbox svg { width: 11px; height: 11px; }
+  .krav .ktext { color: hsl(var(--foreground)); }
+  .krav .kbadge { margin-left: auto; font-size: 10.5px; font-weight: 500; color: hsl(var(--muted-foreground)); }
+  .diff-row { display: flex; gap: 10px; font-size: 13px; padding: 9px 12px; border: 1px solid hsl(var(--border)); border-radius: 9px; background: hsl(var(--background)); margin-bottom: 7px; align-items: flex-start; }
+  .diff-tag { flex-shrink: 0; font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 5px; }
+  .diff-tag.amend { background: hsl(var(--t-warning-bg)); color: hsl(var(--t-warning-fg)); }
+  .diff-tag.new { background: hsl(var(--t-success-bg)); color: hsl(var(--t-success-fg)); }
+  .diff-row code { font-family: 'SF Mono','Menlo',monospace; font-size: 12px; background: hsl(var(--muted)); padding: 1px 6px; border-radius: 4px; color: hsl(var(--foreground)); }
+  .underlag { border: 1px solid hsl(var(--border)); border-radius: 11px; overflow: hidden; background: hsl(var(--background)); }
+  .underlag-head { display: flex; align-items: center; gap: 10px; padding: 11px 14px; cursor: pointer; transition: background 150ms ease; user-select: none; }
+  .underlag-head:hover { background: hsl(var(--muted) / .4); }
+  .underlag-head .ul-t { font-size: 12.5px; font-weight: 600; color: hsl(var(--foreground)); display: flex; align-items: center; gap: 8px; }
+  .underlag-head .ul-m { margin-left: auto; font-size: 11.5px; color: hsl(var(--muted-foreground)); display: inline-flex; align-items: center; gap: 8px; }
+  .underlag-head .ul-chev { transition: transform 220ms ease; color: hsl(var(--muted-foreground)); }
+  .underlag-head .ul-chev svg { width: 14px; height: 14px; }
+  .underlag.open .ul-chev { transform: rotate(180deg); }
+  .underlag-body { display: none; padding: 16px 14px; border-top: 1px solid hsl(var(--border)); flex-direction: column; gap: 13px; }
+  .underlag.open .underlag-body { display: flex; }
+  .msg-user { align-self: flex-end; max-width: 86%; background: hsl(var(--foreground)); color: hsl(var(--background)); padding: 9px 13px; border-radius: 13px 13px 4px 13px; font-size: 13px; line-height: 1.5; }
+  .msg-ai { max-width: 100%; display: flex; gap: 10px; }
+  .msg-ai .av { flex-shrink: 0; width: 26px; height: 26px; border-radius: 7px; background: hsl(var(--muted)); color: hsl(var(--gold)); display: flex; align-items: center; justify-content: center; }
+  .msg-ai .av svg { width: 15px; height: 15px; }
+  .msg-ai .ct { min-width: 0; flex: 1; font-size: 13px; color: hsl(var(--foreground)); line-height: 1.6; }
+  .msg-ai .ct p { margin: 0 0 9px; } .msg-ai .ct p:last-child { margin: 0; }
+  .msg-ai .ct code { font-family: 'SF Mono','Menlo',monospace; font-size: 12px; background: hsl(var(--muted)); padding: 1px 5px; border-radius: 4px; }
+  .ul-foot { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: hsl(var(--muted-foreground)); padding-top: 2px; }
+  .ul-foot svg { width: 12px; height: 12px; }
+  .ul-foot .open-full { margin-left: auto; color: hsl(var(--t-info-fg)); font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+  .d-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .btn { appearance: none; font: inherit; font-weight: 500; font-size: 13px; border: 1px solid hsl(var(--border)); background: transparent; color: hsl(var(--foreground)); padding: 8px 13px; border-radius: 8px; cursor: pointer; transition: all 150ms ease; display: inline-flex; align-items: center; gap: 7px; }
+  .btn:hover { background: hsl(var(--muted) / .5); }
+  .btn svg { width: 14px; height: 14px; }
+  .btn.solid { background: hsl(var(--foreground)); color: hsl(var(--background)); border-color: hsl(var(--foreground)); }
+  .btn.solid:hover { background: hsl(var(--foreground) / .9); }
+  .detail-empty { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; gap: 10px; color: hsl(var(--muted-foreground)); padding: 40px; }
+  .state-3 .tl-body:not(.detail-open) .detail-empty { display: flex; }
+  .state-3 .tl-body:not(.detail-open) .detail-scroll { display: none; }
+  .detail-empty .ic { width: 52px; height: 52px; border-radius: 999px; background: hsl(var(--muted)); display: inline-flex; align-items: center; justify-content: center; }
+  .detail-empty .ic svg { width: 22px; height: 22px; }
+  .detail-empty .t { font-size: 14px; font-weight: 600; color: hsl(var(--foreground)); }
+  .detail-empty .h { font-size: 12.5px; max-width: 250px; }
+
+  /* chat mode */
+  .chat-body { flex: 1; min-height: 0; overflow-y: auto; padding: 20px 18px 14px; display: flex; flex-direction: column; gap: 16px; }
+  .chat-footer { padding: 14px 16px 16px; border-top: 1px solid hsl(var(--border)); flex-shrink: 0; }
+  .chat-input { border: 1px solid hsl(var(--border)); border-radius: 12px; background: hsl(var(--background)); padding: 10px 12px; display: flex; gap: 8px; align-items: flex-end; }
+  .chat-input:focus-within { border-color: hsl(var(--gold) / .4); }
+  .chat-input textarea { flex: 1; min-height: 22px; max-height: 100px; font: inherit; font-size: 14px; border: 0; background: transparent; resize: none; outline: none; padding: 4px 0; color: hsl(var(--foreground)); line-height: 1.5; }
+  .chat-input textarea::placeholder { color: hsl(var(--muted-foreground)); }
+  .send { appearance: none; border: 0; width: 30px; height: 30px; border-radius: 8px; background: hsl(var(--foreground)); color: hsl(var(--background)); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .send svg { width: 14px; height: 14px; }
+  .chat-hint { margin-top: 9px; font-size: 11.5px; color: hsl(var(--muted-foreground)); }
+
+  /* rail */
+  .rail-inner { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 0; height: 100%; opacity: 0; transition: opacity 260ms ease 200ms; }
+  .state-2 .rail-inner { opacity: 1; }
+  .rail-icon { appearance: none; background: transparent; border: 0; width: 32px; height: 32px; border-radius: 8px; color: hsl(var(--muted-foreground)); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 150ms ease; }
+  .rail-icon:hover { background: hsl(var(--muted)); color: hsl(var(--foreground)); }
+  .rail-icon svg { width: 15px; height: 15px; }
+  .rail-icon .sdot { width: 9px; height: 9px; border-radius: 999px; background: hsl(215 15% 55%); }
+  .rail-sep { width: 20px; height: 1px; background: hsl(var(--border)); margin: 6px 0; }
+
+  /* callouts */
+  .callouts { max-width: min(94vw, 1240px); margin: 18px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .callout { padding: 13px 15px; border-radius: 10px; background: hsl(0 0% 11%); border: 1px solid hsl(var(--border)); color: hsl(0 0% 78%); font-size: 12px; line-height: 1.55; }
+  .callout strong { display: block; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: hsl(var(--t-info-fg)); margin-bottom: 4px; }
+  .callout.warn strong { color: hsl(var(--t-warning-fg)); }
+  .callout.ok strong { color: hsl(var(--t-success-fg)); }
+
+  @media (max-width: 900px) { .scene { padding: 12px; } .modal { width: 100%; height: calc(100vh - 130px); } .callouts { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header class="proto-bar">
+  <div class="proto-brand"><span class="dot"></span><span class="font-safiro">Laglig</span> · Tidslinje i lagmodalen</div>
+  <div class="seg-group" id="state-toggle" role="tablist">
+    <button type="button" data-state="state-1" role="tab"><span class="k">1</span> Stängd</button>
+    <button type="button" data-state="state-2" class="active" role="tab"><span class="k">2</span> Öppen</button>
+    <button type="button" data-state="state-3" role="tab"><span class="k">3</span> Expanderad</button>
+  </div>
+  <span class="proto-label">Innehåll</span>
+  <div class="seg-group" id="content-toggle">
+    <button type="button" data-content="full" class="active">Fullständig</button>
+    <button type="button" data-content="sparse">Ny lag (gles)</button>
+  </div>
+  <div class="proto-spacer"></div>
+</header>
+
+<main class="scene state-2" id="scene">
+  <div class="modal" id="modal">
+
+    <div class="modal-header">
+      <div class="breadcrumb"><a href="#">Er laglista</a></div>
+      <div class="header-actions">
+        <button class="icon-btn" title="Lexa"><span class="lexa-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13a3 3 0 0 0 3 3h7"/></svg></span></button>
+        <button class="icon-btn" title="Dela"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></button>
+        <button class="icon-btn" title="Mer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg></button>
+        <button class="icon-btn" title="Stäng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+    </div>
+
+    <div class="strip">
+      <div class="strip-inner">
+        <div class="strip-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+        <div>
+          <div class="strip-title">Aktiebolagslag (2005:551)</div>
+          <div class="strip-meta"><span class="badge neutral" style="padding:2px 7px;font-size:11px;"><span class="dot"></span>Ej påbörjad</span><span>·</span><span>1 kräver åtgärd · 8 i historiken</span></div>
+        </div>
+        <button class="strip-return" id="strip-collapse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Tillbaka till lagen</button>
+      </div>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- LEFT CONTENT PANEL -->
+      <section class="content-panel">
+        <div class="content-inner">
+          <h2 class="law-title font-safiro">Aktiebolagslag (2005:551)</h2>
+          <div class="badge-row">
+            <span class="badge neutral"><span class="dot"></span>Ej påbörjad</span>
+            <span class="badge warning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>Medel</span>
+            <button class="icon-btn toggle-all" title="Expandera alla"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></svg></button>
+          </div>
+
+          <div class="group" data-group="efterlevnad">
+            <button class="group-label"><span class="gl-text font-safiro">Efterlevnad</span><span class="gl-line"></span><span class="gl-count">3</span><svg class="gl-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+            <div class="group-content">
+              <div class="acc"><div class="acc-head"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>Hur påverkar detta oss?<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div><div class="acc-body">Aktiebolagslagen reglerar bolagets organisation, styrelseansvar, bolagsstämma, kapitalskydd och utdelning.</div></div>
+              <div class="acc closed"><div class="acc-head"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Hur efterlever vi kraven?<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div><div class="acc-body">Ingen beskrivning ännu.</div></div>
+              <div class="acc closed"><div class="acc-head"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14l2 2 4-4"/></svg></span>Kravpunkter<span class="mc">0 / 4</span><span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div><div class="acc-body">Styrelsemöten · Bolagsstämma · Kapitalskydd · Revision</div></div>
+            </div>
+          </div>
+
+          <div class="group collapsed" data-group="referens">
+            <button class="group-label"><span class="gl-text font-safiro">Referens</span><span class="gl-line"></span><span class="gl-count">1</span><svg class="gl-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+            <div class="group-content"><div class="acc closed"><div class="acc-head"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>Författningstext<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div><div class="acc-body">Hela lagtexten visas här…</div></div></div>
+          </div>
+
+          <div class="group collapsed" data-group="underlag">
+            <button class="group-label"><span class="gl-text font-safiro">Uppgifter &amp; filer</span><span class="gl-line"></span><span class="gl-count">2</span><svg class="gl-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></button>
+            <div class="group-content"><div class="acc closed"><div class="acc-head"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><polyline points="3 6 4 7 6 5"/></svg></span>Uppgifter<span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></div><div class="acc-body">Inga länkade uppgifter.</div></div></div>
+          </div>
+
+          <div class="activity">
+            <h3>Kommentarer</h3>
+            <div class="comment-box"><span class="avatar-xs" style="background:hsl(214 45% 45%);">DU</span><span class="cb">Skriv en kommentar…</span></div>
+            <!-- Historik-fliken är borttagen: tidslinjen är den kanoniska historiken. -->
+            <div class="act-promo">
+              <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><circle cx="12" cy="6" r="2.5"/><circle cx="12" cy="13" r="2.5"/><circle cx="12" cy="20" r="2.5"/></svg></span>
+              <span class="txt"><b>Historiken bor i tidslinjen</b> — lagändringar, bedömningar, statusbyten och uppgifter, klickbara.</span>
+              <button class="btn" id="open-timeline-2">Öppna tidslinjen</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT PANEL -->
+      <section class="right-panel">
+        <div class="right-inner">
+          <div class="card">
+            <h4>Detaljer</h4>
+            <div class="field"><span class="k">Dokumentnummer</span><span class="v">SFS 2005:551</span></div>
+            <div class="field"><span class="k">Efterlevnad</span><span class="v"><span class="v-pill neutral"><span class="dot"></span>Ej påbörjad <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></span></div>
+            <div class="field"><span class="k">Prioritet</span><span class="v"><span class="v-pill warning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>Medel <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></span></div>
+            <div class="field"><span class="k">Ansvarig</span><span class="v v-muted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Ingen tilldelad</span></div>
+            <div class="field"><span class="k">Senaste ändring</span><span class="v" style="gap:6px;"><a class="link-v" href="#">SFS 2026:495 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a><span class="badge-ny">Ny</span></span></div>
+          </div>
+
+          <div class="card">
+            <h4>Snabblänkar</h4>
+            <div class="ql-list">
+              <button class="ql"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Visa fullständig lag</button>
+              <button class="ql" id="open-timeline"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><circle cx="12" cy="6" r="2.5"/><circle cx="12" cy="13" r="2.5"/><circle cx="12" cy="20" r="2.5"/></svg>Visa tidslinje<span class="ql-count">9</span></button>
+              <button class="ql solid" id="open-lexa"><span class="lexa-mark sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13a3 3 0 0 0 3 3h7"/></svg></span>Fråga Lexa om lagen</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h4>Översikt</h4>
+            <div class="overview-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>0 länkade filer och dokument</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- WORK PANEL -->
+      <section class="work-panel" id="work-panel">
+        <div class="work-inner">
+
+          <div class="work-header">
+            <div class="mode-seg" id="mode-seg">
+              <button data-mode="timeline" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><circle cx="12" cy="6" r="2.5"/><circle cx="12" cy="13" r="2.5"/><circle cx="12" cy="20" r="2.5"/></svg>Tidslinje</button>
+              <button data-mode="chat"><span class="lexa-mark sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13a3 3 0 0 0 3 3h7"/></svg></span>Fråga Lexa</button>
+            </div>
+            <div class="work-actions">
+              <button class="icon-btn" id="density-btn" title="Kompakt vy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="3" y1="14" x2="21" y2="14"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+              <button class="icon-btn" title="Filtrera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg></button>
+              <div class="divider"></div>
+              <button class="icon-btn" id="expand-btn" title="Expandera"><svg id="expand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+              <button class="icon-btn" id="close-work" title="Stäng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+          </div>
+
+          <!-- MODE: TIMELINE -->
+          <div class="mode-pane active" id="pane-timeline">
+            <div class="tl-filterbar" id="tl-filterbar">
+              <button class="tl-filter active" data-filter="all">Alla <span class="cnt">9</span></button>
+              <button class="tl-filter" data-filter="amendment">Lagändringar <span class="cnt">2</span></button>
+              <button class="tl-filter" data-filter="assessment">Bedömningar <span class="cnt">3</span></button>
+              <button class="tl-filter" data-filter="finding">Avvikelser <span class="cnt">1</span></button>
+              <button class="tl-filter" data-filter="status">Status <span class="cnt">2</span></button>
+              <button class="tl-filter" data-filter="task">Uppgifter <span class="cnt">1</span></button>
+            </div>
+
+            <div class="tl-body" id="tl-body">
+              <div class="tl-list" id="tl-list">
+
+                <!-- sparse-state hint (only when content = "Ny lag") -->
+                <div class="tl-sparse-hint">
+                  <span class="sh-t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Tidslinjen är ny</span>
+                  <span class="sh-h">Den fylls på automatiskt allt eftersom lagen ändras och ni gör bedömningar. Hittills finns bara startpunkten.</span>
+                </div>
+
+                <!-- (1) KRÄVER ÅTGÄRD — open items lifted above the chronicle -->
+                <div class="tl-action-strip" id="tl-action-strip">
+                  <div class="tl-action-head">Kräver åtgärd <span class="cnt">1</span></div>
+                  <div class="tl-node tl-actionable t-amendment" data-type="amendment" data-detail="d0">
+                    <div class="tl-top">
+                      <span class="tl-kind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg></span>
+                      <div class="tl-textcol"><span class="tl-eyebrow">Lagändring · ej bedömd</span><span class="tl-title">SFS 2026:495</span></div>
+                      <span class="tl-date">19 maj</span>
+                    </div>
+                    <div class="tl-sub">Ändr. 7 kap. 10 §. Påverkar er bolagsstämmorutin — bör bedömas.</div>
+                    <div class="tl-tags"><span class="micro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Upptäckt automatiskt</span><button class="tl-cta" id="assess-cta">Bedöm nu</button></div>
+                  </div>
+                </div>
+
+                <div class="tl-stream">
+                <div class="tl-month">April 2026</div>
+                <div class="tl-track">
+                  <div class="tl-node t-status" data-type="status" data-detail="d2">
+                    <div class="tl-top"><span class="tl-kind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><div class="tl-textcol"><span class="tl-eyebrow">Statusändring</span><span class="tl-title">Efterlevnad: Pågående → Uppfylld</span></div><span class="tl-date">18 apr</span></div>
+                    <div class="tl-tags"><span class="verdict delvis"><span class="vd"></span>Pågående</span><span class="micro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></span><span class="verdict uppfylld"><span class="vd"></span>Uppfylld</span><span class="micro"><span class="avatar-xs">AL</span>Anna Lind</span></div>
+                  </div>
+                  <div class="tl-node t-assessment" data-type="assessment" data-detail="d1">
+                    <div class="tl-top"><span class="tl-kind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><div class="tl-textcol"><span class="tl-eyebrow">Bedömning signerad</span><span class="tl-title">2026 Q2 Lagefterlevnadskontroll</span></div><span class="tl-date">18 apr</span></div>
+                    <div class="tl-sub">Bedömd som uppfylld efter att kravpunkterna verifierats mot uppdaterad bolagsordning.</div>
+                    <div class="tl-tags"><span class="verdict uppfylld"><span class="vd"></span>Uppfylld</span><span class="micro"><span class="avatar-xs">AL</span>Anna Lind</span><span class="micro"><span class="lexa-mark sm gold" style="width:11px;height:11px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13a3 3 0 0 0 3 3h7"/></svg></span>Lexa-underlag</span></div>
+                  </div>
+                  <div class="tl-node t-task" data-type="task" data-detail="d3">
+                    <div class="tl-top"><span class="tl-kind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><polyline points="3 6 4 7 6 5"/><polyline points="3 12 4 13 6 11"/></svg></span><div class="tl-textcol"><span class="tl-eyebrow">Uppgift slutförd</span><span class="tl-title">Uppdatera bolagsordningen</span></div><span class="tl-date">15 apr</span></div>
+                    <div class="tl-sub">Spårades till avvikelsen i december. Stängd av Erik Sund.</div>
+                  </div>
+                </div>
+
+                <div class="tl-month">Mars 2026</div>
+                <div class="tl-track">
+                  <div class="tl-node t-action" data-type="assessment" data-detail="d4">
+                    <div class="tl-top"><span class="tl-kind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14l2 2 4-4"/></svg></span><div class="tl-textcol"><span class="tl-eyebrow">Bedömning av ändring</span><span class="tl-title">SFS 2025:804</span></div><span class="tl-date">22 mar</span></div>
+                    <div class="tl-sub">Ändringen i 8 kap. bedömdes kräva åtgärd — bolagsordningen behövde uppdateras.</div>
+                    <div class="tl-tags"><span class="verdict delvis"><span class="vd"></span>Åtgärd krävs</span><span class="micro danger">Påverkan: Hög</span><span class="micro"><span class="avatar-xs" style="background:hsl(28 55% 42%);">ES</span>Erik Sund</span><span class="micro"><span class="lexa-mark sm gold" style="width:11px;height:11px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13a3 3 0 0 0 3 3h7"/></svg></span>Lexa-underlag</span></div>
+                  </div>
+                  <div class="tl-node t-amendment" data-type="amendment" data-detail="d5">
+                    <div class="tl-top"><span class="tl-kind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg></span><div class="tl-textcol"><span class="tl-eyebrow">Lagändring trädde i kraft</span><span class="tl-title">SFS 2025:804</span></div><span class="tl-date">15 mar</span></div>
+                    <div class="tl-sub">Ändr. 8 kap. 17 §; ny 8 kap. 4 a §. Skärpta krav på dokumentation av styrelsens beslut.</div>
+                    <div class="tl-tags"><span class="verdict info"><span class="vd"></span>Trädde i kraft</span><span class="micro">2 §-ändringar</span></div>
+                  </div>
+                </div>
+
+                <div class="tl-month">December 2025</div>
+                <div class="tl-track">
+                  <div class="tl-node t-finding" data-type="finding" data-detail="d6b">
+                    <div class="tl-top"><span class="tl-kind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span><div class="tl-textcol"><span class="tl-eyebrow">Avvikelse registrerad</span><span class="tl-title">Revisionsrutin ej dokumenterad</span></div><span class="tl-date">3 dec</span></div>
+                    <div class="tl-tags"><span class="verdict ej"><span class="vd"></span>Mindre avvikelse</span><span class="micro">Stängd 14 jan 2026</span></div>
+                  </div>
+                  <div class="tl-node t-assessment-partial" data-type="assessment" data-detail="d6">
+                    <div class="tl-top"><span class="tl-kind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span><div class="tl-textcol"><span class="tl-eyebrow">Bedömning signerad</span><span class="tl-title">2025 Q4 Lagefterlevnadskontroll</span></div><span class="tl-date">3 dec</span></div>
+                    <div class="tl-sub">Delvis uppfylld — revisionsrutinen var inte dokumenterad.</div>
+                    <div class="tl-tags"><span class="verdict delvis"><span class="vd"></span>Delvis uppfylld</span><span class="micro"><span class="avatar-xs">AL</span>Anna Lind</span></div>
+                  </div>
+                </div>
+
+                <div class="tl-month" data-keep>September 2025</div>
+                <div class="tl-track">
+                  <div class="tl-node t-status" data-type="status" data-detail="d8" data-keep>
+                    <div class="tl-top"><span class="tl-kind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span><div class="tl-textcol"><span class="tl-eyebrow">Onboarding</span><span class="tl-title">Tillagd i laglistan</span></div><span class="tl-date">14 sep</span></div>
+                    <div class="tl-sub">Lagen lades till vid onboarding. Ändringar före detta datum räknas som befintliga.</div>
+                  </div>
+                </div>
+                <div style="height:8px;"></div>
+                </div>
+              </div>
+
+              <!-- DETAIL -->
+              <div class="tl-detail" id="tl-detail">
+                <div class="detail-head">
+                  <button class="detail-back" id="detail-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Tidslinje</button>
+                  <span class="dh">Detalj</span>
+                </div>
+                <div class="detail-empty">
+                  <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><circle cx="12" cy="6" r="2.5"/><circle cx="12" cy="13" r="2.5"/><circle cx="12" cy="20" r="2.5"/></svg></span>
+                  <span class="t">Välj en händelse</span>
+                  <span class="h">Klicka på en punkt för att se vad som gjordes — bedömningen, kravpunkterna och samtalet som ledde fram till slutsatsen.</span>
+                </div>
+                <div class="detail-scroll" id="detail-scroll">
+
+                  <div class="detail-block active" data-block="d0">
+                    <div class="d-eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Lagändring · väntar på bedömning</div>
+                    <h2 class="d-title font-safiro">SFS 2026:495</h2>
+                    <div class="d-metarow"><span class="d-meta"><span class="verdict info"><span class="vd"></span>Ej bedömd</span></span><span class="d-meta">Trädde i kraft 19 maj 2026</span></div>
+                    <div class="d-section"><div class="d-label">Sammanfattning</div><div class="d-text">Lag om ändring i aktiebolagslagen. Justerar reglerna för kallelse till bolagsstämma i 7 kap. 10 §.</div></div>
+                    <div class="d-section"><div class="d-label">Berörda paragrafer</div><div class="diff-row"><span class="diff-tag amend">Ändr.</span><div><code>7 kap. 10 §</code> — ändrad tidsfrist för kallelse.</div></div></div>
+                    <div class="d-section"><div class="d-text" style="font-size:12.5px;color:hsl(var(--muted-foreground));display:flex;gap:8px;align-items:flex-start;"><svg viewBox="0 0 24 24" fill="none" stroke="hsl(var(--gold))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0;margin-top:1px;"><path d="M7 4v13a3 3 0 0 0 3 3h7"/></svg>Bedömningen görs genom Lexa. När du avslutar samtalet sparas konversationen som underlag på bedömningen och dyker upp här i tidslinjen.</div></div>
+                    <div class="d-actions"><button class="btn solid" id="assess-via-lexa"><span class="lexa-mark sm" style="margin-right:-2px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13a3 3 0 0 0 3 3h7"/></svg></span>Bedöm påverkan med Lexa</button><button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/></svg>Ändringsdokument</button></div>
+                  </div>
+
+                  <div class="detail-block" data-block="d1">
+                    <div class="d-eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>Bedömning · Lagefterlevnadskontroll</div>
+                    <h2 class="d-title font-safiro">2026 Q2 — efterlevnad bedömd som uppfylld</h2>
+                    <div class="d-metarow"><span class="d-meta"><span class="verdict uppfylld"><span class="vd"></span>Uppfylld</span></span><span class="d-meta"><span class="avatar-xs">AL</span>Signerad av Anna Lind</span><span class="d-meta">18 apr 2026, 14:32</span></div>
+                    <div class="d-section"><div class="d-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Motivering</div><div class="d-quote">Samtliga fyra kravpunkter är verifierade. Bolagsordningen uppdaterades efter SFS 2025:804 och styrelsens dokumentationsrutin följer nu 8 kap. 4 a §. Revisionsrutinen är dokumenterad sedan december-avvikelsen stängdes.</div></div>
+                    <div class="d-section"><div class="d-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>Kravpunkter vid signering (ögonblicksbild)</div>
+                      <div class="krav-list">
+                        <div class="krav done"><span class="kbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="ktext">Dokumenterade styrelsemöten, minst sex per år</span><span class="kbadge">Bevis ✓</span></div>
+                        <div class="krav done"><span class="kbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="ktext">Årsstämma inom 6 mån efter räkenskapsårets slut</span><span class="kbadge">Bevis ✓</span></div>
+                        <div class="krav done"><span class="kbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="ktext">Lägsta aktiekapital 25 000 kr</span></div>
+                        <div class="krav done"><span class="kbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="ktext">Dokumenterad revisionsrutin</span><span class="kbadge">Bevis ✓</span></div>
+                      </div>
+                    </div>
+                    <div class="d-section">
+                      <div class="d-label"><span class="lexa-mark sm gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13a3 3 0 0 0 3 3h7"/></svg></span>Underlag — samtalet som ledde fram till bedömningen</div>
+                      <div class="underlag" id="underlag-1">
+                        <div class="underlag-head"><span class="ul-t"><span class="lexa-mark sm gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13a3 3 0 0 0 3 3h7"/></svg></span>Lexa-konversation</span><span class="ul-m">3 meddelanden · 18 apr<span class="ul-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></span></div>
+                        <div class="underlag-body">
+                          <div class="msg-user">Vi har uppdaterat bolagsordningen efter SFS 2025:804. Räcker det för att uppfylla 8 kap.?</div>
+                          <div class="msg-ai"><div class="av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13a3 3 0 0 0 3 3h7"/></svg></div><div class="ct"><p>Uppdateringen täcker dokumentationskravet i <code>8 kap. 4 a §</code>. För att bedöma kapitlet som uppfyllt behöver ni också kunna visa att styrelseprotokollen lagras enligt den nya rutinen.</p><p>Av era länkade bevis ser jag sex protokoll för 2025 och en uppdaterad attestordning. Det motsvarar kraven.</p></div></div>
+                          <div class="msg-user">Bra. Då bedömer vi 8 kap. som uppfyllt.</div>
+                          <div class="ul-foot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12l2 2 4-4"/></svg>Fäst som underlag av Anna Lind<span class="open-full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/></svg>Öppna hela samtalet</span></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="d-actions"><button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/></svg>Öppna kontrollen</button><button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Revisionsrapport</button></div>
+                  </div>
+
+                  <div class="detail-block" data-block="d2">
+                    <div class="d-eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Statusändring</div>
+                    <h2 class="d-title font-safiro">Efterlevnad: Pågående → Uppfylld</h2>
+                    <div class="d-metarow"><span class="d-meta"><span class="avatar-xs">AL</span>Anna Lind</span><span class="d-meta">18 apr 2026, 14:33</span></div>
+                    <div class="d-section"><div class="d-label">Orsak</div><div class="d-text">Statusen sattes automatiskt när bedömningen i 2026 Q2-kontrollen signerades.</div></div>
+                    <div class="d-actions"><button class="btn" data-goto="d1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Visa bedömningen</button></div>
+                  </div>
+
+                  <div class="detail-block" data-block="d3">
+                    <div class="d-eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="6" x2="20" y2="6"/><polyline points="3 6 4 7 6 5"/></svg>Uppgift</div>
+                    <h2 class="d-title font-safiro">Uppdatera bolagsordningen</h2>
+                    <div class="d-metarow"><span class="d-meta"><span class="verdict uppfylld"><span class="vd"></span>Slutförd</span></span><span class="d-meta"><span class="avatar-xs" style="background:hsl(28 55% 42%);">ES</span>Erik Sund</span><span class="d-meta">15 apr 2026</span></div>
+                    <div class="d-section"><div class="d-label">Sammanhang</div><div class="d-text">Skapades automatiskt från avvikelsen i bedömningen av SFS 2025:804. Bolagsordningen uppdaterades och godkändes på styrelsemötet.</div></div>
+                    <div class="d-actions"><button class="btn" data-goto="d4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Visa ursprungsbedömningen</button></div>
+                  </div>
+
+                  <div class="detail-block" data-block="d4">
+                    <div class="d-eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>Bedömning av lagändring</div>
+                    <h2 class="d-title font-safiro">SFS 2025:804 — åtgärd krävdes</h2>
+                    <div class="d-metarow"><span class="d-meta"><span class="verdict delvis"><span class="vd"></span>Åtgärd krävs</span></span><span class="d-meta"><span class="micro danger">Påverkan: Hög</span></span><span class="d-meta"><span class="avatar-xs" style="background:hsl(28 55% 42%);">ES</span>Erik Sund</span><span class="d-meta">22 mar 2026</span></div>
+                    <div class="d-section"><div class="d-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>Lexas analys</div><div class="d-text">Ändringen i 8 kap. 4 a § inför ett uttryckligt krav på att styrelsens beslutsunderlag dokumenteras och bevaras. Er nuvarande bolagsordning hänvisar till den gamla lydelsen och behöver uppdateras.</div></div>
+                    <div class="d-section"><div class="d-label">Bedömarens anteckning</div><div class="d-quote">Vi tar upp ändringen på styrelsemötet och uppdaterar bolagsordningen. Skapar en uppgift med Anna som ansvarig.</div></div>
+                    <div class="d-section">
+                      <div class="d-label"><span class="lexa-mark sm gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13a3 3 0 0 0 3 3h7"/></svg></span>Underlag — samtalet som ledde fram till bedömningen</div>
+                      <div class="underlag" id="underlag-4">
+                        <div class="underlag-head"><span class="ul-t"><span class="lexa-mark sm gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13a3 3 0 0 0 3 3h7"/></svg></span>Lexa-konversation</span><span class="ul-m">4 meddelanden · 22 mar<span class="ul-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span></span></div>
+                        <div class="underlag-body">
+                          <div class="msg-user">Vad innebär den nya ändringen i SFS 2025:804 för oss?</div>
+                          <div class="msg-ai"><div class="av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13a3 3 0 0 0 3 3h7"/></svg></div><div class="ct"><p>Den största förändringen är <code>8 kap. 4 a §</code> som inför ett dokumentationskrav för styrelsens beslutsunderlag. Bolagsordningens skrivning om protokoll behöver ses över.</p></div></div>
+                          <div class="msg-user">Påverkar det någon av våra kravpunkter?</div>
+                          <div class="msg-ai"><div class="av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13a3 3 0 0 0 3 3h7"/></svg></div><div class="ct"><p>Ja — kravpunkten "Dokumenterade styrelsemöten" berörs direkt. Jag rekommenderar att markera den som ej uppfylld tills bolagsordningen uppdaterats, och att skapa en åtgärd.</p></div></div>
+                          <div class="ul-foot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12l2 2 4-4"/></svg>Fäst som underlag av Erik Sund<span class="open-full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/></svg>Öppna hela samtalet</span></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="d-section"><div class="d-label">Resulterade i</div><div class="krav-list"><div class="krav done"><span class="kbox" style="background:hsl(var(--muted-foreground));"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="ktext">Uppgift: Uppdatera bolagsordningen</span><span class="kbadge">Slutförd 15 apr</span></div></div></div>
+                  </div>
+
+                  <div class="detail-block" data-block="d5">
+                    <div class="d-eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Lagändring</div>
+                    <h2 class="d-title font-safiro">SFS 2025:804</h2>
+                    <div class="d-metarow"><span class="d-meta"><span class="verdict info"><span class="vd"></span>Trädde i kraft 15 mar 2026</span></span><span class="d-meta">Publicerad 3 mar 2026</span></div>
+                    <div class="d-section"><div class="d-label">Sammanfattning</div><div class="d-text">Lag om ändring i aktiebolagslagen. Skärper kraven på dokumentation av styrelsens beslutsunderlag och inför en ny paragraf om bevarande. Bygger på prop. 2024/25:142.</div></div>
+                    <div class="d-section"><div class="d-label">Berörda paragrafer</div><div class="diff-row"><span class="diff-tag amend">Ändr.</span><div><code>8 kap. 17 §</code> — förtydligat ansvar för styrelsens protokoll.</div></div><div class="diff-row"><span class="diff-tag new">Ny</span><div><code>8 kap. 4 a §</code> — krav på dokumentation och bevarande av beslutsunderlag.</div></div></div>
+                    <div class="d-actions"><button class="btn solid" data-goto="d4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>Visa vår bedömning</button><button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/></svg>Ändringsdokument (PDF)</button></div>
+                  </div>
+
+                  <div class="detail-block" data-block="d6">
+                    <div class="d-eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>Bedömning · Lagefterlevnadskontroll</div>
+                    <h2 class="d-title font-safiro">2025 Q4 — delvis uppfylld</h2>
+                    <div class="d-metarow"><span class="d-meta"><span class="verdict delvis"><span class="vd"></span>Delvis uppfylld</span></span><span class="d-meta"><span class="avatar-xs">AL</span>Anna Lind</span><span class="d-meta">3 dec 2025</span></div>
+                    <div class="d-section"><div class="d-label">Motivering</div><div class="d-quote">Tre av fyra kravpunkter uppfyllda. Revisionsrutinen var inte dokumenterad vid kontrolltillfället — registrerades som avvikelse.</div></div>
+                    <div class="d-actions"><button class="btn" data-goto="d6b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>Visa avvikelsen</button></div>
+                  </div>
+
+                  <div class="detail-block" data-block="d6b">
+                    <div class="d-eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>Avvikelse</div>
+                    <h2 class="d-title font-safiro">Revisionsrutin ej dokumenterad</h2>
+                    <div class="d-metarow"><span class="d-meta"><span class="verdict ej"><span class="vd"></span>Mindre</span></span><span class="d-meta">Öppnad 3 dec 2025 · Stängd 14 jan 2026</span></div>
+                    <div class="d-section"><div class="d-label">Beskrivning</div><div class="d-text">Vid 2025 Q4-kontrollen saknades dokumentation av revisionsrutinen enligt 9 kap. Avvikelsen stängdes efter att rutinen dokumenterats och bifogats som bevis.</div></div>
+                    <div class="d-actions"><button class="btn" data-goto="d6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Visa bedömningen</button></div>
+                  </div>
+
+                  <div class="detail-block" data-block="d8">
+                    <div class="d-eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Onboarding</div>
+                    <h2 class="d-title font-safiro">Tillagd i laglistan</h2>
+                    <div class="d-metarow"><span class="d-meta">14 sep 2025</span><span class="d-meta"><span class="avatar-xs">AL</span>Anna Lind</span></div>
+                    <div class="d-section"><div class="d-text">Aktiebolagslagen lades till i er laglista. Detta är tidslinjens startpunkt — lagändringar som trädde i kraft före detta datum betraktas som befintliga och kräver ingen bedömning.</div></div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODE: FRÅGA LEXA -->
+          <div class="mode-pane" id="pane-chat">
+            <div class="chat-body">
+              <div class="msg-user">Vad gäller för vår bolagsstyrning enligt den här lagen?</div>
+              <div class="msg-ai"><div class="av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13a3 3 0 0 0 3 3h7"/></svg></div><div class="ct"><p>Aktiebolagslagen (2005:551) reglerar styrelseansvar (<code>8 kap.</code>), bolagsstämma (<code>7 kap.</code>), kapitalskydd (<code>17 kap.</code>) och revision (<code>9 kap.</code>).</p><p>Vill ni att jag går djupare in på något område?</p></div></div>
+            </div>
+            <div class="chat-footer">
+              <div class="chat-input"><textarea rows="1" placeholder="Skriv din fråga..."></textarea><button class="send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></button></div>
+              <div class="chat-hint">Samma yta som tidslinjen — växla med reglaget ovan.</div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <aside class="rail">
+        <div class="rail-inner">
+          <button class="rail-icon" title="Efterlevnad: Ej påbörjad"><span class="sdot"></span></button>
+          <button class="rail-icon" title="Prioritet: Medel"><svg viewBox="0 0 24 24" fill="none" stroke="hsl(var(--t-warning-fg))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></button>
+          <div class="rail-sep"></div>
+          <button class="rail-icon" title="Fullständig lag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></button>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</main>
+
+<div class="callouts">
+  <div class="callout warn"><strong>1 · Kräver åtgärd</strong>Öppna, obearbetade poster (t.ex. en ej bedömd lagändring) lyfts ur kronologin till en egen strip överst — historiken begraver inte det som behöver göras.</div>
+  <div class="callout"><strong>2 · En typ-signal</strong>Ikonbrickan bär typ, pillret bär utfall, och tidslinjens prick är en neutral trådmarkör. Prova "Kompakt vy" (ikonen i panelhuvudet) för tätare rader.</div>
+  <div class="callout ok"><strong>3 · Gles vy</strong>Växla "Innehåll → Ny lag" uppe till vänster för att se hur en nyss tillagd lag ser ut: bara startpunkten + en vänlig instruktion.</div>
+</div>
+<div style="height: 36px;"></div>
+
+<script>
+(() => {
+  const scene = document.getElementById('scene');
+  const stateBtns = document.querySelectorAll('#state-toggle button[data-state]');
+  const expandBtn = document.getElementById('expand-btn');
+  const expandIcon = document.getElementById('expand-icon');
+
+  const EXPAND_SVG = '<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>';
+  const COLLAPSE_SVG = '<polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/>';
+
+  function setState(next) {
+    scene.classList.remove('state-1','state-2','state-3');
+    scene.classList.add(next);
+    stateBtns.forEach(b => b.classList.toggle('active', b.dataset.state === next));
+    expandIcon.innerHTML = next === 'state-3' ? COLLAPSE_SVG : EXPAND_SVG;
+    expandBtn.title = next === 'state-3' ? 'Kollapsa' : 'Expandera';
+  }
+  stateBtns.forEach(b => b.addEventListener('click', () => setState(b.dataset.state)));
+  expandBtn.addEventListener('click', () => {
+    const cur = [...scene.classList].find(c => c.startsWith('state-'));
+    setState(cur === 'state-3' ? 'state-2' : 'state-3');
+  });
+  document.getElementById('close-work').addEventListener('click', () => setState('state-1'));
+  document.getElementById('strip-collapse').addEventListener('click', () => setState('state-2'));
+
+  // content toggle (full / sparse)
+  document.querySelectorAll('#content-toggle button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#content-toggle button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    scene.classList.toggle('sparse', b.dataset.content === 'sparse');
+  }));
+
+  // mode switch
+  const modeSeg = document.getElementById('mode-seg');
+  const panes = { timeline: document.getElementById('pane-timeline'), chat: document.getElementById('pane-chat') };
+  function setMode(mode) {
+    modeSeg.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+    Object.entries(panes).forEach(([k, el]) => el.classList.toggle('active', k === mode));
+  }
+  modeSeg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+  document.getElementById('open-timeline').addEventListener('click', () => { setMode('timeline'); setState('state-2'); });
+  document.getElementById('open-timeline-2').addEventListener('click', () => { setMode('timeline'); setState('state-2'); });
+  document.getElementById('open-lexa').addEventListener('click', () => { setMode('chat'); setState('state-2'); });
+
+  // density toggle
+  const list = document.getElementById('tl-list');
+  document.getElementById('density-btn').addEventListener('click', (e) => {
+    const on = list.classList.toggle('compact');
+    e.currentTarget.classList.toggle('on', on);
+    e.currentTarget.title = on ? 'Bekväm vy' : 'Kompakt vy';
+  });
+
+  // master/detail
+  const tlBody = document.getElementById('tl-body');
+  const nodes = document.querySelectorAll('.tl-node');
+  const blocks = document.querySelectorAll('.detail-block');
+  const detailScroll = document.getElementById('detail-scroll');
+  function showDetail(id) {
+    blocks.forEach(b => b.classList.toggle('active', b.dataset.block === id));
+    nodes.forEach(n => n.classList.toggle('active', n.dataset.detail === id));
+    tlBody.classList.add('detail-open');
+    if (detailScroll) detailScroll.scrollTop = 0;
+  }
+  nodes.forEach(n => n.addEventListener('click', (e) => { if (e.target.closest('.tl-cta')) return; showDetail(n.dataset.detail); }));
+  document.getElementById('detail-back').addEventListener('click', () => {
+    tlBody.classList.remove('detail-open');
+    nodes.forEach(n => n.classList.remove('active'));
+  });
+  document.querySelectorAll('[data-goto]').forEach(btn => btn.addEventListener('click', () => showDetail(btn.dataset.goto)));
+  document.getElementById('assess-cta').addEventListener('click', () => { showDetail('d0'); });
+  document.getElementById('assess-via-lexa')?.addEventListener('click', () => setMode('chat'));
+
+  // underlag collapsibles
+  document.querySelectorAll('.underlag-head').forEach(h => h.addEventListener('click', () => h.closest('.underlag').classList.toggle('open')));
+
+  // filters — apply to all nodes (incl. the action strip); hide empty sections
+  const actionStrip = document.getElementById('tl-action-strip');
+  document.querySelectorAll('.tl-filter').forEach(f => f.addEventListener('click', () => {
+    document.querySelectorAll('.tl-filter').forEach(x => x.classList.remove('active'));
+    f.classList.add('active');
+    const filt = f.dataset.filter;
+    nodes.forEach(n => { n.style.display = (filt === 'all' || n.dataset.type === filt) ? '' : 'none'; });
+    // hide the "Kräver åtgärd" strip if its node is filtered out
+    const stripVisible = [...actionStrip.querySelectorAll('.tl-node')].some(n => n.style.display !== 'none');
+    actionStrip.style.display = stripVisible ? '' : 'none';
+    // hide empty month groups
+    document.querySelectorAll('.tl-track').forEach(track => {
+      const any = [...track.querySelectorAll('.tl-node')].some(n => n.style.display !== 'none');
+      track.style.display = any ? '' : 'none';
+      const m = track.previousElementSibling;
+      if (m && m.classList.contains('tl-month')) m.style.display = any ? '' : 'none';
+    });
+  }));
+
+  // left panel
+  document.querySelectorAll('.content-panel .acc-head').forEach(h => h.addEventListener('click', () => h.closest('.acc').classList.toggle('closed')));
+  document.querySelectorAll('.group-label').forEach(l => l.addEventListener('click', () => l.closest('.group').classList.toggle('collapsed')));
+  document.querySelector('.toggle-all')?.addEventListener('click', () => {
+    document.querySelectorAll('.content-panel .group').forEach(g => g.classList.remove('collapsed'));
+    document.querySelectorAll('.content-panel .acc').forEach(a => a.classList.remove('closed'));
+  });
+
+  document.querySelectorAll('.chat-input textarea').forEach(ta => ta.addEventListener('input', () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 100) + 'px'; }));
+  document.getElementById('underlag-1')?.classList.add('open');
+})();
+</script>
+
+</body>
+</html>
