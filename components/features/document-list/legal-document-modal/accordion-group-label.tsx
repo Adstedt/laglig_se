@@ -8,23 +8,20 @@
  * trigger's onClick / aria / data-state, so the chevron and dimming react to
  * the group's open state automatically.
  *
- * `count` shows how many rows live in the group, so a collapsed group still
- * tells you there's hidden content.
+ * Note: the previous `count` chip was removed (2026-05-21) — the counts were
+ * static structural counts (Efterlevnad=3, Referens=1, Uppgifter&filer=2),
+ * not dynamic data, so they trained the eye on noise. If we want to reuse
+ * the slot, prefer a meaningful progress / status indicator over a count.
  */
 
 import { forwardRef, type ComponentPropsWithoutRef } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-interface AccordionGroupLabelProps extends ComponentPropsWithoutRef<'button'> {
-  /** Number of rows in the group — rendered as a small count chip. */
-  count?: number
-}
-
 export const AccordionGroupLabel = forwardRef<
   HTMLButtonElement,
-  AccordionGroupLabelProps
->(({ children, count, className, ...props }, ref) => (
+  ComponentPropsWithoutRef<'button'>
+>(({ children, className, ...props }, ref) => (
   <button
     ref={ref}
     type="button"
@@ -38,11 +35,6 @@ export const AccordionGroupLabel = forwardRef<
       {children}
     </span>
     <span className="h-px flex-1 bg-border" aria-hidden="true" />
-    {typeof count === 'number' && (
-      <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-md bg-muted px-1.5 text-[11px] font-semibold tabular-nums text-muted-foreground">
-        {count}
-      </span>
-    )}
     <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]/grouplabel:rotate-180" />
   </button>
 ))
