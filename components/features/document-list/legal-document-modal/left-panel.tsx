@@ -299,7 +299,7 @@ export function LeftPanel({
           className="mt-1 first:mt-0"
         >
           <CollapsibleTrigger asChild>
-            <AccordionGroupLabel count={3}>Efterlevnad</AccordionGroupLabel>
+            <AccordionGroupLabel>Efterlevnad</AccordionGroupLabel>
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-2 pt-2">
             {/* Business Context */}
@@ -340,7 +340,7 @@ export function LeftPanel({
           className="mt-4"
         >
           <CollapsibleTrigger asChild>
-            <AccordionGroupLabel count={1}>Referens</AccordionGroupLabel>
+            <AccordionGroupLabel>Referens</AccordionGroupLabel>
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-2 pt-2">
             {/* Lagtext Section */}
@@ -361,9 +361,7 @@ export function LeftPanel({
           className="mt-4"
         >
           <CollapsibleTrigger asChild>
-            <AccordionGroupLabel count={onTasksUpdate ? 2 : 1}>
-              Uppgifter & filer
-            </AccordionGroupLabel>
+            <AccordionGroupLabel>Uppgifter & filer</AccordionGroupLabel>
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-2 pt-2">
             {/* Story 6.15: Tasks Accordion */}
