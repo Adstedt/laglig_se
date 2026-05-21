@@ -103,6 +103,10 @@ export interface DocumentListItem {
   updatedAt: Date
   // Story 8.1: Pending change count for visual indicators
   pendingChangeCount: number
+  // Kravpunkter progress, batched server-side so the table renders the count
+  // pill without a per-row server-action fetch (see getDocumentListItems).
+  requirementTotal: number
+  requirementFulfilled: number
   document: {
     id: string
     title: string
@@ -480,6 +484,40 @@ export async function getDocumentListItems(
         changeCountMap.set(row.document_id, Number(row.count))
       }
 
+      // Kravpunkter counts: batched once for the whole page instead of one
+      // server action per row. Keyed on the already workspace-scoped list-item
+      // ids (same pattern as the change counts above). Indexed by
+      // law_list_item_requirements(list_item_id, position).
+      const listItemIds = itemsToReturn.map((item) => item.id)
+      const requirementCounts =
+        listItemIds.length > 0
+          ? await prisma.$queryRaw<
+              Array<{
+                list_item_id: string
+                total: bigint
+                fulfilled: bigint
+              }>
+            >`
+              SELECT list_item_id,
+                     COUNT(*) AS total,
+                     COUNT(*) FILTER (WHERE is_fulfilled) AS fulfilled
+              FROM law_list_item_requirements
+              WHERE list_item_id = ANY(${listItemIds}::text[])
+              GROUP BY list_item_id
+            `
+          : []
+
+      const requirementCountMap = new Map<
+        string,
+        { total: number; fulfilled: number }
+      >()
+      for (const row of requirementCounts) {
+        requirementCountMap.set(row.list_item_id, {
+          total: Number(row.total),
+          fulfilled: Number(row.fulfilled),
+        })
+      }
+
       return {
         success: true,
         data: {
@@ -525,6 +563,10 @@ export async function getDocumentListItems(
             updatedAt: item.updated_at,
             // Story 8.1: Pending change count for visual indicators
             pendingChangeCount: changeCountMap.get(item.document_id) ?? 0,
+            // Kravpunkter progress (batched above) for the table count pill.
+            requirementTotal: requirementCountMap.get(item.id)?.total ?? 0,
+            requirementFulfilled:
+              requirementCountMap.get(item.id)?.fulfilled ?? 0,
             document: {
               id: item.document.id,
               title: item.document.title,
