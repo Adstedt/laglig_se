@@ -69,10 +69,7 @@ import {
 import { KravpunkterChecklist } from './legal-document-modal/kravpunkter-checklist'
 import { RichTextDisplay } from '@/components/ui/rich-text-editor'
 import useSWR from 'swr'
-import {
-  getRequirementsForListItem,
-  type RequirementWithEvidence,
-} from '@/app/actions/law-list-item-requirements'
+import { type RequirementWithEvidence } from '@/app/actions/law-list-item-requirements'
 import { BulkActionBar } from './bulk-action-bar'
 import { ComplianceStatusEditor } from './table-cell-editors/compliance-status-editor'
 import { PriorityEditor } from './table-cell-editors/priority-editor'
@@ -511,12 +508,21 @@ function ExpandedRowContent({
 /**
  * Story 17.18: Table cell for the "Kravpunkter" column. Renders either a live
  * `N/M uppfyllda` progress pill (when requirements exist) or a "+ Lägg till"
- * ghost button (when none exist). Uses the SAME SWR cache key as
- * KravpunkterChecklist so mutations in the expansion/modal auto-update the cell
- * and vice versa — one source of truth, no double-fetch on expand.
+ * ghost button (when none exist).
+ *
+ * Counts come pre-batched from the server (`getDocumentListItems` →
+ * `requirementTotal`/`requirementFulfilled`) so the cell renders instantly with
+ * NO per-row fetch — previously every visible row fired its own
+ * `getRequirementsForListItem` server action, producing a 40–50-POST burst on
+ * each page load/refresh. The cell still SUBSCRIBES (no fetcher) to the SAME
+ * SWR key as KravpunkterChecklist, so when the user opens the expansion/modal
+ * the checklist's fetch + optimistic mutations update the pill live. Cache data
+ * (when present) wins over the server-provided initial counts.
  */
 interface KravpunkterCountCellProps {
   listItemId: string
+  initialTotal: number
+  initialFulfilled: number
   isNotApplicable: boolean
   readOnly: boolean
   onAddClick: () => void
@@ -524,33 +530,33 @@ interface KravpunkterCountCellProps {
 
 function KravpunkterCountCell({
   listItemId,
+  initialTotal,
+  initialFulfilled,
   isNotApplicable,
   readOnly,
   onAddClick,
 }: KravpunkterCountCellProps) {
-  // Same key as KravpunkterChecklist — shared SWR cache.
-  const { data: requirements, isLoading } = useSWR<RequirementWithEvidence[]>(
+  // Pure cache subscriber: a null fetcher means this never triggers a request,
+  // it only re-renders when KravpunkterChecklist (which shares this key) loads
+  // or mutates the data. Until then we render the server-batched initial counts.
+  const { data: requirements } = useSWR<RequirementWithEvidence[]>(
     `list-item-requirements:${listItemId}`,
-    async () => {
-      const result = await getRequirementsForListItem(listItemId)
-      if (!result.success || !result.data) {
-        throw new Error(result.error ?? 'Kunde inte hämta kravpunkter')
-      }
-      return result.data
-    },
-    { revalidateOnFocus: false, dedupingInterval: 30000 }
+    null,
+    {
+      revalidateOnMount: false,
+      revalidateIfStale: false,
+      revalidateOnFocus: false,
+    }
   )
 
   if (isNotApplicable) {
     return <span className="text-muted-foreground text-sm">—</span>
   }
 
-  if (isLoading && !requirements) {
-    return <div className="h-5 w-16 rounded-md bg-muted/60 animate-pulse" />
-  }
-
-  const total = requirements?.length ?? 0
-  const fulfilled = requirements?.filter((r) => r.isFulfilled).length ?? 0
+  const total = requirements ? requirements.length : initialTotal
+  const fulfilled = requirements
+    ? requirements.filter((r) => r.isFulfilled).length
+    : initialFulfilled
 
   if (total === 0) {
     if (readOnly) {
@@ -898,6 +904,8 @@ export function ComplianceDetailTable({
           <CellErrorBoundary>
             <KravpunkterCountCell
               listItemId={row.original.id}
+              initialTotal={row.original.requirementTotal}
+              initialFulfilled={row.original.requirementFulfilled}
               isNotApplicable={
                 row.original.complianceStatus === 'EJ_TILLAMPLIG'
               }

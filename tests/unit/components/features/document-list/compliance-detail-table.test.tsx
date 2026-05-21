@@ -178,6 +178,9 @@ function createMockItem(
     complianceNarrativeUpdatedAt: new Date('2026-01-20'),
     complianceNarrativeUpdatedBy: 'user-1',
     updatedAt: new Date('2026-01-20'),
+    pendingChangeCount: 0,
+    requirementTotal: 0,
+    requirementFulfilled: 0,
     document: {
       id: 'doc-1',
       title: 'Arbetsmiljölagen',
