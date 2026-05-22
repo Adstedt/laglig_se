@@ -176,6 +176,35 @@ export function extractSourcesFromToolResult(
           }
         }
       }
+    } else if (toolName === 'search_workspace_files') {
+      // Story 17.9c: uploaded-file results. Files have no document number, so we
+      // carry the filename in `documentNumber` (keeps SourceInfo.documentNumber a
+      // non-optional string — no cross-cutting type change). The citationKey is the
+      // filename; resolveSource's bare-label fallback (sourceMap.get(trimmed))
+      // resolves `[Källa: <filename>]` against the keys we set here.
+      const data = output.data as
+        | Array<{
+            fileId?: string
+            filename?: string
+            snippet?: string
+            citationKey?: string
+          }>
+        | undefined
+
+      if (Array.isArray(data)) {
+        for (const item of data) {
+          const filename = item.citationKey ?? item.filename
+          if (!filename) continue
+          set(filename, {
+            documentNumber: filename,
+            title: item.filename ?? filename,
+            snippet: item.snippet ?? null,
+            slug: null,
+            path: null,
+            anchorId: null,
+          })
+        }
+      }
     } else if (toolName === 'get_change_details') {
       const data = output.data as
         | {

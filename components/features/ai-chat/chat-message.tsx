@@ -26,6 +26,7 @@ import {
   Trash2,
   Eye,
   Globe,
+  FileSearch,
 } from 'lucide-react'
 import { Streamdown } from 'streamdown'
 import { code } from '@streamdown/code'
@@ -83,6 +84,12 @@ const TOOL_CONFIG: Record<
     label: 'Söker i lagdatabasen',
     doneLabel: 'Sökte i lagdatabasen',
     icon: Search,
+  },
+  // Story 17.9c: semantic search over the workspace's own uploaded files.
+  search_workspace_files: {
+    label: 'Söker i uppladdade filer',
+    doneLabel: 'Sökte i uppladdade filer',
+    icon: FileSearch,
   },
   get_document_details: {
     label: 'Hämtar dokument',

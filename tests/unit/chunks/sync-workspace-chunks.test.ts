@@ -15,6 +15,7 @@ vi.mock('@/lib/prisma', () => ({
     },
     $transaction: vi.fn(),
     $executeRaw: vi.fn(),
+    $queryRaw: vi.fn(),
   },
 }))
 
@@ -39,6 +40,7 @@ const mockPrisma = prisma as unknown as {
   }
   $transaction: ReturnType<typeof vi.fn>
   $executeRaw: ReturnType<typeof vi.fn>
+  $queryRaw: ReturnType<typeof vi.fn>
 }
 const mockEmbed = generateEmbeddingsBatch as ReturnType<typeof vi.fn>
 
@@ -49,6 +51,8 @@ beforeEach(() => {
   mockPrisma.contentChunk.findFirst.mockResolvedValue(null)
   mockPrisma.contentChunk.deleteMany.mockResolvedValue({ count: 0 })
   mockPrisma.$transaction.mockResolvedValue([{ count: 0 }, { count: 1 }])
+  // REL-001 null-embedding count — default to 0 (all chunks embedded → skip is safe).
+  mockPrisma.$queryRaw.mockResolvedValue([{ count: 0 }])
   mockPrisma.contentChunk.findMany.mockResolvedValue([
     { id: 'chunk-1', content: 'text', contextual_header: 'rutin.pdf (POLICY)' },
   ])
@@ -128,6 +132,41 @@ describe('syncWorkspaceChunks — content-hash dedupe (AC 9)', () => {
     expect(result.skipped).toBe(false)
     expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1)
   })
+
+  // REL-001 (Story 17.9c): dedupe must not defeat embed-failure recovery.
+  it('re-embeds (does NOT skip) when content_hash matches but chunks carry null embeddings', async () => {
+    mockPrisma.contentChunk.findFirst.mockResolvedValue({
+      metadata: { content_hash: 'h1' }, // same hash as META → would skip pre-fix
+    })
+    mockPrisma.$queryRaw.mockResolvedValue([{ count: 2 }]) // 2 chunks lack embeddings
+    const result = await syncWorkspaceChunks(
+      'file-1',
+      'USER_FILE',
+      'ws-1',
+      'Ett stycke text här.',
+      META
+    )
+    expect(result.skipped).toBe(false)
+    expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1) // delete-then-insert ran
+    expect(mockEmbed).toHaveBeenCalledTimes(1) // self-healed the failed embed
+  })
+
+  it('still skips when content_hash matches AND all chunks have embeddings', async () => {
+    mockPrisma.contentChunk.findFirst.mockResolvedValue({
+      metadata: { content_hash: 'h1' },
+    })
+    mockPrisma.$queryRaw.mockResolvedValue([{ count: 0 }]) // none null
+    const result = await syncWorkspaceChunks(
+      'file-1',
+      'USER_FILE',
+      'ws-1',
+      'text',
+      META
+    )
+    expect(result.skipped).toBe(true)
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled()
+    expect(mockEmbed).not.toHaveBeenCalled()
+  })
 })
 
 describe('syncWorkspaceChunks — empty content + reliability', () => {
@@ -165,15 +204,38 @@ describe('syncWorkspaceChunks — empty content + reliability', () => {
     errorSpy.mockRestore()
   })
 
-  it('rejects WORKSPACE_DOCUMENT (deferred to Story 17.9b)', async () => {
-    await expect(
-      syncWorkspaceChunks(
-        'doc-1',
-        'WORKSPACE_DOCUMENT',
-        'ws-1',
-        'innehåll här',
-        META
-      )
-    ).rejects.toThrow(/17\.9b/)
+  it('indexes WORKSPACE_DOCUMENT styrdokument (Story 17.9b — no longer throws)', async () => {
+    const result = await syncWorkspaceChunks(
+      'doc-1',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      'Ett stycke styrdokumenttext med tillräckligt innehåll.',
+      {
+        title: 'Dataskyddspolicy',
+        document_type: 'POLICY',
+        status: 'APPROVED',
+        content_hash: 'd1',
+      }
+    )
+    expect(result.chunksCreated).toBe(1)
+    expect(result.chunksEmbedded).toBe(1)
+    expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1)
+
+    // The branch produced real WORKSPACE_DOCUMENT chunks (createMany is invoked to
+    // build the $transaction arg, so its data is the actual chunkWorkspaceDocument output).
+    const createArg = mockPrisma.contentChunk.createMany.mock.calls[0]?.[0] as
+      | {
+          data: Array<{
+            source_type: string
+            source_id: string
+            contextual_header: string
+          }>
+        }
+      | undefined
+    expect(createArg?.data[0]?.source_type).toBe('WORKSPACE_DOCUMENT')
+    expect(createArg?.data[0]?.source_id).toBe('doc-1')
+    expect(createArg?.data[0]?.contextual_header).toBe(
+      'Dataskyddspolicy (POLICY)'
+    )
   })
 })

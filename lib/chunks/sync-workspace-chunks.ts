@@ -8,23 +8,37 @@
  *   2. No context-prefix LLM step — the `contextual_header` (filename + category)
  *      carries the retrieval context, so embeddings use an empty `contextPrefix`.
  *
- * Story 17.9 wires only the `USER_FILE` path; 17.9b adds `WORKSPACE_DOCUMENT`.
+ * Story 17.9 wired the `USER_FILE` path; Story 17.9b adds `WORKSPACE_DOCUMENT`
+ * (authored styrdokument). Both flow through the same delete-then-insert + embed.
  */
 
 import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import {
   chunkUserFile,
+  chunkWorkspaceDocument,
   type WorkspaceSourceType,
 } from './chunk-workspace-document'
 import { generateEmbeddingsBatch, vectorToString } from './embed-chunks'
 
-/** Caller-supplied metadata threaded onto every chunk. */
+/**
+ * Caller-supplied metadata threaded onto every chunk. Fields are optional because
+ * the two source types carry different shapes (the branch reads what it needs):
+ *   - `USER_FILE` (Story 17.9): `filename` + `category`
+ *   - `WORKSPACE_DOCUMENT` (Story 17.9b): `title` + `document_type` + `status`
+ */
 export interface SyncWorkspaceMeta {
-  filename: string
-  /** `FileCategory` value. */
-  category: string
-  /** sha256 of the source bytes (Story 17.8) — gates re-embedding (AC 9). */
+  /** USER_FILE: original filename. */
+  filename?: string
+  /** USER_FILE: `FileCategory` value. */
+  category?: string
+  /** WORKSPACE_DOCUMENT: document title. */
+  title?: string
+  /** WORKSPACE_DOCUMENT: `WorkspaceDocumentType` value. */
+  document_type?: string
+  /** WORKSPACE_DOCUMENT: `WorkspaceDocumentStatus` value. */
+  status?: string
+  /** sha256 of the source content — gates re-embedding (17.9 AC 9 / 17.9b AC 7). */
   content_hash?: string | null
 }
 
@@ -92,7 +106,25 @@ export async function syncWorkspaceChunks(
       existing?.metadata as { content_hash?: string } | null
     )?.content_hash
     if (existing && existingHash === meta.content_hash) {
-      return result({ skipped: true })
+      // REL-001 (Story 17.9c): only short-circuit when the existing chunks are
+      // actually retrievable. A prior transient embed failure can leave chunks
+      // committed with `embedding = NULL` while the file is `DONE`; skipping
+      // re-embed on a same-hash re-sync would then make the file permanently,
+      // silently unretrievable — defeating the documented "retryable via re-sync"
+      // recovery. `embedding` is Unsupported() in Prisma, so count nulls via raw SQL.
+      const nullEmbedRows = await prisma.$queryRaw<{ count: number }[]>`
+        SELECT count(*)::int AS count
+        FROM content_chunks
+        WHERE source_type = ${sourceType}::"SourceType"
+          AND source_id = ${sourceId}
+          AND embedding IS NULL
+      `
+      const nullEmbedCount = Number(nullEmbedRows[0]?.count ?? 0)
+      if (nullEmbedCount === 0) {
+        return result({ skipped: true })
+      }
+      // else: chunks exist but some lack embeddings → fall through to re-chunk +
+      // re-embed, which self-heals the failed embed.
     }
   }
 
@@ -101,12 +133,20 @@ export async function syncWorkspaceChunks(
       ? chunkUserFile({
           fileId: sourceId,
           workspaceId,
-          filename: meta.filename,
-          category: meta.category,
+          filename: meta.filename ?? '',
+          category: meta.category ?? '',
           markdown: text,
           contentHash: meta.content_hash ?? null,
         })
-      : unsupportedSource(sourceType)
+      : chunkWorkspaceDocument({
+          documentId: sourceId,
+          workspaceId,
+          title: meta.title ?? '',
+          documentType: meta.document_type ?? '',
+          status: meta.status ?? '',
+          markdown: text,
+          contentHash: meta.content_hash ?? null,
+        })
 
   // No chunks produced (e.g. content below the minimum) → clear stale chunks.
   if (chunks.length === 0) {
@@ -190,11 +230,4 @@ async function embedWorkspaceChunks(
   }
 
   return embedded
-}
-
-/** 17.9 ships only USER_FILE; WORKSPACE_DOCUMENT lands in 17.9b. */
-function unsupportedSource(sourceType: WorkspaceSourceType): never {
-  throw new Error(
-    `[sync-workspace-chunks] source_type ${sourceType} is not supported in Story 17.9 (authored styrdokument → Story 17.9b)`
-  )
 }

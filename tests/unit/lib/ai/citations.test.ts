@@ -119,6 +119,47 @@ describe('extractSourcesFromToolResult', () => {
     expect(doc!.anchorId).toBeNull()
   })
 
+  it('extracts filename-keyed entries from search_workspace_files (Story 17.9c)', () => {
+    const result = {
+      data: [
+        {
+          fileId: 'file-42',
+          filename: 'dataskyddspolicy.pdf',
+          category: 'POLICY',
+          snippet: 'Kryptering av personuppgifter krävs.',
+          relevanceScore: 0.88,
+          citationKey: 'dataskyddspolicy.pdf',
+        },
+      ],
+      _meta: {
+        tool: 'search_workspace_files',
+        executionTimeMs: 50,
+        resultCount: 1,
+      },
+    }
+
+    const sources = extractSourcesFromToolResult(
+      'search_workspace_files',
+      result
+    )
+
+    // Keyed by the filename (= citationKey) so [Källa: dataskyddspolicy.pdf] resolves.
+    const src = sources['dataskyddspolicy.pdf']
+    expect(src).toBeDefined()
+    // Filename carried in documentNumber (keeps the field non-optional — AC 7).
+    expect(src!.documentNumber).toBe('dataskyddspolicy.pdf')
+    expect(src!.title).toBe('dataskyddspolicy.pdf')
+    expect(src!.snippet).toBe('Kryptering av personuppgifter krävs.')
+    expect(src!.path).toBeNull()
+
+    // A bare filename label resolves via resolveSource's fallback (no doc-number parse).
+    const resolved = resolveSource(
+      'dataskyddspolicy.pdf',
+      sourcesToMap(sources)
+    )
+    expect(resolved?.documentNumber).toBe('dataskyddspolicy.pdf')
+  })
+
   it('extracts from get_document_details', () => {
     const result = {
       data: {

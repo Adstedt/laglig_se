@@ -36,6 +36,13 @@ vi.mock('@/lib/auth/workspace-context', () => ({
   ),
 }))
 
+// Story 17.9b: createDraftFromApproved now schedules a WORKSPACE_DOCUMENT de-index via
+// next/server's `after()` (valid only inside a request scope — throws in the test env).
+// Mock as a no-op so the action's success path isn't masked by an out-of-scope throw.
+vi.mock('next/server', () => ({
+  after: vi.fn(),
+}))
+
 vi.mock('@tiptap/core', () => ({
   generateHTML: vi.fn(() => '<p>Content</p>'),
 }))

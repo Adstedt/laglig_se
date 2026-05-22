@@ -8,7 +8,10 @@ import { describe, it, expect } from 'vitest'
 import {
   chunkUserFile,
   buildFileHeader,
+  chunkWorkspaceDocument,
+  buildDocumentHeader,
   type ChunkUserFileInput,
+  type ChunkWorkspaceDocumentInput,
 } from '@/lib/chunks/chunk-workspace-document'
 
 function makeFile(
@@ -115,5 +118,63 @@ describe('chunkUserFile — content_role detection', () => {
       'Detta är ett vanligt stycke text som beskriver en rutin i verksamheten.'
     const chunks = chunkUserFile(makeFile({ markdown }))
     expect(chunks[0]!.content_role).toBe('MARKDOWN_CHUNK')
+  })
+})
+
+function makeDoc(
+  overrides: Partial<ChunkWorkspaceDocumentInput> = {}
+): ChunkWorkspaceDocumentInput {
+  return {
+    documentId: 'doc-1',
+    workspaceId: 'ws-1',
+    title: 'Dataskyddspolicy',
+    documentType: 'POLICY',
+    status: 'APPROVED',
+    markdown: 'Vår dataskyddspolicy kräver kryptering av personuppgifter.',
+    contentHash: 'doc-hash-1',
+    ...overrides,
+  }
+}
+
+describe('chunkWorkspaceDocument — styrdokument (Story 17.9b)', () => {
+  it('stamps WORKSPACE_DOCUMENT, the document id, and a non-null workspace_id', () => {
+    const chunks = chunkWorkspaceDocument(makeDoc())
+    expect(chunks.length).toBeGreaterThan(0)
+    for (const c of chunks) {
+      expect(c.source_type).toBe('WORKSPACE_DOCUMENT')
+      expect(c.source_id).toBe('doc-1')
+      expect(c.workspace_id).toBe('ws-1')
+    }
+  })
+
+  it('write-side invariant: throws rather than emit a chunk with a null/empty workspace_id', () => {
+    expect(() => chunkWorkspaceDocument(makeDoc({ workspaceId: '' }))).toThrow(
+      /workspace_id is required/
+    )
+  })
+
+  it('sets contextual_header = title + type and metadata {title, document_type, status, content_hash}', () => {
+    const chunks = chunkWorkspaceDocument(makeDoc())
+    expect(chunks[0]!.contextual_header).toBe(
+      buildDocumentHeader('Dataskyddspolicy', 'POLICY')
+    )
+    expect(chunks[0]!.metadata).toMatchObject({
+      title: 'Dataskyddspolicy',
+      document_type: 'POLICY',
+      status: 'APPROVED',
+      content_hash: 'doc-hash-1',
+    })
+  })
+
+  it('omits content_hash from metadata when not provided', () => {
+    const chunks = chunkWorkspaceDocument(makeDoc({ contentHash: null }))
+    expect(chunks[0]!.metadata).not.toHaveProperty('content_hash')
+    expect(chunks[0]!.metadata).toMatchObject({ title: 'Dataskyddspolicy' })
+  })
+
+  it('reuses the heading-aware paragraph-merge (headings get their own chunk)', () => {
+    const markdown = '# Rubrik\n\n## Underrubrik med lite mer text här'
+    const chunks = chunkWorkspaceDocument(makeDoc({ markdown }))
+    expect(chunks.every((c) => c.content_role === 'HEADING')).toBe(true)
   })
 })

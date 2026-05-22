@@ -212,7 +212,7 @@
 
 **Goal:** Provide a complete in-app document management system where users create, edit, version, and export compliance documents (policies, risk assessments, action plans) using a Tiptap rich text editor — and where the AI compliance agent can read, search, create, and update those documents as a first-class participant.
 
-**Delivers:** Tiptap-based rich text editor with Word-like UX, Document & DocumentVersion data models with full version control, document lifecycle management (DRAFT → APPROVED → ARCHIVED), .docx import/export and PDF export, compliance document templates, text extraction from uploaded files, workspace document embedding into RAG pipeline, 5 new agent tools for document interaction
+**Delivers:** Tiptap-based rich text editor with Word-like UX, Document & DocumentVersion data models with full version control, document lifecycle management (DRAFT → APPROVED → ARCHIVED), .docx import/export and PDF export, compliance document templates, text extraction from uploaded files, workspace document embedding into RAG pipeline, 4 new agent tools for document interaction (search/read/list — Story 17.10; section-update — Story 17.11; agent document *creation* ships via Epic 14's `draft_styrdokument`, Story 14.24)
 
 **Requirements covered:** FR7 (compliance workspace), FR25 (audit trail), FR27 (evidence/documentation)
 

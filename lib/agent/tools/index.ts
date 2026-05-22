@@ -4,6 +4,8 @@
  */
 
 import { createSearchLawsTool } from './search-laws'
+// Story 17.9c: semantic search over the workspace's own uploaded files (USER_FILE).
+import { createSearchWorkspaceFilesTool } from './search-workspace-files'
 import { createGetDocumentDetailsTool } from './get-document-details'
 import { createGetChangeDetailsTool } from './get-change-details'
 import { createGetCompanyContextTool } from './get-company-context'
@@ -66,6 +68,8 @@ export function createAgentTools(
   const writeContext = { userId, ...context }
   return {
     search_laws: createSearchLawsTool(workspaceId),
+    // Story 17.9c: read-only, additive — never widens the legal search.
+    search_workspace_files: createSearchWorkspaceFilesTool(workspaceId),
     get_document_details: createGetDocumentDetailsTool(),
     get_change_details: createGetChangeDetailsTool(),
     get_company_context: createGetCompanyContextTool(workspaceId),

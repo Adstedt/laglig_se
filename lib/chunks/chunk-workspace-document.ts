@@ -91,6 +91,55 @@ export function chunkUserFile(file: ChunkUserFileInput): WorkspaceChunkInput[] {
   })
 }
 
+/** `contextual_header` for a styrdokument chunk: title + document type (AC 8). */
+export function buildDocumentHeader(
+  title: string,
+  documentType: string
+): string {
+  return `${title} (${documentType})`
+}
+
+/** Input for chunking an authored styrdokument's markdown (Story 17.9b). */
+export interface ChunkWorkspaceDocumentInput {
+  documentId: string
+  workspaceId: string
+  title: string
+  /** `WorkspaceDocumentType` value. */
+  documentType: string
+  /** `WorkspaceDocumentStatus` value (APPROVED at index time). */
+  status: string
+  /** Markdown derived from `content_html` (the trigger runs `htmlToMarkdown` first). */
+  markdown: string
+  /** sha256 of `content_html` — stored in chunk metadata for dedupe (AC 7). */
+  contentHash?: string | null
+}
+
+/**
+ * Chunk an authored styrdokument's markdown into workspace-scoped
+ * `WORKSPACE_DOCUMENT` chunks (Story 17.9b). Thin wrapper over the shared
+ * paragraph-merge core — uniform with `chunkUserFile`, which also receives
+ * already-converted markdown (the trigger owns the `content_html → markdown` step).
+ */
+export function chunkWorkspaceDocument(
+  doc: ChunkWorkspaceDocumentInput
+): WorkspaceChunkInput[] {
+  const metadata: Record<string, unknown> = {
+    title: doc.title,
+    document_type: doc.documentType,
+    status: doc.status,
+  }
+  if (doc.contentHash) metadata.content_hash = doc.contentHash
+
+  return chunkWorkspaceMarkdown({
+    sourceType: 'WORKSPACE_DOCUMENT',
+    sourceId: doc.documentId,
+    workspaceId: doc.workspaceId,
+    contextualHeader: buildDocumentHeader(doc.title, doc.documentType),
+    markdown: doc.markdown,
+    metadata,
+  })
+}
+
 interface ChunkWorkspaceMarkdownArgs {
   sourceType: WorkspaceSourceType
   sourceId: string

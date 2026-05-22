@@ -113,6 +113,11 @@ const mockStripeWebhookEvent = {
 const mockUser = { findUnique: vi.fn() }
 const mockWorkspaceMember = { findFirst: vi.fn() }
 const mockCompanyProfile = { findFirst: vi.fn() }
+// The chat route calls buildPendingActionsContext (context-assembly.ts), which reads
+// these two models. Without them in the mock, prisma.chatMessage is undefined and the
+// POST handler 500s before reaching streamText. Defaults set in beforeEach.
+const mockChatMessage = { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() }
+const mockPendingAgentAction = { findMany: vi.fn() }
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -123,6 +128,8 @@ vi.mock('@/lib/prisma', () => ({
     user: mockUser,
     workspaceMember: mockWorkspaceMember,
     companyProfile: mockCompanyProfile,
+    chatMessage: mockChatMessage,
+    pendingAgentAction: mockPendingAgentAction,
     $transaction: (arg: unknown) => mockTransaction(arg),
   },
 }))
@@ -157,6 +164,13 @@ beforeEach(() => {
   vi.clearAllMocks()
   // Reset assertWithinTokenQuota mock to a no-op default
   mockAssertWithinTokenQuota.mockResolvedValue({})
+  // buildPendingActionsContext defaults: no prior assistant turn, no pending actions
+  // → the helper returns null and the chat route proceeds normally. The route also
+  // creates/updates the assistant-stub ChatMessage (ADR-14.22-A) around streamText.
+  mockChatMessage.findFirst.mockResolvedValue(null)
+  mockChatMessage.create.mockResolvedValue({ id: 'msg_stub' })
+  mockChatMessage.update.mockResolvedValue({ id: 'msg_stub' })
+  mockPendingAgentAction.findMany.mockResolvedValue([])
 })
 
 afterEach(() => {

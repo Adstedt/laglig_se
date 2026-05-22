@@ -34,7 +34,34 @@ vi.mock('@/lib/auth/workspace-context', () => ({
   ),
 }))
 
+// Story 17.9b: updateDocumentStatus / createDraftFromApproved schedule WORKSPACE_DOCUMENT
+// re-index via next/server's `after()`. Mock as a no-op by default so unit tests don't
+// flush the callback (which would hit the RAG sync); the wiring tests below override it
+// per-test to invoke the callback. Mirrors the 21.12 compliance-audit test.
+vi.mock('next/server', () => ({
+  after: vi.fn(),
+}))
+
+// Story 17.9b: keep the REAL decideReindexOnStatusChange (the gate under test) but stub
+// the two DB-touching side effects so the wiring tests can assert which one fires.
+vi.mock('@/lib/chunks/workspace-document-reindex', async (importOriginal) => {
+  const actual =
+    await importOriginal<
+      typeof import('@/lib/chunks/workspace-document-reindex')
+    >()
+  return {
+    ...actual,
+    indexWorkspaceDocument: vi.fn().mockResolvedValue(undefined),
+    deindexWorkspaceDocument: vi.fn().mockResolvedValue(undefined),
+  }
+})
+
 import { prisma } from '@/lib/prisma'
+import { after } from 'next/server'
+import {
+  indexWorkspaceDocument,
+  deindexWorkspaceDocument,
+} from '@/lib/chunks/workspace-document-reindex'
 import {
   createDocument,
   getDocument,
@@ -565,6 +592,78 @@ describe('updateDocumentStatus', () => {
 
     expect(result.success).toBe(false)
     expect(result.error).toContain('Ogiltig statusövergång')
+  })
+
+  // Story 17.9b — wiring: the status transition must schedule the correct RAG action.
+  // (QA-added.) Captures the after() callback and runs it so the index/de-index call
+  // is actually exercised — without this, deleting the after() block stays green.
+  function setupTransition(
+    fromStatus: WorkspaceDocumentStatus,
+    toStatus: WorkspaceDocumentStatus
+  ) {
+    vi.mocked(prisma.workspaceDocument.findFirst).mockResolvedValue({
+      id: 'doc_1',
+      status: fromStatus,
+      workspace_id: 'ws_123',
+    } as never)
+    vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
+      const tx = {
+        workspaceDocument: {
+          update: vi.fn().mockResolvedValue({ id: 'doc_1', status: toStatus }),
+        },
+        activityLog: { create: vi.fn().mockResolvedValue({}) },
+      }
+      return (callback as (_tx: unknown) => unknown)(tx)
+    })
+    // Flush the after() callback synchronously for this test.
+    vi.mocked(after).mockImplementationOnce(((cb: () => unknown) => {
+      void cb()
+    }) as never)
+  }
+
+  it('Story 17.9b: INDEXes when transitioning IN_REVIEW → APPROVED', async () => {
+    setupTransition(
+      WorkspaceDocumentStatus.IN_REVIEW,
+      WorkspaceDocumentStatus.APPROVED
+    )
+
+    await updateDocumentStatus({
+      documentId: '550e8400-e29b-41d4-a716-446655440000',
+      newStatus: WorkspaceDocumentStatus.APPROVED,
+    })
+
+    expect(indexWorkspaceDocument).toHaveBeenCalledWith('doc_1', 'ws_123')
+    expect(deindexWorkspaceDocument).not.toHaveBeenCalled()
+  })
+
+  it('Story 17.9b: DE-INDEXes when transitioning APPROVED → ARCHIVED', async () => {
+    setupTransition(
+      WorkspaceDocumentStatus.APPROVED,
+      WorkspaceDocumentStatus.ARCHIVED
+    )
+
+    await updateDocumentStatus({
+      documentId: '550e8400-e29b-41d4-a716-446655440000',
+      newStatus: WorkspaceDocumentStatus.ARCHIVED,
+    })
+
+    expect(deindexWorkspaceDocument).toHaveBeenCalledWith('doc_1', 'ws_123')
+    expect(indexWorkspaceDocument).not.toHaveBeenCalled()
+  })
+
+  it('Story 17.9b: schedules NO RAG action for DRAFT → IN_REVIEW (non-boundary)', async () => {
+    setupTransition(
+      WorkspaceDocumentStatus.DRAFT,
+      WorkspaceDocumentStatus.IN_REVIEW
+    )
+
+    await updateDocumentStatus({
+      documentId: '550e8400-e29b-41d4-a716-446655440000',
+      newStatus: WorkspaceDocumentStatus.IN_REVIEW,
+    })
+
+    expect(indexWorkspaceDocument).not.toHaveBeenCalled()
+    expect(deindexWorkspaceDocument).not.toHaveBeenCalled()
   })
 
   it('rejects transition from ARCHIVED (terminal)', async () => {

@@ -128,6 +128,14 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('suggest_followups')
   })
 
+  // Story 17.9c (AC 8): the prompt must surface the workspace-files search tool.
+  it('includes search_workspace_files tool guidance (Story 17.9c, AC 8)', async () => {
+    const prompt = await buildSystemPrompt()
+    expect(prompt).toContain('search_workspace_files')
+    // Tells the agent to cite uploaded-file hits by filename.
+    expect(prompt).toContain('[Källa: rutin.pdf]')
+  })
+
   it('includes company context section when companyContext is provided', async () => {
     const prompt = await buildSystemPrompt({
       companyContext: '- Företag: Acme AB\n- Bransch: Bygg',

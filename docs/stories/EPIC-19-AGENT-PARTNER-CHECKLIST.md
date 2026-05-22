@@ -7,7 +7,7 @@
 **Linked epic:** [`docs/prd/epic-19-agent-partner-skills-subagents.md`](../prd/epic-19-agent-partner-skills-subagents.md)
 
 **Created:** 2026-04-19
-**Last updated:** 2026-04-19
+**Last updated:** 2026-05-22
 **Owner:** Sarah (PO)
 
 ---
@@ -22,8 +22,8 @@
   *`ContentChunk` with `WORKSPACE_DOCUMENT` source; retrieveContext filter*
 - [ ] **17.10** — Agent tools: `search_workspace_documents`, `get_workspace_document`, `list_workspace_documents`
   *Semantic search + read + list of workspace styrdokument*
-- [ ] **17.11** — Agent tools: `create_document`, `update_document`
-  *Atomic authoring with markdown ↔ Tiptap conversion*
+- [ ] **17.11** — Agent tool: `update_document` (section edits via approval card)
+  *Re-scoped 2026-05-22: `create_document` dropped (redundant with 14.24 `draft_styrdokument`); markdown↔Tiptap converters dropped; recast onto the `UPDATE_DOCUMENT` `PendingAgentAction` approval pattern*
 
 ### Epic 14 — Agent approval-card primitives (Approved)
 
@@ -91,6 +91,8 @@
   *`Reminder` model; `schedule_review`, `schedule_bevis_recheck` tools; `fire-reminders` daily cron; `weekly-pulse` cron running `gap_analysis` per workspace*
 - [ ] **19.12** — `AgentFeedback` + proactive hem-chat cards
   *Thumbs UI on assistant messages + tool results; hem-chat renders "N bevisluckor, M obedömda ändringar, P överfallna uppgifter" cards feeding into skill activation*
+- [ ] **19.13** — Agent answer-grounding eval & quality observability
+  *Per-turn grounding capture + v1 citation/overlap scorer + admin grounding-rate dashboard (<5% target) + 50-question eval harness. Residual of archived Story 3.9 (grounding mechanism already shipped via 14.16 + 14.9). Distinct from 19.5 AgentDecisionLog + 19.12 thumbs. NFR2/NFR3/NFR24*
 
 ---
 
@@ -100,8 +102,8 @@
 |---|---|---|
 | Prerequisites (Epic 14 + 17) | 7 | Must ship first or in parallel — blocks most of 19 |
 | Sibling Epic 14 additions | 4 | Schedule 14.28 + 14.31 alongside 19.7 |
-| Epic 19 | 12 | Foundation track (19.1–19.5) unblocks all other tracks |
-| **Total** | **23 stories** | ~8–10 weeks with 2 devs |
+| Epic 19 | 13 | Foundation track (19.1–19.5) unblocks all other tracks |
+| **Total** | **24 stories** | ~8–10 weeks with 2 devs |
 
 ---
 
@@ -147,7 +149,7 @@ Agent drafts styrdokument from templates, user reviews in Tiptap preview, approv
 
 - [ ] All 7 prerequisite stories shipped (17.8, 17.9, 17.10, 17.11, 14.22, 14.23, 14.24)
 - [ ] All 4 sibling stories shipped (14.28, 14.29, 14.30, 14.31)
-- [ ] All 12 Epic 19 stories shipped
+- [ ] All 13 Epic 19 stories shipped
 - [ ] Composite feature flag `agent_partner_v2` enabled in ≥1 customer workspace for ≥2 weeks with no regressions
 - [ ] AUDITOR role verified read-only end-to-end
 - [ ] `AgentDecisionLog` populated for every tool call in production

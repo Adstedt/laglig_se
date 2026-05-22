@@ -1,0 +1,79 @@
+schema: 1
+story: '17.9'
+story_title: 'Chunk & Embed Uploaded Files into the RAG Pipeline'
+gate: CONCERNS
+status_reason: 'All 15 ACs met with strong, well-tested workspace isolation. Held at CONCERNS for one reliability bug (dedupe defeats embed-failure recovery) and a sequencing gap (nothing consumes the USER_FILE index yet — the planned consumer 17.10 targets WORKSPACE_DOCUMENT, not USER_FILE).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-22T20:40:00Z'
+
+# Story closed Done 2026-05-22 (Sarah, PO) accepting the CONCERNS gate. See disposition.
+disposition:
+  decided_by: 'Sarah (PO)'
+  decided_at: '2026-05-22T21:05:00Z'
+  outcome: 'Story 17.9 closed Done — gate CONCERNS accepted (advisory). Residual work tracked, not abandoned.'
+  issue_resolution:
+    SCOPE-001: 'RESOLVED — consumer committed as Story 17.9c (search_workspace_files / USER_FILE RAG tool), sequenced before 17.9b/17.10.'
+    REL-001: 'MIGRATED to Story 17.9c Task 4 — fixed there as a precondition of activating retrieval. Not user-reachable until 17.9c ships (no consumer queries USER_FILE today).'
+    TEST-001: 'MIGRATED to Story 17.9c Task 5 — row-level cross-tenant isolation integration test lands alongside the consumer that makes it load-bearing.'
+  follow_up_story: 'docs/stories/17.9c.agent-search-uploaded-files.md'
+  residual_risk_note: 'Index is dormant (no retrieval) until 17.9c. Files embedded during any OpenAI outage in 17.9 live window may have null embeddings; 17.9c REL-001 fix self-heals on next sync, optional backfill if suspected.'
+
+waiver: { active: false }
+
+quality_score: 80
+expires: '2026-06-05T20:40:00Z'
+
+evidence:
+  tests_reviewed: 37
+  tests_result: '37/37 pass (vitest); tsc clean; eslint clean — all dev claims reproduced'
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 13, 14, 15]
+    ac_gaps: [9, 10, 11, 12]
+    notes:
+      - 'AC 9 dedupe: happy-path tested; embed-failure interaction (null embeddings + same content_hash) untested and broken — Concern 1.'
+      - 'AC 10-12 sourceTypes: capability built + SQL-param tested; read-side ROW isolation deferred to integration (Concern 3); no consumer passes sourceTypes:[USER_FILE] (Concern 2).'
+
+top_issues:
+  - id: REL-001
+    severity: medium
+    summary: 'Dedupe skips re-embed on content_hash match without verifying embeddings exist. A transient embed failure leaves chunks with NULL embedding + DONE status; same-content re-sync short-circuits, so the file is permanently, silently unretrievable. Documented "retryable via re-sync" recovery does not work.'
+    refs: ['lib/chunks/sync-workspace-chunks.ts:86-97']
+    suggested_owner: dev
+    suggested_fix: 'Skip only when content_hash matches AND no chunk has a null embedding (raw count, since embedding is Unsupported() in Prisma). Add a test for the failed-embed re-sync path.'
+  - id: SCOPE-001
+    severity: medium
+    summary: 'USER_FILE index has no consumer. Only caller of retrieveContext (search-laws.ts:48) hardcodes LEGAL_DOCUMENT; planned consumer story 17.10 (Draft) targets WORKSPACE_DOCUMENT (depends on 17.9b), not USER_FILE. Uploaded-file chunks are write-only — indexed and paid for, never queried.'
+    refs: ['lib/agent/tools/search-laws.ts:48', 'docs/stories/17.10.agent-tools-search-read-list.md']
+    suggested_owner: po
+    suggested_fix: 'Confirm a follow-up adds a USER_FILE search tool (or extend 17.10 scope). Not an AC failure of 17.9 (ACs 10-12 only require the capability), but the index accrues embedding cost with zero retrieval value until then.'
+  - id: TEST-001
+    severity: low
+    summary: 'Read-side cross-tenant isolation (AC 11, highest-risk AC) tested only at SQL-parameter level — $queryRaw is mocked. The actual exclusion of a foreign-workspace USER_FILE row is unproven. Story Task 6 explicitly asked for an integration test against a test DB.'
+    refs: ['tests/unit/agent/retrieval.test.ts:261']
+    suggested_owner: dev
+    suggested_fix: 'Add a row-level integration test against a real test DB before USER_FILE retrieval is activated by a consumer.'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Cross-tenant isolation handled on both write side (chunkUserFile/syncWorkspaceChunks throw on null workspace_id) and read side (workspace + source_type SQL filter). deleteFilesBulk de-indexes only the permission-filtered set. Residual: read-side proven at param-level only (TEST-001).'
+  performance:
+    status: PASS
+    notes: 'Cron-batch context. Embeds batched <=100 (guard at embed-chunks.ts:126) + content-hash gated. Minor: per-chunk UPDATE round-trips, consistent with legal sync, fine within cron slice.'
+  reliability:
+    status: CONCERNS
+    notes: 'Fail-safe cron wiring is correct (errors never break the batch or revert DONE). But REL-001: a failed embed cannot be repaired by re-sync due to the dedupe short-circuit — silent permanent un-retrievability.'
+  maintainability:
+    status: PASS
+    notes: 'Merge algorithm faithfully forked (verified vs chunk-document.ts:655-); AC5 MARKDOWN_CHUNK deviation documented; clear module boundaries; 17.9b extension seam in place.'
+
+recommendations:
+  immediate:
+    - action: 'Fix dedupe to require non-null embeddings before skipping re-embed; add failed-embed re-sync test (REL-001)'
+      refs: ['lib/chunks/sync-workspace-chunks.ts']
+  future:
+    - action: 'Confirm/scope a consumer story that searches USER_FILE chunks (SCOPE-001)'
+      refs: ['docs/stories/17.10.agent-tools-search-read-list.md']
+    - action: 'Add row-level cross-tenant isolation integration test alongside the consumer (TEST-001)'
+      refs: ['tests/unit/agent/retrieval.test.ts']

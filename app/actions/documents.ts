@@ -20,6 +20,12 @@ import {
 } from '@/lib/validation/documents'
 import { WorkspaceDocumentStatus } from '@prisma/client'
 import { getStorageClient } from '@/lib/supabase/storage'
+import { after } from 'next/server'
+import {
+  decideReindexOnStatusChange,
+  indexWorkspaceDocument,
+  deindexWorkspaceDocument,
+} from '@/lib/chunks/workspace-document-reindex'
 
 // ============================================================================
 // Types
@@ -407,6 +413,31 @@ export async function updateDocumentStatus(
 
         return doc
       })
+
+      // Story 17.9b: keep the RAG index in sync with the APPROVED boundary.
+      // Status transitions are the only index/de-index events (content is frozen
+      // above DRAFT). after() so the response isn't blocked; failures are logged,
+      // not fatal — a re-approval re-runs the INDEX path.
+      const reindex = decideReindexOnStatusChange(
+        oldStatus,
+        validated.newStatus
+      )
+      if (reindex !== 'NONE') {
+        after(async () => {
+          try {
+            if (reindex === 'INDEX') {
+              await indexWorkspaceDocument(document.id, workspaceId)
+            } else {
+              await deindexWorkspaceDocument(document.id, workspaceId)
+            }
+          } catch (err) {
+            console.error(
+              `[updateDocumentStatus] WORKSPACE_DOCUMENT ${reindex} failed for ${document.id} — retryable:`,
+              err instanceof Error ? err.message : err
+            )
+          }
+        })
+      }
 
       return {
         success: true,
@@ -832,6 +863,19 @@ export async function createDraftFromApproved(
         })
 
         return ver
+      })
+
+      // Story 17.9b: APPROVED → DRAFT leaves the indexable set → de-index.
+      // after() so the response isn't blocked; failures are logged, not fatal.
+      after(async () => {
+        try {
+          await deindexWorkspaceDocument(document.id, workspaceId)
+        } catch (err) {
+          console.error(
+            `[createDraftFromApproved] WORKSPACE_DOCUMENT de-index failed for ${document.id} — retryable:`,
+            err instanceof Error ? err.message : err
+          )
+        }
       })
 
       return {
