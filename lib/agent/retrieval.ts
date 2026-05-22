@@ -19,7 +19,10 @@ import type { LegalReferences } from '@/lib/agent/legal-ref-detector'
 
 export interface RetrievalOptions {
   topK?: number
+  /** Single source-type filter (back-compat). Prefer `sourceTypes` for multi-type. */
   sourceType?: string
+  /** Multi source-type filter, e.g. `['USER_FILE']` (Story 17.9). */
+  sourceTypes?: string[]
   contentType?: string
   overFetchMultiplier?: number
   minRelevanceScore?: number
@@ -101,6 +104,7 @@ export async function retrieveContext(
   const {
     topK = DEFAULT_TOP_K,
     sourceType = null,
+    sourceTypes = null,
     contentType = null,
     overFetchMultiplier = DEFAULT_OVER_FETCH_MULTIPLIER,
     minRelevanceScore,
@@ -165,6 +169,7 @@ export async function retrieveContext(
       WHERE cc.embedding IS NOT NULL
         AND (cc.workspace_id IS NULL OR cc.workspace_id = ${workspaceId})
         AND (${sourceType}::text IS NULL OR cc.source_type = ${sourceType}::"SourceType")
+        AND (${sourceTypes}::text[] IS NULL OR cc.source_type = ANY(${sourceTypes}::"SourceType"[]))
         AND (${contentType}::text IS NULL OR ld.content_type = ${contentType}::"ContentType")
         AND (cc.source_type != 'LEGAL_DOCUMENT' OR ld.status != 'REPEALED')
       ORDER BY cc.embedding <=> ${queryVectorStr}::vector ASC

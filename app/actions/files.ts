@@ -894,6 +894,13 @@ export async function deleteFile(fileId: string): Promise<ActionResult> {
       // Delete from database (cascades to links)
       await prisma.workspaceFile.delete({ where: { id: fileId } })
 
+      // Story 17.9 — de-index the file's RAG chunks. ContentChunk has no FK to its
+      // polymorphic source, so onDelete: Cascade is infeasible — clean up manually
+      // here so the agent can never retrieve a deleted file's content.
+      await prisma.contentChunk.deleteMany({
+        where: { source_type: 'USER_FILE', source_id: fileId },
+      })
+
       revalidatePath('/filer')
       revalidatePath('/tasks')
       revalidatePath('/laglistor')
@@ -1258,9 +1265,19 @@ export async function deleteFilesBulk(
         await storageClient.storage.from(BUCKET_NAME).remove(paths)
       }
 
-      // Delete from database
+      // Delete from database. `deletedIds` is the permission-filtered set actually
+      // deleted (admins: any; others: own only) — never the raw `fileIds` input.
+      const deletedIds = files.map((f) => f.id)
       const deleteResult = await prisma.workspaceFile.deleteMany({
-        where: { id: { in: files.map((f) => f.id) } },
+        where: { id: { in: deletedIds } },
+      })
+
+      // Story 17.9 — de-index RAG chunks for exactly those files. ContentChunk has
+      // no FK to its polymorphic source, so cleanup is manual; mirroring the
+      // permission-filtered set guarantees we never de-index a file the caller
+      // couldn't delete.
+      await prisma.contentChunk.deleteMany({
+        where: { source_type: 'USER_FILE', source_id: { in: deletedIds } },
       })
 
       revalidatePath('/filer')

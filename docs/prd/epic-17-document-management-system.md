@@ -413,26 +413,28 @@ model DocumentListItemLink {
 
 ---
 
-### Story 17.9: Chunk & Embed Workspace Documents into RAG Pipeline
+### Story 17.9: Chunk & Embed Uploaded Files into the RAG Pipeline
+
+> **Re-scoped 2026-05-22:** narrowed to **uploaded files only** (`WorkspaceFile` → `source_type: 'USER_FILE'`), consuming Story 17.8's structure-preserving **markdown** `extracted_text`. The authored-styrdokument path (`WorkspaceDocument` → `WORKSPACE_DOCUMENT`) is split out to **Story 17.9b** (deferred) — it carries prerequisites the file path doesn't: flat-plaintext `extracted_text`, no delete action yet, no `content_hash`, multi-trigger coverage, and draft-status gating.
 
 **As a** system component,
-**I want** workspace documents (both Tiptap documents and extracted file text) embedded into the vector search pipeline,
-**so that** the agent can semantically search across all workspace documentation.
+**I want** uploaded files' extracted markdown (Story 17.8) chunked + embedded into the vector search pipeline, strictly workspace-scoped,
+**so that** the agent can semantically search a workspace's *own* uploaded files — never another tenant's and never the global legal corpus.
 
-**Implementation Note:** Extends the existing `ContentChunk` + pgvector + Cohere rerank pipeline. Adds `WORKSPACE_DOCUMENT` as a new `source_type`.
+**Implementation Note:** Extends the existing `ContentChunk` + pgvector + Cohere rerank pipeline; reuses (forks) the legal markdown paragraph-merge chunker. Triggered from Story 17.8's `extract-files` cron, not a server action.
 
 **Acceptance Criteria:**
 
-1. When a `DocumentVersion` is saved, its `extracted_text` is chunked and embedded using the existing `chunk-document.ts` pipeline
-2. When a `WorkspaceFile` has `extracted_text` populated, it is chunked and embedded similarly
-3. Chunks use `source_type: 'WORKSPACE_DOCUMENT'` and `workspace_id` is always set (workspace-scoped, never public)
-4. Chunk `source_id` references either `Document.id` or `WorkspaceFile.id`
-5. When a new `DocumentVersion` is created, old chunks for that document are replaced (re-indexed)
-6. Chunking strategy: paragraph-level for Tiptap documents (each top-level node), markdown-fallback chunking for extracted file text (same as existing legal document chunking)
-7. `contextual_header` includes document title and document type for better retrieval context
-8. Existing `retrieveContext()` function in `lib/agent/retrieval.ts` extended to include `WORKSPACE_DOCUMENT` source type (opt-in filter — agent tools specify when to search workspace docs vs. legal docs)
-9. Embedding uses same `text-embedding-3-small` model and Cohere rerank pipeline as legal documents
-10. Re-indexing does not block the user — runs after save completes
+1. When Story 17.8's `extract-files` cron sets a `WorkspaceFile` to `DONE`, its markdown `extracted_text` is chunked and embedded.
+2. Chunks use `source_type: 'USER_FILE'`, `source_id = WorkspaceFile.id`, and `workspace_id` is always set (workspace-scoped, never null — a null would leak cross-tenant).
+3. Chunking: markdown paragraph-merge (forked from the legal `chunkFromMarkdown` algorithm; target ~400 tokens, cap 1000).
+4. Deletion de-indexes: `deleteFile` + `deleteFilesBulk` remove the file's `USER_FILE` chunks (mirroring the permission-filtered delete set).
+5. Re-index + content-hash dedupe: a replaced file re-syncs (delete-then-insert); an unchanged `content_hash` skips re-embed.
+6. `retrieveContext()` (`lib/agent/retrieval.ts`) gains a `sourceTypes?: string[]` option so agent tools can search `['USER_FILE']` (back-compat single `sourceType?` retained).
+7. `contextual_header` = filename + `FileCategory`; `metadata.{ filename, category, content_hash }`.
+8. Embedding uses the same `text-embedding-3-small` model + Cohere rerank as legal documents; legal chunking/retrieval is unchanged (additive).
+
+> Authored-styrdokument chunking (`DocumentVersion` content, the `WORKSPACE_DOCUMENT` source type, the original paragraph-per-node strategy, draft gating, and the missing delete pathway) → **Story 17.9b**.
 
 ---
 

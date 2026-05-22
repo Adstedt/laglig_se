@@ -249,4 +249,34 @@ describe('retrieveContext', () => {
       section: '2',
     })
   })
+
+  // ---------------------------------------------------------------------------
+  // Story 17.9: sourceTypes multi-type filter
+  //
+  // $queryRaw is mocked, so this asserts the SQL *parameters* (the array is bound
+  // and the workspace is scoped) rather than real-row isolation. A true
+  // cross-tenant read test belongs in an integration suite against a test DB —
+  // see the story's Testing note.
+  // ---------------------------------------------------------------------------
+  it('binds the sourceTypes array + the workspace id as SQL parameters', async () => {
+    await retrieveContext('arbetsmiljö', 'ws-42', {
+      sourceTypes: ['USER_FILE'],
+    })
+
+    expect(mockQueryRaw).toHaveBeenCalledTimes(1)
+    const params = mockQueryRaw.mock.calls[0]!.slice(1) // drop the template strings
+    // The enum-array param is bound (drives `= ANY(...::"SourceType"[])`).
+    expect(params).toContainEqual(['USER_FILE'])
+    // ...and the query is still scoped to the caller's workspace.
+    expect(params).toContain('ws-42')
+  })
+
+  it('back-compat: sourceTypes defaults to null (no multi-type filter) when omitted', async () => {
+    await retrieveContext('arbetsmiljö', 'ws-1')
+
+    const params = mockQueryRaw.mock.calls[0]!.slice(1)
+    // Null array param → the `::text[] IS NULL` guard passes → no source filter.
+    expect(params).toContain(null)
+    expect(params).not.toContainEqual(['USER_FILE'])
+  })
 })
