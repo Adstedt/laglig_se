@@ -124,7 +124,7 @@ export function HeroProductShot() {
   return (
     <div
       ref={wrapRef}
-      className="relative w-full select-none overflow-hidden"
+      className="relative w-full animate-fade-up select-none overflow-hidden"
       style={{ height: Math.round(DESIGN_H * scale) }}
     >
       <div

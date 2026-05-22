@@ -12,6 +12,7 @@ import { WhySectionGraph as WhySection } from '@/components/features/landing-v3/
 import { BreadthSection } from '@/components/features/landing-v3/breadth-section'
 import { RolesSection } from '@/components/features/landing-v3/roles-section'
 import { AiAgentSection } from '@/components/features/landing-v3/ai-agent-section'
+import { KnowledgeGraphSection } from '@/components/features/landing-v3/knowledge-graph-section'
 import { OpenDatabaseV3 } from '@/components/features/landing-v3/open-database-v3'
 import { InfrastructureSection } from '@/components/features/landing-v3/infrastructure-section'
 import { ByraerSection } from '@/components/features/landing-v3/byraer-section'
@@ -46,6 +47,7 @@ export default function LandingV3Page() {
         <WhySection />
         <BreadthSection />
         <AiAgentSection />
+        <KnowledgeGraphSection />
         <RolesSection />
         <OpenDatabaseV3 />
         <InfrastructureSection />

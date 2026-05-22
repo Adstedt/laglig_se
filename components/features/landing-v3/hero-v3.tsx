@@ -1,6 +1,16 @@
+'use client'
+
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { MapPin, Database, ShieldCheck, ArrowRight } from 'lucide-react'
-import { HeroProductShot } from './hero-product-shot'
+
+// Client-only: the product shot pulls in heavy interactive deps (tanstack-table,
+// dnd-kit) and dnd-kit's SSR ids cause hydration mismatches. Loading it client-
+// side keeps the marketing page's first paint light and the hero hydration clean.
+const HeroProductShot = dynamic(
+  () => import('./hero-product-shot').then((m) => m.HeroProductShot),
+  { ssr: false, loading: () => <div className="aspect-[1640/1080] w-full" /> }
+)
 
 const trustClaims = [
   {
@@ -23,24 +33,24 @@ const trustClaims = [
 export function HeroV3() {
   return (
     <section className="relative overflow-hidden">
-      {/* Headline block — constrained to the text column width */}
-      <div className="container relative mx-auto px-4 pt-12 md:pt-16 lg:pt-20">
+      {/* Headline block — constrained to the text column width. Lines reveal in
+          sequence via the design system's CSS fade-up utilities (compositor-
+          driven, so they never stall behind the heavy product shot mounting). */}
+      <div className="container relative mx-auto px-4 pt-16 md:pt-24 lg:pt-28">
         <div className="mx-auto max-w-7xl">
-          {/* H1 — bold category claim. The "OS for X" move (cf. Notion's
-              "OS for work", Ramp's "finance OS"). Second line muted to keep
-              the visual rhythm we already use elsewhere on the page. */}
           <h1
             className="mb-8 max-w-5xl text-[2.5rem] font-medium leading-[1.05] tracking-tight sm:text-5xl md:text-6xl lg:text-[4.75rem]"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
           >
-            <span className="block">Det nya operativsystemet</span>
-            <span className="block text-foreground/45">för efterlevnad.</span>
+            <span className="block animate-fade-up">
+              Det nya operativsystemet
+            </span>
+            <span className="block animate-fade-up-delay-1 text-foreground/45">
+              för efterlevnad.
+            </span>
           </h1>
 
-          {/* Sub names the ICP explicitly (SMB primary, compliance-team
-              secondary) and the AI-era category. Workflow pillars after the
-              em-dash. Same dot-and-link callout pattern as Linear. */}
-          <div className="mb-10 flex flex-col items-start gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="mb-10 flex animate-fade-up-delay-2 flex-col items-start gap-6 lg:flex-row lg:items-end lg:justify-between">
             <p className="max-w-2xl text-lg text-muted-foreground md:text-xl">
               Byggt för svenska företag, stora som små. Designat för AI-eran —
               där efterlevnad arbetar för er, inte tvärtom.
@@ -60,16 +70,14 @@ export function HeroV3() {
         </div>
       </div>
 
-      {/* Product shot — the visual anchor. Wider than the text column
-          (Linear-style full-bleed) so the real compliance table renders at
-          native size; it scales-to-fit on narrower screens. Multi-layer drop
-          shadow + hairline top-edge highlight + soft ring frame. */}
-      <div className="relative mx-auto w-full max-w-[1640px] px-4 sm:px-6">
-        <div className="relative">
-          {/* Soft warm halo behind the frame */}
+      {/* Product shot — wider than the text column (Linear-style). Frame rises
+          in; the shot fades in when it finishes loading. */}
+      <div className="relative mx-auto w-full max-w-[1476px] px-4 sm:px-6">
+        <div className="relative animate-fade-up-delay-3">
+          {/* Slow breathing warm halo behind the frame */}
           <div
             aria-hidden
-            className="pointer-events-none absolute -inset-x-16 -inset-y-12 rounded-[3rem] bg-gradient-to-br from-amber-100/45 via-orange-50/25 to-transparent blur-3xl"
+            className="pointer-events-none absolute -inset-x-16 -inset-y-12 animate-pulse-slow rounded-[3rem] bg-gradient-to-br from-amber-100/50 via-orange-50/25 to-transparent blur-3xl"
           />
           <div
             className="relative overflow-hidden rounded-[1.25rem] bg-card ring-1 ring-foreground/[0.07]"
@@ -82,8 +90,7 @@ export function HeroV3() {
               ].join(', '),
             }}
           >
-            {/* Top-edge highlight — thin gradient line that gives the
-                illusion of light catching the rounded top edge */}
+            {/* Top-edge highlight — light catching the rounded top edge */}
             <div
               aria-hidden
               className="pointer-events-none absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent"
@@ -93,7 +100,7 @@ export function HeroV3() {
         </div>
       </div>
 
-      {/* Trust strip — customer-logo-band style, back in the text column */}
+      {/* Trust strip */}
       <div className="container relative mx-auto px-4 pb-12 md:pb-16 lg:pb-20">
         <div className="mx-auto max-w-7xl">
           <div className="mt-12 grid grid-cols-1 gap-3 border-t border-border/60 pt-6 sm:grid-cols-3">
