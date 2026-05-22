@@ -18,13 +18,11 @@ import { CitationDetail } from './details/citation-detail'
 import { ToolResultDetail } from './details/tool-result-detail'
 import { WebSearchDetail } from './details/web-search-detail'
 import { SearchResultsDetail } from './details/search-results-detail'
-import { WritePreviewTask } from './details/write-preview-task'
-import { WritePreviewStatus } from './details/write-preview-status'
-import { WritePreviewNote } from './details/write-preview-note'
 import { AssessmentDetail } from './details/assessment-detail'
 import { TaskDetail } from './details/task-detail'
 import { DocumentDetail } from './details/document-detail'
 import { LawListItemDetail } from './details/law-list-item-detail'
+import { DocumentDraftDetail } from './details/document-draft-detail'
 import { cn } from '@/lib/utils'
 
 // ---------------------------------------------------------------------------
@@ -43,8 +41,6 @@ function DetailContent({ item }: { item: ChatDetailItem }) {
         return <WebSearchDetail data={item.data} />
       }
       return <ToolResultDetail toolName={item.toolName} data={item.data} />
-    case 'write-preview':
-      return <WritePreviewRouter toolName={item.toolName} data={item.data} />
     case 'assessment':
       return <AssessmentDetail data={item.data} />
     case 'task':
@@ -53,47 +49,11 @@ function DetailContent({ item }: { item: ChatDetailItem }) {
       return <DocumentDetail data={item.data} />
     case 'law-list-item':
       return <LawListItemDetail data={item.data} />
+    case 'document-draft':
+      return <DocumentDraftDetail data={item.data} />
     default:
       return null
   }
-}
-
-/** Routes write-preview to the correct specialized card by tool name */
-function WritePreviewRouter({
-  toolName,
-  data,
-}: {
-  toolName: string
-  data: Extract<ChatDetailItem, { type: 'write-preview' }>['data']
-}) {
-  switch (toolName) {
-    case 'create_task':
-      return <WritePreviewTask data={data} />
-    case 'update_compliance_status':
-      return <WritePreviewStatus data={data} />
-    case 'add_context_note':
-      return <WritePreviewNote data={data} />
-    default:
-      return <ToolResultDetail toolName={toolName} data={data} />
-  }
-}
-
-const WRITE_PREVIEW_HEADERS: Record<
-  string,
-  { title: string; subtitle: string }
-> = {
-  create_task: {
-    title: 'Skapa uppgift',
-    subtitle: 'Förhandsgranska och bekräfta',
-  },
-  update_compliance_status: {
-    title: 'Uppdatera status',
-    subtitle: 'Granska statusändring',
-  },
-  add_context_note: {
-    title: 'Lägg till anteckning',
-    subtitle: 'Granska anteckning',
-  },
 }
 
 function getDetailHeader(item: ChatDetailItem): {
@@ -124,12 +84,6 @@ function getDetailHeader(item: ChatDetailItem): {
         subtitle: null,
       }
     }
-    case 'write-preview': {
-      const header = WRITE_PREVIEW_HEADERS[item.toolName]
-      return header
-        ? { title: header.title, subtitle: header.subtitle }
-        : { title: 'Bekräfta åtgärd', subtitle: null }
-    }
     case 'assessment':
       return { title: 'Bedömning', subtitle: item.data.documentTitle }
     case 'task':
@@ -140,6 +94,11 @@ function getDetailHeader(item: ChatDetailItem): {
       return {
         title: item.data.documentTitle,
         subtitle: item.data.documentNumber,
+      }
+    case 'document-draft':
+      return {
+        title: item.data.title || 'Utkast',
+        subtitle: 'Förhandsvisning av utkast',
       }
     default:
       return { title: 'Detaljer', subtitle: null }

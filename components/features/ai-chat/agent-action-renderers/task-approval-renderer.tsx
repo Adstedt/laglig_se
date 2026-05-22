@@ -2,16 +2,13 @@
 
 /**
  * Story 14.22, Task 4: CREATE_TASK approval renderer.
- *
- * Per-type body for the AgentActionCard. Mirrors the field surface of the
- * legacy sidebar write-preview-task.tsx (title / description / priority) so the
- * UX is unchanged, but persists edits via updatePendingActionParams (debounced
- * 500ms) instead of holding ephemeral SDK state. Re-implemented, not copied.
+ * Story 14.23: migrated onto the shared ActionRendererFrame so it collapses in
+ * the batch-card `compact` variant like every other type (AC 17). Field surface
+ * (title / description / priority) and APPROVED summary are unchanged.
  */
 
 import { useEffect, useRef, useState } from 'react'
-import { Check, Loader2, X, ArrowUpRight, Flag } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Check, ArrowUpRight, Flag } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import {
@@ -23,11 +20,13 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { getPriorityBadgeProps } from '@/lib/ui/badge-tones'
 import type { PendingAgentAction, TaskPriority } from '@prisma/client'
+import {
+  ActionRendererFrame,
+  LABEL_CLS,
+  useDebouncedParamsChange,
+} from './renderer-frame'
 
 const PRIORITIES: TaskPriority[] = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
-
-const LABEL_CLS =
-  'text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground'
 
 /**
  * Priority pill — canonical task-surface treatment via the shared
@@ -58,6 +57,12 @@ export interface AgentActionRendererProps {
   /** Persist edited params (debounced by the renderer). */
   onParamsChange: (_params: Record<string, unknown>) => void
   isSubmitting: boolean
+  /**
+   * Story 14.23: batch-card variant. When true the renderer collapses to a
+   * one-line summary (expandable to the editable body). Default false (the
+   * single-action AgentActionCard renders the full body).
+   */
+  compact?: boolean
 }
 
 export function TaskApprovalRenderer({
@@ -66,6 +71,7 @@ export function TaskApprovalRenderer({
   onReject,
   onParamsChange,
   isSubmitting,
+  compact = false,
 }: AgentActionRendererProps) {
   const params = (action.params ?? {}) as CreateTaskParams
   const resultRef = (action.result_ref ?? {}) as { taskId?: string }
@@ -86,89 +92,53 @@ export function TaskApprovalRenderer({
     el.style.height = `${Math.min(el.scrollHeight, 260)}px`
   }, [description])
 
-  // 500ms debounced persistence of edits (AC 16). Skip the initial mount.
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined
+  useDebouncedParamsChange(
+    onParamsChange,
+    {
+      title,
+      description: description || null,
+      relatedDocumentId: params.relatedDocumentId ?? null,
+      priority,
+    },
+    action.status === 'PENDING'
   )
-  const mountedRef = useRef(false)
-  useEffect(() => {
-    if (!mountedRef.current) {
-      mountedRef.current = true
-      return
-    }
-    if (action.status !== 'PENDING') return
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      onParamsChange({
-        title,
-        description: description || null,
-        relatedDocumentId: params.relatedDocumentId ?? null,
-        priority,
-      })
-    }, 500)
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, description, priority])
 
-  // ---- APPROVED -----------------------------------------------------------
-  if (action.status === 'APPROVED') {
-    return (
-      <div className="space-y-2.5">
-        <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-          <Check className="h-4 w-4" />
-          Godkänt — uppgift skapad
-        </div>
-        <p className="text-sm leading-snug">{params.title}</p>
-        {resultRef.taskId ? (
-          <a
-            href={`/tasks?task=${resultRef.taskId}`}
-            className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Visa uppgift
-            <ArrowUpRight className="h-3 w-3" />
-          </a>
-        ) : null}
+  const approved = (
+    <>
+      <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+        <Check className="h-4 w-4" />
+        Godkänt — uppgift skapad
       </div>
-    )
-  }
+      <p className="text-sm leading-snug">{params.title}</p>
+      {resultRef.taskId ? (
+        <a
+          href={`/tasks?task=${resultRef.taskId}`}
+          className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Visa uppgift
+          <ArrowUpRight className="h-3 w-3" />
+        </a>
+      ) : null}
+    </>
+  )
 
-  // ---- REJECTED -----------------------------------------------------------
-  if (action.status === 'REJECTED') {
-    return (
-      <div className="flex items-center gap-2">
-        <Badge tone="neutral" variant="outline" className="text-[10px]">
-          Avvisat
-        </Badge>
-        <p className="truncate text-sm text-muted-foreground line-through">
-          {params.title}
-        </p>
-      </div>
-    )
-  }
-
-  // ---- EXPIRED ------------------------------------------------------------
-  if (action.status === 'EXPIRED') {
-    return (
-      <div className="space-y-1">
-        <p className="text-sm text-muted-foreground">Förslaget har gått ut</p>
-        <p className="truncate text-sm text-muted-foreground line-through">
-          {params.title}
-        </p>
-      </div>
-    )
-  }
-
-  // ---- PENDING (editable) -------------------------------------------------
   return (
-    <div className="space-y-3">
+    <ActionRendererFrame
+      status={action.status}
+      compact={compact}
+      badge="Uppgift"
+      summary={params.title ?? ''}
+      approved={approved}
+      onApprove={onApprove}
+      onReject={onReject}
+      isSubmitting={isSubmitting}
+      canApprove={title.trim().length > 0}
+    >
       <div className="space-y-1">
         <span className={`${LABEL_CLS} block`}>Titel</span>
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="h-9 text-sm font-medium"
           disabled={isSubmitting}
         />
       </div>
@@ -210,32 +180,6 @@ export function TaskApprovalRenderer({
           </SelectContent>
         </Select>
       </div>
-
-      <div className="flex items-center gap-1 border-t border-border/60 pt-3">
-        <Button
-          size="sm"
-          onClick={onApprove}
-          disabled={isSubmitting || !title.trim()}
-          className="gap-1.5"
-        >
-          {isSubmitting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Check className="h-4 w-4" />
-          )}
-          Godkänn
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onReject}
-          disabled={isSubmitting}
-          className="gap-1.5 text-muted-foreground hover:text-foreground"
-        >
-          <X className="h-4 w-4" />
-          Avvisa
-        </Button>
-      </div>
-    </div>
+    </ActionRendererFrame>
   )
 }

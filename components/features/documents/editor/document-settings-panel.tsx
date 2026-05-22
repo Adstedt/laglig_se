@@ -38,7 +38,7 @@ const DOCUMENT_TYPE_LABELS: Record<string, string> = {
   POLICY: 'Policy',
   RISK_ASSESSMENT: 'Riskbedömning',
   ACTION_PLAN: 'Handlingsplan',
-  PROCEDURE: 'Procedur',
+  PROCEDURE: 'Rutin',
   INSTRUCTION: 'Instruktion',
   CHECKLIST: 'Checklista',
   REPORT: 'Rapport',

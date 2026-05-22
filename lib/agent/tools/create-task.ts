@@ -65,13 +65,9 @@ export function createCreateTaskTool(
 Använd detta verktyg när användaren har identifierat en åtgärd som behöver genomföras
 och vill spåra den som en uppgift. Uppgiften skapas i den första kolumnen på tavlan.
 
-Bekräftelsemönster: Anropa ALLTID först med execute=false för att visa ett förslag.
-Vänta tills användaren godkänner innan du anropar med execute=true.
-
-Returnerar vid execute=false: ett förslag med confirmation_required: true och en förhandsvisning.
-Returnerar vid execute=true: den skapade uppgiftens ID och titel.
-
-Om skapandet misslyckas returneras ett felmeddelande med vägledning.`,
+Anropa verktyget direkt — det skapar ett inline-förslagskort i chatten där användaren
+granskar, justerar och godkänner. Kortet är bekräftelsen: beskriv inte fälten i löpande
+text och fråga inte om lov först. Uppgiften skapas först när användaren godkänner kortet.`,
     inputSchema: zodSchema(createTaskSchema),
     execute: async ({
       title,

@@ -1,0 +1,117 @@
+# Quality Gate — Story 17.8: Uploaded File Ingestion (LLM/Converter Pipeline)
+schema: 1
+story: '17.8'
+story_title: 'Uploaded File Ingestion — Structured Text via the LLM/Converter Pipeline'
+gate: PASS
+status_reason: >-
+  Re-review after the QA-fix round: TEST-001 (the only medium concern) is closed —
+  the files.ts integration layer (uploadFile stamping + extractWorkspaceFile) now
+  has dedicated unit coverage. 32/32 unit tests pass, typecheck + lint clean, and
+  the pipeline was validated end-to-end live. Remaining items are low-severity
+  accepted trade-offs / deferrals, documented in the story. Cleared to Done.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-22'
+
+waiver: { active: false }
+
+quality_score: 92
+
+# ── Resolved this cycle ──────────────────────────────────────────────────────
+resolved:
+  - id: TEST-001
+    severity: medium
+    was: >-
+      No unit coverage for uploadFile's content_hash/extraction_status stamping
+      or the extractWorkspaceFile manual re-trigger.
+    fix: >-
+      Added tests/unit/actions/files-extraction.test.ts (8 tests): PDF/CSV →
+      PENDING, PNG → UNSUPPORTED, sha256 hash + determinism; extractWorkspaceFile
+      status/extracted_text update, owner-scoped FILE_EXTRACTION telemetry,
+      no-usage path, and the not-found/out-of-workspace guard. 32 tests total,
+      all green; typecheck + lint clean. Independently re-run by QA.
+
+# ── Remaining (low, accepted/deferred — none blocking) ───────────────────────
+top_issues:
+  - id: AC15-001
+    severity: low
+    status: accepted
+    finding: >-
+      AC 15's "skip re-extraction on unchanged content_hash" is not wired (no
+      file-replace flow). Hash IS captured for 17.9 / future dedupe.
+    suggested_action: 'Implement on a future replace flow, or relax the AC wording.'
+  - id: REL-001
+    severity: low
+    status: accepted
+    finding: >-
+      Truncation flag + retry counter not persisted (no WorkspaceFile.metadata
+      column). Truncation logged; FAILED terminal + 3× internal Anthropic retry
+      + time-based stale-PROCESSING re-enqueue cover reliability.
+    suggested_action: 'Add a metadata/attempts column only if persisted observability is later wanted.'
+  - id: SEC-001
+    severity: low
+    status: accepted
+    finding: 'PDF content egresses to Anthropic for transcription (matches the amendment pipeline).'
+    suggested_action: 'Confirm subprocessor DPA covers uploaded files (no code change).'
+  - id: COST-001
+    severity: low
+    status: deferred
+    finding: 'No per-workspace ingestion quota (deferred to Story 5.5b per AC 16).'
+    suggested_action: 'Track via FILE_EXTRACTION telemetry; enforce in 5.5b.'
+  - id: AC6-001
+    severity: low
+    status: open
+    finding: >-
+      Scanned/image-PDF OCR (AC 6) not yet exercised — live smoke used text-layer
+      PDFs. Same Claude document block (native OCR), expected to work but unverified.
+    suggested_action: 'One-off manual smoke of a genuinely scanned PDF before relying on OCR.'
+
+evidence:
+  tests_reviewed: 32 # files-extraction (8) + extract-file (19) + extract-files cron (5)
+  test_result: '32 passed'
+  validations: 'pnpm typecheck clean; pnpm lint (changed files) clean'
+  live_smoke: >-
+    10 docs (5 PDF via Haiku, 5 DOCX via mammoth) → all DONE in 69s; BKR_BBV
+    (12.97MB) → FAILED (oversized); 9 PNGs → UNSUPPORTED; 5 FILE_EXTRACTION
+    telemetry rows (~$0.008/PDF). Upload paths exercised: My-Files browser,
+    law-list-item modal, task modal.
+  trace:
+    ac_covered: [1,2,3,4,5,7,8,9,10,11,12,13,16,17,18,19]
+    ac_partial: [6,14,15] # AC6-001 (OCR unverified), REL-001 (retry simplified), AC15-001 (hash captured, skip not wired)
+    ac_uncovered: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Cron-secret auth; per-file tenant-scoped writes; withWorkspace manual path; Prisma-parameterised. SEC-001 advisory (Anthropic egress).'
+  performance:
+    status: PASS
+    notes: 'max_tokens 16384 (under SDK guard); batch 25; idempotent claim; observed 5 PDFs/69s.'
+  reliability:
+    status: PASS
+    notes: >-
+      Idempotent PENDING→PROCESSING claim, stale re-enqueue, 3× internal retry,
+      comprehensive terminal states, FAILED-not-partial faithfulness. The dropped
+      metadata persistence (REL-001) is an accepted trade-off.
+  maintainability:
+    status: PASS
+    notes: 'Clean, mirrors proven patterns; core + integration layers now unit-tested (32 tests).'
+
+recommendations:
+  immediate: []   # nothing blocks Done
+  future:
+    - 'AC6-001: smoke a real scanned PDF to confirm the OCR path'
+    - 'AC15-001 / REL-001: content_hash skip + persisted retry/metadata column if needed'
+    - 'COST-001: per-workspace ingestion quota (Story 5.5b)'
+    - 'Story 17.9: wire the extract-files cron DONE → syncWorkspaceChunks seam'
+
+history:
+  - at: '2026-05-22'
+    gate: CONCERNS
+    score: 80
+    note: 'Initial review — TEST-001 (no files.ts integration tests) + 5 low concerns.'
+  - at: '2026-05-22'
+    gate: PASS
+    score: 92
+    note: 'Re-review — TEST-001 closed (8 new tests, 32 total). Lows accepted/deferred.'
+
+expires: '2026-06-05T00:00:00Z'

@@ -1,0 +1,853 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Laglig.se — Landing v4 (konverteringsprototyp)</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+    <!-- Brand fonts — loaded from the project's /public/fonts via relative path,
+         same convention as design-language.html. Safiro must always render at
+         weight 500 (only weight registered). -->
+    <style>
+      @font-face {
+        font-family: 'Safiro';
+        src:
+          url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'),
+          url('../public/fonts/safiro-medium-webfont.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Google Sans Flex';
+        src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype');
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      /* HSL channels mirrored from app/globals.css :root. Stored as bare
+         channels so Tailwind's /<alpha-value> opacity modifiers work
+         (text-foreground/40, bg-primary/90, etc.). */
+      :root {
+        --background: 40 20% 98%;
+        --foreground: 30 10% 10%;
+        --card: 40 15% 99%;
+        --primary: 30 15% 12%;
+        --primary-foreground: 40 20% 98%;
+        --secondary: 40 15% 95%;
+        --muted: 40 12% 94%;
+        --muted-foreground: 30 8% 45%;
+        --accent: 40 15% 93%;
+        --border: 35 10% 88%;
+        --section-warm: 45 30% 96%;
+        --section-sage: 140 25% 95%;
+        --section-cream: 35 40% 97%;
+      }
+    </style>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Google Sans Flex', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+              display: ['Safiro', 'Georgia', 'serif'],
+            },
+            colors: {
+              // Mirrored from app/globals.css :root (the visual source of truth).
+              // <alpha-value> lets /opacity modifiers compose correctly.
+              background: 'hsl(var(--background) / <alpha-value>)',
+              foreground: 'hsl(var(--foreground) / <alpha-value>)',
+              card: 'hsl(var(--card) / <alpha-value>)',
+              primary: 'hsl(var(--primary) / <alpha-value>)',
+              'primary-foreground': 'hsl(var(--primary-foreground) / <alpha-value>)',
+              secondary: 'hsl(var(--secondary) / <alpha-value>)',
+              muted: 'hsl(var(--muted) / <alpha-value>)',
+              'muted-foreground': 'hsl(var(--muted-foreground) / <alpha-value>)',
+              accent: 'hsl(var(--accent) / <alpha-value>)',
+              border: 'hsl(var(--border) / <alpha-value>)',
+              'section-warm': 'hsl(var(--section-warm) / <alpha-value>)',
+              'section-sage': 'hsl(var(--section-sage) / <alpha-value>)',
+              'section-cream': 'hsl(var(--section-cream) / <alpha-value>)',
+            },
+            borderRadius: {
+              lg: '0.5rem',
+              md: 'calc(0.5rem - 2px)',
+              sm: 'calc(0.5rem - 4px)',
+            },
+            keyframes: {
+              'fade-up': {
+                '0%': { opacity: '0', transform: 'translateY(16px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+            },
+            animation: {
+              'fade-up': 'fade-up 0.6s ease-out forwards',
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        font-family: 'Google Sans Flex', system-ui, -apple-system, sans-serif;
+        background: hsl(40 20% 98%);
+        color: hsl(30 10% 10%);
+        -webkit-font-smoothing: antialiased;
+      }
+      .font-display { font-family: 'Safiro', Georgia, serif; font-weight: 500; letter-spacing: -0.02em; }
+
+      /* Scroll-reveal: hidden until .is-visible toggled by IntersectionObserver */
+      .reveal { opacity: 0; transform: translateY(20px); transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1); }
+      .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+      /* Layered "polished glass" frame for product shots — ported from hero-v3 */
+      .glass-frame {
+        box-shadow:
+          0 1px 2px 0 rgb(0 0 0 / 0.03),
+          0 8px 16px -4px rgb(0 0 0 / 0.05),
+          0 24px 48px -12px rgb(0 0 0 / 0.10),
+          0 56px 112px -28px rgb(0 0 0 / 0.16);
+      }
+
+      /* skeleton shimmer for the laglista simulation */
+      @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+      .shimmer { background: linear-gradient(90deg, hsl(40 12% 92%) 25%, hsl(40 15% 96%) 50%, hsl(40 12% 92%) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
+    </style>
+  </head>
+
+  <body class="min-h-screen antialiased">
+    <!-- ───────────────────────── Prototype banner ───────────────────────── -->
+    <div class="sticky top-0 z-[70] w-full border-b border-amber-200 bg-amber-100/95 px-4 py-1.5 text-center text-[11px] font-medium text-amber-900 backdrop-blur">
+      <i data-lucide="flask-conical" class="mr-1 inline h-3 w-3 align-[-2px]"></i>
+      Landing v4 · konverteringsprototyp · outcome-led hero + interaktiv laglista-hook · live-sidan ligger på <code class="rounded bg-amber-200/70 px-1">/</code>, v3-wireframe på <code class="rounded bg-amber-200/70 px-1">/landing-v3</code>
+    </div>
+
+    <!-- ───────────────────────────── Navbar ─────────────────────────────── -->
+    <header id="nav" class="sticky top-[29px] z-[60] w-full border-b border-transparent transition-all duration-300">
+      <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 md:px-6">
+        <a href="#" class="flex items-center gap-2">
+          <span class="font-display text-xl text-foreground">Laglig.se</span>
+        </a>
+
+        <nav class="hidden items-center gap-7 text-sm text-muted-foreground lg:flex">
+          <a href="#funktioner" class="transition-colors hover:text-foreground">Funktioner</a>
+          <a href="#ai" class="transition-colors hover:text-foreground">AI-agenten</a>
+          <a href="#for-vem" class="transition-colors hover:text-foreground">För vem</a>
+          <a href="#priser" class="transition-colors hover:text-foreground">Priser</a>
+          <a href="#faq" class="transition-colors hover:text-foreground">Vanliga frågor</a>
+        </nav>
+
+        <div class="flex items-center gap-2">
+          <a href="#" class="hidden rounded-md px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent sm:inline-flex">Logga in</a>
+          <a href="#hero-form" class="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90">
+            Kom igång gratis
+          </a>
+          <button id="menu-btn" class="grid h-9 w-9 place-items-center rounded-md text-foreground hover:bg-accent lg:hidden" aria-label="Meny">
+            <i data-lucide="menu" class="h-5 w-5"></i>
+          </button>
+        </div>
+      </div>
+      <!-- mobile menu -->
+      <div id="mobile-menu" class="hidden border-t border-border bg-background px-4 py-3 lg:hidden">
+        <div class="flex flex-col gap-1 text-sm">
+          <a href="#funktioner" class="rounded-md px-3 py-2.5 hover:bg-accent">Funktioner</a>
+          <a href="#ai" class="rounded-md px-3 py-2.5 hover:bg-accent">AI-agenten</a>
+          <a href="#for-vem" class="rounded-md px-3 py-2.5 hover:bg-accent">För vem</a>
+          <a href="#priser" class="rounded-md px-3 py-2.5 hover:bg-accent">Priser</a>
+          <a href="#faq" class="rounded-md px-3 py-2.5 hover:bg-accent">Vanliga frågor</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- ─────────────────────────────  HERO  ───────────────────────────── -->
+      <section class="relative overflow-hidden">
+        <!-- ambient warm glow -->
+        <div aria-hidden class="pointer-events-none absolute -top-32 left-1/2 h-[42rem] w-[72rem] -translate-x-1/2 rounded-full bg-gradient-to-br from-amber-100/50 via-orange-50/30 to-transparent blur-3xl"></div>
+
+        <div class="relative mx-auto max-w-7xl px-4 pb-16 pt-12 md:px-6 md:pb-24 md:pt-16">
+          <div class="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+            <!-- Left: copy + the conversion hook -->
+            <div>
+              <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-200/70 bg-gradient-to-r from-amber-50 to-orange-50/60 px-3.5 py-1.5 text-xs font-medium text-amber-900">
+                <span class="relative flex h-2 w-2">
+                  <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                </span>
+                För företag som vill ha koll — på riktigt
+              </div>
+
+              <h1 class="font-display text-[2.6rem] leading-[1.04] tracking-tight text-foreground sm:text-5xl md:text-6xl">
+                Vet att ni följer lagen.
+                <span class="block text-foreground/40">Varje dag — inte bara på revisionsdagen.</span>
+              </h1>
+
+              <p class="mt-6 max-w-xl text-lg text-muted-foreground">
+                En levande laglista, automatisk bevakning av varje lagändring och en
+                AI-agent som gör compliance-jobbet åt er. Byggt för dig som
+                <span class="font-medium text-foreground">driver företaget</span> — och dig som
+                <span class="font-medium text-foreground">ansvarar för efterlevnaden</span>.
+              </p>
+
+              <!-- The conversion hook: org-nr → personlig laglista -->
+              <form id="hero-form" class="mt-8 max-w-md scroll-mt-32">
+                <label for="orgnr" class="mb-2 block text-sm font-medium text-foreground">
+                  Se vilka lagar som gäller ert företag
+                </label>
+                <div class="flex flex-col gap-2.5 sm:flex-row">
+                  <div class="relative flex-1">
+                    <i data-lucide="building-2" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"></i>
+                    <input
+                      id="orgnr"
+                      type="text"
+                      inputmode="numeric"
+                      value="556734-1188"
+                      class="h-12 w-full rounded-md border border-border bg-card pl-9 pr-3 text-sm text-foreground outline-none ring-primary/20 transition focus:border-primary focus:ring-4"
+                      placeholder="Organisationsnummer"
+                      aria-label="Organisationsnummer"
+                    />
+                  </div>
+                  <button type="submit" class="inline-flex h-12 shrink-0 items-center justify-center gap-1.5 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90">
+                    Se min laglista
+                    <i data-lucide="arrow-right" class="h-4 w-4"></i>
+                  </button>
+                </div>
+                <p class="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                  <span class="inline-flex items-center gap-1"><i data-lucide="check" class="h-3.5 w-3.5 text-emerald-600"></i> Inget betalkort</span>
+                  <span class="inline-flex items-center gap-1"><i data-lucide="check" class="h-3.5 w-3.5 text-emerald-600"></i> 15 dagar gratis</span>
+                  <span class="inline-flex items-center gap-1"><i data-lucide="check" class="h-3.5 w-3.5 text-emerald-600"></i> Klart på 2 minuter</span>
+                </p>
+              </form>
+            </div>
+
+            <!-- Right: live laglista widget (morphs on submit) -->
+            <div class="relative">
+              <div aria-hidden class="pointer-events-none absolute -inset-8 rounded-[2.5rem] bg-gradient-to-br from-amber-200/40 via-orange-100/20 to-rose-100/25 blur-3xl"></div>
+
+              <div id="laglista-card" class="glass-frame relative overflow-hidden rounded-2xl border border-border/60 bg-card">
+                <!-- card header -->
+                <div class="flex items-center justify-between border-b border-border/70 px-5 py-3.5">
+                  <div class="flex items-center gap-2.5">
+                    <span class="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground">
+                      <i data-lucide="list-checks" class="h-4 w-4"></i>
+                    </span>
+                    <div>
+                      <p class="text-sm font-medium leading-tight text-foreground">Er personliga laglista</p>
+                      <p id="card-sub" class="text-xs text-muted-foreground">Ange organisationsnummer för att börja</p>
+                    </div>
+                  </div>
+                  <span id="card-badge" class="hidden rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-800"></span>
+                </div>
+
+                <!-- card body -->
+                <div id="card-body" class="px-5 py-4">
+                  <!-- IDLE state -->
+                  <div id="state-idle" class="flex flex-col items-center justify-center py-10 text-center">
+                    <span class="grid h-12 w-12 place-items-center rounded-full bg-muted text-muted-foreground">
+                      <i data-lucide="search" class="h-5 w-5"></i>
+                    </span>
+                    <p class="mt-4 max-w-[15rem] text-sm text-muted-foreground">
+                      Vi hämtar er bransch och verksamhet och visar vilka lagkrav som gäller — direkt.
+                    </p>
+                  </div>
+
+                  <!-- LOADING state -->
+                  <div id="state-loading" class="hidden">
+                    <div class="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
+                      <i data-lucide="loader-circle" class="h-4 w-4 animate-spin text-amber-600"></i>
+                      <span id="loading-text">Hämtar uppgifter från Bolagsverket…</span>
+                    </div>
+                    <div class="space-y-2.5">
+                      <div class="h-11 rounded-md shimmer"></div>
+                      <div class="h-11 rounded-md shimmer"></div>
+                      <div class="h-11 rounded-md shimmer"></div>
+                      <div class="h-11 rounded-md shimmer"></div>
+                    </div>
+                  </div>
+
+                  <!-- RESULT state -->
+                  <div id="state-result" class="hidden">
+                    <div class="mb-3 flex items-center gap-2 rounded-md bg-section-sage px-3 py-2 text-xs text-emerald-900">
+                      <i data-lucide="sparkles" class="h-3.5 w-3.5"></i>
+                      <span><span class="font-semibold">Almåsa Havshotell AB</span> · SNI 55101 Hotell · 48 anställda</span>
+                    </div>
+                    <ul id="law-list" class="space-y-1.5"></ul>
+                    <div class="mt-4 rounded-md border border-dashed border-border bg-secondary/60 px-4 py-3 text-center">
+                      <p class="text-xs text-muted-foreground">+ <span class="font-semibold text-foreground">55 fler lagkrav</span> väntar i ert konto</p>
+                      <a href="#" class="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90">
+                        Skapa konto & spara listan
+                        <i data-lucide="arrow-right" class="h-4 w-4"></i>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- trust strip -->
+          <div class="mt-14 grid grid-cols-1 gap-4 border-t border-border/60 pt-7 sm:grid-cols-3">
+            <div class="flex items-start gap-2.5">
+              <div class="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md bg-muted text-foreground/70"><i data-lucide="database" class="h-4 w-4"></i></div>
+              <div><p class="text-sm font-medium leading-tight">10 000+ lagar och regler</p><p class="text-xs text-muted-foreground">uppdateras varje dag</p></div>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <div class="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md bg-muted text-foreground/70"><i data-lucide="map-pin" class="h-4 w-4"></i></div>
+              <div><p class="text-sm font-medium leading-tight">Data lagras i Sverige</p><p class="text-xs text-muted-foreground">GDPR-säkrat, TLS 1.3</p></div>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <div class="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md bg-muted text-foreground/70"><i data-lucide="shield-check" class="h-4 w-4"></i></div>
+              <div><p class="text-sm font-medium leading-tight">Spårbart från start</p><p class="text-xs text-muted-foreground">redo när revisorn frågar</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─────────────────────── Social proof strip ─────────────────────── -->
+      <section class="border-y border-border/60 bg-secondary/40">
+        <div class="mx-auto max-w-7xl px-4 py-8 md:px-6">
+          <p class="mb-6 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">Används av växande svenska företag och compliance-team</p>
+          <div class="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 opacity-60">
+            <!-- placeholder wordmarks — swap for real customer logos -->
+            <span class="font-display text-lg text-foreground/70">Nordbygg</span>
+            <span class="font-display text-lg text-foreground/70">Almåsa</span>
+            <span class="font-display text-lg text-foreground/70">Voltera</span>
+            <span class="font-display text-lg text-foreground/70">Kustlogistik</span>
+            <span class="font-display text-lg text-foreground/70">Trygg HR</span>
+            <span class="font-display text-lg text-foreground/70">Mejeri Syd</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────────────────────── The stakes / problem ─────────────────── -->
+      <section class="reveal mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">
+        <div class="mx-auto max-w-3xl text-center">
+          <p class="mb-3 text-sm font-medium text-amber-700">Varför det spelar roll</p>
+          <h2 class="font-display text-3xl tracking-tight text-foreground sm:text-4xl md:text-[2.75rem]">
+            Det dyraste i compliance är det ni inte vet om.
+          </h2>
+          <p class="mt-5 text-lg text-muted-foreground">
+            Lagar ändras tyst. Krav glöms bort mellan revisioner. En enda missad
+            arbetsmiljö- eller GDPR-skyldighet kan kosta hundratusentals kronor —
+            och förtroendet tar längre tid att bygga tillbaka.
+          </p>
+        </div>
+
+        <div class="mx-auto mt-14 grid max-w-5xl gap-5 md:grid-cols-3">
+          <div class="rounded-xl border border-border bg-card p-6">
+            <span class="grid h-10 w-10 place-items-center rounded-lg bg-rose-100 text-rose-700"><i data-lucide="help-circle" class="h-5 w-5"></i></span>
+            <h3 class="mt-4 font-display text-lg text-foreground">"Vilka lagar gäller oss?"</h3>
+            <p class="mt-2 text-sm text-muted-foreground">Generiska listor och Google-sökningar ger osäkra svar. Ni gissar — och hoppas att ni gissar rätt.</p>
+          </div>
+          <div class="rounded-xl border border-border bg-card p-6">
+            <span class="grid h-10 w-10 place-items-center rounded-lg bg-amber-100 text-amber-700"><i data-lucide="bell-off" class="h-5 w-5"></i></span>
+            <h3 class="mt-4 font-display text-lg text-foreground">Ändringar smyger förbi</h3>
+            <p class="mt-2 text-sm text-muted-foreground">En paragraf skrivs om hos Riksdagen och ingen säger till. Ni upptäcker det först när det är ett problem.</p>
+          </div>
+          <div class="rounded-xl border border-border bg-card p-6">
+            <span class="grid h-10 w-10 place-items-center rounded-lg bg-slate-200 text-slate-700"><i data-lucide="folder-search" class="h-5 w-5"></i></span>
+            <h3 class="mt-4 font-display text-lg text-foreground">Revisionsstress</h3>
+            <p class="mt-2 text-sm text-muted-foreground">Bevis ligger utspridda i mappar och mejl. Att samla ihop dem inför en revision tar dagar ni inte har.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────────────────────── How it works ─────────────────────────── -->
+      <section class="reveal border-y border-border/60 bg-section-warm">
+        <div class="mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">
+          <div class="mx-auto max-w-2xl text-center">
+            <p class="mb-3 text-sm font-medium text-amber-700">Så funkar det</p>
+            <h2 class="font-display text-3xl tracking-tight text-foreground sm:text-4xl">Från osäkerhet till full koll — i tre steg</h2>
+          </div>
+
+          <div class="mt-14 grid gap-8 md:grid-cols-3">
+            <div class="relative">
+              <div class="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary font-display text-lg text-primary-foreground">1</div>
+              <h3 class="font-display text-xl text-foreground">Ange organisationsnumret</h3>
+              <p class="mt-2 text-muted-foreground">Vi hämtar bransch, SNI-kod och storlek automatiskt. Ni svarar på 3–5 snabba frågor om verksamheten.</p>
+            </div>
+            <div class="relative">
+              <div class="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary font-display text-lg text-primary-foreground">2</div>
+              <h3 class="font-display text-xl text-foreground">Få er skräddarsydda laglista</h3>
+              <p class="mt-2 text-muted-foreground">AI:n genererar 60–80 lagkrav som faktiskt gäller just er — kategoriserade och redo att jobba med.</p>
+            </div>
+            <div class="relative">
+              <div class="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary font-display text-lg text-primary-foreground">3</div>
+              <h3 class="font-display text-xl text-foreground">Håll er à jour — automatiskt</h3>
+              <p class="mt-2 text-muted-foreground">Vi bevakar varje ändring och säger till när något påverkar er. Compliance blir levande, inte en årlig brandkår.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────────────────────────  Features  ─────────────────────────── -->
+      <section id="funktioner" class="reveal mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">
+        <div class="mx-auto max-w-2xl text-center">
+          <p class="mb-3 text-sm font-medium text-amber-700">Plattformen</p>
+          <h2 class="font-display text-3xl tracking-tight text-foreground sm:text-4xl">Allt ni behöver för att bevisa efterlevnad</h2>
+          <p class="mt-4 text-lg text-muted-foreground">Inte ett dokumentarkiv från 90-talet. Ett modernt arbetssätt för compliance.</p>
+        </div>
+
+        <!-- big feature: laglistor with screenshot -->
+        <div class="mt-16 grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+          <div>
+            <span class="inline-flex items-center gap-1.5 rounded-md bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800"><i data-lucide="list-checks" class="h-3.5 w-3.5"></i> Laglistor</span>
+            <h3 class="mt-4 font-display text-2xl tracking-tight text-foreground sm:text-3xl">Er laglista — uppdelad i kravpunkter ni kan bocka av</h3>
+            <p class="mt-4 text-muted-foreground">Varje lag bryts ner i konkreta kravpunkter med status: efterlevs, kräver åtgärd eller ej uppfyllt. Länka bevis — filer, dokument, skärmbilder — direkt till kravet. Plötsligt vet ni inte bara <em>vilka</em> lagar som gäller, utan exakt var ni står.</p>
+            <ul class="mt-5 space-y-2.5 text-sm text-foreground">
+              <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> Kravpunkter med status och ansvarig</li>
+              <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> Bevis kopplade till varje krav</li>
+              <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> Grupperat per regelområde (arbetsmiljö, GDPR, ekonomi…)</li>
+            </ul>
+          </div>
+          <div class="glass-frame overflow-hidden rounded-xl border border-border/60 bg-card">
+            <img src="product-shots/01-laglistor.png" alt="Laglig.se laglistor — översikt över regelområden" class="h-auto w-full" />
+          </div>
+        </div>
+
+        <!-- secondary feature grid -->
+        <div class="mt-16 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div class="rounded-xl border border-border bg-card p-6">
+            <span class="grid h-10 w-10 place-items-center rounded-lg bg-amber-100 text-amber-700"><i data-lucide="radar" class="h-5 w-5"></i></span>
+            <h3 class="mt-4 font-display text-lg text-foreground">Lagbevakning</h3>
+            <p class="mt-2 text-sm text-muted-foreground">Daglig koll mot Riksdagen. När en lag på er lista ändras får ni en AI-sammanfattning av vad som ändrats och vad ni bör göra.</p>
+          </div>
+          <div class="rounded-xl border border-border bg-card p-6">
+            <span class="grid h-10 w-10 place-items-center rounded-lg bg-amber-100 text-amber-700"><i data-lucide="clipboard-check" class="h-5 w-5"></i></span>
+            <h3 class="mt-4 font-display text-lg text-foreground">Lagefterlevnadskontroller</h3>
+            <p class="mt-2 text-sm text-muted-foreground">Strukturerade revisionscykler med bedömningar, anmärkningar och åtgärdsplaner. En färdig revisionsrapport när cykeln avslutas.</p>
+          </div>
+          <div class="rounded-xl border border-border bg-card p-6">
+            <span class="grid h-10 w-10 place-items-center rounded-lg bg-amber-100 text-amber-700"><i data-lucide="file-text" class="h-5 w-5"></i></span>
+            <h3 class="mt-4 font-display text-lg text-foreground">Styrdokument</h3>
+            <p class="mt-2 text-sm text-muted-foreground">Policyer och rutiner med versionshantering. AI:n utkastar i korrekt juridisk ton, teamet granskar och godkänner.</p>
+          </div>
+          <div class="rounded-xl border border-border bg-card p-6">
+            <span class="grid h-10 w-10 place-items-center rounded-lg bg-amber-100 text-amber-700"><i data-lucide="kanban" class="h-5 w-5"></i></span>
+            <h3 class="mt-4 font-display text-lg text-foreground">Uppgifter & arbetsflöde</h3>
+            <p class="mt-2 text-sm text-muted-foreground">Ett modernt, visuellt arbetssätt. Tilldela, prioritera och följ upp — compliance slutar vara osynligt.</p>
+          </div>
+          <div class="rounded-xl border border-border bg-card p-6">
+            <span class="grid h-10 w-10 place-items-center rounded-lg bg-amber-100 text-amber-700"><i data-lucide="paperclip" class="h-5 w-5"></i></span>
+            <h3 class="mt-4 font-display text-lg text-foreground">Bevis på ett ställe</h3>
+            <p class="mt-2 text-sm text-muted-foreground">"Vad har vi för bevis på att vi följer den här lagen?" — alla kopplade dokument samlade, redo för revision.</p>
+          </div>
+          <div class="rounded-xl border border-border bg-card p-6">
+            <span class="grid h-10 w-10 place-items-center rounded-lg bg-amber-100 text-amber-700"><i data-lucide="search" class="h-5 w-5"></i></span>
+            <h3 class="mt-4 font-display text-lg text-foreground">Fri lagdatabas</h3>
+            <p class="mt-2 text-sm text-muted-foreground">10 000+ lagar, förordningar och rättsfall — fritt sökbara på moderna sidor. Slå upp vad som helst, när som helst.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─────────────────────── AI agent spotlight ─────────────────────── -->
+      <section id="ai" class="reveal border-y border-border/60 bg-primary text-primary-foreground">
+        <div class="mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">
+          <div class="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+            <div>
+              <span class="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium"><i data-lucide="sparkles" class="h-3.5 w-3.5"></i> AI-agenten</span>
+              <h2 class="mt-5 font-display text-3xl tracking-tight sm:text-4xl md:text-[2.75rem]">Inte en chatbot. En compliance-kollega som gör jobbet.</h2>
+              <p class="mt-5 text-lg text-primary-foreground/70">
+                Dra in en lag, en anställd eller ett avtal i chatten och fråga rakt ut.
+                Agenten lär känna ert företag — er bransch, era styrdokument, era tidigare
+                kontroller — och blir mer träffsäker ju längre ni använder den. Varje svar
+                är grundat i faktisk svensk lag, med källhänvisning.
+              </p>
+              <div class="mt-8 grid gap-4 sm:grid-cols-2">
+                <div class="flex items-start gap-3"><i data-lucide="file-search" class="mt-0.5 h-5 w-5 text-amber-300"></i><div><p class="font-medium">Läser era dokument</p><p class="text-sm text-primary-foreground/60">Dra in ett anställningsavtal — agenten hittar luckorna.</p></div></div>
+                <div class="flex items-start gap-3"><i data-lucide="radar" class="mt-0.5 h-5 w-5 text-amber-300"></i><div><p class="font-medium">Hittar era luckor</p><p class="text-sm text-primary-foreground/60">Vilka krav saknar bevis? Vad har inte bedömts?</p></div></div>
+                <div class="flex items-start gap-3"><i data-lucide="pen-line" class="mt-0.5 h-5 w-5 text-amber-300"></i><div><p class="font-medium">Utkastar policyer</p><p class="text-sm text-primary-foreground/60">Färdiga utkast i rätt juridisk ton, för er granskning.</p></div></div>
+                <div class="flex items-start gap-3"><i data-lucide="shield-check" class="mt-0.5 h-5 w-5 text-amber-300"></i><div><p class="font-medium">Aldrig på autopilot</p><p class="text-sm text-primary-foreground/60">Alla ändringar godkänns av er först. Inga gissningar.</p></div></div>
+              </div>
+            </div>
+
+            <!-- faux chat -->
+            <div class="rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur">
+              <div class="space-y-3">
+                <div class="flex justify-end">
+                  <div class="max-w-[80%] rounded-2xl rounded-br-sm bg-white/10 px-4 py-2.5 text-sm">
+                    Får vi säga upp en anställd som varit sjukskriven i 8 månader?
+                  </div>
+                </div>
+                <div class="flex justify-start">
+                  <div class="max-w-[88%] rounded-2xl rounded-bl-sm bg-white/[0.07] px-4 py-3 text-sm text-primary-foreground/90">
+                    <p class="mb-2">Sjukdom i sig är <span class="font-medium">inte saklig grund</span> för uppsägning. Arbetsgivaren har en långtgående rehabiliterings- och anpassningsskyldighet.</p>
+                    <p class="mb-2">Först om rehabilitering är uttömd och medarbetaren inte kan utföra arbete av betydelse kan saklig grund föreligga.</p>
+                    <div class="mt-3 flex flex-wrap gap-1.5">
+                      <span class="rounded bg-amber-300/15 px-2 py-0.5 text-xs text-amber-200">LAS 7 §</span>
+                      <span class="rounded bg-amber-300/15 px-2 py-0.5 text-xs text-amber-200">AML 3 kap.</span>
+                      <span class="rounded bg-amber-300/15 px-2 py-0.5 text-xs text-amber-200">AFS 2020:5</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 pl-1 text-xs text-primary-foreground/50">
+                  <i data-lucide="sparkles" class="h-3 w-3"></i> Svar grundat i er laglista — alltid med källa
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─────────────────────── Persona fork ───────────────────────────── -->
+      <section id="for-vem" class="reveal mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">
+        <div class="mx-auto max-w-2xl text-center">
+          <p class="mb-3 text-sm font-medium text-amber-700">För vem</p>
+          <h2 class="font-display text-3xl tracking-tight text-foreground sm:text-4xl">Två roller. Samma trygghet.</h2>
+        </div>
+
+        <!-- toggle -->
+        <div class="mt-8 flex justify-center">
+          <div class="inline-flex rounded-lg border border-border bg-secondary p-1">
+            <button data-persona="owner" class="persona-tab rounded-md px-5 py-2 text-sm font-medium transition">Jag driver företaget</button>
+            <button data-persona="manager" class="persona-tab rounded-md px-5 py-2 text-sm font-medium transition">Jag ansvarar för efterlevnaden</button>
+          </div>
+        </div>
+
+        <!-- owner panel -->
+        <div id="panel-owner" class="persona-panel mx-auto mt-10 max-w-4xl">
+          <div class="grid items-center gap-10 rounded-2xl border border-border bg-card p-8 md:grid-cols-2 md:p-10">
+            <div>
+              <h3 class="font-display text-2xl tracking-tight text-foreground">Compliance ni inte behöver tänka på</h3>
+              <p class="mt-3 text-muted-foreground">Ni driver ett företag, inte en juristbyrå. Laglig.se ger er tryggheten att ni följer lagen — utan att det stjäl er tid eller kräver en advokat på snabbval.</p>
+            </div>
+            <ul class="space-y-3 text-sm text-foreground">
+              <li class="flex items-start gap-2.5"><i data-lucide="check-circle-2" class="mt-0.5 h-5 w-5 text-emerald-600"></i> Igång på 2 minuter — inget juridiskt förarbete</li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check-circle-2" class="mt-0.5 h-5 w-5 text-emerald-600"></i> Svar på HR- och avtalsfrågor på sekunder, inte 2 500 kr/timme</li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check-circle-2" class="mt-0.5 h-5 w-5 text-emerald-600"></i> En försäkring mot dyra misstag — till en försumbar kostnad</li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check-circle-2" class="mt-0.5 h-5 w-5 text-emerald-600"></i> Lugnet att veta, istället för att hoppas</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- manager panel -->
+        <div id="panel-manager" class="persona-panel mx-auto mt-10 hidden max-w-4xl">
+          <div class="grid items-center gap-10 rounded-2xl border border-border bg-card p-8 md:grid-cols-2 md:p-10">
+            <div>
+              <h3 class="font-display text-2xl tracking-tight text-foreground">Kontroll, spårbarhet och ett team som drar åt samma håll</h3>
+              <p class="mt-3 text-muted-foreground">Ni vet redan att efterlevnad är affärskritiskt. Laglig.se ersätter kalkylark, mappar och föråldrade bevakningstjänster med ett system byggt för ISO-arbete och revision.</p>
+            </div>
+            <ul class="space-y-3 text-sm text-foreground">
+              <li class="flex items-start gap-2.5"><i data-lucide="check-circle-2" class="mt-0.5 h-5 w-5 text-emerald-600"></i> Lagefterlevnadskontroller med bedömningar och åtgärdsplaner</li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check-circle-2" class="mt-0.5 h-5 w-5 text-emerald-600"></i> Revisionsklar dokumentation — bevis kopplat till varje krav</li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check-circle-2" class="mt-0.5 h-5 w-5 text-emerald-600"></i> Versionshanterade styrdokument och full aktivitetslogg</li>
+              <li class="flex items-start gap-2.5"><i data-lucide="check-circle-2" class="mt-0.5 h-5 w-5 text-emerald-600"></i> Stöd för ISO 9001 / 14001 / 45001 och team-samarbete</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- kontroller screenshot -->
+        <div class="mx-auto mt-12 max-w-5xl">
+          <div class="glass-frame overflow-hidden rounded-xl border border-border/60 bg-card">
+            <img src="product-shots/02-kontroller.png" alt="Laglig.se lagefterlevnadskontroll — revisionscykel" class="h-auto w-full" />
+          </div>
+        </div>
+      </section>
+
+      <!-- ─────────────────────── Why switch / comparison ────────────────── -->
+      <section class="reveal border-y border-border/60 bg-section-cream">
+        <div class="mx-auto max-w-5xl px-4 py-20 md:px-6 md:py-28">
+          <div class="mx-auto max-w-2xl text-center">
+            <p class="mb-3 text-sm font-medium text-amber-700">Varför byta</p>
+            <h2 class="font-display text-3xl tracking-tight text-foreground sm:text-4xl">Det här ersätter Laglig.se</h2>
+          </div>
+
+          <div class="mt-12 overflow-hidden rounded-2xl border border-border bg-card">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="border-b border-border bg-secondary/60">
+                  <th class="px-5 py-4 font-medium text-muted-foreground">&nbsp;</th>
+                  <th class="px-4 py-4 text-center font-medium text-muted-foreground">Gamla bevakningstjänster</th>
+                  <th class="px-4 py-4 text-center font-medium text-muted-foreground">Jurist per timme</th>
+                  <th class="px-4 py-4 text-center font-medium text-muted-foreground">Kalkylark & mappar</th>
+                  <th class="px-4 py-4 text-center font-medium text-foreground">
+                    <span class="font-display text-base">Laglig.se</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border">
+                <script type="text/template" id="cmp-rows"></script>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─────────────────────────── Testimonial ────────────────────────── -->
+      <section class="reveal mx-auto max-w-4xl px-4 py-20 md:px-6 md:py-24">
+        <figure class="text-center">
+          <i data-lucide="quote" class="mx-auto h-8 w-8 text-amber-400"></i>
+          <blockquote class="mt-6 font-display text-2xl leading-snug tracking-tight text-foreground sm:text-3xl">
+            "Vi gick från en pärm och dåligt samvete till att faktiskt veta var vi står.
+            Inför ISO-revisionen tog bevisinsamlingen minuter, inte dagar."
+          </blockquote>
+          <figcaption class="mt-6 text-sm text-muted-foreground">
+            <span class="font-medium text-foreground">Karin Lundqvist</span> · Kvalitets- & miljöchef, Nordbygg Entreprenad
+          </figcaption>
+        </figure>
+      </section>
+
+      <!-- ─────────────────────────────  Pricing  ────────────────────────── -->
+      <section id="priser" class="reveal border-t border-border/60 bg-section-warm">
+        <div class="mx-auto max-w-7xl px-4 py-20 md:px-6 md:py-28">
+          <div class="mx-auto max-w-2xl text-center">
+            <p class="mb-3 text-sm font-medium text-amber-700">Priser</p>
+            <h2 class="font-display text-3xl tracking-tight text-foreground sm:text-4xl">Börja gratis. Väx när ni vill.</h2>
+            <p class="mt-4 text-lg text-muted-foreground">15 dagars gratis provperiod. Inget betalkort krävs.</p>
+          </div>
+
+          <div class="mt-14 grid items-start gap-6 lg:grid-cols-3">
+            <!-- Solo -->
+            <div class="rounded-2xl border border-border bg-card p-7">
+              <h3 class="font-display text-xl text-foreground">Solo</h3>
+              <p class="mt-1 text-sm text-muted-foreground">För mindre företag som vill ha koll</p>
+              <p class="mt-5"><span class="font-display text-4xl text-foreground">499</span> <span class="text-muted-foreground">SEK/mån</span></p>
+              <p class="text-xs text-muted-foreground">ex. moms</p>
+              <a href="#hero-form" class="mt-6 inline-flex w-full items-center justify-center rounded-md border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-accent">Kom igång gratis</a>
+              <ul class="mt-6 space-y-2.5 text-sm text-foreground">
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> 1 användare</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> AI-agent som lär känna ert företag</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> Personlig laglista (genererad)</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> Lagändringar analyserade för er verksamhet</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> Uppgifter & styrdokument</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> E-postsupport</li>
+              </ul>
+            </div>
+
+            <!-- Team (highlighted) -->
+            <div class="relative rounded-2xl border-2 border-primary bg-card p-7 shadow-lg shadow-primary/5">
+              <span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">Populärast</span>
+              <h3 class="font-display text-xl text-foreground">Team</h3>
+              <p class="mt-1 text-sm text-muted-foreground">För team med aktivt compliance-arbete</p>
+              <p class="mt-5"><span class="font-display text-4xl text-foreground">1 299</span> <span class="text-muted-foreground">SEK/mån</span></p>
+              <p class="text-xs text-muted-foreground">ex. moms · +300 SEK/extra plats</p>
+              <a href="#hero-form" class="mt-6 inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90">Kom igång gratis</a>
+              <ul class="mt-6 space-y-2.5 text-sm text-foreground">
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> 5 användare ingår</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> Allt i Solo</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> Lagefterlevnadskontroller</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> Anmärkningar & åtgärdsplaner</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> Styrdokument med versionshantering</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> Export (PDF, Excel)</li>
+              </ul>
+            </div>
+
+            <!-- Enterprise -->
+            <div class="rounded-2xl border border-border bg-card p-7">
+              <h3 class="font-display text-xl text-foreground">Enterprise</h3>
+              <p class="mt-1 text-sm text-muted-foreground">För större organisationer</p>
+              <p class="mt-5"><span class="font-display text-4xl text-foreground">Anpassad</span></p>
+              <p class="text-xs text-muted-foreground">kontakta oss</p>
+              <a href="#" class="mt-6 inline-flex w-full items-center justify-center rounded-md border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-accent">Boka demo</a>
+              <ul class="mt-6 space-y-2.5 text-sm text-foreground">
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> Obegränsat antal användare</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> Allt i Team</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> API-integration & SSO</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> Anpassade rapporter</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> Obegränsade AI-frågor</li>
+                <li class="flex items-start gap-2"><i data-lucide="check" class="mt-0.5 h-4 w-4 text-emerald-600"></i> SLA 99.9% & dedikerad kontaktperson</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+            <span class="inline-flex items-center gap-1.5"><i data-lucide="check" class="h-3.5 w-3.5 text-emerald-600"></i> Ingen bindningstid</span>
+            <span class="inline-flex items-center gap-1.5"><i data-lucide="check" class="h-3.5 w-3.5 text-emerald-600"></i> GDPR-compliant</span>
+            <span class="inline-flex items-center gap-1.5"><i data-lucide="check" class="h-3.5 w-3.5 text-emerald-600"></i> Data lagras i Sverige</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───────────────────────────────  FAQ  ──────────────────────────── -->
+      <section id="faq" class="reveal mx-auto max-w-2xl px-4 py-20 md:px-6 md:py-28">
+        <div class="mb-10 text-center">
+          <h2 class="font-display text-3xl tracking-tight text-foreground sm:text-4xl">Vanliga frågor</h2>
+          <p class="mt-3 text-muted-foreground">Har du fler frågor? <a href="mailto:support@laglig.se" class="text-primary underline-offset-4 hover:underline">Kontakta oss</a></p>
+        </div>
+        <div id="faq-list" class="divide-y divide-border border-y border-border"></div>
+      </section>
+
+      <!-- ───────────────────────────── Final CTA ────────────────────────── -->
+      <section class="reveal relative overflow-hidden border-t border-border/60 bg-primary text-primary-foreground">
+        <div aria-hidden class="pointer-events-none absolute -bottom-40 left-1/2 h-[34rem] w-[60rem] -translate-x-1/2 rounded-full bg-amber-500/10 blur-3xl"></div>
+        <div class="relative mx-auto max-w-3xl px-4 py-24 text-center md:px-6">
+          <h2 class="font-display text-3xl tracking-tight sm:text-4xl md:text-5xl">Se er laglista idag.</h2>
+          <p class="mx-auto mt-5 max-w-xl text-lg text-primary-foreground/70">Ange organisationsnumret och få veta vilka lagar som gäller er — på 2 minuter, helt gratis.</p>
+          <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <a href="#hero-form" class="inline-flex items-center gap-1.5 rounded-md bg-primary-foreground px-6 py-3 text-sm font-medium text-primary transition hover:bg-primary-foreground/90">
+              Kom igång gratis <i data-lucide="arrow-right" class="h-4 w-4"></i>
+            </a>
+            <a href="#" class="inline-flex items-center gap-1.5 rounded-md border border-white/20 px-6 py-3 text-sm font-medium text-primary-foreground transition hover:bg-white/10">Boka en demo</a>
+          </div>
+          <p class="mt-5 text-xs text-primary-foreground/50">Inget betalkort · 15 dagar gratis · Avsluta när du vill</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- ─────────────────────────────── Footer ─────────────────────────── -->
+    <footer class="border-t border-border bg-background">
+      <div class="mx-auto max-w-7xl px-4 py-12 md:px-6">
+        <div class="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
+          <span class="font-display text-lg text-foreground">Laglig.se</span>
+          <nav class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <a href="#" class="hover:text-foreground">Lagdatabas</a>
+            <a href="#priser" class="hover:text-foreground">Priser</a>
+            <a href="#" class="hover:text-foreground">Integritetspolicy</a>
+            <a href="#" class="hover:text-foreground">Cookiepolicy</a>
+            <a href="mailto:support@laglig.se" class="hover:text-foreground">Kontakt</a>
+          </nav>
+        </div>
+        <p class="mt-8 text-xs text-muted-foreground">© 2026 Laglig.se · Data lagras i Sverige · GDPR-säkrat</p>
+      </div>
+    </footer>
+
+    <!-- ─────────────────────────────── Scripts ────────────────────────── -->
+    <script>
+      // ---- icons ----
+      lucide.createIcons();
+
+      // ---- nav: shadow on scroll + mobile menu ----
+      const nav = document.getElementById('nav');
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 8) nav.classList.add('border-border', 'bg-background/85', 'backdrop-blur', 'shadow-sm');
+        else nav.classList.remove('border-border', 'bg-background/85', 'backdrop-blur', 'shadow-sm');
+      });
+      const menuBtn = document.getElementById('menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+      mobileMenu.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
+      // ---- scroll reveal ----
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); } });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+      // ---- hero: org-nr → personalized laglista simulation ----
+      const demoLaws = [
+        { name: 'Arbetsmiljölagen', sfs: '1977:1160', tag: 'Arbetsmiljö' },
+        { name: 'Livsmedelslagen', sfs: '2006:804', tag: 'Livsmedel' },
+        { name: 'Arbetstidslagen', sfs: '1982:673', tag: 'Arbetsmiljö' },
+        { name: 'Dataskyddsförordningen (GDPR)', sfs: '2016/679', tag: 'Dataskydd' },
+        { name: 'Alkohollagen', sfs: '2010:1622', tag: 'Servering' },
+        { name: 'Diskrimineringslagen', sfs: '2008:567', tag: 'HR' },
+      ];
+      const form = document.getElementById('hero-form');
+      const stateIdle = document.getElementById('state-idle');
+      const stateLoading = document.getElementById('state-loading');
+      const stateResult = document.getElementById('state-result');
+      const loadingText = document.getElementById('loading-text');
+      const cardSub = document.getElementById('card-sub');
+      const cardBadge = document.getElementById('card-badge');
+      const lawListEl = document.getElementById('law-list');
+
+      form.addEventListener('submit', (ev) => {
+        ev.preventDefault();
+        stateIdle.classList.add('hidden');
+        stateResult.classList.add('hidden');
+        stateLoading.classList.remove('hidden');
+        cardSub.textContent = 'Analyserar er verksamhet…';
+
+        const steps = [
+          'Hämtar uppgifter från Bolagsverket…',
+          'Identifierar SNI-kod och bransch…',
+          'Matchar mot 10 000+ lagar och regler…',
+        ];
+        let i = 0;
+        loadingText.textContent = steps[0];
+        const stepTimer = setInterval(() => { i++; if (steps[i]) loadingText.textContent = steps[i]; }, 650);
+
+        setTimeout(() => {
+          clearInterval(stepTimer);
+          stateLoading.classList.add('hidden');
+          // build list
+          lawListEl.innerHTML = demoLaws.map((l) => `
+            <li class="flex items-center gap-3 rounded-md border border-border bg-background px-3 py-2.5">
+              <span class="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-emerald-100 text-emerald-700">
+                <i data-lucide="check" class="h-4 w-4"></i>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate text-sm font-medium text-foreground">${l.name}</span>
+                <span class="block text-xs text-muted-foreground">SFS ${l.sfs}</span>
+              </span>
+              <span class="shrink-0 rounded bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">${l.tag}</span>
+            </li>`).join('');
+          stateResult.classList.remove('hidden');
+          cardSub.textContent = 'Almåsa Havshotell AB · 62 lagkrav';
+          cardBadge.textContent = '62 lagkrav';
+          cardBadge.classList.remove('hidden');
+          lucide.createIcons();
+        }, 2000);
+      });
+
+      // ---- persona tabs ----
+      const personaTabs = document.querySelectorAll('.persona-tab');
+      const panelOwner = document.getElementById('panel-owner');
+      const panelManager = document.getElementById('panel-manager');
+      function setPersona(p) {
+        personaTabs.forEach((t) => {
+          const active = t.dataset.persona === p;
+          t.classList.toggle('bg-card', active);
+          t.classList.toggle('text-foreground', active);
+          t.classList.toggle('shadow-sm', active);
+          t.classList.toggle('text-muted-foreground', !active);
+        });
+        panelOwner.classList.toggle('hidden', p !== 'owner');
+        panelManager.classList.toggle('hidden', p !== 'manager');
+      }
+      personaTabs.forEach((t) => t.addEventListener('click', () => setPersona(t.dataset.persona)));
+      setPersona('owner');
+
+      // ---- comparison table rows ----
+      const cmpData = [
+        { label: 'Modernt, visuellt arbetssätt', old: false, jurist: false, sheet: false },
+        { label: 'Personlig laglista för er bransch', old: 'partial', jurist: true, sheet: false },
+        { label: 'Automatisk bevakning av ändringar', old: true, jurist: false, sheet: false },
+        { label: 'AI som svarar med källhänvisning', old: false, jurist: 'partial', sheet: false },
+        { label: 'Revisionsklar bevisdokumentation', old: false, jurist: 'partial', sheet: 'partial' },
+        { label: 'Förutsägbar månadskostnad', old: true, jurist: false, sheet: true },
+      ];
+      const iconFor = (v) =>
+        v === true ? '<i data-lucide="check" class="mx-auto h-4 w-4 text-emerald-600"></i>'
+        : v === 'partial' ? '<i data-lucide="minus" class="mx-auto h-4 w-4 text-amber-500"></i>'
+        : '<i data-lucide="x" class="mx-auto h-4 w-4 text-rose-400/70"></i>';
+      const tbody = document.querySelector('#cmp-rows').parentElement;
+      tbody.innerHTML = cmpData.map((r) => `
+        <tr>
+          <td class="px-5 py-3.5 font-medium text-foreground">${r.label}</td>
+          <td class="px-4 py-3.5 text-center">${iconFor(r.old)}</td>
+          <td class="px-4 py-3.5 text-center">${iconFor(r.jurist)}</td>
+          <td class="px-4 py-3.5 text-center">${iconFor(r.sheet)}</td>
+          <td class="bg-section-sage/60 px-4 py-3.5 text-center"><i data-lucide="check" class="mx-auto h-4 w-4 text-emerald-700"></i></td>
+        </tr>`).join('');
+
+      // ---- FAQ accordion ----
+      const faqs = [
+        { q: 'Hur lång tid tar det att komma igång?', a: 'Under 3 minuter. Ange ditt organisationsnummer, så genererar vår AI en personlig laglista baserad på din bransch och verksamhet.' },
+        { q: 'Hur fungerar AI-assistenten?', a: 'Vår AI använder RAG-teknologi som säkerställer att alla svar baseras på faktiska svenska lagar. Du får alltid källhänvisningar så du kan verifiera svaren.' },
+        { q: 'Kan jag testa gratis?', a: 'Ja. Du får 15 dagars gratis provperiod med full tillgång utan att ange betalkort.' },
+        { q: 'Finns det bindningstid?', a: 'Nej. Du kan avsluta när som helst via kontoinställningar. Din data exporteras enkelt om du vill.' },
+        { q: 'Är min data säker?', a: 'Ja. Vi använder krypterad överföring (TLS 1.3), lagrar all data i Sverige (GDPR-compliant), och delar aldrig information med tredje part.' },
+        { q: 'Vilka lagar täcker ni?', a: '10 000+ svenska lagar och förordningar från Riksdagen samt relevanta EU-direktiv. Systemet uppdateras dagligen.' },
+      ];
+      document.getElementById('faq-list').innerHTML = faqs.map((f) => `
+        <details class="group">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-base font-medium text-foreground">
+            ${f.q}
+            <i data-lucide="chevron-down" class="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"></i>
+          </summary>
+          <p class="pb-4 text-sm text-muted-foreground">${f.a}</p>
+        </details>`).join('');
+
+      lucide.createIcons();
+    </script>
+  </body>
+</html>

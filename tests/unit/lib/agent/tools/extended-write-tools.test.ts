@@ -1,0 +1,215 @@
+/**
+ * Story 14.23, Task 9.1: unit tests for the extended write tools.
+ * Covers entity validation + pending-row creation (execute=false is implicit —
+ * these tools always propose) for the four new types and the two migrated tools.
+ */
+
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+vi.mock('@/lib/prisma', () => ({
+  prisma: {
+    task: { findFirst: vi.fn() },
+    workspaceDocument: { findFirst: vi.fn() },
+    lawListItem: { findFirst: vi.fn() },
+    workspaceMember: { findFirst: vi.fn() },
+    pendingAgentAction: { create: vi.fn() },
+  },
+}))
+
+import { createLinkTaskToDocumentTool } from '@/lib/agent/tools/link-task-to-document'
+import { createLinkDocumentToTaskTool } from '@/lib/agent/tools/link-document-to-task'
+import { createAddObligationTool } from '@/lib/agent/tools/add-obligation'
+import { createAssignTaskTool } from '@/lib/agent/tools/assign-task'
+import { createAddContextNoteTool } from '@/lib/agent/tools/add-context-note'
+import { createUpdateComplianceStatusTool } from '@/lib/agent/tools/update-compliance-status'
+import { prisma } from '@/lib/prisma'
+
+type ExecFn = (
+  _input: Record<string, unknown>
+) => Promise<Record<string, unknown>>
+function execOf(tool: unknown): ExecFn {
+  return (tool as { execute: ExecFn }).execute
+}
+
+const fn = (m: unknown) => m as ReturnType<typeof vi.fn>
+const CTX = {
+  userId: 'u_1',
+  assistantMessageId: 'cm_1',
+  contextType: 'GLOBAL' as const,
+}
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  fn(prisma.pendingAgentAction.create).mockResolvedValue({ id: 'pa_x' })
+})
+
+describe('link_task_to_document', () => {
+  it('validates both entities, creates a LINK_TASK_TO_DOCUMENT row', async () => {
+    fn(prisma.task.findFirst).mockResolvedValue({
+      id: 't_1',
+      title: 'Brandskydd',
+    })
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue({
+      id: 'd_1',
+      title: 'Policy',
+    })
+
+    const result = await execOf(createLinkTaskToDocumentTool('ws_1', CTX))({
+      taskId: 't_1',
+      documentId: 'd_1',
+    })
+
+    expect(fn(prisma.pendingAgentAction.create)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          action_type: 'LINK_TASK_TO_DOCUMENT',
+          status: 'PENDING',
+        }),
+      })
+    )
+    expect(result.confirmation_required).toBe(true)
+    expect(result.data).toEqual({ pendingActionId: 'pa_x' })
+  })
+
+  it('errors when the task is not found', async () => {
+    fn(prisma.task.findFirst).mockResolvedValue(null)
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue({
+      id: 'd_1',
+      title: 'P',
+    })
+
+    const result = await execOf(createLinkTaskToDocumentTool('ws_1', CTX))({
+      taskId: 'missing',
+      documentId: 'd_1',
+    })
+
+    expect(result.error).toBe(true)
+    expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
+  })
+})
+
+describe('link_document_to_task', () => {
+  it('creates a LINK_DOCUMENT_TO_TASK row (distinct type, swapped framing)', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue({
+      id: 'd_1',
+      title: 'P',
+    })
+    fn(prisma.task.findFirst).mockResolvedValue({ id: 't_1', title: 'T' })
+
+    const result = await execOf(createLinkDocumentToTaskTool('ws_1', CTX))({
+      documentId: 'd_1',
+      taskId: 't_1',
+    })
+
+    expect(fn(prisma.pendingAgentAction.create)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ action_type: 'LINK_DOCUMENT_TO_TASK' }),
+      })
+    )
+    expect(result.data).toEqual({ pendingActionId: 'pa_x' })
+  })
+})
+
+describe('add_obligation', () => {
+  it('creates an ADD_OBLIGATION row carrying bevisRequired', async () => {
+    fn(prisma.lawListItem.findFirst).mockResolvedValue({
+      id: 'li_1',
+      document: { title: 'AFS 2011:19' },
+    })
+
+    const result = await execOf(createAddObligationTool('ws_1', CTX))({
+      lawListItemId: 'li_1',
+      text: 'Dokumentera riskbedömning',
+      bevisRequired: true,
+    })
+
+    const call = fn(prisma.pendingAgentAction.create).mock.calls[0][0]
+    expect(call.data.action_type).toBe('ADD_OBLIGATION')
+    expect(call.data.params).toMatchObject({
+      lawListItemId: 'li_1',
+      text: 'Dokumentera riskbedömning',
+      bevisRequired: true,
+    })
+    expect(result.data).toEqual({ pendingActionId: 'pa_x' })
+  })
+
+  it('errors when the law list item is not found', async () => {
+    fn(prisma.lawListItem.findFirst).mockResolvedValue(null)
+    const result = await execOf(createAddObligationTool('ws_1', CTX))({
+      lawListItemId: 'missing',
+      text: 'x',
+      bevisRequired: false,
+    })
+    expect(result.error).toBe(true)
+  })
+})
+
+describe('assign_task', () => {
+  it('validates membership and snapshots the member name', async () => {
+    fn(prisma.task.findFirst).mockResolvedValue({ id: 't_1', title: 'T' })
+    fn(prisma.workspaceMember.findFirst).mockResolvedValue({
+      user: { name: 'Anna', email: 'anna@x.se' },
+    })
+
+    const result = await execOf(createAssignTaskTool('ws_1', CTX))({
+      taskId: 't_1',
+      userId: 'u_2',
+    })
+
+    const call = fn(prisma.pendingAgentAction.create).mock.calls[0][0]
+    expect(call.data.action_type).toBe('ASSIGN_TASK')
+    expect(call.data.params).toMatchObject({ userId: 'u_2', userName: 'Anna' })
+    expect(result.data).toEqual({ pendingActionId: 'pa_x' })
+  })
+
+  it('errors when the assignee is not a workspace member', async () => {
+    fn(prisma.task.findFirst).mockResolvedValue({ id: 't_1', title: 'T' })
+    fn(prisma.workspaceMember.findFirst).mockResolvedValue(null)
+    const result = await execOf(createAssignTaskTool('ws_1', CTX))({
+      taskId: 't_1',
+      userId: 'stranger',
+    })
+    expect(result.error).toBe(true)
+    expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
+  })
+})
+
+describe('migrated tools propose instead of writing directly', () => {
+  it('add_context_note creates an ADD_CONTEXT_NOTE row', async () => {
+    fn(prisma.lawListItem.findFirst).mockResolvedValue({
+      id: 'li_1',
+      business_context: null,
+      document: { title: 'AFS' },
+    })
+    const result = await execOf(createAddContextNoteTool('ws_1', CTX))({
+      lawListItemId: 'li_1',
+      note: 'Relevant pga kemikalier',
+    })
+    expect(fn(prisma.pendingAgentAction.create)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ action_type: 'ADD_CONTEXT_NOTE' }),
+      })
+    )
+    expect(result.data).toEqual({ pendingActionId: 'pa_x' })
+  })
+
+  it('update_compliance_status creates an UPDATE_COMPLIANCE_STATUS row with old+new snapshot', async () => {
+    fn(prisma.lawListItem.findFirst).mockResolvedValue({
+      id: 'li_1',
+      compliance_status: 'EJ_PABORJAD',
+      document: { title: 'AFS' },
+    })
+    const result = await execOf(createUpdateComplianceStatusTool('ws_1', CTX))({
+      lawListItemId: 'li_1',
+      newStatus: 'UPPFYLLD',
+      reason: 'Allt klart',
+    })
+    const call = fn(prisma.pendingAgentAction.create).mock.calls[0][0]
+    expect(call.data.action_type).toBe('UPDATE_COMPLIANCE_STATUS')
+    expect(call.data.params).toMatchObject({
+      newStatus: 'UPPFYLLD',
+      oldStatus: 'EJ_PABORJAD',
+    })
+    expect(result.data).toEqual({ pendingActionId: 'pa_x' })
+  })
+})

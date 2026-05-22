@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import { getDocument, getLatestStatusComment } from '@/app/actions/documents'
 import { DocumentEditor } from '@/components/features/documents/editor/document-editor'
+import { PendingAgentApprovalBanner } from '@/components/features/documents/pending-agent-approval-banner'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Suspense } from 'react'
 
@@ -13,6 +14,8 @@ export const metadata: Metadata = {
 
 interface PageProps {
   params: Promise<{ documentId: string }>
+  // Story 14.24: present when the document was opened from an agent draft card.
+  searchParams: Promise<{ agentApprovalId?: string }>
 }
 
 function EditorSkeleton() {
@@ -42,7 +45,13 @@ function EditorSkeleton() {
   )
 }
 
-async function DocumentEditorLoader({ documentId }: { documentId: string }) {
+async function DocumentEditorLoader({
+  documentId,
+  agentApprovalId,
+}: {
+  documentId: string
+  agentApprovalId: string | undefined
+}) {
   const [result, latestComment] = await Promise.all([
     getDocument(documentId),
     getLatestStatusComment(documentId),
@@ -68,37 +77,51 @@ async function DocumentEditorLoader({ documentId }: { documentId: string }) {
   }
 
   return (
-    <div
-      data-document-id={doc.id}
-      className="h-full -mx-4 -mb-4 md:-mx-6 md:-mb-6"
-    >
-      <DocumentEditor
-        documentId={doc.id}
-        initialTitle={doc.title}
-        initialContent={
-          doc.current_version?.content_json ?? {
-            type: 'doc',
-            content: [{ type: 'paragraph' }],
+    <div className="flex h-full flex-col">
+      {agentApprovalId && (
+        <div className="shrink-0 px-4 pt-3 md:px-6">
+          <PendingAgentApprovalBanner pendingActionId={agentApprovalId} />
+        </div>
+      )}
+      <div
+        data-document-id={doc.id}
+        className="min-h-0 flex-1 -mx-4 -mb-4 md:-mx-6 md:-mb-6"
+      >
+        <DocumentEditor
+          documentId={doc.id}
+          initialTitle={doc.title}
+          initialContent={
+            doc.current_version?.content_json ?? {
+              type: 'doc',
+              content: [{ type: 'paragraph' }],
+            }
           }
-        }
-        status={doc.status}
-        versionNumber={doc.current_version_number}
-        authorName={doc.creator?.name ?? doc.creator?.email ?? 'Okänd'}
-        documentNumber={doc.document_number}
-        reviewDate={doc.review_date}
-        documentType={doc.document_type}
-        latestComment={latestComment}
-      />
+          status={doc.status}
+          versionNumber={doc.current_version_number}
+          authorName={doc.creator?.name ?? doc.creator?.email ?? 'Okänd'}
+          documentNumber={doc.document_number}
+          reviewDate={doc.review_date}
+          documentType={doc.document_type}
+          latestComment={latestComment}
+        />
+      </div>
     </div>
   )
 }
 
-export default async function DocumentEditorPage({ params }: PageProps) {
+export default async function DocumentEditorPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { documentId } = await params
+  const { agentApprovalId } = await searchParams
 
   return (
     <Suspense fallback={<EditorSkeleton />}>
-      <DocumentEditorLoader documentId={documentId} />
+      <DocumentEditorLoader
+        documentId={documentId}
+        agentApprovalId={agentApprovalId}
+      />
     </Suspense>
   )
 }

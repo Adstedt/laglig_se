@@ -78,8 +78,11 @@ describe('AgentActionCard', () => {
   it('routes a CREATE_TASK action to the task renderer', () => {
     useSWRMock.mockReturnValue({ data: action(), mutate, isLoading: false })
     render(<AgentActionCard pendingActionId="pa_1" />)
-    expect(screen.getByText('Förslag från assistenten')).toBeInTheDocument()
-    expect(screen.getByText('Ny uppgift')).toBeInTheDocument()
+    // Story 14.23 (UI v2): the renderer's frame draws the eyebrow + lead line;
+    // editable fields sit behind the "Justera" disclosure.
+    expect(screen.getByText('Förslag')).toBeInTheDocument()
+    expect(screen.getByText(/Uppdatera rutiner/)).toBeInTheDocument()
+    fireEvent.click(screen.getByText('Justera'))
     expect(screen.getByDisplayValue('Uppdatera rutiner')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Godkänn/ })).toBeInTheDocument()
   })

@@ -1304,6 +1304,13 @@ model WorkspaceFile {
   storage_path      String? // Supabase Storage path - null for folders
   category          FileCategory @default(OVRIGT)
 
+  // Story 17.8: Uploaded-file ingestion → structure-preserving markdown for the
+  // agent + RAG (17.9). Extraction runs async via the extract-files cron.
+  extracted_text    String?              @db.Text // canonical markdown representation
+  extraction_status FileExtractionStatus @default(PENDING)
+  extracted_at      DateTime?
+  content_hash      String? // sha256 of file bytes — dedupe + 17.9 incremental sync
+
   // Optional description
   description String? @db.Text
 
@@ -1330,6 +1337,17 @@ model WorkspaceFile {
   @@index([category])
   @@index([is_folder])
   @@map("workspace_files")
+}
+
+// Story 17.8: Uploaded-file extraction lifecycle state.
+enum FileExtractionStatus {
+  PENDING // queued for the extract-files cron
+  PROCESSING // claimed by a cron run
+  DONE // markdown extracted + stored
+  EMPTY // no extractable text found
+  UNSUPPORTED // type not extractable (images, ppt, legacy .doc) — or pre-17.8 backfill
+  ENCRYPTED // password-protected, cannot read
+  FAILED // extraction error (incl. validation failure / oversized PDF)
 }
 
 // Story 6.7a: File category enum
@@ -1488,6 +1506,9 @@ enum ChatContextType {
   // Story 24.7 — per-call LLM telemetry for the granska-page grouping
   // proposer (claude-haiku-4-5). Distinguishes grouping cost from matching.
   IMPORT_GROUPING
+  // Story 17.8 — per-file LLM telemetry for the uploaded-file extraction
+  // pipeline (PDF→Claude Haiku). Distinguishes ingestion cost from chat/import.
+  FILE_EXTRACTION
 }
 
 // Story 14.27: Per-turn chat usage telemetry. One row per successful chat turn.
@@ -1564,6 +1585,17 @@ model PendingAgentAction {
 
 enum PendingAgentActionType {
   CREATE_TASK
+  // Story 14.23 — extended approval types (4 new) + the two migrated sidebar
+  // write-preview tools (ADD_CONTEXT_NOTE, UPDATE_COMPLIANCE_STATUS). Additive
+  // enum-value additions only; ordered alphabetically after CREATE_TASK.
+  ADD_CONTEXT_NOTE
+  ADD_OBLIGATION
+  ASSIGN_TASK
+  LINK_DOCUMENT_TO_TASK
+  LINK_TASK_TO_DOCUMENT
+  UPDATE_COMPLIANCE_STATUS
+  // Story 14.24 — agent-drafted styrdokument approval. Additive enum-value addition.
+  DRAFT_DOCUMENT
 }
 
 enum PendingAgentActionStatus {
@@ -1571,6 +1603,8 @@ enum PendingAgentActionStatus {
   APPROVED
   REJECTED
   EXPIRED
+  // Story 14.24 — draft document opened in the Tiptap editor, awaiting finalize/reject.
+  IN_EDITOR
 }
 
 // Story 25.0 (Epic 25): First-run onboarding modal telemetry.

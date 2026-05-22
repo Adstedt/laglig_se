@@ -13,8 +13,6 @@
 import { useState, type ComponentType } from 'react'
 import useSWR from 'swr'
 import { toast } from 'sonner'
-import { ListTodo } from 'lucide-react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   getPendingAgentAction,
@@ -27,16 +25,39 @@ import {
   TaskApprovalRenderer,
   type AgentActionRendererProps,
 } from './agent-action-renderers/task-approval-renderer'
+import { LinkTaskToDocumentRenderer } from './agent-action-renderers/link-task-to-document-renderer'
+import { LinkDocumentToTaskRenderer } from './agent-action-renderers/link-document-to-task-renderer'
+import { AddObligationRenderer } from './agent-action-renderers/add-obligation-renderer'
+import { AssignTaskRenderer } from './agent-action-renderers/assign-task-renderer'
+import { AddContextNoteRenderer } from './agent-action-renderers/add-context-note-renderer'
+import { UpdateComplianceStatusRenderer } from './agent-action-renderers/update-compliance-status-renderer'
+import { DraftDocumentRenderer } from './agent-action-renderers/draft-document-renderer'
 
-const ACTION_TYPE_LABELS: Partial<Record<PendingAgentActionType, string>> = {
+export const ACTION_TYPE_LABELS: Partial<
+  Record<PendingAgentActionType, string>
+> = {
   CREATE_TASK: 'Ny uppgift',
+  LINK_TASK_TO_DOCUMENT: 'Koppla uppgift till dokument',
+  LINK_DOCUMENT_TO_TASK: 'Koppla dokument till uppgift',
+  ADD_OBLIGATION: 'Ny kravpunkt',
+  ASSIGN_TASK: 'Tilldela uppgift',
+  ADD_CONTEXT_NOTE: 'Ny anteckning',
+  UPDATE_COMPLIANCE_STATUS: 'Ändra status',
+  DRAFT_DOCUMENT: 'Utkast styrdokument',
 }
 
-/** Per-type renderer registry. 14.23+ extend this map. */
-const RENDERERS: Partial<
+/** Per-type renderer registry. Story 14.23: all seven types registered. */
+export const RENDERERS: Partial<
   Record<PendingAgentActionType, ComponentType<AgentActionRendererProps>>
 > = {
   CREATE_TASK: TaskApprovalRenderer,
+  LINK_TASK_TO_DOCUMENT: LinkTaskToDocumentRenderer,
+  LINK_DOCUMENT_TO_TASK: LinkDocumentToTaskRenderer,
+  ADD_OBLIGATION: AddObligationRenderer,
+  ASSIGN_TASK: AssignTaskRenderer,
+  ADD_CONTEXT_NOTE: AddContextNoteRenderer,
+  UPDATE_COMPLIANCE_STATUS: UpdateComplianceStatusRenderer,
+  DRAFT_DOCUMENT: DraftDocumentRenderer,
 }
 
 interface AgentActionCardProps {
@@ -65,12 +86,10 @@ export function AgentActionCard({ pendingActionId }: AgentActionCardProps) {
 
   if (isLoading) {
     return (
-      <Card className="my-2">
-        <CardContent className="p-3">
-          <Skeleton className="h-4 w-32 mb-2" />
-          <Skeleton className="h-8 w-full" />
-        </CardContent>
-      </Card>
+      <div className="my-2 rounded-xl bg-card/60 px-5 py-4 ring-1 ring-border/45">
+        <Skeleton className="mb-2 h-3 w-24" />
+        <Skeleton className="h-4 w-full" />
+      </div>
     )
   }
 
@@ -161,38 +180,24 @@ export function AgentActionCard({ pendingActionId }: AgentActionCardProps) {
   }
 
   const Renderer = RENDERERS[action.action_type]
-  const label = ACTION_TYPE_LABELS[action.action_type] ?? 'Förslag'
 
+  // Story 14.23: the renderer's shared frame draws the full card (spine +
+  // eyebrow + body); the single card is just a margin + entrance wrapper.
   return (
-    <Card className="my-2 animate-fade-up overflow-hidden border-border/70">
-      <CardHeader className="flex-row items-center gap-2.5 space-y-0 p-3 pb-2.5">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-          <ListTodo className="h-4 w-4" />
-        </span>
-        <div className="min-w-0">
-          <p className="text-[10px] font-medium uppercase leading-none tracking-[0.08em] text-muted-foreground">
-            Förslag från assistenten
-          </p>
-          <p className="mt-1 truncate text-sm font-medium leading-tight">
-            {label}
-          </p>
+    <div className="my-2 animate-fade-up">
+      {Renderer ? (
+        <Renderer
+          action={action}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onParamsChange={handleParamsChange}
+          isSubmitting={isSubmitting}
+        />
+      ) : (
+        <div className="rounded-xl bg-muted/30 px-4 py-3 text-sm text-muted-foreground ring-1 ring-border/45">
+          Den här typen av förslag stöds inte ännu
         </div>
-      </CardHeader>
-      <CardContent className="p-3 pt-0">
-        {Renderer ? (
-          <Renderer
-            action={action}
-            onApprove={handleApprove}
-            onReject={handleReject}
-            onParamsChange={handleParamsChange}
-            isSubmitting={isSubmitting}
-          />
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            Den här typen av förslag stöds inte ännu
-          </p>
-        )}
-      </CardContent>
-    </Card>
+      )}
+    </div>
   )
 }

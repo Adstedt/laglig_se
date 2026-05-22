@@ -147,12 +147,34 @@ const PENDING_PRIORITY_LABELS: Record<string, string> = {
 
 /** Short Swedish summary of a pending action, derived from action_type + params. */
 function summarizePendingAction(action: PendingAgentAction): string {
-  if (action.action_type === 'CREATE_TASK') {
-    const p = (action.params ?? {}) as { title?: string; priority?: string }
-    const label = PENDING_PRIORITY_LABELS[p.priority ?? 'MEDIUM'] ?? 'Medel'
-    return `Skapa uppgift: "${p.title ?? ''}" (prioritet ${label})`
+  const p = (action.params ?? {}) as Record<string, unknown>
+  const s = (k: string): string =>
+    typeof p[k] === 'string' ? (p[k] as string) : ''
+  switch (action.action_type) {
+    case 'CREATE_TASK': {
+      const label =
+        PENDING_PRIORITY_LABELS[s('priority') || 'MEDIUM'] ?? 'Medel'
+      return `Skapa uppgift: "${s('title')}" (prioritet ${label})`
+    }
+    case 'LINK_TASK_TO_DOCUMENT':
+      return `Koppla uppgift "${s('taskTitle')}" → dokument "${s('documentTitle')}"`
+    case 'LINK_DOCUMENT_TO_TASK':
+      return `Koppla dokument "${s('documentTitle')}" → uppgift "${s('taskTitle')}"`
+    case 'ADD_OBLIGATION':
+      return `Lägg till kravpunkt för ${s('lawTitle')}: "${s('text')}"`
+    case 'ASSIGN_TASK':
+      return `Tilldela "${s('taskTitle')}" till ${s('userName')}`
+    case 'ADD_CONTEXT_NOTE':
+      return `Lägg till anteckning för ${s('lawTitle')}: "${s('note')}"`
+    case 'UPDATE_COMPLIANCE_STATUS':
+      return `Ändra status för ${s('lawTitle')}: ${s('oldStatusLabel')} → ${s('newStatusLabel')}`
+    case 'DRAFT_DOCUMENT': {
+      const inEditor = action.status === 'IN_EDITOR' ? ' (öppet i editorn)' : ''
+      return `Utkast styrdokument: ${s('docType')} "${s('title')}"${inEditor}`
+    }
+    default:
+      return action.action_type
   }
-  return action.action_type
 }
 
 /**

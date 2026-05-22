@@ -11,6 +11,7 @@ import type { UIMessage } from 'ai'
 import type { ChatContextType } from '@/lib/hooks/use-chat-interface'
 import { isTextUIPart, isReasoningUIPart, isToolUIPart } from 'ai'
 import { AgentActionCard } from './agent-action-card'
+import { AgentActionBatchCard } from './agent-action-batch-card'
 import {
   ChevronRight,
   Search,
@@ -130,6 +131,14 @@ const TOOL_CONFIG: Record<
     doneLabel: 'Sökte på webben',
     icon: Globe,
   },
+  // Story 14.24: drafting a full styrdokument generates the whole Tiptap doc as
+  // tool input — this can run several seconds, so the running label matters.
+  draft_styrdokument: {
+    label: 'Skriver utkast',
+    doneLabel: 'Skapade utkast',
+    proposalLabel: 'Skrev utkast',
+    icon: FileText,
+  },
 }
 
 // ---------------------------------------------------------------------------
@@ -174,10 +183,10 @@ type RenderItem =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | { kind: 'tool-group'; items: Array<{ part: any; index: number }> }
 
-// Story 14.22: inline agent approval cards. Gated by the feature flag; when
-// off, proposals fall back to the sidebar write-preview (sidebarHint==='open').
-const INLINE_APPROVALS_ENABLED =
-  process.env.NEXT_PUBLIC_FEATURE_INLINE_AGENT_APPROVALS === 'true'
+// Story 14.23: inline agent approval cards are the only approval path. The
+// inline-approvals feature flag and the legacy sidebar preview fallback were
+// removed — proposal-carrying tool parts always render as an inline
+// AgentActionCard (1 row) or AgentActionBatchCard (2+ rows per message).
 
 /** Read `output.data.pendingActionId` from a tool result, if present. */
 function extractPendingActionId(output: unknown): string | null {
@@ -268,13 +277,10 @@ function groupCompletedToolParts(parts: any[]): RenderItem[] {
 
     if (part.state === 'output-available') {
       hasSeenToolResult = true
-      // Story 14.22: a proposal-carrying tool part (pendingActionId in output)
-      // must NOT collapse into a group — the inline AgentActionCard renders
-      // beneath it and must stay visible. Flush + render it standalone.
-      if (
-        INLINE_APPROVALS_ENABLED &&
-        extractPendingActionId('output' in part ? part.output : undefined)
-      ) {
+      // Story 14.22/14.23: a proposal-carrying tool part (pendingActionId in
+      // output) must NOT collapse into a group — the inline card renders beneath
+      // it and must stay visible. Flush + render it standalone.
+      if (extractPendingActionId('output' in part ? part.output : undefined)) {
         flushGroup()
         result.push({ kind: 'part', part, index: i })
         continue
@@ -564,7 +570,6 @@ export function ChatMessage({
   // rediscoverable on history reload, where tool parts no longer exist). Rendered
   // once at message level, gated on !isActive (see render below).
   const pendingApprovalIds = useMemo(() => {
-    if (!INLINE_APPROVALS_ENABLED) return [] as string[]
     const ids = new Set<string>()
     for (const part of parts) {
       if (
@@ -641,12 +646,11 @@ export function ChatMessage({
               extractToolPartInfo(part, index)
             const config = TOOL_CONFIG[toolName]
             if (config?.hidden) return null
-            // Story 14.22: for a proposal tool (pendingActionId in output) with
-            // the flag on, suppress the sidebar auto-open — the inline
-            // AgentActionCard (rendered once at message level after streaming)
-            // is the approval surface. When off, the row keeps its sidebar fallback.
+            // Story 14.23: a proposal tool (pendingActionId in output) suppresses
+            // the sidebar auto-open — the inline AgentActionCard / batch card
+            // (rendered once at message level after streaming) is the approval
+            // surface.
             const isProposal =
-              INLINE_APPROVALS_ENABLED &&
               part.state === 'output-available' &&
               extractPendingActionId(toolOutput) !== null
             return (
@@ -687,15 +691,26 @@ export function ChatMessage({
           return null
         })}
 
-        {/* Story 14.22: inline approval card(s) — rendered once per message and
-            only after the turn finishes streaming (avoids the mid-stream mount +
-            SWR-fetch re-render that made post-tool streaming choppy). Sourced
-            from live tool parts ∪ persisted metadata so the card survives a
-            chat exit/reenter. */}
-        {!isActive &&
-          pendingApprovalIds.map((id) => (
-            <AgentActionCard key={`approval-${id}`} pendingActionId={id} />
-          ))}
+        {/* Story 14.22/14.23: inline approval card(s) — rendered once per message
+            and only after the turn finishes streaming (avoids the mid-stream
+            mount + SWR-fetch re-render that made post-tool streaming choppy).
+            Sourced from live tool parts ∪ persisted metadata so the card survives
+            a chat exit/reenter. A lone proposal renders the standalone
+            single-action card (AC 20); 2+ proposals from one message consolidate
+            into a single batch card keyed by chat_message_id (=== message.id per
+            ADR-14.22-A). */}
+        {!isActive && pendingApprovalIds.length === 1 && (
+          <AgentActionCard
+            key={`approval-${pendingApprovalIds[0]}`}
+            pendingActionId={pendingApprovalIds[0]!}
+          />
+        )}
+        {!isActive && pendingApprovalIds.length >= 2 && (
+          <AgentActionBatchCard
+            key={`batch-${message.id}`}
+            chatMessageId={message.id}
+          />
+        )}
 
         {!isActive && sourceMap.size > 0 && (
           <SourcesAccordion
@@ -1052,51 +1067,46 @@ function getToolDetail(
 /**
  * Build the ChatDetailItem for a tool result based on sidebarHint routing.
  * - save_assessment → 'assessment' detail type
- * - other write tools (confirmation_required) → 'write-preview'
  * - everything else → 'tool-result'
+ *
+ * Story 14.23: the generic write-action sidebar route was removed — write
+ * tools now render inline approval cards (AgentActionCard / batch card), not a
+ * sidebar preview. save_assessment keeps its dedicated 'assessment' detail.
  */
 function buildDetailItem(
   toolCallId: string,
   toolName: string,
   output: unknown
 ): ChatDetailItem {
-  const isWritePreview =
+  const isAssessmentPreview =
+    toolName === 'save_assessment' &&
     output &&
     typeof output === 'object' &&
     'confirmation_required' in output &&
     (output as { confirmation_required: boolean }).confirmation_required
 
-  if (isWritePreview) {
-    if (toolName === 'save_assessment') {
-      // Route to assessment detail — extract data from the write tool response
-      const writeResp = output as WriteToolResponse<unknown>
-      const params = writeResp.params ?? {}
-      const assessmentData: AssessmentDetailData = {
-        changeEventId: (params.changeEventId as string) ?? '',
-        lawListItemId: (params.lawListItemId as string) ?? '',
-        amendmentSfs: (params.amendmentSfs as string) ?? '',
-        changeType: (params.changeType as string) ?? '',
-        affectedSections: (params.affectedSections as string[]) ?? [],
-        effectiveDate: params.effectiveDate
-          ? new Date(params.effectiveDate as string)
-          : null,
-        existingAssessment: params.existingAssessment
-          ? (params.existingAssessment as AssessmentDetailData['existingAssessment'])
-          : null,
-        documentTitle: (params.documentTitle as string) ?? '',
-        documentNumber: (params.documentNumber as string) ?? '',
-      }
-      return {
-        type: 'assessment' as const,
-        id: toolCallId,
-        data: assessmentData,
-      }
+  if (isAssessmentPreview) {
+    const writeResp = output as WriteToolResponse<unknown>
+    const params = writeResp.params ?? {}
+    const assessmentData: AssessmentDetailData = {
+      changeEventId: (params.changeEventId as string) ?? '',
+      lawListItemId: (params.lawListItemId as string) ?? '',
+      amendmentSfs: (params.amendmentSfs as string) ?? '',
+      changeType: (params.changeType as string) ?? '',
+      affectedSections: (params.affectedSections as string[]) ?? [],
+      effectiveDate: params.effectiveDate
+        ? new Date(params.effectiveDate as string)
+        : null,
+      existingAssessment: params.existingAssessment
+        ? (params.existingAssessment as AssessmentDetailData['existingAssessment'])
+        : null,
+      documentTitle: (params.documentTitle as string) ?? '',
+      documentNumber: (params.documentNumber as string) ?? '',
     }
     return {
-      type: 'write-preview',
+      type: 'assessment' as const,
       id: toolCallId,
-      toolName,
-      data: output as WriteToolResponse<unknown>,
+      data: assessmentData,
     }
   }
 

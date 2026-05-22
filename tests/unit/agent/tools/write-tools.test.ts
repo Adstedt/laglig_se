@@ -197,11 +197,11 @@ describe('update_compliance_status tool', () => {
     expect(preview).toContain('Arbete påbörjat')
   })
 
-  it('updates only compliance_status on execute: true (Story 21.22 — no longer appends to narrative)', async () => {
-    // Story 21.22 removed the legacy behavior of appending status-change log
-    // entries to the compliance_actions text. Status changes are now recorded
-    // exclusively via the activity log; the human-authored compliance
-    // narrative stays clean.
+  it('proposes instead of writing directly (Story 14.23 — execute:true branch removed)', async () => {
+    // Story 14.23 migrated this tool to the inline pending-action pattern: the
+    // tool always proposes, and the compliance_status write happens in the
+    // approvePendingAction dispatch (covered in pending-agent-actions.test.ts).
+    // Even with execute:true, the tool must NOT write directly.
     mockFindFirst.mockResolvedValue({
       id: 'lli-1',
       compliance_status: 'EJ_PABORJAD',
@@ -222,15 +222,8 @@ describe('update_compliance_status tool', () => {
       toolOpts
     )
 
-    expect(mockUpdate).toHaveBeenCalledWith({
-      where: { id: 'lli-1' },
-      data: {
-        compliance_status: 'UPPFYLLD',
-      },
-    })
-
-    const data = (result as { data: { newStatus: string } }).data
-    expect(data.newStatus).toBe('UPPFYLLD')
+    expect(mockUpdate).not.toHaveBeenCalled()
+    expect(result).toHaveProperty('confirmation_required', true)
   })
 })
 
@@ -370,7 +363,10 @@ describe('add_context_note tool', () => {
     expect(preview).toContain('Ni behandlar personuppgifter i ert CRM-system')
   })
 
-  it('appends to existing business_context with separator', async () => {
+  it('proposes instead of writing directly (Story 14.23 — execute:true branch removed)', async () => {
+    // The business_context append now happens in the approvePendingAction
+    // dispatch (covered in pending-agent-actions.test.ts). The tool always
+    // proposes and must not touch lawListItem.update.
     mockFindFirst.mockResolvedValue({
       id: 'lli-1',
       business_context: 'Befintlig anteckning',
@@ -379,36 +375,12 @@ describe('add_context_note tool', () => {
 
     mockUpdate.mockResolvedValue({} as never)
 
-    await tool.execute(
+    const result = await tool.execute(
       { lawListItemId: 'lli-1', note: 'Ny anteckning', execute: true },
       toolOpts
     )
 
-    expect(mockUpdate).toHaveBeenCalledWith({
-      where: { id: 'lli-1' },
-      data: {
-        business_context: 'Befintlig anteckning\n\n---\n\nNy anteckning',
-      },
-    })
-  })
-
-  it('sets business_context directly when previously empty', async () => {
-    mockFindFirst.mockResolvedValue({
-      id: 'lli-1',
-      business_context: null,
-      document: { title: 'Test', document_number: 'SFS 2000:1' },
-    } as never)
-
-    mockUpdate.mockResolvedValue({} as never)
-
-    await tool.execute(
-      { lawListItemId: 'lli-1', note: 'Första anteckningen', execute: true },
-      toolOpts
-    )
-
-    expect(mockUpdate).toHaveBeenCalledWith({
-      where: { id: 'lli-1' },
-      data: { business_context: 'Första anteckningen' },
-    })
+    expect(mockUpdate).not.toHaveBeenCalled()
+    expect(result).toHaveProperty('confirmation_required', true)
   })
 })

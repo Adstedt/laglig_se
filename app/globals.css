@@ -74,6 +74,9 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Story 14.23 — agent-proposal "spine" accent (warm → sage) */
+    --spine-top: 140 30% 52%;
+    --spine-bot: 45 62% 58%;
   }
 
   .dark {
@@ -130,6 +133,8 @@
     --sidebar-accent-foreground: 0 0% 93%;
     --sidebar-border: 0 0% 13%;
     --sidebar-ring: 0 0% 64%;
+    --spine-top: 140 28% 48%;
+    --spine-bot: 45 55% 52%;
   }
 }
 
@@ -151,6 +156,41 @@ html {
 @layer utilities {
   .font-safiro {
     font-family: 'Safiro', system-ui, sans-serif !important;
+  }
+
+  /* Story 14.23 — agent proposal card: the signature warm→sage "spine" and the
+     calm "awaiting your decision" breathing dot. */
+  .agent-spine {
+    background: linear-gradient(
+      to bottom,
+      hsl(var(--spine-top)),
+      hsl(var(--spine-bot))
+    );
+    border-radius: 9999px;
+  }
+  .agent-dot-pending::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 9999px;
+    background: hsl(var(--spine-top) / 0.18);
+    animation: agentDotBreathe 3.2s ease-in-out infinite;
+  }
+  @keyframes agentDotBreathe {
+    0%,
+    100% {
+      opacity: 0.45;
+      transform: scale(0.85);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .agent-dot-pending::before {
+      animation: none;
+    }
   }
 
   /* Story 25.3: scroll-shadow technique (Lea Verou pattern). Subtle shadow

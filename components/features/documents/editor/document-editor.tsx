@@ -101,6 +101,8 @@ export function DocumentEditor({
     useState(versionNumber)
   const [currentStatus, setCurrentStatus] = useState(status)
   const titleRef = useRef(initialTitle)
+  // DOM ref for the title textarea — auto-grows so long titles wrap (not clip).
+  const titleInputRef = useRef<HTMLTextAreaElement>(null)
   const [diffOpen, setDiffOpen] = useState(false)
   const [diffFromId, setDiffFromId] = useState<string | undefined>()
   const [diffToId, setDiffToId] = useState<string | undefined>()
@@ -156,6 +158,15 @@ export function DocumentEditor({
       editor.setEditable(editable)
     }
   }, [editor, editable])
+
+  // Auto-grow the title textarea so a long title wraps to multiple lines
+  // instead of clipping at the page edge (single-line <input> behaviour).
+  useEffect(() => {
+    const el = titleInputRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [title])
 
   // Shared helper: generate HTML + prepare plain JSON for server actions
   const prepareContent = useCallback((contentJson: object) => {
@@ -463,9 +474,9 @@ export function DocumentEditor({
           })()}
 
         <div className="mx-auto w-full max-w-[210mm] bg-background shadow-md rounded-sm px-16 py-12 min-h-[297mm]">
-          {/* Inline title */}
-          <input
-            type="text"
+          {/* Inline title — textarea so long titles wrap instead of clipping */}
+          <textarea
+            ref={titleInputRef}
             value={title}
             onChange={(e) => {
               setTitle(e.target.value)
@@ -473,7 +484,8 @@ export function DocumentEditor({
             }}
             readOnly={!editable}
             placeholder="Dokumenttitel"
-            className="w-full text-3xl font-bold border-none outline-none bg-transparent mb-6 placeholder:text-muted-foreground/50"
+            rows={1}
+            className="w-full resize-none overflow-hidden text-3xl font-bold leading-tight border-none outline-none bg-transparent mb-6 placeholder:text-muted-foreground/50"
           />
           {/* Tiptap editor content */}
           <EditorContent

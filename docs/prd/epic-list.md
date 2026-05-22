@@ -166,7 +166,7 @@
 
 ## Epic 14: Compliance Agent
 
-**Status:** Core Done (18 completed). Phase 5 (Agent Approval Cards) in active development — 14.22 Ready for Review, 14.23/14.24/14.28–14.31 Approved, 14.32 Draft. Phase 6 (prompt-caching + usage telemetry, 14.26/14.27) Done (added 2026-04-24 as 5.5 prereqs). Original estimate was 14 stories.
+**Status:** Core Done (18 completed). Phase 5 (Agent Approval Cards) in active development — **14.23 Done** (extended approval types + batch card + sidebar decommission; QA gate PASS), 14.22 Ready for Review, 14.24/14.28–14.31 Approved, 14.32 Draft. Phase 6 (prompt-caching + usage telemetry, 14.26/14.27) Done (added 2026-04-24 as 5.5 prereqs). Original estimate was 14 stories.
 
 **Goal:** Build an AI compliance partner that provides contextual, cited legal guidance through conversational interaction with company-aware tooling.
 

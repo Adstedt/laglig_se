@@ -138,6 +138,12 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '25mb',
     },
+    // Story 17.8: /filer uploads pass through proxy.ts, whose request-body buffer
+    // defaults to 10MB — PDFs >10MB were truncated ("Unexpected end of form")
+    // before uploadFile ran. Raise it to match the 25MB upload cap + the
+    // serverActions limit above. (Formerly middlewareClientMaxBodySize, renamed
+    // in Next 16 — the two cannot coexist.)
+    proxyClientMaxBodySize: '25mb',
     // Story P.2: Enable optimizeCss for smaller CSS bundles
     optimizeCss: true,
     // Router Cache Configuration (Story 2.19, Story 6.0)

@@ -8,7 +8,6 @@ import {
   useRef,
   type ReactNode,
 } from 'react'
-import type { WriteToolResponse } from '@/lib/agent/tools/types'
 import type {
   AssessmentStatus,
   ImpactLevel,
@@ -104,22 +103,36 @@ export interface LawListItemDetailData {
 }
 
 /**
+ * Story 14.24: read-only preview of an agent-drafted styrdokument, opened in the
+ * detail panel via the draft card's "Visa mer" (AC 11a — the canvas-ready seam).
+ * This is a read-only preview, NOT a write-preview (those were removed in 14.23):
+ * approval controls stay inline on the card. Story 14.33 upgrades this panel into
+ * the responsive canvas. `documentId` is reserved for the Phase-3 existing-document
+ * mode (Story 14.33 AC 5a) and is unused in 14.24.
+ */
+export interface DocumentDraftDetailData {
+  pendingActionId: string
+  title: string
+  docType: string
+  contentJson: unknown
+  documentId?: string
+}
+
+/**
  * Discriminated union of detail types that can be displayed in the sidebar.
- * 14.15b extends with: 'task', 'assessment', 'document', 'law-list-item', 'write-preview'
+ * 14.15b added: 'task', 'assessment', 'document', 'law-list-item'.
+ * Story 14.23 removed the write-action preview variant — write tools now render
+ * inline approval cards, not a sidebar preview.
+ * Story 14.24 added 'document-draft' (read-only agent draft preview).
  */
 export type ChatDetailItem =
   | { type: 'citation'; id: string; data: CitationDetailData }
   | { type: 'tool-result'; id: string; toolName: string; data: unknown }
-  | {
-      type: 'write-preview'
-      id: string
-      toolName: string
-      data: WriteToolResponse<unknown>
-    }
   | { type: 'task'; id: string; data: TaskDetailData }
   | { type: 'assessment'; id: string; data: AssessmentDetailData }
   | { type: 'document'; id: string; data: DocumentDetailData }
   | { type: 'law-list-item'; id: string; data: LawListItemDetailData }
+  | { type: 'document-draft'; id: string; data: DocumentDraftDetailData }
 
 // ---------------------------------------------------------------------------
 // System messages (ephemeral, not persisted)

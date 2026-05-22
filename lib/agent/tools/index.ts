@@ -12,6 +12,13 @@ import { createUpdateComplianceStatusTool } from './update-compliance-status'
 import { createSaveAssessmentTool } from './save-assessment'
 import { createAddContextNoteTool } from './add-context-note'
 import { createSuggestFollowupsTool } from './suggest-followups'
+// Story 14.23: extended approval-type write tools.
+import { createLinkTaskToDocumentTool } from './link-task-to-document'
+import { createLinkDocumentToTaskTool } from './link-document-to-task'
+import { createAddObligationTool } from './add-obligation'
+import { createAssignTaskTool } from './assign-task'
+// Story 14.24: agent-drafted styrdokument approval.
+import { createDraftStyrdokumentTool } from './draft-styrdokument'
 
 // Re-export types for consumers
 export type {
@@ -63,9 +70,27 @@ export function createAgentTools(
     get_change_details: createGetChangeDetailsTool(),
     get_company_context: createGetCompanyContextTool(workspaceId),
     create_task: createCreateTaskTool(workspaceId, writeContext),
-    update_compliance_status: createUpdateComplianceStatusTool(workspaceId),
+    // Story 14.23: migrated to the inline pending-action pattern — both now
+    // take writeContext so they can persist a PendingAgentAction row.
+    update_compliance_status: createUpdateComplianceStatusTool(
+      workspaceId,
+      writeContext
+    ),
     save_assessment: createSaveAssessmentTool(workspaceId, userId),
-    add_context_note: createAddContextNoteTool(workspaceId),
+    add_context_note: createAddContextNoteTool(workspaceId, writeContext),
     suggest_followups: createSuggestFollowupsTool(),
+    // Story 14.23: extended approval types.
+    link_task_to_document: createLinkTaskToDocumentTool(
+      workspaceId,
+      writeContext
+    ),
+    link_document_to_task: createLinkDocumentToTaskTool(
+      workspaceId,
+      writeContext
+    ),
+    add_obligation: createAddObligationTool(workspaceId, writeContext),
+    assign_task: createAssignTaskTool(workspaceId, writeContext),
+    // Story 14.24: propose a full agent-authored styrdokument (DRAFT_DOCUMENT).
+    draft_styrdokument: createDraftStyrdokumentTool(workspaceId, writeContext),
   }
 }

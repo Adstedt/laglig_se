@@ -38,11 +38,14 @@ const handlers = () => ({
 beforeEach(() => vi.clearAllMocks())
 
 describe('TaskApprovalRenderer — PENDING', () => {
-  it('renders the editable title and approve/reject buttons', () => {
+  it('renders the editable title (behind Justera) and approve/reject buttons', () => {
     const h = handlers()
     render(
       <TaskApprovalRenderer action={action()} isSubmitting={false} {...h} />
     )
+    // Story 14.23 (UI v2): fields sit behind the "Justera" disclosure.
+    expect(screen.getByText(/Uppdatera rutiner/)).toBeInTheDocument()
+    fireEvent.click(screen.getByText('Justera'))
     expect(screen.getByDisplayValue('Uppdatera rutiner')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Godkänn/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Avvisa/ })).toBeInTheDocument()
@@ -101,7 +104,7 @@ describe('TaskApprovalRenderer — read-only states', () => {
         {...h}
       />
     )
-    expect(screen.getByText('Avvisat')).toBeInTheDocument()
+    expect(screen.getByText(/Avvisat/)).toBeInTheDocument()
   })
 
   it('EXPIRED shows the expiry message', () => {

@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { MapPin, Database, ShieldCheck, ArrowRight } from 'lucide-react'
+import { HeroProductShot } from './hero-product-shot'
 
 const trustClaims = [
   {
@@ -23,7 +23,8 @@ const trustClaims = [
 export function HeroV3() {
   return (
     <section className="relative overflow-hidden">
-      <div className="container relative mx-auto px-4 pb-12 pt-12 md:pb-16 md:pt-16 lg:pb-20 lg:pt-20">
+      {/* Headline block — constrained to the text column width */}
+      <div className="container relative mx-auto px-4 pt-12 md:pt-16 lg:pt-20">
         <div className="mx-auto max-w-7xl">
           {/* H1 — bold category claim. The "OS for X" move (cf. Notion's
               "OS for work", Ramp's "finance OS"). Second line muted to keep
@@ -56,47 +57,45 @@ export function HeroV3() {
               <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
+        </div>
+      </div>
 
-          {/* Product screenshot — the visual anchor. Linear-style edge:
-              multi-layer drop shadow simulating real-world light falloff
-              (near + mid + far), a hairline top-edge highlight catching
-              "light", and a soft ring instead of a hard border so the frame
-              feels like polished glass rather than a stroked rectangle. */}
-          <div className="relative">
-            {/* Soft warm halo behind the frame */}
+      {/* Product shot — the visual anchor. Wider than the text column
+          (Linear-style full-bleed) so the real compliance table renders at
+          native size; it scales-to-fit on narrower screens. Multi-layer drop
+          shadow + hairline top-edge highlight + soft ring frame. */}
+      <div className="relative mx-auto w-full max-w-[1640px] px-4 sm:px-6">
+        <div className="relative">
+          {/* Soft warm halo behind the frame */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -inset-x-16 -inset-y-12 rounded-[3rem] bg-gradient-to-br from-amber-100/45 via-orange-50/25 to-transparent blur-3xl"
+          />
+          <div
+            className="relative overflow-hidden rounded-[1.25rem] bg-card ring-1 ring-foreground/[0.07]"
+            style={{
+              boxShadow: [
+                '0 1px 2px 0 rgb(0 0 0 / 0.03)',
+                '0 8px 16px -4px rgb(0 0 0 / 0.05)',
+                '0 24px 48px -12px rgb(0 0 0 / 0.10)',
+                '0 56px 112px -28px rgb(0 0 0 / 0.16)',
+              ].join(', '),
+            }}
+          >
+            {/* Top-edge highlight — thin gradient line that gives the
+                illusion of light catching the rounded top edge */}
             <div
               aria-hidden
-              className="pointer-events-none absolute -inset-x-16 -inset-y-12 rounded-[3rem] bg-gradient-to-br from-amber-100/45 via-orange-50/25 to-transparent blur-3xl"
+              className="pointer-events-none absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent"
             />
-            <div
-              className="relative overflow-hidden rounded-[1.25rem] bg-card ring-1 ring-foreground/[0.07]"
-              style={{
-                boxShadow: [
-                  '0 1px 2px 0 rgb(0 0 0 / 0.03)',
-                  '0 8px 16px -4px rgb(0 0 0 / 0.05)',
-                  '0 24px 48px -12px rgb(0 0 0 / 0.10)',
-                  '0 56px 112px -28px rgb(0 0 0 / 0.16)',
-                ].join(', '),
-              }}
-            >
-              {/* Top-edge highlight — thin gradient line that gives the
-                  illusion of light catching the rounded top edge */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent"
-              />
-              <Image
-                src="/landing-v3/hero-laglistor.png"
-                alt="Laglig.se laglistor — översikt över alla regelområden och dokument för Almåsa Havshotell AB"
-                width={1440}
-                height={900}
-                priority
-                className="h-auto w-full"
-              />
-            </div>
+            <HeroProductShot />
           </div>
+        </div>
+      </div>
 
-          {/* Trust strip — moved below the screenshot, customer-logo-band style */}
+      {/* Trust strip — customer-logo-band style, back in the text column */}
+      <div className="container relative mx-auto px-4 pb-12 md:pb-16 lg:pb-20">
+        <div className="mx-auto max-w-7xl">
           <div className="mt-12 grid grid-cols-1 gap-3 border-t border-border/60 pt-6 sm:grid-cols-3">
             {trustClaims.map((claim) => (
               <div key={claim.label} className="flex items-start gap-2.5">
