@@ -20,6 +20,11 @@ import { getServerSession } from '@/lib/auth/session'
 import { getWorkspaceContext } from '@/lib/auth/workspace-context'
 import { createAgentTools } from '@/lib/agent/tools'
 import { createWebSearchTool } from '@/lib/agent/web-search-config'
+// Story 19.1: chat attachment → content blocks + last-message merge.
+import { attachmentsToContent } from '@/lib/agent/attachments-to-content'
+import { buildModelMessages } from '@/lib/agent/build-model-messages'
+// Story 19.5: role-based tool filter.
+import type { WorkspaceRole } from '@prisma/client'
 import {
   buildSystemPrompt,
   formatCompanyContext,
@@ -80,11 +85,15 @@ export async function POST(req: Request) {
     const userId = session.user.id
 
     let workspaceId: string
+    let role: WorkspaceRole | undefined // Story 19.5: drives the tool-registry filter
     try {
       const ctx = await getWorkspaceContext()
       workspaceId = ctx.workspaceId
+      role = ctx.role
     } catch {
-      // Fallback if workspace context unavailable
+      // Fallback if workspace context unavailable (unauthenticated edge). role
+      // stays undefined → full set, but write server actions still enforce
+      // withWorkspace (defense in depth) and a 'default' workspace can't persist.
       workspaceId = 'default'
     }
 
@@ -167,10 +176,18 @@ export async function POST(req: Request) {
 
     // Parse request body
     const body = await req.json()
-    const { messages, contextType, contextId, ...initialContext } = body as {
+    const {
+      messages,
+      contextType,
+      contextId,
+      attachmentIds,
+      ...initialContext
+    } = body as {
       messages: UIMessage[]
       contextType?: 'global' | 'task' | 'law' | 'change'
       contextId?: string
+      // Story 19.1: chat attachment file ids (top-level body field, not message parts)
+      attachmentIds?: string[]
       title?: string
       description?: string
       sfsNumber?: string
@@ -245,20 +262,30 @@ export async function POST(req: Request) {
       })
     }
 
-    // Create agent tools with workspace + user scoping. assistantMessageId +
-    // chat context are threaded so write tools can persist a PendingAgentAction.
-    const tools = createAgentTools(workspaceId, userId, {
-      assistantMessageId,
-      contextType: contextTypeUpper,
-      contextId: contextId ?? null,
-    })
-
-    // Select model based on environment variable
+    // Select model up-front (Story 19.5) so the resolved name threads into both
+    // the agent tools (AgentDecisionLog.model_version) and the model selection.
     const modelProvider = process.env.AI_CHAT_MODEL ?? 'openai'
+    const modelName =
+      modelProvider === 'anthropic' ? 'claude-sonnet-4-6' : 'gpt-4-turbo'
 
-    // Anthropic web search: conditionally add to tools (Story 14.21)
+    // Create agent tools with workspace + user scoping + role filter (Story 19.5).
+    // assistantMessageId + chat context are threaded so write tools can persist a
+    // PendingAgentAction; modelVersion + role drive logging + the AUDITOR filter.
+    const tools = createAgentTools(
+      workspaceId,
+      userId,
+      {
+        assistantMessageId,
+        contextType: contextTypeUpper,
+        contextId: contextId ?? null,
+        modelVersion: modelName,
+      },
+      role
+    )
+
+    // Anthropic web search (Story 14.21). Story 19.5: AUDITOR is read-only — no web_search.
     const allTools =
-      modelProvider === 'anthropic'
+      modelProvider === 'anthropic' && role !== 'AUDITOR'
         ? { ...tools, web_search: createWebSearchTool() }
         : tools
     const model =
@@ -301,19 +328,19 @@ export async function POST(req: Request) {
           }
         : systemPrompt
 
+    // Story 19.1: convert chat attachments → Claude content blocks, merged into
+    // the last user message only. Skip for the synthetic 'default' workspace.
+    const attachmentBlocks =
+      attachmentIds && attachmentIds.length > 0 && workspaceId !== 'default'
+        ? await attachmentsToContent(attachmentIds, workspaceId)
+        : []
+
     // Stream the response with tool use support
     // smoothStream buffers tokens and releases at word boundaries for smooth UI
     const result = streamText({
       model,
       system: systemMessage,
-      messages: messages.map((m) => ({
-        role: m.role as 'user' | 'assistant' | 'system',
-        content:
-          m.parts
-            ?.filter((p) => p.type === 'text')
-            .map((p) => ('text' in p ? p.text : ''))
-            .join('\n') ?? '',
-      })),
+      messages: buildModelMessages(messages, attachmentBlocks),
       tools: allTools,
       stopWhen: stepCountIs(10),
       experimental_transform: smoothStream({
@@ -344,9 +371,8 @@ export async function POST(req: Request) {
 
           const reasoningTokens = totalUsage.reasoningTokens ?? 0
 
-          const modelName =
-            modelProvider === 'anthropic' ? 'claude-sonnet-4-6' : 'gpt-4-turbo'
-
+          // Story 19.5: `modelName` is now resolved once at the top of the handler
+          // (reused here + for AgentDecisionLog.model_version).
           const costUsdEstimate = estimateCostUsd({
             model: modelName,
             inputTokens,

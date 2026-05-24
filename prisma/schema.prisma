@@ -53,6 +53,7 @@ model User {
 
   // Story 14.27: Chat usage telemetry
   chat_usage_events ChatUsageEvent[]
+  agent_decision_logs AgentDecisionLog[]
 
   // Story 14.22: Agent approval cards
   pending_agent_actions PendingAgentAction[]
@@ -167,6 +168,7 @@ model Workspace {
 
   // Story 14.27: Chat usage telemetry
   chat_usage_events ChatUsageEvent[]
+  agent_decision_logs AgentDecisionLog[]
 
   // Story 14.22: Agent approval cards
   pending_agent_actions PendingAgentAction[]
@@ -1357,6 +1359,7 @@ enum FileCategory {
   AVTAL // Agreements/contracts
   CERTIFIKAT // Certificates
   OVRIGT // Other/miscellaneous
+  CHAT_ATTACHMENT // Story 19.1: uploaded in chat — conversational, excluded from Filer + RAG until promoted (19.1b)
 }
 
 // Story 6.7a: Many-to-many File <-> Task
@@ -1605,6 +1608,51 @@ enum PendingAgentActionStatus {
   EXPIRED
   // Story 14.24 — draft document opened in the Tiptap editor, awaiting finalize/reject.
   IN_EDITOR
+}
+
+// ============================================================================
+// AGENT DECISION LOG — Story 19.5
+// One row per agent tool invocation (reads, write proposals, failures) — the
+// audit trail complementing PendingAgentAction's proposal lifecycle. The soft
+// refs (chat_message_id, pending_action_id, accepted_by) are plain columns, NOT
+// FKs: an audit log is intentionally decoupled + durable (survives deletion of
+// the message/proposal/approver it references). workspace_id + user_id ARE FK
+// Cascade (a deleted workspace/user takes its logs with it — matches
+// ChatUsageEvent). Written fail-safe: a log error never breaks the tool call.
+// ============================================================================
+model AgentDecisionLog {
+  id                String               @id @default(uuid())
+  workspace_id      String
+  user_id           String
+  chat_message_id   String? // soft ref — null outside a chat turn (future cron/CLI)
+  pending_action_id String? // soft ref — set only for write proposals; exact approve/reject match key (Story 19.5 SF-1)
+  tool_name         String // free-form; String not enum so new tools ship without a migration
+  input_json        Json
+  output_json       Json? // null if execute threw before returning a result
+  proposed_at       DateTime             @default(now()) // wrapper-entry time
+  accepted_at       DateTime?
+  accepted_by       String? // soft ref — approver user id
+  outcome           AgentDecisionOutcome
+  model_version     String
+  created_at        DateTime             @default(now())
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id, created_at])
+  @@index([workspace_id, user_id, created_at])
+  @@index([tool_name, created_at])
+  @@index([chat_message_id])
+  @@index([pending_action_id])
+  @@map("agent_decision_logs")
+}
+
+enum AgentDecisionOutcome {
+  SUCCESS // tool executed, non-write result returned
+  WRITE_PROPOSED // write tool returned a PendingAgentAction proposal
+  WRITE_ACCEPTED // proposal approved (accepted_at/accepted_by populated)
+  WRITE_REJECTED // proposal rejected or expired
+  ERROR // tool threw, or returned a ToolError envelope
 }
 
 // Story 25.0 (Epic 25): First-run onboarding modal telemetry.

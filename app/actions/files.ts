@@ -143,7 +143,14 @@ export interface PaginatedFilesResult {
 const UpdateFileSchema = z.object({
   filename: z.string().min(1).max(255).optional(),
   category: z
-    .enum(['BEVIS', 'POLICY', 'AVTAL', 'CERTIFIKAT', 'OVRIGT'])
+    .enum([
+      'BEVIS',
+      'POLICY',
+      'AVTAL',
+      'CERTIFIKAT',
+      'OVRIGT',
+      'CHAT_ATTACHMENT',
+    ])
     .optional(),
   description: z.string().max(1000).optional().nullable(),
 })
@@ -743,6 +750,11 @@ export async function getWorkspaceFiles(
 
       if (filters?.category) {
         where.category = filters.category
+      } else {
+        // Story 19.1: chat attachments are conversational, not curated workspace
+        // files — exclude them from the default Filer listing. (An explicit
+        // category filter still resolves normally.)
+        where.category = { not: 'CHAT_ATTACHMENT' }
       }
 
       if (filters?.uploadedBy) {

@@ -194,7 +194,14 @@ export async function GET(request: Request) {
         // Cron-triggered (not fire-and-forget) per 17.8/17.9's reliability rule.
         // Fail-safe: a chunking error must not fail the file (already DONE) or the
         // rest of the batch — it's retryable via re-sync / extractWorkspaceFile.
-        if (result.status === 'DONE' && result.markdown) {
+        // Story 19.1: CHAT_ATTACHMENT files are conversational — extracted (so the
+        // chat converter can read them) but NOT embedded into the RAG index. They
+        // become searchable only if promoted to a curated category (Story 19.1b).
+        if (
+          result.status === 'DONE' &&
+          result.markdown &&
+          file.category !== 'CHAT_ATTACHMENT'
+        ) {
           try {
             const sync = await syncWorkspaceChunks(
               file.id,

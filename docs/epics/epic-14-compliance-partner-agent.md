@@ -582,7 +582,7 @@ Phase 5 (Agent Approval Cards)
 
 **Superseded stories (archived 2026-05-20):** Superseded by the newer Epic 17 DMS pipeline and Epic 19 tool taxonomy, moved to `docs/stories/archived/`:
 - **14.6** (File Knowledge Extraction & Embedding) → Superseded by Epic 17 **17.8** (text extraction → `WorkspaceFile.extracted_text`) + **17.9** (chunk & embed workspace documents into `ContentChunk`). Same scope, newer and more specific pipeline that Epic 19 depends on.
-- **14.7d** (File Search & Compliance History Tools) → Superseded by Epic 19 **19.2** (`read_file`), **19.3** (diagnostic tools), **19.4** (entity-read tools). The older tool sketch predates the Epic 19 tool taxonomy.
+- **14.7d** (File Search & Compliance History Tools) → Superseded by Epic 19 **19.2** (`read_file`), **19.3** (diagnostic tools), **19.4a** (entity discovery / `search_law_list_items`), **19.4** (entity-read tools incl. compliance history via status-log + assessment handles), and **19.4b** (cycle/finding readers). The older tool sketch predates the Epic 19 tool taxonomy.
 - **14.12** (Smart Context Cards — Tool-Backed Responses) → Superseded by Epic 19 **19.12** (proactive hem-chat cards driven by the 19.3 diagnostic tools). The diagnostic-tool-backed approach replaces static prompt rewrites; any still-wanted scope folds into 19.12.
 
 ---

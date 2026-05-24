@@ -11,6 +11,7 @@ import { LexaIcon } from '@/components/ui/lexa-icon'
 import { Button } from '@/components/ui/button'
 import { ChatMessageList } from './chat-message-list'
 import { ChatInputModern } from './chat-input-modern'
+import { useChatAttachments } from '@/lib/hooks/use-chat-attachments'
 import { ChatError } from './chat-error'
 import { AssessmentResolution } from '@/components/features/changes/assessment-resolution'
 import { FollowupChips } from './followup-chips'
@@ -268,12 +269,23 @@ function ChatPanelBody({
   const { questions: followupQuestions, dismiss: dismissFollowups } =
     useFollowupChips(messages, hasCompletedReply)
 
+  // Story 19.1: chat attachment state (picker/drag-drop/chips → sendMessage).
+  const {
+    pending: pendingAttachments,
+    addFiles: addAttachments,
+    remove: removeAttachment,
+    clear: clearAttachments,
+    error: attachmentError,
+    uploading: attachmentsUploading,
+  } = useChatAttachments()
+
   const handleSendMessage = useCallback(
     (content: string) => {
       dismissFollowups()
-      sendMessage(content)
+      sendMessage(content, pendingAttachments)
+      clearAttachments()
     },
-    [sendMessage, dismissFollowups]
+    [sendMessage, dismissFollowups, pendingAttachments, clearAttachments]
   )
 
   const handleFollowupClick = useCallback(
@@ -414,8 +426,13 @@ function ChatPanelBody({
         isLoading={isLoading}
         placeholder="Skriv din fråga..."
         showModelSelector={false}
-        showAttach={false}
+        showAttach={true}
         showQuickActions={false}
+        pendingAttachments={pendingAttachments}
+        onAttachFiles={addAttachments}
+        onRemoveAttachment={removeAttachment}
+        attachmentError={attachmentError}
+        attachmentsUploading={attachmentsUploading}
       />
     </div>
   )

@@ -55,6 +55,7 @@ export const categoryLabels: Record<FileCategory, string> = {
   AVTAL: 'Avtal',
   CERTIFIKAT: 'Certifikat',
   OVRIGT: 'Övrigt',
+  CHAT_ATTACHMENT: 'Chattbilaga', // Story 19.1 — normally hidden from Filer; label for completeness
 }
 
 export const categoryColors: Record<FileCategory, string> = {
@@ -65,6 +66,8 @@ export const categoryColors: Record<FileCategory, string> = {
   CERTIFIKAT:
     'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
   OVRIGT: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
+  CHAT_ATTACHMENT:
+    'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
 }
 
 // ============================================================================

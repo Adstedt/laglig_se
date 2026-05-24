@@ -7,7 +7,7 @@
 **Linked epic:** [`docs/prd/epic-19-agent-partner-skills-subagents.md`](../prd/epic-19-agent-partner-skills-subagents.md)
 
 **Created:** 2026-04-19
-**Last updated:** 2026-05-22
+**Last updated:** 2026-05-24 (marked shipped: 14.22-24, 17.8, 17.9/b/c, 19.1, 19.5 = 9 stories Done; 19.2 `read_file` drafted. Earlier same-day: added 19.4a/19.4b, refined 19.4 to lazy-traversal)
 **Owner:** Sarah (PO)
 
 ---
@@ -16,22 +16,22 @@
 
 ### Epic 17 — DMS + agent integration (Draft)
 
-- [ ] **17.8** — Text extraction pipeline for uploaded files
+- [x] **17.8** — Text extraction pipeline for uploaded files ✅ **DONE** (`completed/`)
   *PDF/DOCX/XLSX → `WorkspaceFile.extracted_text`; pdf-parse, mammoth, exceljs*
-- [ ] **17.9** — Chunk & embed workspace documents into RAG pipeline
-  *`ContentChunk` with `WORKSPACE_DOCUMENT` source; retrieveContext filter*
-- [ ] **17.10** — Agent tools: `search_workspace_documents`, `get_workspace_document`, `list_workspace_documents`
+- [x] **17.9** — Chunk & embed into RAG pipeline ✅ **DONE — split into 17.9 / 17.9b / 17.9c** (all `completed/`)
+  *17.9 `USER_FILE` chunks · 17.9b `WORKSPACE_DOCUMENT`/styrdokument chunks · 17.9c `search_workspace_files` tool. (17.9d file-aware citation pill drafted, not built.)*
+- [ ] **17.10** — Agent tools: `search_workspace_documents`, `get_workspace_document`, `list_workspace_documents` — *Approved, not built (Phase 5)*
   *Semantic search + read + list of workspace styrdokument*
-- [ ] **17.11** — Agent tool: `update_document` (section edits via approval card)
+- [ ] **17.11** — Agent tool: `update_document` (section edits via approval card) — *Draft (Phase 5)*
   *Re-scoped 2026-05-22: `create_document` dropped (redundant with 14.24 `draft_styrdokument`); markdown↔Tiptap converters dropped; recast onto the `UPDATE_DOCUMENT` `PendingAgentAction` approval pattern*
 
 ### Epic 14 — Agent approval-card primitives (Approved)
 
-- [ ] **14.22** — `AgentActionCard` foundation + `CREATE_TASK` pilot
+- [x] **14.22** — `AgentActionCard` foundation + `CREATE_TASK` pilot ✅ **DONE** (`completed/`)
   *`PendingAgentAction` model + inline card replaces sidebar write-preview*
-- [ ] **14.23** — Extended approval types + batch card
+- [x] **14.23** — Extended approval types + batch card ✅ **DONE** (`completed/`)
   *LINK_TASK_TO_DOC, LINK_DOC_TO_TASK, ADD_OBLIGATION, ASSIGN_TASK + multi-action batching + sidebar decommission*
-- [ ] **14.24** — `DRAFT_DOCUMENT` approval
+- [x] **14.24** — `DRAFT_DOCUMENT` approval ✅ **DONE** (`completed/`)
   *Agent drafts full styrdokument with Tiptap preview + "open in editor" path*
 
 ---
@@ -51,20 +51,25 @@
 
 ---
 
-## 🚀 Epic 19 — Agent Partner (12 new stories)
+## 🚀 Epic 19 — Agent Partner (15 new stories)
 
 ### Foundation track (unblocks everything else)
 
-- [ ] **19.1** — Chat attachment upload + Claude content-block conversion
+- [x] **19.1** — Chat attachment upload + Claude content-block conversion ✅ **DONE** (2026-05-24, `completed/`; QA PASS 92)
   *Drag-drop UI in chat-input-modern; remove `.filter(p => p.type === 'text')` stripping; `lib/agent/attachments-to-content.ts` routes PDFs → document blocks, images → image blocks, DOCX/XLSX → extracted text*
-- [ ] **19.2** — `read_file` unified evidence reader
-  *New agent tool reading any WorkspaceFile (chat attachment OR bevis) via shared conversion logic*
+- [x] **19.2** — `read_file` unified evidence reader ✅ **DONE** (2026-05-24, `completed/`; QA PASS 94)
+  *New `read_file(fileId)` reading any WorkspaceFile in full (PDF/image/extracted text) via the shared `lib/agent/file-content.ts` core + AI-SDK `toModelOutput`; live-verified read vs snippet (agent self-corrected a snippet-only gap analysis by reading 4 docs). Follow-ups: READ-001 (base64 persists across loop steps → folds into 19.9), READ-004 (image path live-unverified until 19.4)*
+  *New agent tool reading any WorkspaceFile (chat attachment OR bevis) via shared conversion logic; extracts 19.1's routing into `lib/agent/file-content.ts`; native PDF/image via the AI-SDK `tool.toModelOutput` hook; `'read'`-tier (kept for AUDITOR)*
 - [ ] **19.3** — Diagnostic tools
   *`list_bevis_gaps`, `list_unassessed_changes`, `list_overdue`, `list_stale_documents` — pure reads, workspace-scoped*
-- [ ] **19.4** — Entity-read tools
-  *`get_law_list_item`, `get_task`, `list_linked_artifacts` — fills retrieval gap between 17.10 (docs) and compliance entity graph*
-- [ ] **19.5** — Role-based tool registry filter + `AgentDecisionLog`
-  *`createAgentTools(workspaceId, userId, role)` — AUDITOR gets read-only; `AgentDecisionLog` model tracks every tool call*
+- [ ] **19.4a** — Agent id-resolution + entity discovery *(foundational; added 2026-05-24)*
+  *Thread active `lawListItemId` into tool-context closure + LAW system-prompt block; add `search_law_list_items` / `search_tasks`. Corrects 19.4's former "Deps: none"; **also hardens shipped write tools** (add_obligation/add_context_note/update_compliance_status) that today lack a clean id path. See `docs/agent-knowledge-traversal-brief.md` Finding B*
+- [ ] **19.4** — Entity-read tools (lazy traversal)
+  *`get_law_list_item`, `get_task`, `list_linked_artifacts` — node state + typed `ContextHandle` neighbour handles (not full hydration); one consolidated reader per entity; hard caps; names-not-IDs; ships with read-before-propose steering. Fills retrieval gap between 17.10 (docs) and compliance entity graph. **Deps:** 19.4a. No caching v1.*
+- [ ] **19.4b** — Cycle/finding entity-readers *(added 2026-05-24; sequence with next Epic 21 work)*
+  *`get_cycle`, `get_finding` over Epic 21 models, same lazy/`ContextHandle` shape. AUDITOR-persona traversal (cycle → items → kravpunkter → findings → tasks). **Deps:** 19.4. Not on the foundation critical path.*
+- [x] **19.5** — Role-based tool registry filter + `AgentDecisionLog` ✅ **DONE** (2026-05-24, `completed/`; QA PASS 93)
+  *`createAgentTools(workspaceId, userId, role)` — AUDITOR gets read-only; `AgentDecisionLog` model tracks every tool call. Follow-ups: WS-001 (web_search logging), AUD-001 (live AUDITOR check)*
 
 ### Skills track
 
@@ -102,8 +107,14 @@
 |---|---|---|
 | Prerequisites (Epic 14 + 17) | 7 | Must ship first or in parallel — blocks most of 19 |
 | Sibling Epic 14 additions | 4 | Schedule 14.28 + 14.31 alongside 19.7 |
-| Epic 19 | 13 | Foundation track (19.1–19.5) unblocks all other tracks |
-| **Total** | **24 stories** | ~8–10 weeks with 2 devs |
+| Epic 19 | 15 | Foundation track (19.1–19.5 + 19.4a) unblocks all other tracks; 19.4b sequences with next Epic 21 work |
+| **Total** | **26 stories** | ~8–10 weeks with 2 devs |
+
+**Progress snapshot (2026-05-24): 9 shipped · 1 drafted · 16 remaining.**
+- ✅ **Shipped (9):** Prereqs 17.8, 17.9/b/c, 14.22, 14.23, 14.24 · Epic 19 foundation 19.1, 19.5.
+- 📝 **Drafted, not built (1):** 19.2 `read_file`.
+- ⬜ **Next to build:** 19.2 → 19.3 → 19.4a → 19.4 (+ sibling 14.28) to close the Phase-3 read/diagnose tier. Phases 1–2 are fully shipped.
+- *(Approved/Draft prereqs awaiting Phase 5: 17.10, 17.11. Sibling 14.31 Approved-not-built.)*
 
 ---
 
@@ -149,7 +160,7 @@ Agent drafts styrdokument from templates, user reviews in Tiptap preview, approv
 
 - [ ] All 7 prerequisite stories shipped (17.8, 17.9, 17.10, 17.11, 14.22, 14.23, 14.24)
 - [ ] All 4 sibling stories shipped (14.28, 14.29, 14.30, 14.31)
-- [ ] All 13 Epic 19 stories shipped
+- [ ] All 15 Epic 19 stories shipped (incl. 19.4a id-resolution, 19.4b cycle/finding readers)
 - [ ] Composite feature flag `agent_partner_v2` enabled in ≥1 customer workspace for ≥2 weeks with no regressions
 - [ ] AUDITOR role verified read-only end-to-end
 - [ ] `AgentDecisionLog` populated for every tool call in production

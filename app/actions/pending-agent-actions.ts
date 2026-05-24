@@ -389,6 +389,21 @@ export async function approvePendingAction(
           },
         })
 
+        // Story 19.5: best-effort — mark this proposal's AgentDecisionLog row
+        // accepted. Keyed on pending_action_id (the exact proposal). Never blocks.
+        try {
+          await prisma.agentDecisionLog.updateMany({
+            where: { pending_action_id: id, outcome: 'WRITE_PROPOSED' },
+            data: {
+              outcome: 'WRITE_ACCEPTED',
+              accepted_at: new Date(),
+              accepted_by: userId,
+            },
+          })
+        } catch (err) {
+          console.error('[AGENT_DECISION_LOG_UPDATE_FAIL]', err)
+        }
+
         // AC 13: revalidate the surfaces this action type affects.
         for (const path of revalidatePaths) {
           revalidatePath(path)
@@ -455,6 +470,16 @@ export async function rejectPendingAction(id: string): Promise<ActionResult> {
           where: { id },
           data: { status: 'REJECTED', decided_at: new Date() },
         })
+
+        // Story 19.5: best-effort — mark this proposal's AgentDecisionLog row rejected.
+        try {
+          await prisma.agentDecisionLog.updateMany({
+            where: { pending_action_id: id, outcome: 'WRITE_PROPOSED' },
+            data: { outcome: 'WRITE_REJECTED' },
+          })
+        } catch (err) {
+          console.error('[AGENT_DECISION_LOG_UPDATE_FAIL]', err)
+        }
 
         if (isInEditorDraft) revalidatePath('/workspace/styrdokument')
 

@@ -242,11 +242,11 @@
 
 ## Epic 19: Agent Partner — Attachments, Skills, Subagents & Continuous Governance
 
-**Status:** Planned (0 completed — 12 stories scoped + 4 sibling stories in Epic 14)
+**Status:** Planned (0 completed — 14 stories scoped + 4 sibling stories in Epic 14). **Updated 2026-05-24:** retrieval track deepened from the architect-reviewed knowledge-traversal brief — added 19.4a (agent id-resolution + entity discovery; also hardens shipped write tools) and 19.4b (cycle/finding readers), and refined 19.4 to a lazy-traversal/`ContextHandle` model.
 
 **Goal:** Evolve the Laglig compliance agent from "informs users" to "helps users complete compliance work" by adding the architectural primitives required for autonomous, context-aware assistance: chat file attachment reading, a self-hosted skills layer (domain playbooks as markdown files), subagents (isolated specialists), diagnostic gap-detection tools, role-based tool filtering, and continuous-governance loops (reminders, weekly pulse, feedback).
 
-**Delivers:** Chat attachment upload + Claude content-block wiring, 9 new agent tools (read_file, 4 entity-reads, 4 diagnostics), role-filtered tool registry + AgentDecisionLog audit trail, self-hosted Skills layer (SKILL.md loader + directory convention + context activation), 3 shipped skills (assess_change migrated, gap_analysis, draft_policy), 3 subagents (LegalReasoner, DocumentReader, ParallelAssessor), Reminder/scheduling tools, weekly pulse cron, AgentFeedback model + thumbs UI, proactive hem-chat cards, seed Swedish styrdokument template library.
+**Delivers:** Chat attachment upload + Claude content-block wiring; an agent **read/traversal tier** over the compliance entity graph (id-resolution + `search_law_list_items` discovery in 19.4a; lazy `get_law_list_item`/`get_task`/`list_linked_artifacts` entity-readers with a shared `ContextHandle` shape in 19.4; `get_cycle`/`get_finding` readers in 19.4b) plus `read_file` and 4 diagnostic tools; role-filtered tool registry + AgentDecisionLog audit trail; self-hosted Skills layer (SKILL.md loader + directory convention + context activation); 3 shipped skills (assess_change migrated, gap_analysis, draft_policy); 3 subagents (LegalReasoner, DocumentReader, ParallelAssessor); Reminder/scheduling tools, weekly pulse cron, AgentFeedback model + thumbs UI, proactive hem-chat cards, seed Swedish styrdokument template library.
 
 **Requirements covered:** FR4 (enhanced), FR5 (enhanced), FR7 (enhanced), FR25 (audit trail — agent decisions), NFR2 (accuracy), NFR3 (hallucination prevention), NFR24 (cite-first answers)
 
@@ -377,10 +377,10 @@
 
 ---
 
-**Total Stories Tracked:** ~257+ across 25 epics (~166 completed, ~89+ backlog; Epic 18 stories TBD, Epic 19 12 stories scoped, Epic 20 3 stories scoped + completed, Epic 21 14 stories scoped — **13 completed, 1 deferred (21.10)**, 1 in backlog (21.15), Epic 22 4 stories scoped, Epic 23 5 stories scoped, Epic 24 6 stories scoped, Epic 25 7 stories scoped — B.0 pre-MVP)
+**Total Stories Tracked:** ~257+ across 25 epics (~166 completed, ~89+ backlog; Epic 18 stories TBD, Epic 19 14 stories scoped (incl. 19.4a id-resolution + 19.4b cycle/finding readers, added 2026-05-24), Epic 20 3 stories scoped + completed, Epic 21 14 stories scoped — **13 completed, 1 deferred (21.10)**, 1 in backlog (21.15), Epic 22 4 stories scoped, Epic 23 5 stories scoped, Epic 24 6 stories scoped, Epic 25 7 stories scoped — B.0 pre-MVP)
 
 **Epic Status:** 12 Done (incl. Epic 21 substantially-done as of 2026-04-27, UAT-ready with 1 deferred 21.10 + 1 backlogged 21.15), 4 Partial / Active, 9 Not Started / Planned (incl. Epic 23, Epic 24, Epic 25)
 
-**Last updated:** 2026-05-06
+**Last updated:** 2026-05-24 (Epic 19 retrieval track: added 19.4a id-resolution + 19.4b cycle/finding readers, refined 19.4 — from the architect-reviewed knowledge-traversal brief)
 
 ---

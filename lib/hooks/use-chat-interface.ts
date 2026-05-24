@@ -43,9 +43,16 @@ export interface UseChatInterfaceOptions extends ChatContext {
   initialMessage?: string | undefined
 }
 
+/** Story 19.1: a chat attachment carried through send + persisted for history chips. */
+export interface ChatAttachmentMeta {
+  fileId: string
+  filename: string
+  mimeType: string | null
+}
+
 export interface UseChatInterfaceReturn {
   messages: UIMessage[]
-  sendMessage: (_content: string) => void
+  sendMessage: (_content: string, _attachments?: ChatAttachmentMeta[]) => void
   status: 'submitted' | 'streaming' | 'ready' | 'error'
   error: Error | null
   stop: () => void
@@ -250,8 +257,10 @@ export function useChatInterface(
   }, [historyLoaded, initialMessage, messages.length])
 
   const sendMessage = useCallback(
-    (content: string) => {
-      if (!content.trim()) return
+    (content: string, attachments?: ChatAttachmentMeta[]) => {
+      const hasAttachments = !!attachments && attachments.length > 0
+      // Allow an attachment-only message (no text) per Story 19.1.
+      if (!content.trim() && !hasAttachments) return
 
       // Reset state
       setRetryAfter(undefined)
@@ -265,18 +274,34 @@ export function useChatInterface(
         hasContext: !!contextId,
       })
 
-      // Persist user message to database
+      // Persist user message to database. Story 19.1: store attachment metadata
+      // so history can re-render file chips (saveChatMessageSchema.metadata is an
+      // existing optional Json field — no migration).
       saveChatMessage({
         role: 'USER',
         content: content.trim(),
         contextType: toPrismaContextType(contextType),
         contextId,
+        ...(hasAttachments ? { metadata: { attachments } } : {}),
       }).catch((err) => {
         console.error('Failed to save user message:', err)
       })
 
-      // Send message using the parts format
-      sendChatMessage({ parts: [{ type: 'text', text: content }] })
+      // Send message; Story 19.1 threads attachment file ids as a per-call body
+      // override (AI SDK v6 ChatRequestOptions.body) — the route converts them
+      // server-side and merges the content blocks into this user message.
+      sendChatMessage(
+        hasAttachments
+          ? {
+              parts: [{ type: 'text', text: content }],
+              // carry chips on the optimistic message so they show immediately
+              metadata: { attachments },
+            }
+          : { parts: [{ type: 'text', text: content }] },
+        hasAttachments
+          ? { body: { attachmentIds: attachments.map((a) => a.fileId) } }
+          : undefined
+      )
       onMessageSent?.()
     },
     [contextType, contextId, sendChatMessage, onMessageSent]

@@ -27,7 +27,11 @@ import {
   Eye,
   Globe,
   FileSearch,
+  Paperclip,
+  Image as ImageIcon,
+  Sheet,
 } from 'lucide-react'
+import { getFileDownloadUrl } from '@/app/actions/files'
 import { Streamdown } from 'streamdown'
 import { code } from '@streamdown/code'
 import { CitationPillInline } from './citation-pill'
@@ -90,6 +94,12 @@ const TOOL_CONFIG: Record<
     label: 'Söker i uppladdade filer',
     doneLabel: 'Sökte i uppladdade filer',
     icon: FileSearch,
+  },
+  // Story 19.2: read a full workspace file (PDF/image/extracted text).
+  read_file: {
+    label: 'Läser fil',
+    doneLabel: 'Läste fil',
+    icon: FileText,
   },
   get_document_details: {
     label: 'Hämtar dokument',
@@ -596,6 +606,19 @@ export function ChatMessage({
 
   if (isUser) {
     const textParts = message.parts?.filter((p) => p.type === 'text') ?? []
+    // Story 19.1: chat attachment chips persisted on the user message metadata.
+    const attachments =
+      (
+        metadata as
+          | {
+              attachments?: Array<{
+                fileId: string
+                filename: string
+                mimeType: string | null
+              }>
+            }
+          | undefined
+      )?.attachments ?? []
     return (
       <div className="group flex items-start gap-2 flex-row-reverse">
         <div className="flex-1 overflow-hidden text-right">
@@ -609,6 +632,44 @@ export function ChatMessage({
               </p>
             </div>
           ))}
+          {attachments.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap justify-end gap-1.5">
+              {attachments.map((att) => {
+                const mime = att.mimeType ?? ''
+                const Icon =
+                  mime === 'application/pdf'
+                    ? FileText
+                    : mime.startsWith('image/')
+                      ? ImageIcon
+                      : mime.includes('sheet') ||
+                          mime.includes('excel') ||
+                          mime === 'text/csv'
+                        ? Sheet
+                        : Paperclip
+                return (
+                  <button
+                    key={att.fileId}
+                    type="button"
+                    onClick={async () => {
+                      const res = await getFileDownloadUrl(att.fileId)
+                      if (res.success && res.data) {
+                        window.open(
+                          res.data.url,
+                          '_blank',
+                          'noopener,noreferrer'
+                        )
+                      }
+                    }}
+                    title={`Öppna ${att.filename}`}
+                    className="inline-flex max-w-[200px] items-center gap-1.5 rounded-md border border-border bg-muted/50 px-2 py-1 text-xs text-foreground/80 hover:bg-muted"
+                  >
+                    <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    <span className="truncate">{att.filename}</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
         {onDelete && (
           <DeleteMessageButton onConfirm={() => onDelete(message.id)} />

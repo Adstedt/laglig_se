@@ -1,0 +1,80 @@
+schema: 1
+story: '19.5'
+story_title: 'Role-based Tool Registry Filter + AgentDecisionLog'
+gate: PASS
+status_reason: 'All 17 ACs met + verified by 10 unit tests AND a live end-to-end smoke (read tools → SUCCESS rows; create_task → WRITE_PROPOSED → WRITE_ACCEPTED on the exact pending_action_id; model_version correct). Clean foundation — role filter + fail-safe audit wrapper + precise SF-1 propagation. Three low/future items, none blocking.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-24T20:05:00Z'
+
+waiver: { active: false }
+
+quality_score: 93
+expires: '2026-06-07T20:05:00Z'
+
+evidence:
+  tests_reviewed: 10
+  tests_result: '10/10 unit pass (decision-log 5, registry-role-filter 5); tsc clean; eslint clean; chat-quota + generate-law-list consumers pass; broad tests/unit/agent 147 pass / 2 fail (pre-existing 14.23) — all reproduced'
+  smoke_test:
+    performed_by: 'Owner (Alexander)'
+    result: 'PASS — verified live in-app + DB'
+    covered:
+      - '3 search_laws calls → 3 agent_decision_logs rows, outcome=SUCCESS, model_version=claude-sonnet-4-6, pending_action_id=NULL'
+      - 'create_task proposal → WRITE_PROPOSED row with real pending_action_id; approve card → that row → WRITE_ACCEPTED (SF-1 precise match confirmed)'
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+    ac_gaps: []
+    notes:
+      - 'SF-1 (AC 13/14) precise pending_action_id match: unit-tested + live-verified (WRITE_ACCEPTED on the exact row).'
+      - 'SF-2 (AC 11) model_version = resolved name: live-verified (claude-sonnet-4-6).'
+      - 'AC 5 AUDITOR read-only: unit-tested; not live-verified (no AUDITOR member) — low residual (AUD-001).'
+
+top_issues:
+  - id: WS-001
+    severity: low
+    summary: 'web_search is injected at the route, not by createAgentTools, so it is not wrapped by wrapWithDecisionLog → its calls do not appear in AgentDecisionLog. AUDITOR exclusion of web_search IS handled at the route.'
+    refs: ['app/api/chat/route.ts']
+    suggested_owner: dev
+    suggested_fix: 'Future: wrap web_search at the route injection point if web-search auditing is wanted.'
+  - id: AUD-001
+    severity: low
+    summary: 'AUDITOR read-only filter is unit-tested but not live-verified (no AUDITOR-role member available during smoke).'
+    refs: ['lib/agent/tools/index.ts']
+    suggested_owner: dev
+    suggested_fix: 'Spot-check live once an AUDITOR member exists: chat shows no write tool rows.'
+  - id: DEF-001
+    severity: low
+    summary: 'The default workspace fallback passes role=undefined → full tool set. Write actions still enforce withWorkspace (defense in depth), so no privilege leak — harden to read-only only if that path serves real traffic.'
+    refs: ['app/api/chat/route.ts']
+    suggested_owner: dev
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Governance layer itself. AUDITOR read-only (unit-tested) as defense-in-depth atop unchanged withWorkspace server-action enforcement. Audit trail populates correctly (live-verified) incl. accepted_by attribution. No raw @anthropic-ai/sdk usage.'
+  performance:
+    status: PASS
+    notes: 'One insert per tool call (live: 3 calls → 3 rows, no perceptible latency); fail-safe + indexed. onFinish batching noted as future if volume grows.'
+  reliability:
+    status: PASS
+    notes: 'Fail-safe wrapper (unit-tested: create throws → inner result returned); graceful degradation when the table is absent. Live write-lifecycle confirmed.'
+  maintainability:
+    status: PASS
+    notes: 'Clean modules; compile-enforced exhaustive policy (ToolName union); 10 tests. AC-6 plain-column refinement for soft refs is sound + documented (decoupled, durable audit log).'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'WS-001: wrap web_search at the route to log it too'
+      refs: ['app/api/chat/route.ts']
+    - action: 'AUD-001: live-verify AUDITOR filter once an AUDITOR member exists'
+      refs: ['lib/agent/tools/index.ts']
+    - action: 'Seam ready: 19.2/19.3/19.4 add one TOOL_REGISTRY_POLICY entry + are auto-wrapped by the factory'
+      refs: ['lib/agent/tools/index.ts']
+
+# Advisory — pre-existing branch failures, NOT introduced by 19.5.
+branch_advisory:
+  - id: BR-PROMPT
+    refs: ['tests/unit/agent/system-prompt.test.ts']
+    summary: 'execute:false assertion + token budget — Story 14.23 prompt growth. Pre-existing; resolve before the branch merges.'
+    suggested_owner: dev

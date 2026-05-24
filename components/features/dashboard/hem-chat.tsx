@@ -10,6 +10,7 @@ import { useRef, useCallback, useEffect, useState } from 'react'
 import Image from 'next/image'
 import { SquarePen, History, Download } from 'lucide-react'
 import { useChatInterface } from '@/lib/hooks/use-chat-interface'
+import { useChatAttachments } from '@/lib/hooks/use-chat-attachments'
 import { useLayoutStore } from '@/lib/stores/layout-store'
 import { ChatMessageList } from '@/components/features/ai-chat/chat-message-list'
 import { ChatInputModern } from '@/components/features/ai-chat/chat-input-modern'
@@ -107,6 +108,17 @@ export function HemChat({
     contextType: 'global',
   })
 
+  // Story 19.1: chat attachments on the dashboard hem-chat surface (shared across
+  // the launcher + active-conversation inputs; one is mounted at a time).
+  const {
+    pending: pendingAttachments,
+    addFiles: addAttachments,
+    remove: removeAttachment,
+    clear: clearAttachments,
+    error: attachmentError,
+    uploading: attachmentsUploading,
+  } = useChatAttachments()
+
   // Full mode: archive leftover active messages from previous session on mount
   useEffect(() => {
     if (mode !== 'full') return
@@ -131,9 +143,10 @@ export function HemChat({
   const handleSend = useCallback(
     (content: string) => {
       setUserEngaged(true)
-      sendMessage(content)
+      sendMessage(content, pendingAttachments)
+      clearAttachments()
     },
-    [sendMessage]
+    [sendMessage, pendingAttachments, clearAttachments]
   )
 
   const handlePromptClick = useCallback(
@@ -319,9 +332,14 @@ export function HemChat({
           disabled={hasError}
           isLoading={isLoading}
           showModelSelector={false}
-          showAttach={false}
+          showAttach={true}
           showQuickActions={false}
           placeholder="Skriv ett meddelande..."
+          pendingAttachments={pendingAttachments}
+          onAttachFiles={addAttachments}
+          onRemoveAttachment={removeAttachment}
+          attachmentError={attachmentError}
+          attachmentsUploading={attachmentsUploading}
         />
       </div>
     )
@@ -420,10 +438,15 @@ export function HemChat({
                 disabled={hasError}
                 isLoading={isLoading}
                 showModelSelector={false}
-                showAttach={false}
+                showAttach={true}
                 showQuickActions={false}
                 placeholder="Svara..."
                 className="border-none bg-transparent p-0"
+                pendingAttachments={pendingAttachments}
+                onAttachFiles={addAttachments}
+                onRemoveAttachment={removeAttachment}
+                attachmentError={attachmentError}
+                attachmentsUploading={attachmentsUploading}
               />
             </div>
           </div>
@@ -479,10 +502,15 @@ export function HemChat({
           disabled={false}
           isLoading={false}
           showModelSelector={false}
-          showAttach={false}
+          showAttach={true}
           showQuickActions={false}
           placeholder="Vad kan jag hjälpa dig med?"
           className="border-none bg-transparent p-0"
+          pendingAttachments={pendingAttachments}
+          onAttachFiles={addAttachments}
+          onRemoveAttachment={removeAttachment}
+          attachmentError={attachmentError}
+          attachmentsUploading={attachmentsUploading}
         />
 
         {/* Suggested Prompts */}

@@ -13,7 +13,7 @@ One ordered critical path (Track A) delivers the agent-partner loop. Two indepen
 1. **Phase 0:** Draft the four renumbered sibling stories; fix one status note. (No code.)
 2. **Phase 1:** Close the inline-card stack (14.22–24) — mostly built.
 3. **Phase 2:** DMS foundation — 17.8 text extraction is the single biggest blocker.
-4. **Phase 3:** Agent sight + diagnostics (19.1–19.5 + 14.28).
+4. **Phase 3:** Agent sight + diagnostics (19.1–19.5, incl. 19.4a id-resolution, + 14.28).
 5. **Phase 4:** Skills system (19.6–19.7 + 14.29/14.30). ← read-and-diagnose loop hits its smoke-test DoD.
 6. **Phase 5:** Authoring (17.10–17.11 + 19.8).
 7. **Phase 6:** Scale + governance (19.9–19.12).
@@ -44,7 +44,32 @@ Rough total: **~12–14 weeks (1 dev) / ~8–10 weeks (2 devs)**.
 
 *(Renumbered in the checklist on 2026-05-20 because Epic 14 shipped 14.26 = Prompt Caching, 14.27 = Usage Telemetry.)*
 
-**Epic 19 (19.1–19.12):** PRD-defined only; full story docs to be drafted via `*create-story` per phase.
+**Epic 19 (19.1–19.13 + 19.4a/19.4b):** PRD-defined only; full story docs to be drafted via `*create-story` per phase. 19.4a (id-resolution + discovery) and 19.4b (cycle/finding readers) added 2026-05-24 from the architect-reviewed knowledge-traversal brief; 19.4 refined to a lazy-traversal model.
+
+---
+
+## Progress update — 2026-05-24
+
+**Shipped since the 2026-05-20 snapshot (Done → `completed/`):**
+- **Phase 1 — DONE:** 14.22, 14.23, 14.24 (inline-card stack).
+- **Phase 2 — DONE.** 17.8 (text extraction) + the RAG pipeline, which **split** into: **17.9** (`USER_FILE` chunks) ✅, **17.9b** (`WORKSPACE_DOCUMENT`/styrdokument chunks) ✅, **17.9c** (`search_workspace_files` USER_FILE search tool) ✅. 14.31 (staleness) still Approved-not-built (batches with 14.28+14.30 per its deps).
+- **Phase 3 — in progress:** **19.1** (chat attachments) ✅ · **19.5** (role registry + `AgentDecisionLog`, the "do-early" seam) ✅.
+
+**Drafted, not built:** **17.9d** (file-aware citation pill — snippet sidebar + open-in-preview), **19.1b** (promote chat attachment → Filer). 17.10 Approved / 17.11 Draft (Phase 5).
+
+**Follow-ups surfaced (tracked in QA gates, not yet stories):**
+- **STO-001** — chat-attachment storage retention (sent `CHAT_ATTACHMENT` files accumulate, hidden from Filer, no cleanup).
+- **WS-001** — `web_search` isn't wrapped by 19.5's decision-log (injected at the route, not the factory).
+
+**Next in sequence → 19.2 (`read_file`):** only dep (19.1) is Done; pairs with 19.1's `attachments-to-content.ts` converter and unblocks 19.9's `DocumentReader`. Then 19.3 / 19.4a → 19.4 / 14.28 to close Phase 3.
+
+### Completion notes — addendum 2026-05-24 (later)
+
+**Done → `completed/` (verified against the folder):** 14.22, 14.23, 14.24 · 17.8, 17.9, 17.9b, 17.9c · 19.1, 19.5. **= 9 stories shipped.**
+
+**19.2 (`read_file`) APPROVED** (`docs/stories/19.2.read-file-evidence-reader.md`, v0.2, status Approved — PO `validate-next-story` GO 9/10) — ready for `*develop-story`. Design pins: extracts 19.1's converter routing into a shared `lib/agent/file-content.ts` core; delivers native PDF/image to the model via the AI-SDK `tool.toModelOutput` hook (Task-1 spike confirms the shape on `ai@6.0.50` + `@ai-sdk/anthropic@3.0.23`; text-only fallback noted); lean `execute` envelope keeps base64 out of `AgentDecisionLog`; registers as a `'read'` tool (kept for AUDITOR, auto-wrapped by 19.5's decision-log loop). Immediate id-source = `search_workspace_files.fileId` (19.4 widens it later).
+
+**Phase 3 status:** 2 built (19.1, 19.5) + 1 drafted (19.2); remaining to build = 19.2, 19.3, 19.4a, 19.4, 14.28. **Phases 1–2 fully shipped.** 14.31 remains Approved-not-built (Phase-1 retrofit, batches with 14.28/14.30).
 
 ---
 
@@ -59,27 +84,30 @@ The numbering rename is **already done** in the checklist. Remaining:
 
 ## TRACK A — Agent Partner (the main sequence)
 
-### Phase 1 — Close the inline-card stack (~1–2 wk) — *mostly built*
+### Phase 1 — Close the inline-card stack (~1–2 wk) — ✅ **DONE**
 
-1. **14.22** AgentActionCard + `CREATE_TASK` pilot
-2. **14.23** Extended types + batch card + write-preview decommission
-3. **14.24** `DRAFT_DOCUMENT` approval (Tiptap preview)
+1. **14.22** AgentActionCard + `CREATE_TASK` pilot — ✅ **DONE** (`completed/`)
+2. **14.23** Extended types + batch card + write-preview decommission — ✅ **DONE** (`completed/`)
+3. **14.24** `DRAFT_DOCUMENT` approval (Tiptap preview) — ✅ **DONE** (`completed/`)
 4. Ship behind `agent_partner_v2`; dogfood internally.
 
-### Phase 2 — DMS foundation (~2–3 wk)
+### Phase 2 — DMS foundation (~2–3 wk) — ✅ **DONE** (RAG split 17.9 → 17.9/b/c)
 
-5. **17.8** text extraction (PDF/DOCX/XLSX → `WorkspaceFile.extracted_text`) ← **single biggest blocker; start Day 1**
-6. **17.9** workspace-doc RAG pipeline (`ContentChunk` source `WORKSPACE_DOCUMENT`) — needs 17.8
-7. **14.31** proposal staleness protection — *parallel track*; retrofit onto the Phase-1 cards
+5. **17.8** text extraction (PDF/DOCX/XLSX → `WorkspaceFile.extracted_text`) — ✅ **DONE** (`completed/`) ← *was the single biggest blocker*
+6. **17.9** workspace-doc RAG pipeline — **split + all DONE:** **17.9** (`USER_FILE` chunks) ✅ · **17.9b** (`WORKSPACE_DOCUMENT`/styrdokument chunks) ✅ · **17.9c** (`search_workspace_files` USER_FILE tool) ✅ — all in `completed/`. *(Drafted, not built: **17.9d** file-aware citation pill.)*
+7. **14.31** proposal staleness protection — *parallel track*; **Approved, not built** (batches with 14.28+14.30 per its deps)
 
-### Phase 3 — Agent sight + diagnostics (~3 wk)
+### Phase 3 — Agent sight + diagnostics (~3 wk) — *in progress (2 of 7 done)*
 
-8. **19.1** chat attachment upload + Claude content-block conversion — needs 17.8
-9. **19.2** `read_file` unified evidence reader — needs 19.1
-10. **19.5** role-based tool registry filter + `AgentDecisionLog` ← **do early; cheap to add to a few tools now, a refactor across 20+ later**
-11. **19.3** diagnostic tools (`list_bevis_gaps`, `list_unassessed_changes`, `list_overdue`, `list_stale_documents`)
-12. **19.4** entity-read tools (`get_law_list_item`, `get_task`, `list_linked_artifacts`) — *parallel with 19.3*
-13. **14.28** `update_requirement` approval + diff renderer
+8. **19.1** chat attachment upload + Claude content-block conversion — needs 17.8 — ✅ **DONE** (2026-05-24, `completed/`)
+9. **19.2** `read_file` unified evidence reader — needs 19.1 — ✅ **DONE** (2026-05-24, `completed/`; QA PASS 94; read-vs-snippet live-verified — agent self-corrected a snippet-only analysis by reading 4 docs)
+10. **19.5** role-based tool registry filter + `AgentDecisionLog` ← **do early; cheap to add to a few tools now, a refactor across 20+ later** — ✅ **DONE** (2026-05-24, `completed/`)
+11. **19.3** diagnostic tools (`list_bevis_gaps`, `list_unassessed_changes`, `list_overdue`, `list_stale_documents`) — ⬜ pending
+12. **19.4a** id-resolution + entity discovery (thread `lawListItemId` into context; `search_law_list_items`) ← **prerequisite for 19.4; also retro-hardens the shipped law-item write tools** (added 2026-05-24) — ⬜ pending
+13. **19.4** entity-read tools (`get_law_list_item`, `get_task`, `list_linked_artifacts`) — lazy-traversal/`ContextHandle` model; *parallel with 19.3, after 19.4a* — ⬜ pending
+14. **14.28** `update_requirement` approval + diff renderer — ⬜ pending (Draft exists)
+
+> **19.4b** (`get_cycle`/`get_finding` readers) is **not** scheduled here — sequence it to ride with the next Epic 21 work (reads the same models). See Epic 19 PRD + `docs/agent-knowledge-traversal-brief.md`.
 
 ### Phase 4 — Skills system (~2 wk)
 
@@ -141,7 +169,7 @@ Mirrors `EPIC-19-AGENT-PARTNER-CHECKLIST.md`:
 
 - [ ] Prerequisites shipped: 17.8, 17.9, 17.10, 17.11, 14.22, 14.23, 14.24
 - [ ] Siblings shipped: 14.28, 14.29, 14.30, 14.31
-- [ ] All 12 Epic 19 stories shipped
+- [ ] All 15 Epic 19 stories shipped (incl. 19.4a id-resolution, 19.4b cycle/finding readers)
 - [ ] `agent_partner_v2` enabled in ≥1 customer workspace ≥2 weeks, no regressions
 - [ ] AUDITOR role verified read-only end-to-end; `AgentDecisionLog` populated for every tool call
 - [ ] Three skills live (`assess_change`, `gap_analysis`, `draft_policy`); three subagents live; two crons live
