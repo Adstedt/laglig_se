@@ -62,8 +62,9 @@
   *New agent tool reading any WorkspaceFile (chat attachment OR bevis) via shared conversion logic; extracts 19.1's routing into `lib/agent/file-content.ts`; native PDF/image via the AI-SDK `tool.toModelOutput` hook; `'read'`-tier (kept for AUDITOR)*
 - [ ] **19.3** — Diagnostic tools
   *`list_bevis_gaps`, `list_unassessed_changes`, `list_overdue`, `list_stale_documents` — pure reads, workspace-scoped*
-- [ ] **19.4a** — Agent id-resolution + entity discovery *(foundational; added 2026-05-24)*
-  *Thread active `lawListItemId` into tool-context closure + LAW system-prompt block; add `search_law_list_items` / `search_tasks`. Corrects 19.4's former "Deps: none"; **also hardens shipped write tools** (add_obligation/add_context_note/update_compliance_status) that today lack a clean id path. See `docs/agent-knowledge-traversal-brief.md` Finding B*
+- [x] **19.4a** — Agent id-resolution + entity discovery *(foundational; added 2026-05-24)* ✅ **DONE** (2026-05-24, `completed/`; QA PASS 91; both smoke paths verified, no migration)
+  *Surfaces the active `lawListItemId` (LAW prompt + tool-context default — hardens add_obligation/add_context_note/update_compliance_status), threads CHANGE-context id, adds `search_law_list_items` (Swedish definite-form match fix) + `search_tasks`. Follow-ups: 419A-001..004 (low/fail-safe), SLI-001 (pg_trgm robust matching). Unblocks 19.4.*
+  *Surface active `lawListItemId` in the LAW system-prompt block + as a tool-context default (hardening add_obligation/add_context_note/update_compliance_status); thread the CHANGE-context id to the route; add `search_law_list_items` / `search_tasks`. **SM reconciliation:** brief's Finding B is stale — the LAW chat already sends `contextId = listItemId` (`ai-chat-panel.tsx:47,77`), so the id is in the closure; gap is surfacing+defaulting+discovery, not new plumbing. Unblocks 19.4.*
 - [ ] **19.4** — Entity-read tools (lazy traversal)
   *`get_law_list_item`, `get_task`, `list_linked_artifacts` — node state + typed `ContextHandle` neighbour handles (not full hydration); one consolidated reader per entity; hard caps; names-not-IDs; ships with read-before-propose steering. Fills retrieval gap between 17.10 (docs) and compliance entity graph. **Deps:** 19.4a. No caching v1.*
 - [ ] **19.4b** — Cycle/finding entity-readers *(added 2026-05-24; sequence with next Epic 21 work)*

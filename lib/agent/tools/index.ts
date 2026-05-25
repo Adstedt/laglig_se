@@ -8,6 +8,9 @@ import { createSearchLawsTool } from './search-laws'
 import { createSearchWorkspaceFilesTool } from './search-workspace-files'
 // Story 19.2: read ANY workspace file in full (PDF/image/extracted text).
 import { createReadFileTool } from './read-file'
+// Story 19.4a: id-resolution / discovery over the company compliance graph.
+import { createSearchLawListItemsTool } from './search-law-list-items'
+import { createSearchTasksTool } from './search-tasks'
 import { createGetDocumentDetailsTool } from './get-document-details'
 import { createGetChangeDetailsTool } from './get-change-details'
 import { createGetCompanyContextTool } from './get-company-context'
@@ -65,6 +68,9 @@ export interface AgentToolContext {
   conversationId?: string | null
   /** Story 19.5: resolved model name (e.g. "claude-sonnet-4-6") for AgentDecisionLog. */
   modelVersion?: string
+  /** Story 19.4a: active LawListItem id — the law-item write tools default to
+   *  this when their `lawListItemId` arg is omitted (e.g. in a LAW chat). */
+  lawListItemId?: string | undefined
 }
 
 /**
@@ -77,6 +83,8 @@ type ToolName =
   | 'search_laws'
   | 'search_workspace_files'
   | 'read_file'
+  | 'search_law_list_items'
+  | 'search_tasks'
   | 'get_document_details'
   | 'get_change_details'
   | 'get_company_context'
@@ -96,6 +104,8 @@ export const TOOL_REGISTRY_POLICY = {
   search_laws: 'read',
   search_workspace_files: 'read',
   read_file: 'read',
+  search_law_list_items: 'read',
+  search_tasks: 'read',
   get_document_details: 'read',
   get_change_details: 'read',
   get_company_context: 'read',
@@ -141,6 +151,9 @@ export function createAgentTools(
     search_workspace_files: createSearchWorkspaceFilesTool(workspaceId),
     // Story 19.2: read ANY workspace file in full (search → read loop).
     read_file: createReadFileTool(workspaceId),
+    // Story 19.4a: resolve a law-list item / task by name (GLOBAL-chat entry).
+    search_law_list_items: createSearchLawListItemsTool(workspaceId),
+    search_tasks: createSearchTasksTool(workspaceId),
     get_document_details: createGetDocumentDetailsTool(),
     get_change_details: createGetChangeDetailsTool(),
     get_company_context: createGetCompanyContextTool(workspaceId),

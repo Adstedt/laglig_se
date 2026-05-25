@@ -11,7 +11,7 @@
  */
 
 import { useState, type ComponentType } from 'react'
-import useSWR from 'swr'
+import useSWR, { mutate as globalMutate } from 'swr'
 import { toast } from 'sonner'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -58,6 +58,31 @@ export const RENDERERS: Partial<
   ADD_CONTEXT_NOTE: AddContextNoteRenderer,
   UPDATE_COMPLIANCE_STATUS: UpdateComplianceStatusRenderer,
   DRAFT_DOCUMENT: DraftDocumentRenderer,
+}
+
+/**
+ * Story 19.4a follow-up: after an agent write is approved in the chat, the
+ * open law-item modal panels (kravpunkter, business-context, status) are
+ * separate SWR scopes and don't see the change until a manual refresh. Map the
+ * approved action → the entity SWR keys it touches so we can revalidate them
+ * live. Keyed on the `lawListItemId` the write tools stamp into `params`.
+ */
+function affectedSwrKeys(action: PendingAgentAction): string[] {
+  const params = (action.params ?? {}) as { lawListItemId?: string }
+  const itemId = params.lawListItemId
+  if (!itemId) return []
+  switch (action.action_type) {
+    case 'ADD_OBLIGATION':
+      // New kravpunkt → the modal's KravpunkterChecklist + the artifacts panel.
+      return [`list-item-requirements:${itemId}`, `linked-artifacts:${itemId}`]
+    case 'ADD_CONTEXT_NOTE':
+      // business_context append → the item + its "extra" fields.
+      return [`list-item:${itemId}`, `list-item-extra:${itemId}`]
+    case 'UPDATE_COMPLIANCE_STATUS':
+      return [`list-item:${itemId}`]
+    default:
+      return []
+  }
 }
 
 interface AgentActionCardProps {
@@ -118,6 +143,11 @@ export function AgentActionCard({ pendingActionId }: AgentActionCardProps) {
           revalidate: true,
         }
       )
+      // Story 19.4a follow-up: revalidate the open law-item modal panels so the
+      // approved change (e.g. a new kravpunkt) shows live without a manual refresh.
+      for (const key of affectedSwrKeys(action)) {
+        void globalMutate(key)
+      }
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : 'Kunde inte godkänna förslaget'

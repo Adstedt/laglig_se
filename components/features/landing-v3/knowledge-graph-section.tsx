@@ -418,11 +418,148 @@ function AgentGlyph({ className }: { className?: string }) {
   )
 }
 
+function UserBubble({
+  text,
+  animate,
+}: {
+  text: string
+  animate?: boolean | undefined
+}) {
+  return (
+    <div
+      className={cn(
+        'flex items-end justify-end gap-2',
+        animate && 'kg-usermsg'
+      )}
+    >
+      <div className="max-w-[82%] rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-[12.5px] leading-snug text-primary-foreground shadow-sm">
+        {text}
+      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={ASKER_AVATAR}
+        alt=""
+        className="h-6 w-6 shrink-0 rounded-full object-cover ring-1 ring-border"
+      />
+    </div>
+  )
+}
+
+// The grounded-answer card body (eyebrow → answer → source → proposal → actions).
+function ReplyCardInner({ sc }: { sc: Scenario }) {
+  const actionLabel = sc.action.kind === 'task' ? 'Uppgift' : 'Styrdokument'
+  return (
+    <>
+      <div className="mb-1 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.06em] text-emerald-600 dark:text-emerald-400">
+        <ShieldCheck className="h-3.5 w-3.5" />
+        Grundat svar
+      </div>
+      <p className="text-[12.5px] leading-snug text-foreground">{sc.answer}</p>
+      <span className="mt-1.5 inline-flex items-center gap-1 rounded border border-amber-300/60 bg-amber-50/60 px-1.5 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+        <BookOpen className="h-3 w-3" /> {sc.source}
+      </span>
+      <div className="mt-3 border-t border-border/45 pt-2.5">
+        <div className="mb-1 flex items-center gap-2 text-[11px] tracking-[0.04em] text-muted-foreground">
+          <span
+            className="agent-dot-pending relative inline-block h-[7px] w-[7px] shrink-0 rounded-full"
+            style={{ background: 'hsl(var(--spine-top))' }}
+          />
+          <span className="font-medium">Förslag</span>
+          <span className="text-muted-foreground/40">·</span>
+          <span>{actionLabel}</span>
+        </div>
+        <p className="text-[12.5px] leading-snug text-foreground">
+          {sc.action.label}
+        </p>
+        <div className="mt-2.5 flex items-center gap-1">
+          <span className="inline-flex h-7 items-center gap-1.5 rounded-md bg-primary px-2.5 text-[12px] font-medium text-primary-foreground">
+            <Check className="h-3.5 w-3.5" /> Godkänn
+          </span>
+          <span className="inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-[12px] text-muted-foreground">
+            Avvisa
+          </span>
+        </div>
+      </div>
+    </>
+  )
+}
+
+// One question → grounded-answer exchange. When `animate`, the card builds live
+// (search status → composing shimmer → answer). Otherwise it's the finished
+// card, which persists in the thread as the conversation keeps scrolling.
+function Exchange({ sc, animate }: { sc: Scenario; animate?: boolean }) {
+  return (
+    <>
+      <UserBubble text={sc.question} animate={animate} />
+      {animate ? (
+        <div className="kg-aslot relative overflow-hidden">
+          {/* search status while the graph is searched */}
+          <div className="kg-search absolute inset-x-0 bottom-0 flex items-center gap-2">
+            <AgentGlyph className="h-6 w-6" />
+            <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm bg-muted/70 px-3 py-2 text-[12px] text-muted-foreground">
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+              Söker i kunskapsgrafen
+              <span className="kg-dots inline-flex items-center gap-1">
+                <i />
+                <i />
+                <i />
+              </span>
+            </div>
+          </div>
+          {/* answer card — brief composing shimmer → grounded answer */}
+          <div className="kg-card absolute inset-x-0 bottom-0 flex items-start gap-2">
+            <AgentGlyph className="h-6 w-6" />
+            <div className="relative flex-1 overflow-hidden rounded-2xl rounded-tl-sm bg-card ring-1 ring-border/60">
+              <span className="agent-spine pointer-events-none absolute bottom-3 left-0 top-3 w-[3px]" />
+              <div className="kg-loading absolute inset-0 py-2.5 pl-4 pr-3">
+                <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                  Sammanställer svar
+                  <span className="kg-dots inline-flex items-center gap-1">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                </div>
+                <div className="mt-3 space-y-2.5">
+                  <div className="kg-sk h-2 w-[92%] rounded-full bg-foreground/10" />
+                  <div className="kg-sk h-2 w-[74%] rounded-full bg-foreground/10" />
+                  <div className="kg-sk mt-3 h-2 w-[42%] rounded-full bg-amber-400/25" />
+                  <div className="kg-sk !mt-4 h-2 w-[64%] rounded-full bg-foreground/10" />
+                  <div className="!mt-4 flex gap-1.5">
+                    <div className="kg-sk h-7 w-20 rounded-md bg-foreground/10" />
+                    <div className="kg-sk h-7 w-14 rounded-md bg-foreground/[0.06]" />
+                  </div>
+                </div>
+              </div>
+              <div className="kg-reply py-2.5 pl-4 pr-3">
+                <ReplyCardInner sc={sc} />
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-start gap-2">
+          <AgentGlyph className="h-6 w-6" />
+          <div className="relative flex-1 overflow-hidden rounded-2xl rounded-tl-sm bg-card ring-1 ring-border/60">
+            <span className="agent-spine pointer-events-none absolute bottom-3 left-0 top-3 w-[3px]" />
+            <div className="py-2.5 pl-4 pr-3">
+              <ReplyCardInner sc={sc} />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
 export function KnowledgeGraphSection() {
   const ref = useRef<HTMLDivElement>(null)
   const [inView, setInView] = useState(false)
   const [started, setStarted] = useState(false)
-  const [scenario, setScenario] = useState(0)
+  // monotonic question counter — the conversation flows continuously (older
+  // exchanges persist + scroll off), it never resets
+  const [tick, setTick] = useState(0)
 
   useEffect(() => {
     const el = ref.current
@@ -448,16 +585,20 @@ export function KnowledgeGraphSection() {
 
   useEffect(() => {
     if (!started) return
-    const iv = setInterval(
-      () => setScenario((s) => (s + 1) % SCENARIOS.length),
-      LOOP_MS
-    )
+    const iv = setInterval(() => setTick((t) => t + 1), LOOP_MS)
     return () => clearInterval(iv)
   }, [started])
 
+  // sliding window of the most recent exchanges (keeps the DOM bounded while the
+  // conversation scrolls continuously)
+  const WINDOW = 4
+  const scenario = tick % SCENARIOS.length
+  const windowStart = Math.max(0, tick - WINDOW + 1)
+  const windowTicks: number[] = []
+  for (let t = windowStart; t <= tick; t++) windowTicks.push(t)
+
   const sc = SCENARIOS[scenario]!
   const lawNode = byId[sc.chain[0]!]!
-  const actionLabel = sc.action.kind === 'task' ? 'Uppgift' : 'Styrdokument'
 
   const fr = fractions(sc.chain)
   const dash = (i: number) => +(1 - fr[i]! / 100).toFixed(3)
@@ -563,165 +704,32 @@ export function KnowledgeGraphSection() {
                 up as the answer card grows in, and the chat never resizes the
                 section (no page shift) */}
             <div className="flex h-[420px] flex-col justify-end gap-3 overflow-hidden px-4 py-4">
-              {/* established conversation history (static) */}
-              <div className="flex items-end gap-2">
-                <AgentGlyph className="h-6 w-6" />
-                <div className="max-w-[86%] rounded-2xl rounded-bl-sm bg-muted/70 px-3 py-2 text-[12.5px] leading-snug text-foreground/80">
-                  Hej Sofia! Jag har koll på alla era lagkrav, styrdokument och
-                  ansvariga — fråga mig vad som helst.
-                </div>
-              </div>
-
-              <div className="flex items-end justify-end gap-2">
-                <div className="max-w-[82%] rounded-2xl rounded-br-sm bg-primary/90 px-3 py-2 text-[12.5px] leading-snug text-primary-foreground">
-                  Hur ligger vi till med efterlevnaden?
-                </div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={ASKER_AVATAR}
-                  alt=""
-                  className="h-6 w-6 shrink-0 rounded-full object-cover ring-1 ring-border"
-                />
-              </div>
-
-              <div className="flex items-end gap-2">
-                <AgentGlyph className="h-6 w-6" />
-                <div className="max-w-[86%] rounded-2xl rounded-bl-sm bg-muted/70 px-3 py-2 text-[12.5px] leading-snug text-foreground/80">
-                  Ni efterlever{' '}
-                  <span className="font-medium text-foreground">
-                    58 av 67 krav
-                  </span>{' '}
-                  — 3 kräver åtgärd den här månaden. 2 nya lagändringar bevakas.
-                </div>
-              </div>
-
-              <div className="flex items-end justify-end gap-2">
-                <div className="max-w-[82%] rounded-2xl rounded-br-sm bg-primary/90 px-3 py-2 text-[12.5px] leading-snug text-primary-foreground">
-                  Vad bör vi prioritera?
-                </div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={ASKER_AVATAR}
-                  alt=""
-                  className="h-6 w-6 shrink-0 rounded-full object-cover ring-1 ring-border"
-                />
-              </div>
-
-              <div className="flex items-end gap-2">
-                <AgentGlyph className="h-6 w-6" />
-                <div className="max-w-[86%] rounded-2xl rounded-bl-sm bg-muted/70 px-3 py-2 text-[12.5px] leading-snug text-foreground/80">
-                  Tre saker: årets riskbedömning, brandskyddskontrollen och en
-                  översyn av alkoholpolicyn.
-                </div>
-              </div>
-
               {started && (
-                <div key={scenario}>
+                <>
+                  {/* greeting — shown until it scrolls out of the window */}
+                  {windowStart === 0 && (
+                    <div key="greet" className="kg-greet flex items-end gap-2">
+                      <AgentGlyph className="h-6 w-6" />
+                      <div className="max-w-[86%] rounded-2xl rounded-bl-sm bg-muted/70 px-3 py-2 text-[12.5px] leading-snug text-foreground/80">
+                        Hej Sofia! Jag har koll på alla era lagkrav,
+                        styrdokument och ansvariga — fråga mig vad som helst.
+                      </div>
+                    </div>
+                  )}
+
+                  {/* keyframes for the active query line */}
                   <style>{dynStyles}</style>
 
-                  {/* user question */}
-                  <div className="kg-usermsg flex items-end justify-end gap-2">
-                    <div className="max-w-[82%] rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-[12.5px] leading-snug text-primary-foreground shadow-sm">
-                      {sc.question}
-                    </div>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={ASKER_AVATAR}
-                      alt=""
-                      className="h-6 w-6 shrink-0 rounded-full object-cover ring-1 ring-border"
+                  {/* the conversation — recent exchanges persist as full cards
+                      and scroll; only the newest builds live */}
+                  {windowTicks.map((t) => (
+                    <Exchange
+                      key={`x-${t}`}
+                      sc={SCENARIOS[t % SCENARIOS.length]!}
+                      animate={t === tick}
                     />
-                  </div>
-
-                  {/* assistant — a compact "Söker…" status while the graph is
-                      searched, then the answer card expands in (a brief shimmer
-                      while composing → the grounded answer). The slot grows, so
-                      there's no void and no long skeleton wait. */}
-                  <div className="kg-aslot relative mt-3 overflow-hidden">
-                    {/* search status — small bubble pinned to the slot bottom */}
-                    <div className="kg-search absolute inset-x-0 bottom-0 flex items-center gap-2">
-                      <AgentGlyph className="h-6 w-6" />
-                      <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm bg-muted/70 px-3 py-2 text-[12px] text-muted-foreground">
-                        <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-                        Söker i kunskapsgrafen
-                        <span className="kg-dots inline-flex items-center gap-1">
-                          <i />
-                          <i />
-                          <i />
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* answer card — brief composing shimmer → grounded answer */}
-                    <div className="kg-card absolute inset-x-0 bottom-0 flex items-start gap-2">
-                      <AgentGlyph className="h-6 w-6" />
-                      <div className="relative flex-1 overflow-hidden rounded-2xl rounded-tl-sm bg-card ring-1 ring-border/60">
-                        <span className="agent-spine pointer-events-none absolute bottom-3 left-0 top-3 w-[3px]" />
-
-                        {/* brief composing shimmer */}
-                        <div className="kg-loading absolute inset-0 py-2.5 pl-4 pr-3">
-                          <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
-                            <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-                            Sammanställer svar
-                            <span className="kg-dots inline-flex items-center gap-1">
-                              <i />
-                              <i />
-                              <i />
-                            </span>
-                          </div>
-                          <div className="mt-3 space-y-2.5">
-                            <div className="kg-sk h-2 w-[92%] rounded-full bg-foreground/10" />
-                            <div className="kg-sk h-2 w-[74%] rounded-full bg-foreground/10" />
-                            <div className="kg-sk mt-3 h-2 w-[42%] rounded-full bg-amber-400/25" />
-                            <div className="kg-sk !mt-4 h-2 w-[64%] rounded-full bg-foreground/10" />
-                            <div className="!mt-4 flex gap-1.5">
-                              <div className="kg-sk h-7 w-20 rounded-md bg-foreground/10" />
-                              <div className="kg-sk h-7 w-14 rounded-md bg-foreground/[0.06]" />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* grounded reply */}
-                        <div className="kg-reply py-2.5 pl-4 pr-3">
-                          <div className="mb-1 flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.06em] text-emerald-600 dark:text-emerald-400">
-                            <ShieldCheck className="h-3.5 w-3.5" />
-                            Grundat svar
-                          </div>
-                          <p className="text-[12.5px] leading-snug text-foreground">
-                            {sc.answer}
-                          </p>
-                          <span className="mt-1.5 inline-flex items-center gap-1 rounded border border-amber-300/60 bg-amber-50/60 px-1.5 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
-                            <BookOpen className="h-3 w-3" /> {sc.source}
-                          </span>
-
-                          <div className="mt-3 border-t border-border/45 pt-2.5">
-                            <div className="mb-1 flex items-center gap-2 text-[11px] tracking-[0.04em] text-muted-foreground">
-                              <span
-                                className="agent-dot-pending relative inline-block h-[7px] w-[7px] shrink-0 rounded-full"
-                                style={{ background: 'hsl(var(--spine-top))' }}
-                              />
-                              <span className="font-medium">Förslag</span>
-                              <span className="text-muted-foreground/40">
-                                ·
-                              </span>
-                              <span>{actionLabel}</span>
-                            </div>
-                            <p className="text-[12.5px] leading-snug text-foreground">
-                              {sc.action.label}
-                            </p>
-                            <div className="mt-2.5 flex items-center gap-1">
-                              <span className="inline-flex h-7 items-center gap-1.5 rounded-md bg-primary px-2.5 text-[12px] font-medium text-primary-foreground">
-                                <Check className="h-3.5 w-3.5" /> Godkänn
-                              </span>
-                              <span className="inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-[12px] text-muted-foreground">
-                                Avvisa
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  ))}
+                </>
               )}
             </div>
 
@@ -811,7 +819,7 @@ export function KnowledgeGraphSection() {
 
                 {started && (
                   <path
-                    key={scenario}
+                    key={tick}
                     d={cometPath(sc.chain, 1, 0)}
                     pathLength={1}
                     className="kg-queryline"
@@ -875,9 +883,9 @@ export function KnowledgeGraphSection() {
                 )
               })}
 
-              {/* Per-scenario graph layer (re-keyed → animations replay) */}
+              {/* Per-question graph layer (re-keyed → animations replay) */}
               {started && (
-                <div key={scenario}>
+                <div key={tick}>
                   {/* Stop glows — bloom as the comet lands on each chain node */}
                   {sc.chain.map((id, i) => (
                     <span
@@ -1060,22 +1068,27 @@ const kgStyles = `
   40%         { transform: translateY(-3px); opacity: 1; }
 }
 
+/* greeting + accumulated (already-answered) messages fade in once on mount */
+.kg-greet, .kg-msg-in { animation: kg-msgin 0.45s ease both; }
+@keyframes kg-msgin {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .kg-usermsg { opacity: 0; transform: translateY(6px); animation: kg-usermsg var(--kg-dur, 12s) ease forwards; }
 @keyframes kg-usermsg {
-  0%,5%    { opacity: 0; transform: translateY(6px); }
-  8%       { opacity: 1; transform: translateY(0); }
-  93%      { opacity: 1; transform: translateY(0); }
-  96%,100% { opacity: 0; }
+  0%,5% { opacity: 0; transform: translateY(6px); }
+  8%    { opacity: 1; transform: translateY(0); }
+  100%  { opacity: 1; transform: translateY(0); }
 }
 
 /* assistant — slot stays short with a "Söker…" status during the graph search,
    then grows as the answer card expands (brief composing shimmer → answer). */
 .kg-aslot { height: 42px; animation: kg-aslot var(--kg-dur, 12s) ease forwards; }
 @keyframes kg-aslot {
-  0%,52%   { height: 42px; }
-  60%      { height: 206px; }
-  92%      { height: 206px; }
-  96%,100% { height: 42px; }
+  0%,52% { height: 42px; }
+  60%    { height: 206px; }
+  100%   { height: 206px; }
 }
 .kg-search { opacity: 0; animation: kg-search var(--kg-dur, 12s) ease forwards; }
 @keyframes kg-search {
@@ -1086,10 +1099,9 @@ const kgStyles = `
 }
 .kg-card { opacity: 0; animation: kg-card var(--kg-dur, 12s) ease forwards; }
 @keyframes kg-card {
-  0%,53%   { opacity: 0; }
-  58%      { opacity: 1; }
-  92%      { opacity: 1; }
-  96%,100% { opacity: 0; }
+  0%,53% { opacity: 0; }
+  58%    { opacity: 1; }
+  100%   { opacity: 1; }
 }
 .kg-loading { opacity: 0; animation: kg-loading var(--kg-dur, 12s) ease forwards; }
 @keyframes kg-loading {
@@ -1102,10 +1114,9 @@ const kgStyles = `
 @keyframes kg-skel { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 .kg-reply { opacity: 0; transform: translateY(4px); animation: kg-reply var(--kg-dur, 12s) ease forwards; }
 @keyframes kg-reply {
-  0%,67%   { opacity: 0; transform: translateY(4px); }
-  71%      { opacity: 1; transform: translateY(0); }
-  92%      { opacity: 1; transform: translateY(0); }
-  96%,100% { opacity: 0; }
+  0%,67% { opacity: 0; transform: translateY(4px); }
+  71%    { opacity: 1; transform: translateY(0); }
+  100%   { opacity: 1; transform: translateY(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1119,7 +1130,7 @@ const kgStyles = `
   .kg-card { position: static !important; animation: none !important; }
   .kg-glow { opacity: 0.45 !important; transform: translate(-50%,-50%) scale(1) !important; }
   .kg-pill { animation: none !important; opacity: 0.85 !important; transform: translate(-50%,-50%) scale(1) !important; }
-  .kg-src, .kg-usermsg, .kg-card, .kg-reply {
+  .kg-greet, .kg-msg-in, .kg-src, .kg-usermsg, .kg-card, .kg-reply {
     animation: none !important; opacity: 1 !important; transform: none !important;
   }
 }

@@ -23,6 +23,9 @@ export interface PendingActionToolContext {
   contextType?: 'GLOBAL' | 'TASK' | 'LAW' | 'CHANGE'
   contextId?: string | null
   conversationId?: string | null
+  /** Story 19.4a: active LawListItem id — law-item write tools default to this
+   *  when their `lawListItemId` arg is omitted. */
+  lawListItemId?: string | undefined
 }
 
 /**

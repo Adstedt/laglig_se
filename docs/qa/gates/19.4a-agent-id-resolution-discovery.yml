@@ -1,0 +1,92 @@
+schema: 1
+story: '19.4a'
+story_title: 'Agent ID-Resolution + Entity Discovery'
+gate: PASS
+status_reason: 'All 10 ACs implemented + verified by unit tests AND a live owner smoke on both headline paths: (1) LAW chat — kravpunkt added with NO id pasted (write-tool defaults lawListItemId from context); (2) GLOBAL chat — "lägg till kravpunkt på arbetsmiljölagen" → search_law_list_items resolved "Arbetsmiljölag (1977:1160)". The Swedish definite-form false-negative found mid-smoke was fixed (v0.5: tokenize + definite-suffix strip + retry steering) and re-smoked green. Workspace isolation holds on both new tools + the threaded id (findFirst scoping fails safe). Findings are all low/robustness-edge; substring matching brittleness beyond definite forms is tracked as SLI-001 (pg_trgm follow-up).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-24T23:55:00Z'
+
+waiver: { active: false }
+
+quality_score: 91
+expires: '2026-06-07T23:55:00Z'
+
+evidence:
+  tests_reviewed: 45
+  tests_result: '45/45 across the 5 relevant suites (search-law-list-items 4, search-tasks 2, law-item-write-context-default 6, registry-role-filter 5, system-prompt incl. the 2 LAW-id tests); full agent suite 174/174; full unit suite 5040 passed / 0 failed (prior run). tsc 0 errors (outside the unrelated landing-v3 file); eslint clean. No migration. All reproduced.'
+  smoke_test:
+    performed_by: 'Owner (Alexander)'
+    result: 'PASS — both headline paths verified live'
+    covered:
+      - 'LAW write-without-id: in a law chat, "Lägg till en kravpunkt: dokumentera årlig riskbedömning" → add_obligation proposed on MBL with NO id pasted → approved → kravpunkt persisted. Confirms the prompt surfaces the id + the write tools default to context.lawListItemId.'
+      - 'GLOBAL discovery→resolve: "Lägg till en kravpunkt på arbetsmiljölagen…" → "Sökte i laglistan" chip → resolved "Arbetsmiljölag (1977:1160)" and asked for the kravpunkt content. Confirms search_law_list_items + the Swedish definite-form fix + the TOOL_CONFIG label.'
+      - 'Regression caught + fixed mid-smoke: the definite form "arbetsmiljölagen" initially returned 0 hits (false "not in list"); fixed (v0.5) and re-smoked → now resolves correctly.'
+  risks_identified: 5
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    ac_gaps: []
+    notes:
+      - 'AC 1/2 threading: client DefaultChatTransport body → route resolve (explicit field, else contextId for LAW). NH-1 honoured (LAW hoisted in ai-chat-panel; CHANGE standalone in chat-panel).'
+      - 'AC 3 (SF-2): LAW prompt block injects the id only when resolved — unit-tested present/absent.'
+      - 'AC 5: write tools optional arg + context default; explicit arg wins. Workspace isolation preserved (findFirst { id, law_list:{ workspace_id } } → wrong/foreign id fails safe to "hittades inte", never a cross-tenant write). Unit-tested (explicit-wins / context-default / neither→error ×3 tools).'
+      - 'AC 6 (SF-1): search_law_list_items returns listName for multi-list disambiguation. AC 10 isolation: both discovery tools scoped by workspace.'
+
+top_issues:
+  - id: 419A-001
+    severity: low
+    summary: 'Write-tool id resolution uses `lawListItemId ?? context?.lawListItemId` + `if (!resolvedId)`, so an explicit EMPTY-STRING arg errors ("Ingen laglistpost angiven") instead of falling back to context. AC 5 said "absent/empty". Fails safe (no wrong write) and the agent realistically never passes "", so very low — but a literal AC edge.'
+    refs: ['lib/agent/tools/add-obligation.ts', 'lib/agent/tools/add-context-note.ts', 'lib/agent/tools/update-compliance-status.ts']
+    suggested_owner: dev
+    suggested_fix: 'Treat empty/whitespace arg as absent: `const id = (lawListItemId?.trim() || context?.lawListItemId)`.'
+  - id: 419A-002
+    severity: low
+    summary: 'search_law_list_items `query` is `z.string()` (no min); an empty/whitespace query degrades to `contains: ""` which matches ALL items (returns up to `limit` arbitrary rows) rather than erroring. Agent will not pass an empty query, so low.'
+    refs: ['lib/agent/tools/search-law-list-items.ts']
+    suggested_owner: dev
+    suggested_fix: 'If buildDocumentWhere yields no usable tokens, return wrapToolError (or add `.min(2)` to the query schema).'
+  - id: 419A-003
+    severity: low
+    summary: 'search_law_list_items matches token-AND × (raw|stem) × (title|number) — precision-biased. A query polluted with non-name words (e.g. the agent appending the kravpunkt topic) yields zero hits. Mitigated by the prompt retry steering (shorter stem / SFS) + the agent passing clean law names (live smoke did). Monitor.'
+    refs: ['lib/agent/tools/search-law-list-items.ts']
+    suggested_owner: dev
+  - id: 419A-004
+    severity: low
+    summary: 'Route LAW fallback `lawListItemId = contextId` assumes the current single LAW mount convention (contextId = listItemId, verified). A future LAW chat that sets contextId to something else (e.g. a document slug, as the brief originally assumed) would feed a wrong id. Fails safe → "Laglistposten hittades inte", never a wrong write.'
+    refs: ['app/api/chat/route.ts']
+    suggested_owner: dev
+  - id: SLI-001
+    severity: low
+    status: tracked
+    summary: 'The v0.5 definite-form fix is still substring-based (token + suffix strip) — brittle to typos, word order, and inflection beyond definite suffixes. Robust answer = pg_trgm trigram similarity (extension + GIN index on document.title = a migration + threshold). Logged in the implementation-sequence plan follow-ups.'
+    refs: ['lib/agent/tools/search-law-list-items.ts']
+    suggested_owner: dev
+    suggested_fix: 'Promote pg_trgm fuzzy matching if name-resolution misses recur.'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Both discovery tools workspace-scoped (law_list.workspace_id / Task.workspace_id). The threaded lawListItemId cannot bypass isolation — write tools still findFirst { id, law_list:{ workspace_id } }, so a foreign/wrong id fails safe to an error, never a cross-tenant write (unit-tested). Discovery tools expose no raw user IDs (return no people at all). No raw @anthropic-ai/sdk.'
+  performance:
+    status: PASS
+    notes: 'Discovery is a single findMany per call; Task.workspace_id is indexed; the title/number ILIKE is a scan but law lists are small per workspace (≈tens–hundreds of items). pg_trgm + GIN index (SLI-001) is the scale answer if lists grow large. No N+1.'
+  reliability:
+    status: PASS
+    notes: 'All paths fail safe — wrapToolError on miss/empty, threaded id validated via findFirst, prompt retry steering on empty search. The definite-form regression is locked by a unit test so it cannot silently return.'
+  maintainability:
+    status: PASS
+    notes: 'Clean helpers (definiteStem / buildDocumentWhere) with comments; reuses the 19.5 registry seam + the search-workspace-files tool pattern; SF-1/SF-2/NH-1 all implemented + tested. 12 new tests.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: '419A-001/002: treat empty-string arg/query as absent (trim guard / .min on schema)'
+      refs: ['lib/agent/tools/add-obligation.ts', 'lib/agent/tools/search-law-list-items.ts']
+    - action: 'SLI-001: pg_trgm trigram matching if name-resolution misses recur'
+      refs: ['lib/agent/tools/search-law-list-items.ts']
+
+# Advisory — pre-existing/unrelated, NOT introduced by 19.4a.
+branch_advisory:
+  - id: BR-LANDING
+    refs: ['components/features/landing-v3/knowledge-graph-section.tsx']
+    summary: '5 JSX syntax errors (unclosed div/Fragment) in an unrelated, in-progress landing file — present in the working tree, NOT touched by 19.4a. Will block the pre-push `pnpm build` until closed. Resolve before committing this batch.'
+    suggested_owner: dev

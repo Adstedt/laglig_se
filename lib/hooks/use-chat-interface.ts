@@ -33,6 +33,12 @@ export interface ChatContextInitial {
 export interface ChatContext {
   contextType: ChatContextType
   contextId?: string | undefined
+  /**
+   * Story 19.4a: the active LawListItem id, threaded to the chat route so the
+   * agent's law-item write tools default to it and the LAW prompt block surfaces
+   * it. For LAW the route also falls back to `contextId`; CHANGE sends it here.
+   */
+  lawListItemId?: string | undefined
   initialContext?: ChatContextInitial | undefined
 }
 
@@ -95,6 +101,7 @@ export function useChatInterface(
   const {
     contextType,
     contextId,
+    lawListItemId,
     initialContext,
     initialMessage,
     onMessageSent,
@@ -123,10 +130,12 @@ export function useChatInterface(
         body: {
           contextType,
           contextId,
+          // Story 19.4a: surface the active law-list item to the agent.
+          lawListItemId,
           ...initialContext,
         },
       }),
-    [contextType, contextId, initialContext]
+    [contextType, contextId, lawListItemId, initialContext]
   )
 
   const {

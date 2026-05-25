@@ -60,6 +60,8 @@ Rough total: **~12–14 weeks (1 dev) / ~8–10 weeks (2 devs)**.
 **Follow-ups surfaced (tracked in QA gates, not yet stories):**
 - **STO-001** — chat-attachment storage retention (sent `CHAT_ATTACHMENT` files accumulate, hidden from Filer, no cleanup).
 - **WS-001** — `web_search` isn't wrapped by 19.5's decision-log (injected at the route, not the factory).
+- **KP-001** — agent-proposed kravpunkter are phrased as **imperative to-dos** (*"Genomför…", "Säkerställ…"*) instead of **verifiable obligations/criteria** (*"…genomförs och dokumenteras (11 §)"*), mismatching the template house style and conflating requirement with action. Fix: framing rule in **19.7 gap_analysis STYLE.md** + the shipped **`add_obligation`** tool guidance. Surfaced 2026-05-24 during the 19.4a smoke; captured in the Epic 19 PRD 19.7 entry.
+- **SLI-001** — `search_law_list_items` name matching: the lightweight Swedish definite-form fix (token + suffix-strip, shipped in 19.4a v0.5) handles definite forms + the common cases, but is still substring-based — brittle to typos, word order, and inflection beyond definite suffixes. **Robust follow-up:** PostgreSQL `pg_trgm` trigram similarity (fuzzy match) — needs the extension + a GIN index on `document.title` (a migration) + a similarity threshold to tune. Promote if name-resolution misses recur. Surfaced 2026-05-24 during the 19.4a smoke.
 
 **Next in sequence → 19.2 (`read_file`):** only dep (19.1) is Done; pairs with 19.1's `attachments-to-content.ts` converter and unblocks 19.9's `DocumentReader`. Then 19.3 / 19.4a → 19.4 / 14.28 to close Phase 3.
 
@@ -103,7 +105,7 @@ The numbering rename is **already done** in the checklist. Remaining:
 9. **19.2** `read_file` unified evidence reader — needs 19.1 — ✅ **DONE** (2026-05-24, `completed/`; QA PASS 94; read-vs-snippet live-verified — agent self-corrected a snippet-only analysis by reading 4 docs)
 10. **19.5** role-based tool registry filter + `AgentDecisionLog` ← **do early; cheap to add to a few tools now, a refactor across 20+ later** — ✅ **DONE** (2026-05-24, `completed/`)
 11. **19.3** diagnostic tools (`list_bevis_gaps`, `list_unassessed_changes`, `list_overdue`, `list_stale_documents`) — ⬜ pending
-12. **19.4a** id-resolution + entity discovery (thread `lawListItemId` into context; `search_law_list_items`) ← **prerequisite for 19.4; also retro-hardens the shipped law-item write tools** (added 2026-05-24) — ⬜ pending
+12. **19.4a** id-resolution + entity discovery (thread `lawListItemId` into context; `search_law_list_items`) ← **prerequisite for 19.4; also retro-hardens the shipped law-item write tools** (added 2026-05-24) — ✅ **DONE 2026-05-24** (`docs/stories/completed/19.4a.agent-id-resolution-discovery.md`; QA PASS 91; both smoke paths verified live, no migration). Unblocks 19.4. SM reconciliation (PO-verified): the brief's Finding B is stale — the LAW chat already sends `contextId = listItemId` (`ai-chat-panel.tsx:47`), so scope narrowed to surfacing the id (prompt + tool-context default) + threading the CHANGE-context id + the two discovery tools.
 13. **19.4** entity-read tools (`get_law_list_item`, `get_task`, `list_linked_artifacts`) — lazy-traversal/`ContextHandle` model; *parallel with 19.3, after 19.4a* — ⬜ pending
 14. **14.28** `update_requirement` approval + diff renderer — ⬜ pending (Draft exists)
 

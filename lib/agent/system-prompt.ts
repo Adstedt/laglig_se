@@ -24,6 +24,9 @@ export interface SystemPromptOptions {
   companyContext?: string | undefined
   contextType?: 'global' | 'task' | 'law' | 'change' | undefined
   contextId?: string | undefined
+  /** Story 19.4a: active LawListItem id — surfaced in the LAW block so the agent
+   *  can pass it to the law-item write tools (omitted when undefined). */
+  lawListItemId?: string | undefined
   title?: string | undefined
   sfsNumber?: string | undefined
   summary?: string | undefined
@@ -260,8 +263,14 @@ export async function buildSystemPrompt(
     sections.push(`<task_context>\n${parts.join(' ')}\n</task_context>`)
   } else if (options?.contextType === 'law' && options.sfsNumber) {
     const lawName = options.title ?? 'en lag'
+    // Story 19.4a (SF-2): surface the active law-list item id ONLY when resolved
+    // (undefined when the user browses a law not in their list) so the agent can
+    // pass it to the write tools without the user pasting an id.
+    const idLine = options.lawListItemId
+      ? ` Aktiv laglistpost-ID: ${options.lawListItemId}. Använd detta ID för add_obligation / update_compliance_status / add_context_note.`
+      : ''
     sections.push(
-      `<task_context>\nAnvändaren tittar på ${lawName} (${options.sfsNumber}). Fokusera svaren på denna lag.\n</task_context>`
+      `<task_context>\nAnvändaren tittar på ${lawName} (${options.sfsNumber}).${idLine} Fokusera svaren på denna lag.\n</task_context>`
     )
   }
 

@@ -19,7 +19,10 @@ import {
 const schema = z.object({
   lawListItemId: z
     .string()
-    .describe('ID of the LawListItem to add the kravpunkt to'),
+    .optional()
+    .describe(
+      'ID of the LawListItem to add the kravpunkt to. Utelämna i en lag-chatt — då används den aktiva laglistposten automatiskt (Story 19.4a).'
+    ),
   text: z
     .string()
     .describe('The obligation / requirement text (max 500 characters)'),
@@ -57,8 +60,20 @@ skapas först efter godkännande.`,
     execute: async ({ lawListItemId, text, bevisRequired }: Input) => {
       const startTime = Date.now()
 
+      // Story 19.4a: default to the active law-list item from the chat context
+      // when the agent didn't supply an explicit id (e.g. in a LAW chat).
+      const resolvedId = lawListItemId ?? context?.lawListItemId
+      if (!resolvedId) {
+        return wrapToolError(
+          'add_obligation',
+          'Ingen laglistpost angiven.',
+          'Ange lawListItemId, eller använd search_law_list_items för att hitta rätt post i bevakningslistan.',
+          startTime
+        )
+      }
+
       const item = await prisma.lawListItem.findFirst({
-        where: { id: lawListItemId, law_list: { workspace_id: workspaceId } },
+        where: { id: resolvedId, law_list: { workspace_id: workspaceId } },
         include: {
           document: { select: { title: true, document_number: true } },
         },
@@ -74,9 +89,14 @@ skapas först efter godkännande.`,
       }
 
       const lawTitle =
-        item.document?.title ?? item.document?.document_number ?? lawListItemId
+        item.document?.title ?? item.document?.document_number ?? resolvedId
 
-      const params = { lawListItemId, lawTitle, text, bevisRequired }
+      const params = {
+        lawListItemId: resolvedId,
+        lawTitle,
+        text,
+        bevisRequired,
+      }
 
       const pendingActionId = await createPendingActionRow(
         workspaceId,

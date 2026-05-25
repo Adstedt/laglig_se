@@ -25,7 +25,12 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const updateComplianceStatusSchema = z.object({
-  lawListItemId: z.string().describe('ID of the LawListItem to update'),
+  lawListItemId: z
+    .string()
+    .optional()
+    .describe(
+      'ID of the LawListItem to update. Utelämna i en lag-chatt — då används den aktiva laglistposten automatiskt (Story 19.4a).'
+    ),
   newStatus: z
     .enum([
       'EJ_PABORJAD',
@@ -72,10 +77,21 @@ Returnerar fel om lawListItemId inte hittas eller inte tillhör den aktiva arbet
     }: UpdateComplianceStatusInput) => {
       const startTime = Date.now()
 
+      // Story 19.4a: default to the active law-list item from the chat context.
+      const resolvedId = lawListItemId ?? context?.lawListItemId
+      if (!resolvedId) {
+        return wrapToolError(
+          'update_compliance_status',
+          'Ingen laglistpost angiven.',
+          'Ange lawListItemId, eller använd search_law_list_items för att hitta rätt post i bevakningslistan.',
+          startTime
+        )
+      }
+
       // Validate item exists and belongs to workspace
       const item = await prisma.lawListItem.findFirst({
         where: {
-          id: lawListItemId,
+          id: resolvedId,
           law_list: { workspace_id: workspaceId },
         },
         include: {
@@ -93,13 +109,13 @@ Returnerar fel om lawListItemId inte hittas eller inte tillhör den aktiva arbet
       }
 
       const lawTitle =
-        item.document?.title ?? item.document?.document_number ?? lawListItemId
+        item.document?.title ?? item.document?.document_number ?? resolvedId
       const oldStatusLabel =
         STATUS_LABELS[item.compliance_status] ?? item.compliance_status
       const newStatusLabel = STATUS_LABELS[newStatus] ?? newStatus
 
       const params = {
-        lawListItemId,
+        lawListItemId: resolvedId,
         lawTitle,
         newStatus,
         oldStatus: item.compliance_status,

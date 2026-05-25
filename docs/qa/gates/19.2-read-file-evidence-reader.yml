@@ -106,6 +106,8 @@ recommendations:
 # Advisory — pre-existing branch failures, NOT introduced by 19.2 (confirmed via clean-tree stash).
 branch_advisory:
   - id: BR-PROMPT
+    status: resolved
+    resolution: '2026-05-24 — both stale assertions fixed: `execute: false` → `förslagskort` (14.23 replaced the direct-write branch with the inline approval card; verified `execute: false` absent from the prompt md), and the token-budget ceiling re-baselined 4000 → 5500 with rationale (base prompt is ~4.5k now). Broad tests/unit/agent now 160/160 (was 158/2). Branch agent suite fully green.'
     refs: ['tests/unit/agent/system-prompt.test.ts']
-    summary: 'execute:false assertion + ~4000-token budget — Story 14.23 prompt growth. Pre-existing (red on a clean tree). 19.2 added ~100 tokens (read_file steering bullet) to an already-over-budget prompt — the budget threshold is stale and should be re-baselined. Resolve before the branch merges.'
+    summary: 'execute:false assertion + ~4000-token budget — Story 14.23 prompt growth. Pre-existing (red on a clean tree). 19.2 added ~100 tokens (read_file steering bullet) to an already-over-budget prompt — the budget threshold was stale.'
     suggested_owner: dev

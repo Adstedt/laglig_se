@@ -180,12 +180,16 @@ export async function POST(req: Request) {
       messages,
       contextType,
       contextId,
+      lawListItemId,
       attachmentIds,
       ...initialContext
     } = body as {
       messages: UIMessage[]
       contextType?: 'global' | 'task' | 'law' | 'change'
       contextId?: string
+      // Story 19.4a: active LawListItem id (CHANGE sends it explicitly; LAW falls
+      // back to contextId, which that mount sets to the listItemId).
+      lawListItemId?: string
       // Story 19.1: chat attachment file ids (top-level body field, not message parts)
       attachmentIds?: string[]
       title?: string
@@ -213,6 +217,14 @@ export async function POST(req: Request) {
       | 'LAW'
       | 'CHANGE'
 
+    // Story 19.4a: resolve the active law-list item id — prefer the explicit
+    // body field (CHANGE sends it), else fall back to contextId for a LAW chat
+    // (the LAW mount sets contextId = listItemId). Threaded into the system
+    // prompt (surfaced to the agent) + the tool context (write-tool default).
+    const resolvedLawListItemId =
+      lawListItemId ??
+      (contextTypeUpper === 'LAW' ? (contextId ?? undefined) : undefined)
+
     // Build system prompt with company context
     const profile = await prisma.companyProfile.findFirst({
       where: { workspace_id: workspaceId },
@@ -236,6 +248,7 @@ export async function POST(req: Request) {
       companyContext,
       contextType,
       contextId,
+      lawListItemId: resolvedLawListItemId,
       thinkingEnabled: thinkingBudget > 0,
       ...(pendingActionsBlock ? { pendingActionsBlock } : {}),
       ...initialContext,
@@ -278,6 +291,7 @@ export async function POST(req: Request) {
         assistantMessageId,
         contextType: contextTypeUpper,
         contextId: contextId ?? null,
+        lawListItemId: resolvedLawListItemId,
         modelVersion: modelName,
       },
       role

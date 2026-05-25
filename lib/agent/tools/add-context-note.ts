@@ -19,7 +19,10 @@ import {
 const addContextNoteSchema = z.object({
   lawListItemId: z
     .string()
-    .describe('ID of the LawListItem to add the note to'),
+    .optional()
+    .describe(
+      'ID of the LawListItem to add the note to. Utelämna i en lag-chatt — då används den aktiva laglistposten automatiskt (Story 19.4a).'
+    ),
   note: z
     .string()
     .describe('Context note explaining why this law matters to the company'),
@@ -55,10 +58,21 @@ Returnerar fel om lawListItemId inte hittas eller inte tillhör den aktiva arbet
     execute: async ({ lawListItemId, note }: AddContextNoteInput) => {
       const startTime = Date.now()
 
+      // Story 19.4a: default to the active law-list item from the chat context.
+      const resolvedId = lawListItemId ?? context?.lawListItemId
+      if (!resolvedId) {
+        return wrapToolError(
+          'add_context_note',
+          'Ingen laglistpost angiven.',
+          'Ange lawListItemId, eller använd search_law_list_items för att hitta rätt post i bevakningslistan.',
+          startTime
+        )
+      }
+
       // Validate item exists and belongs to workspace
       const item = await prisma.lawListItem.findFirst({
         where: {
-          id: lawListItemId,
+          id: resolvedId,
           law_list: { workspace_id: workspaceId },
         },
         include: {
@@ -76,9 +90,9 @@ Returnerar fel om lawListItemId inte hittas eller inte tillhör den aktiva arbet
       }
 
       const lawTitle =
-        item.document?.title ?? item.document?.document_number ?? lawListItemId
+        item.document?.title ?? item.document?.document_number ?? resolvedId
 
-      const params = { lawListItemId, lawTitle, note }
+      const params = { lawListItemId: resolvedId, lawTitle, note }
 
       const pendingActionId = await createPendingActionRow(
         workspaceId,

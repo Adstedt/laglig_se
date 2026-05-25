@@ -100,7 +100,10 @@ describe('buildSystemPrompt', () => {
     // Tool guidance (AC 8)
     expect(prompt).toContain('<tool_guidance>')
     expect(prompt).toContain('get_company_context')
-    expect(prompt).toContain('execute: false')
+    // Story 14.23 removed the `execute: false` direct-write branch — write tools
+    // now propose via the inline approval card ("förslagskort"). Assert the
+    // current model rather than the retired execute:false phrasing.
+    expect(prompt).toContain('förslagskort')
 
     // Guardrails (AC 9-12)
     expect(prompt).toContain('<guardrails>')
@@ -425,12 +428,38 @@ describe('buildSystemPrompt', () => {
     expect(prompt).not.toContain('Berörda paragrafer')
   })
 
-  it('stays within approximate token budget (~2000-4000 tokens)', async () => {
+  it('LAW block surfaces the law-list item id when provided (Story 19.4a)', async () => {
+    const prompt = await buildSystemPrompt({
+      contextType: 'law',
+      title: 'Arbetsmiljölag',
+      sfsNumber: 'SFS 1977:1160',
+      lawListItemId: 'item-1',
+    })
+    expect(prompt).toContain('Aktiv laglistpost-ID: item-1')
+    expect(prompt).toContain('Arbetsmiljölag (SFS 1977:1160)')
+  })
+
+  it('LAW block omits the id line when lawListItemId is undefined (SF-2)', async () => {
+    const prompt = await buildSystemPrompt({
+      contextType: 'law',
+      title: 'Arbetsmiljölag',
+      sfsNumber: 'SFS 1977:1160',
+    })
+    expect(prompt).not.toContain('Aktiv laglistpost-ID')
+    expect(prompt).toContain('Arbetsmiljölag (SFS 1977:1160)')
+  })
+
+  it('stays within approximate token budget (~2000-5500 tokens)', async () => {
     const prompt = await buildSystemPrompt()
-    // Rough approximation: 1 token ≈ 4 characters for Swedish text
+    // Rough approximation: 1 token ≈ 4 characters for Swedish text.
+    // Ceiling re-baselined 4000 → 5500: the base prompt legitimately grew with
+    // the Story 14.23 inline-approval ("förslagskort") guidance + the 17.9c/19.2
+    // tool bullets (~4.5k tokens now). This stays a guard against runaway growth;
+    // revisit when the 19.6 skills layer lands (candidate for the structured-parts
+    // / prompt-caching v2 refactor noted in Story 14.26).
     const estimatedTokens = prompt.length / 4
     expect(estimatedTokens).toBeGreaterThan(1500)
-    expect(estimatedTokens).toBeLessThan(4000)
+    expect(estimatedTokens).toBeLessThan(5500)
   })
 })
 

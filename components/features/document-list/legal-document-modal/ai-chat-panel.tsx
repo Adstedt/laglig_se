@@ -45,6 +45,9 @@ export function AiChatPanel({
   const chat = useChatInterface({
     contextType: 'law',
     contextId: listItemId,
+    // Story 19.4a: surface the active law-list item explicitly (not only via
+    // contextId) so the agent's write tools default to it + the prompt shows it.
+    lawListItemId: listItemId,
     initialContext: {
       title: documentTitle,
       sfsNumber: documentNumber,

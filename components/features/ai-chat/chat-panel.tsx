@@ -155,11 +155,15 @@ function ChatPanelStandalone({
   contextId,
   initialContext,
   initialMessage,
+  lawListItemId,
   ...rest
 }: StandaloneProps) {
   const chat = useChatInterface({
     contextType,
     contextId,
+    // Story 19.4a: CHANGE chats own the hook here (no hoisted `chat`), so
+    // forward the existing lawListItemId prop into the route body.
+    lawListItemId,
     initialContext,
     initialMessage,
   })
@@ -167,6 +171,7 @@ function ChatPanelStandalone({
     <ChatPanelBody
       contextType={contextType}
       contextId={contextId}
+      lawListItemId={lawListItemId}
       {...rest}
       chat={chat}
     />

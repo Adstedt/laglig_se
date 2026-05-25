@@ -101,6 +101,17 @@ const TOOL_CONFIG: Record<
     doneLabel: 'Läste fil',
     icon: FileText,
   },
+  // Story 19.4a: discovery over the company compliance graph.
+  search_law_list_items: {
+    label: 'Söker i laglistan',
+    doneLabel: 'Sökte i laglistan',
+    icon: Search,
+  },
+  search_tasks: {
+    label: 'Söker bland uppgifter',
+    doneLabel: 'Sökte bland uppgifter',
+    icon: ClipboardList,
+  },
   get_document_details: {
     label: 'Hämtar dokument',
     doneLabel: 'Hämtade dokument',
@@ -135,6 +146,31 @@ const TOOL_CONFIG: Record<
   add_context_note: {
     label: 'Lägger till anteckning',
     doneLabel: 'Lade till anteckning',
+    icon: ClipboardList,
+  },
+  // Story 14.23 write tools — were rendering raw tool names (no config entry).
+  add_obligation: {
+    label: 'Lägger till kravpunkt',
+    doneLabel: 'Lade till kravpunkt',
+    proposalLabel: 'Föreslog kravpunkt',
+    icon: ClipboardList,
+  },
+  link_task_to_document: {
+    label: 'Länkar dokument',
+    doneLabel: 'Länkade dokument',
+    proposalLabel: 'Föreslog länkning',
+    icon: FileText,
+  },
+  link_document_to_task: {
+    label: 'Länkar dokument till uppgift',
+    doneLabel: 'Länkade dokument till uppgift',
+    proposalLabel: 'Föreslog länkning',
+    icon: ClipboardList,
+  },
+  assign_task: {
+    label: 'Tilldelar uppgift',
+    doneLabel: 'Tilldelade uppgift',
+    proposalLabel: 'Föreslog tilldelning',
     icon: ClipboardList,
   },
   suggest_followups: {
