@@ -11,6 +11,10 @@ import { createReadFileTool } from './read-file'
 // Story 19.4a: id-resolution / discovery over the company compliance graph.
 import { createSearchLawListItemsTool } from './search-law-list-items'
 import { createSearchTasksTool } from './search-tasks'
+// Story 19.4: lazy entity-readers (node state + ContextHandle neighbours).
+import { createGetLawListItemTool } from './get-law-list-item'
+import { createGetTaskTool } from './get-task'
+import { createListLinkedArtifactsTool } from './list-linked-artifacts'
 import { createGetDocumentDetailsTool } from './get-document-details'
 import { createGetChangeDetailsTool } from './get-change-details'
 import { createGetCompanyContextTool } from './get-company-context'
@@ -85,6 +89,9 @@ type ToolName =
   | 'read_file'
   | 'search_law_list_items'
   | 'search_tasks'
+  | 'get_law_list_item'
+  | 'get_task'
+  | 'list_linked_artifacts'
   | 'get_document_details'
   | 'get_change_details'
   | 'get_company_context'
@@ -106,6 +113,9 @@ export const TOOL_REGISTRY_POLICY = {
   read_file: 'read',
   search_law_list_items: 'read',
   search_tasks: 'read',
+  get_law_list_item: 'read',
+  get_task: 'read',
+  list_linked_artifacts: 'read',
   get_document_details: 'read',
   get_change_details: 'read',
   get_company_context: 'read',
@@ -154,6 +164,14 @@ export function createAgentTools(
     // Story 19.4a: resolve a law-list item / task by name (GLOBAL-chat entry).
     search_law_list_items: createSearchLawListItemsTool(workspaceId),
     search_tasks: createSearchTasksTool(workspaceId),
+    // Story 19.4: lazy entity-readers — receive writeContext for the id defaults
+    // (lawListItemId / contextType / contextId) per NH-1.
+    get_law_list_item: createGetLawListItemTool(workspaceId, writeContext),
+    list_linked_artifacts: createListLinkedArtifactsTool(
+      workspaceId,
+      writeContext
+    ),
+    get_task: createGetTaskTool(workspaceId, writeContext),
     get_document_details: createGetDocumentDetailsTool(),
     get_change_details: createGetChangeDetailsTool(),
     get_company_context: createGetCompanyContextTool(workspaceId),

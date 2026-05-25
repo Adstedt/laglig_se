@@ -71,97 +71,111 @@ export interface LinkedArtifactsResult {
 export async function getLinkedArtifactsForListItem(
   listItemId: string
 ): Promise<ActionResult<LinkedArtifactsResult>> {
+  return withWorkspace(
+    (ctx) => loadLinkedArtifacts(listItemId, ctx.workspaceId),
+    'read'
+  )
+}
+
+/**
+ * Story 19.4 (SF-A): workspaceId-parameterized core of the linked-artifacts
+ * query. Both the session-derived `getLinkedArtifactsForListItem` (above) and
+ * the agent `list_linked_artifacts` tool (closure workspaceId — no `cookies()`
+ * dependency inside the streaming tool loop) delegate here.
+ */
+export async function loadLinkedArtifacts(
+  listItemId: string,
+  workspaceId: string
+): Promise<ActionResult<LinkedArtifactsResult>> {
   if (!z.string().uuid().safeParse(listItemId).success) {
     return { success: false, error: 'Ogiltigt ID' }
   }
 
   try {
-    return await withWorkspace(async (ctx) => {
-      const item = await prisma.lawListItem.findFirst({
-        where: { id: listItemId },
-        include: {
-          law_list: { select: { workspace_id: true } },
-          file_links: {
-            include: {
-              file: {
-                select: {
-                  id: true,
-                  filename: true,
-                  mime_type: true,
-                  file_size: true,
-                },
+    const item = await prisma.lawListItem.findFirst({
+      where: { id: listItemId },
+      include: {
+        law_list: { select: { workspace_id: true } },
+        file_links: {
+          include: {
+            file: {
+              select: {
+                id: true,
+                filename: true,
+                mime_type: true,
+                file_size: true,
               },
             },
           },
-          workspace_document_links: {
-            include: {
-              document: {
-                select: {
-                  id: true,
-                  title: true,
-                  document_type: true,
-                  status: true,
-                  current_version_number: true,
-                },
+        },
+        workspace_document_links: {
+          include: {
+            document: {
+              select: {
+                id: true,
+                title: true,
+                document_type: true,
+                status: true,
+                current_version_number: true,
               },
             },
           },
-          requirements: {
-            select: {
-              id: true,
-              text: true,
-              evidence_links: {
-                include: {
-                  file: {
-                    select: {
-                      id: true,
-                      filename: true,
-                      mime_type: true,
-                      file_size: true,
-                    },
+        },
+        requirements: {
+          select: {
+            id: true,
+            text: true,
+            evidence_links: {
+              include: {
+                file: {
+                  select: {
+                    id: true,
+                    filename: true,
+                    mime_type: true,
+                    file_size: true,
                   },
-                  workspace_document: {
-                    select: {
-                      id: true,
-                      title: true,
-                      document_type: true,
-                      status: true,
-                      current_version_number: true,
-                    },
+                },
+                workspace_document: {
+                  select: {
+                    id: true,
+                    title: true,
+                    document_type: true,
+                    status: true,
+                    current_version_number: true,
                   },
                 },
               },
             },
           },
-          task_links: {
-            include: {
-              task: {
-                select: {
-                  id: true,
-                  title: true,
-                  workspace_id: true,
-                  file_links: {
-                    include: {
-                      file: {
-                        select: {
-                          id: true,
-                          filename: true,
-                          mime_type: true,
-                          file_size: true,
-                        },
+        },
+        task_links: {
+          include: {
+            task: {
+              select: {
+                id: true,
+                title: true,
+                workspace_id: true,
+                file_links: {
+                  include: {
+                    file: {
+                      select: {
+                        id: true,
+                        filename: true,
+                        mime_type: true,
+                        file_size: true,
                       },
                     },
                   },
-                  workspace_document_links: {
-                    include: {
-                      document: {
-                        select: {
-                          id: true,
-                          title: true,
-                          document_type: true,
-                          status: true,
-                          current_version_number: true,
-                        },
+                },
+                workspace_document_links: {
+                  include: {
+                    document: {
+                      select: {
+                        id: true,
+                        title: true,
+                        document_type: true,
+                        status: true,
+                        current_version_number: true,
                       },
                     },
                   },
@@ -170,128 +184,128 @@ export async function getLinkedArtifactsForListItem(
             },
           },
         },
-      })
+      },
+    })
 
-      if (!item || item.law_list.workspace_id !== ctx.workspaceId) {
-        return { success: false, error: 'Laglistpost hittades inte' }
-      }
+    if (!item || item.law_list.workspace_id !== workspaceId) {
+      return { success: false, error: 'Laglistpost hittades inte' }
+    }
 
-      const byKey = new Map<string, LinkedArtifact>()
+    const byKey = new Map<string, LinkedArtifact>()
 
-      const ensureFile = (file: {
-        id: string
-        filename: string
-        mime_type: string | null
-        file_size: number | null
-      }) => {
-        const key = `file:${file.id}`
-        let entry = byKey.get(key)
-        if (!entry) {
-          entry = {
-            kind: 'file',
-            id: file.id,
-            filename: file.filename,
-            mimeType: file.mime_type,
-            fileSize: file.file_size,
-            directLink: false,
-            requirements: [],
-            tasks: [],
-          }
-          byKey.set(key, entry)
+    const ensureFile = (file: {
+      id: string
+      filename: string
+      mime_type: string | null
+      file_size: number | null
+    }) => {
+      const key = `file:${file.id}`
+      let entry = byKey.get(key)
+      if (!entry) {
+        entry = {
+          kind: 'file',
+          id: file.id,
+          filename: file.filename,
+          mimeType: file.mime_type,
+          fileSize: file.file_size,
+          directLink: false,
+          requirements: [],
+          tasks: [],
         }
-        return entry
+        byKey.set(key, entry)
       }
+      return entry
+    }
 
-      const ensureDocument = (doc: {
-        id: string
-        title: string
-        document_type: string
-        status: string
-        current_version_number: number
-      }) => {
-        const key = `document:${doc.id}`
-        let entry = byKey.get(key)
-        if (!entry) {
-          entry = {
-            kind: 'document',
-            id: doc.id,
-            title: doc.title,
-            documentType: doc.document_type,
-            status: doc.status,
-            versionNumber: doc.current_version_number,
-            directLink: false,
-            requirements: [],
-            tasks: [],
-          }
-          byKey.set(key, entry)
+    const ensureDocument = (doc: {
+      id: string
+      title: string
+      document_type: string
+      status: string
+      current_version_number: number
+    }) => {
+      const key = `document:${doc.id}`
+      let entry = byKey.get(key)
+      if (!entry) {
+        entry = {
+          kind: 'document',
+          id: doc.id,
+          title: doc.title,
+          documentType: doc.document_type,
+          status: doc.status,
+          versionNumber: doc.current_version_number,
+          directLink: false,
+          requirements: [],
+          tasks: [],
         }
-        return entry
+        byKey.set(key, entry)
       }
+      return entry
+    }
 
-      // Pathway 1: direct file links
-      for (const link of item.file_links) {
-        const entry = ensureFile(link.file)
-        entry.directLink = true
-      }
+    // Pathway 1: direct file links
+    for (const link of item.file_links) {
+      const entry = ensureFile(link.file)
+      entry.directLink = true
+    }
 
-      // Pathway 2: direct document links
-      for (const link of item.workspace_document_links) {
-        const entry = ensureDocument(link.document)
-        entry.directLink = true
-      }
+    // Pathway 2: direct document links
+    for (const link of item.workspace_document_links) {
+      const entry = ensureDocument(link.document)
+      entry.directLink = true
+    }
 
-      // Pathway 3: kravpunkt evidence (file or document)
-      for (const req of item.requirements) {
-        const ref: LinkedArtifactRequirementRef = { id: req.id, text: req.text }
-        for (const link of req.evidence_links) {
-          if (link.file) {
-            const entry = ensureFile(link.file)
-            if (!entry.requirements.some((r) => r.id === ref.id)) {
-              entry.requirements.push(ref)
-            }
-          } else if (link.workspace_document) {
-            const entry = ensureDocument(link.workspace_document)
-            if (!entry.requirements.some((r) => r.id === ref.id)) {
-              entry.requirements.push(ref)
-            }
+    // Pathway 3: kravpunkt evidence (file or document)
+    for (const req of item.requirements) {
+      const ref: LinkedArtifactRequirementRef = { id: req.id, text: req.text }
+      for (const link of req.evidence_links) {
+        if (link.file) {
+          const entry = ensureFile(link.file)
+          if (!entry.requirements.some((r) => r.id === ref.id)) {
+            entry.requirements.push(ref)
           }
-        }
-      }
-
-      // Pathway 4 + 5: task-side files and documents.
-      // Also tally tasks-without-attachment for the compliance-health widget.
-      let tasksWithoutAttachmentCount = 0
-      for (const taskLink of item.task_links) {
-        const task = taskLink.task
-        if (task.workspace_id !== ctx.workspaceId) continue
-        const hasAnyAttachment =
-          task.file_links.length > 0 || task.workspace_document_links.length > 0
-        if (!hasAnyAttachment) tasksWithoutAttachmentCount++
-        const ref: LinkedArtifactTaskRef = { id: task.id, title: task.title }
-        for (const fileLink of task.file_links) {
-          const entry = ensureFile(fileLink.file)
-          if (!entry.tasks.some((t) => t.id === ref.id)) {
-            entry.tasks.push(ref)
-          }
-        }
-        for (const docLink of task.workspace_document_links) {
-          const entry = ensureDocument(docLink.document)
-          if (!entry.tasks.some((t) => t.id === ref.id)) {
-            entry.tasks.push(ref)
+        } else if (link.workspace_document) {
+          const entry = ensureDocument(link.workspace_document)
+          if (!entry.requirements.some((r) => r.id === ref.id)) {
+            entry.requirements.push(ref)
           }
         }
       }
+    }
 
-      return {
-        success: true,
-        data: {
-          artifacts: Array.from(byKey.values()),
-          tasksWithoutAttachmentCount,
-        },
+    // Pathway 4 + 5: task-side files and documents.
+    // Also tally tasks-without-attachment for the compliance-health widget.
+    let tasksWithoutAttachmentCount = 0
+    for (const taskLink of item.task_links) {
+      const task = taskLink.task
+      if (task.workspace_id !== workspaceId) continue
+      const hasAnyAttachment =
+        task.file_links.length > 0 || task.workspace_document_links.length > 0
+      if (!hasAnyAttachment) tasksWithoutAttachmentCount++
+      const ref: LinkedArtifactTaskRef = { id: task.id, title: task.title }
+      for (const fileLink of task.file_links) {
+        const entry = ensureFile(fileLink.file)
+        if (!entry.tasks.some((t) => t.id === ref.id)) {
+          entry.tasks.push(ref)
+        }
       }
-    }, 'read')
+      for (const docLink of task.workspace_document_links) {
+        const entry = ensureDocument(docLink.document)
+        if (!entry.tasks.some((t) => t.id === ref.id)) {
+          entry.tasks.push(ref)
+        }
+      }
+    }
+
+    return {
+      success: true,
+      data: {
+        artifacts: Array.from(byKey.values()),
+        tasksWithoutAttachmentCount,
+      },
+    }
   } catch (error) {
-    console.error('getLinkedArtifactsForListItem error:', error)
+    console.error('loadLinkedArtifacts error:', error)
     return { success: false, error: 'Kunde inte hämta länkade artefakter' }
   }
 }

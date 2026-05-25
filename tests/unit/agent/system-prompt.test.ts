@@ -449,6 +449,13 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('Arbetsmiljölag (SFS 1977:1160)')
   })
 
+  it('includes read-before-propose steering for the entity-readers (Story 19.4)', async () => {
+    const prompt = await buildSystemPrompt()
+    expect(prompt).toContain('get_law_list_item')
+    // the read-before-propose instruction must be present
+    expect(prompt).toContain('INNAN du föreslår update_compliance_status')
+  })
+
   it('stays within approximate token budget (~2000-5500 tokens)', async () => {
     const prompt = await buildSystemPrompt()
     // Rough approximation: 1 token ≈ 4 characters for Swedish text.

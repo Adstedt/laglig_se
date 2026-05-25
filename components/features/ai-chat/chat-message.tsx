@@ -112,6 +112,22 @@ const TOOL_CONFIG: Record<
     doneLabel: 'Sökte bland uppgifter',
     icon: ClipboardList,
   },
+  // Story 19.4: lazy entity-readers (compliance-graph traversal).
+  get_law_list_item: {
+    label: 'Läser laglistpost',
+    doneLabel: 'Läste laglistpost',
+    icon: ClipboardList,
+  },
+  get_task: {
+    label: 'Läser uppgift',
+    doneLabel: 'Läste uppgift',
+    icon: ClipboardList,
+  },
+  list_linked_artifacts: {
+    label: 'Hämtar länkade dokument',
+    doneLabel: 'Hämtade länkade dokument',
+    icon: FileText,
+  },
   get_document_details: {
     label: 'Hämtar dokument',
     doneLabel: 'Hämtade dokument',

@@ -73,6 +73,16 @@ Rough total: **~12–14 weeks (1 dev) / ~8–10 weeks (2 devs)**.
 
 **Phase 3 status:** 2 built (19.1, 19.5) + 1 drafted (19.2); remaining to build = 19.2, 19.3, 19.4a, 19.4, 14.28. **Phases 1–2 fully shipped.** 14.31 remains Approved-not-built (Phase-1 retrofit, batches with 14.28/14.30).
 
+### Completion notes — addendum 2026-05-24 (post-19.4a)
+
+**Shipped (Done → `completed/`): 11 stories.** Adds **19.2** (`read_file`, QA PASS 95) + **19.4a** (id-resolution + discovery, QA PASS 91) to the prior 9. Both smoke-verified live; pushed in `ce19cf96`.
+
+**Phase 3: 4 of 7 built** — 19.1, 19.5, 19.2, 19.4a ✅. **Remaining: 19.3, 19.4, 14.28.**
+
+**➡️ Next in sequence → 19.4 (entity-readers `get_law_list_item` / `list_linked_artifacts`).** Now unblocked by 19.4a (consumes the threaded `lawListItemId` + the `search_law_list_items` entry point). Highest-leverage: it's the flagship reader that lets the agent actually read a law-item's state + its linked artifacts — directly closing the *"agent can't see what's linked to this law"* gap observed during the 19.4a smoke (today it falls back to semantic search and guesses). It also surfaces bevis file-ids to 19.2's `read_file`, completing the "read the evidence on a kravpunkt" loop.
+- **Alternative / parallel:** **19.3** (diagnostics — `list_bevis_gaps` / `list_unassessed_changes` / `list_overdue` / `list_stale_documents`); no deps, powers the gap-analysis flow + fixes the "saknas helt from a search miss" reliability gap. 19.3 and 19.4 both close Phase 3 — either order works.
+- **Sibling:** **14.28** (`update_requirement` approval) — schedule alongside per its deps.
+
 ---
 
 ## Phase 0 — Housekeeping (½ day, no code)
@@ -99,14 +109,14 @@ The numbering rename is **already done** in the checklist. Remaining:
 6. **17.9** workspace-doc RAG pipeline — **split + all DONE:** **17.9** (`USER_FILE` chunks) ✅ · **17.9b** (`WORKSPACE_DOCUMENT`/styrdokument chunks) ✅ · **17.9c** (`search_workspace_files` USER_FILE tool) ✅ — all in `completed/`. *(Drafted, not built: **17.9d** file-aware citation pill.)*
 7. **14.31** proposal staleness protection — *parallel track*; **Approved, not built** (batches with 14.28+14.30 per its deps)
 
-### Phase 3 — Agent sight + diagnostics (~3 wk) — *in progress (2 of 7 done)*
+### Phase 3 — Agent sight + diagnostics (~3 wk) — *in progress (4 of 7 done)*
 
 8. **19.1** chat attachment upload + Claude content-block conversion — needs 17.8 — ✅ **DONE** (2026-05-24, `completed/`)
 9. **19.2** `read_file` unified evidence reader — needs 19.1 — ✅ **DONE** (2026-05-24, `completed/`; QA PASS 94; read-vs-snippet live-verified — agent self-corrected a snippet-only analysis by reading 4 docs)
 10. **19.5** role-based tool registry filter + `AgentDecisionLog` ← **do early; cheap to add to a few tools now, a refactor across 20+ later** — ✅ **DONE** (2026-05-24, `completed/`)
 11. **19.3** diagnostic tools (`list_bevis_gaps`, `list_unassessed_changes`, `list_overdue`, `list_stale_documents`) — ⬜ pending
 12. **19.4a** id-resolution + entity discovery (thread `lawListItemId` into context; `search_law_list_items`) ← **prerequisite for 19.4; also retro-hardens the shipped law-item write tools** (added 2026-05-24) — ✅ **DONE 2026-05-24** (`docs/stories/completed/19.4a.agent-id-resolution-discovery.md`; QA PASS 91; both smoke paths verified live, no migration). Unblocks 19.4. SM reconciliation (PO-verified): the brief's Finding B is stale — the LAW chat already sends `contextId = listItemId` (`ai-chat-panel.tsx:47`), so scope narrowed to surfacing the id (prompt + tool-context default) + threading the CHANGE-context id + the two discovery tools.
-13. **19.4** entity-read tools (`get_law_list_item`, `get_task`, `list_linked_artifacts`) — lazy-traversal/`ContextHandle` model; *parallel with 19.3, after 19.4a* — ⬜ pending
+13. **19.4** entity-read tools (`get_law_list_item`, `get_task`, `list_linked_artifacts`) — lazy-traversal/`ContextHandle` model — 🔬 **READY FOR REVIEW 2026-05-24** (`docs/stories/19.4.entity-read-tools.md`, v0.4; implemented, +15 tests, full unit suite green, no migration; pending review/smoke). The flagship reader: reads a law-item's state + linked artifacts (closes the "can't see what's linked" gap from the 19.4a smoke) + feeds bevis file-ids to `read_file`. *(Parallel with 19.3.)*
 14. **14.28** `update_requirement` approval + diff renderer — ⬜ pending (Draft exists)
 
 > **19.4b** (`get_cycle`/`get_finding` readers) is **not** scheduled here — sequence it to ride with the next Epic 21 work (reads the same models). See Epic 19 PRD + `docs/agent-knowledge-traversal-brief.md`.

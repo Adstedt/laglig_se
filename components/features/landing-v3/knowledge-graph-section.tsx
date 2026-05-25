@@ -10,7 +10,7 @@ import {
   GitCommit,
   Database,
   ShieldCheck,
-  RefreshCw,
+  Radar,
   BookOpen,
   Check,
   ArrowUp,
@@ -315,19 +315,19 @@ const KIND_STYLE: Record<
 
 const beats = [
   {
+    icon: Radar,
+    label: 'Bevakar åt er',
+    sub: 'läser nya lagar och förbereder uppgifter',
+  },
+  {
     icon: Database,
     label: 'Grundat i exakta lagrum',
     sub: 'svar härleds ur era egna kopplingar',
   },
   {
     icon: ShieldCheck,
-    label: 'Hämtar verkliga källor',
-    sub: 'varje svar pekar på rätt SFS/AFS',
-  },
-  {
-    icon: RefreshCw,
-    label: 'Föreslår nästa steg',
-    sub: 'skapar uppgifter och styrdokument',
+    label: 'Ni godkänner alltid',
+    sub: 'agenten föreslår — ni bestämmer',
   },
 ]
 
@@ -398,7 +398,57 @@ function fractions(chain: string[]) {
   return cum.map((c) => +((c / total) * 100).toFixed(2)) // [0, fAgent, fLaw, fKrav, fDoc, 100]
 }
 
-const LOOP_MS = 12000
+// A vast, faint "backdrop graph" behind the labeled core. It says: the handful
+// of nodes the agent actually uses is a small island in a much larger knowledge
+// graph. Points sit on jittered concentric rings (deterministic, so they never
+// reflow), each linked to its nearest neighbours; a radial mask fades the whole
+// layer out toward the rim — density + detail concentrate where the agent works
+// and trail off into "there's much more here".
+function buildBackdrop() {
+  let seed = 0x4c61676c
+  const rnd = () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0
+    return seed / 0xffffffff
+  }
+  const cx = 510
+  const cy = 385
+  const pts: { x: number; y: number; r: number }[] = []
+  const rings = [
+    { r: 175, n: 12 },
+    { r: 255, n: 16 },
+    { r: 335, n: 20 },
+    { r: 420, n: 24 },
+    { r: 510, n: 27 },
+    { r: 600, n: 30 },
+  ]
+  for (const ring of rings) {
+    for (let i = 0; i < ring.n; i++) {
+      const a = (i / ring.n) * Math.PI * 2 + (rnd() - 0.5) * 0.55
+      const rr = ring.r + (rnd() - 0.5) * 80
+      pts.push({
+        x: +(cx + Math.cos(a) * rr * 1.2).toFixed(1),
+        y: +(cy + Math.sin(a) * rr * 0.86).toFixed(1),
+        r: +(1.5 + rnd() * 2.6).toFixed(2),
+      })
+    }
+  }
+  const edges: [number, number][] = []
+  for (let i = 0; i < pts.length; i++) {
+    const near = pts
+      .map((p, j) => ({ j, d: Math.hypot(pts[i]!.x - p.x, pts[i]!.y - p.y) }))
+      .filter((o) => o.j !== i)
+      .sort((p, q) => p.d - q.d)
+    const links = 1 + (rnd() > 0.55 ? 1 : 0)
+    for (let k = 0; k < links; k++) {
+      const j = near[k]!.j
+      if (j > i) edges.push([i, j])
+    }
+  }
+  return { pts, edges }
+}
+const BACKDROP = buildBackdrop()
+
+const LOOP_MS = 13000
 
 function AgentGlyph({ className }: { className?: string }) {
   return (
@@ -418,20 +468,9 @@ function AgentGlyph({ className }: { className?: string }) {
   )
 }
 
-function UserBubble({
-  text,
-  animate,
-}: {
-  text: string
-  animate?: boolean | undefined
-}) {
+function UserBubble({ text }: { text: string }) {
   return (
-    <div
-      className={cn(
-        'flex items-end justify-end gap-2',
-        animate && 'kg-usermsg'
-      )}
-    >
+    <div className="flex items-end justify-end gap-2">
       <div className="max-w-[82%] rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-[12.5px] leading-snug text-primary-foreground shadow-sm">
         {text}
       </div>
@@ -490,50 +529,83 @@ function ReplyCardInner({ sc }: { sc: Scenario }) {
 function Exchange({ sc, animate }: { sc: Scenario; animate?: boolean }) {
   return (
     <>
-      <UserBubble text={sc.question} animate={animate} />
       {animate ? (
-        <div className="kg-aslot relative overflow-hidden">
-          {/* search status while the graph is searched */}
-          <div className="kg-search absolute inset-x-0 bottom-0 flex items-center gap-2">
-            <AgentGlyph className="h-6 w-6" />
-            <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm bg-muted/70 px-3 py-2 text-[12px] text-muted-foreground">
-              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-              Söker i kunskapsgrafen
-              <span className="kg-dots inline-flex items-center gap-1">
-                <i />
-                <i />
-                <i />
-              </span>
+        <div className="kg-uslot">
+          {/* the asker composing — typing dots before the question lands */}
+          <div className="kg-ph kg-utyping grid">
+            <div>
+              <div className="flex items-end justify-end gap-2">
+                <div className="rounded-2xl rounded-br-sm bg-primary px-3.5 py-3 shadow-sm">
+                  <span className="kg-dots kg-dots-light inline-flex items-center gap-1">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={ASKER_AVATAR}
+                  alt=""
+                  className="h-6 w-6 shrink-0 rounded-full object-cover ring-1 ring-border"
+                />
+              </div>
             </div>
           </div>
-          {/* answer card — brief composing shimmer → grounded answer */}
-          <div className="kg-card absolute inset-x-0 bottom-0 flex items-start gap-2">
-            <AgentGlyph className="h-6 w-6" />
-            <div className="relative flex-1 overflow-hidden rounded-2xl rounded-tl-sm bg-card ring-1 ring-border/60">
-              <span className="agent-spine pointer-events-none absolute bottom-3 left-0 top-3 w-[3px]" />
-              <div className="kg-loading absolute inset-0 py-2.5 pl-4 pr-3">
-                <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
+          {/* the question — expands in as the typing collapses */}
+          <div className="kg-ph kg-uquestion grid">
+            <div>
+              <UserBubble text={sc.question} />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <UserBubble text={sc.question} />
+      )}
+      {animate ? (
+        <div className="kg-aslot">
+          {/* searching — shown while the query line traverses the graph */}
+          <div className="kg-ph kg-search grid">
+            <div>
+              <div className="flex items-center gap-2">
+                <AgentGlyph className="h-6 w-6" />
+                <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm bg-muted/70 px-3 py-2 text-[12px] text-muted-foreground">
                   <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-                  Sammanställer svar
+                  Söker i kunskapsgrafen
                   <span className="kg-dots inline-flex items-center gap-1">
                     <i />
                     <i />
                     <i />
                   </span>
                 </div>
-                <div className="mt-3 space-y-2.5">
-                  <div className="kg-sk h-2 w-[92%] rounded-full bg-foreground/10" />
-                  <div className="kg-sk h-2 w-[74%] rounded-full bg-foreground/10" />
-                  <div className="kg-sk mt-3 h-2 w-[42%] rounded-full bg-amber-400/25" />
-                  <div className="kg-sk !mt-4 h-2 w-[64%] rounded-full bg-foreground/10" />
-                  <div className="!mt-4 flex gap-1.5">
-                    <div className="kg-sk h-7 w-20 rounded-md bg-foreground/10" />
-                    <div className="kg-sk h-7 w-14 rounded-md bg-foreground/[0.06]" />
-                  </div>
+              </div>
+            </div>
+          </div>
+          {/* thinking — a real beat after the graph is read, before the reply */}
+          <div className="kg-ph kg-think grid">
+            <div>
+              <div className="flex items-center gap-2">
+                <AgentGlyph className="h-6 w-6" />
+                <div className="flex items-center rounded-2xl rounded-tl-sm bg-muted/70 px-3.5 py-3">
+                  <span className="kg-dots inline-flex items-center gap-1">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
                 </div>
               </div>
-              <div className="kg-reply py-2.5 pl-4 pr-3">
-                <ReplyCardInner sc={sc} />
+            </div>
+          </div>
+          {/* grounded answer — expands in smoothly (no fixed height to clip) */}
+          <div className="kg-ph kg-reply grid">
+            <div>
+              <div className="flex items-start gap-2">
+                <AgentGlyph className="h-6 w-6" />
+                <div className="relative flex-1 overflow-hidden rounded-2xl rounded-tl-sm bg-card ring-1 ring-border/60">
+                  <span className="agent-spine pointer-events-none absolute bottom-3 left-0 top-3 w-[3px]" />
+                  <div className="py-2.5 pl-4 pr-3">
+                    <ReplyCardInner sc={sc} />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -608,27 +680,27 @@ export function KnowledgeGraphSection() {
   // step-by-step, then holds as a faint trace while the answer is shown.
   const dynStyles = `
 @keyframes kg-line {
-  0%, 7%  { stroke-dashoffset: 1; opacity: 0; }
-  8%      { opacity: 1; }
-  13%     { stroke-dashoffset: ${dash(1)}; }
-  15%     { stroke-dashoffset: ${dash(1)}; }
-  20%     { stroke-dashoffset: ${dash(2)}; }
-  23%     { stroke-dashoffset: ${dash(2)}; }
-  27%     { stroke-dashoffset: ${dash(3)}; }
-  30%     { stroke-dashoffset: ${dash(3)}; }
-  34%     { stroke-dashoffset: ${dash(4)}; }
-  37%     { stroke-dashoffset: ${dash(4)}; }
-  41%     { stroke-dashoffset: 0; opacity: 1; }
-  49%     { stroke-dashoffset: 0; opacity: 1; }
-  55%     { stroke-dashoffset: 0; opacity: 0.24; }
-  93%     { stroke-dashoffset: 0; opacity: 0.24; }
-  96%,100%{ stroke-dashoffset: 0; opacity: 0; }
+  0%, 24% { stroke-dashoffset: 1; opacity: 0; }
+  25%     { opacity: 1; }
+  30%     { stroke-dashoffset: ${dash(1)}; }
+  32%     { stroke-dashoffset: ${dash(1)}; }
+  35%     { stroke-dashoffset: ${dash(2)}; }
+  37%     { stroke-dashoffset: ${dash(2)}; }
+  40%     { stroke-dashoffset: ${dash(3)}; }
+  42%     { stroke-dashoffset: ${dash(3)}; }
+  45%     { stroke-dashoffset: ${dash(4)}; }
+  47%     { stroke-dashoffset: ${dash(4)}; }
+  51%     { stroke-dashoffset: 0; opacity: 1; }
+  58%     { stroke-dashoffset: 0; opacity: 1; }
+  64%     { stroke-dashoffset: 0; opacity: 0.24; }
+  94%     { stroke-dashoffset: 0; opacity: 0.24; }
+  97%,100%{ stroke-dashoffset: 0; opacity: 0; }
 }`
 
   return (
     <section
       className="relative overflow-hidden bg-section-cream py-20 md:py-28"
-      style={{ ['--kg-dur' as string]: '12s' }}
+      style={{ ['--kg-dur' as string]: '13s' }}
     >
       <style>{kgStyles}</style>
 
@@ -649,8 +721,8 @@ export function KnowledgeGraphSection() {
           <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground md:text-lg">
             Generiska AI-verktyg gissar. Laglig bygger en levande kunskapsgraf
             av er verksamhet — lagar, krav, styrdokument och ansvariga kopplas
-            samman. Agenten svarar grundat i exakta lagrum, och föreslår nästa
-            steg.
+            samman. Agenten bevakar lagändringar, svarar grundat i exakta lagrum
+            och förbereder nästa steg — ni godkänner alltid först.
           </p>
         </div>
 
@@ -798,6 +870,30 @@ export function KnowledgeGraphSection() {
                       }}
                     />
                   </radialGradient>
+                  {/* radial fade for the backdrop graph — visible at the core,
+                      trailing off to nothing at the rim */}
+                  <radialGradient
+                    id="kg-fade-grad"
+                    cx="510"
+                    cy="385"
+                    r="400"
+                    gradientUnits="userSpaceOnUse"
+                    gradientTransform="translate(510 385) scale(1.32 0.94) translate(-510 -385)"
+                  >
+                    <stop offset="0%" stopColor="white" stopOpacity="0.82" />
+                    <stop offset="45%" stopColor="white" stopOpacity="0.6" />
+                    <stop offset="74%" stopColor="white" stopOpacity="0.26" />
+                    <stop offset="100%" stopColor="white" stopOpacity="0" />
+                  </radialGradient>
+                  <mask id="kg-fade-mask">
+                    <rect
+                      x="-260"
+                      y="-220"
+                      width="1520"
+                      height="1200"
+                      fill="url(#kg-fade-grad)"
+                    />
+                  </mask>
                 </defs>
 
                 <circle
@@ -807,6 +903,32 @@ export function KnowledgeGraphSection() {
                   fill="url(#kg-core)"
                   className="kg-corewash"
                 />
+
+                {/* backdrop graph — a vast faint web fading out toward the rim */}
+                <g className="kg-backdrop" mask="url(#kg-fade-mask)">
+                  {BACKDROP.edges.map(([a, b], i) => (
+                    <line
+                      key={`be-${i}`}
+                      x1={BACKDROP.pts[a]!.x}
+                      y1={BACKDROP.pts[a]!.y}
+                      x2={BACKDROP.pts[b]!.x}
+                      y2={BACKDROP.pts[b]!.y}
+                      stroke="hsl(var(--foreground))"
+                      strokeWidth="0.9"
+                      strokeOpacity="0.34"
+                    />
+                  ))}
+                  {BACKDROP.pts.map((p, i) => (
+                    <circle
+                      key={`bp-${i}`}
+                      cx={p.x}
+                      cy={p.y}
+                      r={p.r}
+                      fill="hsl(var(--foreground))"
+                      fillOpacity="0.46"
+                    />
+                  ))}
+                </g>
 
                 {EDGES.map(([a, b]) => (
                   <path
@@ -970,6 +1092,9 @@ const kgStyles = `
 .kg-in .kg-corewash { animation: kg-fade 1.2s ease 0.2s forwards; }
 @keyframes kg-fade { to { opacity: 1; } }
 
+.kg-backdrop { opacity: 0; }
+.kg-in .kg-backdrop { animation: kg-fade 1.6s ease 0.15s forwards; }
+
 .kg-node { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
 .kg-in .kg-node { animation: kg-pop 0.6s cubic-bezier(0.2,1,0.3,1) forwards; animation-delay: var(--d); }
 @keyframes kg-pop { to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
@@ -993,32 +1118,32 @@ const kgStyles = `
 .kg-s3 { animation: kg-stop3 var(--kg-dur, 12s) ease forwards; }
 .kg-s4 { animation: kg-stop4 var(--kg-dur, 12s) ease forwards; }
 @keyframes kg-stop1 {
-  0%,18%   { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
-  21%      { opacity: 1; transform: translate(-50%,-50%) scale(1.15); }
-  25%      { opacity: 0.5; transform: translate(-50%,-50%) scale(0.95); }
-  90%      { opacity: 0.4; transform: translate(-50%,-50%) scale(0.95); }
-  96%,100% { opacity: 0; }
+  0%,33%   { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
+  36%      { opacity: 1; transform: translate(-50%,-50%) scale(1.15); }
+  40%      { opacity: 0.5; transform: translate(-50%,-50%) scale(0.95); }
+  91%      { opacity: 0.4; transform: translate(-50%,-50%) scale(0.95); }
+  97%,100% { opacity: 0; }
 }
 @keyframes kg-stop2 {
-  0%,25%   { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
-  28%      { opacity: 1; transform: translate(-50%,-50%) scale(1.15); }
-  32%      { opacity: 0.5; transform: translate(-50%,-50%) scale(0.95); }
-  90%      { opacity: 0.4; transform: translate(-50%,-50%) scale(0.95); }
-  96%,100% { opacity: 0; }
+  0%,38%   { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
+  41%      { opacity: 1; transform: translate(-50%,-50%) scale(1.15); }
+  45%      { opacity: 0.5; transform: translate(-50%,-50%) scale(0.95); }
+  91%      { opacity: 0.4; transform: translate(-50%,-50%) scale(0.95); }
+  97%,100% { opacity: 0; }
 }
 @keyframes kg-stop3 {
-  0%,32%   { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
-  35%      { opacity: 1; transform: translate(-50%,-50%) scale(1.15); }
-  39%      { opacity: 0.5; transform: translate(-50%,-50%) scale(0.95); }
-  90%      { opacity: 0.4; transform: translate(-50%,-50%) scale(0.95); }
-  96%,100% { opacity: 0; }
+  0%,43%   { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
+  46%      { opacity: 1; transform: translate(-50%,-50%) scale(1.15); }
+  50%      { opacity: 0.5; transform: translate(-50%,-50%) scale(0.95); }
+  91%      { opacity: 0.4; transform: translate(-50%,-50%) scale(0.95); }
+  97%,100% { opacity: 0; }
 }
 @keyframes kg-stop4 {
-  0%,39%   { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
-  42%      { opacity: 1; transform: translate(-50%,-50%) scale(1.2); }
-  46%      { opacity: 0.55; transform: translate(-50%,-50%) scale(0.98); }
-  90%      { opacity: 0.45; transform: translate(-50%,-50%) scale(0.98); }
-  96%,100% { opacity: 0; }
+  0%,49%   { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
+  52%      { opacity: 1; transform: translate(-50%,-50%) scale(1.2); }
+  56%      { opacity: 0.55; transform: translate(-50%,-50%) scale(0.98); }
+  91%      { opacity: 0.45; transform: translate(-50%,-50%) scale(0.98); }
+  97%,100% { opacity: 0; }
 }
 
 /* reasoning halts — blink in at each node, then clear before the reply lands */
@@ -1027,22 +1152,22 @@ const kgStyles = `
 .kg-p2 { animation: kg-pill2 var(--kg-dur, 12s) ease forwards; }
 .kg-p3 { animation: kg-pill3 var(--kg-dur, 12s) ease forwards; }
 @keyframes kg-pill1 {
-  0%,26%   { opacity: 0; transform: translate(-50%,-50%) scale(0.85); }
-  30%      { opacity: 1; transform: translate(-50%,-50%) scale(1); }
-  41%      { opacity: 0.9; transform: translate(-50%,-50%) scale(1); }
-  45%,100% { opacity: 0; transform: translate(-50%,-50%) scale(0.95); }
+  0%,38%   { opacity: 0; transform: translate(-50%,-50%) scale(0.85); }
+  42%      { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  53%      { opacity: 0.9; transform: translate(-50%,-50%) scale(1); }
+  57%,100% { opacity: 0; transform: translate(-50%,-50%) scale(0.95); }
 }
 @keyframes kg-pill2 {
-  0%,33%   { opacity: 0; transform: translate(-50%,-50%) scale(0.85); }
-  37%      { opacity: 1; transform: translate(-50%,-50%) scale(1); }
-  48%      { opacity: 0.9; transform: translate(-50%,-50%) scale(1); }
-  52%,100% { opacity: 0; transform: translate(-50%,-50%) scale(0.95); }
+  0%,43%   { opacity: 0; transform: translate(-50%,-50%) scale(0.85); }
+  47%      { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  56%      { opacity: 0.9; transform: translate(-50%,-50%) scale(1); }
+  60%,100% { opacity: 0; transform: translate(-50%,-50%) scale(0.95); }
 }
 @keyframes kg-pill3 {
-  0%,40%   { opacity: 0; transform: translate(-50%,-50%) scale(0.85); }
-  44%      { opacity: 1; transform: translate(-50%,-50%) scale(1); }
-  52%      { opacity: 0.9; transform: translate(-50%,-50%) scale(1); }
-  55%,100% { opacity: 0; transform: translate(-50%,-50%) scale(0.95); }
+  0%,49%   { opacity: 0; transform: translate(-50%,-50%) scale(0.85); }
+  53%      { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  59%      { opacity: 0.9; transform: translate(-50%,-50%) scale(1); }
+  63%,100% { opacity: 0; transform: translate(-50%,-50%) scale(0.95); }
 }
 
 /* the source is the law-node "step" — it blinks in as the line reaches the law
@@ -1050,10 +1175,10 @@ const kgStyles = `
    chat reply keeps the source persistently) */
 .kg-src { opacity: 0; animation: kg-srcchip var(--kg-dur, 12s) ease forwards; }
 @keyframes kg-srcchip {
-  0%,19%   { opacity: 0; }
-  23%      { opacity: 1; }
-  33%      { opacity: 1; }
-  37%,100% { opacity: 0; }
+  0%,33%   { opacity: 0; }
+  36%      { opacity: 1; }
+  49%      { opacity: 1; }
+  53%,100% { opacity: 0; }
 }
 
 /* thinking-shimmer dots (in the assistant loading label) */
@@ -1063,6 +1188,8 @@ const kgStyles = `
 }
 .kg-dots i:nth-child(2) { animation-delay: 0.15s; }
 .kg-dots i:nth-child(3) { animation-delay: 0.3s; }
+/* light dots — for the dark (primary) user "typing" bubble */
+.kg-dots-light i { background: hsl(var(--primary-foreground)); }
 @keyframes kg-bounce {
   0%,80%,100% { transform: translateY(0); opacity: 0.4; }
   40%         { transform: translateY(-3px); opacity: 1; }
@@ -1075,48 +1202,50 @@ const kgStyles = `
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.kg-usermsg { opacity: 0; transform: translateY(6px); animation: kg-usermsg var(--kg-dur, 12s) ease forwards; }
-@keyframes kg-usermsg {
-  0%,5% { opacity: 0; transform: translateY(6px); }
-  8%    { opacity: 1; transform: translateY(0); }
-  100%  { opacity: 1; transform: translateY(0); }
+/* assistant phases — search → think → reply. Each is a grid-rows (0fr⇄1fr)
+   expand/collapse, so height changes are buttery and the thread scrolls up
+   smoothly (no hard height jump, no fixed px to clip a tall reply). The
+   transitions overlap slightly so there's never a 0-height flash between beats. */
+.kg-ph { display: grid; grid-template-rows: 0fr; opacity: 0; }
+.kg-ph > div { min-height: 0; overflow: hidden; }
+
+/* user side: the asker "typing" (~3s) → the question lands */
+.kg-utyping { animation: kg-ph-utyping var(--kg-dur, 13s) ease forwards; }
+@keyframes kg-ph-utyping {
+  0%        { grid-template-rows: 0fr; opacity: 0; }
+  1%        { grid-template-rows: 1fr; opacity: 1; }
+  22%       { grid-template-rows: 1fr; opacity: 1; }
+  25%, 100% { grid-template-rows: 0fr; opacity: 0; }
+}
+.kg-uquestion { animation: kg-ph-uquestion var(--kg-dur, 13s) ease forwards; }
+@keyframes kg-ph-uquestion {
+  0%, 21% { grid-template-rows: 0fr; opacity: 0; }
+  25%     { grid-template-rows: 1fr; opacity: 1; }
+  100%    { grid-template-rows: 1fr; opacity: 1; }
 }
 
-/* assistant — slot stays short with a "Söker…" status during the graph search,
-   then grows as the answer card expands (brief composing shimmer → answer). */
-.kg-aslot { height: 42px; animation: kg-aslot var(--kg-dur, 12s) ease forwards; }
-@keyframes kg-aslot {
-  0%,52% { height: 42px; }
-  60%    { height: 206px; }
-  100%   { height: 206px; }
+/* assistant: searching — present while the query line traverses the graph */
+.kg-search { animation: kg-ph-search var(--kg-dur, 13s) ease forwards; }
+@keyframes kg-ph-search {
+  0%, 24%   { grid-template-rows: 0fr; opacity: 0; }
+  28%       { grid-template-rows: 1fr; opacity: 1; }
+  56%       { grid-template-rows: 1fr; opacity: 1; }
+  61%, 100% { grid-template-rows: 0fr; opacity: 0; }
 }
-.kg-search { opacity: 0; animation: kg-search var(--kg-dur, 12s) ease forwards; }
-@keyframes kg-search {
-  0%,9%    { opacity: 0; }
-  13%      { opacity: 1; }
-  50%      { opacity: 1; }
-  54%,100% { opacity: 0; }
+/* the post-traversal "think" beat — pure typing dots, like a real chat */
+.kg-think { animation: kg-ph-think var(--kg-dur, 13s) ease forwards; }
+@keyframes kg-ph-think {
+  0%, 57%   { grid-template-rows: 0fr; opacity: 0; }
+  62%       { grid-template-rows: 1fr; opacity: 1; }
+  67%       { grid-template-rows: 1fr; opacity: 1; }
+  71%, 100% { grid-template-rows: 0fr; opacity: 0; }
 }
-.kg-card { opacity: 0; animation: kg-card var(--kg-dur, 12s) ease forwards; }
-@keyframes kg-card {
-  0%,53% { opacity: 0; }
-  58%    { opacity: 1; }
-  100%   { opacity: 1; }
-}
-.kg-loading { opacity: 0; animation: kg-loading var(--kg-dur, 12s) ease forwards; }
-@keyframes kg-loading {
-  0%,55%   { opacity: 0; }
-  59%      { opacity: 1; }
-  67%      { opacity: 1; }
-  70%,100% { opacity: 0; }
-}
-.kg-sk { animation: kg-skel 1.5s ease-in-out infinite; }
-@keyframes kg-skel { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-.kg-reply { opacity: 0; transform: translateY(4px); animation: kg-reply var(--kg-dur, 12s) ease forwards; }
-@keyframes kg-reply {
-  0%,67% { opacity: 0; transform: translateY(4px); }
-  71%    { opacity: 1; transform: translateY(0); }
-  100%   { opacity: 1; transform: translateY(0); }
+/* grounded answer — expands in and holds for the rest of the loop */
+.kg-reply { animation: kg-ph-reply var(--kg-dur, 13s) ease forwards; }
+@keyframes kg-ph-reply {
+  0%, 66% { grid-template-rows: 0fr; opacity: 0; }
+  72%     { grid-template-rows: 1fr; opacity: 1; }
+  100%    { grid-template-rows: 1fr; opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1124,13 +1253,15 @@ const kgStyles = `
     animation: none !important; opacity: 1 !important; stroke-dashoffset: 0 !important;
     transform: translate(-50%, -50%) scale(1) !important;
   }
-  .kg-corepulse, .kg-float, .kg-glow, .kg-dots i, .kg-sk { animation: none !important; }
-  .kg-aslot { height: auto !important; overflow: visible !important; animation: none !important; }
-  .kg-search, .kg-loading { display: none !important; }
-  .kg-card { position: static !important; animation: none !important; }
+  .kg-corepulse, .kg-float, .kg-glow, .kg-dots i { animation: none !important; }
+  .kg-backdrop { opacity: 1 !important; animation: none !important; }
+  .kg-utyping, .kg-search, .kg-think { display: none !important; }
+  .kg-ph { animation: none !important; opacity: 1 !important; }
+  .kg-uquestion, .kg-reply { grid-template-rows: 1fr !important; }
+  .kg-uquestion > div, .kg-reply > div { overflow: visible !important; }
   .kg-glow { opacity: 0.45 !important; transform: translate(-50%,-50%) scale(1) !important; }
   .kg-pill { animation: none !important; opacity: 0.85 !important; transform: translate(-50%,-50%) scale(1) !important; }
-  .kg-greet, .kg-msg-in, .kg-src, .kg-usermsg, .kg-card, .kg-reply {
+  .kg-greet, .kg-msg-in, .kg-src {
     animation: none !important; opacity: 1 !important; transform: none !important;
   }
 }

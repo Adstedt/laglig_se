@@ -32,24 +32,28 @@ describe('createAgentTools — role filter (Story 19.5)', () => {
     // Story 19.4a: discovery tools are read-tier → AUDITOR keeps them.
     expect(keys).toContain('search_law_list_items')
     expect(keys).toContain('search_tasks')
+    // Story 19.4: entity-readers are read-tier → AUDITOR keeps them.
+    expect(keys).toContain('get_law_list_item')
+    expect(keys).toContain('get_task')
+    expect(keys).toContain('list_linked_artifacts')
   })
 
   it('MEMBER receives the full set (has tasks:edit)', () => {
     const keys = Object.keys(createAgentTools('ws', 'u', {}, 'MEMBER'))
     expect(keys).toContain('create_task')
     expect(keys).toContain('draft_styrdokument')
-    expect(keys).toHaveLength(18) // web_search is injected at the route, not here
+    expect(keys).toHaveLength(21) // web_search is injected at the route, not here
   })
 
   it('OWNER receives the full set', () => {
     const keys = Object.keys(createAgentTools('ws', 'u', {}, 'OWNER'))
     expect(keys).toContain('create_task')
-    expect(keys).toHaveLength(18)
+    expect(keys).toHaveLength(21)
   })
 
   it('undefined role → full set (backward compat for legacy callers)', () => {
     const keys = Object.keys(createAgentTools('ws', 'u', {}))
-    expect(keys).toHaveLength(18)
+    expect(keys).toHaveLength(21)
     expect(keys).toContain('assign_task')
   })
 
