@@ -79,7 +79,10 @@ function affectedSwrKeys(action: PendingAgentAction): string[] {
       // business_context append → the item + its "extra" fields.
       return [`list-item:${itemId}`, `list-item-extra:${itemId}`]
     case 'UPDATE_COMPLIANCE_STATUS':
-      return [`list-item:${itemId}`]
+      // `list-item` (no-initialData modal) + `list-item-extra` (initialData
+      // modal — now carries status/priority, Story 19.4 follow-up) so the
+      // header pill refreshes live without a manual reload.
+      return [`list-item:${itemId}`, `list-item-extra:${itemId}`]
     default:
       return []
   }

@@ -173,7 +173,9 @@ export function ActionRendererFrame({
       return (
         <div className="flex items-center gap-2.5 px-2 py-2">
           <StatusDot state={isApproved ? 'approved' : 'muted'} />
-          <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <span title={badge} className="inline-flex shrink-0">
+            <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+          </span>
           <span
             className={cn(
               'min-w-0 flex-1 truncate text-[13.5px]',
@@ -207,7 +209,9 @@ export function ActionRendererFrame({
       <Collapsible open={open} onOpenChange={setOpen}>
         <div className="flex items-center gap-2.5 rounded-lg px-2 py-2 transition-colors hover:bg-muted/40">
           <StatusDot state="pending" />
-          <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <span title={badge} className="inline-flex shrink-0">
+            <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+          </span>
           <CollapsibleTrigger className="min-w-0 flex-1 text-left">
             <span className="block truncate text-[13.5px] text-foreground">
               {summary}

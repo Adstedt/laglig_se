@@ -1,4 +1,4 @@
-import { HeroPreview } from '@/components/features/landing/hero-preview'
+import { OrgCheckForm } from './org-check-form'
 
 /**
  * Mid-page conversion moment — wraps the org-number form widget that used to
@@ -35,7 +35,7 @@ export function TryNowSection() {
               className="pointer-events-none absolute -inset-x-6 -inset-y-4 rounded-3xl bg-gradient-to-br from-amber-100/30 via-orange-50/20 to-transparent blur-3xl"
             />
             <div className="relative rounded-2xl border border-border/60 bg-card p-6 shadow-xl md:p-8">
-              <HeroPreview />
+              <OrgCheckForm />
               <p className="mt-4 border-t border-border/60 pt-4 text-center text-xs text-muted-foreground">
                 Sen bygger vi er egen laglista – med allt ni behöver göra,
                 samlat och klart.

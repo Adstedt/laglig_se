@@ -211,24 +211,14 @@ function ComparisonColumn({ col, index }: { col: Column; index: number }) {
 
 export function AiComparisonSection() {
   return (
-    <section className="relative overflow-hidden bg-foreground py-20 text-background md:py-28">
-      <div className="absolute -top-40 right-0 h-80 w-80 rounded-full bg-violet-500/10 blur-3xl" />
-      <div className="absolute -bottom-40 left-0 h-80 w-80 rounded-full bg-background/[0.04] blur-3xl" />
-
+    <section className="relative pb-10 pt-20 md:pb-14 md:pt-28">
       <div className="container relative mx-auto px-4">
         <div className="mx-auto max-w-3xl text-center">
-          <div
-            className="mb-5 inline-flex items-center gap-2 rounded-full border border-background/15 bg-background/5 px-3.5 py-1.5 text-xs font-medium"
-            style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
-          >
-            <Sparkles className="h-3 w-3" />
-            <span>Skillnaden</span>
-          </div>
           <h2
             className="mx-auto mb-5 max-w-2xl text-3xl font-medium leading-[1.1] tracking-tight md:text-5xl lg:text-6xl"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
           >
-            Andra AI ser en bit.
+            Andra ser en bit.
             <span className="block text-background/45">
               Laglig ser helheten.
             </span>

@@ -8,9 +8,7 @@ import {
   ClipboardCheck,
   Sparkles,
   GitCommit,
-  Database,
   ShieldCheck,
-  Radar,
   BookOpen,
   Check,
   ArrowUp,
@@ -291,45 +289,27 @@ const KIND_STYLE: Record<
   },
   law: {
     icon: Scale,
-    ring: 'ring-blue-500/30',
-    fg: 'text-blue-600 dark:text-blue-400',
+    ring: 'ring-blue-500/40',
+    fg: 'text-blue-600',
   },
   krav: {
     icon: ListChecks,
-    ring: 'ring-emerald-500/30',
-    fg: 'text-emerald-600 dark:text-emerald-400',
+    ring: 'ring-emerald-500/40',
+    fg: 'text-emerald-600',
   },
-  doc: { icon: FileText, ring: 'ring-border', fg: 'text-foreground/70' },
+  doc: { icon: FileText, ring: 'ring-black/10', fg: 'text-neutral-500' },
   audit: {
     icon: ClipboardCheck,
-    ring: 'ring-amber-500/30',
-    fg: 'text-amber-600 dark:text-amber-400',
+    ring: 'ring-amber-500/40',
+    fg: 'text-amber-600',
   },
   change: {
     icon: GitCommit,
-    ring: 'ring-rose-500/30',
-    fg: 'text-rose-600 dark:text-rose-400',
+    ring: 'ring-rose-500/40',
+    fg: 'text-rose-600',
   },
   person: { icon: Sparkles, ring: 'ring-border', fg: 'text-foreground' },
 }
-
-const beats = [
-  {
-    icon: Radar,
-    label: 'Bevakar åt er',
-    sub: 'läser nya lagar och förbereder uppgifter',
-  },
-  {
-    icon: Database,
-    label: 'Grundat i exakta lagrum',
-    sub: 'svar härleds ur era egna kopplingar',
-  },
-  {
-    icon: ShieldCheck,
-    label: 'Ni godkänner alltid',
-    sub: 'agenten föreslår — ni bestämmer',
-  },
-]
 
 const VB_W = 1000
 const VB_H = 760
@@ -398,55 +378,16 @@ function fractions(chain: string[]) {
   return cum.map((c) => +((c / total) * 100).toFixed(2)) // [0, fAgent, fLaw, fKrav, fDoc, 100]
 }
 
-// A vast, faint "backdrop graph" behind the labeled core. It says: the handful
-// of nodes the agent actually uses is a small island in a much larger knowledge
-// graph. Points sit on jittered concentric rings (deterministic, so they never
-// reflow), each linked to its nearest neighbours; a radial mask fades the whole
-// layer out toward the rim — density + detail concentrate where the agent works
-// and trail off into "there's much more here".
-function buildBackdrop() {
-  let seed = 0x4c61676c
-  const rnd = () => {
-    seed = (seed * 1664525 + 1013904223) >>> 0
-    return seed / 0xffffffff
-  }
-  const cx = 510
-  const cy = 385
-  const pts: { x: number; y: number; r: number }[] = []
-  const rings = [
-    { r: 175, n: 12 },
-    { r: 255, n: 16 },
-    { r: 335, n: 20 },
-    { r: 420, n: 24 },
-    { r: 510, n: 27 },
-    { r: 600, n: 30 },
-  ]
-  for (const ring of rings) {
-    for (let i = 0; i < ring.n; i++) {
-      const a = (i / ring.n) * Math.PI * 2 + (rnd() - 0.5) * 0.55
-      const rr = ring.r + (rnd() - 0.5) * 80
-      pts.push({
-        x: +(cx + Math.cos(a) * rr * 1.2).toFixed(1),
-        y: +(cy + Math.sin(a) * rr * 0.86).toFixed(1),
-        r: +(1.5 + rnd() * 2.6).toFixed(2),
-      })
-    }
-  }
-  const edges: [number, number][] = []
-  for (let i = 0; i < pts.length; i++) {
-    const near = pts
-      .map((p, j) => ({ j, d: Math.hypot(pts[i]!.x - p.x, pts[i]!.y - p.y) }))
-      .filter((o) => o.j !== i)
-      .sort((p, q) => p.d - q.d)
-    const links = 1 + (rnd() > 0.55 ? 1 : 0)
-    for (let k = 0; k < links; k++) {
-      const j = near[k]!.j
-      if (j > i) edges.push([i, j])
-    }
-  }
-  return { pts, edges }
-}
-const BACKDROP = buildBackdrop()
+// A few clean tendrils reaching out from the agent into the surrounding dark,
+// where they meet the large background web — so the labeled graph is visibly
+// plugged into the bigger graph. Spread + angled to avoid the horizontal query
+// line (left) and the labeled cluster (right).
+const AGENT_TENDRILS: [number, number][] = [
+  [-150, 80],
+  [-170, 690],
+  [260, 880],
+  [560, 905],
+]
 
 const LOOP_MS = 13000
 
@@ -454,7 +395,7 @@ function AgentGlyph({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'flex shrink-0 items-center justify-center rounded-lg bg-primary',
+        'flex shrink-0 items-center justify-center rounded-lg bg-neutral-900 ring-1 ring-white/10',
         className
       )}
     >
@@ -699,50 +640,28 @@ export function KnowledgeGraphSection() {
 
   return (
     <section
-      className="relative overflow-hidden bg-section-cream py-20 md:py-28"
+      className="relative overflow-hidden pb-20 pt-10 md:pb-28 md:pt-14"
       style={{ ['--kg-dur' as string]: '13s' }}
     >
       <style>{kgStyles}</style>
 
-      <div className="container mx-auto px-4">
+      <div className="dark container relative mx-auto px-4 text-foreground">
         {/* Header band */}
         <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-            <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-            Personlig kunskapsgraf
-          </span>
           <h2
-            className="mx-auto mt-5 max-w-2xl text-3xl font-medium leading-[1.1] tracking-tight md:text-4xl lg:text-[2.75rem]"
+            className="mx-auto max-w-2xl text-3xl font-medium leading-[1.1] tracking-tight md:text-4xl lg:text-[2.75rem]"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
           >
             En agent som känner{' '}
             <span className="text-foreground/45">hela er efterlevnad.</span>
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground md:text-lg">
-            Generiska AI-verktyg gissar. Laglig bygger en levande kunskapsgraf
-            av er verksamhet — lagar, krav, styrdokument och ansvariga kopplas
-            samman. Agenten bevakar lagändringar, svarar grundat i exakta lagrum
-            och förbereder nästa steg — ni godkänner alltid först.
+            Så hänger er efterlevnad ihop: lagar, krav, styrdokument och
+            ansvariga, kopplade i en levande graf. Fråga vad som helst — agenten
+            följer kopplingarna, svarar grundat i exakta lagrum och förbereder
+            nästa steg. Ni godkänner alltid först.
           </p>
         </div>
-
-        {/* USP row */}
-        <ul className="mx-auto mt-10 grid max-w-4xl gap-4 sm:grid-cols-3">
-          {beats.map((b) => (
-            <li
-              key={b.label}
-              className="flex items-start gap-3 rounded-xl border border-border/70 bg-card/60 px-4 py-3"
-            >
-              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-card text-foreground/70 ring-1 ring-border">
-                <b.icon className="h-4 w-4" />
-              </div>
-              <div>
-                <p className="text-sm font-medium leading-tight">{b.label}</p>
-                <p className="text-[13px] text-muted-foreground">{b.sub}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
 
         {/* Exchange: chat (left) | graph (right) */}
         <div
@@ -828,18 +747,6 @@ export function KnowledgeGraphSection() {
                 aria-hidden
               >
                 <defs>
-                  <radialGradient id="kg-core" cx="50%" cy="50%" r="50%">
-                    <stop
-                      offset="0%"
-                      stopColor="hsl(40 60% 90%)"
-                      stopOpacity="0.85"
-                    />
-                    <stop
-                      offset="100%"
-                      stopColor="hsl(40 60% 90%)"
-                      stopOpacity="0"
-                    />
-                  </radialGradient>
                   {/* tapered edges: bright near the agent, fading out to the rim */}
                   <radialGradient
                     id="kg-edge-grad"
@@ -870,63 +777,23 @@ export function KnowledgeGraphSection() {
                       }}
                     />
                   </radialGradient>
-                  {/* radial fade for the backdrop graph — visible at the core,
-                      trailing off to nothing at the rim */}
-                  <radialGradient
-                    id="kg-fade-grad"
-                    cx="510"
-                    cy="385"
-                    r="400"
-                    gradientUnits="userSpaceOnUse"
-                    gradientTransform="translate(510 385) scale(1.32 0.94) translate(-510 -385)"
-                  >
-                    <stop offset="0%" stopColor="white" stopOpacity="0.82" />
-                    <stop offset="45%" stopColor="white" stopOpacity="0.6" />
-                    <stop offset="74%" stopColor="white" stopOpacity="0.26" />
-                    <stop offset="100%" stopColor="white" stopOpacity="0" />
-                  </radialGradient>
-                  <mask id="kg-fade-mask">
-                    <rect
-                      x="-260"
-                      y="-220"
-                      width="1520"
-                      height="1200"
-                      fill="url(#kg-fade-grad)"
-                    />
-                  </mask>
                 </defs>
 
-                <circle
-                  cx="420"
-                  cy="380"
-                  r="360"
-                  fill="url(#kg-core)"
-                  className="kg-corewash"
-                />
-
-                {/* backdrop graph — a vast faint web fading out toward the rim */}
-                <g className="kg-backdrop" mask="url(#kg-fade-mask)">
-                  {BACKDROP.edges.map(([a, b], i) => (
-                    <line
-                      key={`be-${i}`}
-                      x1={BACKDROP.pts[a]!.x}
-                      y1={BACKDROP.pts[a]!.y}
-                      x2={BACKDROP.pts[b]!.x}
-                      y2={BACKDROP.pts[b]!.y}
-                      stroke="hsl(var(--foreground))"
-                      strokeWidth="0.9"
-                      strokeOpacity="0.34"
-                    />
-                  ))}
-                  {BACKDROP.pts.map((p, i) => (
-                    <circle
-                      key={`bp-${i}`}
-                      cx={p.x}
-                      cy={p.y}
-                      r={p.r}
-                      fill="hsl(var(--foreground))"
-                      fillOpacity="0.46"
-                    />
+                {/* tendrils — the agent reaches out into the large background
+                    web, so the labeled graph is plugged into the bigger graph */}
+                <g className="kg-bg" stroke="white" fill="white" aria-hidden>
+                  {AGENT_TENDRILS.map(([x, y], i) => (
+                    <g key={i}>
+                      <line
+                        x1={byId['agent']!.x}
+                        y1={byId['agent']!.y}
+                        x2={x}
+                        y2={y}
+                        strokeOpacity="0.07"
+                        strokeWidth="1"
+                      />
+                      <circle cx={x} cy={y} r="3" fillOpacity="0.11" />
+                    </g>
                   ))}
                 </g>
 
@@ -961,32 +828,32 @@ export function KnowledgeGraphSection() {
                     className="kg-node absolute z-10 -translate-x-1/2 -translate-y-1/2"
                     style={{
                       ...posStyle(n.id),
-                      ['--d' as string]: `${0.15 + n.step * 0.1}s`,
+                      ['--d' as string]: `${0.25 + n.step * 0.22}s`,
                     }}
                   >
                     <div className={`kg-float kg-float-${n.drift}`}>
                       <div className="flex flex-col items-center gap-1.5">
                         {isAgent ? (
-                          <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg ring-4 ring-primary/15">
+                          <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-900 text-white shadow-lg ring-4 ring-white/10">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src="/images/logo-icon-white.png"
                               alt="Laglig"
                               className="h-6 w-auto"
                             />
-                            <span className="kg-corepulse absolute inset-0 rounded-2xl ring-2 ring-primary/40" />
+                            <span className="kg-corepulse absolute inset-0 rounded-2xl ring-2 ring-white/30" />
                           </div>
                         ) : isPerson ? (
                           /* eslint-disable-next-line @next/next/no-img-element */
                           <img
                             src={n.avatar}
                             alt=""
-                            className="h-10 w-10 rounded-full bg-card object-cover shadow-sm ring-2 ring-card"
+                            className="h-10 w-10 rounded-full object-cover shadow-md ring-2 ring-white/20"
                           />
                         ) : (
                           <div
                             className={cn(
-                              'flex h-10 w-10 items-center justify-center rounded-xl bg-card shadow-sm ring-1',
+                              'flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-[0_4px_14px_-2px_rgba(0,0,0,0.5)] ring-1',
                               s.fg,
                               s.ring
                             )}
@@ -995,7 +862,7 @@ export function KnowledgeGraphSection() {
                           </div>
                         )}
                         {!isAgent && (
-                          <span className="whitespace-nowrap rounded-md bg-card/85 px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground backdrop-blur-sm">
+                          <span className="whitespace-nowrap text-[11px] font-medium text-white/85 [text-shadow:_0_1px_5px_rgb(0_0_0_/_0.95)]">
                             {n.label}
                           </span>
                         )}
@@ -1077,7 +944,7 @@ const kgStyles = `
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
 }
-.kg-in .kg-edge { animation: kg-draw 0.9s ease forwards; }
+.kg-in .kg-edge { animation: kg-draw 1.5s ease forwards; }
 @keyframes kg-draw { to { stroke-dashoffset: 0; } }
 
 .kg-queryline {
@@ -1088,15 +955,13 @@ const kgStyles = `
   animation: kg-line var(--kg-dur, 12s) linear forwards;
 }
 
-.kg-corewash { opacity: 0; }
-.kg-in .kg-corewash { animation: kg-fade 1.2s ease 0.2s forwards; }
 @keyframes kg-fade { to { opacity: 1; } }
 
-.kg-backdrop { opacity: 0; }
-.kg-in .kg-backdrop { animation: kg-fade 1.6s ease 0.15s forwards; }
+.kg-bg { opacity: 0; }
+.kg-in .kg-bg { animation: kg-fade 2.4s ease 0.5s forwards; }
 
 .kg-node { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
-.kg-in .kg-node { animation: kg-pop 0.6s cubic-bezier(0.2,1,0.3,1) forwards; animation-delay: var(--d); }
+.kg-in .kg-node { animation: kg-pop 0.95s cubic-bezier(0.2,1,0.3,1) forwards; animation-delay: var(--d); }
 @keyframes kg-pop { to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
 
 .kg-float { animation: kg-float 7s ease-in-out infinite; }
@@ -1249,12 +1114,12 @@ const kgStyles = `
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .kg-edge, .kg-queryline, .kg-node, .kg-corewash {
+  .kg-edge, .kg-queryline, .kg-node {
     animation: none !important; opacity: 1 !important; stroke-dashoffset: 0 !important;
     transform: translate(-50%, -50%) scale(1) !important;
   }
   .kg-corepulse, .kg-float, .kg-glow, .kg-dots i { animation: none !important; }
-  .kg-backdrop { opacity: 1 !important; animation: none !important; }
+  .kg-bg { opacity: 1 !important; animation: none !important; }
   .kg-utyping, .kg-search, .kg-think { display: none !important; }
   .kg-ph { animation: none !important; opacity: 1 !important; }
   .kg-uquestion, .kg-reply { grid-template-rows: 1fr !important; }

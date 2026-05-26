@@ -137,6 +137,9 @@ export function DocumentEditor({
     editable,
     immediatelyRender: false,
     editorProps: {
+      // Chrome's spellchecker flags correct Swedish words (wrong dictionary);
+      // disable it to remove the red-squiggle noise on legal content.
+      attributes: { spellcheck: 'false' },
       // Stop keystrokes from bubbling to global window shortcuts (e.g. "/"
       // opening the AI chat sidebar). Plain typing — no modifier — belongs
       // solely to the editor. Cmd/Ctrl-combos (save, toggle chat, etc.) are

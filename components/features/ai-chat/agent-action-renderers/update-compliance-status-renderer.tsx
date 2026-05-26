@@ -18,6 +18,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import type { ComplianceStatus } from '@prisma/client'
+import { getStatusBadgeProps } from '@/lib/ui/badge-tones'
+import { COMPLIANCE_STATUS_OPTIONS } from '@/components/features/document-list/table-cell-editors/compliance-status-editor'
 import type { AgentActionRendererProps } from './task-approval-renderer'
 import {
   ActionRendererFrame,
@@ -25,16 +27,20 @@ import {
   useDebouncedParamsChange,
 } from './renderer-frame'
 
-const STATUS_OPTIONS: { value: ComplianceStatus; label: string }[] = [
-  { value: 'EJ_PABORJAD', label: 'Ej påbörjad' },
-  { value: 'PAGAENDE', label: 'Pågående' },
-  { value: 'UPPFYLLD', label: 'Uppfylld' },
-  { value: 'EJ_UPPFYLLD', label: 'Ej uppfylld' },
-  { value: 'EJ_TILLAMPLIG', label: 'Ej tillämplig' },
-]
+function statusLabel(status?: ComplianceStatus): string {
+  return status ? getStatusBadgeProps('compliance-status', status).label : ''
+}
 
-function statusLabel(status?: string): string {
-  return STATUS_OPTIONS.find((o) => o.value === status)?.label ?? status ?? ''
+/** The real tone-coloured compliance pill (single source of truth via
+ *  badge-tones) — not a plain outline badge. */
+function StatusPill({ status }: { status?: ComplianceStatus }) {
+  if (!status) return null
+  const p = getStatusBadgeProps('compliance-status', status)
+  return (
+    <Badge tone={p.tone} variant={p.variant} className="text-[10px]">
+      {p.label}
+    </Badge>
+  )
 }
 
 interface UpdateStatusParams {
@@ -71,7 +77,13 @@ export function UpdateComplianceStatusRenderer({
     action.status === 'PENDING'
   )
 
-  const summary = `${params.lawTitle ?? ''}: ${statusLabel(params.oldStatus)} → ${statusLabel(params.newStatus)}`
+  // Compact (batch) rows lead with the status change; the law title repeats
+  // across rows and shows when expanded.
+  const statusChange = `${statusLabel(params.oldStatus)} → ${statusLabel(params.newStatus)}`
+  const summary =
+    compact || !params.lawTitle
+      ? statusChange
+      : `${params.lawTitle}: ${statusChange}`
 
   const approved = (
     <>
@@ -85,15 +97,11 @@ export function UpdateComplianceStatusRenderer({
       <div className="flex items-center gap-2">
         {params.oldStatus && (
           <>
-            <Badge tone="neutral" variant="outline" className="text-[10px]">
-              {statusLabel(params.oldStatus)}
-            </Badge>
+            <StatusPill status={params.oldStatus} />
             <ArrowRight className="h-3 w-3 text-muted-foreground" />
           </>
         )}
-        <Badge tone="neutral" variant="outline" className="text-[10px]">
-          {statusLabel(newStatus)}
-        </Badge>
+        <StatusPill status={newStatus} />
       </div>
       <a
         href="/laglistor"
@@ -122,9 +130,7 @@ export function UpdateComplianceStatusRenderer({
       {params.oldStatus && (
         <div className="flex items-center gap-2">
           <span className={LABEL_CLS}>Nuvarande</span>
-          <Badge tone="neutral" variant="outline" className="text-[10px]">
-            {statusLabel(params.oldStatus)}
-          </Badge>
+          <StatusPill status={params.oldStatus} />
         </div>
       )}
       <div className="space-y-1">
@@ -138,11 +144,16 @@ export function UpdateComplianceStatusRenderer({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {STATUS_OPTIONS.map((o) => (
-              <SelectItem key={o.value} value={o.value}>
-                {o.label}
-              </SelectItem>
-            ))}
+            {COMPLIANCE_STATUS_OPTIONS.map((o) => {
+              const p = getStatusBadgeProps('compliance-status', o.value)
+              return (
+                <SelectItem key={o.value} value={o.value}>
+                  <Badge tone={p.tone} variant={p.variant}>
+                    {p.label}
+                  </Badge>
+                </SelectItem>
+              )
+            })}
           </SelectContent>
         </Select>
       </div>
@@ -151,7 +162,8 @@ export function UpdateComplianceStatusRenderer({
         <Textarea
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          className="min-h-[56px] resize-none text-sm leading-relaxed"
+          spellCheck={false}
+          className="min-h-[88px] resize-y text-sm leading-relaxed focus-visible:ring-inset focus-visible:ring-offset-0"
           placeholder="Beskriv varför statusen ändras…"
           disabled={isSubmitting}
         />

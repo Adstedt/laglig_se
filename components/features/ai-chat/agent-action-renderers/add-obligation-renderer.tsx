@@ -50,9 +50,12 @@ export function AddObligationRenderer({
     action.status === 'PENDING'
   )
 
-  const summary = params.lawTitle
-    ? `${params.lawTitle}: ${params.text ?? ''}`
-    : (params.text ?? '')
+  // Compact (batch) rows lead with the distinct content — the law title is
+  // repeated across rows and shown when a row is expanded, so omit it here.
+  const summary =
+    !compact && params.lawTitle
+      ? `${params.lawTitle}: ${params.text ?? ''}`
+      : (params.text ?? '')
 
   const approved = (
     <>
@@ -96,7 +99,8 @@ export function AddObligationRenderer({
         <Textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="min-h-[64px] resize-none text-sm leading-relaxed"
+          spellCheck={false}
+          className="min-h-[88px] resize-y text-sm leading-relaxed focus-visible:ring-inset focus-visible:ring-offset-0"
           placeholder="Beskriv kravet…"
           disabled={isSubmitting}
         />

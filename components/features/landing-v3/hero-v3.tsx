@@ -1,8 +1,8 @@
 'use client'
 
-import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import { MapPin, Database, ShieldCheck, ArrowRight } from 'lucide-react'
+import { MapPin, Database, ShieldCheck } from 'lucide-react'
+import { OrgCheckForm } from './org-check-form'
 
 // Client-only: the product shot pulls in heavy interactive deps (tanstack-table,
 // dnd-kit) and dnd-kit's SSR ids cause hydration mismatches. Loading it client-
@@ -39,7 +39,7 @@ export function HeroV3() {
       <div className="container relative mx-auto px-4 pt-16 md:pt-24 lg:pt-28">
         <div className="mx-auto max-w-7xl">
           <h1
-            className="mb-8 max-w-5xl text-[2.5rem] font-medium leading-[1.05] tracking-tight sm:text-5xl md:text-6xl lg:text-[4.75rem]"
+            className="mb-5 max-w-5xl text-[2.5rem] font-medium leading-[1.05] tracking-tight sm:text-5xl md:text-6xl lg:text-[4.75rem]"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
           >
             <span className="block animate-fade-up">
@@ -51,21 +51,11 @@ export function HeroV3() {
           </h1>
 
           <div className="mb-10 flex animate-fade-up-delay-2 flex-col items-start gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <p className="max-w-2xl text-lg text-muted-foreground md:text-xl">
+            <p className="max-w-xl text-lg text-muted-foreground md:text-xl">
               Byggt för svenska företag, stora som små. Designat för AI-eran —
               där efterlevnad arbetar för er, inte tvärtom.
             </p>
-            <Link
-              href="/sok"
-              className="group inline-flex shrink-0 items-center gap-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <span className="relative flex h-2 w-2 shrink-0">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500/70 opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-600" />
-              </span>
-              <span>10 000+ lagar bevakas dagligen</span>
-              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-            </Link>
+            <OrgCheckForm className="w-full shrink-0 lg:w-[400px]" />
           </div>
         </div>
       </div>

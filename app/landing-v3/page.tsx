@@ -13,6 +13,7 @@ import { BreadthSection } from '@/components/features/landing-v3/breadth-section
 import { RolesSection } from '@/components/features/landing-v3/roles-section'
 import { KnowledgeGraphSection } from '@/components/features/landing-v3/knowledge-graph-section'
 import { AiComparisonSection } from '@/components/features/landing-v3/ai-comparison-section'
+import { AiSectionBackdrop } from '@/components/features/landing-v3/ai-section-backdrop'
 import { OpenDatabaseV3 } from '@/components/features/landing-v3/open-database-v3'
 import { InfrastructureSection } from '@/components/features/landing-v3/infrastructure-section'
 import { ByraerSection } from '@/components/features/landing-v3/byraer-section'
@@ -46,8 +47,15 @@ export default function LandingV3Page() {
         <HeroV3 />
         <WhySection />
         <BreadthSection />
-        <AiComparisonSection />
-        <KnowledgeGraphSection />
+        {/* AI chapter — comparison (the claim) + knowledge graph (the proof),
+            one continuous dark banner over a single faint graph texture */}
+        <div className="relative isolate overflow-hidden bg-foreground text-background">
+          <AiSectionBackdrop />
+          <div className="pointer-events-none absolute -top-24 right-0 h-96 w-96 rounded-full bg-violet-500/10 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-0 left-0 h-96 w-96 rounded-full bg-background/[0.04] blur-3xl" />
+          <AiComparisonSection />
+          <KnowledgeGraphSection />
+        </div>
         <RolesSection />
         <OpenDatabaseV3 />
         <InfrastructureSection />
