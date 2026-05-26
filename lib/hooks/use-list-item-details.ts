@@ -92,14 +92,19 @@ function initialDataToListItem(
     // Story 17.18: latest tracked change
     latestAmendment?: ListItemDetails['latestAmendment']
     lastChangeAcknowledgedAt?: Date | null
+    // Story 19.4 follow-up: live status/priority (fetched) override stale initialData.
+    complianceStatus?: ListItemDetails['complianceStatus'] | undefined
+    priority?: ('LOW' | 'MEDIUM' | 'HIGH') | undefined
   }
 ): ListItemDetails {
   return {
     id: initial.id,
     position: initial.position,
-    complianceStatus:
-      initial.complianceStatus as ListItemDetails['complianceStatus'],
-    priority: initial.priority ?? 'MEDIUM',
+    // Prefer the freshly-fetched status (so an agent-approved change shows live);
+    // fall back to the static initialData from the laglista row.
+    complianceStatus: (extraData?.complianceStatus ??
+      initial.complianceStatus) as ListItemDetails['complianceStatus'],
+    priority: extraData?.priority ?? initial.priority ?? 'MEDIUM',
     businessContext: extraData?.businessContext ?? null,
     aiCommentary: extraData?.aiCommentary ?? null,
     category: initial.category,
@@ -202,6 +207,9 @@ export function useListItemDetails(
           complianceNarrativeUpdatedBy: null,
           latestAmendment: null,
           lastChangeAcknowledgedAt: null,
+          // Story 19.4 follow-up: undefined → merge falls back to initialData.
+          complianceStatus: undefined,
+          priority: undefined,
         }
       }
       return {
@@ -214,6 +222,10 @@ export function useListItemDetails(
         // Story 17.18: latest tracked change + acknowledgement floor
         latestAmendment: result.data.latestAmendment,
         lastChangeAcknowledgedAt: result.data.lastChangeAcknowledgedAt,
+        // Story 19.4 follow-up: surface status/priority so an agent-approved
+        // change refreshes the modal live (globalMutate `list-item-extra:<id>`).
+        complianceStatus: result.data.complianceStatus,
+        priority: result.data.priority,
       }
     },
     {

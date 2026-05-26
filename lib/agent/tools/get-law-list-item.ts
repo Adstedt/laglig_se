@@ -14,7 +14,15 @@ import { tool, zodSchema } from 'ai'
 import { z } from 'zod/v4'
 import { prisma } from '@/lib/prisma'
 import { wrapToolResponse, wrapToolError } from './utils'
-import { shortText, userName, userNameOrNull, isoDate } from './reader-utils'
+import {
+  shortText,
+  userName,
+  userNameOrNull,
+  isoDate,
+  complianceStatusLabel,
+  priorityLabel,
+  impactLevelLabel,
+} from './reader-utils'
 import type { ContextHandle } from './types'
 import type { PendingActionToolContext } from './pending-action'
 
@@ -123,16 +131,16 @@ Utelämna \`lawListItemId\` i en lag-chatt (den aktiva posten används). I en gl
 
         const data = {
           id: item.id,
-          complianceStatus: item.compliance_status,
-          priority: item.priority,
+          complianceStatus: complianceStatusLabel(item.compliance_status),
+          priority: priorityLabel(item.priority),
           dueDate: isoDate(item.due_date),
           category: item.category,
           businessContext: shortText(item.business_context),
           complianceNarrative: shortText(item.compliance_narrative),
           responsibleName: userNameOrNull(item.responsible_user),
           statusLogSummary: item.compliance_status_logs.map((l) => ({
-            from: l.previous_status,
-            to: l.new_status,
+            from: complianceStatusLabel(l.previous_status),
+            to: complianceStatusLabel(l.new_status),
             reason: shortText(l.reason, 40),
             date: isoDate(l.changed_at),
             byName: userName(l.changed_by_user),
@@ -148,7 +156,7 @@ Utelämna \`lawListItemId\` i en lag-chatt (den aktiva posten används). I en gl
             id: a.id,
             amendmentSfs: a.change_event?.amendment_sfs ?? null,
             conclusion: shortText(a.user_notes?.trim() || a.ai_analysis),
-            impactLevel: a.impact_level,
+            impactLevel: impactLevelLabel(a.impact_level),
             date: isoDate(a.assessed_at),
           })),
           linkedTasks: item.task_links.map(

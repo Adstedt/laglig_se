@@ -3,6 +3,12 @@
  * get_task / list_linked_artifacts). Enforce the brief's caps + names-not-IDs.
  */
 
+import {
+  getStatusBadgeProps,
+  getPriorityBadgeProps,
+  type PriorityValue,
+} from '@/lib/ui/badge-tones'
+import type { ComplianceStatus, ImpactLevel } from '@prisma/client'
 import { truncateMarkdown } from './utils'
 
 /** Cap a long free-text field to a short, plain-text excerpt (no raw HTML). */
@@ -37,4 +43,49 @@ export function userNameOrNull(
 /** ISO date string (or null) for a nullable DateTime. */
 export function isoDate(d: Date | null | undefined): string | null {
   return d ? d.toISOString() : null
+}
+
+// ---------------------------------------------------------------------------
+// Enum → canonical Swedish label (Story 19.4 follow-up, CP-001 family)
+//
+// Readers MUST emit these labels, never the raw Prisma enum. Otherwise the
+// agent improvises a label ("Pågående" instead of the product's "Delvis
+// uppfylld", or surfaces the raw "(NONE)") — inconsistent with the UI pills.
+// Status + priority reuse the single source of truth in `lib/ui/badge-tones`.
+// ---------------------------------------------------------------------------
+
+/**
+ * Canonical Swedish label for a `ComplianceStatus` (e.g. PAGAENDE → "Delvis
+ * uppfylld") — the same label the compliance-status pills render.
+ */
+export function complianceStatusLabel(
+  value: ComplianceStatus | null | undefined
+): string | null {
+  return value ? getStatusBadgeProps('compliance-status', value).label : null
+}
+
+/** Canonical Swedish label for a Priority enum (MEDIUM → "Medel", HIGH → "Hög"). */
+export function priorityLabel(
+  value: PriorityValue | null | undefined
+): string | null {
+  return value ? getPriorityBadgeProps(value).label : null
+}
+
+/**
+ * Swedish label for the `ImpactLevel` enum. Mirrors `IMPACT_LABELS` in
+ * `components/features/changes/assessment-resolution.tsx` — duplicated here
+ * because that module is `'use client'` and can't be imported server-side.
+ * Consolidating both maps into a server-safe location is a logged follow-up.
+ */
+const IMPACT_LEVEL_LABELS: Record<ImpactLevel, string> = {
+  HIGH: 'Hög',
+  MEDIUM: 'Medel',
+  LOW: 'Låg',
+  NONE: 'Ingen',
+}
+
+export function impactLevelLabel(
+  value: ImpactLevel | null | undefined
+): string | null {
+  return value ? IMPACT_LEVEL_LABELS[value] : null
 }

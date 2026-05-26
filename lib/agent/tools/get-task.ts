@@ -11,7 +11,13 @@ import { tool, zodSchema } from 'ai'
 import { z } from 'zod/v4'
 import { prisma } from '@/lib/prisma'
 import { wrapToolResponse, wrapToolError } from './utils'
-import { shortText, userName, userNameOrNull, isoDate } from './reader-utils'
+import {
+  shortText,
+  userName,
+  userNameOrNull,
+  isoDate,
+  priorityLabel,
+} from './reader-utils'
 import type { ContextHandle } from './types'
 import type { PendingActionToolContext } from './pending-action'
 
@@ -102,7 +108,7 @@ Utelämna \`taskId\` i en uppgifts-chatt (den aktiva uppgiften används); annars
           title: task.title,
           description: shortText(task.description),
           status: task.column?.name ?? null,
-          priority: task.priority,
+          priority: priorityLabel(task.priority),
           assigneeName: userNameOrNull(task.assignee),
           dueDate: isoDate(task.due_date),
           completedAt: isoDate(task.completed_at),

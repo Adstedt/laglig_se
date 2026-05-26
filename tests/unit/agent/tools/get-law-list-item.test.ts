@@ -94,9 +94,26 @@ it('defaults to context.lawListItemId + workspace-scoped where', async () => {
       where: { id: 'item-1', law_list: { workspace_id: WS } },
     })
   )
+  // Canonical label, never the raw enum (CP-001 family).
   expect((result.data as { complianceStatus: string }).complianceStatus).toBe(
-    'PAGAENDE'
+    'Delvis uppfylld'
   )
+})
+
+it('emits canonical Swedish labels, never raw enums', async () => {
+  mockFindFirst.mockResolvedValue(item())
+  const result = await execute({ lawListItemId: 'item-1' }, opts)
+  const data = result.data as {
+    complianceStatus: string
+    priority: string
+    statusLogSummary: Array<{ from: string | null; to: string | null }>
+    changeAssessments: Array<{ impactLevel: string | null }>
+  }
+  expect(data.complianceStatus).toBe('Delvis uppfylld') // PAGAENDE
+  expect(data.priority).toBe('Medel') // MEDIUM
+  expect(data.statusLogSummary[0].from).toBe('Ej påbörjad') // EJ_PABORJAD
+  expect(data.statusLogSummary[0].to).toBe('Delvis uppfylld') // PAGAENDE
+  expect(data.changeAssessments[0].impactLevel).toBe('Hög') // HIGH
 })
 
 it('caps collections at the Prisma `take` level (SF-1)', async () => {

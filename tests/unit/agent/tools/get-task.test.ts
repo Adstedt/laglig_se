@@ -73,6 +73,8 @@ it('defaults from contextId when contextType=TASK; workspace-scoped', async () =
     expect.objectContaining({ where: { id: 'task-1', workspace_id: WS } })
   )
   expect((result.data as { status: string }).status).toBe('Att göra')
+  // Priority surfaces as the canonical Swedish label, not the raw enum.
+  expect((result.data as { priority: string }).priority).toBe('Hög') // HIGH
 })
 
 it('caps comments + links at the Prisma take level; names-not-IDs', async () => {
@@ -112,4 +114,11 @@ it('no id + non-TASK context → wrapToolError', async () => {
   const result = await (tool.execute as Exec)({}, opts)
   expect(result.error).toBe(true)
   expect(mockFindFirst).not.toHaveBeenCalled()
+})
+
+it('not found → wrapToolError (parity with get_law_list_item)', async () => {
+  mockFindFirst.mockResolvedValue(null)
+  const tool = createGetTaskTool(WS)
+  const result = await (tool.execute as Exec)({ taskId: 'missing' }, opts)
+  expect(result.error).toBe(true)
 })

@@ -73,7 +73,7 @@ it('workspace-scoped; result shape includes listName (SF-1)', async () => {
     lawListItemId: 'item-1',
     title: 'Arbetsmiljölag (1977:1160)',
     sfsNumber: 'SFS 1977:1160',
-    complianceStatus: 'PAGAENDE',
+    complianceStatus: 'Delvis uppfylld', // canonical label, not raw PAGAENDE
     listName: 'Huvudlista',
   })
 })

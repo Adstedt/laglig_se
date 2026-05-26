@@ -16,6 +16,7 @@ import { z } from 'zod/v4'
 import type { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { wrapToolResponse, wrapToolError } from './utils'
+import { complianceStatusLabel } from './reader-utils'
 
 // Swedish definite-article endings, longest-first so "lagerna" strips "erna"
 // (not "en"/"na"). Used to make substring matching robust to definite forms:
@@ -131,7 +132,7 @@ OBS: detta verktyg hittar POSTER i listan, inte lagtext. För att citera lagtext
           title:
             it.document?.title ?? it.document?.document_number ?? 'Okänd lag',
           sfsNumber: it.document?.document_number ?? null,
-          complianceStatus: it.compliance_status,
+          complianceStatus: complianceStatusLabel(it.compliance_status),
           // SF-1: disambiguates the same SFS appearing across multiple lists.
           listName: it.law_list?.name ?? null,
         }))

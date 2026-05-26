@@ -346,14 +346,12 @@ function groupCompletedToolParts(parts: any[]): RenderItem[] {
 
     if (part.state === 'output-available') {
       hasSeenToolResult = true
-      // Story 14.22/14.23: a proposal-carrying tool part (pendingActionId in
-      // output) must NOT collapse into a group — the inline card renders beneath
-      // it and must stay visible. Flush + render it standalone.
-      if (extractPendingActionId('output' in part ? part.output : undefined)) {
-        flushGroup()
-        result.push({ kind: 'part', part, index: i })
-        continue
-      }
+      // Story 19.4 follow-up (1a): proposal-carrying tool parts now coalesce
+      // like any other tool — a batch of N same-tool proposals shows
+      // "Föreslog kravpunkt (N)" instead of N stacked rows. Safe because the
+      // approval card renders once at message level from `pendingApprovalIds`
+      // (decoupled from these chips); a lone proposal still renders as a
+      // single-item row (count 1).
       currentGroup.push({ part, index: i })
     } else {
       flushGroup()
@@ -1024,9 +1022,17 @@ function CollapsedToolGroup({
 
         <div className="flex items-center gap-x-1.5 gap-y-0 flex-1 min-w-0 flex-wrap text-left">
           {runs.flatMap((run, i) => {
-            const label =
-              (TOOL_CONFIG[run.toolName]?.doneLabel ?? run.toolName) +
-              (run.count > 1 ? ` (${run.count})` : '')
+            const cfg = TOOL_CONFIG[run.toolName]
+            // Story 19.4 follow-up (1a): a run of proposal tool calls uses the
+            // proposal label ("Föreslog kravpunkt") rather than the done label.
+            const isProposalRun = run.outputs.some(
+              (o) => extractPendingActionId(o) !== null
+            )
+            const baseLabel =
+              (isProposalRun && cfg?.proposalLabel) ||
+              cfg?.doneLabel ||
+              run.toolName
+            const label = baseLabel + (run.count > 1 ? ` (${run.count})` : '')
             const clickable = isRunClickable(run)
             const detailId = getRunDetailId(run)
             const isActive =
