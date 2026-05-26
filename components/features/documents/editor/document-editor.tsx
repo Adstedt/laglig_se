@@ -488,7 +488,10 @@ export function DocumentEditor({
             readOnly={!editable}
             placeholder="Dokumenttitel"
             rows={1}
-            className="w-full resize-none overflow-hidden text-3xl font-bold leading-tight border-none outline-none bg-transparent mb-6 placeholder:text-muted-foreground/50"
+            // pt-1: the textarea clips overflow (for auto-grow), and `leading-tight`
+            // leaves too little half-leading above line 1 — without top padding the
+            // umlaut on tall glyphs (Å/Ä/Ö) on the first line gets clipped.
+            className="w-full resize-none overflow-hidden text-3xl font-bold leading-tight border-none outline-none bg-transparent pt-1 mb-6 placeholder:text-muted-foreground/50"
           />
           {/* Tiptap editor content */}
           <EditorContent

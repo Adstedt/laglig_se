@@ -151,6 +151,12 @@ const TOOL_CONFIG: Record<
     doneLabel: 'Hittade dokument att granska',
     icon: FileText,
   },
+  // Story 19.7a: load a skill's instructions mid-conversation.
+  activate_skill: {
+    label: 'Aktiverar färdighet',
+    doneLabel: 'Aktiverade färdighet',
+    icon: Brain,
+  },
   get_document_details: {
     label: 'Hämtar dokument',
     doneLabel: 'Hämtade dokument',

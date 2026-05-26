@@ -10,6 +10,7 @@ import { ForceLightTheme } from '@/components/features/landing-v2/force-light-th
 import { HeroV3 } from '@/components/features/landing-v3/hero-v3'
 import { WhySectionGraph as WhySection } from '@/components/features/landing-v3/why-section-graph'
 import { BreadthSection } from '@/components/features/landing-v3/breadth-section'
+import { FeatureShowcase } from '@/components/features/landing-v3/feature-showcase'
 import { RolesSection } from '@/components/features/landing-v3/roles-section'
 import { KnowledgeGraphSection } from '@/components/features/landing-v3/knowledge-graph-section'
 import { AiComparisonSection } from '@/components/features/landing-v3/ai-comparison-section'
@@ -47,6 +48,10 @@ export default function LandingV3Page() {
         <HeroV3 />
         <WhySection />
         <BreadthSection />
+        {/* PoC: feature showcase row (Efterlevnad) — large framed product
+            mockup. If approved, the remaining surfaces follow + this folds in
+            to replace the BreadthSection text cards. */}
+        <FeatureShowcase />
         {/* AI chapter — comparison (the claim) + knowledge graph (the proof),
             one continuous dark banner over a single faint graph texture */}
         <div className="relative isolate overflow-hidden bg-foreground text-background">

@@ -203,8 +203,78 @@ describe('buildSystemPrompt', () => {
       contextId: 'ce-2',
     })
 
-    expect(prompt).toContain('<assessment_workflow>')
+    // Story 19.7a: the assessment playbook is now the injected assess_change
+    // skill (the ASSESSMENT_WORKFLOW literal was removed).
+    expect(prompt).toContain('<skill>')
+    expect(prompt).toContain('Bedömningsflöde') // assess_change PROCEDURE body
     expect(prompt).toContain('suggest_followups')
+    expect(prompt).not.toContain('<assessment_workflow>')
+  })
+
+  it('injects assess_change for change context but not for global (Story 19.7a)', async () => {
+    const mockFindUnique = vi.mocked(prisma.changeEvent.findUnique)
+    mockFindUnique.mockResolvedValue({
+      id: 'ce-skill',
+      document_id: 'doc-1',
+      change_type: 'AMENDMENT',
+      amendment_sfs: null,
+      ai_summary: null,
+      changed_sections: null,
+      document: {
+        title: 'Testlagen',
+        document_number: 'SFS 2020:1',
+        effective_date: null,
+      },
+    } as never)
+
+    const changePrompt = await buildSystemPrompt({
+      contextType: 'change',
+      contextId: 'ce-skill',
+    })
+    expect(changePrompt).toContain('<skill>')
+    expect(changePrompt).toContain('Bedömningsflöde')
+
+    // Global: no primary skill → no <skill> block, but assess_change is
+    // advertised in <available_skills> (activatable via activate_skill).
+    const globalPrompt = await buildSystemPrompt({})
+    expect(globalPrompt).not.toContain('<skill>')
+    expect(globalPrompt).toContain('<available_skills>')
+    expect(globalPrompt).toContain('assess_change')
+  })
+
+  it('advertises gap_analysis + injects the assess_change current-state read + carries KP-001 framing (Story 19.7b)', async () => {
+    // Global: gap_analysis is advertised in <available_skills> (activation-only,
+    // never primary → no <skill> block from it). The base prompt carries the
+    // KP-001 kravpunkt-framing rule.
+    const globalPrompt = await buildSystemPrompt({})
+    expect(globalPrompt).toContain('<available_skills>')
+    expect(globalPrompt).toContain('gap_analysis')
+    expect(globalPrompt).not.toContain('<skill>')
+    expect(globalPrompt).toContain('verifierbart krav i påstående-presens') // KP-001
+
+    // Change: the assess_change <skill> body now includes the current-state read
+    // prep step (enrichment) — parity directives still present.
+    const mockFindUnique = vi.mocked(prisma.changeEvent.findUnique)
+    mockFindUnique.mockResolvedValue({
+      id: 'ce-7b',
+      document_id: 'doc-1',
+      change_type: 'AMENDMENT',
+      amendment_sfs: null,
+      ai_summary: null,
+      changed_sections: null,
+      document: {
+        title: 'Testlagen',
+        document_number: 'SFS 2020:1',
+        effective_date: null,
+      },
+    } as never)
+    const changePrompt = await buildSystemPrompt({
+      contextType: 'change',
+      contextId: 'ce-7b',
+    })
+    expect(changePrompt).toContain('get_law_list_item') // enrichment prep step
+    expect(changePrompt).toContain('Bedömningsflöde') // parity preserved
+    expect(changePrompt).toContain('suggest_followups') // parity preserved
   })
 
   it('includes section changes from SectionChange table in change context', async () => {

@@ -49,8 +49,13 @@ export function createAddObligationTool(
   return tool({
     description: `Lägg till en kravpunkt (specifikt krav att uppfylla) på en lag i bevakningslistan.
 
-Använd detta verktyg när ni tillsammans har brutit ner en lag i konkreta krav,
-t.ex. "dokumentera riskbedömning årligen" eller "utse brandskyddsansvarig".
+Använd detta verktyg när ni tillsammans har brutit ner en lag i konkreta krav.
+
+**Formulera kravpunkten som ett verifierbart krav i påstående-presens** — något som går att
+bocka av som uppfyllt eller ej — INTE som en uppmaning/att-göra (det hör hemma i en uppgift).
+Ange relevant § när kravet följer av en specifik bestämmelse.
+- Rätt: "Riskbedömning genomförs och dokumenteras minst årligen (AFS 2023:1)", "Brandskyddsansvarig är utsedd".
+- Fel: "Genomför riskbedömning årligen", "Utse brandskyddsansvarig" (det är uppgifter, inte kravpunkter).
 
 Sätt bevisRequired=true om kravpunkten ska kräva kopplat bevis för att räknas som uppfylld.
 

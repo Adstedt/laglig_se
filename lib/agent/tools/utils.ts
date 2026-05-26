@@ -58,7 +58,11 @@ export function wrapWriteToolResponse<T>(
     action,
     params,
     preview,
-    _meta: buildMeta(tool, startTime, 0, 'open'),
+    // A write tool's surface is the inline approval card (Stories 14.22–24), not
+    // the detail sidebar. 'none' (was 'open') stops ToolAutoOpener from popping a
+    // sidebar that just dumps the raw {pendingActionId} envelope. draft_styrdokument's
+    // "öppna i editorn" canvas is a separate user-initiated openDetail in its renderer.
+    _meta: buildMeta(tool, startTime, 0, 'none'),
   }
 }
 

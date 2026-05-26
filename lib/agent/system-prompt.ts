@@ -15,6 +15,14 @@ import {
   resolveEffectiveDate,
   getEffectiveDateBadge,
 } from '@/lib/utils/effective-date'
+// Story 19.7a: file-based skills layer — the context-primary skill is injected
+// here (replacing the old ASSESSMENT_WORKFLOW literal) + an available-skills
+// catalogue. The loader is registry-agnostic and reads deploy-static files.
+import {
+  getPrimarySkillForContext,
+  loadSkill,
+  listSkills,
+} from './skill-loader'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -251,9 +259,8 @@ export async function buildSystemPrompt(
     if (changeContext) {
       sections.push(`<change_context>\n${changeContext}\n</change_context>`)
     }
-    sections.push(
-      `<assessment_workflow>\n${ASSESSMENT_WORKFLOW}\n</assessment_workflow>`
-    )
+    // Story 19.7a: the change-context playbook is now the assess_change skill
+    // (injected generically below), not a hardcoded literal.
   } else if (options?.contextType === 'task' && options.title) {
     const parts = [`Användaren arbetar med uppgiften "${options.title}".`]
     if (options.summary) {
@@ -271,6 +278,23 @@ export async function buildSystemPrompt(
       : ''
     sections.push(
       `<task_context>\nAnvändaren tittar på ${lawName} (${options.sfsNumber}).${idLine} Fokusera svaren på denna lag.\n</task_context>`
+    )
+  }
+
+  // Story 19.7a: inject the context-primary skill (data-driven via the skill
+  // loader) — a change chat gets assess_change, replacing the former
+  // ASSESSMENT_WORKFLOW literal. Then advertise the remaining skills the agent
+  // can pull mid-conversation via activate_skill.
+  const primarySkill = getPrimarySkillForContext(options?.contextType)
+  if (primarySkill) {
+    const skillBody = loadSkill(primarySkill)
+    if (skillBody) sections.push(`<skill>\n${skillBody}\n</skill>`)
+  }
+  const otherSkills = listSkills().filter((s) => s.name !== primarySkill)
+  if (otherSkills.length > 0) {
+    const lines = otherSkills.map((s) => `- ${s.name}: ${s.description}`)
+    sections.push(
+      `<available_skills>\nDu kan ladda en färdighets fullständiga instruktioner med activate_skill(name):\n${lines.join('\n')}\n</available_skills>`
     )
   }
 
@@ -477,44 +501,7 @@ export function extractCompactDiff(diff: string): string | null {
 }
 
 // ---------------------------------------------------------------------------
-// Assessment workflow instructions (Story 14.10)
+// Story 19.7a: the change-assessment playbook (formerly the ASSESSMENT_WORKFLOW
+// literal here) now lives in lib/agent/skills/assess_change/ and is injected via
+// the skill loader — getPrimarySkillForContext('change') → 'assess_change'.
 // ---------------------------------------------------------------------------
-
-const ASSESSMENT_WORKFLOW = `## Bedömningsflöde
-
-Du guidar användaren genom en strukturerad granskning av lagändringen ovan.
-
-### Verktygsanrop (gör ALLA verktygsanrop INNAN du skriver bedömningstexten)
-
-Anropa följande verktyg i en fas innan du skriver din text:
-1. **get_company_context** — Hämta företagets profil
-2. **search_laws** — Sök relevant lagtext för kontext
-3. **get_change_details** — Hämta detaljerade sektionsändringar med gammal och ny lydelse. Använd Händelse-ID från ovan som changeEventId (inte SFS-numret)
-4. **suggest_followups** — Föreslå 2–3 uppföljningsfrågor baserat på ändringen och företaget. Frågorna ska vara specifika (inte generiska), handlingsinriktade eller fördjupande, och varierade i kategori. Undantag: anropa INTE suggest_followups om du behöver ställa en direkt fråga till användaren.
-
-Du kan anropa steg 1–3 parallellt. Anropa suggest_followups när du har tillräcklig kontext (efter steg 1–3).
-
-### Bedömningstext (skriv EFTER att alla verktygsanrop är klara)
-
-Strukturera din text enligt:
-
-**Sammanfatta ändringen** — Beskriv vad som faktiskt ändras. Ändringstexten i change_context visar exakt vad riksdagen beslutade — basera din sammanfattning på denna text, inte på andra ändringar i baslagen.
-
-**Bedöm relevans** — Analysera om ändringen berör verksamheten baserat på bransch, storlek, certifieringar och verksamhetsområden. Var specifik — "detta berör er eftersom ni har minderåriga anställda" är bättre än "detta kan beröra arbetsgivare".
-
-**Identifiera konkreta åtgärder** — Om ändringen är relevant, beskriv vilka åtgärder som kan behövas: policyer att uppdatera, utbildningsinsatser, dokumentation, tidsfrister (särskilt ikraftträdandedatum).
-
-**Ge en rekommendation** — Avsluta med:
-- **Granskad** — Ändringen har granskats och kräver inga åtgärder just nu
-- **Åtgärd krävs** — Specifika åtgärder behövs (beskriv vilka)
-- **Ej tillämplig** — Ändringen berör inte verksamheten (förklara varför)
-- **Uppskjuten** — Ändringen behöver utredas vidare
-
-Ange även rekommenderad påverkansnivå (Hög/Medel/Låg/Ingen).
-
-### Beteenderegler
-- Du har ändringstexten (den publicerade författningen) i change_context — använd den som primär källa. Komplettera med get_change_details för gammal/ny lydelse och search_laws för omgivande kontext vid behov.
-- Var proaktiv: vänta inte på att användaren ställer alla frågor. Driv bedömningen framåt.
-- Om du saknar information för att göra en fullständig bedömning, säg vilken information som behövs.
-- Användaren ser ett bedömningsformulär efter ditt första svar. Dina rekommendationer hjälper dem fylla i det.
-- Håll ett professionellt men effektivt tempo — detta är en arbetsuppgift, inte en föreläsning.`

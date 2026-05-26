@@ -1,0 +1,70 @@
+schema: 1
+story: '19.6'
+story_title: 'Skill Loader Library + Directory Convention'
+gate: PASS
+status_reason: 'Clean, pure, registry-agnostic loader library — the "thin it down" re-scope de-risked it completely (zero agent integration → nothing dormant to get wrong). 10/10 loader tests, full agent suite 226/226, tsc 0 branch-wide, eslint clean. AC 6/7 scope guards independently verified via git: zero 19.6 source modifications (every 19.6 file is a new addition). No security/perf concerns (deploy-static reads, no traversal, read-once cache). Three low nice-to-haves, none blocking.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-26T21:10:00Z'
+
+waiver: { active: false }
+
+quality_score: 95
+expires: '2026-06-09T21:10:00Z'
+
+evidence:
+  tests_reviewed: 10
+  tests_result: 'QA-verified: 10/10 skill-loader.test.ts (scan/skip/warn rules, frontmatter parse + Zod validation, cache identity, non-existent baseDir, primary-for-context, whitelist, body assembly + companion omission, unknown/skipped→null); full tests/unit/agent suite 226/226 (216 + 10); tsc --noEmit 0 errors branch-wide; eslint clean. No migration. gray-matter first-use (types resolve, no new dep).'
+  smoke_test:
+    performed_by: 'N/A'
+    result: 'Not applicable — 19.6 has no runtime wiring (nothing imports the loader until 19.7). Validated entirely by unit tests.'
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7]
+    ac_gaps: []
+    notes:
+      - 'AC 1-3: convention + frontmatter (Zod) + the 4 pure functions (baseDir, cache, frozen metas) all tested.'
+      - 'AC 2: every scan/skip/warn rule covered — _-prefix, loose file, no-SKILL.md, malformed frontmatter (warn+skip), name≠dirname (warn+skip).'
+      - 'AC 4: _template + README created (docs — verified by inspection).'
+      - 'AC 6/7: scope guards independently verified via git status — zero 19.6 source modifications (the 3 modified files in the tree are unrelated landing-v3 WIP + the PO plan update). No buildSystemPrompt/createAgentTools/route/activate_skill changes; no ASSESSMENT_WORKFLOW migration; no DB migration.'
+
+top_issues:
+  - id: 196-001
+    severity: low
+    status: open
+    summary: 'getPrimarySkillForContext multi-match (two skills claiming the same contextType) — the deterministic first-by-name + console.warn branch is untested (would need a separate fixtures dir). Implementation is deterministic by construction (records sorted by name). Add a fixtures-dir test if convenient.'
+    refs: ['tests/unit/agent/skill-loader.test.ts', 'lib/agent/skill-loader.ts']
+    suggested_owner: dev
+  - id: 196-002
+    severity: low
+    status: open
+    summary: 'name kebab-case is not schema-validated — only name===dirname is enforced (the real guard). Convention documented in README; a machine-check (regex in the Zod schema) is nice-to-have.'
+    refs: ['lib/agent/skill-loader.ts']
+    suggested_owner: dev
+  - id: 196-003
+    severity: low
+    status: open
+    summary: 'listSkills returns a shallow-frozen array — inner contextTypes/tools arrays remain mutable by a caller. Deep-freeze or rely on the read-only convention (callers are 19.7 read paths).'
+    refs: ['lib/agent/skill-loader.ts']
+    suggested_owner: dev
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No write surface, no DB, no user-controlled path. loadSkill(name) matches against scanned records (never builds a path from name); readdirSync dirents + join(base,…) cannot escape baseDir → no traversal. gray-matter parses local trusted files only.'
+  performance:
+    status: PASS
+    notes: 'Metadata read + validated once per baseDir (cache verified by the identity test). loadSkill re-reads body files per call — negligible at skill scale; cache later only if profiling demands.'
+  reliability:
+    status: PASS
+    notes: 'warn-not-throw — a malformed / name-mismatched skill is skipped without breaking the loader for the others (tested). Non-existent baseDir → [] (tested).'
+  maintainability:
+    status: PASS
+    notes: 'Registry-agnostic (no coupling to ToolName/the tool registry), pure functions, baseDir-injectable, read-once cache, exported Zod schema + SkillMeta for 19.7 reuse. Excellent infra-module shape.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: '196-001: add a multi-match getPrimarySkillForContext test (separate fixtures dir).'
+      refs: ['tests/unit/agent/skill-loader.test.ts']
+    - action: '196-002/003: kebab-case name validation + deep-freeze listSkills output (defensive nice-to-haves).'
+      refs: ['lib/agent/skill-loader.ts']

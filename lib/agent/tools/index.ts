@@ -37,6 +37,8 @@ import { createUpdateRequirementTool } from './update-requirement'
 import { createAssignTaskTool } from './assign-task'
 // Story 14.24: agent-drafted styrdokument approval.
 import { createDraftStyrdokumentTool } from './draft-styrdokument'
+// Story 19.7a: load a skill's full instructions mid-conversation (skills layer).
+import { createActivateSkillTool } from './activate-skill'
 // Story 19.5: role-based registry filter + per-call decision logging.
 import type { WorkspaceRole } from '@prisma/client'
 import { hasPermission } from '@/lib/auth/permissions'
@@ -107,6 +109,7 @@ type ToolName =
   | 'get_change_details'
   | 'get_company_context'
   | 'suggest_followups'
+  | 'activate_skill'
   | 'web_search'
   | 'create_task'
   | 'update_compliance_status'
@@ -136,6 +139,7 @@ export const TOOL_REGISTRY_POLICY = {
   get_change_details: 'read',
   get_company_context: 'read',
   suggest_followups: 'read',
+  activate_skill: 'read',
   web_search: 'read',
   create_task: 'write',
   update_compliance_status: 'write',
@@ -208,6 +212,8 @@ export function createAgentTools(
     save_assessment: createSaveAssessmentTool(workspaceId, userId),
     add_context_note: createAddContextNoteTool(workspaceId, writeContext),
     suggest_followups: createSuggestFollowupsTool(),
+    // Story 19.7a: load a skill's instructions mid-conversation ('read' tier).
+    activate_skill: createActivateSkillTool(),
     // Story 14.23: extended approval types.
     link_task_to_document: createLinkTaskToDocumentTool(
       workspaceId,

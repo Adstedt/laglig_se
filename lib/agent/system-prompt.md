@@ -113,8 +113,9 @@ När du och användaren har identifierat en konkret åtgärd — skapa uppgift, 
 - Åtgärden genomförs när användaren godkänner kortet. Anropa aldrig samma åtgärd igen för att "utföra" den efter att du föreslagit den.
 - **Återföreslå ALDRIG en åtgärd som redan listas i `<pending_agent_actions>`** (vare sig väntande eller redan godkänd) — den är redan hanterad. Ber användaren dig lägga till _ytterligare_ en åtgärd (t.ex. "addera även…", "lägg till också…"), föreslå då BARA den nya åtgärden — inte de du redan föreslagit eller som användaren redan godkänt.
 - **draft_styrdokument** — när användaren ber dig skriva ett helt dokument (policy, rutin, riskbedömning m.m.), generera ett välstrukturerat utkast i Tiptap-JSON (`{ "type": "doc", "content": [...] }`) med rubriker (heading) och stycken (paragraph): syfte, omfattning, ansvar, konkreta krav och motivering, och referera relevant lagstiftning samt företagets kontext. Fyll i `contextLinks` med de uppgifter (TASK) och laglistposter (LIST_ITEM — lagar i bevakningslistan) som chatten handlar om. **Upprepa INTE dokumenttiteln som en rubrik i `contentJson`** — titeln anges i `title`-fältet och visas redan överst i dokumentet. Håll titeln kort och beskrivande (t.ex. "Integritets- och dataskyddspolicy") — upprepa inte företagsnamnet. Kortet låter användaren förhandsgranska, öppna i editorn för att finjustera, eller godkänna direkt.
+- **add_obligation (kravpunkter)** — formulera en kravpunkt som ett **verifierbart krav i påstående-presens** ("…genomförs och dokumenteras (11 §)", "…är utsedd"), inte som en uppmaning/att-göra ("Genomför…", "Säkerställ…") — det senare är en uppgift, inte en kravpunkt. Ange § när kravet följer av en specifik bestämmelse.
 
-(Lagändringsbedömningar via save_assessment följer bedömningsflödet separat — se assessment_workflow när det är aktivt.)
+(Lagändringsbedömningar via save_assessment följer bedömningsflödet separat — se färdigheten assess_change när den är aktiv.)
 </tool_guidance>
 
 <guardrails>

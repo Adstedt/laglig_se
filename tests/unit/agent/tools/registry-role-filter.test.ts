@@ -41,6 +41,8 @@ describe('createAgentTools — role filter (Story 19.5)', () => {
     expect(keys).toContain('list_unassessed_changes')
     expect(keys).toContain('list_overdue')
     expect(keys).toContain('list_stale_documents')
+    // Story 19.7a: activate_skill is read-tier → AUDITOR keeps it.
+    expect(keys).toContain('activate_skill')
   })
 
   it('MEMBER receives the full set (has tasks:edit)', () => {
@@ -49,18 +51,18 @@ describe('createAgentTools — role filter (Story 19.5)', () => {
     expect(keys).toContain('draft_styrdokument')
     // Story 14.28: the new write tool is present for write-capable roles.
     expect(keys).toContain('update_requirement')
-    expect(keys).toHaveLength(26) // web_search is injected at the route, not here
+    expect(keys).toHaveLength(27) // web_search is injected at the route, not here
   })
 
   it('OWNER receives the full set', () => {
     const keys = Object.keys(createAgentTools('ws', 'u', {}, 'OWNER'))
     expect(keys).toContain('create_task')
-    expect(keys).toHaveLength(26)
+    expect(keys).toHaveLength(27)
   })
 
   it('undefined role → full set (backward compat for legacy callers)', () => {
     const keys = Object.keys(createAgentTools('ws', 'u', {}))
-    expect(keys).toHaveLength(26)
+    expect(keys).toHaveLength(27)
     expect(keys).toContain('assign_task')
   })
 

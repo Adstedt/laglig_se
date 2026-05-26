@@ -317,7 +317,7 @@ export function OrgCheckForm({
               <input
                 type="text"
                 inputMode="numeric"
-                placeholder="Organisationsnummer (XXXXXX-XXXX)"
+                placeholder="Organisationsnummer"
                 value={orgNumber}
                 onChange={(e) => setOrgNumber(formatOrgNumber(e.target.value))}
                 maxLength={11}
