@@ -67,8 +67,8 @@ const NODES: GNode[] = [
   // alkohol branch — sweeps up
   {
     id: 'alkohollag',
-    x: 388,
-    y: 196,
+    x: 372,
+    y: 212,
     kind: 'law',
     label: 'Alkohollag',
     step: 1,
@@ -76,8 +76,8 @@ const NODES: GNode[] = [
   },
   {
     id: 'serverings',
-    x: 548,
-    y: 126,
+    x: 560,
+    y: 118,
     kind: 'krav',
     label: 'Serveringstillstånd',
     step: 2,
@@ -85,8 +85,8 @@ const NODES: GNode[] = [
   },
   {
     id: 'alkoholpolicy',
-    x: 708,
-    y: 158,
+    x: 766,
+    y: 172,
     kind: 'doc',
     label: 'Alkoholpolicy',
     step: 3,
@@ -94,19 +94,19 @@ const NODES: GNode[] = [
   },
   {
     id: 'anna',
-    x: 868,
-    y: 224,
+    x: 922,
+    y: 250,
     kind: 'person',
     label: 'Anna',
     avatar: '/demo-team/anna.png',
     step: 4,
     drift: 2,
   },
-  // brandskydd branch — straight out
+  // brandskydd branch — middle, gently staggered so labels never share a row
   {
     id: 'brandskydd',
-    x: 404,
-    y: 380,
+    x: 398,
+    y: 402,
     kind: 'law',
     label: 'Brandskydd',
     step: 1,
@@ -114,8 +114,8 @@ const NODES: GNode[] = [
   },
   {
     id: 'sba',
-    x: 566,
-    y: 388,
+    x: 610,
+    y: 348,
     kind: 'krav',
     label: 'Systematiskt brandskydd',
     step: 2,
@@ -123,8 +123,8 @@ const NODES: GNode[] = [
   },
   {
     id: 'brandpolicy',
-    x: 728,
-    y: 378,
+    x: 806,
+    y: 414,
     kind: 'doc',
     label: 'Brandskyddspolicy',
     step: 3,
@@ -132,8 +132,8 @@ const NODES: GNode[] = [
   },
   {
     id: 'johan',
-    x: 882,
-    y: 380,
+    x: 938,
+    y: 344,
     kind: 'person',
     label: 'Johan',
     avatar: '/demo-team/johan.png',
@@ -143,8 +143,8 @@ const NODES: GNode[] = [
   // arbetsmiljö branch — sweeps down
   {
     id: 'arbmiljolag',
-    x: 388,
-    y: 566,
+    x: 372,
+    y: 558,
     kind: 'law',
     label: 'Arbetsmiljölag',
     step: 1,
@@ -152,8 +152,8 @@ const NODES: GNode[] = [
   },
   {
     id: 'sam',
-    x: 548,
-    y: 636,
+    x: 560,
+    y: 652,
     kind: 'krav',
     label: 'Systematiskt AM',
     step: 2,
@@ -161,8 +161,8 @@ const NODES: GNode[] = [
   },
   {
     id: 'samrutin',
-    x: 708,
-    y: 604,
+    x: 766,
+    y: 598,
     kind: 'doc',
     label: 'SAM-rutin',
     step: 3,
@@ -170,8 +170,8 @@ const NODES: GNode[] = [
   },
   {
     id: 'erik',
-    x: 868,
-    y: 538,
+    x: 922,
+    y: 528,
     kind: 'person',
     label: 'Erik',
     avatar: '/demo-team/erik.png',
@@ -181,8 +181,8 @@ const NODES: GNode[] = [
   // connective nodes — audit weaves the top two, amendment weaves the bottom two
   {
     id: 'kontroll',
-    x: 518,
-    y: 282,
+    x: 512,
+    y: 214,
     kind: 'audit',
     label: 'Kontroll Q1',
     step: 3,
@@ -190,8 +190,8 @@ const NODES: GNode[] = [
   },
   {
     id: 'andring',
-    x: 508,
-    y: 488,
+    x: 540,
+    y: 484,
     kind: 'change',
     label: 'Ny ändring',
     step: 4,
@@ -241,6 +241,8 @@ type Scenario = {
   source: string
   /** short "thinking" labels shown at the krav / doc / person halts */
   reasoning: [string, string, string]
+  /** brief conversational lead-in shown before the grounded-answer card */
+  intro: string
   answer: string
   action: { kind: 'task' | 'doc'; label: string }
 }
@@ -251,6 +253,8 @@ const SCENARIOS: Scenario[] = [
     chain: ['alkohollag', 'serverings', 'alkoholpolicy', 'anna'],
     source: 'Alkohollag (2010:1622) · 8 kap. 1 §',
     reasoning: ['Kollar serveringskrav', 'Matchar er policy', 'Ansvarig: Anna'],
+    intro:
+      'Jag följde kopplingarna från Alkohollagen till era egna rutiner — här är vad jag hittade:',
     answer:
       'Serveringstillstånd kräver dokumenterade rutiner — er Alkoholpolicy täcker kraven.',
     action: {
@@ -263,6 +267,8 @@ const SCENARIOS: Scenario[] = [
     chain: ['arbmiljolag', 'sam', 'samrutin', 'erik'],
     source: 'AFS 2023:1 · 6 § (SAM)',
     reasoning: ['Kollar SAM-status', 'Granskar rutinen', 'Ansvarig: Erik'],
+    intro:
+      'Jag stämde av ert systematiska arbetsmiljöarbete mot AFS 2023:1 — så här ser det ut:',
     answer:
       'Ni har en SAM-rutin på plats, men årets riskbedömning saknas — komplettera den.',
     action: { kind: 'doc', label: 'Skapa styrdokument: Riskbedömning 2026' },
@@ -272,9 +278,30 @@ const SCENARIOS: Scenario[] = [
     chain: ['brandskydd', 'sba', 'brandpolicy', 'johan'],
     source: 'LSO (2003:778) · 2 kap. 2 §',
     reasoning: ['Kollar brandskyddskrav', 'Granskar SBA', 'Ansvarig: Johan'],
+    intro:
+      'Jag gick igenom ert brandskyddsarbete mot LSO och er SBA-rutin — här är läget:',
     answer:
       'Ert systematiska brandskyddsarbete är dokumenterat — men brandskyddskontrollen för Q2 är försenad.',
     action: { kind: 'task', label: 'Skapa uppgift: boka brandskyddskontroll' },
+  },
+  // Change-assessment flow: a new amendment to the arbetsmiljö föreskrifter →
+  // the agent reads the ändring, traces which krav + styrdokument it touches,
+  // and proposes the fix. Traverses the otherwise-decorative "Ny ändring" node
+  // (every hop lies on a real edge: arbmiljolag→andring→sam→samrutin).
+  {
+    question:
+      'Vad innebär den nya ändringen i arbetsmiljöföreskrifterna för oss?',
+    chain: ['arbmiljolag', 'andring', 'sam', 'samrutin'],
+    source: 'AFS 2023:1 · 6 § (ändrad)',
+    reasoning: ['Läser ändringen', 'Påverkar SAM-kravet', 'Berör SAM-rutinen'],
+    intro:
+      'En ny ändring i Arbetsmiljöverkets föreskrifter rör ert systematiska arbetsmiljöarbete — så här bedömer jag den:',
+    answer:
+      'Ändringen skärper kraven på årlig riskbedömning. Er SAM-rutin täcker inte det nya kravet ännu — den behöver uppdateras.',
+    action: {
+      kind: 'task',
+      label: 'Skapa uppgift: uppdatera riskbedömning enligt nya kravet',
+    },
   },
 ]
 
@@ -309,6 +336,17 @@ const KIND_STYLE: Record<
     fg: 'text-rose-600',
   },
   person: { icon: Sparkles, ring: 'ring-border', fg: 'text-foreground' },
+}
+
+// Swedish kind labels for the mobile tool-use trace rows
+const TRACE_KIND_LABEL: Record<Kind, string> = {
+  agent: 'Agent',
+  law: 'Lag',
+  krav: 'Krav',
+  doc: 'Styrdokument',
+  audit: 'Kontroll',
+  change: 'Ändring',
+  person: 'Ansvarig',
 }
 
 const VB_W = 1000
@@ -504,47 +542,141 @@ function Exchange({ sc, animate }: { sc: Scenario; animate?: boolean }) {
       )}
       {animate ? (
         <div className="kg-aslot">
-          {/* searching — shown while the query line traverses the graph */}
-          <div className="kg-ph kg-search grid">
-            <div>
-              <div className="flex items-center gap-2">
-                <AgentGlyph className="h-6 w-6" />
-                <div className="flex items-center gap-2 rounded-2xl rounded-tl-sm bg-muted/70 px-3 py-2 text-[12px] text-muted-foreground">
-                  <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-                  Söker i kunskapsgrafen
-                  <span className="kg-dots inline-flex items-center gap-1">
-                    <i />
-                    <i />
-                    <i />
-                  </span>
+          {/* DESKTOP — the live graph is the search showcase, so the chat just
+              works briefly (Söker → …) then becomes the lead-in message. One
+              bubble: content crossfades in place, the thread only ever grows. */}
+          <div className="hidden lg:block">
+            <div className="kg-ph kg-say grid">
+              <div>
+                <div className="flex items-start gap-2">
+                  <AgentGlyph className="h-6 w-6" />
+                  <div className="relative flex-1 rounded-2xl rounded-tl-sm bg-muted/70 px-3 py-2 text-[12.5px] leading-snug">
+                    {/* working: searching the graph */}
+                    <span className="kg-saywork absolute inset-x-3 top-1/2 flex -translate-y-1/2 items-center gap-2 text-muted-foreground">
+                      <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                      Söker i kunskapsgrafen
+                      <span className="kg-dots inline-flex items-center gap-1">
+                        <i />
+                        <i />
+                        <i />
+                      </span>
+                    </span>
+                    {/* composing beat */}
+                    <span className="kg-saythink absolute left-3 top-1/2 -translate-y-1/2">
+                      <span className="kg-dots inline-flex items-center gap-1">
+                        <i />
+                        <i />
+                        <i />
+                      </span>
+                    </span>
+                    {/* the lead-in message — in flow, so it defines the bubble's
+                        height from the start (working states are overlaid) */}
+                    <span className="kg-saytext block text-foreground/85">
+                      {sc.intro}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* grounded answer — grows in below the message (aligned under it) */}
+            <div className="kg-ph kg-reply grid">
+              <div>
+                <div className="pl-8 pt-2">
+                  <div className="relative overflow-hidden rounded-2xl rounded-tl-sm bg-card ring-1 ring-border/60">
+                    <span className="agent-spine pointer-events-none absolute bottom-3 left-0 top-3 w-[3px]" />
+                    <div className="py-2.5 pl-4 pr-3">
+                      <ReplyCardInner sc={sc} />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          {/* thinking — a real beat after the graph is read, before the reply */}
-          <div className="kg-ph kg-think grid">
-            <div>
-              <div className="flex items-center gap-2">
-                <AgentGlyph className="h-6 w-6" />
-                <div className="flex items-center rounded-2xl rounded-tl-sm bg-muted/70 px-3.5 py-3">
-                  <span className="kg-dots inline-flex items-center gap-1">
-                    <i />
-                    <i />
-                    <i />
-                  </span>
+
+          {/* MOBILE — no graph here, so the chat shows the agent's tool use: it
+              pulls each piece of context out of the graph (rows stream in one by
+              one), then grounds the reply. Same retrieval chain the desktop line
+              walks — each row stays as the evidence the answer is built on. */}
+          <div className="lg:hidden">
+            <div className="kg-ph kg-mtrace grid">
+              <div>
+                <div className="flex items-start gap-2">
+                  <AgentGlyph className="h-6 w-6" />
+                  <div className="flex-1 overflow-hidden rounded-2xl rounded-tl-sm bg-card ring-1 ring-border/60">
+                    <div className="flex items-center gap-2 border-b border-border/50 px-3 py-2 text-[12px] text-muted-foreground">
+                      <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                      Söker i kunskapsgrafen
+                      <span className="kg-dots ml-auto inline-flex items-center gap-1">
+                        <i />
+                        <i />
+                        <i />
+                      </span>
+                    </div>
+                    <ul className="space-y-1.5 px-3 py-2.5">
+                      {sc.chain.map((id, i) => {
+                        const node = byId[id]!
+                        const Icon = KIND_STYLE[node.kind].icon
+                        return (
+                          <li
+                            key={id}
+                            className={cn(
+                              'kg-mstep flex items-center gap-2.5',
+                              `kg-mstep${i + 1}`
+                            )}
+                          >
+                            {node.kind === 'person' && node.avatar ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={node.avatar}
+                                alt=""
+                                className="h-5 w-5 shrink-0 rounded-full object-cover ring-1 ring-border"
+                              />
+                            ) : (
+                              <span
+                                className={cn(
+                                  'flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-white ring-1',
+                                  KIND_STYLE[node.kind].fg,
+                                  KIND_STYLE[node.kind].ring
+                                )}
+                              >
+                                <Icon className="h-3 w-3" />
+                              </span>
+                            )}
+                            <span className="shrink-0 text-[10.5px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+                              {TRACE_KIND_LABEL[node.kind]}
+                            </span>
+                            <span className="truncate text-[12.5px] font-medium text-foreground">
+                              {node.label}
+                            </span>
+                            <Check className="ml-auto h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          {/* grounded answer — expands in smoothly (no fixed height to clip) */}
-          <div className="kg-ph kg-reply grid">
-            <div>
-              <div className="flex items-start gap-2">
-                <AgentGlyph className="h-6 w-6" />
-                <div className="relative flex-1 overflow-hidden rounded-2xl rounded-tl-sm bg-card ring-1 ring-border/60">
-                  <span className="agent-spine pointer-events-none absolute bottom-3 left-0 top-3 w-[3px]" />
-                  <div className="py-2.5 pl-4 pr-3">
-                    <ReplyCardInner sc={sc} />
+            {/* lead-in message */}
+            <div className="kg-ph kg-mmsg grid">
+              <div>
+                <div className="flex items-start gap-2 pt-2">
+                  <AgentGlyph className="h-6 w-6" />
+                  <div className="flex-1 rounded-2xl rounded-tl-sm bg-muted/70 px-3 py-2 text-[12.5px] leading-snug text-foreground/85">
+                    {sc.intro}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* grounded answer */}
+            <div className="kg-ph kg-mcard grid">
+              <div>
+                <div className="pl-8 pt-2">
+                  <div className="relative overflow-hidden rounded-2xl rounded-tl-sm bg-card ring-1 ring-border/60">
+                    <span className="agent-spine pointer-events-none absolute bottom-3 left-0 top-3 w-[3px]" />
+                    <div className="py-2.5 pl-4 pr-3">
+                      <ReplyCardInner sc={sc} />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -554,10 +686,15 @@ function Exchange({ sc, animate }: { sc: Scenario; animate?: boolean }) {
       ) : (
         <div className="flex items-start gap-2">
           <AgentGlyph className="h-6 w-6" />
-          <div className="relative flex-1 overflow-hidden rounded-2xl rounded-tl-sm bg-card ring-1 ring-border/60">
-            <span className="agent-spine pointer-events-none absolute bottom-3 left-0 top-3 w-[3px]" />
-            <div className="py-2.5 pl-4 pr-3">
-              <ReplyCardInner sc={sc} />
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="rounded-2xl rounded-tl-sm bg-muted/70 px-3 py-2 text-[12.5px] leading-snug text-foreground/85">
+              {sc.intro}
+            </div>
+            <div className="relative overflow-hidden rounded-2xl rounded-tl-sm bg-card ring-1 ring-border/60">
+              <span className="agent-spine pointer-events-none absolute bottom-3 left-0 top-3 w-[3px]" />
+              <div className="py-2.5 pl-4 pr-3">
+                <ReplyCardInner sc={sc} />
+              </div>
             </div>
           </div>
         </div>
@@ -621,19 +758,19 @@ export function KnowledgeGraphSection() {
   // step-by-step, then holds as a faint trace while the answer is shown.
   const dynStyles = `
 @keyframes kg-line {
-  0%, 24% { stroke-dashoffset: 1; opacity: 0; }
-  25%     { opacity: 1; }
-  30%     { stroke-dashoffset: ${dash(1)}; }
-  32%     { stroke-dashoffset: ${dash(1)}; }
-  35%     { stroke-dashoffset: ${dash(2)}; }
-  37%     { stroke-dashoffset: ${dash(2)}; }
-  40%     { stroke-dashoffset: ${dash(3)}; }
-  42%     { stroke-dashoffset: ${dash(3)}; }
-  45%     { stroke-dashoffset: ${dash(4)}; }
-  47%     { stroke-dashoffset: ${dash(4)}; }
-  51%     { stroke-dashoffset: 0; opacity: 1; }
-  58%     { stroke-dashoffset: 0; opacity: 1; }
-  64%     { stroke-dashoffset: 0; opacity: 0.24; }
+  0%, 39% { stroke-dashoffset: 1; opacity: 0; }
+  40%     { opacity: 1; }
+  43%     { stroke-dashoffset: ${dash(1)}; }
+  45%     { stroke-dashoffset: ${dash(1)}; }
+  47%     { stroke-dashoffset: ${dash(2)}; }
+  49%     { stroke-dashoffset: ${dash(2)}; }
+  51%     { stroke-dashoffset: ${dash(3)}; }
+  52%     { stroke-dashoffset: ${dash(3)}; }
+  54%     { stroke-dashoffset: ${dash(4)}; }
+  55%     { stroke-dashoffset: ${dash(4)}; }
+  57%     { stroke-dashoffset: 0; opacity: 1; }
+  63%     { stroke-dashoffset: 0; opacity: 1; }
+  69%     { stroke-dashoffset: 0; opacity: 0.24; }
   94%     { stroke-dashoffset: 0; opacity: 0.24; }
   97%,100%{ stroke-dashoffset: 0; opacity: 0; }
 }`
@@ -702,8 +839,8 @@ export function KnowledgeGraphSection() {
                     <div key="greet" className="kg-greet flex items-end gap-2">
                       <AgentGlyph className="h-6 w-6" />
                       <div className="max-w-[86%] rounded-2xl rounded-bl-sm bg-muted/70 px-3 py-2 text-[12.5px] leading-snug text-foreground/80">
-                        Hej Sofia! Jag har koll på alla era lagkrav,
-                        styrdokument och ansvariga — fråga mig vad som helst.
+                        Hej! Jag har koll på alla era lagkrav, styrdokument och
+                        ansvariga — fråga mig vad som helst.
                       </div>
                     </div>
                   )}
@@ -737,8 +874,9 @@ export function KnowledgeGraphSection() {
             </div>
           </div>
 
-          {/* Graph */}
-          <div className="relative w-full">
+          {/* Graph — desktop showcase only; on mobile the chat shows a
+              tool-use trace instead (the graph doesn't fit a phone column) */}
+          <div className="relative hidden w-full lg:block">
             <div className="relative aspect-[1000/760] w-full overflow-visible">
               {/* Edges (static) + query line (re-keyed per scenario) */}
               <svg
@@ -983,30 +1121,30 @@ const kgStyles = `
 .kg-s3 { animation: kg-stop3 var(--kg-dur, 12s) ease forwards; }
 .kg-s4 { animation: kg-stop4 var(--kg-dur, 12s) ease forwards; }
 @keyframes kg-stop1 {
-  0%,33%   { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
-  36%      { opacity: 1; transform: translate(-50%,-50%) scale(1.15); }
-  40%      { opacity: 0.5; transform: translate(-50%,-50%) scale(0.95); }
+  0%,45%   { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
+  48%      { opacity: 1; transform: translate(-50%,-50%) scale(1.15); }
+  52%      { opacity: 0.5; transform: translate(-50%,-50%) scale(0.95); }
   91%      { opacity: 0.4; transform: translate(-50%,-50%) scale(0.95); }
   97%,100% { opacity: 0; }
 }
 @keyframes kg-stop2 {
-  0%,38%   { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
-  41%      { opacity: 1; transform: translate(-50%,-50%) scale(1.15); }
-  45%      { opacity: 0.5; transform: translate(-50%,-50%) scale(0.95); }
+  0%,49%   { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
+  52%      { opacity: 1; transform: translate(-50%,-50%) scale(1.15); }
+  56%      { opacity: 0.5; transform: translate(-50%,-50%) scale(0.95); }
   91%      { opacity: 0.4; transform: translate(-50%,-50%) scale(0.95); }
   97%,100% { opacity: 0; }
 }
 @keyframes kg-stop3 {
-  0%,43%   { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
-  46%      { opacity: 1; transform: translate(-50%,-50%) scale(1.15); }
-  50%      { opacity: 0.5; transform: translate(-50%,-50%) scale(0.95); }
+  0%,52%   { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
+  55%      { opacity: 1; transform: translate(-50%,-50%) scale(1.15); }
+  59%      { opacity: 0.5; transform: translate(-50%,-50%) scale(0.95); }
   91%      { opacity: 0.4; transform: translate(-50%,-50%) scale(0.95); }
   97%,100% { opacity: 0; }
 }
 @keyframes kg-stop4 {
-  0%,49%   { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
-  52%      { opacity: 1; transform: translate(-50%,-50%) scale(1.2); }
-  56%      { opacity: 0.55; transform: translate(-50%,-50%) scale(0.98); }
+  0%,55%   { opacity: 0; transform: translate(-50%,-50%) scale(0.5); }
+  58%      { opacity: 1; transform: translate(-50%,-50%) scale(1.2); }
+  62%      { opacity: 0.55; transform: translate(-50%,-50%) scale(0.98); }
   91%      { opacity: 0.45; transform: translate(-50%,-50%) scale(0.98); }
   97%,100% { opacity: 0; }
 }
@@ -1017,22 +1155,22 @@ const kgStyles = `
 .kg-p2 { animation: kg-pill2 var(--kg-dur, 12s) ease forwards; }
 .kg-p3 { animation: kg-pill3 var(--kg-dur, 12s) ease forwards; }
 @keyframes kg-pill1 {
-  0%,38%   { opacity: 0; transform: translate(-50%,-50%) scale(0.85); }
-  42%      { opacity: 1; transform: translate(-50%,-50%) scale(1); }
-  53%      { opacity: 0.9; transform: translate(-50%,-50%) scale(1); }
-  57%,100% { opacity: 0; transform: translate(-50%,-50%) scale(0.95); }
+  0%,51%   { opacity: 0; transform: translate(-50%,-50%) scale(0.85); }
+  53%      { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  61%      { opacity: 0.9; transform: translate(-50%,-50%) scale(1); }
+  65%,100% { opacity: 0; transform: translate(-50%,-50%) scale(0.95); }
 }
 @keyframes kg-pill2 {
-  0%,43%   { opacity: 0; transform: translate(-50%,-50%) scale(0.85); }
-  47%      { opacity: 1; transform: translate(-50%,-50%) scale(1); }
-  56%      { opacity: 0.9; transform: translate(-50%,-50%) scale(1); }
-  60%,100% { opacity: 0; transform: translate(-50%,-50%) scale(0.95); }
+  0%,54%   { opacity: 0; transform: translate(-50%,-50%) scale(0.85); }
+  56%      { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  63%      { opacity: 0.9; transform: translate(-50%,-50%) scale(1); }
+  67%,100% { opacity: 0; transform: translate(-50%,-50%) scale(0.95); }
 }
 @keyframes kg-pill3 {
-  0%,49%   { opacity: 0; transform: translate(-50%,-50%) scale(0.85); }
-  53%      { opacity: 1; transform: translate(-50%,-50%) scale(1); }
-  59%      { opacity: 0.9; transform: translate(-50%,-50%) scale(1); }
-  63%,100% { opacity: 0; transform: translate(-50%,-50%) scale(0.95); }
+  0%,57%   { opacity: 0; transform: translate(-50%,-50%) scale(0.85); }
+  59%      { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  64%      { opacity: 0.9; transform: translate(-50%,-50%) scale(1); }
+  68%,100% { opacity: 0; transform: translate(-50%,-50%) scale(0.95); }
 }
 
 /* the source is the law-node "step" — it blinks in as the line reaches the law
@@ -1040,10 +1178,10 @@ const kgStyles = `
    chat reply keeps the source persistently) */
 .kg-src { opacity: 0; animation: kg-srcchip var(--kg-dur, 12s) ease forwards; }
 @keyframes kg-srcchip {
-  0%,33%   { opacity: 0; }
-  36%      { opacity: 1; }
-  49%      { opacity: 1; }
-  53%,100% { opacity: 0; }
+  0%,45%   { opacity: 0; }
+  48%      { opacity: 1; }
+  58%      { opacity: 1; }
+  62%,100% { opacity: 0; }
 }
 
 /* thinking-shimmer dots (in the assistant loading label) */
@@ -1089,27 +1227,88 @@ const kgStyles = `
   100%    { grid-template-rows: 1fr; opacity: 1; }
 }
 
-/* assistant: searching — present while the query line traverses the graph */
-.kg-search { animation: kg-ph-search var(--kg-dur, 13s) ease forwards; }
-@keyframes kg-ph-search {
-  0%, 24%   { grid-template-rows: 0fr; opacity: 0; }
-  28%       { grid-template-rows: 1fr; opacity: 1; }
-  56%       { grid-template-rows: 1fr; opacity: 1; }
-  61%, 100% { grid-template-rows: 0fr; opacity: 0; }
+/* the assistant bubble appears only AFTER the user's question lands (~25%),
+   then holds — its content (working → think → message) crossfades in place, so
+   it never collapses */
+.kg-say { animation: kg-ph-say var(--kg-dur, 13s) ease forwards; }
+@keyframes kg-ph-say {
+  0%, 29% { grid-template-rows: 0fr; opacity: 0; }
+  33%     { grid-template-rows: 1fr; opacity: 1; }
+  100%    { grid-template-rows: 1fr; opacity: 1; }
 }
-/* the post-traversal "think" beat — pure typing dots, like a real chat */
-.kg-think { animation: kg-ph-think var(--kg-dur, 13s) ease forwards; }
-@keyframes kg-ph-think {
-  0%, 57%   { grid-template-rows: 0fr; opacity: 0; }
-  62%       { grid-template-rows: 1fr; opacity: 1; }
-  67%       { grid-template-rows: 1fr; opacity: 1; }
-  71%, 100% { grid-template-rows: 0fr; opacity: 0; }
+.kg-saywork { animation: kg-saywork var(--kg-dur, 13s) ease forwards; }
+@keyframes kg-saywork {
+  0%, 30%  { opacity: 0; }
+  33%      { opacity: 1; }
+  55%      { opacity: 1; }
+  59%, 100%{ opacity: 0; }
 }
-/* grounded answer — expands in and holds for the rest of the loop */
+.kg-saythink { opacity: 0; animation: kg-saythink var(--kg-dur, 13s) ease forwards; }
+@keyframes kg-saythink {
+  0%, 56%  { opacity: 0; }
+  60%      { opacity: 1; }
+  64%      { opacity: 1; }
+  68%, 100%{ opacity: 0; }
+}
+.kg-saytext { opacity: 0; animation: kg-saytext var(--kg-dur, 13s) ease forwards; }
+@keyframes kg-saytext {
+  0%, 67% { opacity: 0; }
+  71%     { opacity: 1; }
+  100%    { opacity: 1; }
+}
+/* grounded answer card — grows in below the message, then holds */
 .kg-reply { animation: kg-ph-reply var(--kg-dur, 13s) ease forwards; }
 @keyframes kg-ph-reply {
-  0%, 66% { grid-template-rows: 0fr; opacity: 0; }
-  72%     { grid-template-rows: 1fr; opacity: 1; }
+  0%, 73% { grid-template-rows: 0fr; opacity: 0; }
+  78%     { grid-template-rows: 1fr; opacity: 1; }
+  100%    { grid-template-rows: 1fr; opacity: 1; }
+}
+
+/* MOBILE tool-use trace — the graph is hidden on small screens, so the agent's
+   retrieval is shown in-chat: the trace card opens when the search starts, its
+   rows (the graph nodes it pulls) stream in one by one, then the lead-in message
+   and grounded card grow in below. The thread only ever grows (no wobble). */
+.kg-mtrace { animation: kg-mtrace var(--kg-dur, 13s) ease forwards; }
+@keyframes kg-mtrace {
+  0%, 30% { grid-template-rows: 0fr; opacity: 0; }
+  34%     { grid-template-rows: 1fr; opacity: 1; }
+  100%    { grid-template-rows: 1fr; opacity: 1; }
+}
+.kg-mstep { opacity: 0; transform: translateY(4px); }
+.kg-mstep1 { animation: kg-mstep1 var(--kg-dur, 13s) ease forwards; }
+@keyframes kg-mstep1 {
+  0%, 34% { opacity: 0; transform: translateY(4px); }
+  38%     { opacity: 1; transform: none; }
+  100%    { opacity: 1; transform: none; }
+}
+.kg-mstep2 { animation: kg-mstep2 var(--kg-dur, 13s) ease forwards; }
+@keyframes kg-mstep2 {
+  0%, 41% { opacity: 0; transform: translateY(4px); }
+  45%     { opacity: 1; transform: none; }
+  100%    { opacity: 1; transform: none; }
+}
+.kg-mstep3 { animation: kg-mstep3 var(--kg-dur, 13s) ease forwards; }
+@keyframes kg-mstep3 {
+  0%, 48% { opacity: 0; transform: translateY(4px); }
+  52%     { opacity: 1; transform: none; }
+  100%    { opacity: 1; transform: none; }
+}
+.kg-mstep4 { animation: kg-mstep4 var(--kg-dur, 13s) ease forwards; }
+@keyframes kg-mstep4 {
+  0%, 55% { opacity: 0; transform: translateY(4px); }
+  59%     { opacity: 1; transform: none; }
+  100%    { opacity: 1; transform: none; }
+}
+.kg-mmsg { animation: kg-mmsg var(--kg-dur, 13s) ease forwards; }
+@keyframes kg-mmsg {
+  0%, 63% { grid-template-rows: 0fr; opacity: 0; }
+  67%     { grid-template-rows: 1fr; opacity: 1; }
+  100%    { grid-template-rows: 1fr; opacity: 1; }
+}
+.kg-mcard { animation: kg-mcard var(--kg-dur, 13s) ease forwards; }
+@keyframes kg-mcard {
+  0%, 72% { grid-template-rows: 0fr; opacity: 0; }
+  77%     { grid-template-rows: 1fr; opacity: 1; }
   100%    { grid-template-rows: 1fr; opacity: 1; }
 }
 
@@ -1120,10 +1319,14 @@ const kgStyles = `
   }
   .kg-corepulse, .kg-float, .kg-glow, .kg-dots i { animation: none !important; }
   .kg-bg { opacity: 1 !important; animation: none !important; }
-  .kg-utyping, .kg-search, .kg-think { display: none !important; }
+  .kg-utyping, .kg-saywork, .kg-saythink { display: none !important; }
+  .kg-saytext { opacity: 1 !important; }
+  .kg-mstep { opacity: 1 !important; transform: none !important; }
   .kg-ph { animation: none !important; opacity: 1 !important; }
-  .kg-uquestion, .kg-reply { grid-template-rows: 1fr !important; }
-  .kg-uquestion > div, .kg-reply > div { overflow: visible !important; }
+  .kg-uquestion, .kg-say, .kg-reply,
+  .kg-mtrace, .kg-mmsg, .kg-mcard { grid-template-rows: 1fr !important; }
+  .kg-uquestion > div, .kg-say > div, .kg-reply > div,
+  .kg-mtrace > div, .kg-mmsg > div, .kg-mcard > div { overflow: visible !important; }
   .kg-glow { opacity: 0.45 !important; transform: translate(-50%,-50%) scale(1) !important; }
   .kg-pill { animation: none !important; opacity: 0.85 !important; transform: translate(-50%,-50%) scale(1) !important; }
   .kg-greet, .kg-msg-in, .kg-src {

@@ -55,7 +55,11 @@ export function HeroV3() {
               Byggt för svenska företag, stora som små. Designat för AI-eran —
               där efterlevnad arbetar för er, inte tvärtom.
             </p>
-            <OrgCheckForm className="w-full shrink-0 lg:w-[400px]" />
+            <OrgCheckForm
+              eyebrow="Testa direkt · 30 sek"
+              resultMode="modal"
+              className="w-full shrink-0 lg:w-[400px]"
+            />
           </div>
         </div>
       </div>

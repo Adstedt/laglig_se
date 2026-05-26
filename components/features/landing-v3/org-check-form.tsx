@@ -8,11 +8,25 @@ import {
   Loader2,
   Search,
   Globe,
-  Shield,
   Check,
+  Sparkles,
+  ShieldCheck,
+  MapPin,
+  Building2,
+  Lock,
+  Calculator,
+  Scale,
+  Receipt,
+  Percent,
+  Users,
+  FlaskConical,
+  Flame,
+  Leaf,
+  BookMarked,
+  type LucideIcon,
 } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 
 /**
@@ -58,7 +72,35 @@ function normalizeUrl(input: string): string {
   return `https://${trimmed}`
 }
 
-export function OrgCheckForm({ className }: { className?: string }) {
+// Map a regulatory area to a representative icon so the preview reads as the
+// product's own intelligence rather than a flat list of tags.
+function iconForArea(area: string): LucideIcon {
+  const a = area.toLowerCase()
+  if (a.includes('gdpr') || a.includes('dataskydd') || a.includes('personuppg'))
+    return Lock
+  if (a.includes('bokför') || a.includes('redovis')) return Calculator
+  if (a.includes('bolag') || a.includes('aktie')) return Scale
+  if (a.includes('moms') || a.includes('mervärde')) return Percent
+  if (a.includes('skatt')) return Receipt
+  if (a.includes('arbets')) return Users
+  if (a.includes('kemik')) return FlaskConical
+  if (a.includes('brand')) return Flame
+  if (a.includes('miljö')) return Leaf
+  return BookMarked
+}
+
+export function OrgCheckForm({
+  className,
+  eyebrow,
+  resultMode = 'inline',
+}: {
+  className?: string
+  eyebrow?: string
+  /** how the preview result is surfaced: revealed in place (`inline`, default)
+   *  or in a modal (`modal`) — used in the hero so the result doesn't balloon
+   *  the form column and break the surrounding layout */
+  resultMode?: 'inline' | 'modal'
+}) {
   const [step, setStep] = useState<1 | 2>(1)
   const [orgNumber, setOrgNumber] = useState('')
   const [websiteUrl, setWebsiteUrl] = useState('')
@@ -121,6 +163,12 @@ export function OrgCheckForm({ className }: { className?: string }) {
     [orgNumber, websiteUrl, orgReady]
   )
 
+  const reset = useCallback(() => {
+    setPreview(null)
+    setStep(1)
+    setError(null)
+  }, [])
+
   const ctaUrl = preview
     ? `/signup?org=${encodeURIComponent(preview.company.orgNumber)}${
         websiteUrl.trim()
@@ -136,11 +184,134 @@ export function OrgCheckForm({ className }: { className?: string }) {
   const action =
     'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40'
 
+  // The company-preview "payoff" card — rendered inline (try-now section) or
+  // inside a modal (hero). As a modal it lives outside the page flow, so the
+  // hero's form column never balloons when the result appears.
+  const result = preview && (
+    <div
+      className={cn(
+        'relative text-left',
+        resultMode === 'inline' &&
+          'overflow-hidden rounded-2xl border border-border bg-card shadow-sm'
+      )}
+    >
+      {resultMode === 'inline' && (
+        <button
+          type="button"
+          onClick={reset}
+          className="absolute right-4 top-4 z-10 text-xs text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"
+        >
+          Sök på nytt
+        </button>
+      )}
+
+      {/* identity — soft warm wash so the header reads as a branded surface */}
+      <div className="bg-gradient-to-b from-secondary/60 to-transparent px-5 pb-4 pt-5">
+        <p className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <Sparkles className="h-3 w-3 text-amber-500" />
+          Din regelöversikt
+        </p>
+        <div
+          className={cn(
+            'flex items-start gap-3',
+            resultMode === 'modal' && 'pr-6'
+          )}
+        >
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-foreground font-safiro text-lg font-medium text-background">
+            {preview.company.name.trim().charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <h3 className="font-safiro text-lg font-medium leading-tight">
+              {preview.company.name}
+            </h3>
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+              {preview.company.legalForm && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-background/70 px-1.5 py-0.5 ring-1 ring-border/60">
+                  <Building2 className="h-3 w-3" />
+                  {preview.company.legalForm}
+                </span>
+              )}
+              {preview.company.municipality && (
+                <span className="inline-flex items-center gap-1 rounded-md bg-background/70 px-1.5 py-0.5 ring-1 ring-border/60">
+                  <MapPin className="h-3 w-3" />
+                  {preview.company.municipality}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        {preview.companySummary && (
+          <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
+            {preview.companySummary}
+          </p>
+        )}
+      </div>
+
+      {/* regelområden — the payoff */}
+      <div className="border-t border-border/70 px-5 py-4">
+        <div className="mb-3 flex items-center gap-2.5">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <ShieldCheck className="h-4 w-4" />
+          </span>
+          <p className="text-sm leading-snug">
+            Minst{' '}
+            <span className="font-safiro text-base font-medium text-foreground">
+              {preview.areaCount}
+            </span>{' '}
+            regelområden kan beröra er verksamhet
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {preview.areas.slice(0, MAX_VISIBLE_BADGES).map((area) => {
+            const Icon = iconForArea(area)
+            return (
+              <span
+                key={area}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-secondary/70 px-2.5 py-1.5 text-[12.5px] font-medium text-foreground/80 ring-1 ring-border/50"
+              >
+                <Icon className="h-3.5 w-3.5 text-foreground/45" />
+                {area}
+              </span>
+            )
+          })}
+          {preview.areas.length > MAX_VISIBLE_BADGES && (
+            <span className="inline-flex items-center rounded-lg px-2 py-1.5 text-[12.5px] font-medium text-muted-foreground">
+              +{preview.areas.length - MAX_VISIBLE_BADGES} till
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="px-5 pb-5 pt-1">
+        <Button asChild size="lg" className="w-full">
+          <Link href={ctaUrl}>
+            Testa gratis
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </Button>
+        <p className="mt-2.5 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+          <Check className="h-3.5 w-3.5 text-emerald-600" />
+          Gratis i 15 dagar · inget betalkort krävs
+        </p>
+      </div>
+    </div>
+  )
+
   return (
     <div className={cn('w-full', className)}>
-      {!preview &&
+      {(resultMode === 'modal' || !preview) &&
         (step === 1 ? (
           <form onSubmit={goNext}>
+            {eyebrow && (
+              <p className="mb-2.5 flex items-center gap-1.5 pl-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500/70 opacity-70" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-600" />
+                </span>
+                {eyebrow}
+              </p>
+            )}
             <div className={pill}>
               <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
               <input
@@ -158,9 +329,11 @@ export function OrgCheckForm({ className }: { className?: string }) {
                 <ArrowRight className="h-3.5 w-3.5" />
               </button>
             </div>
-            <p className="mt-2.5 pl-1 text-xs text-muted-foreground">
-              Se direkt vilka regler som gäller — på 30 sekunder.
-            </p>
+            {!eyebrow && (
+              <p className="mt-2.5 pl-1 text-xs text-muted-foreground">
+                Se direkt vilka regler som gäller — på 30 sekunder.
+              </p>
+            )}
           </form>
         ) : (
           <form onSubmit={handleSubmit}>
@@ -217,86 +390,35 @@ export function OrgCheckForm({ className }: { className?: string }) {
           </form>
         ))}
 
-      {/* Result */}
-      <div
-        aria-live="polite"
-        className={cn(
-          'overflow-hidden transition-all duration-500 ease-out',
-          preview ? 'mt-4 max-h-[680px] opacity-100' : 'max-h-0 opacity-0'
-        )}
-      >
-        {preview && (
-          <div className="rounded-2xl border border-border bg-card text-left shadow-sm">
-            <div className="flex items-start justify-between gap-3 p-5 pb-4">
-              <div className="min-w-0">
-                <h3 className="text-lg font-semibold leading-tight">
-                  {preview.company.name}
-                </h3>
-                <div className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                  {preview.company.legalForm && (
-                    <span>{preview.company.legalForm}</span>
-                  )}
-                  {preview.company.municipality && (
-                    <>
-                      <span aria-hidden>·</span>
-                      <span>{preview.company.municipality}</span>
-                    </>
-                  )}
-                </div>
-                {preview.companySummary && (
-                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                    {preview.companySummary}
-                  </p>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setPreview(null)
-                  setStep(1)
-                }}
-                className="shrink-0 text-xs text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"
-              >
-                Sök på nytt
-              </button>
-            </div>
-
-            <div className="border-t border-border bg-muted/30 px-5 py-4">
-              <div className="mb-3 flex items-center gap-2">
-                <Shield className="h-4 w-4 text-primary" />
-                <p className="text-sm font-medium">
-                  Minst{' '}
-                  <span className="text-base font-bold text-primary">
-                    {preview.areaCount}
-                  </span>{' '}
-                  regelområden kan beröra er verksamhet
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {preview.areas.slice(0, MAX_VISIBLE_BADGES).map((area) => (
-                  <Badge key={area} variant="secondary" className="text-xs">
-                    {area}
-                  </Badge>
-                ))}
-                {preview.areas.length > MAX_VISIBLE_BADGES && (
-                  <Badge variant="outline" className="text-xs">
-                    +{preview.areas.length - MAX_VISIBLE_BADGES} till…
-                  </Badge>
-                )}
-              </div>
-            </div>
-
-            <div className="p-5 pt-4">
-              <Button asChild size="lg" className="w-full">
-                <Link href={ctaUrl}>
-                  Kom igång gratis
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Result — modal (hero) keeps it out of the page flow so the layout
+          doesn't shift; inline (try-now) reveals it in place */}
+      {resultMode === 'modal' ? (
+        <Dialog
+          open={!!preview}
+          onOpenChange={(open) => {
+            if (!open) reset()
+          }}
+        >
+          <DialogContent className="max-w-md gap-0 overflow-hidden p-0">
+            <DialogTitle className="sr-only">
+              {preview
+                ? `Regelöversikt för ${preview.company.name}`
+                : 'Regelöversikt'}
+            </DialogTitle>
+            {result}
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <div
+          aria-live="polite"
+          className={cn(
+            'overflow-hidden transition-all duration-500 ease-out',
+            preview ? 'mt-4 max-h-[680px] opacity-100' : 'max-h-0 opacity-0'
+          )}
+        >
+          {result}
+        </div>
+      )}
     </div>
   )
 }
