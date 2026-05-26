@@ -30,6 +30,8 @@ import {
   Paperclip,
   Image as ImageIcon,
   Sheet,
+  AlertTriangle,
+  Clock,
 } from 'lucide-react'
 import { getFileDownloadUrl } from '@/app/actions/files'
 import { Streamdown } from 'streamdown'
@@ -128,6 +130,27 @@ const TOOL_CONFIG: Record<
     doneLabel: 'Hämtade länkade dokument',
     icon: FileText,
   },
+  // Story 19.3: workspace-wide diagnostic aggregates.
+  list_bevis_gaps: {
+    label: 'Letar efter bevisluckor',
+    doneLabel: 'Hittade bevisluckor',
+    icon: AlertTriangle,
+  },
+  list_unassessed_changes: {
+    label: 'Letar efter obedömda ändringar',
+    doneLabel: 'Hittade obedömda ändringar',
+    icon: FileSearch,
+  },
+  list_overdue: {
+    label: 'Letar efter försenade uppgifter',
+    doneLabel: 'Hittade försenade uppgifter',
+    icon: Clock,
+  },
+  list_stale_documents: {
+    label: 'Letar efter dokument att granska',
+    doneLabel: 'Hittade dokument att granska',
+    icon: FileText,
+  },
   get_document_details: {
     label: 'Hämtar dokument',
     doneLabel: 'Hämtade dokument',
@@ -169,6 +192,13 @@ const TOOL_CONFIG: Record<
     label: 'Lägger till kravpunkt',
     doneLabel: 'Lade till kravpunkt',
     proposalLabel: 'Föreslog kravpunkt',
+    icon: ClipboardList,
+  },
+  // Story 14.28: propose an edit to a kravpunkt.
+  update_requirement: {
+    label: 'Ändrar kravpunkt',
+    doneLabel: 'Ändrade kravpunkt',
+    proposalLabel: 'Föreslog ändring av kravpunkt',
     icon: ClipboardList,
   },
   link_task_to_document: {
@@ -1453,7 +1483,7 @@ function TextBlock({
   const hasCitations = hasCitationMarkers(text)
 
   return (
-    <div className={PROSE_CLASSES}>
+    <div className={cn(PROSE_CLASSES, 'chat-markdown')}>
       <Streamdown
         mode={isStreaming ? 'streaming' : 'static'}
         isAnimating={isStreaming}

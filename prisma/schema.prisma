@@ -1597,6 +1597,8 @@ enum PendingAgentActionType {
   LINK_DOCUMENT_TO_TASK
   LINK_TASK_TO_DOCUMENT
   UPDATE_COMPLIANCE_STATUS
+  // Story 14.28 — agent-proposed kravpunkt (requirement) edit. Additive enum-value addition.
+  UPDATE_REQUIREMENT
   // Story 14.24 — agent-drafted styrdokument approval. Additive enum-value addition.
   DRAFT_DOCUMENT
 }

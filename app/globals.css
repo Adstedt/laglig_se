@@ -766,6 +766,33 @@ html {
     @apply bg-muted/30;
   }
 
+  /* ---------- Chat (agent markdown) tables ----------
+     Brings agent-emitted markdown tables onto the app's table styling — the
+     same card surface / muted uppercase header / row hover as legal documents,
+     slightly denser for the chat column. Zero-specificity prose defaults
+     (@tailwindcss/typography uses :where()) are overridden by these. */
+  .chat-markdown table {
+    @apply my-4 w-full overflow-hidden rounded-md border border-border text-sm;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .chat-markdown th {
+    @apply border-b border-border bg-muted/60 px-3.5 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground;
+  }
+
+  .chat-markdown td {
+    @apply border-b border-border/50 bg-background px-3.5 py-2.5 text-left align-top;
+  }
+
+  .chat-markdown tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .chat-markdown tr:hover td {
+    @apply bg-muted/30;
+  }
+
   /* ---------- Bold text ---------- */
   .legal-document b {
     @apply font-semibold;

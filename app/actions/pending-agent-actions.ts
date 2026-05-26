@@ -23,7 +23,10 @@ import {
   linkDocumentToTask,
   linkDocumentToListItem,
 } from './documents'
-import { createRequirement } from './law-list-item-requirements'
+import {
+  createRequirement,
+  updateRequirement,
+} from './law-list-item-requirements'
 import { markdownToHtml } from '@/lib/markdown/markdown-to-html'
 import type {
   ComplianceStatus,
@@ -73,6 +76,18 @@ interface AddContextNoteParams {
 interface UpdateComplianceStatusParams {
   lawListItemId: string
   newStatus: ComplianceStatus
+}
+// Story 14.28 — UPDATE_REQUIREMENT params. `patch` keys map 1:1 to the
+// updateRequirement `updates` object; `oldSnapshot` + `entity_version` are
+// renderer/staleness concerns and are not read by dispatch.
+interface UpdateRequirementParams {
+  requirementId: string
+  patch: {
+    text?: string
+    isFulfilled?: boolean
+    comment?: string | null
+    bevisRequired?: boolean
+  }
 }
 
 // Story 14.24 — DRAFT_DOCUMENT params (set by the draft_styrdokument tool).
@@ -242,6 +257,21 @@ export async function approvePendingAction(
               }
             }
             resultRef = { requirementId: result.data.id }
+            revalidatePaths = ['/laglistor']
+            break
+          }
+
+          // ── Story 14.28: edit kravpunkt (requirement) ──────────────────────
+          case 'UPDATE_REQUIREMENT': {
+            const p = action.params as unknown as UpdateRequirementParams
+            const result = await updateRequirement(p.requirementId, p.patch)
+            if (!result.success) {
+              return {
+                success: false,
+                error: result.error ?? 'Kunde inte uppdatera kravpunkten',
+              }
+            }
+            resultRef = { requirementId: p.requirementId }
             revalidatePaths = ['/laglistor']
             break
           }

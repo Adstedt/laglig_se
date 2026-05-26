@@ -1,0 +1,87 @@
+schema: 1
+story: '19.3'
+story_title: 'Agent Diagnostic Tools (bevis gaps, unassessed changes, overdue, stale docs)'
+gate: PASS
+status_reason: 'Four read-only diagnostic tools, clean + workspace-isolated + unit-green (216/216 agent suite; change-events action tests 10/10 regression-checking the SF-A refactor; tsc 0 branch-wide; eslint clean), and the owner live smoke PASSED (all four fired in a real GLOBAL chat; count-as-work-items + empty-state framing confirmed; no enum/id leakage). The one AC-3 gap — changeType emitted as a raw enum — was fixed during review (a CHANGE_TYPE_LABELS map already existed; the dev premise was wrong). All four NFRs PASS. Two low, non-blocking follow-ups tracked.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-26T14:20:00Z'
+
+waiver: { active: false }
+
+quality_score: 95
+expires: '2026-06-09T14:20:00Z'
+
+evidence:
+  tests_reviewed: 216
+  tests_result: 'QA-verified: full tests/unit/agent suite 216/216 (32 files); the directly-affected post-refactor suites (list-unassessed-changes, reader-utils) + change-events action tests = 22/22 (the latter regression-checking the SF-A extraction against the dashboard caller); tsc --noEmit 0 errors branch-wide; eslint clean on all touched files. No migration.'
+  smoke_test:
+    performed_by: 'Owner (Alexander)'
+    result: 'PASS — owner-approved'
+    covered:
+      - 'GLOBAL chat "Vad bör vi prioritera den här veckan?" → all four tools fired (chips: Hittade bevisluckor / obedömda ändringar / försenade uppgifter / dokument att granska).'
+      - 'list_bevis_gaps: 2 kravpunkter, Diskrimineringslagen (SFS 2008:567), ansvarig Sofia Karlsson (name not id).'
+      - 'list_unassessed_changes: "5 ändringar att hantera, fördelade på 3 lagar" — count-as-work-items framing held (not "5 unika"); per-list multiplicity surfaced.'
+      - 'list_overdue + list_stale_documents returned 0 → positive empty-state framing ("inga försenade… ett bra läge"), not "jag hittade inget".'
+      - 'Agent synthesised a prioritised plan; no raw enum/id leakage in Swedish copy.'
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    ac_gaps: []
+    notes:
+      - 'AC 1/2: factories take workspaceId only (no context); count = separate prisma.count for the 3 findMany tools, rows.length for unassessed (bounded). Asserted (count-vs-shown, take=20).'
+      - 'AC 3: names-not-IDs asserted (no responsible_user_id/assignee_id); Swedish labels for status/priority/impact AND now changeType (fixed in review). documentType deliberately raw (no map; coarse category, PO-accepted).'
+      - 'AC 4: inlined needs_evidence where (parity with query-builders.ts:67), orderBy created_at desc, responsible→parent name fallback.'
+      - 'AC 5 (SF-A): loadUnacknowledgedChanges(workspaceId) core extracted from getUnacknowledgedChanges; tool calls it with closure workspaceId (asserted); delegation regression-verified by existing change-events tests (10/10).'
+      - 'AC 6/7: overdue = due_date<now + column.is_done=false; stale = review_date<now excluding SUPERSEDED/ARCHIVED; daysOverdue derived; both asserted.'
+      - 'AC 8: registry 21→25, all read-tier, the four ∈ AUDITOR (registry-role-filter test). AC 11: no migration (verified). AC 12: gap_analysis/hem-chat/law-item-due_date out of scope (respected).'
+      - 'AC 9 (TOOL_CONFIG) + AC 10 (steering) present; not unit-asserted but AC 10 empty-state framing confirmed live in the smoke.'
+
+top_issues:
+  - id: 193-001
+    severity: low
+    status: resolved
+    summary: 'RESOLVED in review. changeType was emitted as a raw enum in list_unassessed_changes — AC 3 ("never the raw enum"). The dev judgment-call premise ("no label map exists") was wrong: a CHANGE_TYPE_LABELS map exists in assessment-detail.tsx / change-row.tsx. QA added changeTypeLabel to reader-utils (mirroring it, same pattern as impactLevelLabel) + applied + updated the test. All four enum fields now labelled.'
+    refs:
+      - 'lib/agent/tools/reader-utils.ts'
+      - 'lib/agent/tools/list-unassessed-changes.ts'
+    suggested_owner: dev
+  - id: 193-002
+    severity: low
+    status: open
+    summary: 'limit schema uses z.number().max(50) which REJECTS values >50 (validation error) rather than CLAMPING, though the Dev Notes say "clamped". Cosmetic — the agent will not pass >50 and the default is 20. Either .transform(v => Math.min(v,50)) or reword the notes.'
+    refs:
+      - 'lib/agent/tools/list-bevis-gaps.ts'
+      - 'lib/agent/tools/list-overdue.ts'
+      - 'lib/agent/tools/list-stale-documents.ts'
+      - 'lib/agent/tools/list-unassessed-changes.ts'
+    suggested_owner: dev
+  - id: 193-003
+    severity: low
+    status: open
+    summary: 'No dedicated changeTypeLabel unit in reader-utils.test.ts and no system-prompt.test.ts assertion for the diagnostics steering bullet (AC 10). Both covered indirectly (list-unassessed-changes test asserts the label; live smoke confirmed steering). Add for parity with the sibling helpers if convenient.'
+    refs:
+      - 'tests/unit/agent/tools/reader-utils.test.ts'
+      - 'tests/unit/agent/system-prompt.test.ts'
+    suggested_owner: dev
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Workspace isolation on all four — closure workspaceId in the where (bevis/overdue/stale) and the SF-A core raw SQL WHERE ll.workspace_id = ${workspaceId} (unassessed; no session dependency in the streaming loop). Names-not-IDs enforced (asserted). read-tier → AUDITOR-safe, no write surface. Live smoke showed only own-workspace data. No raw @anthropic-ai/sdk.'
+  performance:
+    status: PASS
+    notes: 'SF-1 caps at the Prisma take level + separate prisma.count (never rows.length on a capped set), parallelised via Promise.all. The one uncapped path (loadUnacknowledgedChanges) is naturally bounded and reuses the shipped dashboard query unchanged.'
+  reliability:
+    status: PASS
+    notes: 'try/catch → wrapToolError on all four; SF-A core has its own try/catch; getUnacknowledgedChanges keeps its outer try/catch + passthroughRedirect (behaviour-preserving — regression-verified). Missing/empty fails safe. Empty-state positive framing. End-to-end confirmed by the owner smoke.'
+  maintainability:
+    status: PASS
+    notes: 'Clean, mirrors established tool patterns; reuses shared reader-utils + the canonical needs_evidence/unacknowledged-change definitions. All enum labels now consolidated through reader-utils. IMPACT_LEVEL_LABELS + CHANGE_TYPE_LABELS server-side duplication has a logged consolidation follow-up (193-003 family).'
+
+recommendations:
+  immediate: []
+  future:
+    - action: '193-002: clamp the limit (transform) or reword the Dev Notes.'
+      refs: ['lib/agent/tools/list-bevis-gaps.ts']
+    - action: '193-003: add changeTypeLabel helper unit + a system-prompt diagnostics-steering assertion; consolidate the enum-label maps server-side.'
+      refs: ['lib/agent/tools/reader-utils.ts', 'tests/unit/agent/system-prompt.test.ts']

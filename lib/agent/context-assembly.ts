@@ -162,6 +162,11 @@ function summarizePendingAction(action: PendingAgentAction): string {
       return `Koppla dokument "${s('documentTitle')}" → uppgift "${s('taskTitle')}"`
     case 'ADD_OBLIGATION':
       return `Lägg till kravpunkt för ${s('lawTitle')}: "${s('text')}"`
+    case 'UPDATE_REQUIREMENT': {
+      const patch = (p.patch ?? {}) as Record<string, unknown>
+      const n = Object.keys(patch).length
+      return `Ändra kravpunkt: ${n} fält`
+    }
     case 'ASSIGN_TASK':
       return `Tilldela "${s('taskTitle')}" till ${s('userName')}`
     case 'ADD_CONTEXT_NOTE':

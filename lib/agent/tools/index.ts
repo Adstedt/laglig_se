@@ -15,6 +15,11 @@ import { createSearchTasksTool } from './search-tasks'
 import { createGetLawListItemTool } from './get-law-list-item'
 import { createGetTaskTool } from './get-task'
 import { createListLinkedArtifactsTool } from './list-linked-artifacts'
+// Story 19.3: workspace-wide diagnostic aggregates (gap detection).
+import { createListBevisGapsTool } from './list-bevis-gaps'
+import { createListUnassessedChangesTool } from './list-unassessed-changes'
+import { createListOverdueTool } from './list-overdue'
+import { createListStaleDocumentsTool } from './list-stale-documents'
 import { createGetDocumentDetailsTool } from './get-document-details'
 import { createGetChangeDetailsTool } from './get-change-details'
 import { createGetCompanyContextTool } from './get-company-context'
@@ -27,6 +32,8 @@ import { createSuggestFollowupsTool } from './suggest-followups'
 import { createLinkTaskToDocumentTool } from './link-task-to-document'
 import { createLinkDocumentToTaskTool } from './link-document-to-task'
 import { createAddObligationTool } from './add-obligation'
+// Story 14.28: propose an edit to a kravpunkt (UPDATE_REQUIREMENT approval card).
+import { createUpdateRequirementTool } from './update-requirement'
 import { createAssignTaskTool } from './assign-task'
 // Story 14.24: agent-drafted styrdokument approval.
 import { createDraftStyrdokumentTool } from './draft-styrdokument'
@@ -92,6 +99,10 @@ type ToolName =
   | 'get_law_list_item'
   | 'get_task'
   | 'list_linked_artifacts'
+  | 'list_bevis_gaps'
+  | 'list_unassessed_changes'
+  | 'list_overdue'
+  | 'list_stale_documents'
   | 'get_document_details'
   | 'get_change_details'
   | 'get_company_context'
@@ -104,6 +115,7 @@ type ToolName =
   | 'link_task_to_document'
   | 'link_document_to_task'
   | 'add_obligation'
+  | 'update_requirement'
   | 'assign_task'
   | 'draft_styrdokument'
 
@@ -116,6 +128,10 @@ export const TOOL_REGISTRY_POLICY = {
   get_law_list_item: 'read',
   get_task: 'read',
   list_linked_artifacts: 'read',
+  list_bevis_gaps: 'read',
+  list_unassessed_changes: 'read',
+  list_overdue: 'read',
+  list_stale_documents: 'read',
   get_document_details: 'read',
   get_change_details: 'read',
   get_company_context: 'read',
@@ -128,6 +144,7 @@ export const TOOL_REGISTRY_POLICY = {
   link_task_to_document: 'write',
   link_document_to_task: 'write',
   add_obligation: 'write',
+  update_requirement: 'write',
   assign_task: 'write',
   draft_styrdokument: 'write',
 } satisfies Record<ToolName, 'read' | 'write'>
@@ -172,6 +189,12 @@ export function createAgentTools(
       writeContext
     ),
     get_task: createGetTaskTool(workspaceId, writeContext),
+    // Story 19.3: workspace-wide diagnostics — read-tier, no context needed
+    // (aggregates with no entry-node id; scope is the closure workspaceId).
+    list_bevis_gaps: createListBevisGapsTool(workspaceId),
+    list_unassessed_changes: createListUnassessedChangesTool(workspaceId),
+    list_overdue: createListOverdueTool(workspaceId),
+    list_stale_documents: createListStaleDocumentsTool(workspaceId),
     get_document_details: createGetDocumentDetailsTool(),
     get_change_details: createGetChangeDetailsTool(),
     get_company_context: createGetCompanyContextTool(workspaceId),
@@ -195,6 +218,8 @@ export function createAgentTools(
       writeContext
     ),
     add_obligation: createAddObligationTool(workspaceId, writeContext),
+    // Story 14.28: propose a kravpunkt edit (UPDATE_REQUIREMENT pending action).
+    update_requirement: createUpdateRequirementTool(workspaceId, writeContext),
     assign_task: createAssignTaskTool(workspaceId, writeContext),
     // Story 14.24: propose a full agent-authored styrdokument (DRAFT_DOCUMENT).
     draft_styrdokument: createDraftStyrdokumentTool(workspaceId, writeContext),

@@ -8,7 +8,12 @@ import {
   getPriorityBadgeProps,
   type PriorityValue,
 } from '@/lib/ui/badge-tones'
-import type { ComplianceStatus, ImpactLevel } from '@prisma/client'
+import type {
+  ChangeType,
+  ComplianceStatus,
+  ImpactLevel,
+  WorkspaceDocumentStatus,
+} from '@prisma/client'
 import { truncateMarkdown } from './utils'
 
 /** Cap a long free-text field to a short, plain-text excerpt (no raw HTML). */
@@ -88,4 +93,37 @@ export function impactLevelLabel(
   value: ImpactLevel | null | undefined
 ): string | null {
   return value ? IMPACT_LEVEL_LABELS[value] : null
+}
+
+/**
+ * Canonical Swedish label for a `WorkspaceDocumentStatus` (DRAFT → "Utkast",
+ * APPROVED → "Godkänd", …). Reuses the single source in `lib/ui/badge-tones`
+ * (the `'document-status'` domain). Story 19.3 (list_stale_documents).
+ */
+export function workspaceDocumentStatusLabel(
+  value: WorkspaceDocumentStatus | null | undefined
+): string | null {
+  return value ? getStatusBadgeProps('document-status', value).label : null
+}
+
+/**
+ * Swedish label for the `ChangeType` enum (AMENDMENT → "Ändring", REPEAL →
+ * "Upphävande", …). Mirrors `CHANGE_TYPE_LABELS` in `assessment-detail.tsx` /
+ * `change-row.tsx` — duplicated here because those modules are `'use client'`
+ * and can't be imported server-side (same rationale as `IMPACT_LEVEL_LABELS`).
+ * Consolidating the enum-label maps into a server-safe location is a logged
+ * follow-up.
+ */
+const CHANGE_TYPE_LABELS: Record<ChangeType, string> = {
+  NEW_LAW: 'Ny lag',
+  AMENDMENT: 'Ändring',
+  REPEAL: 'Upphävande',
+  METADATA_UPDATE: 'Metadata',
+  NEW_RULING: 'Nytt avgörande',
+}
+
+export function changeTypeLabel(
+  value: ChangeType | null | undefined
+): string | null {
+  return value ? CHANGE_TYPE_LABELS[value] : null
 }

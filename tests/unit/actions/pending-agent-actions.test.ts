@@ -12,6 +12,7 @@ const {
   mockUpdateTasksBulk,
   mockLinkDocumentToTask,
   mockCreateRequirement,
+  mockUpdateRequirement,
   mockCreateDocument,
   mockLinkDocumentToListItem,
 } = vi.hoisted(() => ({
@@ -20,6 +21,7 @@ const {
   mockUpdateTasksBulk: vi.fn(),
   mockLinkDocumentToTask: vi.fn(),
   mockCreateRequirement: vi.fn(),
+  mockUpdateRequirement: vi.fn(),
   mockCreateDocument: vi.fn(),
   mockLinkDocumentToListItem: vi.fn(),
 }))
@@ -59,6 +61,7 @@ vi.mock('@/app/actions/documents', () => ({
 
 vi.mock('@/app/actions/law-list-item-requirements', () => ({
   createRequirement: mockCreateRequirement,
+  updateRequirement: mockUpdateRequirement,
 }))
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
@@ -481,6 +484,50 @@ describe('approvePendingAction — extended types (14.23)', () => {
       bevisRequired: true,
     })
     expect(result.data?.resultRef).toEqual({ requirementId: 'req_1' })
+  })
+
+  it('dispatches UPDATE_REQUIREMENT via updateRequirement with the patch', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({
+        action_type: 'UPDATE_REQUIREMENT',
+        params: {
+          requirementId: 'req_1',
+          patch: { isFulfilled: true, comment: 'Klart' },
+        },
+      })
+    )
+    mockUpdateRequirement.mockResolvedValue({ success: true })
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(mockUpdateRequirement).toHaveBeenCalledWith('req_1', {
+      isFulfilled: true,
+      comment: 'Klart',
+    })
+    expect(result.data?.resultRef).toEqual({ requirementId: 'req_1' })
+  })
+
+  it('UPDATE_REQUIREMENT keeps the row PENDING on dispatch failure', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({
+        action_type: 'UPDATE_REQUIREMENT',
+        params: { requirementId: 'req_1', patch: { isFulfilled: true } },
+      })
+    )
+    mockUpdateRequirement.mockResolvedValue({
+      success: false,
+      error: 'Kunde inte',
+    })
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(false)
+    // Not marked APPROVED — the row update only runs after a successful dispatch.
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
   })
 
   it('dispatches ASSIGN_TASK via updateTasksBulk([taskId], { assigneeId })', async () => {

@@ -28,6 +28,7 @@ import {
 import { LinkTaskToDocumentRenderer } from './agent-action-renderers/link-task-to-document-renderer'
 import { LinkDocumentToTaskRenderer } from './agent-action-renderers/link-document-to-task-renderer'
 import { AddObligationRenderer } from './agent-action-renderers/add-obligation-renderer'
+import { UpdateRequirementRenderer } from './agent-action-renderers/update-requirement-renderer'
 import { AssignTaskRenderer } from './agent-action-renderers/assign-task-renderer'
 import { AddContextNoteRenderer } from './agent-action-renderers/add-context-note-renderer'
 import { UpdateComplianceStatusRenderer } from './agent-action-renderers/update-compliance-status-renderer'
@@ -40,6 +41,7 @@ export const ACTION_TYPE_LABELS: Partial<
   LINK_TASK_TO_DOCUMENT: 'Koppla uppgift till dokument',
   LINK_DOCUMENT_TO_TASK: 'Koppla dokument till uppgift',
   ADD_OBLIGATION: 'Ny kravpunkt',
+  UPDATE_REQUIREMENT: 'Ändra kravpunkt',
   ASSIGN_TASK: 'Tilldela uppgift',
   ADD_CONTEXT_NOTE: 'Ny anteckning',
   UPDATE_COMPLIANCE_STATUS: 'Ändra status',
@@ -54,6 +56,7 @@ export const RENDERERS: Partial<
   LINK_TASK_TO_DOCUMENT: LinkTaskToDocumentRenderer,
   LINK_DOCUMENT_TO_TASK: LinkDocumentToTaskRenderer,
   ADD_OBLIGATION: AddObligationRenderer,
+  UPDATE_REQUIREMENT: UpdateRequirementRenderer,
   ASSIGN_TASK: AssignTaskRenderer,
   ADD_CONTEXT_NOTE: AddContextNoteRenderer,
   UPDATE_COMPLIANCE_STATUS: UpdateComplianceStatusRenderer,
@@ -73,7 +76,8 @@ function affectedSwrKeys(action: PendingAgentAction): string[] {
   if (!itemId) return []
   switch (action.action_type) {
     case 'ADD_OBLIGATION':
-      // New kravpunkt → the modal's KravpunkterChecklist + the artifacts panel.
+    case 'UPDATE_REQUIREMENT':
+      // New/edited kravpunkt → the modal's KravpunkterChecklist + artifacts panel.
       return [`list-item-requirements:${itemId}`, `linked-artifacts:${itemId}`]
     case 'ADD_CONTEXT_NOTE':
       // business_context append → the item + its "extra" fields.

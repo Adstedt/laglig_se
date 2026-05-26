@@ -32,88 +32,106 @@ export async function getUnacknowledgedChanges(): Promise<
   ActionResult<UnacknowledgedChange[]>
 > {
   try {
-    return await withWorkspace(async (ctx) => {
-      // Find all ChangeEvents for documents that are in this workspace's law lists
-      // and haven't been acknowledged yet
-      // One row per (ChangeEvent × LawList) — each is an independent unit of work
-      // for the assessment flow, with full list-specific context.
-      const changes = await prisma.$queryRaw<
-        Array<{
-          id: string
-          document_id: string
-          title: string
-          document_number: string
-          content_type: ContentType
-          change_type: ChangeType
-          amendment_sfs: string | null
-          ai_summary: string | null
-          detected_at: Date
-          effective_date: Date | null
-          list_id: string
-          list_name: string
-          law_list_item_id: string
-        }>
-      >`
-        SELECT
-          ce.id,
-          ce.document_id,
-          ld.title,
-          ld.document_number,
-          ld.content_type,
-          ce.change_type,
-          ce.amendment_sfs,
-          ce.ai_summary,
-          ce.detected_at,
-          ad.effective_date,
-          ll.id as list_id,
-          ll.name as list_name,
-          lli.id as law_list_item_id
-        FROM change_events ce
-        JOIN legal_documents ld ON ld.id = ce.document_id
-        JOIN law_list_items lli ON lli.document_id = ce.document_id
-        JOIN law_lists ll ON ll.id = lli.law_list_id
-        LEFT JOIN amendment_documents ad ON ad.sfs_number = ce.amendment_sfs
-        LEFT JOIN change_assessments ca
-          ON ca.change_event_id = ce.id
-          AND ca.law_list_item_id = lli.id
-        WHERE ll.workspace_id = ${ctx.workspaceId}
-          AND ca.id IS NULL
-          AND (
-            lli.last_change_acknowledged_at IS NULL
-            OR ce.detected_at > lli.last_change_acknowledged_at
-          )
-          AND NOT (ce.change_type = 'NEW_LAW' AND ce.amendment_sfs IS NULL)
-      `
+    // Story 19.3 (SF-A): delegate to the workspaceId-parameterized core so the
+    // same query backs both this session-derived action AND the agent
+    // `list_unassessed_changes` tool (which passes its closure workspaceId — no
+    // session/cookies() dependency inside the streaming tool loop).
+    return await withWorkspace(
+      (ctx) => loadUnacknowledgedChanges(ctx.workspaceId),
+      'read'
+    )
+  } catch (error) {
+    passthroughRedirect(error)
+    console.error('Error fetching unacknowledged changes:', error)
+    return { success: false, error: 'Kunde inte hämta ändringar' }
+  }
+}
 
-      // Derive priority and sort
-      const result: UnacknowledgedChange[] = changes.map((ce) => ({
-        id: ce.id,
-        documentId: ce.document_id,
-        documentTitle: ce.title,
-        documentNumber: ce.document_number,
-        contentType: ce.content_type,
-        changeType: ce.change_type,
-        amendmentSfs: ce.amendment_sfs,
-        aiSummary: ce.ai_summary,
-        detectedAt: ce.detected_at,
-        effectiveDate: ce.effective_date ?? null,
-        priority: derivePriority(ce.change_type),
-        listId: ce.list_id,
-        listName: ce.list_name,
-        lawListItemId: ce.law_list_item_id,
-      }))
-
-      // Sort: priority desc, then detected_at desc
-      result.sort((a, b) => {
-        const pDiff = priorityWeight(b.priority) - priorityWeight(a.priority)
-        if (pDiff !== 0) return pDiff
-        return (
-          new Date(b.detectedAt).getTime() - new Date(a.detectedAt).getTime()
+/**
+ * Story 19.3 (SF-A): workspaceId-parameterized core of the unacknowledged-change
+ * query. Both the session-derived `getUnacknowledgedChanges` (above) and the
+ * agent `list_unassessed_changes` tool delegate here. One row per
+ * (ChangeEvent × LawList) — each is an independent unit of work for the
+ * assessment flow, with full list-specific context (unchanged semantics).
+ */
+export async function loadUnacknowledgedChanges(
+  workspaceId: string
+): Promise<ActionResult<UnacknowledgedChange[]>> {
+  try {
+    const changes = await prisma.$queryRaw<
+      Array<{
+        id: string
+        document_id: string
+        title: string
+        document_number: string
+        content_type: ContentType
+        change_type: ChangeType
+        amendment_sfs: string | null
+        ai_summary: string | null
+        detected_at: Date
+        effective_date: Date | null
+        list_id: string
+        list_name: string
+        law_list_item_id: string
+      }>
+    >`
+      SELECT
+        ce.id,
+        ce.document_id,
+        ld.title,
+        ld.document_number,
+        ld.content_type,
+        ce.change_type,
+        ce.amendment_sfs,
+        ce.ai_summary,
+        ce.detected_at,
+        ad.effective_date,
+        ll.id as list_id,
+        ll.name as list_name,
+        lli.id as law_list_item_id
+      FROM change_events ce
+      JOIN legal_documents ld ON ld.id = ce.document_id
+      JOIN law_list_items lli ON lli.document_id = ce.document_id
+      JOIN law_lists ll ON ll.id = lli.law_list_id
+      LEFT JOIN amendment_documents ad ON ad.sfs_number = ce.amendment_sfs
+      LEFT JOIN change_assessments ca
+        ON ca.change_event_id = ce.id
+        AND ca.law_list_item_id = lli.id
+      WHERE ll.workspace_id = ${workspaceId}
+        AND ca.id IS NULL
+        AND (
+          lli.last_change_acknowledged_at IS NULL
+          OR ce.detected_at > lli.last_change_acknowledged_at
         )
-      })
+        AND NOT (ce.change_type = 'NEW_LAW' AND ce.amendment_sfs IS NULL)
+    `
 
-      return { success: true, data: result }
-    }, 'read')
+    // Derive priority and sort
+    const result: UnacknowledgedChange[] = changes.map((ce) => ({
+      id: ce.id,
+      documentId: ce.document_id,
+      documentTitle: ce.title,
+      documentNumber: ce.document_number,
+      contentType: ce.content_type,
+      changeType: ce.change_type,
+      amendmentSfs: ce.amendment_sfs,
+      aiSummary: ce.ai_summary,
+      detectedAt: ce.detected_at,
+      effectiveDate: ce.effective_date ?? null,
+      priority: derivePriority(ce.change_type),
+      listId: ce.list_id,
+      listName: ce.list_name,
+      lawListItemId: ce.law_list_item_id,
+    }))
+
+    // Sort: priority desc, then detected_at desc
+    result.sort((a, b) => {
+      const pDiff = priorityWeight(b.priority) - priorityWeight(a.priority)
+      if (pDiff !== 0) return pDiff
+      return new Date(b.detectedAt).getTime() - new Date(a.detectedAt).getTime()
+    })
+
+    return { success: true, data: result }
   } catch (error) {
     passthroughRedirect(error)
     console.error('Error fetching unacknowledged changes:', error)

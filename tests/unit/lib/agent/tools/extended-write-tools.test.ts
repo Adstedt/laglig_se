@@ -11,6 +11,7 @@ vi.mock('@/lib/prisma', () => ({
     task: { findFirst: vi.fn() },
     workspaceDocument: { findFirst: vi.fn() },
     lawListItem: { findFirst: vi.fn() },
+    lawListItemRequirement: { findFirst: vi.fn() },
     workspaceMember: { findFirst: vi.fn() },
     pendingAgentAction: { create: vi.fn() },
   },
@@ -19,6 +20,7 @@ vi.mock('@/lib/prisma', () => ({
 import { createLinkTaskToDocumentTool } from '@/lib/agent/tools/link-task-to-document'
 import { createLinkDocumentToTaskTool } from '@/lib/agent/tools/link-document-to-task'
 import { createAddObligationTool } from '@/lib/agent/tools/add-obligation'
+import { createUpdateRequirementTool } from '@/lib/agent/tools/update-requirement'
 import { createAssignTaskTool } from '@/lib/agent/tools/assign-task'
 import { createAddContextNoteTool } from '@/lib/agent/tools/add-context-note'
 import { createUpdateComplianceStatusTool } from '@/lib/agent/tools/update-compliance-status'
@@ -141,6 +143,85 @@ describe('add_obligation', () => {
       bevisRequired: false,
     })
     expect(result.error).toBe(true)
+  })
+})
+
+describe('update_requirement', () => {
+  const existing = {
+    text: 'Gammal text',
+    is_fulfilled: false,
+    bevis_required: false,
+    comment: null,
+    updated_at: new Date('2026-01-01T00:00:00.000Z'),
+    list_item_id: 'li_1',
+  }
+
+  it('creates an UPDATE_REQUIREMENT row with the changed-field patch + oldSnapshot + entity_version', async () => {
+    fn(prisma.lawListItemRequirement.findFirst).mockResolvedValue(existing)
+
+    const result = await execOf(createUpdateRequirementTool('ws_1', CTX))({
+      requirementId: 'req_1',
+      isFulfilled: true,
+      comment: 'Klart 12 mars',
+    })
+
+    const call = fn(prisma.pendingAgentAction.create).mock.calls[0][0]
+    expect(call.data.action_type).toBe('UPDATE_REQUIREMENT')
+    expect(call.data.params).toMatchObject({
+      requirementId: 'req_1',
+      lawListItemId: 'li_1',
+      patch: { isFulfilled: true, comment: 'Klart 12 mars' },
+      oldSnapshot: {
+        text: 'Gammal text',
+        isFulfilled: false,
+        comment: null,
+        bevisRequired: false,
+      },
+      entity_version: '2026-01-01T00:00:00.000Z',
+    })
+    // Unchanged fields are NOT in the patch (AC 3).
+    expect(call.data.params.patch).not.toHaveProperty('text')
+    expect(call.data.params.patch).not.toHaveProperty('bevisRequired')
+    expect(result.data).toEqual({ pendingActionId: 'pa_x' })
+  })
+
+  it('rejects a no-op (same boolean + whitespace-only text diff)', async () => {
+    fn(prisma.lawListItemRequirement.findFirst).mockResolvedValue(existing)
+    const result = await execOf(createUpdateRequirementTool('ws_1', CTX))({
+      requirementId: 'req_1',
+      isFulfilled: false, // same as current
+      text: '  Gammal text  ', // differs only by whitespace → suppressed
+    })
+    expect(result.error).toBe(true)
+    expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
+  })
+
+  it('rejects execute: true (inline approval only)', async () => {
+    const result = await execOf(createUpdateRequirementTool('ws_1', CTX))({
+      requirementId: 'req_1',
+      isFulfilled: true,
+      execute: true,
+    })
+    expect(result.error).toBe(true)
+    expect(fn(prisma.lawListItemRequirement.findFirst)).not.toHaveBeenCalled()
+  })
+
+  it('errors when no mutable field is supplied', async () => {
+    const result = await execOf(createUpdateRequirementTool('ws_1', CTX))({
+      requirementId: 'req_1',
+    })
+    expect(result.error).toBe(true)
+    expect(fn(prisma.lawListItemRequirement.findFirst)).not.toHaveBeenCalled()
+  })
+
+  it('errors when the requirement is not found (workspace-scoped)', async () => {
+    fn(prisma.lawListItemRequirement.findFirst).mockResolvedValue(null)
+    const result = await execOf(createUpdateRequirementTool('ws_1', CTX))({
+      requirementId: 'missing',
+      isFulfilled: true,
+    })
+    expect(result.error).toBe(true)
+    expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
   })
 })
 

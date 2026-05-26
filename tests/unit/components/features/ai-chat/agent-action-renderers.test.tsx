@@ -17,6 +17,7 @@ vi.mock('@/app/actions/tasks', () => ({
 }))
 
 import { AddObligationRenderer } from '@/components/features/ai-chat/agent-action-renderers/add-obligation-renderer'
+import { UpdateRequirementRenderer } from '@/components/features/ai-chat/agent-action-renderers/update-requirement-renderer'
 import { AddContextNoteRenderer } from '@/components/features/ai-chat/agent-action-renderers/add-context-note-renderer'
 import { UpdateComplianceStatusRenderer } from '@/components/features/ai-chat/agent-action-renderers/update-compliance-status-renderer'
 import { AssignTaskRenderer } from '@/components/features/ai-chat/agent-action-renderers/assign-task-renderer'
@@ -122,11 +123,105 @@ describe('AddObligationRenderer', () => {
       />
     )
     // Collapsed: the one-line summary shows, the textarea does not.
-    expect(screen.getByText('AFS 2011:19: Dokumentera')).toBeInTheDocument()
+    expect(screen.getByText('Dokumentera')).toBeInTheDocument()
     expect(screen.queryByDisplayValue('Dokumentera')).not.toBeInTheDocument()
     // Expand via the row trigger (the summary line).
-    fireEvent.click(screen.getByText('AFS 2011:19: Dokumentera'))
+    fireEvent.click(screen.getByText('Dokumentera'))
     expect(screen.getByDisplayValue('Dokumentera')).toBeInTheDocument()
+  })
+})
+
+describe('UpdateRequirementRenderer', () => {
+  const params = {
+    requirementId: 'req_1',
+    lawListItemId: 'li_1',
+    patch: { isFulfilled: true, comment: 'Klart' },
+    oldSnapshot: {
+      text: 'Dokumentera',
+      isFulfilled: false,
+      comment: null,
+      bevisRequired: false,
+    },
+    entity_version: '2026-01-01T00:00:00.000Z',
+  }
+
+  it('PENDING: lead shows the fulfilled transition; renders only the changed fields', () => {
+    const h = handlers()
+    render(
+      <UpdateRequirementRenderer
+        action={action({ action_type: 'UPDATE_REQUIREMENT', params } as never)}
+        isSubmitting={false}
+        {...h}
+      />
+    )
+    // The one-line summary shows the boolean transition.
+    expect(screen.getByText(/uppfylld: Nej → Ja/)).toBeInTheDocument()
+    expandJustera()
+    // Changed fields present…
+    expect(screen.getByRole('switch', { name: /Uppfylld/ })).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Klart')).toBeInTheDocument()
+    // …unchanged fields (text, bevis) are NOT rendered (not in patch).
+    expect(
+      screen.queryByPlaceholderText('Beskriv kravet…')
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('switch', { name: /Bevis krävs/ })
+    ).not.toBeInTheDocument()
+  })
+
+  it('disables Godkänn when a proposed text edit is cleared', () => {
+    const h = handlers()
+    render(
+      <UpdateRequirementRenderer
+        action={action({
+          action_type: 'UPDATE_REQUIREMENT',
+          params: {
+            ...params,
+            patch: { text: 'Skärpt formulering' },
+          },
+        } as never)}
+        isSubmitting={false}
+        {...h}
+      />
+    )
+    expandJustera()
+    fireEvent.change(screen.getByDisplayValue('Skärpt formulering'), {
+      target: { value: '   ' },
+    })
+    expect(screen.getByRole('button', { name: /Godkänn/ })).toBeDisabled()
+  })
+
+  it('APPROVED shows the done copy + laglista link', () => {
+    const h = handlers()
+    render(
+      <UpdateRequirementRenderer
+        action={action({
+          status: 'APPROVED',
+          action_type: 'UPDATE_REQUIREMENT',
+          params,
+        } as never)}
+        isSubmitting={false}
+        {...h}
+      />
+    )
+    expect(screen.getByText(/kravpunkt uppdaterad/)).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: /Visa i laglistan/ })
+    ).toBeInTheDocument()
+  })
+
+  it('compact: collapsed summary, expands to reveal the editable diff', () => {
+    const h = handlers()
+    render(
+      <UpdateRequirementRenderer
+        action={action({ action_type: 'UPDATE_REQUIREMENT', params } as never)}
+        isSubmitting={false}
+        compact
+        {...h}
+      />
+    )
+    expect(screen.getByText(/Ändra kravpunkt/)).toBeInTheDocument()
+    expect(screen.queryByDisplayValue('Klart')).not.toBeInTheDocument()
   })
 })
 
