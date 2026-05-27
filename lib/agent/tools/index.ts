@@ -39,6 +39,8 @@ import { createAssignTaskTool } from './assign-task'
 import { createDraftStyrdokumentTool } from './draft-styrdokument'
 // Story 19.7a: load a skill's full instructions mid-conversation (skills layer).
 import { createActivateSkillTool } from './activate-skill'
+// Story 19.7c: per-skill registry narrowing — read an active skill's tool whitelist.
+import { getSkillToolWhitelist } from '../skill-loader'
 // Story 19.5: role-based registry filter + per-call decision logging.
 import type { WorkspaceRole } from '@prisma/client'
 import { hasPermission } from '@/lib/auth/permissions'
@@ -153,6 +155,28 @@ export const TOOL_REGISTRY_POLICY = {
   draft_styrdokument: 'write',
 } satisfies Record<ToolName, 'read' | 'write'>
 
+/**
+ * Story 19.7c: tools meaningless outside a specific skill — gated behind an
+ * active skill's whitelist. Today only `save_assessment` (it persists a
+ * ChangeAssessment and requires a `changeEventId`, so it is inherently a
+ * change-assessment action; its out-of-change use was already broken — SA-001).
+ * Every other factory tool — all reads + the ad-hoc write tools — is universally
+ * useful and lives in ALWAYS_AVAILABLE.
+ */
+const SKILL_GATED_TOOLS = new Set<ToolName>(['save_assessment'])
+
+/**
+ * Story 19.7c: the universal baseline. `createAgentTools(…, activeSkills)` narrows
+ * the registry to `ALWAYS_AVAILABLE ∪ (active skills' whitelists)`. Derived from the
+ * policy (minus the route-injected `web_search`, which this factory never builds)
+ * so a newly-added tool is always-available by default unless explicitly gated.
+ */
+const ALWAYS_AVAILABLE: ReadonlySet<ToolName> = new Set(
+  (Object.keys(TOOL_REGISTRY_POLICY) as ToolName[]).filter(
+    (name) => name !== 'web_search' && !SKILL_GATED_TOOLS.has(name)
+  )
+)
+
 /** Mutate a tool's `execute` to log every call (Story 19.5). In-place, idempotent-safe. */
 function wrapToolExecute(
   name: string,
@@ -172,7 +196,10 @@ export function createAgentTools(
   workspaceId: string,
   userId: string,
   context?: AgentToolContext,
-  role?: WorkspaceRole
+  role?: WorkspaceRole,
+  // Story 19.7c: narrow the registry to ALWAYS_AVAILABLE ∪ these skills' whitelists.
+  // `undefined` → no narrowing (legacy callers); `[]` → baseline only.
+  activeSkills?: string[]
 ) {
   // userId is required by write tools that persist a PendingAgentAction.
   const writeContext = { userId, ...context }
@@ -242,19 +269,35 @@ export function createAgentTools(
     wrapToolExecute(name, toolObj, logCtx)
   }
 
-  // Story 19.5: role filter — AUDITOR (lacks `tasks:edit`) receives read tools
-  // only. Absent role → full set (backward compat for legacy callers).
-  if (role && !hasPermission(role, 'tasks:edit')) {
-    // Cast to the full type: a role-filtered registry is only ever passed
-    // wholesale to streamText (which iterates whatever keys exist) — no caller
-    // accesses a specific tool key off a filtered registry, so claiming the full
-    // shape keeps consumers (e.g. generate-law-list) free of spurious `undefined`.
-    return Object.fromEntries(
-      Object.entries(tools).filter(
-        ([name]) => TOOL_REGISTRY_POLICY[name as ToolName] !== 'write'
-      )
-    ) as typeof tools
+  // Story 19.5 + 19.7c: one `allowed()` predicate composes the role filter
+  // (AUDITOR, lacking `tasks:edit`, gets read tools only) with per-skill
+  // narrowing. Both default to "no filtering" so legacy callers (no role, no
+  // activeSkills) receive the full set.
+  const roleReadOnly = role != null && !hasPermission(role, 'tasks:edit')
+  // activeSkills === undefined → no narrowing (legacy). [] → narrow to the
+  // baseline. [skills] → baseline ∪ those skills' declared whitelists.
+  const skillTools =
+    activeSkills === undefined
+      ? null
+      : new Set<string>([
+          ...ALWAYS_AVAILABLE,
+          ...activeSkills.flatMap((s) => getSkillToolWhitelist(s)),
+        ])
+
+  const allowed = (name: ToolName): boolean => {
+    if (roleReadOnly && TOOL_REGISTRY_POLICY[name] === 'write') return false
+    if (skillTools && !skillTools.has(name)) return false
+    return true
   }
 
-  return tools
+  // No filtering needed → return the full set as-is.
+  if (!roleReadOnly && !skillTools) return tools
+
+  // Cast to the full type: a filtered registry is only ever passed wholesale to
+  // streamText (which iterates whatever keys exist) — no caller reads a specific
+  // tool key off a filtered registry, so claiming the full shape keeps consumers
+  // (e.g. generate-law-list) free of spurious `undefined`.
+  return Object.fromEntries(
+    Object.entries(tools).filter(([name]) => allowed(name as ToolName))
+  ) as typeof tools
 }

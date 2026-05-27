@@ -29,6 +29,8 @@ import {
   buildSystemPrompt,
   formatCompanyContext,
 } from '@/lib/agent/system-prompt'
+// Story 19.7c: derive the context's primary skill to narrow the tool registry.
+import { getPrimarySkillForContext } from '@/lib/agent/skill-loader'
 import { buildPendingActionsContext } from '@/lib/agent/context-assembly'
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
@@ -284,6 +286,13 @@ export async function POST(req: Request) {
     // Create agent tools with workspace + user scoping + role filter (Story 19.5).
     // assistantMessageId + chat context are threaded so write tools can persist a
     // PendingAgentAction; modelVersion + role drive logging + the AUDITOR filter.
+    // Story 19.7c: narrow the registry to the context's primary skill (+ the
+    // ALWAYS_AVAILABLE baseline). Activation-only skills (gap_analysis) never
+    // appear here — their tools are all baseline. Mid-conversation activate_skill
+    // → activeSkills re-injection stays deferred (the live path is the tool result).
+    const primarySkill = getPrimarySkillForContext(contextType)
+    const activeSkills = primarySkill ? [primarySkill] : []
+
     const tools = createAgentTools(
       workspaceId,
       userId,
@@ -294,7 +303,8 @@ export async function POST(req: Request) {
         lawListItemId: resolvedLawListItemId,
         modelVersion: modelName,
       },
-      role
+      role,
+      activeSkills
     )
 
     // Anthropic web search (Story 14.21). Story 19.5: AUDITOR is read-only — no web_search.

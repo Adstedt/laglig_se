@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Prototype — Ändringsbedömning workflow</title>
+    <!--
+      Standalone HTML prototype (no React / no backend). Open directly in a browser.
+      Goal: show the change-assessment as a guided WORKFLOW (phase stepper) rather than
+      a generic chat. Palette = Laglig warm tokens. Fonts are system stand-ins; in-app
+      this is Google Sans Flex + Safiro (display).  Iterate freely — it's just markup.
+    -->
+    <style>
+      :root {
+        --background: 40 20% 98%;
+        --foreground: 30 10% 10%;
+        --primary: 30 15% 12%;
+        --primary-fg: 40 20% 98%;
+        --secondary: 40 15% 95%;
+        --muted: 40 12% 94%;
+        --muted-fg: 30 8% 45%;
+        --border: 35 10% 88%;
+        --card: 40 15% 99.5%;
+        --sage: 140 25% 95%;
+        --destructive: 0 60% 50%;
+        --radius: 12px;
+        --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { height: 100%; }
+      body {
+        font-family: 'Google Sans Flex', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+        background: hsl(var(--background));
+        color: hsl(var(--foreground));
+        -webkit-font-smoothing: antialiased;
+        display: flex; align-items: center; justify-content: center;
+        min-height: 100vh; padding: 28px;
+        background-image:
+          radial-gradient(60% 50% at 50% 0%, hsl(45 30% 96% / 0.9), transparent),
+          radial-gradient(40% 40% at 100% 100%, hsl(140 25% 95% / 0.6), transparent);
+      }
+      .backdrop { position: fixed; inset: 0; background: hsl(0 0% 0% / 0.18); }
+
+      /* prototype controls */
+      .controls {
+        position: fixed; top: 18px; right: 20px; z-index: 20;
+        display: flex; align-items: center; gap: 8px;
+      }
+      .pill {
+        background: hsl(var(--card) / 0.85); backdrop-filter: blur(8px);
+        border: 1px solid hsl(var(--border));
+        border-radius: 999px; padding: 5px 11px; font-size: 11px; font-weight: 500;
+        color: hsl(var(--muted-fg));
+      }
+      .btn {
+        font: inherit; cursor: pointer; border-radius: 8px; border: 1px solid hsl(var(--border));
+        background: hsl(var(--secondary)); color: hsl(var(--foreground));
+        padding: 6px 12px; font-size: 12.5px; font-weight: 500;
+        display: inline-flex; align-items: center; gap: 6px; transition: background .15s;
+      }
+      .btn:hover { background: hsl(var(--muted)); }
+      .btn-primary {
+        background: hsl(var(--primary)); color: hsl(var(--primary-fg)); border-color: hsl(var(--primary));
+      }
+      .btn-primary:hover { background: hsl(30 15% 18%); }
+
+      /* modal */
+      .modal {
+        position: relative; z-index: 1;
+        width: 100%; max-width: 860px; height: 88vh; max-height: 880px;
+        background: hsl(var(--background));
+        border: 1px solid hsl(var(--border)); border-radius: 16px;
+        box-shadow: 0 24px 60px -12px hsl(30 20% 10% / 0.28);
+        display: flex; flex-direction: column; overflow: hidden;
+      }
+      .modal-header {
+        display: flex; align-items: center; gap: 12px;
+        padding: 13px 18px; border-bottom: 1px solid hsl(var(--border)); flex-shrink: 0;
+      }
+      .badge {
+        background: hsl(var(--primary)); color: hsl(var(--primary-fg));
+        border-radius: 7px; padding: 3px 9px; font-size: 12px; font-weight: 500;
+      }
+      .hd-title { font-size: 14px; font-weight: 500; }
+      .hd-sub { font-size: 12px; color: hsl(var(--muted-fg)); margin-top: 1px; }
+      .close { margin-left: auto; width: 32px; height: 32px; border-radius: 8px;
+        border: none; background: transparent; cursor: pointer; color: hsl(var(--muted-fg));
+        display: grid; place-items: center; }
+      .close:hover { background: hsl(var(--muted)); }
+
+      /* ── stepper ─────────────────────────────────────────── */
+      .stepper { padding: 14px 22px 18px; border-bottom: 1px solid hsl(var(--border));
+        background: hsl(var(--card)); flex-shrink: 0; }
+      .stepper-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+      .eyebrow { font-size: 13px; font-weight: 500; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+      .tag { font-size: 9.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+        color: hsl(var(--muted-fg)); background: hsl(var(--secondary)); padding: 3px 8px; border-radius: 999px; }
+      .count { font-size: 11px; font-weight: 600; color: hsl(var(--muted-fg)); font-variant-numeric: tabular-nums; }
+
+      .steps { display: flex; align-items: flex-start; }
+      .step { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 88px; flex-shrink: 0; text-align: center; }
+      .node { width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center;
+        border: 1.5px solid hsl(var(--border)); background: hsl(var(--muted));
+        color: hsl(var(--muted-fg)); font-size: 13px; font-weight: 600; position: relative;
+        transition: all .5s var(--ease); }
+      .node svg { width: 16px; height: 16px; }
+      .step-label { font-size: 12.5px; line-height: 1.25; color: hsl(var(--muted-fg)); transition: color .5s; max-width: 92px; }
+      .step-sub { font-size: 10.5px; line-height: 1.2; margin-top: 1px; min-height: 13px; }
+      .conn { flex: 1; height: 2px; margin-top: 16px; border-radius: 999px; background: hsl(var(--border)); overflow: hidden; }
+      .conn > i { display: block; height: 100%; width: 0; background: hsl(var(--primary)); transition: width .7s var(--ease); }
+
+      .step[data-state='done'] .node { background: hsl(var(--primary)); border-color: hsl(var(--primary)); color: hsl(var(--primary-fg)); }
+      .step[data-state='active'] .node { background: hsl(var(--primary) / 0.08); border-color: hsl(var(--primary)); color: hsl(var(--primary));
+        box-shadow: 0 0 0 4px hsl(var(--primary) / 0.10); }
+      .step[data-state='active'] .node::after { content: ''; position: absolute; inset: -5px; border-radius: 999px;
+        border: 1.5px solid hsl(var(--primary) / 0.25); animation: ring 2.4s ease-in-out infinite; }
+      @keyframes ring { 0%,100% { opacity: .5; transform: scale(1); } 50% { opacity: 0; transform: scale(1.18); } }
+      .step[data-state]:not([data-state='upcoming']) .step-label { color: hsl(var(--foreground)); font-weight: 500; }
+      .conn[data-fill='1'] > i { width: 100%; }
+
+      /* ── chat thread ─────────────────────────────────────── */
+      .chat { flex: 1; overflow-y: auto; padding: 22px 0; }
+      .chat-inner { max-width: 680px; margin: 0 auto; padding: 0 24px; }
+      .day { text-align: center; font-size: 11px; color: hsl(var(--muted-fg)); margin: 0 0 18px; position: relative; }
+      .msg { animation: fadeup .5s var(--ease) both; }
+      @keyframes fadeup { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+      .msg.user { display: flex; justify-content: flex-end; margin-bottom: 22px; }
+      .msg.user > span { background: hsl(var(--primary)); color: hsl(var(--primary-fg));
+        padding: 10px 15px; border-radius: 16px 16px 4px 16px; font-size: 14px; max-width: 78%; }
+
+      .assistant { display: flex; gap: 11px; }
+      .lexa { width: 26px; height: 26px; border-radius: 999px; background: hsl(var(--secondary));
+        border: 1px solid hsl(var(--border)); display: grid; place-items: center; flex-shrink: 0; margin-top: 2px; }
+      .lexa svg { width: 15px; height: 15px; color: hsl(var(--foreground)); }
+      .a-body { flex: 1; min-width: 0; }
+
+      .thought { font-size: 12.5px; color: hsl(var(--muted-fg)); display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+      .thought svg { width: 14px; height: 14px; }
+
+      /* grouped tool strip (mirrors real ToolCallRow group) */
+      .tools { display: flex; align-items: center; gap: 8px; background: hsl(var(--secondary) / 0.6);
+        border: 1px solid hsl(var(--border)); border-radius: 10px; padding: 8px 11px; margin-bottom: 14px; font-size: 12px;
+        color: hsl(var(--muted-fg)); }
+      .tools .ok { width: 16px; height: 16px; border-radius: 999px; background: hsl(140 45% 38%); color: #fff;
+        display: grid; place-items: center; flex-shrink: 0; }
+      .tools .ok svg { width: 10px; height: 10px; }
+      .tools .spin { width: 15px; height: 15px; flex-shrink: 0; color: hsl(var(--primary)); animation: spin 1s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .tools .labels { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 4px 0; }
+      .tools .labels span { white-space: nowrap; }
+      .tools .labels span:not(:last-child)::after { content: '·'; margin: 0 7px; color: hsl(var(--border)); }
+      .tools .chev { color: hsl(var(--muted-fg)); flex-shrink: 0; }
+      .tools .chev svg { width: 15px; height: 15px; }
+
+      /* bedömning markdown */
+      .md { font-size: 14px; line-height: 1.62; color: hsl(var(--foreground)); }
+      .md > * { animation: fadeup .45s var(--ease) both; }
+      .md h3 { font-size: 17px; font-weight: 600; margin: 20px 0 8px; letter-spacing: -0.01em; }
+      .md h3:first-child { margin-top: 0; }
+      .md p { margin: 0 0 10px; }
+      .md ol, .md ul { margin: 0 0 10px; padding-left: 22px; }
+      .md li { margin: 4px 0; }
+      .md strong { font-weight: 600; }
+      .src { display: inline-block; font-size: 11px; color: hsl(var(--muted-fg)); background: hsl(var(--muted));
+        border: 1px solid hsl(var(--border)); border-radius: 5px; padding: 1px 6px; margin: 0 1px; vertical-align: baseline; }
+      .cursor { display: inline-block; width: 7px; height: 15px; background: hsl(var(--primary)); border-radius: 1px;
+        vertical-align: -2px; margin-left: 2px; animation: blink 1s step-end infinite; }
+      @keyframes blink { 50% { opacity: 0; } }
+      .msg-actions { display: flex; gap: 12px; margin: 12px 0 0; color: hsl(var(--muted-fg)); }
+      .msg-actions svg { width: 15px; height: 15px; }
+
+      /* ── resolution (real AssessmentResolution shape: selects + notes) ── */
+      .resolution { max-width: 680px; margin: 22px auto 0; padding: 0 24px; }
+      .res-card { border: 1.5px solid hsl(var(--primary) / 0.22); border-left: 3px solid hsl(var(--primary));
+        background: hsl(var(--card)); border-radius: 14px; padding: 16px; animation: fadeup .5s var(--ease) both;
+        box-shadow: 0 4px 16px -6px hsl(30 20% 10% / 0.12); }
+      .res-head { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+      .res-head .lx { width: 18px; height: 18px; color: hsl(var(--foreground)); }
+      .res-title { font-size: 14px; font-weight: 600; }
+      .res-wait { margin-left: auto; font-size: 9.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+        color: hsl(var(--primary)); background: hsl(var(--primary) / 0.1); padding: 3px 8px; border-radius: 999px; }
+      .field { margin-bottom: 12px; }
+      .field > label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+        color: hsl(var(--muted-fg)); margin-bottom: 5px; }
+      .field select, .field textarea {
+        font: inherit; font-size: 13.5px; width: 100%; border: 1px solid hsl(var(--border)); border-radius: 8px;
+        background: hsl(var(--background)); color: hsl(var(--foreground)); padding: 8px 10px; }
+      .field textarea { resize: vertical; min-height: 56px; }
+      .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .res-save { width: 100%; justify-content: center; margin-top: 4px; padding: 9px; }
+
+      /* completion summary */
+      .res-done { display: flex; align-items: center; gap: 12px; background: hsl(var(--sage));
+        border: 1px solid hsl(var(--primary) / 0.25); border-radius: 14px; padding: 14px 16px; animation: fadeup .5s var(--ease) both; }
+      .res-done .ck { width: 30px; height: 30px; border-radius: 999px; background: hsl(var(--primary)); color: hsl(var(--primary-fg));
+        display: grid; place-items: center; flex-shrink: 0; }
+      .res-done .ck svg { width: 16px; height: 16px; }
+      .res-done b { font-size: 14px; font-weight: 600; display: block; }
+      .res-done small { font-size: 12px; color: hsl(var(--muted-fg)); }
+      .res-badges { display: flex; gap: 6px; margin-left: auto; }
+      .b-status { background: hsl(var(--destructive)); color: #fff; }
+      .b-impact { background: hsl(var(--secondary)); color: hsl(var(--foreground)); border: 1px solid hsl(var(--border)); }
+      .res-badges span { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 999px; }
+
+      /* faux input */
+      .input { flex-shrink: 0; border-top: 1px solid hsl(var(--border)); background: hsl(var(--card)); padding: 12px 18px; }
+      .input > div { display: flex; align-items: center; gap: 10px; border: 1px solid hsl(var(--border));
+        background: hsl(var(--background)); border-radius: 10px; padding: 10px 12px; font-size: 14px; color: hsl(var(--muted-fg)); }
+      .input svg { width: 16px; height: 16px; opacity: .4; }
+      .hidden { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <div class="backdrop"></div>
+
+    <div class="controls">
+      <span class="pill">fas: <b id="phaseLabel" style="color:hsl(var(--foreground))">gather</b></span>
+      <button class="btn" onclick="play()">↻ Spela upp igen</button>
+    </div>
+
+    <div class="modal">
+      <!-- header -->
+      <div class="modal-header">
+        <span class="badge">Ändring</span>
+        <div>
+          <div class="hd-title">Alkohollag (2010:1622)</div>
+          <div class="hd-sub">SFS 2010:1622</div>
+        </div>
+        <button class="close" aria-label="Stäng">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- stepper -->
+      <div class="stepper">
+        <div class="stepper-top">
+          <span class="eyebrow">Ändringsbedömning <span class="tag">AI-arbetsflöde</span></span>
+          <span class="count" id="count">1 / 3</span>
+        </div>
+        <div class="steps">
+          <div class="step" data-step="0">
+            <div class="node">1</div>
+            <div class="step-label">Samlar underlag</div>
+            <div class="step-sub"></div>
+          </div>
+          <div class="conn"><i></i></div>
+          <div class="step" data-step="1">
+            <div class="node">2</div>
+            <div class="step-label">Skriver bedömning</div>
+            <div class="step-sub"></div>
+          </div>
+          <div class="conn"><i></i></div>
+          <div class="step" data-step="2">
+            <div class="node">3</div>
+            <div class="step-label" data-label>Din bedömning</div>
+            <div class="step-sub"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- chat -->
+      <div class="chat">
+        <div class="chat-inner">
+          <div class="day">Idag</div>
+
+          <div class="msg user"><span>Granska denna lagändring och bedöm hur den påverkar vår verksamhet.</span></div>
+
+          <div class="msg assistant">
+            <div class="lexa">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a9 9 0 0 0-9 9c0 4 3 7 5 8 0-2 1-3 4-3s4 1 4 3c2-1 5-4 5-8a9 9 0 0 0-9-9Z"/></svg>
+            </div>
+            <div class="a-body">
+              <div class="thought" id="thought">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M5 12H3M21 12h-2"/></svg>
+                <span id="thoughtText">Tänker…</span>
+              </div>
+
+              <div class="tools" id="tools">
+                <div id="toolIcon"><svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg></div>
+                <div class="labels" id="toolLabels"></div>
+                <span class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></span>
+              </div>
+
+              <div class="md" id="bedomning"></div>
+
+              <div class="msg-actions hidden" id="actions">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 14V2M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- resolution -->
+          <div class="resolution hidden" id="resolution"></div>
+        </div>
+      </div>
+
+      <!-- faux input -->
+      <div class="input">
+        <div><span style="flex:1">Skriv din fråga…</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const TOOLS = ['Hämtade företagskontext', 'Sökte i lagdatabasen', 'Hämtade ändringsdetaljer', 'Läste laglistpost', 'Föreslog uppföljningsfrågor'];
+      const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>';
+      // bedömning, revealed block-by-block to simulate streaming
+      const BLOCKS = [
+        '<h3>Sammanfattning av ändringen</h3>',
+        '<p>Ändringen i Alkohollagen (SFS 2010:1622) via SFS 2026:511 träder i kraft <strong>1 juni 2026</strong> och rör villkoren för serveringstillstånd. Tre delar är relevanta för er:</p>',
+        '<ol><li>Kravet på <strong>kunskapsprov</strong> för serveringsansvarig personal utökas till att även omfatta ansvarig vid enstaka tillfällen.</li><li>Dokumentationen av <strong>egenkontrollprogrammet</strong> ska kunna visas digitalt vid tillsyn.</li><li>Tidsfristen för att anmäla ny serveringsansvarig kortas från 14 till 7 dagar.</li></ol>',
+        '<h3>Relevans för er</h3>',
+        '<p>Som hotell- och konferensverksamhet med stadigvarande serveringstillstånd berörs ni direkt — särskilt punkt 2, eftersom ert egenkontrollprogram idag förvaras i pärm<span class="src">Källa: SFS 2010:1622, 8 kap. 5 §</span>. De utökade kunskapskraven gäller personalen som ansvarar vid konferens- och eventservering.</p>',
+        '<h3>Föreslagna åtgärder</h3>',
+        '<ul><li>Digitalisera egenkontrollprogrammet så att det är åtkomstbart vid oanmäld tillsyn före ikraftträdandet.</li><li>Boka in kunskapsprov för den personal som ansvarar vid enstaka event.</li></ul>',
+        '<p><strong>Rekommendation: Åtgärd krävs.</strong> Påverkansnivå: <strong>Medel</strong>.</p>',
+      ];
+
+      const $ = (id) => document.getElementById(id);
+      const steps = [...document.querySelectorAll('.step')];
+      const conns = [...document.querySelectorAll('.conn')];
+      let run = 0;
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+      function setStepper(phase) {
+        // phase: 0 gather, 1 assess, 2 resolve, 3 done
+        steps.forEach((s, i) => {
+          let state = 'upcoming';
+          if (phase === 3 || i < phase) state = 'done';
+          else if (i === phase) state = 'active';
+          s.dataset.state = state;
+          const node = s.querySelector('.node');
+          node.innerHTML = state === 'done' ? CHECK : String(i + 1);
+        });
+        conns.forEach((c, i) => (c.dataset.fill = phase === 3 || i < phase ? '1' : '0'));
+        const last = steps[2];
+        last.querySelector('[data-label]').textContent = phase === 3 ? 'Sparad' : 'Din bedömning';
+        last.querySelector('.step-sub').innerHTML =
+          phase === 2 ? '<span style="color:hsl(var(--primary))">väntar på dig</span>'
+          : phase === 3 ? '<span style="color:hsl(var(--muted-fg))">klart</span>' : '';
+        $('count').textContent = (phase === 3 ? 3 : Math.min(phase + 1, 3)) + ' / 3';
+        $('phaseLabel').textContent = ['gather', 'assess', 'resolve', 'done'][phase];
+      }
+
+      function resolutionForm() {
+        return `
+          <div class="res-card">
+            <div class="res-head">
+              <svg class="lx" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a9 9 0 0 0-9 9c0 4 3 7 5 8 0-2 1-3 4-3s4 1 4 3c2-1 5-4 5-8a9 9 0 0 0-9-9Z"/></svg>
+              <span class="res-title">Din bedömning</span>
+              <span class="res-wait">väntar på dig</span>
+            </div>
+            <div class="row2">
+              <div class="field"><label>Status</label>
+                <select id="selStatus"><option>Granskad</option><option selected>Åtgärd krävs</option><option>Ej tillämplig</option><option>Uppskjuten</option></select>
+              </div>
+              <div class="field"><label>Påverkansnivå</label>
+                <select id="selImpact"><option>Hög</option><option selected>Medel</option><option>Låg</option><option>Ingen</option></select>
+              </div>
+            </div>
+            <div class="field"><label>Anteckning (valfri)</label>
+              <textarea placeholder="Lägg till en kommentar om bedömningen…"></textarea>
+            </div>
+            <button class="btn btn-primary res-save" onclick="saveAssessment()">Spara bedömning</button>
+          </div>`;
+      }
+
+      function saveAssessment() {
+        const status = $('selStatus').value;
+        const impact = $('selImpact').value;
+        $('resolution').innerHTML = `
+          <div class="res-done">
+            <span class="ck">${CHECK}</span>
+            <div><b>Bedömning sparad</b><small>Lagändringen är markerad som granskad.</small></div>
+            <span class="res-badges"><span class="b-status">${status}</span><span class="b-impact">Påverkan ${impact}</span></span>
+          </div>`;
+        setStepper(3);
+      }
+
+      async function play() {
+        const id = ++run;
+        const alive = () => id === run;
+        // reset
+        setStepper(0);
+        $('thought').classList.remove('hidden');
+        $('thoughtText').textContent = 'Tänker…';
+        $('tools').classList.remove('hidden');
+        $('toolIcon').innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>';
+        $('toolLabels').innerHTML = '';
+        $('bedomning').innerHTML = '';
+        $('actions').classList.add('hidden');
+        $('resolution').classList.add('hidden');
+        $('resolution').innerHTML = '';
+
+        // PHASE 0 — gather: reveal tool labels one by one
+        for (let i = 0; i < TOOLS.length; i++) {
+          await sleep(520); if (!alive()) return;
+          const span = document.createElement('span');
+          span.textContent = TOOLS[i];
+          $('toolLabels').appendChild(span);
+        }
+        await sleep(450); if (!alive()) return;
+        $('toolIcon').innerHTML = '<span class="ok">' + CHECK + '</span>';
+        $('thoughtText').textContent = 'Tänkte klart';
+
+        // PHASE 1 — assess: stream the bedömning block-by-block
+        setStepper(1);
+        await sleep(350);
+        for (let i = 0; i < BLOCKS.length; i++) {
+          if (!alive()) return;
+          $('bedomning').insertAdjacentHTML('beforeend', BLOCKS[i]);
+          // cursor on the freshly added block
+          [...$('bedomning').querySelectorAll('.cursor')].forEach((c) => c.remove());
+          $('bedomning').lastElementChild.insertAdjacentHTML('beforeend', '<span class="cursor"></span>');
+          await sleep(430);
+        }
+        if (!alive()) return;
+        [...$('bedomning').querySelectorAll('.cursor')].forEach((c) => c.remove());
+        $('actions').classList.remove('hidden');
+        await sleep(400);
+
+        // PHASE 2 — resolve: your turn
+        if (!alive()) return;
+        setStepper(2);
+        $('resolution').innerHTML = resolutionForm();
+        $('resolution').classList.remove('hidden');
+        $('resolution').scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+
+      play();
+    </script>
+  </body>
+</html>
