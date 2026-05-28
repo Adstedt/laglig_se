@@ -8,7 +8,11 @@ updated: '2026-05-28T08:30:00Z'
 
 reviewer_caveat:
   same_session_as_dev: true
-  note: 'Dev (James) and QA (Quinn) ran in the SAME Claude session — this review is second-pass scrutiny, not a fresh independent review. To compensate: re-ran touched tests + tsc + eslint from a fresh runner; re-traced every AC against shipped code; looked harder for what the Dev might have rationalised. Owner-driven live smoke (run after the review) provided the external validation lever.'
+  note: 'Dev (James) and QA (Quinn) ran in the SAME Claude session — original review was second-pass scrutiny, not a fresh independent pass. Compensated with: fresh-runner re-verification, AC-by-AC re-trace, owner live smoke (Smokes A/B/C/D all PASS), AND the owner-conducted independent review below.'
+  independent_review:
+    reviewer: 'owner (Alexander Adstedt)'
+    date: '2026-05-28'
+    outcome: 'PASS — no concerns raised. The same-session COI recommendation in this gate is satisfied.'
 
 owner_signoff:
   live_smoke: 'PASS'
@@ -25,7 +29,7 @@ owner_signoff:
 top_issues: [] # no code-level issues
 waiver: { active: false }
 
-quality_score: 92 # 100 − 8 (4 for self-review COI, 2 for mentions-hazard residual (halved post-smoke evidence), 0 for owner smoke (PASS), 2 for minor nice-to-have test gaps + ATC-001 cosmetic). No FAILs, no CONCERNS.
+quality_score: 96 # 100 − 4: COI deduction retired by owner's independent review (2026-05-28); only the mentions-hazard residual (2) and the cosmetic test/UI nits (2) remain. No FAILs, no CONCERNS.
 expires: '2026-06-11T08:30:00Z'
 
 evidence:
@@ -64,9 +68,7 @@ recommendations:
     - action: 'Defence-in-depth strip of @[name](id) tokens in the ADD_TASK_COMMENT dispatch (or a skipMentionParsing flag through createComment). Steering held under a direct probe in the owner smoke (2026-05-28), but it is still prompt-engineering, not enforcement — at scale, eventual failures are likely.'
       refs: ['app/actions/pending-agent-actions.ts', 'app/actions/task-modal.ts']
       suggested_owner: dev
-    - action: 'Get a separate-reviewer pass (fresh-session agent or human) — the same-session Dev + QA COI is documented but not externally validated.'
-      refs: ['docs/stories/completed/14.29.add-task-comment-approval.md']
-      suggested_owner: po
+    # Separate-reviewer pass DONE 2026-05-28 (owner) — see reviewer_caveat.independent_review.
     - action: 'ATC-001: focus-ring asymmetry on approval-card Textarea (top + right heavier than bottom + left). Surfaced during 14.29 smoke; NOT 14.29-specific — affects all approval-type renderers uniformly (Textarea className identical across siblings). Cosmetic; fix sits on `components/ui/textarea.tsx` or the shared `renderer-frame.tsx` Shell, not per-renderer.'
       refs: ['components/ui/textarea.tsx', 'components/features/ai-chat/agent-action-renderers/renderer-frame.tsx']
       suggested_owner: dev
