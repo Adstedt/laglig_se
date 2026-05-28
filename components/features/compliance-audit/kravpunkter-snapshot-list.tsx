@@ -23,9 +23,9 @@ import { sv } from 'date-fns/locale'
 import useSWR from 'swr'
 import {
   AlertCircle,
+  Check,
   ChevronRight,
   Circle,
-  CircleCheck,
   FileText,
   MessageSquare,
   Paperclip,
@@ -279,12 +279,12 @@ function KravpunktRow({
               'hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
             )}
           >
-            {/* 1. Fulfilled indicator — matches `FulfilledToggle` (CircleCheck
-             *  outlined, green stroke). Plain icons since snapshot is read-only. */}
+            {/* 1. Fulfilled indicator — matches `FulfilledToggle` (bare Check
+             *  when fulfilled, empty Circle otherwise). Read-only here. */}
             {req.is_fulfilled ? (
-              <CircleCheck
+              <Check
                 className="h-4 w-4 shrink-0 text-green-600 dark:text-green-500"
-                strokeWidth={2}
+                strokeWidth={2.5}
                 aria-label="Uppfylld"
               />
             ) : (

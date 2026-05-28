@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Circle, CircleCheck } from 'lucide-react'
+import { Check, Circle } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
@@ -17,7 +17,7 @@ export const FulfilledToggle = React.forwardRef<
   HTMLButtonElement,
   FulfilledToggleProps
 >(({ checked, onCheckedChange, disabled, className, ...props }, ref) => {
-  const Icon = checked ? CircleCheck : Circle
+  const Icon = checked ? Check : Circle
   return (
     <button
       ref={ref}
@@ -40,7 +40,7 @@ export const FulfilledToggle = React.forwardRef<
     >
       <Icon
         className="h-4 w-4"
-        strokeWidth={checked ? 2 : 1.75}
+        strokeWidth={checked ? 2.5 : 1.75}
         aria-hidden="true"
       />
     </button>
