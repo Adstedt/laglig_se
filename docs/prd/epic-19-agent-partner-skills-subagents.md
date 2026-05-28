@@ -10,7 +10,7 @@
 - Role-based tool registry filter (AUDITOR → read-only) and an `AgentDecisionLog` audit trail
 - A self-hosted Skills layer: file-based SKILL.md/PROCEDURE.md/STYLE.md convention, skill loader, context-bound activation, meta-tool override
 - Two shipped skills: `assess_change` (migrating the existing monolithic ASSESSMENT_WORKFLOW) and `gap_analysis` (new)
-- A third skill (`draft_policy`) plus a seeded library of 3–5 canonical Swedish styrdokument templates
+- A third skill (`draft_styrdokument` — type-aware, one skill covers all `WorkspaceDocumentType` values via `types/*.md` modules) plus a seeded library of canonical Swedish templates (≥1 per type)
 - Three subagents: `LegalReasoner` (conservative interpretation), `DocumentReader` (heavy-PDF isolation), `ParallelAssessor` (bulk change triage)
 - Continuous governance: reminders, weekly pulse cron, agent feedback loop, proactive hem-chat cards
 
@@ -35,7 +35,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ Skills  (self-hosted domain playbooks, loaded per context)  │
-│  • assess_change    • gap_analysis    • draft_policy        │
+│  • assess_change    • gap_analysis    • draft_styrdokument  │
 │  • (future) find_or_create_evidence, onboarding, audit_prep │
 │                                                             │
 │ Each skill bundles: SKILL.md (frontmatter) + PROCEDURE.md   │
@@ -130,8 +130,24 @@ Migrate the existing `ASSESSMENT_WORKFLOW` string literal in `lib/agent/system-p
 
 ### Authoring track
 
-**19.8 — `draft_policy` skill + Swedish template library seed**
-New skill `lib/agent/skills/draft_policy/`: PROCEDURE.md (12 steps: search for existing → company context → select template → pull law requirements → draft sections → propose review task → propose link to kravpunkter), STRUCTURE.md (canonical Swedish styrdokument structure: Syfte / Omfattning / Ansvar / Genomförande / Uppföljning / Referenser), CITATION.md (Swedish legal citation rules), examples/ (2 good Swedish policies). Seed script `scripts/seed-document-templates.ts` populates `WorkspaceDocumentTemplate` with 3–5 canonical templates: Dataskyddspolicy (GDPR), Arbetsmiljöpolicy (AFS), Incidenthanteringsrutin, Riskbedömning, Leverantörs-/personuppgiftsbiträdespolicy. Each template includes `metadata.applicable_law_ids[]`. **Deps:** 17.11 (create_document tool), 14.24 (DRAFT_DOCUMENT approval card), 19.6 (skill loader).
+**19.8 — `draft_styrdokument` skill (type-aware) + Swedish template library seed**
+*Re-scoped 2026-05-28 from `draft_policy` to `draft_styrdokument` — one skill, parameterised by `WorkspaceDocumentType`, not eight skills. See "Why one skill, not per-type" below.*
+
+Three layers, cleanly separated:
+
+1. **Skill — `lib/agent/skills/draft_styrdokument/`** (one). `SKILL.md` (`tools: [search_workspace_files, get_law_list_item, list_linked_artifacts, create_document, draft_styrdokument]`; `contextTypes: []` — activation-only, like `gap_analysis`). `PROCEDURE.md` (English, 12 steps: resolve `docType` → search for existing → company context → **load `types/<docType>.md` module** → pull law requirements → draft sections → run type-specific quality checks → propose review task → propose link to kravpunkter). `STYLE.md` (cross-cutting Swedish tone + KP-001 verifiable-obligation framing + GR-001 citation-grounding rule — written once, applies to every type). `CRITERIA.md` (cross-cutting guardrails: must-cite, currency, no-internal-identifiers per CP-001).
+
+2. **Per-type modules — `lib/agent/skills/draft_styrdokument/types/*.md`** (one per `WorkspaceDocumentType`: `policy.md`, `risk_assessment.md`, `action_plan.md`, `procedure.md`, `instruction.md`, `checklist.md`, `report.md`, `other.md`). Each holds the type-specific **STRUCTURE** (the canonical Swedish skeleton — e.g. Riskbedömning = riskkälla × sannolikhet × konsekvens matrix per AFS 2001:1; Handlingsplan = åtgärd/ansvarig/klart-senast/status table per AFS §10; Policy = Syfte/Omfattning/Ansvar/Principer; Checklista = verifierbara kontrollpunkter), **per-type STYLE** (verb form, perspective — Policy is declarative "vi ska"; Instruktion is imperative "utför"; Checklista is verifierbar "är genomförd"), and **per-type CRITERIA** (machine-checkable invariants — *riskbedömning MUST contain a matrix table*; *handlingsplan MUST have ansvarig + klart-datum on every row*; *checklista items MUST be verifiable yes/no, not actions*). These criteria upgrade the existing generic quality gate in `lib/agent/tools/draft-styrdokument.ts` (today: ≥3 blocks + ≥1 heading) to a type-aware gate.
+
+3. **Templates — `WorkspaceDocumentTemplate` seed** (data, not skill content). `scripts/seed-document-templates.ts` ships ≥1 canonical template per type — minimum: Dataskyddspolicy (POLICY/GDPR), Arbetsmiljöpolicy (POLICY/AFS), Incidenthanteringsrutin (PROCEDURE), Riskbedömning arbetsmiljö (RISK_ASSESSMENT/AFS — *includes* the matrix table scaffold), Handlingsplan arbetsmiljö (ACTION_PLAN/AFS — *includes* the action-rows table), SBA-checklista (CHECKLIST), Leverantörs-/personuppgiftsbiträdespolicy (POLICY/GDPR). Each template carries `metadata.applicable_law_ids[]` + `metadata.docType` so the skill can match user intent → template → type module.
+
+**Why one skill, not per-type** (the alternative — `draft_policy` / `draft_riskbedomning` / … as separate skills — was considered and rejected 2026-05-28):
+- The document type is a **known parameter**, not a routing decision (the user picks it in "Nytt dokument", or it's trivially inferred from the request). Skills exist to solve a *which-workflow* problem (`assess_change` vs `gap_analysis`); the type isn't that problem.
+- 19.7c's per-skill registry narrowing scales **per skill** (activation, whitelist, harness). Eight `draft_*` skills would multiply that overhead for one workflow.
+- **KP-001** (verifiable-obligation framing) and **GR-001** (citation grounding) are cross-cutting — eight skills would duplicate those guardrails 8× and they would drift.
+- A consultant still gets an ownable "Riskbedömning playbook" — it's `types/risk_assessment.md`, edited without a deploy per Principle #2.
+
+**Deps:** 17.11 (`update_document` tool — `create_document` was dropped 2026-05-22 in favour of the existing `draft_styrdokument`/DRAFT_DOCUMENT approval pattern; see checklist line 26), 14.24 (DRAFT_DOCUMENT approval card), 19.6 (skill loader), 19.7c (registry narrowing — gates the skill-specific tools when active).
 
 ### Subagent track
 
@@ -214,7 +230,7 @@ These can be drafted and scheduled independently of Epic 19. Recommend schedulin
 - [ ] All 14 stories completed with their ACs met (incl. 19.4a id-resolution + 19.4b cycle/finding readers)
 - [ ] Sibling Stories 14.28–14.31 completed (coordinated with Epic 14)
 - [ ] Prisma migrations merged: `AgentDecisionLog`, `Reminder`, `AgentFeedback`, `FileCategory` enum extension, `via_agent` columns on affected tables
-- [ ] Three skills live: `assess_change` (migrated), `gap_analysis` (new), `draft_policy` (new)
+- [ ] Three skills live: `assess_change` (migrated), `gap_analysis` (new), `draft_styrdokument` (new, type-aware with `types/*.md` modules per `WorkspaceDocumentType`)
 - [ ] Three subagents live: `LegalReasoner`, `DocumentReader`, `ParallelAssessor`
 - [ ] Two cron endpoints live: `fire-reminders` (daily), `weekly-pulse` (weekly)
 - [ ] Template library seeded with ≥3 Swedish styrdokument templates

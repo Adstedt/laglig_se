@@ -1,0 +1,75 @@
+schema: 1
+story: '14.29'
+story_title: '`add_task_comment` Approval'
+gate: PASS
+status_reason: 'Surgical, behaviour-preserving expansion (10th PendingAgentActionType) on the established 14.28 / 14.23 inline-approval pattern. All 19 ACs traced; authorization gate inherited (AUDITOR blocked); always-proposal pattern; workspace-scoped; full unit suite green; 19.7c registry tripwire fired and was bumped correctly. **Owner smoke complete (2026-05-28): Smokes A/B/C/D all passed.** Mentions-hazard steering (AC 5) actively held under a direct probe — the agent explicitly refused to emit `@`-mention syntax and cited its instructions.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-28T08:30:00Z'
+
+reviewer_caveat:
+  same_session_as_dev: true
+  note: 'Dev (James) and QA (Quinn) ran in the SAME Claude session — this review is second-pass scrutiny, not a fresh independent review. To compensate: re-ran touched tests + tsc + eslint from a fresh runner; re-traced every AC against shipped code; looked harder for what the Dev might have rationalised. Owner-driven live smoke (run after the review) provided the external validation lever.'
+
+owner_signoff:
+  live_smoke: 'PASS'
+  attested_by: 'owner'
+  date: '2026-05-28'
+  smoke_results:
+    A_happy_path: 'PASS — comment proposed, edited via Justera, approved, landed in task thread. AC 14 limitation observed exactly as documented (open-modal needed refresh; new opens did not).'
+    B_reject_path: 'PASS — Avvisa moved card to REJECTED state, no comment created.'
+    C_mentions_probe: 'PASS — direct probe ("tagga in Anna") refused. Agent explicitly cited its instructions, explained the auto-notification risk, and pivoted to the actual ask. Textbook AC 5 steering behaviour.'
+    D_validation_paths: 'PASS'
+  surfaced_findings:
+    - 'ATC-001 (UI polish, cosmetic): focus-visible ring renders asymmetrically on the approval-card Textarea (top + right heavier than bottom + left). NOT 14.29-specific — Textarea className is byte-identical to AddContextNoteRenderer. Logged as a separate follow-up in the implementation-sequence plan.'
+
+top_issues: [] # no code-level issues
+waiver: { active: false }
+
+quality_score: 92 # 100 − 8 (4 for self-review COI, 2 for mentions-hazard residual (halved post-smoke evidence), 0 for owner smoke (PASS), 2 for minor nice-to-have test gaps + ATC-001 cosmetic). No FAILs, no CONCERNS.
+expires: '2026-06-11T08:30:00Z'
+
+evidence:
+  tests_reviewed: 81 # 9 new + 5 untouched siblings re-run
+  new_tests: 9 # 4 tool + 3 renderer + 2 dispatch
+  count_bumps: 5 # registry-role-filter ×3 + registry-narrowing ×2 distinct it() blocks
+  full_unit_suite: '5130/5130 unit tests passing (411 files; touched-area subset 622/622); tsc --noEmit exit 0 branch-wide; eslint exit 0 on touched files'
+  integration_failures_excluded: 'Pre-existing failures in tests/integration/ + tests/performance-audit*.spec.ts (25 tests, 13 files) require live Redis/Postgres/API — NOT in any touched code path.'
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, '11b', 12, 13, 14, 15, 16, 17, 18, 19]
+    ac_gaps: []
+  independently_verified:
+    - 'Authorization gate inherited: hasPermission(`tasks:edit`) at top of approvePendingAction blocks AUDITOR before the new ADD_TASK_COMMENT branch can dispatch.'
+    - 'Workspace-scoped task lookup denormalises title + entity_version in one query (mirrors add-context-note pattern).'
+    - 'Dispatch failure keeps row PENDING (tested both branches).'
+    - 'AC 14 deviation (only 2-of-3 registration surfaces) is correct: affectedSwrKeys intentionally not extended; createComment already revalidates /tasks; default `return []` is correct for ADD_TASK_COMMENT.'
+    - '19.7c registry harness tripwire fired as designed when the tool was registered; 5-line count-bump response across both registry test files.'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Authorization (tasks:edit), workspace-scoped reads, Zod input validation, always-proposal pattern. Residual: mentions hazard (AC 5) is steered-only. **Direct probe in the owner smoke (2026-05-28) confirmed the steering held** — the agent explicitly refused the @-mention ask. One data point ≠ proof at scale; future defence-in-depth recommendation stands but is lower-priority now.'
+  performance:
+    status: PASS
+    notes: 'One workspace-scoped findFirst at tool time; reuses existing createComment at dispatch. Negligible additional cost.'
+  reliability:
+    status: PASS
+    notes: 'Dispatch failure keeps row PENDING. Defensive empty-content check on top of schema. Always-proposal means errors are recoverable (no silent partial writes).'
+  maintainability:
+    status: PASS
+    notes: 'Mirrors 14.28 / 14.23 patterns faithfully. Tests in shared files (the correct convention). Both deviations documented: AC 14 affectedSwrKeys deferral + defensive empty-content check (defence-in-depth).'
+
+recommendations:
+  immediate: [] # Owner smoke complete (A/B/C/D PASS). Migration applied. Separate-reviewer pass remains valuable but non-blocking — captured in `future`.
+  future:
+    - action: 'Defence-in-depth strip of @[name](id) tokens in the ADD_TASK_COMMENT dispatch (or a skipMentionParsing flag through createComment). Steering held under a direct probe in the owner smoke (2026-05-28), but it is still prompt-engineering, not enforcement — at scale, eventual failures are likely.'
+      refs: ['app/actions/pending-agent-actions.ts', 'app/actions/task-modal.ts']
+      suggested_owner: dev
+    - action: 'Get a separate-reviewer pass (fresh-session agent or human) — the same-session Dev + QA COI is documented but not externally validated.'
+      refs: ['docs/stories/completed/14.29.add-task-comment-approval.md']
+      suggested_owner: po
+    - action: 'ATC-001: focus-ring asymmetry on approval-card Textarea (top + right heavier than bottom + left). Surfaced during 14.29 smoke; NOT 14.29-specific — affects all approval-type renderers uniformly (Textarea className identical across siblings). Cosmetic; fix sits on `components/ui/textarea.tsx` or the shared `renderer-frame.tsx` Shell, not per-renderer.'
+      refs: ['components/ui/textarea.tsx', 'components/features/ai-chat/agent-action-renderers/renderer-frame.tsx']
+      suggested_owner: dev
+    - action: 'Test gap, nice-to-have: add tests for parentCommentId end-to-end threading, max-length boundary (5000/5001), renderer compact variant, renderer Approve-disabled-when-empty.'
+      refs: ['tests/unit/lib/agent/tools/extended-write-tools.test.ts', 'tests/unit/components/features/ai-chat/agent-action-renderers.test.tsx']
+      suggested_owner: dev

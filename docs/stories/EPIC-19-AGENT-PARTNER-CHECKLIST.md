@@ -81,8 +81,8 @@
 
 ### Authoring track
 
-- [ ] **19.8** — `draft_policy` skill + Swedish template library seed
-  *`draft_policy/` with PROCEDURE/STRUCTURE/CITATION/examples; seed 3–5 canonical templates (Dataskyddspolicy, Arbetsmiljöpolicy, Incidenthanteringsrutin, Riskbedömning, Leverantörspolicy)*
+- [ ] **19.8** — `draft_styrdokument` skill (type-aware) + Swedish template library seed
+  *Re-scoped 2026-05-28 from `draft_policy` → `draft_styrdokument` (one skill, not per-type — see PRD 19.8 + plan addendum). `draft_styrdokument/` with PROCEDURE + cross-cutting STYLE (KP-001) + cross-cutting CRITERIA (GR-001) + `types/<docType>.md` modules (one per `WorkspaceDocumentType`: policy, risk_assessment, action_plan, procedure, instruction, checklist, report, other) holding the per-type STRUCTURE + STYLE + CRITERIA; type-aware quality gate in `lib/agent/tools/draft-styrdokument.ts`; seed ≥1 template per type — minimum: Dataskyddspolicy, Arbetsmiljöpolicy, Incidenthanteringsrutin, Riskbedömning arbetsmiljö, Handlingsplan arbetsmiljö, SBA-checklista, Leverantörspolicy*
 
 ### Subagent track
 
@@ -165,7 +165,7 @@ Agent drafts styrdokument from templates, user reviews in Tiptap preview, approv
 - [ ] Composite feature flag `agent_partner_v2` enabled in ≥1 customer workspace for ≥2 weeks with no regressions
 - [ ] AUDITOR role verified read-only end-to-end
 - [ ] `AgentDecisionLog` populated for every tool call in production
-- [ ] Three skills live: `assess_change`, `gap_analysis`, `draft_policy`
+- [ ] Three skills live: `assess_change`, `gap_analysis`, `draft_styrdokument` (type-aware, `types/*.md` module per `WorkspaceDocumentType`)
 - [ ] Three subagents live: `LegalReasoner`, `DocumentReader`, `ParallelAssessor`
 - [ ] Two cron jobs live: `fire-reminders` (daily 03:00), `weekly-pulse` (weekly)
 - [ ] E2E smoke test passes: fresh workspace → attach DOCX → "är vi GDPR-compliant?" → agent reads attachment, runs gap_analysis, proposes 3 tasks + 1 policy draft + 2 evidence links, user accepts → all artifacts visible with `via_agent = true`
