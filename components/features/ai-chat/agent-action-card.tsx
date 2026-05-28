@@ -33,6 +33,7 @@ import { AssignTaskRenderer } from './agent-action-renderers/assign-task-rendere
 import { AddContextNoteRenderer } from './agent-action-renderers/add-context-note-renderer'
 import { UpdateComplianceStatusRenderer } from './agent-action-renderers/update-compliance-status-renderer'
 import { DraftDocumentRenderer } from './agent-action-renderers/draft-document-renderer'
+import { AddTaskCommentRenderer } from './agent-action-renderers/add-task-comment-renderer'
 
 export const ACTION_TYPE_LABELS: Partial<
   Record<PendingAgentActionType, string>
@@ -46,6 +47,7 @@ export const ACTION_TYPE_LABELS: Partial<
   ADD_CONTEXT_NOTE: 'Ny anteckning',
   UPDATE_COMPLIANCE_STATUS: 'Ändra status',
   DRAFT_DOCUMENT: 'Utkast styrdokument',
+  ADD_TASK_COMMENT: 'Kommentar till uppgift',
 }
 
 /** Per-type renderer registry. Story 14.23: all seven types registered. */
@@ -61,6 +63,7 @@ export const RENDERERS: Partial<
   ADD_CONTEXT_NOTE: AddContextNoteRenderer,
   UPDATE_COMPLIANCE_STATUS: UpdateComplianceStatusRenderer,
   DRAFT_DOCUMENT: DraftDocumentRenderer,
+  ADD_TASK_COMMENT: AddTaskCommentRenderer,
 }
 
 /**

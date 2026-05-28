@@ -177,6 +177,11 @@ function summarizePendingAction(action: PendingAgentAction): string {
       const inEditor = action.status === 'IN_EDITOR' ? ' (öppet i editorn)' : ''
       return `Utkast styrdokument: ${s('docType')} "${s('title')}"${inEditor}`
     }
+    case 'ADD_TASK_COMMENT': {
+      const c = s('content')
+      const snippet = c.length > 40 ? `${c.slice(0, 40)}…` : c
+      return `Kommentar till uppgift "${s('taskTitle')}": "${snippet}"`
+    }
     default:
       return action.action_type
   }

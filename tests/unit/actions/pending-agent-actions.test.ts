@@ -15,6 +15,7 @@ const {
   mockUpdateRequirement,
   mockCreateDocument,
   mockLinkDocumentToListItem,
+  mockCreateComment,
 } = vi.hoisted(() => ({
   mockWithWorkspace: vi.fn(),
   mockCreateTask: vi.fn(),
@@ -24,6 +25,8 @@ const {
   mockUpdateRequirement: vi.fn(),
   mockCreateDocument: vi.fn(),
   mockLinkDocumentToListItem: vi.fn(),
+  // Story 14.29: ADD_TASK_COMMENT dispatch target.
+  mockCreateComment: vi.fn(),
 }))
 
 vi.mock('@/lib/prisma', () => ({
@@ -62,6 +65,11 @@ vi.mock('@/app/actions/documents', () => ({
 vi.mock('@/app/actions/law-list-item-requirements', () => ({
   createRequirement: mockCreateRequirement,
   updateRequirement: mockUpdateRequirement,
+}))
+
+// Story 14.29: ADD_TASK_COMMENT dispatch target.
+vi.mock('@/app/actions/task-modal', () => ({
+  createComment: mockCreateComment,
 }))
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
@@ -717,5 +725,60 @@ describe('expirePendingActions', () => {
     expect(call.where.expires_at).toHaveProperty('lt')
     expect(call.data).toEqual({ status: 'EXPIRED' })
     expect(result).toEqual({ expiredCount: 3 })
+  })
+})
+
+// Story 14.29: ADD_TASK_COMMENT dispatch — calls createComment, captures
+// commentId in result_ref, keeps row PENDING on dispatch failure.
+describe('approvePendingAction → ADD_TASK_COMMENT', () => {
+  it('dispatches ADD_TASK_COMMENT via createComment(taskId, content, parentCommentId)', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({
+        action_type: 'ADD_TASK_COMMENT',
+        params: {
+          taskId: 't_1',
+          taskTitle: 'Brandskydd',
+          content: 'Bedömning klar.',
+          parentCommentId: 'pc_1',
+          entity_version: '2026-01-01T00:00:00.000Z',
+        },
+      })
+    )
+    mockCreateComment.mockResolvedValue({
+      success: true,
+      data: { id: 'c_1' },
+    })
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(mockCreateComment).toHaveBeenCalledWith(
+      't_1',
+      'Bedömning klar.',
+      'pc_1'
+    )
+    expect(result.data?.resultRef).toEqual({ commentId: 'c_1' })
+  })
+
+  it('ADD_TASK_COMMENT keeps the row PENDING on dispatch failure (AC 13)', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({
+        action_type: 'ADD_TASK_COMMENT',
+        params: { taskId: 't_1', content: 'En kommentar' },
+      })
+    )
+    mockCreateComment.mockResolvedValue({
+      success: false,
+      error: 'Kunde inte',
+    })
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(false)
+    // Row NOT marked APPROVED — update only fires after a successful dispatch.
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
   })
 })

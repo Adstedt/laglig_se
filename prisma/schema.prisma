@@ -1601,6 +1601,10 @@ enum PendingAgentActionType {
   UPDATE_REQUIREMENT
   // Story 14.24 — agent-drafted styrdokument approval. Additive enum-value addition.
   DRAFT_DOCUMENT
+  // Story 14.29 — agent-proposed task comment approval (append-only; no diff,
+  // no editor path). Dispatch calls the existing createComment server action.
+  // Additive enum-value addition.
+  ADD_TASK_COMMENT
 }
 
 enum PendingAgentActionStatus {

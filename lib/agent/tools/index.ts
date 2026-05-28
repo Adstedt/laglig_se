@@ -37,6 +37,8 @@ import { createUpdateRequirementTool } from './update-requirement'
 import { createAssignTaskTool } from './assign-task'
 // Story 14.24: agent-drafted styrdokument approval.
 import { createDraftStyrdokumentTool } from './draft-styrdokument'
+// Story 14.29: agent-proposed task-comment approval (ADD_TASK_COMMENT inline card).
+import { createAddTaskCommentTool } from './add-task-comment'
 // Story 19.7a: load a skill's full instructions mid-conversation (skills layer).
 import { createActivateSkillTool } from './activate-skill'
 // Story 19.7c: per-skill registry narrowing — read an active skill's tool whitelist.
@@ -123,6 +125,7 @@ type ToolName =
   | 'update_requirement'
   | 'assign_task'
   | 'draft_styrdokument'
+  | 'add_task_comment'
 
 export const TOOL_REGISTRY_POLICY = {
   search_laws: 'read',
@@ -153,6 +156,7 @@ export const TOOL_REGISTRY_POLICY = {
   update_requirement: 'write',
   assign_task: 'write',
   draft_styrdokument: 'write',
+  add_task_comment: 'write',
 } satisfies Record<ToolName, 'read' | 'write'>
 
 /**
@@ -256,6 +260,8 @@ export function createAgentTools(
     assign_task: createAssignTaskTool(workspaceId, writeContext),
     // Story 14.24: propose a full agent-authored styrdokument (DRAFT_DOCUMENT).
     draft_styrdokument: createDraftStyrdokumentTool(workspaceId, writeContext),
+    // Story 14.29: propose a comment on a task (ADD_TASK_COMMENT approval card).
+    add_task_comment: createAddTaskCommentTool(workspaceId, writeContext),
   }
 
   // Story 19.5: wrap every tool's execute to log the invocation (fail-safe).

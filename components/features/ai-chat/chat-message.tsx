@@ -244,6 +244,15 @@ const TOOL_CONFIG: Record<
     proposalLabel: 'Skrev utkast',
     icon: FileText,
   },
+  // Story 14.29: agent-proposed task comment (always a proposal — the
+  // proposalLabel is what the chip actually shows; doneLabel is the
+  // never-used direct-write fallback).
+  add_task_comment: {
+    label: 'Föreslår kommentar',
+    doneLabel: 'Lade till kommentar',
+    proposalLabel: 'Föreslog kommentar',
+    icon: ClipboardList,
+  },
 }
 
 // ---------------------------------------------------------------------------

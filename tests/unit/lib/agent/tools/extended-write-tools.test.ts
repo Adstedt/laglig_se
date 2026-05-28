@@ -24,6 +24,8 @@ import { createUpdateRequirementTool } from '@/lib/agent/tools/update-requiremen
 import { createAssignTaskTool } from '@/lib/agent/tools/assign-task'
 import { createAddContextNoteTool } from '@/lib/agent/tools/add-context-note'
 import { createUpdateComplianceStatusTool } from '@/lib/agent/tools/update-compliance-status'
+// Story 14.29: add_task_comment tool.
+import { createAddTaskCommentTool } from '@/lib/agent/tools/add-task-comment'
 import { prisma } from '@/lib/prisma'
 
 type ExecFn = (
@@ -292,5 +294,70 @@ describe('migrated tools propose instead of writing directly', () => {
       oldStatus: 'EJ_PABORJAD',
     })
     expect(result.data).toEqual({ pendingActionId: 'pa_x' })
+  })
+})
+
+// Story 14.29: add_task_comment — proposal-only (mirrors the 14.23 / 14.28 pattern).
+describe('add_task_comment', () => {
+  const TASK_ROW = {
+    id: 't_1',
+    title: 'Brandskydd',
+    updated_at: new Date('2026-01-01T00:00:00.000Z'),
+  }
+
+  it('creates an ADD_TASK_COMMENT row with denormalised task title + entity_version', async () => {
+    fn(prisma.task.findFirst).mockResolvedValue(TASK_ROW)
+    const result = await execOf(createAddTaskCommentTool('ws_1', CTX))({
+      taskId: 't_1',
+      content: 'Bedömning: ingen påverkan, vi följer redan kraven.',
+    })
+    expect(fn(prisma.pendingAgentAction.create)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          action_type: 'ADD_TASK_COMMENT',
+          status: 'PENDING',
+          params: expect.objectContaining({
+            taskId: 't_1',
+            taskTitle: 'Brandskydd',
+            content: 'Bedömning: ingen påverkan, vi följer redan kraven.',
+            entity_version: '2026-01-01T00:00:00.000Z',
+          }),
+        }),
+      })
+    )
+    expect(result.confirmation_required).toBe(true)
+    expect(result.data).toEqual({ pendingActionId: 'pa_x' })
+  })
+
+  it('rejects execute=true with a Swedish ToolError, no row created (AC 6)', async () => {
+    const result = await execOf(createAddTaskCommentTool('ws_1', CTX))({
+      taskId: 't_1',
+      content: 'Något',
+      execute: true,
+    })
+    expect(result.error).toBe(true)
+    expect(result.message).toMatch(/inte köras direkt/i)
+    expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
+  })
+
+  it('rejects empty / whitespace-only content with a Swedish ToolError (AC 3)', async () => {
+    const result = await execOf(createAddTaskCommentTool('ws_1', CTX))({
+      taskId: 't_1',
+      content: '   ',
+    })
+    expect(result.error).toBe(true)
+    expect(result.message).toMatch(/får inte vara tom/i)
+    expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
+  })
+
+  it('errors with a Swedish message when the task is not in the workspace (AC 4)', async () => {
+    fn(prisma.task.findFirst).mockResolvedValue(null)
+    const result = await execOf(createAddTaskCommentTool('ws_1', CTX))({
+      taskId: 'missing',
+      content: 'En riktig kommentar',
+    })
+    expect(result.error).toBe(true)
+    expect(result.message).toMatch(/hittades inte/i)
+    expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
   })
 })

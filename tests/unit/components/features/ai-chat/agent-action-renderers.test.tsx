@@ -22,6 +22,8 @@ import { AddContextNoteRenderer } from '@/components/features/ai-chat/agent-acti
 import { UpdateComplianceStatusRenderer } from '@/components/features/ai-chat/agent-action-renderers/update-compliance-status-renderer'
 import { AssignTaskRenderer } from '@/components/features/ai-chat/agent-action-renderers/assign-task-renderer'
 import { LinkTaskToDocumentRenderer } from '@/components/features/ai-chat/agent-action-renderers/link-task-to-document-renderer'
+// Story 14.29: add_task_comment renderer.
+import { AddTaskCommentRenderer } from '@/components/features/ai-chat/agent-action-renderers/add-task-comment-renderer'
 
 function action(
   overrides: Partial<PendingAgentAction> = {}
@@ -336,5 +338,63 @@ describe('LinkTaskToDocumentRenderer', () => {
     expect(screen.getByText(/Brandskydd.*Brandpolicy/)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /Godkänn/ }))
     expect(h.onApprove).toHaveBeenCalledOnce()
+  })
+})
+
+// Story 14.29: ADD_TASK_COMMENT renderer.
+describe('AddTaskCommentRenderer', () => {
+  const params = {
+    taskId: 't_1',
+    taskTitle: 'Brandskydd',
+    content: 'Bedömning: ingen påverkan på vår rutin.',
+  }
+
+  it('PENDING: lead shows the task title in the summary; editable comment behind Justera + approve enabled', () => {
+    const h = handlers()
+    render(
+      <AddTaskCommentRenderer
+        action={action({ action_type: 'ADD_TASK_COMMENT', params } as never)}
+        isSubmitting={false}
+        {...h}
+      />
+    )
+    // Summary (visible in the lead): `Brandskydd: "..."` — match as substring.
+    expect(screen.getByText(/Brandskydd/)).toBeInTheDocument()
+    expandJustera()
+    expect(
+      screen.getByDisplayValue(/Bedömning: ingen påverkan/)
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Godkänn/ })).toBeEnabled()
+  })
+
+  it('approve click calls onApprove', () => {
+    const h = handlers()
+    render(
+      <AddTaskCommentRenderer
+        action={action({ action_type: 'ADD_TASK_COMMENT', params } as never)}
+        isSubmitting={false}
+        {...h}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Godkänn/ }))
+    expect(h.onApprove).toHaveBeenCalledOnce()
+  })
+
+  it('APPROVED shows read-only comment + a link to the task by id (AC 9)', () => {
+    const h = handlers()
+    render(
+      <AddTaskCommentRenderer
+        action={action({
+          action_type: 'ADD_TASK_COMMENT',
+          status: 'APPROVED',
+          params,
+        } as never)}
+        isSubmitting={false}
+        {...h}
+      />
+    )
+    expect(screen.getByText(/Bedömning: ingen påverkan/)).toBeInTheDocument()
+    const link = screen.getByRole('link', { name: /Visa uppgift/ })
+    expect(link).toHaveAttribute('href', '/tasks?task=t_1')
   })
 })

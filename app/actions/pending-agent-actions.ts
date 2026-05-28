@@ -27,6 +27,8 @@ import {
   createRequirement,
   updateRequirement,
 } from './law-list-item-requirements'
+// Story 14.29: ADD_TASK_COMMENT dispatch target.
+import { createComment } from './task-modal'
 import { markdownToHtml } from '@/lib/markdown/markdown-to-html'
 import type {
   ComplianceStatus,
@@ -99,6 +101,15 @@ interface DraftDocumentParams {
   docType: string
   contentJson: unknown
   contextLinks: ContextLink[]
+}
+
+// Story 14.29 — ADD_TASK_COMMENT params. Dispatch calls createComment with
+// (taskId, content, parentCommentId?). `taskTitle` + `entity_version` are
+// renderer/staleness concerns and are not read by dispatch.
+interface AddTaskCommentParams {
+  taskId: string
+  content: string
+  parentCommentId?: string
 }
 
 // ============================================================================
@@ -395,6 +406,29 @@ export async function approvePendingAction(
               '/laglistor',
               '/tasks',
             ]
+            break
+          }
+
+          // ── Story 14.29: agent-proposed task comment ────────────────────────
+          case 'ADD_TASK_COMMENT': {
+            const p = action.params as unknown as AddTaskCommentParams
+            const result = await createComment(
+              p.taskId,
+              p.content,
+              p.parentCommentId
+            )
+            // AC 13: dispatch failure keeps the row PENDING (do NOT mark APPROVED).
+            if (!result.success || !result.data) {
+              return {
+                success: false,
+                error: result.error ?? 'Kunde inte spara kommentaren',
+              }
+            }
+            resultRef = { commentId: result.data.id }
+            // createComment already revalidates '/tasks' itself
+            // (task-modal.ts:1025); we still declare it for the dispatcher's
+            // AC-13 revalidate-paths contract.
+            revalidatePaths = ['/tasks']
             break
           }
 
