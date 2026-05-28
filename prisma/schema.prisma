@@ -1605,6 +1605,11 @@ enum PendingAgentActionType {
   // no editor path). Dispatch calls the existing createComment server action.
   // Additive enum-value addition.
   ADD_TASK_COMMENT
+  // Story 14.30 — agent-proposed styrdokument status transition. Separation-of-
+  // duties: agent never proposes APPROVED (guarded at the tool AND the dispatch
+  // as defence-in-depth). Dispatch calls the existing updateDocumentStatus
+  // server action. Additive enum-value addition.
+  TRANSITION_DOCUMENT_STATUS
 }
 
 enum PendingAgentActionStatus {

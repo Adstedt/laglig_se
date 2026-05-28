@@ -24,6 +24,8 @@ import { AssignTaskRenderer } from '@/components/features/ai-chat/agent-action-r
 import { LinkTaskToDocumentRenderer } from '@/components/features/ai-chat/agent-action-renderers/link-task-to-document-renderer'
 // Story 14.29: add_task_comment renderer.
 import { AddTaskCommentRenderer } from '@/components/features/ai-chat/agent-action-renderers/add-task-comment-renderer'
+// Story 14.30: transition_document_status renderer.
+import { TransitionDocumentStatusRenderer } from '@/components/features/ai-chat/agent-action-renderers/transition-document-status-renderer'
 
 function action(
   overrides: Partial<PendingAgentAction> = {}
@@ -396,5 +398,96 @@ describe('AddTaskCommentRenderer', () => {
     expect(screen.getByText(/Bedömning: ingen påverkan/)).toBeInTheDocument()
     const link = screen.getByRole('link', { name: /Visa uppgift/ })
     expect(link).toHaveAttribute('href', '/tasks?task=t_1')
+  })
+})
+
+// Story 14.30: TRANSITION_DOCUMENT_STATUS renderer.
+describe('TransitionDocumentStatusRenderer', () => {
+  const params = {
+    documentId: 'd_1',
+    documentTitle: 'Brandskyddspolicy',
+    oldStatus: 'DRAFT' as const,
+    newStatus: 'IN_REVIEW' as const,
+    oldStatusLabel: 'Utkast',
+    newStatusLabel: 'Under granskning',
+  }
+
+  it('PENDING: lead shows DocumentStatusBadge pills (Utkast + Under granskning) AND the document title — visible without expanding Justera', () => {
+    const h = handlers()
+    render(
+      <TransitionDocumentStatusRenderer
+        action={action({
+          action_type: 'TRANSITION_DOCUMENT_STATUS',
+          params,
+        } as never)}
+        isSubmitting={false}
+        {...h}
+      />
+    )
+    // AC 10: the badge transition is the signature UX — must be in the lead,
+    // not buried behind Justera. Each badge renders its own label via
+    // DocumentStatusBadge's STATUS_CONFIG lookup, so they're in separate text
+    // nodes — query them individually.
+    expect(screen.getByText('Utkast')).toBeInTheDocument()
+    expect(screen.getByText('Under granskning')).toBeInTheDocument()
+    expect(screen.getByText(/Brandskyddspolicy/)).toBeInTheDocument()
+    // Raw enum must NOT appear in the visible UI.
+    expect(screen.queryByText(/DRAFT/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/IN_REVIEW/)).not.toBeInTheDocument()
+  })
+
+  it('PENDING: editable comment behind Justera (target is fixed — no APPROVED option offered)', () => {
+    const h = handlers()
+    render(
+      <TransitionDocumentStatusRenderer
+        action={action({
+          action_type: 'TRANSITION_DOCUMENT_STATUS',
+          params: { ...params, comment: 'Klart för granskning.' },
+        } as never)}
+        isSubmitting={false}
+        {...h}
+      />
+    )
+    expandJustera()
+    expect(
+      screen.getByDisplayValue('Klart för granskning.')
+    ).toBeInTheDocument()
+    // AC 10: target is fixed — no APPROVED select/option in the renderer.
+    expect(screen.queryByText('Godkänd')).not.toBeInTheDocument()
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+  })
+
+  it('approve click calls onApprove', () => {
+    const h = handlers()
+    render(
+      <TransitionDocumentStatusRenderer
+        action={action({
+          action_type: 'TRANSITION_DOCUMENT_STATUS',
+          params,
+        } as never)}
+        isSubmitting={false}
+        {...h}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Godkänn/ }))
+    expect(h.onApprove).toHaveBeenCalledOnce()
+  })
+
+  it('APPROVED shows the status badges + a link to /workspace/styrdokument/<id>/edit (AC 11)', () => {
+    const h = handlers()
+    render(
+      <TransitionDocumentStatusRenderer
+        action={action({
+          action_type: 'TRANSITION_DOCUMENT_STATUS',
+          status: 'APPROVED',
+          params,
+        } as never)}
+        isSubmitting={false}
+        {...h}
+      />
+    )
+    expect(screen.getByText(/Godkänt — status ändrad/)).toBeInTheDocument()
+    const link = screen.getByRole('link', { name: /Öppna dokument/ })
+    expect(link).toHaveAttribute('href', '/workspace/styrdokument/d_1/edit')
   })
 })

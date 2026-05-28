@@ -16,6 +16,7 @@ const {
   mockCreateDocument,
   mockLinkDocumentToListItem,
   mockCreateComment,
+  mockUpdateDocumentStatus,
 } = vi.hoisted(() => ({
   mockWithWorkspace: vi.fn(),
   mockCreateTask: vi.fn(),
@@ -27,6 +28,8 @@ const {
   mockLinkDocumentToListItem: vi.fn(),
   // Story 14.29: ADD_TASK_COMMENT dispatch target.
   mockCreateComment: vi.fn(),
+  // Story 14.30: TRANSITION_DOCUMENT_STATUS dispatch target.
+  mockUpdateDocumentStatus: vi.fn(),
 }))
 
 vi.mock('@/lib/prisma', () => ({
@@ -60,6 +63,8 @@ vi.mock('@/app/actions/documents', () => ({
   linkDocumentToTask: mockLinkDocumentToTask,
   createDocument: mockCreateDocument,
   linkDocumentToListItem: mockLinkDocumentToListItem,
+  // Story 14.30: TRANSITION_DOCUMENT_STATUS dispatch target.
+  updateDocumentStatus: mockUpdateDocumentStatus,
 }))
 
 vi.mock('@/app/actions/law-list-item-requirements', () => ({
@@ -779,6 +784,97 @@ describe('approvePendingAction → ADD_TASK_COMMENT', () => {
 
     expect(result.success).toBe(false)
     // Row NOT marked APPROVED — update only fires after a successful dispatch.
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+  })
+})
+
+// Story 14.30: TRANSITION_DOCUMENT_STATUS dispatch — two-layer separation-of-
+// duties. The DISPATCH guard is the authoritative trusted gate (the tool's
+// guard is a first line; AC 13 mandates the dispatch refuses APPROVED even
+// if it somehow reaches params).
+describe('approvePendingAction → TRANSITION_DOCUMENT_STATUS', () => {
+  it('blocks newStatus=APPROVED at the dispatch (defence-in-depth), keeps row PENDING, never calls updateDocumentStatus', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({
+        action_type: 'TRANSITION_DOCUMENT_STATUS',
+        // Inject APPROVED as if the tool guard was bypassed — the dispatch
+        // is the authoritative gate and MUST refuse it regardless.
+        params: {
+          documentId: 'd_1',
+          newStatus: 'APPROVED',
+          oldStatus: 'IN_REVIEW',
+        },
+      })
+    )
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/kan inte godkänna/i)
+    // Critical: updateDocumentStatus must NOT be called.
+    expect(mockUpdateDocumentStatus).not.toHaveBeenCalled()
+    // Critical: the row must NOT be marked APPROVED.
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+  })
+
+  it('dispatches a valid transition via updateDocumentStatus and sets result_ref', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({
+        action_type: 'TRANSITION_DOCUMENT_STATUS',
+        params: {
+          documentId: 'd_1',
+          documentTitle: 'Brandskyddspolicy',
+          oldStatus: 'DRAFT',
+          newStatus: 'IN_REVIEW',
+          comment: 'Redo för granskning.',
+        },
+      })
+    )
+    mockUpdateDocumentStatus.mockResolvedValue({
+      success: true,
+      data: { id: 'd_1', status: 'IN_REVIEW' },
+    })
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(mockUpdateDocumentStatus).toHaveBeenCalledWith({
+      documentId: 'd_1',
+      newStatus: 'IN_REVIEW',
+      comment: 'Redo för granskning.',
+    })
+    expect(result.data?.resultRef).toEqual({
+      documentId: 'd_1',
+      status: 'IN_REVIEW',
+    })
+  })
+
+  it('keeps row PENDING when updateDocumentStatus fails (e.g., drifted "Ogiltig statusövergång")', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({
+        action_type: 'TRANSITION_DOCUMENT_STATUS',
+        params: {
+          documentId: 'd_1',
+          oldStatus: 'DRAFT',
+          newStatus: 'IN_REVIEW',
+        },
+      })
+    )
+    mockUpdateDocumentStatus.mockResolvedValue({
+      success: false,
+      error: 'Ogiltig statusövergång',
+    })
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/ogiltig statusövergång/i)
+    // Row NOT marked APPROVED.
     expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
   })
 })

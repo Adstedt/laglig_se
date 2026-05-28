@@ -22,6 +22,7 @@ import {
   createDocument,
   linkDocumentToTask,
   linkDocumentToListItem,
+  updateDocumentStatus,
 } from './documents'
 import {
   createRequirement,
@@ -35,6 +36,7 @@ import type {
   PendingAgentAction,
   Prisma,
   TaskPriority,
+  WorkspaceDocumentStatus,
   WorkspaceDocumentType,
 } from '@prisma/client'
 
@@ -110,6 +112,19 @@ interface AddTaskCommentParams {
   taskId: string
   content: string
   parentCommentId?: string
+}
+
+// Story 14.30 — TRANSITION_DOCUMENT_STATUS params. Dispatch calls
+// updateDocumentStatus with (documentId, newStatus, comment?). `documentTitle`,
+// `oldStatus`, and `entity_version` are renderer/staleness concerns and are
+// not read by dispatch. NOTE: `newStatus` MUST never be 'APPROVED' here — the
+// AC 13 guard refuses it as the authoritative trusted gate, independent of
+// the tool-level guard (defence-in-depth).
+interface TransitionDocumentStatusParams {
+  documentId: string
+  newStatus: WorkspaceDocumentStatus
+  oldStatus?: WorkspaceDocumentStatus
+  comment?: string
 }
 
 // ============================================================================
@@ -429,6 +444,45 @@ export async function approvePendingAction(
             // (task-modal.ts:1025); we still declare it for the dispatcher's
             // AC-13 revalidate-paths contract.
             revalidatePaths = ['/tasks']
+            break
+          }
+
+          // ── Story 14.30: agent-proposed styrdokument status transition ─────
+          case 'TRANSITION_DOCUMENT_STATUS': {
+            const p = action.params as unknown as TransitionDocumentStatusParams
+            // AC 13 — Authoritative APPROVED guard (defence-in-depth, the
+            // dispatch is the trusted gate, independent of the tool refusal).
+            // Row stays PENDING with the Swedish error surfaced; we do NOT
+            // mark APPROVED. Deliberate string divergence vs. the longer
+            // tool-level message (this is a last-line backstop the agent
+            // should rarely hit; see AC 13 note).
+            if (p.newStatus === 'APPROVED') {
+              return {
+                success: false,
+                error: 'Agenten kan inte godkänna styrdokument.',
+              }
+            }
+            const result = await updateDocumentStatus({
+              documentId: p.documentId,
+              newStatus: p.newStatus,
+              ...(p.comment !== undefined && { comment: p.comment }),
+            })
+            // AC 14: dispatch failure (incl. now-invalid transition because
+            // the live status drifted, surfacing "Ogiltig statusövergång")
+            // keeps the row PENDING.
+            if (!result.success) {
+              return {
+                success: false,
+                error: result.error ?? 'Kunde inte ändra dokumentstatusen',
+              }
+            }
+            resultRef = { documentId: p.documentId, status: p.newStatus }
+            // AC 15: revalidate the styrdokument list page + the specific
+            // document's edit route.
+            revalidatePaths = [
+              '/workspace/styrdokument',
+              `/workspace/styrdokument/${p.documentId}/edit`,
+            ]
             break
           }
 

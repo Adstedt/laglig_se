@@ -51,18 +51,18 @@ describe('createAgentTools — role filter (Story 19.5)', () => {
     expect(keys).toContain('draft_styrdokument')
     // Story 14.28: the new write tool is present for write-capable roles.
     expect(keys).toContain('update_requirement')
-    expect(keys).toHaveLength(28) // web_search is injected at the route, not here
+    expect(keys).toHaveLength(29) // web_search is injected at the route, not here
   })
 
   it('OWNER receives the full set', () => {
     const keys = Object.keys(createAgentTools('ws', 'u', {}, 'OWNER'))
     expect(keys).toContain('create_task')
-    expect(keys).toHaveLength(28)
+    expect(keys).toHaveLength(29)
   })
 
   it('undefined role → full set (backward compat for legacy callers)', () => {
     const keys = Object.keys(createAgentTools('ws', 'u', {}))
-    expect(keys).toHaveLength(28)
+    expect(keys).toHaveLength(29)
     expect(keys).toContain('assign_task')
   })
 

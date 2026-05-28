@@ -182,6 +182,8 @@ function summarizePendingAction(action: PendingAgentAction): string {
       const snippet = c.length > 40 ? `${c.slice(0, 40)}…` : c
       return `Kommentar till uppgift "${s('taskTitle')}": "${snippet}"`
     }
+    case 'TRANSITION_DOCUMENT_STATUS':
+      return `Status för "${s('documentTitle')}": ${s('oldStatusLabel') || s('oldStatus')} → ${s('newStatusLabel') || s('newStatus')}`
     default:
       return action.action_type
   }

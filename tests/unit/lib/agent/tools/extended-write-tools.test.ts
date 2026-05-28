@@ -26,6 +26,8 @@ import { createAddContextNoteTool } from '@/lib/agent/tools/add-context-note'
 import { createUpdateComplianceStatusTool } from '@/lib/agent/tools/update-compliance-status'
 // Story 14.29: add_task_comment tool.
 import { createAddTaskCommentTool } from '@/lib/agent/tools/add-task-comment'
+// Story 14.30: transition_document_status tool.
+import { createTransitionDocumentStatusTool } from '@/lib/agent/tools/transition-document-status'
 import { prisma } from '@/lib/prisma'
 
 type ExecFn = (
@@ -355,6 +357,108 @@ describe('add_task_comment', () => {
     const result = await execOf(createAddTaskCommentTool('ws_1', CTX))({
       taskId: 'missing',
       content: 'En riktig kommentar',
+    })
+    expect(result.error).toBe(true)
+    expect(result.message).toMatch(/hittades inte/i)
+    expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
+  })
+})
+
+// Story 14.30: transition_document_status — proposal-only with two-layer
+// separation-of-duties (the dispatch enforces it too — see pending-agent-actions
+// dispatch tests). Schema enum excludes APPROVED; runtime check is the
+// belt-and-suspenders for direct-execute bypass paths.
+describe('transition_document_status', () => {
+  const DOC_ROW = {
+    id: 'd_1',
+    title: 'Brandskyddspolicy',
+    status: 'DRAFT' as const,
+    updated_at: new Date('2026-01-01T00:00:00.000Z'),
+  }
+
+  it('creates a TRANSITION_DOCUMENT_STATUS row with denormalised title + old/new status + entity_version', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(DOC_ROW)
+    const result = await execOf(
+      createTransitionDocumentStatusTool('ws_1', CTX)
+    )({
+      documentId: 'd_1',
+      newStatus: 'IN_REVIEW',
+      comment: 'Klart för granskning.',
+    })
+    expect(fn(prisma.pendingAgentAction.create)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          action_type: 'TRANSITION_DOCUMENT_STATUS',
+          status: 'PENDING',
+          params: expect.objectContaining({
+            documentId: 'd_1',
+            documentTitle: 'Brandskyddspolicy',
+            oldStatus: 'DRAFT',
+            newStatus: 'IN_REVIEW',
+            oldStatusLabel: 'Utkast',
+            newStatusLabel: 'Under granskning',
+            comment: 'Klart för granskning.',
+            entity_version: '2026-01-01T00:00:00.000Z',
+          }),
+        }),
+      })
+    )
+    expect(result.confirmation_required).toBe(true)
+    expect(result.data).toEqual({ pendingActionId: 'pa_x' })
+  })
+
+  it('rejects newStatus = APPROVED with a Swedish ToolError, no row (AC 4 — load-bearing separation-of-duties)', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue({
+      ...DOC_ROW,
+      status: 'IN_REVIEW' as const,
+    })
+    const result = await execOf(
+      createTransitionDocumentStatusTool('ws_1', CTX)
+    )({
+      documentId: 'd_1',
+      // Cast bypasses the Zod enum (which already excludes APPROVED) and
+      // exercises the runtime guard — the load-bearing defence for any
+      // direct-execute path.
+      newStatus: 'APPROVED' as never,
+    })
+    expect(result.error).toBe(true)
+    expect(result.message).toMatch(/kan inte godkänna/i)
+    expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
+  })
+
+  it('rejects an invalid ladder move (DRAFT → SUPERSEDED) with a Swedish ToolError (AC 5)', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(DOC_ROW)
+    const result = await execOf(
+      createTransitionDocumentStatusTool('ws_1', CTX)
+    )({
+      documentId: 'd_1',
+      newStatus: 'SUPERSEDED', // not in VALID_STATUS_TRANSITIONS.DRAFT
+    })
+    expect(result.error).toBe(true)
+    expect(result.message).toMatch(/ogiltig statusövergång/i)
+    expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
+  })
+
+  it('rejects execute=true with a Swedish ToolError, no row (AC 8)', async () => {
+    const result = await execOf(
+      createTransitionDocumentStatusTool('ws_1', CTX)
+    )({
+      documentId: 'd_1',
+      newStatus: 'IN_REVIEW',
+      execute: true,
+    })
+    expect(result.error).toBe(true)
+    expect(result.message).toMatch(/inte köras direkt/i)
+    expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
+  })
+
+  it('errors when the document is not in the workspace', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(null)
+    const result = await execOf(
+      createTransitionDocumentStatusTool('ws_1', CTX)
+    )({
+      documentId: 'missing',
+      newStatus: 'IN_REVIEW',
     })
     expect(result.error).toBe(true)
     expect(result.message).toMatch(/hittades inte/i)

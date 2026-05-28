@@ -253,6 +253,15 @@ const TOOL_CONFIG: Record<
     proposalLabel: 'Föreslog kommentar',
     icon: ClipboardList,
   },
+  // Story 14.30: agent-proposed styrdokument status transition. Always a
+  // proposal — APPROVED is forbidden at both tool + dispatch layers
+  // (separation of duties); the proposalLabel is what the chip shows.
+  transition_document_status: {
+    label: 'Föreslår statusändring',
+    doneLabel: 'Ändrade status',
+    proposalLabel: 'Föreslog statusändring',
+    icon: FileText,
+  },
 }
 
 // ---------------------------------------------------------------------------

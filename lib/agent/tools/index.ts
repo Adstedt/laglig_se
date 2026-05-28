@@ -39,6 +39,8 @@ import { createAssignTaskTool } from './assign-task'
 import { createDraftStyrdokumentTool } from './draft-styrdokument'
 // Story 14.29: agent-proposed task-comment approval (ADD_TASK_COMMENT inline card).
 import { createAddTaskCommentTool } from './add-task-comment'
+// Story 14.30: agent-proposed styrdokument status transition (TRANSITION_DOCUMENT_STATUS).
+import { createTransitionDocumentStatusTool } from './transition-document-status'
 // Story 19.7a: load a skill's full instructions mid-conversation (skills layer).
 import { createActivateSkillTool } from './activate-skill'
 // Story 19.7c: per-skill registry narrowing — read an active skill's tool whitelist.
@@ -126,6 +128,7 @@ type ToolName =
   | 'assign_task'
   | 'draft_styrdokument'
   | 'add_task_comment'
+  | 'transition_document_status'
 
 export const TOOL_REGISTRY_POLICY = {
   search_laws: 'read',
@@ -157,6 +160,7 @@ export const TOOL_REGISTRY_POLICY = {
   assign_task: 'write',
   draft_styrdokument: 'write',
   add_task_comment: 'write',
+  transition_document_status: 'write',
 } satisfies Record<ToolName, 'read' | 'write'>
 
 /**
@@ -262,6 +266,11 @@ export function createAgentTools(
     draft_styrdokument: createDraftStyrdokumentTool(workspaceId, writeContext),
     // Story 14.29: propose a comment on a task (ADD_TASK_COMMENT approval card).
     add_task_comment: createAddTaskCommentTool(workspaceId, writeContext),
+    // Story 14.30: propose a styrdokument status transition (TRANSITION_DOCUMENT_STATUS).
+    transition_document_status: createTransitionDocumentStatusTool(
+      workspaceId,
+      writeContext
+    ),
   }
 
   // Story 19.5: wrap every tool's execute to log the invocation (fail-safe).
