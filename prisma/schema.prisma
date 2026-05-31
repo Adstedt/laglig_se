@@ -4,6 +4,12 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
+  // Trim Prisma query-engine binaries to just (a) the local dev platform
+  // and (b) Vercel's Node 20 RHEL runtime. Default behaviour bundles every
+  // platform binary (linux x4 + darwin x2 + windows), inflating the
+  // serverless function bundle by ~50 MB. Verified contributor in the
+  // VERCEL_ANALYZE_BUILD_OUTPUT report (77 MB @prisma/client per function).
+  binaryTargets   = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {

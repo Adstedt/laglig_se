@@ -132,6 +132,48 @@ const nextConfig = {
     '/api/chat': ['./lib/agent/system-prompt.md'],
   },
 
+  // Serverless function size cap (250 MB unzipped). The Next.js file tracer
+  // was sweeping `data/`, `docs/`, `tests/`, `_prototype/`, and `scripts/` into
+  // every serverless function via some path-string reference, pushing
+  // /api/chat and /api/workspace/generate-law-list to ~428 MB each (per the
+  // VERCEL_ANALYZE_BUILD_OUTPUT report). None of these directories are read
+  // at runtime by app/ or lib/ code:
+  //   - data/{msbfs-pdfs,notisum-amnesfokus,sfs-indexes}: ingestion-time only
+  //     (loaded into Postgres + pgvector by scripts/crons; runtime queries
+  //     hit the DB). Verified by grep across app/ + lib/.
+  //   - docs/: PRD, stories, plans, QA gates — never shipped to production.
+  //   - tests/: unit + e2e tests + their committed screenshots.
+  //   - _prototype/: HTML mockups.
+  //   - scripts/: one-off TS scripts run via `pnpm tsx scripts/...`.
+  outputFileTracingExcludes: {
+    // Global excludes — non-production directories that should never ship.
+    '*': [
+      'data/**',
+      'docs/**',
+      'tests/**',
+      '_prototype/**',
+      'scripts/**',
+    ],
+    // The two routes Vercel flagged + the cron family don't render PDFs;
+    // Chromium (~64 MB) + puppeteer-core (~12 MB) are only legitimately
+    // needed by /api/workspace/documents/*/export (the PDF export route)
+    // and the styrdokument PDF report page. NOT excluding `openai/**` from
+    // /api/chat: the retrieval pipeline (lib/agent/retrieval.ts →
+    // lib/chunks/embed-chunks.ts) uses it at runtime for query embeddings.
+    '/api/chat/**': [
+      'node_modules/@sparticuz/chromium/**',
+      'node_modules/puppeteer-core/**',
+    ],
+    '/api/workspace/generate-law-list/**': [
+      'node_modules/@sparticuz/chromium/**',
+      'node_modules/puppeteer-core/**',
+    ],
+    '/api/cron/**': [
+      'node_modules/@sparticuz/chromium/**',
+      'node_modules/puppeteer-core/**',
+    ],
+  },
+
   experimental: {
     // Story 6.7a: Increase Server Actions body size limit for file uploads (25MB)
     // Next.js 16: must live under `experimental.serverActions` (root-level was silently ignored)
