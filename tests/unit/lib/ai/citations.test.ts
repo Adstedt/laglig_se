@@ -160,6 +160,111 @@ describe('extractSourcesFromToolResult', () => {
     expect(resolved?.documentNumber).toBe('dataskyddspolicy.pdf')
   })
 
+  // Story 17.10 (AC 20 + 21): search_workspace_documents — title-keyed citations
+  // with collision disambiguation.
+  it('extracts title-keyed entries from search_workspace_documents (Story 17.10, AC 20)', () => {
+    const result = {
+      data: [
+        {
+          documentId: 'wd-1',
+          title: 'Dataskyddspolicy',
+          documentType: 'POLICY',
+          status: 'APPROVED',
+          snippet: 'Kryptering av personuppgifter.',
+          relevanceScore: 0.88,
+          citationKey: 'Dataskyddspolicy',
+        },
+        {
+          documentId: 'wd-2',
+          title: 'Brandskyddsrutin',
+          documentType: 'ROUTINE',
+          status: 'APPROVED',
+          snippet: 'Brandskyddsansvarig utses årligen.',
+          relevanceScore: 0.76,
+          citationKey: 'Brandskyddsrutin',
+        },
+      ],
+      _meta: { tool: 'search_workspace_documents' },
+    }
+
+    const sources = extractSourcesFromToolResult(
+      'search_workspace_documents',
+      result
+    )
+
+    // DEC-2: citationKey = title (clean — no collision in this set).
+    const polis = sources['Dataskyddspolicy']
+    expect(polis).toBeDefined()
+    expect(polis!.documentNumber).toBe('Dataskyddspolicy')
+    expect(polis!.title).toBe('Dataskyddspolicy')
+    expect(polis!.snippet).toContain('Kryptering')
+
+    const rutin = sources['Brandskyddsrutin']
+    expect(rutin).toBeDefined()
+    expect(rutin!.documentNumber).toBe('Brandskyddsrutin')
+
+    // [Källa: Dataskyddspolicy] resolves via resolveSource's bare-label fallback.
+    const resolved = resolveSource('Dataskyddspolicy', sourcesToMap(sources))
+    expect(resolved?.title).toBe('Dataskyddspolicy')
+  })
+
+  it('appends a short id suffix on title collisions for disambiguation (Story 17.10, AC 21)', () => {
+    const result = {
+      data: [
+        // Two styrdokument that happen to share the same title — e.g. an old
+        // and a re-issued version both surfaced by the search.
+        {
+          documentId: '0a0a0a0a-1111-2222-3333-444444444444',
+          title: 'Dataskyddspolicy',
+          snippet: 'Version 1 — pre-2024.',
+          relevanceScore: 0.9,
+          citationKey: 'Dataskyddspolicy',
+        },
+        {
+          documentId: 'bbbbcccc-1111-2222-3333-444444444444',
+          title: 'Dataskyddspolicy',
+          snippet: 'Version 2 — uppdaterad efter GDPR-revision.',
+          relevanceScore: 0.85,
+          citationKey: 'Dataskyddspolicy',
+        },
+        // A non-colliding doc — must still stay clean (no suffix).
+        {
+          documentId: '99999999-1111-2222-3333-444444444444',
+          title: 'Brandskyddsrutin',
+          snippet: 'Branrutiner.',
+          relevanceScore: 0.7,
+          citationKey: 'Brandskyddsrutin',
+        },
+      ],
+      _meta: { tool: 'search_workspace_documents' },
+    }
+
+    const sources = extractSourcesFromToolResult(
+      'search_workspace_documents',
+      result
+    )
+
+    // Colliding entries get a short id-suffix appended; bare title becomes
+    // ambiguous and is NOT a source key.
+    expect(sources['Dataskyddspolicy']).toBeUndefined()
+    expect(sources['Dataskyddspolicy (0a0a0a0a)']).toBeDefined()
+    expect(sources['Dataskyddspolicy (bbbbcccc)']).toBeDefined()
+
+    // Non-colliding entry stays clean.
+    expect(sources['Brandskyddsrutin']).toBeDefined()
+    expect(sources['Brandskyddsrutin (99999999)']).toBeUndefined()
+
+    // documentNumber carries the full disambiguated citationKey.
+    expect(sources['Dataskyddspolicy (0a0a0a0a)']!.documentNumber).toBe(
+      'Dataskyddspolicy (0a0a0a0a)'
+    )
+    // Display title stays the human-readable original (no suffix), so the
+    // citation pill renders cleanly even when the key is disambiguated.
+    expect(sources['Dataskyddspolicy (0a0a0a0a)']!.title).toBe(
+      'Dataskyddspolicy'
+    )
+  })
+
   it('extracts from get_document_details', () => {
     const result = {
       data: {

@@ -262,6 +262,22 @@ const TOOL_CONFIG: Record<
     proposalLabel: 'Föreslog statusändring',
     icon: FileText,
   },
+  // Story 17.10: workspace-document reads (styrdokument).
+  search_workspace_documents: {
+    label: 'Söker i styrdokument',
+    doneLabel: 'Sökte i styrdokument',
+    icon: FileSearch,
+  },
+  get_workspace_document: {
+    label: 'Läser styrdokument',
+    doneLabel: 'Läste styrdokument',
+    icon: FileText,
+  },
+  list_workspace_documents: {
+    label: 'Listar styrdokument',
+    doneLabel: 'Listade styrdokument',
+    icon: FileText,
+  },
 }
 
 // ---------------------------------------------------------------------------

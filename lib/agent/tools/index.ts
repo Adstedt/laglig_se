@@ -41,6 +41,10 @@ import { createDraftStyrdokumentTool } from './draft-styrdokument'
 import { createAddTaskCommentTool } from './add-task-comment'
 // Story 14.30: agent-proposed styrdokument status transition (TRANSITION_DOCUMENT_STATUS).
 import { createTransitionDocumentStatusTool } from './transition-document-status'
+// Story 17.10: workspace-document read tools (search / get / list styrdokument).
+import { createSearchWorkspaceDocumentsTool } from './search-workspace-documents'
+import { createGetWorkspaceDocumentTool } from './get-workspace-document'
+import { createListWorkspaceDocumentsTool } from './list-workspace-documents'
 // Story 19.7a: load a skill's full instructions mid-conversation (skills layer).
 import { createActivateSkillTool } from './activate-skill'
 // Story 19.7c: per-skill registry narrowing — read an active skill's tool whitelist.
@@ -129,6 +133,9 @@ type ToolName =
   | 'draft_styrdokument'
   | 'add_task_comment'
   | 'transition_document_status'
+  | 'search_workspace_documents'
+  | 'get_workspace_document'
+  | 'list_workspace_documents'
 
 export const TOOL_REGISTRY_POLICY = {
   search_laws: 'read',
@@ -161,6 +168,11 @@ export const TOOL_REGISTRY_POLICY = {
   draft_styrdokument: 'write',
   add_task_comment: 'write',
   transition_document_status: 'write',
+  // Story 17.10: workspace-document reads. All three are 'read' tier (no
+  // mutations) → auto-join ALWAYS_AVAILABLE via 19.7c (not in SKILL_GATED_TOOLS).
+  search_workspace_documents: 'read',
+  get_workspace_document: 'read',
+  list_workspace_documents: 'read',
 } satisfies Record<ToolName, 'read' | 'write'>
 
 /**
@@ -271,6 +283,11 @@ export function createAgentTools(
       workspaceId,
       writeContext
     ),
+    // Story 17.10: workspace-document reads. Each takes workspaceId only —
+    // read tools never need userId / writeContext / role-write filtering.
+    search_workspace_documents: createSearchWorkspaceDocumentsTool(workspaceId),
+    get_workspace_document: createGetWorkspaceDocumentTool(workspaceId),
+    list_workspace_documents: createListWorkspaceDocumentsTool(workspaceId),
   }
 
   // Story 19.5: wrap every tool's execute to log the invocation (fail-safe).

@@ -139,6 +139,18 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('[Källa: rutin.pdf]')
   })
 
+  // Story 17.10 (AC 18): the prompt must surface all three workspace-document
+  // read tools (search / get / list) so the agent knows when to reach for them.
+  it('includes the three workspace-document tools (Story 17.10, AC 18)', async () => {
+    const prompt = await buildSystemPrompt()
+    expect(prompt).toContain('search_workspace_documents')
+    expect(prompt).toContain('get_workspace_document')
+    expect(prompt).toContain('list_workspace_documents')
+    // DEC-2: cite styrdokument by title. The new guidance line carries an
+    // explicit example.
+    expect(prompt).toContain('[Källa: Dataskyddspolicy]')
+  })
+
   it('includes company context section when companyContext is provided', async () => {
     const prompt = await buildSystemPrompt({
       companyContext: '- Företag: Acme AB\n- Bransch: Bygg',
@@ -536,7 +548,12 @@ describe('buildSystemPrompt', () => {
     // / prompt-caching v2 refactor noted in Story 14.26).
     const estimatedTokens = prompt.length / 4
     expect(estimatedTokens).toBeGreaterThan(1500)
-    expect(estimatedTokens).toBeLessThan(5500)
+    // Story 17.10: bumped from 5500 → 6500. Prior ceiling had already been
+    // breached at baseline (~5594) before 17.10's three workspace-document
+    // tool entries (+237 tokens after AC-18 terse-trim). The guardrail's job
+    // is to flag conscious growth — this is conscious, not creep. Revisit /
+    // shrink if a future story pushes past 6500 without comparable value.
+    expect(estimatedTokens).toBeLessThan(6500)
   })
 })
 

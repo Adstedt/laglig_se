@@ -71,13 +71,13 @@ const GLOBAL_FLOW_REQUIRED = [
 ]
 
 describe('registry narrowing — no-regression harness (Story 19.7c)', () => {
-  it('sanity: full factory registry is 29 tools (update flow-required sets if this changes)', () => {
-    expect(FULL).toHaveLength(29)
+  it('sanity: full factory registry is 32 tools (update flow-required sets if this changes)', () => {
+    expect(FULL).toHaveLength(32)
   })
 
   it('activeSkills undefined → full set (legacy callers unaffected)', () => {
-    expect(toolKeys('MEMBER', undefined)).toHaveLength(29)
-    expect(toolKeys(undefined, undefined)).toHaveLength(29)
+    expect(toolKeys('MEMBER', undefined)).toHaveLength(32)
+    expect(toolKeys(undefined, undefined)).toHaveLength(32)
   })
 
   it('change context keeps every tool the assessment flow uses', () => {
@@ -113,9 +113,9 @@ describe('registry narrowing — no-regression harness (Story 19.7c)', () => {
     )
   })
 
-  it('activeSkills [] → baseline only (save_assessment gated, 28 tools)', () => {
+  it('activeSkills [] → baseline only (save_assessment gated, 31 tools)', () => {
     const k = toolKeys('MEMBER', [])
     expect(k).not.toContain('save_assessment')
-    expect(k).toHaveLength(28)
+    expect(k).toHaveLength(31)
   })
 })

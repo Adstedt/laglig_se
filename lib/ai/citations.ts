@@ -205,6 +205,56 @@ export function extractSourcesFromToolResult(
           })
         }
       }
+    } else if (toolName === 'search_workspace_documents') {
+      // Story 17.10 (DEC-2 + AC 20/21): authored styrdokument. citationKey = title.
+      // Mirrors the file branch above (title carried in `documentNumber` to keep
+      // SourceInfo.documentNumber a non-optional string).
+      //
+      // CITE-002 collision disambiguator (AC 21): two styrdokument can share
+      // the same title (e.g. an older + a re-issued version both surfacing in
+      // a search). We pre-scan the result set for title collisions; only
+      // colliding titles get a short id suffix appended to the citationKey so
+      // the model can disambiguate. Single-occurrence titles stay clean
+      // (`[Källa: Dataskyddspolicy]`).
+      const data = output.data as
+        | Array<{
+            documentId?: string
+            title?: string
+            snippet?: string
+            citationKey?: string
+          }>
+        | undefined
+
+      if (Array.isArray(data)) {
+        // Pre-scan: how many times does each base title appear?
+        const titleCounts = new Map<string, number>()
+        for (const item of data) {
+          const t = item.citationKey ?? item.title
+          if (!t) continue
+          titleCounts.set(t, (titleCounts.get(t) ?? 0) + 1)
+        }
+
+        for (const item of data) {
+          const baseTitle = item.citationKey ?? item.title
+          if (!baseTitle) continue
+          const isColliding = (titleCounts.get(baseTitle) ?? 0) > 1
+          // Short id suffix = first 8 chars of the UUID (enough disambiguation
+          // for in-result-set collisions while staying visually compact).
+          const suffix =
+            isColliding && item.documentId
+              ? ` (${item.documentId.slice(0, 8)})`
+              : ''
+          const citationKey = `${baseTitle}${suffix}`
+          set(citationKey, {
+            documentNumber: citationKey,
+            title: item.title ?? baseTitle,
+            snippet: item.snippet ?? null,
+            slug: null,
+            path: null,
+            anchorId: null,
+          })
+        }
+      }
     } else if (toolName === 'get_change_details') {
       const data = output.data as
         | {
