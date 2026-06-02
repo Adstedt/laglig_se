@@ -87,14 +87,16 @@ const COLUMNS: Column[] = [
   },
 ]
 
-// per-chip tint for the Laglig column (bright-on-dark; ties back to graph nodes)
+// per-chip tint for the Laglig column — near-monochrome on dark with the single
+// sanctioned amber accent (the brand palette); the green Check marks carry the
+// "has it" status signal, so the chips themselves stay ink-toned.
 const HERO_CHIP_TONE = [
-  'text-blue-400',
-  'text-emerald-400',
+  'text-amber-400',
+  'text-background/80',
+  'text-background/80',
+  'text-background/80',
   'text-background/80',
   'text-amber-400',
-  'text-background',
-  'text-rose-400',
 ]
 
 function ComparisonColumn({ col, index }: { col: Column; index: number }) {
@@ -104,12 +106,12 @@ function ComparisonColumn({ col, index }: { col: Column; index: number }) {
       className={cn(
         'flex flex-col rounded-2xl p-6',
         hero
-          ? 'relative bg-background/[0.07] ring-2 ring-violet-400/40 shadow-[0_24px_70px_-20px_rgba(139,92,246,0.45)] lg:-mt-4 lg:mb-[-1rem]'
+          ? 'relative bg-background/[0.07] ring-2 ring-amber-400/40 shadow-[0_24px_70px_-20px_rgba(245,158,11,0.35)] lg:-mt-4 lg:mb-[-1rem]'
           : 'border border-background/10 bg-background/[0.035]'
       )}
     >
       {hero && (
-        <span className="absolute -top-3 left-6 inline-flex items-center gap-1 rounded-full bg-violet-500 px-2.5 py-1 text-[11px] font-medium text-white">
+        <span className="absolute -top-3 left-6 inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-[11px] font-medium text-foreground">
           <Sparkles className="h-3 w-3" /> Hela bilden
         </span>
       )}
@@ -117,10 +119,10 @@ function ComparisonColumn({ col, index }: { col: Column; index: number }) {
       {/* header */}
       <div className="flex items-center gap-3">
         {hero ? (
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-500">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-400">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/images/logo-icon-white.png"
+              src="/images/logo-icon-black.png"
               alt="Laglig"
               className="h-4 w-auto"
             />

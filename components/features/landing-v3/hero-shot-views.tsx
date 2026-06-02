@@ -212,7 +212,7 @@ export function AssistentView() {
               Förslag på åtgärd
             </div>
             <div className="mt-2 flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-secondary text-foreground/70 ring-1 ring-border/60">
                 <ListChecks className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
@@ -222,7 +222,7 @@ export function AssistentView() {
                 </div>
                 <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
                   <span>Föreslagen ansvarig:</span>
-                  <Avatar src="/demo-team/anna.png" className="h-5 w-5" />
+                  <Avatar src="/demo-team/anna.webp" className="h-5 w-5" />
                   Anna Lindqvist
                   <span className="text-muted-foreground/50">·</span>
                   <Badge tone="danger" variant="soft">
@@ -262,13 +262,13 @@ const FINDINGS = [
     id: 'AVV-01',
     type: 'AVVIKELSE',
     text: 'Brandskyddsrutin saknar dokumenterad utrymningsövning för 2025.',
-    owner: '/demo-team/erik.png',
+    owner: '/demo-team/erik.webp',
   },
   {
     id: 'OBS-02',
     type: 'OBSERVATION',
     text: 'Allergiinformation bör uppdateras på menyer i konferensdelen.',
-    owner: '/demo-team/johan.png',
+    owner: '/demo-team/johan.webp',
   },
 ] as const
 
@@ -389,56 +389,56 @@ const DOCS = [
     name: 'Alkoholpolicy',
     status: 'APPROVED',
     version: 'v2.1',
-    owner: '/demo-team/anna.png',
+    owner: '/demo-team/anna.webp',
     links: ['Alkohollagen'],
   },
   {
     name: 'HACCP-plan & egenkontroll',
     status: 'APPROVED',
     version: 'v3.0',
-    owner: '/demo-team/johan.png',
+    owner: '/demo-team/johan.webp',
     links: ['Livsmedelslagen', 'Livsmedelsförordningen'],
   },
   {
     name: 'Brandskyddsrutin',
     status: 'IN_REVIEW',
     version: 'v1.4',
-    owner: '/demo-team/erik.png',
+    owner: '/demo-team/erik.webp',
     links: ['Lag om skydd mot olyckor'],
   },
   {
     name: 'Krishanteringsplan',
     status: 'APPROVED',
     version: 'v1.0',
-    owner: '/demo-team/sofia.png',
+    owner: '/demo-team/sofia.webp',
     links: ['AFS 2023:2'],
   },
   {
     name: 'Personalhandbok',
     status: 'APPROVED',
     version: 'v4.2',
-    owner: '/demo-team/sofia.png',
+    owner: '/demo-team/sofia.webp',
     links: ['Arbetsmiljölagen'],
   },
   {
     name: 'Rutin för systematiskt arbetsmiljöarbete',
     status: 'APPROVED',
     version: 'v2.3',
-    owner: '/demo-team/erik.png',
+    owner: '/demo-team/erik.webp',
     links: ['AFS 2023:1'],
   },
   {
     name: 'Dataskyddspolicy (GDPR)',
     status: 'APPROVED',
     version: 'v2.0',
-    owner: '/demo-team/maria.png',
+    owner: '/demo-team/maria.webp',
     links: ['Dataskyddsförordningen'],
   },
   {
     name: 'Rutin för allergeninformation',
     status: 'IN_REVIEW',
     version: 'v1.1',
-    owner: '/demo-team/johan.png',
+    owner: '/demo-team/johan.webp',
     links: ['Livsmedelsförordningen'],
   },
 ] as const
@@ -578,7 +578,7 @@ export function RegelverkView() {
             className="rounded-lg border border-border/70 bg-card p-3.5"
           >
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-secondary text-foreground/70 ring-1 ring-border/60">
                 <Scale className="h-3.5 w-3.5" />
               </div>
               <span className="min-w-0 flex-1 truncate text-sm font-medium">

@@ -31,25 +31,25 @@ const MEMBERS: WorkspaceMemberOption[] = [
     id: 'u-anna',
     name: 'Anna Lindqvist',
     email: 'anna@nordviken.se',
-    avatarUrl: '/demo-team/anna.png',
+    avatarUrl: '/demo-team/anna.webp',
   },
   {
     id: 'u-erik',
     name: 'Erik Holm',
     email: 'erik@nordviken.se',
-    avatarUrl: '/demo-team/erik.png',
+    avatarUrl: '/demo-team/erik.webp',
   },
   {
     id: 'u-johan',
     name: 'Johan Berg',
     email: 'johan@nordviken.se',
-    avatarUrl: '/demo-team/johan.png',
+    avatarUrl: '/demo-team/johan.webp',
   },
   {
     id: 'u-maria',
     name: 'Maria Ek',
     email: 'maria@nordviken.se',
-    avatarUrl: '/demo-team/maria.png',
+    avatarUrl: '/demo-team/maria.webp',
   },
 ]
 const memberById = (id: string) => MEMBERS.find((m) => m.id === id)!

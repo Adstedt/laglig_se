@@ -42,7 +42,10 @@ const stages = [
 
 export function BreadthSection() {
   return (
-    <section className="border-y bg-section-cream py-16 md:py-24">
+    <section
+      id="how-it-works"
+      className="scroll-mt-20 border-y bg-section-cream py-16 md:py-24"
+    >
       <div className="container mx-auto px-4">
         <div className="mx-auto mb-12 max-w-3xl text-center md:mb-16">
           <h2

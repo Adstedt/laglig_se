@@ -65,7 +65,7 @@ const jobs = [
 export function AiAgentSection() {
   return (
     <section className="relative overflow-hidden bg-foreground py-20 text-background md:py-28">
-      <div className="absolute -top-40 right-0 h-80 w-80 rounded-full bg-violet-500/10 blur-3xl" />
+      <div className="absolute -top-40 right-0 h-80 w-80 rounded-full bg-amber-400/10 blur-3xl" />
       <div className="absolute -bottom-40 left-0 h-80 w-80 rounded-full bg-background/[0.04] blur-3xl" />
 
       <div className="container relative mx-auto px-4">
@@ -151,7 +151,7 @@ export function AiAgentSection() {
                 key={job.title}
                 className="flex flex-col rounded-2xl border border-background/10 bg-background/[0.04] p-6"
               >
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/20 text-violet-300">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400/20 text-amber-300">
                   <job.icon className="h-5 w-5" />
                 </div>
                 <h3

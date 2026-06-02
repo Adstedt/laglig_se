@@ -16,31 +16,31 @@ export const MEMBERS: WorkspaceMemberOption[] = [
     id: 'u-anna',
     name: 'Anna Lindqvist',
     email: 'anna.lindqvist@nordviken.example',
-    avatarUrl: '/demo-team/anna.png',
+    avatarUrl: '/demo-team/anna.webp',
   },
   {
     id: 'u-sofia',
     name: 'Sofia Karlsson',
     email: 'sofia.karlsson@nordviken.example',
-    avatarUrl: '/demo-team/sofia.png',
+    avatarUrl: '/demo-team/sofia.webp',
   },
   {
     id: 'u-erik',
     name: 'Erik Bergström',
     email: 'erik.bergstrom@nordviken.example',
-    avatarUrl: '/demo-team/erik.png',
+    avatarUrl: '/demo-team/erik.webp',
   },
   {
     id: 'u-johan',
     name: 'Johan Nilsson',
     email: 'johan.nilsson@nordviken.example',
-    avatarUrl: '/demo-team/johan.png',
+    avatarUrl: '/demo-team/johan.webp',
   },
   {
     id: 'u-maria',
     name: 'Maria Holm',
     email: 'maria.holm@nordviken.example',
-    avatarUrl: '/demo-team/maria.png',
+    avatarUrl: '/demo-team/maria.webp',
   },
 ]
 

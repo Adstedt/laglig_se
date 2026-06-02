@@ -1,89 +1,78 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import { Mail, FolderClosed, AlertTriangle, Landmark } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-// Prototype variant of WhySection — editorial layout with a single rising
-// sparkline. Big Safiro numbers carry the narrative on the left, a precise
-// monochrome chart on the right tells the same story visually. One warm
-// accent (amber) lands only on the destination — the 50+ employee tier — so
-// the eye is pulled to "this is where you're heading."
-//
-// Aesthetic reference: Anthropic product pages, Apple pricing, Vercel
-// analytics hero. Restraint over decoration.
+// WhySection — "where does your compliance live today?" Efterlevnad is a whole
+// job that today is scattered across a spreadsheet, an inbox, a binder and
+// someone's head — no overview, no record. Sets up #3 directly: scattered →
+// samlad, no record → spårbar. Each tile mimics its real artifact; the pile
+// reveals with a staggered drop-in. Near-monochrome warm cream, one amber
+// accent on the human single-point-of-failure.
 
-const tiers = [
-  {
-    label: 'Enskild firma',
-    people: '1 person',
-    total: 3,
-    newAreas: ['Bokföring', 'Skatt', 'Avtal'],
-  },
-  {
-    label: 'Litet AB',
-    people: '2–10 anställda',
-    total: 6,
-    newAreas: ['Arbetsmiljö', 'Arbetsrätt', 'Försäkringar'],
-  },
-  {
-    label: 'Växande bolag',
-    people: '11–49 anställda',
-    total: 9,
-    newAreas: ['Systematiskt arbetsmiljöarbete', 'Dataskydd', 'Kollektivavtal'],
-  },
-  {
-    label: 'Etablerat bolag',
-    people: '50+ anställda',
-    total: 12,
-    newAreas: [
-      'Aktiva åtgärder mot diskriminering',
-      'Visselblåsarfunktion',
-      'Hållbarhetsrapportering',
-    ],
-  },
-] as const
-
-// SVG chart layout — sized once, scales fluidly via viewBox.
-const W = 640
-const H = 320
-const PAD = { left: 56, right: 36, top: 56, bottom: 82 }
-const innerW = W - PAD.left - PAD.right
-const innerH = H - PAD.top - PAD.bottom
-const yMax = 14 // headroom above the 12+ datapoint
-
-const xPos = (i: number) => PAD.left + (i / (tiers.length - 1)) * innerW
-const yPos = (v: number) => PAD.top + (1 - v / yMax) * innerH
-
-const points = tiers.map((t, i) => ({ x: xPos(i), y: yPos(t.total) }))
-
-// Smooth monotone cubic through the 4 datapoints — control points are pulled
-// horizontally toward each neighbour so the curve eases into each dot instead
-// of overshooting.
-function buildSmoothPath(pts: { x: number; y: number }[]): string {
-  if (pts.length < 2) return ''
-  let d = `M ${pts[0]!.x} ${pts[0]!.y}`
-  for (let i = 1; i < pts.length; i++) {
-    const prev = pts[i - 1]!
-    const curr = pts[i]!
-    const cp1x = prev.x + (curr.x - prev.x) * 0.5
-    const cp2x = curr.x - (curr.x - prev.x) * 0.5
-    d += ` C ${cp1x} ${prev.y}, ${cp2x} ${curr.y}, ${curr.x} ${curr.y}`
-  }
-  return d
+// ── reveal-on-scroll wrapper for one tile ──────────────────────────────────
+function Tile({
+  pos,
+  z,
+  rotate,
+  i,
+  shown,
+  children,
+}: {
+  pos: string
+  z: string
+  rotate: number
+  i: number
+  shown: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <div
+      className={cn('absolute transition-all duration-500 ease-out', pos, z)}
+      style={{
+        transitionDelay: `${i * 70}ms`,
+        transform: shown ? 'translateY(0)' : 'translateY(16px)',
+        opacity: shown ? 1 : 0,
+      }}
+    >
+      <div style={{ transform: `rotate(${rotate}deg)` }}>{children}</div>
+    </div>
+  )
 }
 
-const linePath = buildSmoothPath(points)
-const lastPt = points[points.length - 1]!
-const firstPt = points[0]!
-const areaPath = `${linePath} L ${lastPt.x} ${yPos(0)} L ${firstPt.x} ${yPos(0)} Z`
+const CARD =
+  'rounded-xl border border-border/70 bg-card shadow-[0_6px_20px_-8px_rgb(0_0_0_/_0.22)]'
 
 export function WhySectionGraph() {
+  const pileRef = useRef<HTMLDivElement>(null)
+  const [shown, setShown] = useState(false)
+
+  useEffect(() => {
+    const el = pileRef.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setShown(true)
+          io.disconnect()
+        }
+      },
+      { threshold: 0.25 }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
   return (
-    <section className="relative overflow-hidden border-y bg-section-warm py-12 md:py-20">
+    <section className="relative overflow-hidden border-y bg-section-warm py-16 md:py-24">
       <div className="container relative mx-auto px-4">
         <div className="mx-auto max-w-7xl">
-          <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            Compliance vid skala
+          <p className="mb-4 text-[12.5px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+            Compliance idag
           </p>
 
-          <div className="grid grid-cols-1 items-end gap-12 lg:grid-cols-12 lg:gap-20">
+          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-20">
             {/* LEFT — editorial copy block */}
             <div className="lg:col-span-5">
               <h2
@@ -93,277 +82,295 @@ export function WhySectionGraph() {
                 Ni har koll på bokföringen.
                 <br />
                 <span className="text-foreground/40">
-                  Vem har koll på lagarna?
+                  Vem har koll på er compliance?
                 </span>
               </h2>
 
-              <p className="mb-10 max-w-md text-base leading-relaxed text-muted-foreground">
-                Varje företag har skyldigheter enligt lag — från enskild firma
-                till koncern. Det som skiljer är hur många, inte om.
+              <p className="mb-6 max-w-md text-lg leading-relaxed text-muted-foreground">
+                Efterlevnad är inte en uppgift. Det är att veta vilka regler som
+                gäller, leva upp till dem, hålla koll när de ändras — och kunna
+                visa det. Hela tiden.
               </p>
 
-              <div className="space-y-6">
-                <BigNumber
-                  value="3"
-                  caption="regelområden"
-                  meta="som enskild firma"
-                />
-                <BigNumber
-                  value="12+"
-                  caption="regelområden"
-                  meta="vid 50+ anställda"
-                  accent
-                />
-              </div>
-
-              <p className="mt-10 max-w-md text-base leading-relaxed text-foreground/85">
-                Listan växer med företaget — och blir aldrig kortare.
-                <span className="mt-1 block text-muted-foreground">
-                  Någon måste hålla koll på vilka som gäller just er.
+              <p className="max-w-md text-lg leading-relaxed text-foreground/85">
+                Idag är allt det utspritt: ett kalkylark här, en mejltråd där,
+                en pärm i hyllan — och det mesta i någons huvud.
+                <span className="mt-3 block text-muted-foreground">
+                  Ingen överblick. Inget facit när en myndighet, en kund eller
+                  en revisor frågar “hur vet ni det?”
                 </span>
               </p>
             </div>
 
-            {/* RIGHT — sparkline */}
+            {/* RIGHT — where compliance lives today (scattered pile) */}
             <div className="lg:col-span-7">
-              <div className="relative rounded-3xl border bg-card/50 p-3 shadow-[0_1px_0_0_rgb(0_0_0_/_0.02),0_12px_32px_-16px_rgb(0_0_0_/_0.10)] backdrop-blur-sm md:p-5">
-                <svg
-                  viewBox={`0 0 ${W} ${H}`}
-                  className="h-auto w-full text-foreground"
-                  aria-hidden
+              <div className="relative overflow-hidden rounded-3xl border bg-gradient-to-b from-card/30 to-section-warm/0 p-5 shadow-[0_1px_0_0_rgb(0_0_0_/_0.02),0_12px_32px_-16px_rgb(0_0_0_/_0.10)] backdrop-blur-sm md:p-7">
+                <div
+                  ref={pileRef}
+                  className="relative min-h-[480px] md:min-h-[560px]"
                 >
-                  <defs>
-                    <linearGradient id="why-area" x1="0" y1="0" x2="0" y2="1">
-                      <stop
-                        offset="0%"
-                        stopColor="currentColor"
-                        stopOpacity="0.14"
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor="currentColor"
-                        stopOpacity="0"
-                      />
-                    </linearGradient>
-                    {/* Warm accent overlay — fades in only across the right
-                        third so the destination feels charged */}
-                    <linearGradient
-                      id="why-area-warm"
-                      x1="0"
-                      y1="0"
-                      x2="1"
-                      y2="0"
-                    >
-                      <stop
-                        offset="55%"
-                        stopColor="rgb(180 83 9)"
-                        stopOpacity="0"
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor="rgb(180 83 9)"
-                        stopOpacity="0.16"
-                      />
-                    </linearGradient>
-                  </defs>
-
-                  {/* Y-axis ticks — minimal, two reference levels */}
-                  {[6, 12].map((v) => (
-                    <g key={v}>
-                      <line
-                        x1={PAD.left}
-                        y1={yPos(v)}
-                        x2={W - PAD.right}
-                        y2={yPos(v)}
-                        stroke="currentColor"
-                        strokeOpacity="0.07"
-                        strokeDasharray="2 5"
-                      />
-                      <text
-                        x={PAD.left - 14}
-                        y={yPos(v) + 3}
-                        textAnchor="end"
-                        className="fill-muted-foreground text-[10px]"
-                        style={{
-                          fontFamily: "'Safiro', system-ui, sans-serif",
-                        }}
-                      >
-                        {v}
-                      </text>
-                    </g>
-                  ))}
-
-                  {/* Area fills — mono base + warm right-side overlay */}
-                  <path d={areaPath} fill="url(#why-area)" />
-                  <path d={areaPath} fill="url(#why-area-warm)" />
-
-                  {/* Curve */}
-                  <path
-                    d={linePath}
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                    strokeLinecap="round"
+                  {/* faint dotted backdrop so the pile sits on texture, not void */}
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0"
+                    style={{
+                      backgroundImage:
+                        'radial-gradient(circle, hsl(var(--foreground) / 0.05) 1px, transparent 1px)',
+                      backgroundSize: '22px 22px',
+                      maskImage:
+                        'radial-gradient(80% 80% at 50% 45%, black, transparent 100%)',
+                      WebkitMaskImage:
+                        'radial-gradient(80% 80% at 50% 45%, black, transparent 100%)',
+                    }}
                   />
 
-                  {/* X-axis baseline */}
-                  <line
-                    x1={PAD.left}
-                    y1={yPos(0)}
-                    x2={W - PAD.right}
-                    y2={yPos(0)}
-                    stroke="currentColor"
-                    strokeOpacity="0.15"
-                  />
-
-                  {/* Tier dots — last one in warm accent */}
-                  {tiers.map((t, i) => {
-                    const last = i === tiers.length - 1
-                    const x = xPos(i)
-                    const y = yPos(t.total)
-                    return (
-                      <g key={t.label}>
-                        <circle
-                          cx={x}
-                          cy={y}
-                          r={last ? 16 : 11}
-                          fill={last ? 'rgb(245 158 11)' : 'currentColor'}
-                          fillOpacity={last ? 0.16 : 0.06}
-                        />
-                        <circle
-                          cx={x}
-                          cy={y}
-                          r={last ? 6 : 4.5}
-                          fill={last ? 'rgb(180 83 9)' : 'currentColor'}
-                        />
-                        <text
-                          x={x}
-                          y={y - 22}
-                          textAnchor="middle"
-                          className={cn(
-                            'text-[13px] font-medium',
-                            last ? 'fill-amber-900' : 'fill-foreground'
-                          )}
-                          style={{
-                            fontFamily: "'Safiro', system-ui, sans-serif",
-                          }}
-                        >
-                          {t.total}+
-                        </text>
-                      </g>
-                    )
-                  })}
-
-                  {/* X-axis tier labels */}
-                  {tiers.map((t, i) => (
-                    <g key={`x-${t.label}`}>
-                      <text
-                        x={xPos(i)}
-                        y={yPos(0) + 22}
-                        textAnchor="middle"
-                        className="fill-foreground text-[11px] font-medium"
-                        style={{
-                          fontFamily: "'Safiro', system-ui, sans-serif",
-                        }}
-                      >
-                        {t.label}
-                      </text>
-                      <text
-                        x={xPos(i)}
-                        y={yPos(0) + 40}
-                        textAnchor="middle"
-                        className="fill-muted-foreground text-[10px]"
-                      >
-                        {t.people}
-                      </text>
-                    </g>
-                  ))}
-                </svg>
-
-                {/* Category footnotes — list of categories under each tier,
-                    each prefixed with "+" so the "added at this tier" framing
-                    is carried by the items themselves rather than a header.
-                    Last column gets the warm accent so the destination story
-                    carries through. */}
-                <div className="mt-1 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-foreground/5 pt-4 text-[11px] leading-snug md:grid-cols-4">
-                  {tiers.map((t, i) => {
-                    const last = i === tiers.length - 1
-                    return (
-                      <ul
-                        key={`foot-${t.label}`}
-                        className={cn(
-                          'space-y-1 px-1',
-                          last ? 'text-amber-950' : 'text-foreground/75'
-                        )}
-                      >
-                        {t.newAreas.map((area) => (
-                          <li key={area} className="flex gap-1.5 leading-snug">
-                            <span
-                              className={cn(
-                                'select-none',
-                                last
-                                  ? 'text-amber-700/80'
-                                  : 'text-muted-foreground/60'
-                              )}
-                            >
-                              +
-                            </span>
-                            <span>{area}</span>
-                          </li>
+                  {/* 1 — spreadsheet */}
+                  <Tile
+                    pos="left-[3%] top-[4%]"
+                    z="z-10"
+                    rotate={-3}
+                    i={0}
+                    shown={shown}
+                  >
+                    <div className={cn(CARD, 'w-[244px] overflow-hidden')}>
+                      <div className="flex items-center gap-2 px-3 pb-2 pt-2.5">
+                        <span className="flex h-7 w-7 items-center justify-center rounded bg-emerald-600/10 text-[10px] font-bold text-emerald-700">
+                          XLS
+                        </span>
+                        <p className="truncate text-[14px] font-medium">
+                          Efterlevnad_FINAL_v3
+                        </p>
+                      </div>
+                      {/* mini cell grid */}
+                      <div className="grid grid-cols-4 border-t border-border/60 text-[9px] text-muted-foreground/50">
+                        {Array.from({ length: 12 }).map((_, n) => (
+                          <div
+                            key={n}
+                            className={cn(
+                              'h-5 border-b border-r border-border/40',
+                              n % 4 === 0 && 'bg-muted/30'
+                            )}
+                          />
                         ))}
-                      </ul>
-                    )
-                  })}
+                      </div>
+                      <p className="px-3 py-1.5 text-[11.5px] text-muted-foreground">
+                        senast rörd för 8 mån sedan
+                      </p>
+                    </div>
+                  </Tile>
+
+                  {/* 2 — unread email */}
+                  <Tile
+                    pos="right-[4%] top-[2%]"
+                    z="z-10"
+                    rotate={3}
+                    i={1}
+                    shown={shown}
+                  >
+                    <div className={cn(CARD, 'w-[256px] px-4 py-3.5')}>
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-[18px] w-[18px] text-muted-foreground" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                        <span className="text-[11px] font-medium uppercase tracking-wide text-amber-700">
+                          Oläst
+                        </span>
+                      </div>
+                      <p className="mt-2 truncate text-[14px] font-medium">
+                        Sv: Re: Re: nya AFS-kraven?
+                      </p>
+                      <p className="mt-0.5 truncate text-[12.5px] text-muted-foreground">
+                        ”Hej, vet någon om det här gäller oss…”
+                      </p>
+                    </div>
+                  </Tile>
+
+                  {/* 8 — official myndighet letter (the universally dreaded one) */}
+                  <Tile
+                    pos="left-[34%] bottom-[5%]"
+                    z="z-20"
+                    rotate={-2}
+                    i={7}
+                    shown={shown}
+                  >
+                    <div className={cn(CARD, 'w-[228px] overflow-hidden')}>
+                      <div className="flex items-center justify-between border-b border-border/60 bg-muted/40 px-3 py-1.5">
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-foreground/60">
+                          Arbetsmiljöverket
+                        </span>
+                        <Landmark className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <div className="px-3 py-2.5">
+                        <p className="text-[14px] font-medium">
+                          Inspektionsmeddelande
+                        </p>
+                        <p className="mt-0.5 text-[11.5px] text-muted-foreground">
+                          oöppnat · svar krävs inom 14 dagar
+                        </p>
+                      </div>
+                    </div>
+                  </Tile>
+
+                  {/* 3 — binder */}
+                  <Tile
+                    pos="left-[5%] top-[42%]"
+                    z="z-10"
+                    rotate={-2}
+                    i={2}
+                    shown={shown}
+                  >
+                    <div className={cn(CARD, 'flex w-[214px] overflow-hidden')}>
+                      <div className="w-2 shrink-0 bg-foreground/70" />
+                      <div className="px-3 py-2.5">
+                        <div className="flex items-center gap-1.5">
+                          <FolderClosed className="h-4 w-4 text-muted-foreground" />
+                          <p className="text-[14px] font-medium">
+                            Rutiner & policyer
+                          </p>
+                        </div>
+                        <p className="mt-0.5 text-[11.5px] text-muted-foreground">
+                          pärm i hyllan · 2022
+                        </p>
+                      </div>
+                    </div>
+                  </Tile>
+
+                  {/* 4 — Anna (single point of failure) — focal, on top */}
+                  <Tile
+                    pos="left-[37%] top-[28%]"
+                    z="z-30"
+                    rotate={1}
+                    i={3}
+                    shown={shown}
+                  >
+                    <div
+                      className={cn(
+                        'w-[236px] rounded-xl border border-amber-400/50 bg-card px-4 py-3.5 shadow-[0_12px_30px_-10px_rgb(180_83_9_/_0.35)] ring-1 ring-amber-400/30'
+                      )}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src="/demo-team/anna.webp"
+                          alt=""
+                          className="h-11 w-11 rounded-full object-cover ring-2 ring-amber-400/40"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-[13px] font-medium">”Anna vet”</p>
+                          <p className="text-[12.5px] text-muted-foreground">
+                            Compliance-ansvarig (inofficiellt)
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-2.5 flex items-center gap-1.5 rounded-md bg-amber-400/10 px-2 py-1 text-[12.5px] font-medium text-amber-800">
+                        <AlertTriangle className="h-4 w-4 shrink-0" />
+                        …men Anna slutar i juni
+                      </div>
+                    </div>
+                  </Tile>
+
+                  {/* 5 — stale PDF */}
+                  <Tile
+                    pos="right-[4%] top-[40%]"
+                    z="z-20"
+                    rotate={4}
+                    i={4}
+                    shown={shown}
+                  >
+                    <div className={cn(CARD, 'relative w-[240px] px-4 py-3.5')}>
+                      {/* folded corner */}
+                      <div className="absolute right-0 top-0 h-0 w-0 border-l-[14px] border-t-[14px] border-l-transparent border-t-muted-foreground/15" />
+                      <div className="flex items-center gap-2">
+                        <span className="flex h-7 w-7 items-center justify-center rounded bg-rose-600/10 text-[10px] font-bold text-rose-700">
+                          PDF
+                        </span>
+                        <p className="truncate text-[14px] font-medium">
+                          Compliance-genomgång
+                        </p>
+                      </div>
+                      <div className="mt-2 space-y-1">
+                        <div className="h-1 w-full rounded bg-muted/60" />
+                        <div className="h-1 w-4/5 rounded bg-muted/60" />
+                      </div>
+                      <p className="mt-2 text-[11.5px] text-muted-foreground">
+                        konsultrapport · 1,5 år gammal
+                      </p>
+                    </div>
+                  </Tile>
+
+                  {/* 6 — post-it */}
+                  <Tile
+                    pos="left-[10%] bottom-[5%]"
+                    z="z-20"
+                    rotate={6}
+                    i={5}
+                    shown={shown}
+                  >
+                    <div className="w-[180px] rounded-sm bg-amber-100/80 px-3 py-3 shadow-[0_8px_20px_-8px_rgb(0_0_0_/_0.25)]">
+                      <p
+                        className="text-[16px] leading-tight text-amber-950"
+                        style={{
+                          fontFamily: "'Safiro', system-ui, sans-serif",
+                        }}
+                      >
+                        Förnya tillståndet!
+                      </p>
+                      <p className="mt-1 text-[11px] text-amber-900/60">
+                        post-it på skärmen
+                      </p>
+                    </div>
+                  </Tile>
+
+                  {/* 7 — shared folder, version conflict */}
+                  <Tile
+                    pos="right-[9%] bottom-[6%]"
+                    z="z-10"
+                    rotate={-3}
+                    i={6}
+                    shown={shown}
+                  >
+                    <div className={cn(CARD, 'relative w-[220px] px-4 py-3.5')}>
+                      {/* stacked-file hint behind */}
+                      <div className="absolute -right-1.5 -top-1.5 h-full w-full rounded-xl border border-border/50 bg-card/60" />
+                      <div className="relative flex items-center gap-1.5">
+                        <FolderClosed className="h-4 w-4 text-muted-foreground" />
+                        <p className="truncate text-[14px] font-medium">
+                          /Gemensam/HMS
+                        </p>
+                      </div>
+                      <p className="relative mt-0.5 text-[11.5px] text-muted-foreground">
+                        vem har senaste versionen?
+                      </p>
+                    </div>
+                  </Tile>
+                </div>
+
+                {/* grounding caption */}
+                <div className="relative mt-3 flex items-center justify-between border-t border-foreground/5 pt-4 text-[12px]">
+                  <span className="text-muted-foreground">
+                    Åtta ställen — och ingen som har hela bilden.
+                  </span>
+                  <span className="font-medium text-amber-900">
+                    Noll överblick
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Bridge into the rest of the page */}
-        <div className="mx-auto mt-20 max-w-2xl text-center md:mt-24">
-          <p className="text-xl font-medium md:text-2xl">
-            Det svåra är inte att följa lagen.
+        {/* Bridge into the showcase — "hålla ihop allt" → samlad, "visa det" →
+            spårbar, "systemet för resten" → #3 */}
+        <div className="mx-auto mt-16 max-w-2xl text-center md:mt-20">
+          <p className="text-2xl font-medium md:text-3xl">
+            Det svåra är inte att följa reglerna.
             <br />
-            Det svåra är att veta vilka lagar som gäller just er.
+            Det svåra är att hålla ihop allt de kräver — och kunna visa det.
           </p>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Och &quot;vi visste inte&quot; är sällan ett bra svar – vare sig för
-            en myndighet eller en kund som frågar. Det är där Laglig.se börjar.
+          <p className="mt-3 text-base text-muted-foreground">
+            Er bokföring har ett system. Det här är systemet för resten.
           </p>
         </div>
       </div>
     </section>
-  )
-}
-
-function BigNumber({
-  value,
-  caption,
-  meta,
-  accent,
-}: {
-  value: string
-  caption: string
-  meta: string
-  accent?: boolean
-}) {
-  return (
-    <div className="flex items-baseline gap-4">
-      <span
-        className={cn(
-          'text-6xl font-medium leading-none tracking-tight md:text-7xl',
-          accent ? 'text-amber-900' : 'text-foreground'
-        )}
-        style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
-      >
-        {value}
-      </span>
-      <div>
-        <p className="text-sm font-medium">{caption}</p>
-        <p className="text-xs text-muted-foreground">{meta}</p>
-      </div>
-    </div>
   )
 }

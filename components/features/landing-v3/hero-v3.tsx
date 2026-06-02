@@ -46,7 +46,7 @@ export function HeroV3() {
               Det nya operativsystemet
             </span>
             <span className="block animate-fade-up-delay-1 text-foreground/45">
-              för efterlevnad.
+              för compliance.
             </span>
           </h1>
 

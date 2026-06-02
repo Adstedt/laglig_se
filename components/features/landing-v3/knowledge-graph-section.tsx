@@ -98,7 +98,7 @@ const NODES: GNode[] = [
     y: 250,
     kind: 'person',
     label: 'Anna',
-    avatar: '/demo-team/anna.png',
+    avatar: '/demo-team/anna.webp',
     step: 4,
     drift: 2,
   },
@@ -136,7 +136,7 @@ const NODES: GNode[] = [
     y: 344,
     kind: 'person',
     label: 'Johan',
-    avatar: '/demo-team/johan.png',
+    avatar: '/demo-team/johan.webp',
     step: 4,
     drift: 1,
   },
@@ -174,7 +174,7 @@ const NODES: GNode[] = [
     y: 528,
     kind: 'person',
     label: 'Erik',
-    avatar: '/demo-team/erik.png',
+    avatar: '/demo-team/erik.webp',
     step: 4,
     drift: 3,
   },
@@ -316,8 +316,8 @@ const KIND_STYLE: Record<
   },
   law: {
     icon: Scale,
-    ring: 'ring-blue-500/40',
-    fg: 'text-blue-600',
+    ring: 'ring-foreground/15',
+    fg: 'text-foreground/70',
   },
   krav: {
     icon: ListChecks,
@@ -332,8 +332,8 @@ const KIND_STYLE: Record<
   },
   change: {
     icon: GitCommit,
-    ring: 'ring-rose-500/40',
-    fg: 'text-rose-600',
+    ring: 'ring-foreground/15',
+    fg: 'text-foreground/70',
   },
   person: { icon: Sparkles, ring: 'ring-border', fg: 'text-foreground' },
 }
@@ -358,7 +358,7 @@ const PORT = { x: -190, y: 380 }
 
 // the person chatting with Laglig (kept consistent across all user messages so
 // it reads as one compliance manager, distinct from the graph's responsibles)
-const ASKER_AVATAR = '/demo-team/sofia.png'
+const ASKER_AVATAR = '/demo-team/sofia.webp'
 
 const pct = (v: number, max: number) => `${(v / max) * 100}%`
 const posStyle = (id: string) => ({

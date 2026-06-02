@@ -1,34 +1,62 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useEffect, useRef, useState } from 'react'
-import { ListChecks, Paperclip, Users, Lock } from 'lucide-react'
+import { useState } from 'react'
+import {
+  ListChecks,
+  Paperclip,
+  Users,
+  Bell,
+  Sparkles,
+  CircleCheck,
+  ClipboardList,
+  Link2,
+  History,
+  FileStack,
+  FileCheck2,
+  ShieldCheck,
+  FileBadge,
+  type LucideIcon,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { ScaledModalFrame, ShowcaseAtmosphere } from './showcase-utils'
 
 /**
- * Feature showcase — large "screenshot" rows that SHOW the compliance OS.
+ * Feature showcase — one framed "screenshot" that SHOWS the compliance OS.
  *
- * Efterlevnad row: the REAL law-list-item modal (`LawItemModalReal`) fed mocked
- * data. The modal is a wide desktop dialog, so it's rendered at its natural
- * width (`DESIGN_W`) and scaled to fit — preserving the real proportions
- * instead of reflowing cramped — inside a full-width browser frame.
- *
- * Once approved, the remaining surfaces (Lagändringar, Uppgifter, Styrdokument,
- * Lagefterlevnadskontroll) follow the same pattern.
+ * Top-level tabs switch between the five product surfaces; each renders the
+ * REAL in-app component fed mocked data inside the same scaled browser frame.
+ * The frame renders at the surface's natural desktop width and scales-to-fit,
+ * preserving real proportions instead of reflowing cramped.
  */
+
+const loading = () => (
+  <div className="h-full w-full animate-pulse bg-muted/20" />
+)
 
 const LawItemModalReal = dynamic(
   () => import('./law-item-modal-real').then((m) => m.LawItemModalReal),
-  {
-    ssr: false,
-    loading: () => <div className="h-full w-full animate-pulse bg-muted/20" />,
-  }
+  { ssr: false, loading }
+)
+const ChangeAssessmentReal = dynamic(
+  () => import('./change-assessment-real').then((m) => m.ChangeAssessmentReal),
+  { ssr: false, loading }
+)
+const UppgifterReal = dynamic(
+  () => import('./uppgifter-real').then((m) => m.UppgifterReal),
+  { ssr: false, loading }
+)
+const StyrdokumentReal = dynamic(
+  () => import('./styrdokument-real').then((m) => m.StyrdokumentReal),
+  { ssr: false, loading }
+)
+const KontrollReal = dynamic(
+  () => import('./kontroll-real').then((m) => m.KontrollReal),
+  { ssr: false, loading }
 )
 
-// Natural desktop width the modal lays out at before being scaled into the frame.
-const DESIGN_W = 1280
-
-// Light tab metadata (the heavy per-doc data lives in law-item-modal-real).
+// Efterlevnad sub-tabs — swap between regelverk types (lag / föreskrift / EU).
+// The heavy per-doc data lives in law-item-modal-real.
 const DOC_TABS = [
   { id: 'alkohollag', name: 'Alkohollagen', kind: 'Lag' },
   { id: 'arbetsmiljolagen', name: 'Arbetsmiljölagen', kind: 'Lag' },
@@ -37,125 +65,248 @@ const DOC_TABS = [
   { id: 'gdpr', name: 'GDPR', kind: 'EU-förordning' },
 ]
 
-function ScaledModalFrame({ url, docId }: { url: string; docId: string }) {
-  const viewportRef = useRef<HTMLDivElement>(null)
-  const [scale, setScale] = useState(1)
+type SurfaceId =
+  | 'efterlevnad'
+  | 'lagandringar'
+  | 'uppgifter'
+  | 'styrdokument'
+  | 'kontroll'
 
-  useEffect(() => {
-    const el = viewportRef.current
-    if (!el) return
-    const update = () => setScale(Math.min(1, el.clientWidth / DESIGN_W))
-    update()
-    const ro = new ResizeObserver(update)
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [])
-
-  return (
-    <div
-      className="overflow-hidden rounded-xl border border-border/70 bg-card ring-1 ring-foreground/[0.04]"
-      style={{
-        boxShadow: [
-          '0 1px 2px 0 rgb(0 0 0 / 0.03)',
-          '0 18px 40px -12px rgb(0 0 0 / 0.13)',
-          '0 56px 100px -32px rgb(0 0 0 / 0.20)',
-        ].join(', '),
-      }}
-    >
-      {/* browser chrome */}
-      <div className="flex items-center gap-2 border-b border-border/60 bg-muted/30 px-4 py-2.5">
-        <span className="h-2.5 w-2.5 rounded-full bg-red-400/70" />
-        <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
-        <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
-        <div className="ml-2 inline-flex items-center gap-1.5 rounded-md bg-background/70 px-2.5 py-1 text-[11px] text-muted-foreground ring-1 ring-border/60">
-          <Lock className="h-2.5 w-2.5" />
-          {url}
-        </div>
-      </div>
-      {/* viewport — the real modal renders at DESIGN_W then scales to fit width;
-          the bottom bleeds off behind a soft fade */}
-      <div
-        ref={viewportRef}
-        className="relative h-[600px] overflow-hidden sm:h-[740px] lg:h-[840px]"
-      >
-        <div
-          className="absolute left-0 top-0 origin-top-left"
-          style={{ width: DESIGN_W, transform: `scale(${scale})` }}
-        >
-          <LawItemModalReal key={docId} docId={docId} />
-        </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-card to-transparent" />
-      </div>
-    </div>
-  )
+interface Point {
+  icon: LucideIcon
+  title: string
+  desc: string
 }
 
-const POINTS = [
+interface Surface {
+  id: SurfaceId
+  tab: string
+  eyebrow: string
+  title: string
+  desc: string
+  url: string
+  designWidth: number
+  points: Point[]
+}
+
+const SURFACES: Surface[] = [
   {
-    icon: ListChecks,
-    title: 'Kravpunkter att bocka av',
-    desc: 'Regeln bryts ned i konkreta krav — bocka av det som är uppfyllt och se vad som återstår.',
+    id: 'efterlevnad',
+    tab: 'Efterlevnad',
+    eyebrow: 'Efterlevnad',
+    title: 'Öppna ett regelverk — se exakt vad ni måste göra.',
+    desc: 'Lag, förordning eller föreskrift — varje post i laglistan blir en arbetsyta där efterlevnaden faktiskt sker.',
+    url: 'app.laglig.se/laglistor',
+    designWidth: 1280,
+    points: [
+      {
+        icon: ListChecks,
+        title: 'Kravpunkter att bocka av',
+        desc: 'Regeln bryts ned i konkreta krav — bocka av det som är uppfyllt och se vad som återstår.',
+      },
+      {
+        icon: Paperclip,
+        title: 'Bevis kopplat till varje krav',
+        desc: 'Fäst intyg, rutiner och dokument direkt på kravet — så finns underlaget när någon frågar.',
+      },
+      {
+        icon: Users,
+        title: 'Ansvar, status och historik',
+        desc: 'Sätt ansvarig, följ efterlevnaden och se vem som gjort vad — per krav och för hela posten.',
+      },
+    ],
   },
   {
-    icon: Paperclip,
-    title: 'Bevis kopplat till varje krav',
-    desc: 'Fäst intyg, rutiner och dokument direkt på kravet — så finns underlaget när någon frågar.',
+    id: 'lagandringar',
+    tab: 'Lagändringar',
+    eyebrow: 'Lagändringar',
+    title: 'En lag ändras — AI:n bedömer hur det påverkar just er.',
+    desc: 'När ett regelverk på er laglista ändras får ni inte bara en notis. Laglig läser ändringen mot er verksamhet och föreslår vad ni behöver göra.',
+    url: 'app.laglig.se/lagar/andringar',
+    designWidth: 1280,
+    points: [
+      {
+        icon: Bell,
+        title: 'Bevakning på era regelverk',
+        desc: 'Ni får besked direkt när en lag, förordning eller föreskrift på er laglista ändras.',
+      },
+      {
+        icon: Sparkles,
+        title: 'Bedömning i ert sammanhang',
+        desc: 'AI:n väger ändringen mot era krav, styrdokument och ansvariga — inte bara lagtexten.',
+      },
+      {
+        icon: CircleCheck,
+        title: 'Förslag på åtgärd',
+        desc: 'Konkreta uppgifter med ansvarig och deadline — redo att skapas med ett klick.',
+      },
+    ],
   },
   {
-    icon: Users,
-    title: 'Ansvar, status och historik',
-    desc: 'Sätt ansvarig, följ efterlevnaden och se vem som gjort vad — per krav och för hela posten.',
+    id: 'uppgifter',
+    tab: 'Uppgifter',
+    eyebrow: 'Uppgifter',
+    title: 'Förvandla krav till åtgärder — och följ upp dem.',
+    desc: 'Varje kravpunkt kan bli en uppgift med ansvarig och deadline, kopplad tillbaka till regeln den uppfyller.',
+    url: 'app.laglig.se/uppgifter',
+    designWidth: 1280,
+    points: [
+      {
+        icon: CircleCheck,
+        title: 'Tilldela och prioritera',
+        desc: 'Sätt ansvarig, prioritet och förfallodatum — och se direkt vad som är försenat.',
+      },
+      {
+        icon: Link2,
+        title: 'Kopplade till regelverken',
+        desc: 'Varje uppgift vet vilket krav den uppfyller, så inget arbete tappar sitt sammanhang.',
+      },
+      {
+        icon: ClipboardList,
+        title: 'Lista, tavla eller kalender',
+        desc: 'Se arbetet på det sätt som passar teamet — utan att tappa överblicken.',
+      },
+    ],
+  },
+  {
+    id: 'styrdokument',
+    tab: 'Styrdokument',
+    eyebrow: 'Styrdokument',
+    title: 'Policyer och rutiner — versionerade och kopplade till kraven.',
+    desc: 'Skriv, godkänn och versionshantera era styrdokument på ett ställe — och knyt dem till de krav de uppfyller.',
+    url: 'app.laglig.se/workspace/styrdokument',
+    designWidth: 1340,
+    points: [
+      {
+        icon: FileStack,
+        title: 'Allt på ett ställe',
+        desc: 'Policyer, rutiner, riskbedömningar och checklistor samlade och sökbara.',
+      },
+      {
+        icon: History,
+        title: 'Version och granskningsdatum',
+        desc: 'Se vilken version som gäller och när dokumentet behöver granskas igen.',
+      },
+      {
+        icon: FileCheck2,
+        title: 'Godkännandeflöde',
+        desc: 'Från utkast till godkänt — med spårbarhet på vem som gjort vad.',
+      },
+    ],
+  },
+  {
+    id: 'kontroll',
+    tab: 'Kontroll',
+    eyebrow: 'Lagefterlevnadskontroll',
+    title: 'Bevisa efterlevnad — med full spårbarhet på varje steg.',
+    desc: 'Varje statusändring, bedömning och åtgärd loggas över tid. Genomför kontroller och visa en komplett, spårbar bild — för ledning, styrelse eller revisor.',
+    url: 'app.laglig.se/laglistor/kontroller',
+    designWidth: 1280,
+    points: [
+      {
+        icon: ShieldCheck,
+        title: 'Strukturerad genomgång',
+        desc: 'Gå igenom kraven systematiskt och dokumentera bedömning och avvikelser.',
+      },
+      {
+        icon: History,
+        title: 'Fullständig historik',
+        desc: 'Vem gjorde vad, och när — varje förändring i arbetsytan är spårbar över tid.',
+      },
+      {
+        icon: FileBadge,
+        title: 'Delbar rapport',
+        desc: 'En tydlig, spårbar rapport som visar status, avvikelser och åtgärder.',
+      },
+    ],
   },
 ]
 
 export function FeatureShowcase() {
-  const [activeId, setActiveId] = useState(DOC_TABS[0]!.id)
+  const [activeSurface, setActiveSurface] = useState<SurfaceId>('efterlevnad')
+  const [activeDocId, setActiveDocId] = useState(DOC_TABS[0]!.id)
+
+  const surface = SURFACES.find((s) => s.id === activeSurface) ?? SURFACES[0]!
+
+  const body =
+    surface.id === 'efterlevnad' ? (
+      <LawItemModalReal key={activeDocId} docId={activeDocId} />
+    ) : surface.id === 'lagandringar' ? (
+      <ChangeAssessmentReal />
+    ) : surface.id === 'uppgifter' ? (
+      <UppgifterReal />
+    ) : surface.id === 'styrdokument' ? (
+      <StyrdokumentReal />
+    ) : (
+      <KontrollReal />
+    )
 
   return (
-    <section className="relative overflow-hidden bg-background py-24 md:py-32">
-      {/* atmosphere — faint dot texture + warm/violet ambient glow */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle, hsl(var(--foreground) / 0.05) 1px, transparent 1px)',
-          backgroundSize: '24px 24px',
-          maskImage:
-            'radial-gradient(ellipse 60% 55% at 50% 60%, black, transparent 75%)',
-          WebkitMaskImage:
-            'radial-gradient(ellipse 60% 55% at 50% 60%, black, transparent 75%)',
-        }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[58%] h-[620px] w-[820px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-amber-200/30 via-orange-100/15 to-transparent blur-3xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -bottom-24 right-10 h-72 w-[28rem] rounded-full bg-violet-300/12 blur-3xl"
-      />
+    <section
+      id="how-it-works"
+      className="relative scroll-mt-20 overflow-hidden bg-background py-24 md:py-32"
+    >
+      <ShowcaseAtmosphere />
 
       <div className="container relative z-10 mx-auto px-4">
-        {/* copy header */}
+        {/* section intro — frame the whole offering before the tabs */}
+        <div className="mx-auto mb-10 max-w-2xl text-center">
+          <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Systemet för compliance
+          </p>
+          <h2
+            className="text-3xl font-medium leading-[1.1] tracking-tight md:text-4xl lg:text-5xl"
+            style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
+          >
+            Hela efterlevnaden — samlad och spårbar.
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-muted-foreground">
+            Från laglista till bevisad efterlevnad — allt på ett ställe, med
+            ansvar och full historik på varje steg. Klicka runt i riktiga vyer
+            ur produkten.
+          </p>
+        </div>
+
+        {/* surface tabs — switch between the five product surfaces */}
+        <div className="mx-auto mb-10 flex max-w-7xl flex-wrap justify-center gap-2">
+          {SURFACES.map((s) => {
+            const active = s.id === activeSurface
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setActiveSurface(s.id)}
+                className={cn(
+                  'rounded-full px-4 py-2 text-sm transition',
+                  active
+                    ? 'bg-foreground text-background shadow-sm'
+                    : 'bg-card text-muted-foreground ring-1 ring-border hover:text-foreground hover:ring-foreground/25'
+                )}
+              >
+                <span className="font-medium">{s.tab}</span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* copy header — tailored per surface */}
         <div className="mx-auto mb-12 grid max-w-7xl gap-8 lg:grid-cols-[1fr_1fr] lg:items-end lg:gap-16">
           <div>
             <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Efterlevnad
+              {surface.eyebrow}
             </p>
-            <h2
-              className="text-3xl font-medium leading-[1.1] tracking-tight md:text-4xl lg:text-5xl"
+            <h3
+              className="text-2xl font-medium leading-[1.12] tracking-tight md:text-3xl lg:text-[2.5rem]"
               style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
             >
-              Öppna ett regelverk — se exakt vad ni måste göra.
-            </h2>
+              {surface.title}
+            </h3>
             <p className="mt-4 max-w-lg text-lg leading-relaxed text-muted-foreground">
-              Lag, förordning eller föreskrift — varje post i laglistan blir en
-              arbetsyta där efterlevnaden faktiskt sker.
+              {surface.desc}
             </p>
           </div>
           <ul className="grid gap-4 sm:grid-cols-3 lg:gap-5 lg:pb-1">
-            {POINTS.map((p) => (
+            {surface.points.map((p) => (
               <li key={p.title}>
                 <span className="mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-foreground/70 ring-1 ring-border/60">
                   <p.icon className="h-4 w-4" />
@@ -171,39 +322,43 @@ export function FeatureShowcase() {
           </ul>
         </div>
 
-        {/* document tabs — swap between regelverk types (lag / föreskrift / EU) */}
-        <div className="mx-auto mb-5 flex max-w-7xl flex-wrap gap-2">
-          {DOC_TABS.map((t) => {
-            const active = t.id === activeId
-            return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setActiveId(t.id)}
-                className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] transition',
-                  active
-                    ? 'bg-foreground text-background shadow-sm'
-                    : 'bg-card text-muted-foreground ring-1 ring-border hover:text-foreground hover:ring-foreground/25'
-                )}
-              >
-                <span className="font-medium">{t.name}</span>
-                <span
+        {/* Efterlevnad sub-tabs — only for the efterlevnad surface */}
+        {surface.id === 'efterlevnad' && (
+          <div className="mx-auto mb-5 flex max-w-7xl flex-wrap gap-2">
+            {DOC_TABS.map((t) => {
+              const active = t.id === activeDocId
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setActiveDocId(t.id)}
                   className={cn(
-                    'text-[11px]',
-                    active ? 'text-background/60' : 'text-muted-foreground/70'
+                    'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] transition',
+                    active
+                      ? 'bg-foreground text-background shadow-sm'
+                      : 'bg-card text-muted-foreground ring-1 ring-border hover:text-foreground hover:ring-foreground/25'
                   )}
                 >
-                  {t.kind}
-                </span>
-              </button>
-            )
-          })}
-        </div>
+                  <span className="font-medium">{t.name}</span>
+                  <span
+                    className={cn(
+                      'text-[11px]',
+                      active ? 'text-background/60' : 'text-muted-foreground/70'
+                    )}
+                  >
+                    {t.kind}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        )}
 
-        {/* full-width mockup — the real modal, fed mocked data */}
+        {/* full-width mockup — the real surface, fed mocked data */}
         <div className="mx-auto max-w-7xl">
-          <ScaledModalFrame url="app.laglig.se/laglistor" docId={activeId} />
+          <ScaledModalFrame url={surface.url} designWidth={surface.designWidth}>
+            {body}
+          </ScaledModalFrame>
         </div>
       </div>
     </section>

@@ -9,7 +9,6 @@ import { ForceLightTheme } from '@/components/features/landing-v2/force-light-th
 
 import { HeroV3 } from '@/components/features/landing-v3/hero-v3'
 import { WhySectionGraph as WhySection } from '@/components/features/landing-v3/why-section-graph'
-import { BreadthSection } from '@/components/features/landing-v3/breadth-section'
 import { FeatureShowcase } from '@/components/features/landing-v3/feature-showcase'
 import { RolesSection } from '@/components/features/landing-v3/roles-section'
 import { KnowledgeGraphSection } from '@/components/features/landing-v3/knowledge-graph-section'
@@ -22,7 +21,10 @@ import { TryNowSection } from '@/components/features/landing-v3/try-now-section'
 import { CtaV3 } from '@/components/features/landing-v3/cta-v3'
 
 export const metadata = {
-  title: 'Laglig.se – v3 wireframe (Fortnox-positioning)',
+  title: 'Laglig.se – operativsystemet för compliance',
+  description:
+    'Laglig.se är compliance-plattformen för svenska företag: håll koll på lagar och regler, bevaka lagändringar, samla bevis och visa er efterlevnad. Byggt för AI-eran.',
+  // Keep noindex until landing-v3 is promoted to the live homepage.
   robots: { index: false, follow: false },
 }
 
@@ -46,17 +48,16 @@ export default function LandingV3Page() {
       <NavbarV2 />
       <main>
         <HeroV3 />
+        {/* Problem → Solution: the scale/"vem har koll" problem hands straight
+            into the product showcase (the Breadth text cards folded into the
+            showcase tabs, removing the duplication). */}
         <WhySection />
-        <BreadthSection />
-        {/* PoC: feature showcase row (Efterlevnad) — large framed product
-            mockup. If approved, the remaining surfaces follow + this folds in
-            to replace the BreadthSection text cards. */}
         <FeatureShowcase />
         {/* AI chapter — comparison (the claim) + knowledge graph (the proof),
             one continuous dark banner over a single faint graph texture */}
         <div className="relative isolate overflow-hidden bg-foreground text-background">
           <AiSectionBackdrop />
-          <div className="pointer-events-none absolute -top-24 right-0 h-96 w-96 rounded-full bg-violet-500/10 blur-3xl" />
+          <div className="pointer-events-none absolute -top-24 right-0 h-96 w-96 rounded-full bg-amber-400/10 blur-3xl" />
           <div className="pointer-events-none absolute bottom-0 left-0 h-96 w-96 rounded-full bg-background/[0.04] blur-3xl" />
           <AiComparisonSection />
           <KnowledgeGraphSection />
