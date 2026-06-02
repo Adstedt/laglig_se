@@ -84,16 +84,32 @@ const MATURITY_LABELS: Record<string, string> = {
 /**
  * Formats a CompanyProfile record into a Swedish context string for prompt injection.
  * Returns undefined when profile is null or has no meaningful data.
+ *
+ * When `workspaceName` is provided and differs from `profile.company_name`,
+ * `workspaceName` is used as the authoritative name and a drift warning is
+ * logged. The user-facing workspace name wins because that's what the user
+ * sees in the UI — a stale CompanyProfile (e.g. from a Bolagsverket lookup
+ * that wasn't re-synced after rename) must not let the agent address content
+ * to the wrong entity.
  */
 export function formatCompanyContext(
-  profile: CompanyProfile | null
+  profile: CompanyProfile | null,
+  workspaceName?: string
 ): string | undefined {
   if (!profile) return undefined
 
   const lines: string[] = []
 
-  if (profile.company_name) {
-    lines.push(`- Företag: ${profile.company_name}`)
+  const profileName = profile.company_name?.trim()
+  const wsName = workspaceName?.trim()
+  if (wsName && profileName && wsName !== profileName) {
+    console.warn(
+      `[company-context drift] workspace.name="${wsName}" ≠ CompanyProfile.company_name="${profileName}" (workspace_id=${profile.workspace_id}). Using workspace.name.`
+    )
+  }
+  const authoritativeName = wsName || profileName
+  if (authoritativeName) {
+    lines.push(`- Företag: ${authoritativeName}`)
   }
   if (profile.business_description) {
     lines.push(`- Verksamhet: ${profile.business_description}`)

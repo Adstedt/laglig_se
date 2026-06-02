@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 /**
- * Dev-only helper to reset the first-run onboarding modal for the Almåsa
+ * Dev-only helper to reset the first-run onboarding modal for the the test workspace
  * test workspace so the modal re-opens and the law-list generation flow
  * can be re-triggered.
  *
@@ -17,9 +17,9 @@
  * scripts/toggle-failed-banner.ts).
  *
  * Usage:
- *   pnpm tsx scripts/reset-almasa-onboarding.ts                    # default email
- *   pnpm tsx scripts/reset-almasa-onboarding.ts --email <e>        # custom email
- *   pnpm tsx scripts/reset-almasa-onboarding.ts --keep-events      # keep telemetry rows
+ *   pnpm tsx scripts/reset-nordviken-onboarding.ts                    # default email
+ *   pnpm tsx scripts/reset-nordviken-onboarding.ts --email <e>        # custom email
+ *   pnpm tsx scripts/reset-nordviken-onboarding.ts --keep-events      # keep telemetry rows
  */
 import { config as loadEnv } from 'dotenv'
 import { resolve } from 'path'

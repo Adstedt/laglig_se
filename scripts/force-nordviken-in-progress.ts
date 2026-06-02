@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 /**
- * Dev-only helper to PIN the Almåsa workspace in `law_list_generation_status =
+ * Dev-only helper to PIN the the test workspace in `law_list_generation_status =
  * 'in_progress'` with a hand-crafted progress payload, so the modal's
  * <ProgressStrip> renders indefinitely for visual inspection.
  *
@@ -8,11 +8,11 @@
  * read whatever the DB says and render the strip until status changes.
  *
  * Usage:
- *   pnpm tsx scripts/force-almasa-in-progress.ts                # default state
- *   pnpm tsx scripts/force-almasa-in-progress.ts --restore      # set status back to null
+ *   pnpm tsx scripts/force-nordviken-in-progress.ts                # default state
+ *   pnpm tsx scripts/force-nordviken-in-progress.ts --restore      # set status back to null
  *
  * Custom email:
- *   pnpm tsx scripts/force-almasa-in-progress.ts --email <e>
+ *   pnpm tsx scripts/force-nordviken-in-progress.ts --email <e>
  */
 import { config as loadEnv } from 'dotenv'
 import { resolve } from 'path'
@@ -77,7 +77,7 @@ async function main() {
       `\nReload /dashboard, click Generera (it'll 409 immediately since\n` +
         `status=in_progress, and the path-choice-step's 409-as-success path\n` +
         `transitions to the tutorial step). Strip will render indefinitely.\n` +
-        `Restore with: pnpm tsx scripts/force-almasa-in-progress.ts --restore`
+        `Restore with: pnpm tsx scripts/force-nordviken-in-progress.ts --restore`
     )
   }
 

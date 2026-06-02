@@ -178,6 +178,46 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('pågående utkast')
   })
 
+  // DASH-WRITE-001: explicit rules for resolving lawListItemId in a workspace/
+  // global chat before calling write tools. The four rules (Lös upp /
+  // Verbalisera / Skicka explicit / Försök inte igen) are the load-bearing
+  // safety surface against silent wrong-law attribution. Surfaced 2026-06-02
+  // during a dashboard-chat gap-analysis probe where the agent activated
+  // gap_analysis, found the right law semantically, but didn't thread the
+  // resolved lawListItemId into subsequent write tool calls — and retried
+  // the same permanent-rejection error 6 + 2 times before self-diagnosing.
+  it('teaches the agent to resolve lawListItemId explicitly in workspace/global chats (DASH-WRITE-001)', async () => {
+    const prompt = await buildSystemPrompt()
+
+    // Rule 1: resolve via search_law_list_items, ask on ambiguity, never guess.
+    expect(prompt).toContain(
+      'Identifiera rätt laglistpost INNAN du anropar skrivverktyg'
+    )
+    expect(prompt).toContain('search_law_list_items')
+    expect(prompt).toContain('TVETYDIGT')
+    expect(prompt).toContain('Gissa ALDRIG')
+
+    // Rule 2: verbalise the choice in prose BEFORE creating the proposal card —
+    // gives the user a chance to catch wrong-law selection before approval.
+    expect(prompt).toContain('Verbalisera valet')
+    expect(prompt).toContain('ger användaren en chans att avbryta')
+
+    // Rule 3: pass lawListItemId explicitly; never reuse stale IDs across turns
+    // (context may have shifted from one law to another mid-conversation).
+    expect(prompt).toContain('Skicka `lawListItemId` explicit')
+    expect(prompt).toContain(
+      'Återanvänd ALDRIG en UUID från en TIDIGARE konversationstur'
+    )
+
+    // Rule 4: no retry-on-permanent-error (partial mitigation for TC-002).
+    // The two specific error messages the agent should treat as terminal.
+    expect(prompt).toContain(
+      'Försök INTE samma verktyg igen utan ändrade indata'
+    )
+    expect(prompt).toContain('Ingen laglistpost angiven')
+    expect(prompt).toContain('Laglistposten hittades inte')
+  })
+
   it('includes company context section when companyContext is provided', async () => {
     const prompt = await buildSystemPrompt({
       companyContext: '- Företag: Acme AB\n- Bransch: Bygg',
@@ -778,5 +818,57 @@ describe('formatCompanyContext', () => {
 
     const result = formatCompanyContext(profile)!
     expect(result).toContain('Registrerad: 1998')
+  })
+
+  // Drift guard — when workspace.name disagrees with CompanyProfile.company_name
+  // (rename without re-sync; happened in prod 2026-06-02 against Nordviken),
+  // the user-facing workspace name MUST win and a warn MUST be logged.
+  describe('workspace-name drift guard', () => {
+    it('prefers workspace.name when it differs from profile.company_name and warns', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const profile = makeProfile({
+        company_name: 'Stale Original AB',
+      })
+      const result = formatCompanyContext(profile, 'Renamed Current AB')!
+      expect(result).toContain('Företag: Renamed Current AB')
+      expect(result).not.toContain('Stale Original AB')
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('[company-context drift]')
+      )
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('Renamed Current AB')
+      )
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('Stale Original AB')
+      )
+      warn.mockRestore()
+    })
+
+    it('does not warn when workspace.name matches profile.company_name', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const profile = makeProfile({ company_name: 'Same AB' })
+      const result = formatCompanyContext(profile, 'Same AB')!
+      expect(result).toContain('Företag: Same AB')
+      expect(warn).not.toHaveBeenCalled()
+      warn.mockRestore()
+    })
+
+    it('falls back to profile.company_name when workspaceName is undefined (backward compat)', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const profile = makeProfile({ company_name: 'Profile Only AB' })
+      const result = formatCompanyContext(profile)!
+      expect(result).toContain('Företag: Profile Only AB')
+      expect(warn).not.toHaveBeenCalled()
+      warn.mockRestore()
+    })
+
+    it('does not warn on whitespace-only differences', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const profile = makeProfile({ company_name: '  Trimmed AB' })
+      const result = formatCompanyContext(profile, 'Trimmed AB  ')!
+      expect(result).toContain('Företag: Trimmed AB')
+      expect(warn).not.toHaveBeenCalled()
+      warn.mockRestore()
+    })
   })
 })

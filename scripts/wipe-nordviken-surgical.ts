@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 /**
- * SURGICAL clean-slate wipe for the Almåsa test workspace. Deletes only
+ * SURGICAL clean-slate wipe for the the test workspace. Deletes only
  * law-list-coupled data and onboarding telemetry, in a single transaction.
  *
  * Preserved (NOT touched):
@@ -22,9 +22,9 @@
  * law_list_generation_status etc.) so the first-run modal re-opens.
  *
  * Usage:
- *   pnpm tsx scripts/wipe-almasa-surgical.ts            # dry-run (prints what WOULD delete)
- *   pnpm tsx scripts/wipe-almasa-surgical.ts --confirm  # actually run
- *   pnpm tsx scripts/wipe-almasa-surgical.ts --confirm --email <e>
+ *   pnpm tsx scripts/wipe-nordviken-surgical.ts            # dry-run (prints what WOULD delete)
+ *   pnpm tsx scripts/wipe-nordviken-surgical.ts --confirm  # actually run
+ *   pnpm tsx scripts/wipe-nordviken-surgical.ts --confirm --email <e>
  */
 import { config as loadEnv } from 'dotenv'
 import { resolve } from 'path'

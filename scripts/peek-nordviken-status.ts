@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 /**
- * Read-only — prints the current onboarding + generation status for Almåsa.
+ * Read-only — prints the current onboarding + generation status for the test workspace.
  * Use to diagnose why the modal's ProgressStrip might be hidden.
  */
 import { config as loadEnv } from 'dotenv'

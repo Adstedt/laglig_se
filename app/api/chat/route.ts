@@ -227,11 +227,25 @@ export async function POST(req: Request) {
       lawListItemId ??
       (contextTypeUpper === 'LAW' ? (contextId ?? undefined) : undefined)
 
-    // Build system prompt with company context
-    const profile = await prisma.companyProfile.findFirst({
-      where: { workspace_id: workspaceId },
-    })
-    const companyContext = formatCompanyContext(profile)
+    // Build system prompt with company context.
+    // Fetch workspace.name alongside the profile so formatCompanyContext can
+    // prefer the user-facing name on identity drift (the workspace was renamed
+    // but the CompanyProfile.company_name was never re-synced — fired in prod
+    // 2026-06-02 against the Nordviken test workspace; agent kept naming
+    // drafts after stale Bolagsverket data).
+    const [profile, workspaceRow] = await Promise.all([
+      prisma.companyProfile.findFirst({ where: { workspace_id: workspaceId } }),
+      workspaceId !== 'default'
+        ? prisma.workspace.findUnique({
+            where: { id: workspaceId },
+            select: { name: true },
+          })
+        : Promise.resolve(null),
+    ])
+    const companyContext = formatCompanyContext(
+      profile,
+      workspaceRow?.name ?? undefined
+    )
 
     // Story 14.22: agent feedback loop — inject pending/decided action proposals
     // as workflow state. Built before the stub message so it reflects the
@@ -371,6 +385,24 @@ export async function POST(req: Request) {
         chunking: /[\s\S]/,
         delayInMs: 8,
       }),
+      // Surface SDK-level streaming errors (AI SDK rejections, Zod input
+      // validation failures, transport errors) at the route boundary so they
+      // appear in dev/prod logs instead of being swallowed by the stream.
+      // Per-step structured tool errors are intentionally NOT logged here —
+      // tools that return `{error: true, message: ...}` (e.g. search "no
+      // matches") are handled by the agent loop as normal control flow.
+      onError: ({ error }) => {
+        const e = error as
+          | Error
+          | { message?: string; cause?: unknown; issues?: unknown }
+        console.error('[CHAT STREAM ERROR]', {
+          name: (e as Error)?.name,
+          message: e?.message ?? String(e),
+          cause: e?.cause,
+          issues: (e as { issues?: unknown })?.issues,
+          stack: (e as Error)?.stack?.split('\n').slice(0, 5).join('\n'),
+        })
+      },
       // Story 14.27: persistent usage telemetry. Writes one ChatUsageEvent row per
       // successful chat turn. Fail-safe — telemetry write errors are logged but
       // never propagated to the stream response.
