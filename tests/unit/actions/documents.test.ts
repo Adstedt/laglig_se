@@ -42,8 +42,11 @@ vi.mock('next/server', () => ({
   after: vi.fn(),
 }))
 
-// Story 17.9b: keep the REAL decideReindexOnStatusChange (the gate under test) but stub
-// the two DB-touching side effects so the wiring tests can assert which one fires.
+// Story 17.9b → extended by 17.10b: keep the REAL decideReindexOnStatusChange
+// (the gate under test) but stub the DB-touching side effects so the wiring
+// tests can assert which branch fires. 17.10b added METADATA_UPDATE (cheap
+// status-label UPDATE, no embed) + the autosave dirty-mark + the saveDocumentVersion
+// immediate reindex.
 vi.mock('@/lib/chunks/workspace-document-reindex', async (importOriginal) => {
   const actual =
     await importOriginal<
@@ -53,6 +56,8 @@ vi.mock('@/lib/chunks/workspace-document-reindex', async (importOriginal) => {
     ...actual,
     indexWorkspaceDocument: vi.fn().mockResolvedValue(undefined),
     deindexWorkspaceDocument: vi.fn().mockResolvedValue(undefined),
+    updateWorkspaceDocumentStatusMetadata: vi.fn().mockResolvedValue(undefined),
+    markWorkspaceDocumentDirty: vi.fn().mockResolvedValue(undefined),
   }
 })
 
@@ -61,6 +66,8 @@ import { after } from 'next/server'
 import {
   indexWorkspaceDocument,
   deindexWorkspaceDocument,
+  updateWorkspaceDocumentStatusMetadata,
+  markWorkspaceDocumentDirty,
 } from '@/lib/chunks/workspace-document-reindex'
 import {
   createDocument,
@@ -68,6 +75,8 @@ import {
   getDocumentVersions,
   getWorkspaceDocuments,
   updateDocumentStatus,
+  autosaveDocument,
+  saveDocumentVersion,
 } from '@/app/actions/documents'
 import {
   createDocumentSchema,
@@ -621,7 +630,11 @@ describe('updateDocumentStatus', () => {
     }) as never)
   }
 
-  it('Story 17.9b: INDEXes when transitioning IN_REVIEW → APPROVED', async () => {
+  // Story 17.10b: 3-way contract replaces the 17.9b INDEX/DEINDEX semantics.
+  // - DELETE → entering ARCHIVED or SUPERSEDED (chunks dropped)
+  // - METADATA_UPDATE → any other non-same-status change (cheap UPDATE, no embed)
+  // - NONE → same-status (no-op)
+  it('17.10b: METADATA_UPDATE on IN_REVIEW → APPROVED (cheap status flip, NO re-embed)', async () => {
     setupTransition(
       WorkspaceDocumentStatus.IN_REVIEW,
       WorkspaceDocumentStatus.APPROVED
@@ -632,11 +645,16 @@ describe('updateDocumentStatus', () => {
       newStatus: WorkspaceDocumentStatus.APPROVED,
     })
 
-    expect(indexWorkspaceDocument).toHaveBeenCalledWith('doc_1', 'ws_123')
+    expect(updateWorkspaceDocumentStatusMetadata).toHaveBeenCalledWith(
+      'doc_1',
+      'ws_123',
+      WorkspaceDocumentStatus.APPROVED
+    )
+    expect(indexWorkspaceDocument).not.toHaveBeenCalled()
     expect(deindexWorkspaceDocument).not.toHaveBeenCalled()
   })
 
-  it('Story 17.9b: DE-INDEXes when transitioning APPROVED → ARCHIVED', async () => {
+  it('17.10b: DELETE when transitioning APPROVED → ARCHIVED (terminal state hard-delete)', async () => {
     setupTransition(
       WorkspaceDocumentStatus.APPROVED,
       WorkspaceDocumentStatus.ARCHIVED
@@ -648,10 +666,11 @@ describe('updateDocumentStatus', () => {
     })
 
     expect(deindexWorkspaceDocument).toHaveBeenCalledWith('doc_1', 'ws_123')
+    expect(updateWorkspaceDocumentStatusMetadata).not.toHaveBeenCalled()
     expect(indexWorkspaceDocument).not.toHaveBeenCalled()
   })
 
-  it('Story 17.9b: schedules NO RAG action for DRAFT → IN_REVIEW (non-boundary)', async () => {
+  it('17.10b: METADATA_UPDATE on DRAFT → IN_REVIEW (no longer a no-op — chunks need new status label)', async () => {
     setupTransition(
       WorkspaceDocumentStatus.DRAFT,
       WorkspaceDocumentStatus.IN_REVIEW
@@ -662,8 +681,28 @@ describe('updateDocumentStatus', () => {
       newStatus: WorkspaceDocumentStatus.IN_REVIEW,
     })
 
+    expect(updateWorkspaceDocumentStatusMetadata).toHaveBeenCalledWith(
+      'doc_1',
+      'ws_123',
+      WorkspaceDocumentStatus.IN_REVIEW
+    )
     expect(indexWorkspaceDocument).not.toHaveBeenCalled()
     expect(deindexWorkspaceDocument).not.toHaveBeenCalled()
+  })
+
+  it('17.10b: DELETE on APPROVED → SUPERSEDED (also terminal)', async () => {
+    setupTransition(
+      WorkspaceDocumentStatus.APPROVED,
+      WorkspaceDocumentStatus.SUPERSEDED
+    )
+
+    await updateDocumentStatus({
+      documentId: '550e8400-e29b-41d4-a716-446655440000',
+      newStatus: WorkspaceDocumentStatus.SUPERSEDED,
+    })
+
+    expect(deindexWorkspaceDocument).toHaveBeenCalledWith('doc_1', 'ws_123')
+    expect(updateWorkspaceDocumentStatusMetadata).not.toHaveBeenCalled()
   })
 
   it('rejects transition from ARCHIVED (terminal)', async () => {
@@ -691,5 +730,107 @@ describe('updateDocumentStatus', () => {
 
     expect(result.success).toBe(false)
     expect(result.error).toBe('Dokument hittades inte')
+  })
+})
+
+// ============================================================================
+// Story 17.10b: autosaveDocument + saveDocumentVersion reindex wiring
+// ============================================================================
+
+describe('autosaveDocument — 17.10b AC 6 (cron-sweep dirty-mark)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    // Flush the after() callback synchronously so the dirty-mark fires.
+    vi.mocked(after).mockImplementation(((cb: () => unknown) => {
+      void cb()
+    }) as never)
+  })
+
+  it('marks the document dirty for the cron sweep after the in-place version update', async () => {
+    vi.mocked(prisma.workspaceDocument.findFirst).mockResolvedValue({
+      id: 'doc_autosave',
+      current_version_id: 'ver_1',
+      current_version_number: 1,
+    } as never)
+    // No-op the version update — we're not testing the in-place mutation here.
+    vi.mocked(prisma.workspaceDocumentVersion).update = vi
+      .fn()
+      .mockResolvedValue({})
+
+    await autosaveDocument(
+      'doc_autosave',
+      { type: 'doc' },
+      undefined,
+      '<p>x</p>'
+    )
+
+    expect(markWorkspaceDocumentDirty).toHaveBeenCalledWith(
+      'doc_autosave',
+      'ws_123'
+    )
+    // Cron-sweep is the ONLY consumer; autosave must NOT call indexWorkspaceDocument
+    // directly (that would burn embeddings on every keystroke).
+    expect(indexWorkspaceDocument).not.toHaveBeenCalled()
+  })
+
+  it('does NOT mark dirty when the document is missing (cross-tenant miss or deleted)', async () => {
+    vi.mocked(prisma.workspaceDocument.findFirst).mockResolvedValue(null)
+
+    const result = await autosaveDocument('doc_x', { type: 'doc' })
+
+    expect(result.success).toBe(false)
+    expect(markWorkspaceDocumentDirty).not.toHaveBeenCalled()
+  })
+})
+
+describe('saveDocumentVersion — 17.10b AC 7 (immediate reindex on explicit checkpoint)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(after).mockImplementation(((cb: () => unknown) => {
+      void cb()
+    }) as never)
+  })
+
+  it('schedules an immediate (non-debounced) indexWorkspaceDocument call', async () => {
+    vi.mocked(prisma.workspaceDocument.findFirst).mockResolvedValue({
+      id: 'doc_checkpoint',
+      current_version_number: 2,
+      workspace_id: 'ws_123',
+    } as never)
+    vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
+      const tx = {
+        workspaceDocumentVersion: {
+          create: vi.fn().mockResolvedValue({ id: 'ver_3' }),
+        },
+        workspaceDocument: { update: vi.fn().mockResolvedValue({}) },
+        activityLog: { create: vi.fn().mockResolvedValue({}) },
+      }
+      return (callback as (_tx: unknown) => unknown)(tx)
+    })
+
+    await saveDocumentVersion(
+      'doc_checkpoint',
+      { type: 'doc' },
+      'Manual checkpoint',
+      undefined,
+      '<p>new</p>'
+    )
+
+    expect(indexWorkspaceDocument).toHaveBeenCalledWith(
+      'doc_checkpoint',
+      'ws_123'
+    )
+    // saveDocumentVersion uses the IMMEDIATE path (not the cron sweep) — the
+    // user explicitly checkpointed, so embed now (hash-gated downstream).
+    expect(markWorkspaceDocumentDirty).not.toHaveBeenCalled()
+  })
+
+  it('does NOT reindex when the document is missing (cross-tenant miss)', async () => {
+    vi.mocked(prisma.workspaceDocument.findFirst).mockResolvedValue(null)
+
+    const result = await saveDocumentVersion('doc_x', { type: 'doc' })
+
+    expect(result.success).toBe(false)
+    expect(indexWorkspaceDocument).not.toHaveBeenCalled()
   })
 })

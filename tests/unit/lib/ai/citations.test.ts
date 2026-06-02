@@ -22,6 +22,13 @@ describe('hasCitationMarkers', () => {
   it('returns true for partial marker', () => {
     expect(hasCitationMarkers('text [Källa: partial')).toBe(true)
   })
+
+  // Story 17.10b: [Utkast:] is the draft-tier citation form (DEC-3).
+  it('returns true when [Utkast: ...] present (17.10b draft tier)', () => {
+    expect(
+      hasCitationMarkers('enligt utkast till [Utkast: Semesterpolicy]')
+    ).toBe(true)
+  })
 })
 
 describe('anchorIdFromPath', () => {
@@ -462,6 +469,148 @@ describe('extractSourcesFromToolResult', () => {
   it('returns empty for unknown tool', () => {
     const sources = extractSourcesFromToolResult('unknown', { data: {} })
     expect(Object.keys(sources)).toHaveLength(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Story 17.10b AC 9 / AC 10 / AC 11: status-aware citation labels.
+// The citationKey itself stays the bare title (display title stays clean per
+// AC 10); the agent picks the bracket form ([Källa:] vs [Utkast:]) based on
+// the `status` field returned by the tool. These tests verify the sourceMap
+// shape isn't affected by the status split (no status-specific keys).
+// ---------------------------------------------------------------------------
+
+describe('extractSourcesFromToolResult — search_workspace_documents status awareness (17.10b)', () => {
+  it('AC 10: citationKey stays the bare title regardless of status (Källa)', () => {
+    const sources = extractSourcesFromToolResult('search_workspace_documents', {
+      data: [
+        {
+          documentId: 'doc-1',
+          title: 'Diskrimineringspolicy',
+          status: 'APPROVED',
+          snippet: 'snippet',
+          citationKey: 'Diskrimineringspolicy',
+        },
+      ],
+    })
+
+    expect(sources['Diskrimineringspolicy']).toBeDefined()
+    expect(sources['Diskrimineringspolicy']!.documentNumber).toBe(
+      'Diskrimineringspolicy'
+    )
+    // Crucially: no bracketed/prefixed key. The display title is clean.
+    expect(sources['[Källa: Diskrimineringspolicy]']).toBeUndefined()
+  })
+
+  it('AC 10: citationKey stays the bare title for DRAFT/IN_REVIEW too (Utkast)', () => {
+    const sources = extractSourcesFromToolResult('search_workspace_documents', {
+      data: [
+        {
+          documentId: 'doc-1',
+          title: 'Semesterpolicy',
+          status: 'DRAFT',
+          snippet: 'snippet',
+          citationKey: 'Semesterpolicy',
+        },
+      ],
+    })
+
+    expect(sources['Semesterpolicy']).toBeDefined()
+    expect(sources['[Utkast: Semesterpolicy]']).toBeUndefined()
+    expect(sources['Utkast: Semesterpolicy']).toBeUndefined()
+  })
+
+  it('AC 9 + CITE-002: collision suffix still applies across mixed APPROVED + DRAFT pair', () => {
+    const sources = extractSourcesFromToolResult('search_workspace_documents', {
+      data: [
+        {
+          documentId: 'abcd1234-aaaa-bbbb-cccc-000000000001',
+          title: 'Diskrimineringspolicy',
+          status: 'APPROVED',
+          snippet: 'hr variant',
+          citationKey: 'Diskrimineringspolicy',
+        },
+        {
+          documentId: 'efgh5678-aaaa-bbbb-cccc-000000000002',
+          title: 'Diskrimineringspolicy',
+          status: 'DRAFT',
+          snippet: 'guest variant draft',
+          citationKey: 'Diskrimineringspolicy',
+        },
+      ],
+    })
+
+    // Both keys get an id-suffix because the bare title collides — regardless
+    // of status tier. Status is not part of the collision key.
+    expect(sources['Diskrimineringspolicy (abcd1234)']).toBeDefined()
+    expect(sources['Diskrimineringspolicy (efgh5678)']).toBeDefined()
+    expect(sources['Diskrimineringspolicy']).toBeUndefined()
+  })
+
+  it('AC 11: handles missing status on legacy chunks gracefully (no crash, no extra key)', () => {
+    // The tool layer (search-workspace-documents.ts) defaults missing status
+    // to 'APPROVED' before reaching this extractor — but the extractor itself
+    // doesn't read status. This test pins that contract: the source map shape
+    // is unaffected by whether status is APPROVED, DRAFT, or absent.
+    const sources = extractSourcesFromToolResult('search_workspace_documents', {
+      data: [
+        {
+          documentId: 'doc-legacy',
+          title: 'Legacy Policy',
+          // status DELIBERATELY OMITTED — legacy 17.9b chunk path
+          snippet: 'snippet',
+          citationKey: 'Legacy Policy',
+        },
+      ],
+    })
+    expect(sources['Legacy Policy']).toBeDefined()
+  })
+})
+
+describe('resolveSource — Utkast: prefix stripping (17.10b AC 9/10)', () => {
+  it('strips the "Utkast: " prefix before sourceMap lookup', () => {
+    const map = new Map<string, SourceInfo>([
+      [
+        'Diskrimineringspolicy',
+        {
+          documentNumber: 'Diskrimineringspolicy',
+          title: 'Diskrimineringspolicy',
+          snippet: 'draft policy',
+          slug: null,
+          path: null,
+          anchorId: null,
+        },
+      ],
+    ])
+
+    // The chip carries "Utkast: Diskrimineringspolicy" as its visible text
+    // (DEC-3) — the resolver must strip the prefix to hit the title-keyed map.
+    const resolved = resolveSource('Utkast: Diskrimineringspolicy', map)
+    expect(resolved?.documentNumber).toBe('Diskrimineringspolicy')
+  })
+
+  it('does NOT strip "Källa: " (canonical pills never carry the prefix in chip text)', () => {
+    const map = new Map<string, SourceInfo>([
+      [
+        'Diskrimineringspolicy',
+        {
+          documentNumber: 'Diskrimineringspolicy',
+          title: 'Diskrimineringspolicy',
+          snippet: 'approved policy',
+          slug: null,
+          path: null,
+          anchorId: null,
+        },
+      ],
+    ])
+
+    // A literal "Källa: X" label would fail lookup if it ever appeared (it
+    // doesn't — Källa pills render bare-label). This pins the asymmetry.
+    expect(resolveSource('Källa: Diskrimineringspolicy', map)).toBeNull()
+    // The bare title still resolves.
+    expect(resolveSource('Diskrimineringspolicy', map)?.documentNumber).toBe(
+      'Diskrimineringspolicy'
+    )
   })
 })
 

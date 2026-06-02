@@ -98,7 +98,8 @@ describe('createSearchWorkspaceDocumentsTool', () => {
         documentId: string
         title: string
         documentType: string | null
-        status: string | null
+        status: string
+        versionNumber: number | null
         snippet: string
         relevanceScore: number
         citationKey: string
@@ -110,13 +111,43 @@ describe('createSearchWorkspaceDocumentsTool', () => {
       documentId: 'wd-42',
       title: 'Dataskyddspolicy',
       documentType: 'POLICY',
+      // Story 17.10b: tool returns 'APPROVED' here because the mock metadata
+      // sets status: 'APPROVED' explicitly. Missing-status default is exercised
+      // in the AC-11 backwards-compat test below.
       status: 'APPROVED',
+      // Story 17.10b: version_number is null because the mock metadata doesn't
+      // include it. When chunks are produced by the new indexer it's a number.
+      versionNumber: null,
       snippet: 'Vår dataskyddspolicy kräver kryptering av personuppgifter.',
       // 0.876543 → round(× 1000)/1000 = 0.877
       relevanceScore: 0.877,
-      // DEC-2: citationKey = title
+      // DEC-2: citationKey = title (bare; the agent adds the [Källa:] /
+      // [Utkast:] bracket form based on the `status` field).
       citationKey: 'Dataskyddspolicy',
     })
+  })
+
+  // Story 17.10b AC 11: backwards-compatibility for legacy 17.9b chunks that
+  // were indexed without a `status` key in their metadata. The tool MUST
+  // default to 'APPROVED' so the agent's bracket-form decision never falls
+  // back to a null tier.
+  it('AC 11 backwards-compat: missing metadata.status defaults to APPROVED', async () => {
+    mockRetrieve.mockResolvedValue({
+      results: [
+        resultRow({
+          metadata: {
+            title: 'Legacy Policy',
+            document_type: 'POLICY',
+            // status DELIBERATELY OMITTED — legacy 17.9b chunk
+          },
+        }),
+      ],
+    })
+
+    const out = (await makeTool().execute({ query: 'q' })) as {
+      data: Array<{ status: string }>
+    }
+    expect(out.data[0]!.status).toBe('APPROVED')
   })
 
   it('falls back to contextualHeader, then sourceId, when metadata.title is missing', async () => {

@@ -151,6 +151,33 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('[Källa: Dataskyddspolicy]')
   })
 
+  // Story 17.10b AC 12 / AC 14: status-aware hedging directive. The agent
+  // MUST be told to differentiate APPROVED hits (Källa, canonical) from
+  // DRAFT/IN_REVIEW hits (Utkast, hedged). This is the load-bearing safety
+  // surface — the prompt-layer half of "do not quote DRAFT as canonical".
+  it('teaches status-aware Källa vs Utkast hedging for workspace documents (17.10b AC 12)', async () => {
+    const prompt = await buildSystemPrompt()
+    // The full directive (substring match — exact wording per the story AC).
+    expect(prompt).toContain('Citera APPROVED-träffar som `[Källa: <titel>]`')
+    expect(prompt).toContain(
+      'Citera DRAFT/IN_REVIEW-träffar som `[Utkast: <titel>]`'
+    )
+    // The hedging-in-text instruction — agents must phrase non-APPROVED hits
+    // as drafts, never as canonical policy.
+    expect(prompt).toContain('enligt utkast till')
+    expect(prompt).toContain(
+      'ALDRIG "enligt …" eller "vår policy säger …" som om utkastet vore gällande policy'
+    )
+  })
+
+  // Story 17.10b AC 13: a worked mixed-status example so the agent has a
+  // concrete pattern to imitate (Källa + Utkast in the same response).
+  it('contains a mixed-status worked example for Källa + Utkast (17.10b AC 13)', async () => {
+    const prompt = await buildSystemPrompt()
+    expect(prompt).toContain('[Utkast: Semesterpolicy]')
+    expect(prompt).toContain('pågående utkast')
+  })
+
   it('includes company context section when companyContext is provided', async () => {
     const prompt = await buildSystemPrompt({
       companyContext: '- Företag: Acme AB\n- Bransch: Bygg',

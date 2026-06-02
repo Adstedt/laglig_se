@@ -60,6 +60,26 @@ vi.mock('@/lib/supabase/storage', () => ({
   getStorageClient: vi.fn(),
 }))
 
+// Story 17.10b: saveDocumentVersion now schedules an indexWorkspaceDocument
+// call via next/server's after(). Mock both so this older test doesn't try to
+// run the real after() / hit the RAG sync.
+vi.mock('next/server', () => ({
+  after: vi.fn(),
+}))
+vi.mock('@/lib/chunks/workspace-document-reindex', async (importOriginal) => {
+  const actual =
+    await importOriginal<
+      typeof import('@/lib/chunks/workspace-document-reindex')
+    >()
+  return {
+    ...actual,
+    indexWorkspaceDocument: vi.fn().mockResolvedValue(undefined),
+    deindexWorkspaceDocument: vi.fn().mockResolvedValue(undefined),
+    markWorkspaceDocumentDirty: vi.fn().mockResolvedValue(undefined),
+    updateWorkspaceDocumentStatusMetadata: vi.fn().mockResolvedValue(undefined),
+  }
+})
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------

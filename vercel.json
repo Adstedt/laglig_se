@@ -88,6 +88,10 @@
     {
       "path": "/api/cron/extract-files",
       "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/sweep-draft-reindex",
+      "schedule": "* * * * *"
     }
   ]
 }

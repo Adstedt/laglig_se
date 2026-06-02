@@ -81,18 +81,24 @@ Hittas inga träffar, omformulera frågan eller använd bredare söktermer. Anv�
             title?: string
             document_type?: string
             status?: string
+            version_number?: number
           }
           const title = meta.title || r.contextualHeader || r.sourceId
           return {
             documentId: r.sourceId,
             title,
             documentType: meta.document_type ?? null,
-            status: meta.status ?? null,
+            // Story 17.10b AC 11: default to 'APPROVED' for legacy chunks
+            // indexed under 17.9b before status was uniformly written. The
+            // backfill script (Task 7) overwrites these in-place; this default
+            // is the read-side safety net so the agent never sees a null tier.
+            status: meta.status ?? 'APPROVED',
+            versionNumber: meta.version_number ?? null,
             snippet: r.content,
             relevanceScore: Math.round(r.relevanceScore * 1000) / 1000,
-            // DEC-2: citationKey = title. Note `version_number` is NOT in
-            // the chunk metadata (Story 17.9b's index covers only the
-            // current version) — use `get_workspace_document` to read it.
+            // DEC-2: citationKey = title. The agent decides bracket form by
+            // reading `status`: APPROVED → [Källa: <title>], DRAFT/IN_REVIEW
+            // → [Utkast: <title>] (system-prompt directive, AC 12).
             citationKey: title,
           }
         })

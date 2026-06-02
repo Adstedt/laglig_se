@@ -25,6 +25,8 @@ import {
   decideReindexOnStatusChange,
   indexWorkspaceDocument,
   deindexWorkspaceDocument,
+  markWorkspaceDocumentDirty,
+  updateWorkspaceDocumentStatusMetadata,
 } from '@/lib/chunks/workspace-document-reindex'
 
 // ============================================================================
@@ -414,10 +416,11 @@ export async function updateDocumentStatus(
         return doc
       })
 
-      // Story 17.9b: keep the RAG index in sync with the APPROVED boundary.
-      // Status transitions are the only index/de-index events (content is frozen
-      // above DRAFT). after() so the response isn't blocked; failures are logged,
-      // not fatal — a re-approval re-runs the INDEX path.
+      // Story 17.10b: 3-way status-transition handling. DELETE for terminal
+      // states (ARCHIVED / SUPERSEDED), METADATA_UPDATE for the common in-place
+      // status changes (cheap UPDATE on chunk.metadata.status, no re-embed),
+      // NONE when status didn't actually change. after() so the response isn't
+      // blocked; failures are logged, not fatal.
       const reindex = decideReindexOnStatusChange(
         oldStatus,
         validated.newStatus
@@ -425,10 +428,14 @@ export async function updateDocumentStatus(
       if (reindex !== 'NONE') {
         after(async () => {
           try {
-            if (reindex === 'INDEX') {
-              await indexWorkspaceDocument(document.id, workspaceId)
-            } else {
+            if (reindex === 'DELETE') {
               await deindexWorkspaceDocument(document.id, workspaceId)
+            } else {
+              await updateWorkspaceDocumentStatusMetadata(
+                document.id,
+                workspaceId,
+                validated.newStatus
+              )
             }
           } catch (err) {
             console.error(
@@ -546,6 +553,21 @@ export async function autosaveDocument(
         })
       }
 
+      // Story 17.10b: mark dirty for the cron sweep to re-index after the
+      // DRAFT_REINDEX_DEBOUNCE_MS idle window. Helper skips terminal-state docs
+      // (ARCHIVED/SUPERSEDED) and is workspace-scoped per AC 28. Fire-and-forget
+      // via after() so the autosave response stays fast; failures are logged.
+      after(async () => {
+        try {
+          await markWorkspaceDocumentDirty(document.id, workspaceId)
+        } catch (err) {
+          console.error(
+            `[autosaveDocument] mark-dirty failed for ${document.id} — retryable:`,
+            err instanceof Error ? err.message : err
+          )
+        }
+      })
+
       return {
         success: true,
         data: {
@@ -631,6 +653,21 @@ export async function saveDocumentVersion(
         })
 
         return ver
+      })
+
+      // Story 17.10b: explicit checkpoint = real content change = embed now.
+      // Skip for non-indexable terminal states (ARCHIVED / SUPERSEDED — checkpointing
+      // those would be unusual but defensive). after() so the response isn't blocked;
+      // hash-gated inside syncWorkspaceChunks so a no-op content change is free.
+      after(async () => {
+        try {
+          await indexWorkspaceDocument(document.id, document.workspace_id)
+        } catch (err) {
+          console.error(
+            `[saveDocumentVersion] WORKSPACE_DOCUMENT reindex failed for ${document.id} — retryable:`,
+            err instanceof Error ? err.message : err
+          )
+        }
       })
 
       return {

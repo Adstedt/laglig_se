@@ -35,10 +35,12 @@ export interface ChatMessageMetadata {
 // ---------------------------------------------------------------------------
 
 /**
- * Check if text contains any [Källa: ...] markers.
+ * Check if text contains any [Källa: ...] or [Utkast: ...] markers.
+ * Story 17.10b adds the `[Utkast:]` form for DRAFT/IN_REVIEW styrdokument
+ * citations (DEC-3); both forms count as "this text references a source".
  */
 export function hasCitationMarkers(text: string): boolean {
-  return text.includes('[Källa:')
+  return text.includes('[Källa:') || text.includes('[Utkast:')
 }
 
 // ---------------------------------------------------------------------------
@@ -295,7 +297,15 @@ export function resolveSource(
   label: string,
   sourceMap: Map<string, SourceInfo>
 ): SourceInfo | null {
-  const trimmed = label.trim()
+  let trimmed = label.trim()
+
+  // Story 17.10b: chips emitted from [Utkast: <title>] carry the "Utkast: "
+  // prefix in their visible text (DEC-3 — the prefix is the user-facing draft
+  // marker). The source map is keyed by the title alone, so strip the prefix
+  // before lookup. Källa pills never carry a prefix in the chip text.
+  if (trimmed.startsWith('Utkast: ')) {
+    trimmed = trimmed.slice('Utkast: '.length).trim()
+  }
 
   // 1. Parse label to extract section reference and look up by path
   const parsed = parseCitationLabel(trimmed)

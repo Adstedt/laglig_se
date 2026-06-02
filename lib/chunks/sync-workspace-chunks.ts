@@ -38,6 +38,8 @@ export interface SyncWorkspaceMeta {
   document_type?: string
   /** WORKSPACE_DOCUMENT: `WorkspaceDocumentStatus` value. */
   status?: string
+  /** WORKSPACE_DOCUMENT: current version_number at index time (Story 17.10b). */
+  version_number?: number
   /** sha256 of the source content — gates re-embedding (17.9 AC 9 / 17.9b AC 7). */
   content_hash?: string | null
 }
@@ -144,6 +146,10 @@ export async function syncWorkspaceChunks(
           title: meta.title ?? '',
           documentType: meta.document_type ?? '',
           status: meta.status ?? '',
+          // exactOptionalPropertyTypes: omit when undefined rather than pass undefined.
+          ...(typeof meta.version_number === 'number'
+            ? { versionNumber: meta.version_number }
+            : {}),
           markdown: text,
           contentHash: meta.content_hash ?? null,
         })
@@ -230,4 +236,52 @@ async function embedWorkspaceChunks(
   }
 
   return embedded
+}
+
+/**
+ * Story 17.10b: Metadata-only UPDATE helper. Merges `partialMetadata` into the
+ * existing `metadata` jsonb on every chunk matching (source_id, source_type,
+ * workspace_id). NO embedding work — used when a status transition needs to
+ * update the chunk's status label without touching content.
+ *
+ * AC 28 (cross-tenant defence-in-depth): `workspace_id` is REQUIRED in the
+ * WHERE clause — alongside the closure-captured workspaceId at the caller and
+ * the 17.9b write-side invariant. The "cheap UPDATE" path is exactly where a
+ * future refactor could drop the predicate by accident, so the parameter is
+ * non-optional and the SQL hard-codes the filter.
+ *
+ * Embeddings are untouched. Same-hash + null-embedding chunks (REL-001 self-heal
+ * scenario) won't be repaired by this path — the next content-change call to
+ * `syncWorkspaceChunks` will self-heal as designed. Intentional: this path is
+ * for label updates only, not content recovery.
+ */
+export async function updateChunkMetadata(
+  sourceId: string,
+  sourceType: WorkspaceSourceType,
+  partialMetadata: Record<string, unknown>,
+  workspaceId: string
+): Promise<{ chunksUpdated: number; duration: number }> {
+  const start = Date.now()
+
+  if (!workspaceId) {
+    throw new Error(
+      `[updateChunkMetadata] workspace_id is required for ${sourceType} ${sourceId} — refusing to update (cross-tenant leak risk)`
+    )
+  }
+
+  // jsonb `||` merges right-hand keys into the left-hand value. NULL metadata
+  // is coalesced to an empty object so legacy rows still get the new keys.
+  const updated = await prisma.$executeRaw`
+    UPDATE content_chunks
+    SET metadata = COALESCE(metadata, '{}'::jsonb) || ${JSON.stringify(partialMetadata)}::jsonb,
+        updated_at = NOW()
+    WHERE source_type = ${sourceType}::"SourceType"
+      AND source_id = ${sourceId}
+      AND workspace_id = ${workspaceId}
+  `
+
+  return {
+    chunksUpdated: Number(updated),
+    duration: Date.now() - start,
+  }
 }

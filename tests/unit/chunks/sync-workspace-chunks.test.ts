@@ -28,7 +28,10 @@ vi.mock('@/lib/chunks/embed-chunks', () => ({
 }))
 
 import { prisma } from '@/lib/prisma'
-import { syncWorkspaceChunks } from '@/lib/chunks/sync-workspace-chunks'
+import {
+  syncWorkspaceChunks,
+  updateChunkMetadata,
+} from '@/lib/chunks/sync-workspace-chunks'
 import { generateEmbeddingsBatch } from '@/lib/chunks/embed-chunks'
 
 const mockPrisma = prisma as unknown as {
@@ -237,5 +240,71 @@ describe('syncWorkspaceChunks — empty content + reliability', () => {
     expect(createArg?.data[0]?.contextual_header).toBe(
       'Dataskyddspolicy (POLICY)'
     )
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Story 17.10b AC 4 + AC 28: updateChunkMetadata — cheap UPDATE, no re-embed
+// ---------------------------------------------------------------------------
+
+describe('updateChunkMetadata — 17.10b AC 4', () => {
+  beforeEach(() => {
+    // $executeRaw resolves to the row count for an UPDATE.
+    mockPrisma.$executeRaw.mockResolvedValue(3)
+  })
+
+  it('runs a single UPDATE and returns chunksUpdated count', async () => {
+    const result = await updateChunkMetadata(
+      'doc-1',
+      'WORKSPACE_DOCUMENT',
+      { status: 'IN_REVIEW' },
+      'ws-1'
+    )
+
+    expect(mockPrisma.$executeRaw).toHaveBeenCalledTimes(1)
+    expect(result.chunksUpdated).toBe(3)
+    expect(typeof result.duration).toBe('number')
+  })
+
+  it('does NOT trigger any embedding work (the whole point of the cheap path)', async () => {
+    await updateChunkMetadata(
+      'doc-1',
+      'WORKSPACE_DOCUMENT',
+      { status: 'APPROVED' },
+      'ws-1'
+    )
+
+    expect(mockEmbed).not.toHaveBeenCalled()
+    expect(mockPrisma.$transaction).not.toHaveBeenCalled()
+    expect(mockPrisma.contentChunk.createMany).not.toHaveBeenCalled()
+  })
+
+  it('throws when workspaceId is empty — AC 28 cross-tenant defence', async () => {
+    await expect(
+      updateChunkMetadata(
+        'doc-1',
+        'WORKSPACE_DOCUMENT',
+        { status: 'APPROVED' },
+        ''
+      )
+    ).rejects.toThrow(/workspace_id is required/i)
+
+    expect(mockPrisma.$executeRaw).not.toHaveBeenCalled()
+  })
+
+  it('cross-tenant proof: passes workspaceId into the UPDATE statement', async () => {
+    await updateChunkMetadata(
+      'doc-a',
+      'WORKSPACE_DOCUMENT',
+      { status: 'DRAFT' },
+      'ws-target'
+    )
+
+    // The raw-SQL tagged template embeds workspaceId as a parameter — verify
+    // it appears in the executeRaw call's interpolated values.
+    const call = mockPrisma.$executeRaw.mock.calls[0]!
+    const joined = JSON.stringify(call)
+    expect(joined).toContain('ws-target')
+    expect(joined).toContain('doc-a')
   })
 })

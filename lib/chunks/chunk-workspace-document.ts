@@ -106,8 +106,18 @@ export interface ChunkWorkspaceDocumentInput {
   title: string
   /** `WorkspaceDocumentType` value. */
   documentType: string
-  /** `WorkspaceDocumentStatus` value (APPROVED at index time). */
+  /**
+   * `WorkspaceDocumentStatus` value. Story 17.9b indexed APPROVED-only; Story
+   * 17.10b widens to DRAFT/IN_REVIEW/APPROVED and uses this in the chunk metadata
+   * so the citation layer can render `[Källa:]` vs `[Utkast:]` (DEC-3).
+   */
   status: string
+  /**
+   * Current version_number at index time (17.10b). Recorded in chunk metadata
+   * so citations can render `[Källa: X v3]` if precision is wanted; not
+   * required by any 17.10b AC but cheap to carry forward (DEC-1 compromise).
+   */
+  versionNumber?: number
   /** Markdown derived from `content_html` (the trigger runs `htmlToMarkdown` first). */
   markdown: string
   /** sha256 of `content_html` — stored in chunk metadata for dedupe (AC 7). */
@@ -127,6 +137,9 @@ export function chunkWorkspaceDocument(
     title: doc.title,
     document_type: doc.documentType,
     status: doc.status,
+  }
+  if (typeof doc.versionNumber === 'number') {
+    metadata.version_number = doc.versionNumber
   }
   if (doc.contentHash) metadata.content_hash = doc.contentHash
 

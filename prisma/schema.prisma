@@ -2036,6 +2036,13 @@ model WorkspaceDocument {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
+  // Story 17.10b: cron-sweep debounce flags for DRAFT autosave reindex.
+  // `autosaveDocument` flips needs_reindex = true + records last_marked_dirty_at;
+  // /api/cron/sweep-draft-reindex picks rows where the dirty-mark has aged past
+  // DRAFT_REINDEX_DEBOUNCE_MS (60s) and clears the flag after indexing.
+  needs_reindex        Boolean   @default(false)
+  last_marked_dirty_at DateTime?
+
   // Relations
   workspace       Workspace                       @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
   creator         User                            @relation("WsDocCreator", fields: [created_by], references: [id])
@@ -2052,6 +2059,9 @@ model WorkspaceDocument {
   @@index([workspace_id, status])
   @@index([workspace_id, document_type])
   @@index([workspace_id, created_at])
+  // Story 17.10b: partial-like index for the cron sweep (Postgres will use the
+  // composite index when scanning for needs_reindex = true).
+  @@index([needs_reindex, last_marked_dirty_at])
   @@map("workspace_documents")
 }
 

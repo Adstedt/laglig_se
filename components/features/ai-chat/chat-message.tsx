@@ -481,10 +481,13 @@ type AccordionSource =
       anchorId: string | null
     }
 
-/** Extract document numbers actually cited in text via [Källa: ...] markers */
+/**
+ * Extract document numbers actually cited in text via [Källa: ...] or
+ * [Utkast: ...] markers (17.10b — Utkast is the draft-tier citation form).
+ */
 function extractCitedDocNumbers(text: string): Set<string> {
   const cited = new Set<string>()
-  const re = /\[Källa:\s*([^\]]+)\]/g
+  const re = /\[(?:Källa|Utkast):\s*([^\]]+)\]/g
   let match
   while ((match = re.exec(text)) !== null) {
     const label = match[1]!.trim()
