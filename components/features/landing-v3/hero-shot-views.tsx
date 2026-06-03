@@ -7,23 +7,38 @@ import {
   Plus,
   Search,
   SlidersHorizontal,
-  Scale,
   ClipboardCheck,
   Sparkles,
-  ListChecks,
   FileText,
   Download,
   ArrowUp,
   CheckCircle2,
   AlertTriangle,
-  Link2,
   BookOpen,
   ExternalLink,
+  Clock,
+  BarChart3,
+  LayoutGrid,
+  List,
+  Calendar,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { getStatusBadgeProps } from '@/lib/ui/badge-tones'
 import { cn } from '@/lib/utils'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  WorkspaceViewTabs,
+  WorkspaceViewTabsList,
+  WorkspaceViewTabsTrigger,
+} from '@/components/ui/workspace-view-tabs'
 import { GroupedComplianceTable } from '@/components/features/document-list/grouped-compliance-table'
+import { DocumentTable } from '@/components/features/documents/document-table'
+import { KanbanTab } from '@/components/features/tasks/task-workspace/kanban-tab'
+import type { WorkspaceMember } from '@/components/features/tasks/task-workspace'
+import { TaskApprovalRenderer } from '@/components/features/ai-chat/agent-action-renderers/task-approval-renderer'
+import { SearchResultCard } from '@/components/features/search/search-result-card'
+import type { SearchResult } from '@/app/actions/search'
+import type { PendingAgentAction } from '@prisma/client'
 import {
   MEMBERS,
   GROUPS,
@@ -31,6 +46,89 @@ import {
   TOTAL,
   EXPANDED_GROUPS,
 } from './hero-shot-data'
+import { DOCUMENTS } from './styrdokument-mock-data'
+import { COLUMNS as TASK_COLUMNS, TASKS } from './uppgifter-mock-data'
+
+// Real tasks ListTab/KanbanTab member shape (reused from the showcase mocks).
+const WORKSPACE_MEMBERS: WorkspaceMember[] = MEMBERS.map((m) => ({
+  id: m.id,
+  name: m.name,
+  email: m.email,
+  avatarUrl: m.avatarUrl,
+}))
+
+// Mocked PENDING action so the assistant renders the real 14.23 approval card.
+const TASK_ACTION = {
+  id: 'pa-hero-1',
+  status: 'PENDING',
+  action_type: 'CREATE_TASK',
+  params: {
+    title: 'Upprätta register över utbildad serveringspersonal',
+    description:
+      'Skapa och underhåll ett register över vilka i personalen som genomgått utbildning i ansvarsfull alkoholservering, enligt nya 8 kap. 12 a §. Ansvarig: Anna Lindqvist.',
+    priority: 'HIGH',
+  },
+  result_ref: null,
+} as unknown as PendingAgentAction
+
+// Tasks page tabs (same set + chrome as the real /tasks page).
+const TASK_TABS = [
+  { value: 'sammanfattning', label: 'Sammanfattning', icon: BarChart3 },
+  { value: 'aktiva', label: 'Aktiva', icon: LayoutGrid },
+  { value: 'lista', label: 'Lista', icon: List },
+  { value: 'kalender', label: 'Kalender', icon: Calendar },
+  { value: 'alla', label: 'Alla uppgifter', icon: Clock },
+] as const
+
+// Mock results shaped to the real `SearchResult` type so the actual
+// `SearchResultCard` renders the Regelverk view exactly like the app.
+const SEARCH_RESULTS: SearchResult[] = [
+  {
+    id: 'sr-1',
+    title: 'Alkohollag (2010:1622)',
+    documentNumber: 'SFS 2010:1622',
+    contentType: 'SFS_LAW',
+    sfsInstrument: 'LAG',
+    category: null,
+    summary: null,
+    effectiveDate: '2011-01-01',
+    status: 'ACTIVE',
+    slug: 'sfs-2010-1622',
+    snippet:
+      'Denna lag gäller tillverkning, marknadsföring och försäljning av <mark>alkohol</mark>haltiga drycker. Serveringstillstånd regleras i 8 kap.',
+    rank: 1,
+  },
+  {
+    id: 'sr-2',
+    title: 'Alkoholförordning (2010:1636)',
+    documentNumber: 'SFS 2010:1636',
+    contentType: 'SFS_LAW',
+    sfsInstrument: 'FORORDNING',
+    category: null,
+    summary: null,
+    effectiveDate: '2011-01-01',
+    status: 'ACTIVE',
+    slug: 'sfs-2010-1636',
+    snippet:
+      'Kompletterande bestämmelser till <mark>alkohol</mark>lagen om bland annat tillsyn, avgifter och anmälningar.',
+    rank: 2,
+  },
+  {
+    id: 'sr-3',
+    title: 'AFS 2023:2 — Planering och organisering av arbetsmiljöarbetet',
+    documentNumber: 'AFS 2023:2',
+    contentType: 'AGENCY_REGULATION',
+    sfsInstrument: null,
+    category: null,
+    summary: null,
+    effectiveDate: '2025-01-01',
+    status: 'ACTIVE',
+    slug: 'afs-2023-2',
+    snippet:
+      'Arbetsmiljöverkets föreskrifter om systematiskt arbetsmiljöarbete, organisatorisk och social arbetsmiljö m.m.',
+    rank: 3,
+  },
+]
 
 /* ------------------------------------------------------------------ shared */
 
@@ -163,88 +261,133 @@ export function LaglistorView() {
 export function AssistentView() {
   return (
     <>
-      <Breadcrumb trail={['Nordviken Hotell & Konferens AB', 'Assistent']} />
-      <div className="mx-auto mt-4 max-w-2xl space-y-4">
+      {/* Chat header — logo + title + history + new chat (real chat chrome) */}
+      <div className="flex items-center gap-2.5 border-b border-border/70 pb-3">
+        <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-muted">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/logo-icon-black.png"
+            alt=""
+            className="h-3.5 w-auto"
+          />
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-medium leading-none">Laglig-assistent</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Känner er verksamhet
+          </p>
+        </div>
+        <div className="ml-auto flex items-center gap-1">
+          <span className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground">
+            <Clock className="h-4 w-4" />
+          </span>
+          <span className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs font-medium text-foreground/80">
+            <Plus className="h-3.5 w-3.5" />
+            Ny chatt
+          </span>
+        </div>
+      </div>
+
+      <div className="mx-auto mt-5 max-w-2xl space-y-4">
         {/* User question */}
         <div className="flex justify-end">
           <div className="max-w-[80%] rounded-2xl rounded-br-sm bg-primary px-4 py-2.5 text-sm text-primary-foreground">
-            Vad krävs för vårt serveringstillstånd enligt alkohollagen?
+            Vad krävs för vårt serveringstillstånd — och uppfyller vi det idag?
           </div>
         </div>
 
         {/* AI answer */}
         <div className="space-y-3">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-            <span>Tänkte igenom era kravpunkter och Alkohollagen · 2 s</span>
+          {/* tool-use trace */}
+          <div className="space-y-1.5 rounded-xl border border-border/60 bg-muted/30 px-3.5 py-3">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+              Tänkte igenom · 3 steg · 2 s
+            </div>
+            {[
+              'Läste Alkohollagen 8 kap.',
+              'Jämförde med era kravpunkter och Alkoholpolicy',
+              'Kollade personalens utbildningsstatus',
+            ].map((t) => (
+              <div
+                key={t}
+                className="flex items-center gap-2 text-xs text-muted-foreground"
+              >
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                {t}
+              </div>
+            ))}
           </div>
+
+          {/* answer — mixed status, surfaces the gap */}
           <div className="space-y-3 text-sm leading-relaxed text-foreground/90">
             <p>
-              För ert serveringstillstånd ställer Alkohollagen krav på bland
-              annat lämplighet, kunskap och fungerande rutiner. De viktigaste
-              punkterna för Nordviken:
+              Ert serveringstillstånd är till största del i ordning — två av tre
+              krav är uppfyllda. Men ett saknas sedan den senaste ändringen:
             </p>
-            <ul className="space-y-1.5 pl-1">
-              {[
-                'Dokumenterade rutiner för ansvarsfull alkoholservering',
-                'Personal utbildad i ålderskontroll och servering',
-                'Kassaregister och bokföring enligt kraven',
-              ].map((t) => (
-                <li key={t} className="flex gap-2">
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
-                  <span>{t}</span>
-                </li>
-              ))}
+            <ul className="space-y-2 pl-1">
+              <li className="flex gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                <span>
+                  Dokumenterade rutiner för ansvarsfull servering{' '}
+                  <span className="text-muted-foreground">
+                    — Alkoholpolicy v2.1
+                  </span>
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                <span>Personal utbildad i ålderskontroll och servering</span>
+              </li>
+              <li className="flex gap-2">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                <span>
+                  <span className="font-medium text-foreground">
+                    Register över utbildad personal saknas
+                  </span>{' '}
+                  <span className="text-muted-foreground">
+                    — nytt krav i 8 kap. 12 a §
+                  </span>
+                </span>
+              </li>
             </ul>
             <p className="flex flex-wrap items-center gap-1.5 text-muted-foreground">
               Källa:
               <span className="inline-flex items-center gap-1 rounded border border-border bg-muted/50 px-1.5 py-0.5 text-[11px] font-medium text-foreground/70">
                 <BookOpen className="h-3 w-3" />
-                Alkohollag (2010:1622) 8 kap.
+                Alkohollag (2010:1622) · 8 kap. 12 a §
               </span>
             </p>
           </div>
 
-          {/* Agent action card */}
-          <div className="rounded-xl border border-primary/20 bg-primary/[0.03] p-3.5">
-            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-              Förslag på åtgärd
-            </div>
-            <div className="mt-2 flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-secondary text-foreground/70 ring-1 ring-border/60">
-                <ListChecks className="h-4 w-4" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium">
-                  Skapa uppgift: Utbilda serveringspersonal i ansvarsfull
-                  alkoholservering
-                </div>
-                <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>Föreslagen ansvarig:</span>
-                  <Avatar src="/demo-team/anna.webp" className="h-5 w-5" />
-                  Anna Lindqvist
-                  <span className="text-muted-foreground/50">·</span>
-                  <Badge tone="danger" variant="soft">
-                    Hög
-                  </Badge>
-                </div>
-              </div>
-            </div>
-            <div className="mt-3 flex justify-end gap-2">
-              <div className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-foreground/70">
-                Avvisa
-              </div>
-              <PrimaryBtn>
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Godkänn
-              </PrimaryBtn>
-            </div>
-          </div>
+          {/* Agent action card — the real 14.23 approval card (CREATE_TASK) */}
+          <TaskApprovalRenderer
+            action={TASK_ACTION}
+            onApprove={noop}
+            onReject={noop}
+            onParamsChange={noop}
+            isSubmitting={false}
+          />
+        </div>
+
+        {/* Follow-up suggestions */}
+        <div className="flex flex-wrap gap-2">
+          {[
+            'Vad gäller vid uteservering?',
+            'När måste tillståndet förnyas?',
+            'Vilka krav ställs på kassaregistret?',
+          ].map((q) => (
+            <span
+              key={q}
+              className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-foreground/70"
+            >
+              {q}
+            </span>
+          ))}
         </div>
 
         {/* Input */}
-        <div className="mt-2 flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
+        <div className="flex items-center justify-between gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm text-muted-foreground">
           Fråga om regler och efterlevnad…
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <ArrowUp className="h-4 w-4" />
@@ -305,6 +448,27 @@ export function KontrollView() {
           </PrimaryBtn>
         </div>
       </div>
+
+      {/* Progress */}
+      <div className="mt-4">
+        <div className="mb-1.5 flex items-center justify-between text-xs text-muted-foreground">
+          <span>18 av 18 krav signerade</span>
+          <span>100%</span>
+        </div>
+        <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+          <div className="h-full w-full rounded-full bg-foreground" />
+        </div>
+      </div>
+
+      {/* Tabs — same set as the real cycle-detail page */}
+      <Tabs defaultValue="rapport" className="mt-4">
+        <TabsList>
+          <TabsTrigger value="items">Dokument</TabsTrigger>
+          <TabsTrigger value="findings">Anmärkningar</TabsTrigger>
+          <TabsTrigger value="rapport">Rapport</TabsTrigger>
+          <TabsTrigger value="aktivitet">Aktivitet</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* Summary stat cards */}
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -382,66 +546,57 @@ export function KontrollView() {
   )
 }
 
-/* -------------------------------------------------------- Styrdokument view */
+/* ------------------------------------------------------------ Uppgifter view
+ * Renders the REAL tasks KanbanTab fed mocked tasks (same as the showcase). */
 
-const DOCS = [
-  {
-    name: 'Alkoholpolicy',
-    status: 'APPROVED',
-    version: 'v2.1',
-    owner: '/demo-team/anna.webp',
-    links: ['Alkohollagen'],
-  },
-  {
-    name: 'HACCP-plan & egenkontroll',
-    status: 'APPROVED',
-    version: 'v3.0',
-    owner: '/demo-team/johan.webp',
-    links: ['Livsmedelslagen', 'Livsmedelsförordningen'],
-  },
-  {
-    name: 'Brandskyddsrutin',
-    status: 'IN_REVIEW',
-    version: 'v1.4',
-    owner: '/demo-team/erik.webp',
-    links: ['Lag om skydd mot olyckor'],
-  },
-  {
-    name: 'Krishanteringsplan',
-    status: 'APPROVED',
-    version: 'v1.0',
-    owner: '/demo-team/sofia.webp',
-    links: ['AFS 2023:2'],
-  },
-  {
-    name: 'Personalhandbok',
-    status: 'APPROVED',
-    version: 'v4.2',
-    owner: '/demo-team/sofia.webp',
-    links: ['Arbetsmiljölagen'],
-  },
-  {
-    name: 'Rutin för systematiskt arbetsmiljöarbete',
-    status: 'APPROVED',
-    version: 'v2.3',
-    owner: '/demo-team/erik.webp',
-    links: ['AFS 2023:1'],
-  },
-  {
-    name: 'Dataskyddspolicy (GDPR)',
-    status: 'APPROVED',
-    version: 'v2.0',
-    owner: '/demo-team/maria.webp',
-    links: ['Dataskyddsförordningen'],
-  },
-  {
-    name: 'Rutin för allergeninformation',
-    status: 'IN_REVIEW',
-    version: 'v1.1',
-    owner: '/demo-team/johan.webp',
-    links: ['Livsmedelsförordningen'],
-  },
-] as const
+export function UppgifterView() {
+  return (
+    <>
+      <Breadcrumb trail={['Nordviken Hotell & Konferens AB', 'Uppgifter']} />
+      <div className="mt-2 flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-2xl font-semibold tracking-tight">Uppgifter</h3>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            Planera och följ upp åtgärder — kopplade till regelverken de
+            uppfyller.
+          </p>
+        </div>
+        <div className="hidden shrink-0 md:block">
+          <PrimaryBtn>
+            <Plus className="h-3.5 w-3.5" />
+            Ny uppgift
+          </PrimaryBtn>
+        </div>
+      </div>
+
+      {/* View tabs — same chrome as the real /tasks page */}
+      <div className="mt-4">
+        <WorkspaceViewTabs value="aktiva" onValueChange={noop}>
+          <WorkspaceViewTabsList>
+            {TASK_TABS.map(({ value, label, icon: Icon }) => (
+              <WorkspaceViewTabsTrigger key={value} value={value}>
+                <Icon className="h-4 w-4" />
+                <span className="hidden sm:inline">{label}</span>
+              </WorkspaceViewTabsTrigger>
+            ))}
+          </WorkspaceViewTabsList>
+        </WorkspaceViewTabs>
+      </div>
+
+      <div className="mt-4">
+        <KanbanTab
+          filteredTasks={TASKS}
+          initialColumns={TASK_COLUMNS}
+          activeStatusFilter={[]}
+          workspaceMembers={WORKSPACE_MEMBERS}
+        />
+      </div>
+    </>
+  )
+}
+
+/* -------------------------------------------------------- Styrdokument view
+ * Renders the REAL DocumentTable fed mocked documents (same as the showcase). */
 
 export function StyrdokumentView() {
   return (
@@ -453,7 +608,7 @@ export function StyrdokumentView() {
             Styrdokument
           </h3>
           <p className="mt-0.5 text-sm text-muted-foreground">
-            Era policyer och rutiner — kopplade till lagkraven de uppfyller.
+            Era policyer och rutiner — kopplade till kraven de uppfyller.
           </p>
         </div>
         <div className="hidden shrink-0 md:block">
@@ -463,96 +618,26 @@ export function StyrdokumentView() {
           </PrimaryBtn>
         </div>
       </div>
-
-      <div className="mt-4 overflow-hidden rounded-xl border border-border/70">
-        <div className="grid grid-cols-[minmax(0,1.4fr)_140px_80px_minmax(0,1.3fr)_44px] gap-3 border-b border-border/70 bg-muted/40 px-4 py-2.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-          <span>Dokument</span>
-          <span>Status</span>
-          <span>Version</span>
-          <span className="hidden lg:block">Kopplad till</span>
-          <span className="text-right">Ägare</span>
-        </div>
-        {DOCS.map((d, i) => {
-          const sp = getStatusBadgeProps('document-status', d.status)
-          return (
-            <div
-              key={d.name}
-              className={cn(
-                'grid grid-cols-[minmax(0,1.4fr)_140px_80px_minmax(0,1.3fr)_44px] items-center gap-3 px-4 py-3',
-                i !== DOCS.length - 1 && 'border-b border-border/50'
-              )}
-            >
-              <div className="flex min-w-0 items-center gap-2.5">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-foreground/70">
-                  <FileText className="h-4 w-4" />
-                </div>
-                <span className="truncate text-sm font-medium">{d.name}</span>
-              </div>
-              <div>
-                <Badge
-                  tone={sp.tone}
-                  variant={sp.variant}
-                  className="whitespace-nowrap"
-                >
-                  {sp.label}
-                </Badge>
-              </div>
-              <span className="text-xs text-muted-foreground tabular-nums">
-                {d.version}
-              </span>
-              <div className="hidden flex-wrap gap-1 lg:flex">
-                {d.links.map((l) => (
-                  <span
-                    key={l}
-                    className="inline-flex items-center gap-1 rounded border border-border bg-muted/40 px-1.5 py-0.5 text-[11px] text-muted-foreground"
-                  >
-                    <Link2 className="h-3 w-3" />
-                    {l}
-                  </span>
-                ))}
-              </div>
-              <div className="flex justify-end">
-                <Avatar src={d.owner} className="h-6 w-6" />
-              </div>
-            </div>
-          )
-        })}
+      <div className="mt-4">
+        <DocumentTable
+          documents={DOCUMENTS}
+          sortBy="updated_at"
+          sortOrder="desc"
+          onSort={noop}
+          onArchive={noop}
+        />
       </div>
     </>
   )
 }
 
-/* ----------------------------------------------------------- Regelverk view */
-
-const LAWS = [
-  {
-    title: 'Alkohollag (2010:1622)',
-    type: 'Lag',
-    updated: 'Uppdaterad 2026-02-15',
-    excerpt:
-      'Denna lag gäller tillverkning, marknadsföring och försäljning av alkoholhaltiga drycker. Serveringstillstånd regleras i 8 kap.',
-  },
-  {
-    title: 'Alkoholförordning (2010:1636)',
-    type: 'Förordning',
-    updated: 'Uppdaterad 2025-11-30',
-    excerpt:
-      'Kompletterande bestämmelser till alkohollagen om bland annat tillsyn, avgifter och anmälningar.',
-  },
-  {
-    title: 'AFS 2023:2 — Planering och organisering av arbetsmiljöarbetet',
-    type: 'Föreskrift',
-    updated: 'Uppdaterad 2025-09-01',
-    excerpt:
-      'Arbetsmiljöverkets föreskrifter om systematiskt arbetsmiljöarbete, organisatorisk och social arbetsmiljö m.m.',
-  },
-] as const
+/* ----------------------------------------------------------- Regelverk view
+ * Renders the REAL SearchResultCard fed mocked results. */
 
 export function RegelverkView() {
   return (
     <>
-      <Breadcrumb trail={['Regelverk']} />
-      <div className="mt-2">
+      <div className="mt-1">
         <h3 className="text-2xl font-semibold tracking-tight">Regelverk</h3>
         <p className="mt-0.5 text-sm text-muted-foreground">
           Sök i 10 000+ lagar, förordningar och föreskrifter — uppdateras varje
@@ -570,38 +655,21 @@ export function RegelverkView() {
         </span>
       </div>
 
-      {/* Results */}
-      <div className="mt-3 space-y-2.5">
-        {LAWS.map((law) => (
-          <div
-            key={law.title}
-            className="rounded-lg border border-border/70 bg-card p-3.5"
-          >
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-secondary text-foreground/70 ring-1 ring-border/60">
-                <Scale className="h-3.5 w-3.5" />
-              </div>
-              <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                {law.title}
-              </span>
-              <Badge tone="neutral" variant="outline">
-                {law.type}
-              </Badge>
-            </div>
-            <p className="mt-2 line-clamp-2 text-xs leading-snug text-muted-foreground">
-              {law.excerpt}
-            </p>
-            <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <span className="inline-flex h-1.5 w-1.5 rounded-full bg-green-500" />
-              {law.updated} · Källa: Riksdagen
-            </div>
-          </div>
+      {/* Results — the REAL SearchResultCard */}
+      <div className="mt-4 space-y-3">
+        {SEARCH_RESULTS.map((doc, i) => (
+          <SearchResultCard
+            key={doc.id}
+            document={doc}
+            query="alkohollag"
+            position={i}
+          />
         ))}
       </div>
 
       <a
         href="/sok"
-        className="pointer-events-auto mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-foreground/70 transition-colors hover:text-foreground"
+        className="pointer-events-auto mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-foreground/70 transition-colors hover:text-foreground"
       >
         Öppna hela regelverket
         <ExternalLink className="h-3.5 w-3.5" />

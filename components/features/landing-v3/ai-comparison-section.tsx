@@ -46,19 +46,19 @@ const COLUMNS: Column[] = [
     desc: 'Allmän chattbot',
     context: [{ icon: Globe, label: 'Allmän kunskap' }],
     missing: [
-      { icon: Scale, label: 'Sveriges lagar' },
+      { icon: Scale, label: 'Sveriges regelverk' },
       { icon: ListChecks, label: 'Er laglista & krav' },
       { icon: FileText, label: 'Era styrdokument' },
       { icon: ClipboardCheck, label: 'Era uppgifter & status' },
       { icon: Users, label: 'Ansvariga' },
     ],
-    verdict: 'Gissar utifrån allmän kunskap — ingen koll på lagen eller er.',
+    verdict: 'Gissar utifrån allmän kunskap — ingen koll på reglerna eller er.',
   },
   {
     name: 'Juridisk AI',
-    desc: 'Tränad på lagtext',
+    desc: 'Tränad på regelverket',
     context: [
-      { icon: Scale, label: 'Sveriges lagar' },
+      { icon: Scale, label: 'Sveriges regelverk' },
       { icon: BookOpen, label: 'Rättskällor' },
     ],
     missing: [
@@ -68,22 +68,22 @@ const COLUMNS: Column[] = [
       { icon: Users, label: 'Ansvariga' },
     ],
     verdict:
-      'Kan lagen — men känner inte just er verksamhet. Råden blir generiska.',
+      'Kan regelverket — men känner inte just er verksamhet. Råden blir generiska.',
   },
   {
     name: 'Laglig',
-    desc: 'Komplett kunskapsgraf',
+    desc: 'Reglerna + hela er verksamhet',
     hero: true,
     context: [
-      { icon: Scale, label: 'Sveriges lagar' },
+      { icon: Scale, label: 'Sveriges regelverk' },
       { icon: ListChecks, label: 'Er laglista & krav' },
       { icon: FileText, label: 'Era styrdokument' },
       { icon: ClipboardCheck, label: 'Era uppgifter & status' },
       { icon: Users, label: 'Ansvariga' },
-      { icon: RefreshCw, label: 'Lagändringar i realtid' },
+      { icon: RefreshCw, label: 'Regeländringar i realtid' },
     ],
     verdict:
-      'Grundat i exakta lagrum och hela er verksamhet — och föreslår nästa steg.',
+      'Grundat i exakt rätt regel och hela er verksamhet — och föreslår nästa steg.',
   },
 ]
 
@@ -149,7 +149,7 @@ function ComparisonColumn({ col, index }: { col: Column; index: number }) {
 
       {/* context stack */}
       <p className="mt-6 text-[11px] font-medium uppercase tracking-[0.08em] text-background/45">
-        Har i kontexten
+        Känner till
       </p>
       <ul className="mt-3 flex-1 space-y-1.5">
         {col.context.map((chip, i) => (
@@ -216,6 +216,9 @@ export function AiComparisonSection() {
     <section className="relative pb-10 pt-20 md:pb-14 md:pt-28">
       <div className="container relative mx-auto px-4">
         <div className="mx-auto max-w-3xl text-center">
+          <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-background/50">
+            Med allt på ett ställe
+          </p>
           <h2
             className="mx-auto mb-5 max-w-2xl text-3xl font-medium leading-[1.1] tracking-tight md:text-5xl lg:text-6xl"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
@@ -226,8 +229,9 @@ export function AiComparisonSection() {
             </span>
           </h2>
           <p className="mx-auto max-w-xl text-lg opacity-75 md:text-xl">
-            Ett svar är bara så bra som kontexten bakom det. Laglig har lagen
-            och hela er verksamhet i samma graf — inte bara lagtexten.
+            Först då kan en AI faktiskt resonera kring just er — inte gissa.
+            Laglig känner både regelverket och hela er verksamhet, inte bara
+            lagtexten.
           </p>
         </div>
 

@@ -1,16 +1,16 @@
 import Link from 'next/link'
-import { Footer } from '@/components/shared/navigation/footer'
 import { PricingSection } from '@/components/features/landing/pricing-section'
 import { FaqSection } from '@/components/features/landing/faq-section'
 import { BrowsePagesPrefetcher } from '@/components/features/landing/browse-pages-prefetcher'
 
-import { NavbarV2 } from '@/components/features/landing-v2/navbar-v2'
+import { NavbarV3 } from '@/components/features/landing-v3/navbar-v3'
+import { FooterV3 } from '@/components/features/landing-v3/footer-v3'
 import { ForceLightTheme } from '@/components/features/landing-v2/force-light-theme'
 
 import { HeroV3 } from '@/components/features/landing-v3/hero-v3'
 import { WhySectionGraph as WhySection } from '@/components/features/landing-v3/why-section-graph'
 import { FeatureShowcase } from '@/components/features/landing-v3/feature-showcase'
-import { RolesSection } from '@/components/features/landing-v3/roles-section'
+import { ScaleSection } from '@/components/features/landing-v3/scale-section'
 import { KnowledgeGraphSection } from '@/components/features/landing-v3/knowledge-graph-section'
 import { AiComparisonSection } from '@/components/features/landing-v3/ai-comparison-section'
 import { AiSectionBackdrop } from '@/components/features/landing-v3/ai-section-backdrop'
@@ -45,7 +45,7 @@ export default function LandingV3Page() {
         </Link>
       </div>
 
-      <NavbarV2 />
+      <NavbarV3 />
       <main>
         <HeroV3 />
         {/* Problem → Solution: the scale/"vem har koll" problem hands straight
@@ -55,14 +55,17 @@ export default function LandingV3Page() {
         <FeatureShowcase />
         {/* AI chapter — comparison (the claim) + knowledge graph (the proof),
             one continuous dark banner over a single faint graph texture */}
-        <div className="relative isolate overflow-hidden bg-foreground text-background">
+        <div
+          id="ai"
+          className="relative isolate scroll-mt-16 overflow-hidden bg-foreground text-background"
+        >
           <AiSectionBackdrop />
           <div className="pointer-events-none absolute -top-24 right-0 h-96 w-96 rounded-full bg-amber-400/10 blur-3xl" />
           <div className="pointer-events-none absolute bottom-0 left-0 h-96 w-96 rounded-full bg-background/[0.04] blur-3xl" />
           <AiComparisonSection />
           <KnowledgeGraphSection />
         </div>
-        <RolesSection />
+        <ScaleSection />
         <OpenDatabaseV3 />
         <InfrastructureSection />
         <ByraerSection />
@@ -71,7 +74,7 @@ export default function LandingV3Page() {
         <FaqSection />
         <CtaV3 />
       </main>
-      <Footer />
+      <FooterV3 />
       <BrowsePagesPrefetcher />
     </>
   )

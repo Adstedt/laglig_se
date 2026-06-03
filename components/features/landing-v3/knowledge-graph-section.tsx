@@ -12,6 +12,9 @@ import {
   BookOpen,
   Check,
   ArrowUp,
+  Paperclip,
+  PencilLine,
+  RefreshCw,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -316,8 +319,8 @@ const KIND_STYLE: Record<
   },
   law: {
     icon: Scale,
-    ring: 'ring-foreground/15',
-    fg: 'text-foreground/70',
+    ring: 'ring-black/10',
+    fg: 'text-neutral-700',
   },
   krav: {
     icon: ListChecks,
@@ -332,8 +335,8 @@ const KIND_STYLE: Record<
   },
   change: {
     icon: GitCommit,
-    ring: 'ring-foreground/15',
-    fg: 'text-foreground/70',
+    ring: 'ring-black/10',
+    fg: 'text-neutral-700',
   },
   person: { icon: Sparkles, ring: 'ring-border', fg: 'text-foreground' },
 }
@@ -554,7 +557,7 @@ function Exchange({ sc, animate }: { sc: Scenario; animate?: boolean }) {
                     {/* working: searching the graph */}
                     <span className="kg-saywork absolute inset-x-3 top-1/2 flex -translate-y-1/2 items-center gap-2 text-muted-foreground">
                       <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-                      Söker i kunskapsgrafen
+                      Letar bland era kopplingar
                       <span className="kg-dots inline-flex items-center gap-1">
                         <i />
                         <i />
@@ -605,7 +608,7 @@ function Exchange({ sc, animate }: { sc: Scenario; animate?: boolean }) {
                   <div className="flex-1 overflow-hidden rounded-2xl rounded-tl-sm bg-card ring-1 ring-border/60">
                     <div className="flex items-center gap-2 border-b border-border/50 px-3 py-2 text-[12px] text-muted-foreground">
                       <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-                      Söker i kunskapsgrafen
+                      Letar bland era kopplingar
                       <span className="kg-dots ml-auto inline-flex items-center gap-1">
                         <i />
                         <i />
@@ -789,14 +792,14 @@ export function KnowledgeGraphSection() {
             className="mx-auto max-w-2xl text-3xl font-medium leading-[1.1] tracking-tight md:text-4xl lg:text-[2.75rem]"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
           >
-            En agent som känner{' '}
-            <span className="text-foreground/45">hela er efterlevnad.</span>
+            En agent som kan{' '}
+            <span className="text-foreground/45">er verksamhet utantill.</span>
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground md:text-lg">
-            Så hänger er efterlevnad ihop: lagar, krav, styrdokument och
-            ansvariga, kopplade i en levande graf. Fråga vad som helst — agenten
-            följer kopplingarna, svarar grundat i exakta lagrum och förbereder
-            nästa steg. Ni godkänner alltid först.
+            Så hänger er efterlevnad ihop: regler, krav, styrdokument och
+            ansvariga — och hur allt påverkar varandra. Fråga vad som helst —
+            agenten följer kopplingarna, svarar grundat i exakt rätt regel och
+            förbereder nästa steg. Ni godkänner alltid först.
           </p>
         </div>
 
@@ -839,7 +842,7 @@ export function KnowledgeGraphSection() {
                     <div key="greet" className="kg-greet flex items-end gap-2">
                       <AgentGlyph className="h-6 w-6" />
                       <div className="max-w-[86%] rounded-2xl rounded-bl-sm bg-muted/70 px-3 py-2 text-[12.5px] leading-snug text-foreground/80">
-                        Hej! Jag har koll på alla era lagkrav, styrdokument och
+                        Hej! Jag har koll på alla era krav, styrdokument och
                         ansvariga — fråga mig vad som helst.
                       </div>
                     </div>
@@ -1066,6 +1069,45 @@ export function KnowledgeGraphSection() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Capabilities — the agent doesn't just answer, it acts across the
+            whole system (autonomously, on approval). */}
+        <div className="mx-auto mt-16 max-w-3xl text-center md:mt-24">
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground/50">
+            Och den agerar — inte bara svarar
+          </p>
+          <h3
+            className="text-2xl font-medium tracking-tight md:text-3xl"
+            style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
+          >
+            Föreslår, förbereder och utför — autonomt när ni vill.
+          </h3>
+          <div className="mt-7 flex flex-wrap justify-center gap-2.5">
+            {[
+              { icon: ListChecks, label: 'Skapar uppgifter' },
+              { icon: FileText, label: 'Skriver utkast till styrdokument' },
+              { icon: PencilLine, label: 'Granskar & uppdaterar policyer' },
+              { icon: RefreshCw, label: 'Uppdaterar status & kravpunkter' },
+              { icon: Paperclip, label: 'Kopplar bevis till rätt krav' },
+              {
+                icon: ShieldCheck,
+                label: 'Sammanställer underlag till revisorn',
+              },
+            ].map((c) => (
+              <span
+                key={c.label}
+                className="inline-flex items-center gap-2 rounded-full border border-foreground/12 bg-foreground/[0.06] px-3.5 py-2 text-[13px] text-foreground/85"
+              >
+                <c.icon className="h-4 w-4 text-amber-400" />
+                {c.label}
+              </span>
+            ))}
+          </div>
+          <p className="mx-auto mt-7 max-w-xl text-sm text-foreground/55">
+            Allt loggas och är spårbart — och ni godkänner alltid innan något
+            genomförs.
+          </p>
         </div>
       </div>
     </section>

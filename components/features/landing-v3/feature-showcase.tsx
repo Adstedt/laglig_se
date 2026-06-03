@@ -118,9 +118,9 @@ const SURFACES: Surface[] = [
   },
   {
     id: 'lagandringar',
-    tab: 'Lagändringar',
-    eyebrow: 'Lagändringar',
-    title: 'En lag ändras — AI:n bedömer hur det påverkar just er.',
+    tab: 'Regeländringar',
+    eyebrow: 'Regeländringar',
+    title: 'När en regel ändras — AI:n bedömer hur det påverkar just er.',
     desc: 'När ett regelverk på er laglista ändras får ni inte bara en notis. Laglig läser ändringen mot er verksamhet och föreslår vad ni behöver göra.',
     url: 'app.laglig.se/lagar/andringar',
     designWidth: 1280,

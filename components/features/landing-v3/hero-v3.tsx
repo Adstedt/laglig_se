@@ -66,7 +66,7 @@ export function HeroV3() {
 
       {/* Product shot — wider than the text column (Linear-style). Frame rises
           in; the shot fades in when it finishes loading. */}
-      <div className="relative mx-auto w-full max-w-[1476px] px-4 sm:px-6">
+      <div className="relative mx-auto w-full max-w-[1600px] px-4 sm:px-6">
         <div className="relative animate-fade-up-delay-3">
           {/* Slow breathing warm halo behind the frame */}
           <div

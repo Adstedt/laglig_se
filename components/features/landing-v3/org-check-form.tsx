@@ -182,7 +182,7 @@ export function OrgCheckForm({
   const field =
     'min-w-0 flex-1 bg-transparent py-1 text-sm outline-none placeholder:text-muted-foreground'
   const action =
-    'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40'
+    'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-amber-400 px-4 text-sm font-semibold text-foreground shadow-sm shadow-amber-500/20 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:bg-amber-400/45 disabled:text-foreground/50 disabled:shadow-none'
 
   // The company-preview "payoff" card — rendered inline (try-now section) or
   // inside a modal (hero). As a modal it lives outside the page flow, so the

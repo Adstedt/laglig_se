@@ -15,7 +15,7 @@ export function CtaV3() {
             className="mb-5 text-3xl font-medium tracking-tight md:text-4xl lg:text-5xl"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
           >
-            Få koll på lagarna
+            Få koll på reglerna
             <br className="hidden sm:block" /> – på det enkla sättet.
           </h2>
           <p className="mb-10 text-lg opacity-80">

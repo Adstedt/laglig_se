@@ -161,7 +161,7 @@ export const TASKS: TaskWithRelations[] = [
   }),
   mk({
     id: 't-3',
-    title: 'Upprätta register över personuppgiftsbehandlingar',
+    title: 'Upprätta register över personuppgifter',
     col: 'todo',
     priority: 'CRITICAL',
     due: '2026-05-15',

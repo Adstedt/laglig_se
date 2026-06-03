@@ -25,6 +25,7 @@ import {
   KontrollView,
   StyrdokumentView,
   RegelverkView,
+  UppgifterView,
 } from './hero-shot-views'
 
 /**
@@ -50,6 +51,7 @@ type View =
   | 'kontroll'
   | 'styrdokument'
   | 'regelverk'
+  | 'uppgifter'
 
 type NavItem = { icon: typeof Home; view: View | null; label: string }
 
@@ -61,7 +63,7 @@ const NAV_TOP: NavItem[] = [
   { icon: BookOpen, view: 'regelverk', label: 'Regelverk' },
 ]
 const NAV_MID: NavItem[] = [
-  { icon: ListChecks, view: null, label: 'Uppgifter' },
+  { icon: ListChecks, view: 'uppgifter', label: 'Uppgifter' },
   { icon: FileText, view: 'styrdokument', label: 'Styrdokument' },
   { icon: FolderClosed, view: null, label: 'Filer' },
   { icon: Activity, view: null, label: 'Aktivitetslogg' },
@@ -74,6 +76,7 @@ const VIEWS: Record<View, () => React.JSX.Element> = {
   kontroll: KontrollView,
   styrdokument: StyrdokumentView,
   regelverk: RegelverkView,
+  uppgifter: UppgifterView,
 }
 
 export function HeroProductShot() {

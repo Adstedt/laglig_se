@@ -1,7 +1,13 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Mail, FolderClosed, AlertTriangle, Landmark } from 'lucide-react'
+import {
+  Mail,
+  FolderClosed,
+  AlertTriangle,
+  Landmark,
+  Gavel,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 // WhySection — "where does your compliance live today?" Efterlevnad is a whole
@@ -72,7 +78,7 @@ export function WhySectionGraph() {
             Compliance idag
           </p>
 
-          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-20">
+          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-14">
             {/* LEFT — editorial copy block */}
             <div className="lg:col-span-5">
               <h2
@@ -107,7 +113,7 @@ export function WhySectionGraph() {
               <div className="relative overflow-hidden rounded-3xl border bg-gradient-to-b from-card/30 to-section-warm/0 p-5 shadow-[0_1px_0_0_rgb(0_0_0_/_0.02),0_12px_32px_-16px_rgb(0_0_0_/_0.10)] backdrop-blur-sm md:p-7">
                 <div
                   ref={pileRef}
-                  className="relative min-h-[480px] md:min-h-[560px]"
+                  className="relative min-h-[480px] md:min-h-[620px]"
                 >
                   {/* faint dotted backdrop so the pile sits on texture, not void */}
                   <div
@@ -132,7 +138,7 @@ export function WhySectionGraph() {
                     i={0}
                     shown={shown}
                   >
-                    <div className={cn(CARD, 'w-[244px] overflow-hidden')}>
+                    <div className={cn(CARD, 'w-[229px] overflow-hidden')}>
                       <div className="flex items-center gap-2 px-3 pb-2 pt-2.5">
                         <span className="flex h-7 w-7 items-center justify-center rounded bg-emerald-600/10 text-[10px] font-bold text-emerald-700">
                           XLS
@@ -141,16 +147,37 @@ export function WhySectionGraph() {
                           Efterlevnad_FINAL_v3
                         </p>
                       </div>
-                      {/* mini cell grid */}
-                      <div className="grid grid-cols-4 border-t border-border/60 text-[9px] text-muted-foreground/50">
-                        {Array.from({ length: 12 }).map((_, n) => (
+                      {/* mini sheet — header row + rows of data */}
+                      <div className="border-t border-border/60">
+                        {Array.from({ length: 5 }).map((_, r) => (
                           <div
-                            key={n}
-                            className={cn(
-                              'h-5 border-b border-r border-border/40',
-                              n % 4 === 0 && 'bg-muted/30'
-                            )}
-                          />
+                            key={r}
+                            className="grid grid-cols-4 border-b border-border/40 last:border-b-0"
+                          >
+                            {Array.from({ length: 4 }).map((_, c) => (
+                              <div
+                                key={c}
+                                className={cn(
+                                  'flex h-[18px] items-center border-r border-border/40 px-1.5 last:border-r-0',
+                                  r === 0 && 'bg-muted/50'
+                                )}
+                              >
+                                <span
+                                  className={cn(
+                                    'h-1.5 rounded-full',
+                                    r === 0
+                                      ? 'bg-foreground/25'
+                                      : 'bg-foreground/10',
+                                    c === 0
+                                      ? 'w-3/4'
+                                      : c === 3
+                                        ? 'w-1/3'
+                                        : 'w-1/2'
+                                  )}
+                                />
+                              </div>
+                            ))}
+                          </div>
                         ))}
                       </div>
                       <p className="px-3 py-1.5 text-[11.5px] text-muted-foreground">
@@ -167,7 +194,7 @@ export function WhySectionGraph() {
                     i={1}
                     shown={shown}
                   >
-                    <div className={cn(CARD, 'w-[256px] px-4 py-3.5')}>
+                    <div className={cn(CARD, 'w-[242px] px-4 py-3.5')}>
                       <div className="flex items-center gap-2">
                         <Mail className="h-[18px] w-[18px] text-muted-foreground" />
                         <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
@@ -186,13 +213,13 @@ export function WhySectionGraph() {
 
                   {/* 8 — official myndighet letter (the universally dreaded one) */}
                   <Tile
-                    pos="left-[34%] bottom-[5%]"
+                    pos="left-[33%] bottom-[7%]"
                     z="z-20"
                     rotate={-2}
                     i={7}
                     shown={shown}
                   >
-                    <div className={cn(CARD, 'w-[228px] overflow-hidden')}>
+                    <div className={cn(CARD, 'w-[204px] overflow-hidden')}>
                       <div className="flex items-center justify-between border-b border-border/60 bg-muted/40 px-3 py-1.5">
                         <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-foreground/60">
                           Arbetsmiljöverket
@@ -218,7 +245,7 @@ export function WhySectionGraph() {
                     i={2}
                     shown={shown}
                   >
-                    <div className={cn(CARD, 'flex w-[214px] overflow-hidden')}>
+                    <div className={cn(CARD, 'flex w-[201px] overflow-hidden')}>
                       <div className="w-2 shrink-0 bg-foreground/70" />
                       <div className="px-3 py-2.5">
                         <div className="flex items-center gap-1.5">
@@ -236,7 +263,7 @@ export function WhySectionGraph() {
 
                   {/* 4 — Anna (single point of failure) — focal, on top */}
                   <Tile
-                    pos="left-[37%] top-[28%]"
+                    pos="left-[37%] top-[18%]"
                     z="z-30"
                     rotate={1}
                     i={3}
@@ -244,7 +271,7 @@ export function WhySectionGraph() {
                   >
                     <div
                       className={cn(
-                        'w-[236px] rounded-xl border border-amber-400/50 bg-card px-4 py-3.5 shadow-[0_12px_30px_-10px_rgb(180_83_9_/_0.35)] ring-1 ring-amber-400/30'
+                        'w-[222px] rounded-xl border border-amber-400/50 bg-card px-4 py-3.5 shadow-[0_12px_30px_-10px_rgb(180_83_9_/_0.35)] ring-1 ring-amber-400/30'
                       )}
                     >
                       <div className="flex items-center gap-2.5">
@@ -270,13 +297,13 @@ export function WhySectionGraph() {
 
                   {/* 5 — stale PDF */}
                   <Tile
-                    pos="right-[4%] top-[40%]"
+                    pos="right-[3%] top-[45%]"
                     z="z-20"
                     rotate={4}
                     i={4}
                     shown={shown}
                   >
-                    <div className={cn(CARD, 'relative w-[240px] px-4 py-3.5')}>
+                    <div className={cn(CARD, 'relative w-[227px] px-4 py-3.5')}>
                       {/* folded corner */}
                       <div className="absolute right-0 top-0 h-0 w-0 border-l-[14px] border-t-[14px] border-l-transparent border-t-muted-foreground/15" />
                       <div className="flex items-center gap-2">
@@ -299,22 +326,22 @@ export function WhySectionGraph() {
 
                   {/* 6 — post-it */}
                   <Tile
-                    pos="left-[10%] bottom-[5%]"
+                    pos="left-[4%] bottom-[4%]"
                     z="z-20"
                     rotate={6}
                     i={5}
                     shown={shown}
                   >
-                    <div className="w-[180px] rounded-sm bg-amber-100/80 px-3 py-3 shadow-[0_8px_20px_-8px_rgb(0_0_0_/_0.25)]">
+                    <div className="flex aspect-square w-[188px] flex-col justify-between rounded-sm bg-amber-100/85 p-4 shadow-[0_12px_26px_-10px_rgb(0_0_0_/_0.3)]">
                       <p
-                        className="text-[16px] leading-tight text-amber-950"
+                        className="text-[19px] leading-snug text-amber-950"
                         style={{
                           fontFamily: "'Safiro', system-ui, sans-serif",
                         }}
                       >
                         Förnya tillståndet!
                       </p>
-                      <p className="mt-1 text-[11px] text-amber-900/60">
+                      <p className="text-[11px] text-amber-900/55">
                         post-it på skärmen
                       </p>
                     </div>
@@ -322,13 +349,13 @@ export function WhySectionGraph() {
 
                   {/* 7 — shared folder, version conflict */}
                   <Tile
-                    pos="right-[9%] bottom-[6%]"
+                    pos="right-[3%] bottom-[4%]"
                     z="z-10"
                     rotate={-3}
                     i={6}
                     shown={shown}
                   >
-                    <div className={cn(CARD, 'relative w-[220px] px-4 py-3.5')}>
+                    <div className={cn(CARD, 'relative w-[207px] px-4 py-3.5')}>
                       {/* stacked-file hint behind */}
                       <div className="absolute -right-1.5 -top-1.5 h-full w-full rounded-xl border border-border/50 bg-card/60" />
                       <div className="relative flex items-center gap-1.5">
@@ -342,12 +369,41 @@ export function WhySectionGraph() {
                       </p>
                     </div>
                   </Tile>
+
+                  {/* 9 — vite / sanktionsavgift (the stakes) */}
+                  <Tile
+                    pos="left-[35%] top-[49%]"
+                    z="z-20"
+                    rotate={1}
+                    i={8}
+                    shown={shown}
+                  >
+                    <div className={cn(CARD, 'w-[172px] px-4 py-3.5')}>
+                      <div className="flex items-center gap-2">
+                        <Gavel className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-foreground/60">
+                          Sanktionsavgift
+                        </span>
+                      </div>
+                      <p
+                        className="mt-1.5 text-[20px] font-semibold leading-none text-rose-700"
+                        style={{
+                          fontFamily: "'Safiro', system-ui, sans-serif",
+                        }}
+                      >
+                        40 000 kr
+                      </p>
+                      <p className="mt-1.5 text-[11.5px] text-muted-foreground">
+                        för utebliven riskbedömning
+                      </p>
+                    </div>
+                  </Tile>
                 </div>
 
                 {/* grounding caption */}
                 <div className="relative mt-3 flex items-center justify-between border-t border-foreground/5 pt-4 text-[12px]">
                   <span className="text-muted-foreground">
-                    Åtta ställen — och ingen som har hela bilden.
+                    Nio ställen — och ingen som har hela bilden.
                   </span>
                   <span className="font-medium text-amber-900">
                     Noll överblick
