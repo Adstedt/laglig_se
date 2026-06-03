@@ -23,7 +23,17 @@ import {
   linkDocumentToTask,
   linkDocumentToListItem,
   updateDocumentStatus,
+  saveDocumentVersion,
 } from './documents'
+// Story 17.11 + 17.11b: UPDATE_DOCUMENT / ADD_DOCUMENT_SECTION dispatch —
+// section-replace + section-add + server-side HTML.
+import {
+  addSection,
+  updateSection,
+  type InsertPosition,
+  type TiptapNode,
+} from '@/lib/documents/update-document-section'
+import { tiptapDocToHtml } from '@/lib/documents/tiptap-to-html'
 import {
   createRequirement,
   updateRequirement,
@@ -125,6 +135,41 @@ interface TransitionDocumentStatusParams {
   newStatus: WorkspaceDocumentStatus
   oldStatus?: WorkspaceDocumentStatus
   comment?: string
+}
+
+// Story 17.11 — UPDATE_DOCUMENT params (set by the update_document tool).
+// Dispatch re-reads the live document, re-asserts the DRAFT/IN_REVIEW guard,
+// applies updateSection() to produce the full updated contentJson, and calls
+// saveDocumentVersion. `oldSectionContentJson` + `entity_version` are
+// renderer/staleness concerns and are not read by dispatch — the only fields
+// dispatch consumes are `documentId`, `sectionHeading`,
+// `newSectionContentJson`, and `changeSummary`.
+interface UpdateDocumentParams {
+  documentId: string
+  sectionHeading: string
+  oldSectionContentJson: unknown
+  newSectionContentJson: unknown
+  changeSummary: string
+  entity_version: string
+}
+
+// Story 17.11b — ADD_DOCUMENT_SECTION params (set by the add_document_section
+// tool). Dispatch re-reads the live document, re-asserts DRAFT/IN_REVIEW +
+// no-duplicate-heading + position-target (when applicable), applies
+// addSection() to produce the full updated contentJson, and calls
+// saveDocumentVersion. `documentTitle` + `entity_version` are renderer /
+// staleness concerns and are NOT read by dispatch — the fields dispatch
+// consumes are documentId, newSectionHeading, newSectionLevel,
+// newSectionContentJson, position, and changeSummary.
+interface AddDocumentSectionParams {
+  documentId: string
+  documentTitle?: string
+  newSectionHeading: string
+  newSectionLevel: 1 | 2 | 3 | 4 | 5 | 6
+  newSectionContentJson: unknown
+  position: InsertPosition
+  changeSummary: string
+  entity_version: string
 }
 
 // ============================================================================
@@ -444,6 +489,300 @@ export async function approvePendingAction(
             // (task-modal.ts:1025); we still declare it for the dispatcher's
             // AC-13 revalidate-paths contract.
             revalidatePaths = ['/tasks']
+            break
+          }
+
+          // ── Story 17.11: agent-proposed section-level edit ─────────────────
+          case 'UPDATE_DOCUMENT': {
+            const p = action.params as unknown as UpdateDocumentParams
+
+            // Re-read the live document. We do NOT trust the propose-time
+            // snapshot — state may have drifted (status flipped to APPROVED,
+            // section heading removed, etc.). Workspace-scoped via the where.
+            const document = await prisma.workspaceDocument.findFirst({
+              where: { id: p.documentId, workspace_id: workspaceId },
+              select: {
+                id: true,
+                status: true,
+                workspace_id: true,
+                current_version: { select: { content_json: true } },
+              },
+            })
+            if (!document) {
+              return { success: false, error: 'Dokumentet hittades inte' }
+            }
+
+            // AC 11 — re-assert DRAFT/IN_REVIEW at dispatch time. saveDocumentVersion
+            // itself doesn't enforce this; the dispatch is the authoritative gate.
+            // Stale APPROVED/SUPERSEDED/ARCHIVED keeps the row PENDING.
+            if (
+              document.status !== 'DRAFT' &&
+              document.status !== 'IN_REVIEW'
+            ) {
+              return {
+                success: false,
+                error: `Dokumentet kan inte uppdateras i status "${document.status}".`,
+              }
+            }
+
+            const currentContent = document.current_version?.content_json
+            if (
+              !currentContent ||
+              typeof currentContent !== 'object' ||
+              !Array.isArray((currentContent as { content?: unknown }).content)
+            ) {
+              return {
+                success: false,
+                error: 'Dokumentet saknar en aktuell version att uppdatera.',
+              }
+            }
+
+            // Apply the section replacement. Heading-not-found at dispatch
+            // (drift since propose) → keep the row PENDING with a clear error.
+            let fullContentJson: ReturnType<typeof updateSection>
+            try {
+              fullContentJson = updateSection(
+                currentContent as unknown as Parameters<
+                  typeof updateSection
+                >[0],
+                p.sectionHeading,
+                p.newSectionContentJson as Parameters<typeof updateSection>[2]
+              )
+            } catch (err) {
+              return {
+                success: false,
+                error:
+                  err instanceof Error
+                    ? err.message
+                    : 'Kunde inte hitta sektionen i dokumentet.',
+              }
+            }
+
+            const contentHtml = tiptapDocToHtml(fullContentJson)
+
+            // saveDocumentVersion: appends a new version, bumps current_version_*,
+            // writes a `document_version_saved` ActivityLog row, AND triggers
+            // indexWorkspaceDocument via after() — all in one $transaction.
+            const saveResult = await saveDocumentVersion(
+              p.documentId,
+              fullContentJson as object,
+              p.changeSummary,
+              undefined,
+              contentHtml
+            )
+            if (!saveResult.success || !saveResult.data) {
+              return {
+                success: false,
+                error: saveResult.error ?? 'Kunde inte spara dokumentversionen',
+              }
+            }
+
+            // AC 10 — stamp agent authorship onto the auto-created
+            // `document_version_saved` row's new_value. We don't mint a redundant
+            // action label; we enrich the row saveDocumentVersion just wrote.
+            // Matched on (entity_id, action, new_value.version_number) — unique
+            // per (document, version). Fire-and-forget: a missed stamp doesn't
+            // roll back the version itself.
+            try {
+              const logRow = await prisma.activityLog.findFirst({
+                where: {
+                  entity_type: 'workspace_document',
+                  entity_id: p.documentId,
+                  action: 'document_version_saved',
+                  new_value: {
+                    path: ['version_number'],
+                    equals: saveResult.data.versionNumber,
+                  },
+                },
+                orderBy: { created_at: 'desc' },
+                select: { id: true, new_value: true },
+              })
+              if (logRow) {
+                const existing =
+                  logRow.new_value && typeof logRow.new_value === 'object'
+                    ? (logRow.new_value as Record<string, unknown>)
+                    : {}
+                await prisma.activityLog.update({
+                  where: { id: logRow.id },
+                  data: {
+                    new_value: {
+                      ...existing,
+                      by: 'agent',
+                      pendingActionId: action.id,
+                    } as Prisma.InputJsonValue,
+                  },
+                })
+              }
+            } catch (err) {
+              console.error(
+                `[UPDATE_DOCUMENT] activity-log stamp failed for ${p.documentId}:`,
+                err instanceof Error ? err.message : err
+              )
+            }
+
+            resultRef = {
+              documentId: p.documentId,
+              versionId: saveResult.data.id,
+              versionNumber: saveResult.data.versionNumber,
+            }
+            revalidatePaths = [
+              '/workspace/styrdokument',
+              `/workspace/styrdokument/${p.documentId}/edit`,
+            ]
+            break
+          }
+
+          // ── Story 17.11b: agent-proposed insert of a new section ───────────
+          case 'ADD_DOCUMENT_SECTION': {
+            const p = action.params as unknown as AddDocumentSectionParams
+
+            // Re-read the live document. State may have drifted (status flipped,
+            // a heading was added/removed manually since propose, etc.).
+            const document = await prisma.workspaceDocument.findFirst({
+              where: { id: p.documentId, workspace_id: workspaceId },
+              select: {
+                id: true,
+                status: true,
+                workspace_id: true,
+                current_version: { select: { content_json: true } },
+              },
+            })
+            if (!document) {
+              return { success: false, error: 'Dokumentet hittades inte' }
+            }
+
+            // AC 11 — re-assert DRAFT/IN_REVIEW. Dispatch is the authoritative
+            // gate; saveDocumentVersion does not enforce this itself.
+            if (
+              document.status !== 'DRAFT' &&
+              document.status !== 'IN_REVIEW'
+            ) {
+              return {
+                success: false,
+                error: `Dokumentet kan inte uppdateras i status "${document.status}".`,
+              }
+            }
+
+            const currentContent = document.current_version?.content_json
+            if (
+              !currentContent ||
+              typeof currentContent !== 'object' ||
+              !Array.isArray((currentContent as { content?: unknown }).content)
+            ) {
+              return {
+                success: false,
+                error: 'Dokumentet saknar en aktuell version att lägga till i.',
+              }
+            }
+
+            // Apply addSection — its internal guards handle the
+            // duplicate-heading-since-propose AND position-target-missing-
+            // since-propose cases. Caught here so the row stays PENDING with
+            // a Swedish-language message that reuses the tool-time copy.
+            let fullContentJson: ReturnType<typeof addSection>
+            try {
+              fullContentJson = addSection(
+                currentContent as unknown as Parameters<typeof addSection>[0],
+                p.newSectionHeading,
+                p.newSectionLevel,
+                p.newSectionContentJson as TiptapNode[],
+                p.position
+              )
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : ''
+              if (
+                err instanceof Error &&
+                err.name === 'SectionAlreadyExistsError'
+              ) {
+                return {
+                  success: false,
+                  error: `Avsnittet "${p.newSectionHeading}" finns redan i dokumentet.`,
+                }
+              }
+              if (
+                err instanceof Error &&
+                err.name === 'SectionNotFoundError' &&
+                (p.position.at === 'after' || p.position.at === 'before')
+              ) {
+                return {
+                  success: false,
+                  error: `Rubriken "${p.position.heading}" finns inte i dokumentet — kan inte positionera det nya avsnittet.`,
+                }
+              }
+              return {
+                success: false,
+                error: msg || 'Kunde inte lägga till avsnittet i dokumentet.',
+              }
+            }
+
+            const contentHtml = tiptapDocToHtml(fullContentJson)
+
+            const saveResult = await saveDocumentVersion(
+              p.documentId,
+              fullContentJson as object,
+              p.changeSummary,
+              undefined,
+              contentHtml
+            )
+            if (!saveResult.success || !saveResult.data) {
+              return {
+                success: false,
+                error: saveResult.error ?? 'Kunde inte spara dokumentversionen',
+              }
+            }
+
+            // AC 10 — stamp agent authorship + operation discriminator onto
+            // the auto-created `document_version_saved` row. The `operation`
+            // key distinguishes ADD from UPDATE for downstream audit
+            // consumers (supersedes REL-001 trade-off note from 17.11).
+            // Fire-and-forget: a missed stamp doesn't roll back the version.
+            try {
+              const logRow = await prisma.activityLog.findFirst({
+                where: {
+                  entity_type: 'workspace_document',
+                  entity_id: p.documentId,
+                  action: 'document_version_saved',
+                  new_value: {
+                    path: ['version_number'],
+                    equals: saveResult.data.versionNumber,
+                  },
+                },
+                orderBy: { created_at: 'desc' },
+                select: { id: true, new_value: true },
+              })
+              if (logRow) {
+                const existing =
+                  logRow.new_value && typeof logRow.new_value === 'object'
+                    ? (logRow.new_value as Record<string, unknown>)
+                    : {}
+                await prisma.activityLog.update({
+                  where: { id: logRow.id },
+                  data: {
+                    new_value: {
+                      ...existing,
+                      by: 'agent',
+                      pendingActionId: action.id,
+                      operation: 'add_section',
+                    } as Prisma.InputJsonValue,
+                  },
+                })
+              }
+            } catch (err) {
+              console.error(
+                `[ADD_DOCUMENT_SECTION] activity-log stamp failed for ${p.documentId}:`,
+                err instanceof Error ? err.message : err
+              )
+            }
+
+            resultRef = {
+              documentId: p.documentId,
+              versionId: saveResult.data.id,
+              versionNumber: saveResult.data.versionNumber,
+            }
+            revalidatePaths = [
+              '/workspace/styrdokument',
+              `/workspace/styrdokument/${p.documentId}/edit`,
+            ]
             break
           }
 

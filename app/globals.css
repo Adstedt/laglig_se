@@ -168,6 +168,20 @@ html {
     );
     border-radius: 9999px;
   }
+  /* AI-suggestion emphasis — reuses the agent-proposal accent (sage → amber)
+     so a pre-filled "Din bedömning" card reads clearly as an AI proposal until
+     the user saves. */
+  .ai-suggest-surface {
+    background-color: hsl(var(--spine-top) / 0.05);
+    box-shadow: inset 0 0 0 1px hsl(var(--spine-top) / 0.32);
+  }
+  .ai-suggest-banner {
+    background-color: hsl(var(--spine-top) / 0.1);
+    border: 1px solid hsl(var(--spine-top) / 0.28);
+  }
+  .ai-suggest-icon {
+    color: hsl(var(--spine-top));
+  }
   .agent-dot-pending::before {
     content: '';
     position: absolute;

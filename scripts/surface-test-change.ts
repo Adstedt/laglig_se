@@ -5,6 +5,7 @@
  *   npx tsx scripts/surface-test-change.ts                      # diagnose (READ-ONLY)
  *   npx tsx scripts/surface-test-change.ts --ws nordvik         # diagnose one workspace
  *   npx tsx scripts/surface-test-change.ts --surface --ws nordvik  # reveal one (non-destructive)
+ *   npx tsx scripts/surface-test-change.ts --surface --count 6 --ws nordvik  # reveal up to 6 distinct items
  *
  * A change shows on the dashboard as "unassessed" when it has NO ChangeAssessment
  * AND the law-list item's last_change_acknowledged_at is null/older than the
@@ -35,6 +36,11 @@ async function main() {
   const wsIdx = process.argv.indexOf('--ws')
   const wsFilter =
     wsIdx >= 0 ? (process.argv[wsIdx + 1] ?? '').toLowerCase() : null
+  const countIdx = process.argv.indexOf('--count')
+  const count =
+    countIdx >= 0
+      ? Math.max(1, parseInt(process.argv[countIdx + 1] ?? '1', 10) || 1)
+      : 1
 
   const all = await prisma.$queryRaw<Row[]>`
     SELECT
@@ -103,27 +109,33 @@ async function main() {
     return
   }
 
-  if (visible.length > 0) {
-    console.log(
-      `\nAlready visible in "${visible[0]!.workspace_name}" — nothing to do.`
-    )
-    return
+  // Pick up to `count` DISTINCT law-list items among the surfaceable changes.
+  // Nulling an item's floor reveals every hidden change on that item, so distinct
+  // items give the most variety to test against.
+  const picks: Row[] = []
+  const seenItems = new Set<string>()
+  for (const r of surfaceable) {
+    if (seenItems.has(r.item_id)) continue
+    seenItems.add(r.item_id)
+    picks.push(r)
+    if (picks.length >= count) break
   }
-  const c = surfaceable[0]
-  if (!c) {
+  if (picks.length === 0) {
     console.log(
       '\nNo surfaceable (un-assessed) change found. Ask Claude for a seeder.'
     )
     return
   }
-  await prisma.$executeRaw`
-    UPDATE law_list_items SET last_change_acknowledged_at = NULL WHERE id = ${c.item_id}
-  `
+  for (const c of picks) {
+    await prisma.$executeRaw`
+      UPDATE law_list_items SET last_change_acknowledged_at = NULL WHERE id = ${c.item_id}
+    `
+    console.log(
+      `✅ Surfaced ${c.document_number} (${c.change_type} ${c.amendment_sfs ?? ''}) in "${c.workspace_name}".`
+    )
+  }
   console.log(
-    `\n✅ Surfaced ${c.document_number} (${c.change_type} ${c.amendment_sfs ?? ''}) in "${c.workspace_name}".`
-  )
-  console.log(
-    '   Open that workspace dashboard → the change now shows as unassessed → click it to start the change-assessment chat. (Reversible: acknowledge it again.)'
+    `\nSurfaced ${picks.length} item(s). Open that workspace → Laglistor → Ändringar; they now show as unassessed. (Reversible: acknowledge each again in the UI.)`
   )
 }
 

@@ -111,6 +111,43 @@ describe('AssessmentDetail', () => {
     expect(badges.length).toBeGreaterThan(0)
   })
 
+  it('pre-fills from the agent recommendation and marks it as AI-suggested', async () => {
+    const data: AssessmentDetailData = {
+      ...mockAssessmentData,
+      existingAssessment: null,
+      recommendation: {
+        status: 'NOT_APPLICABLE',
+        impactLevel: 'NONE',
+        notes: 'Berör inte er verksamhet.',
+      },
+    }
+
+    render(
+      <TestWrapper>
+        <AssessmentDetail data={data} />
+      </TestWrapper>
+    )
+
+    // The AI-suggestion hint is shown...
+    await waitFor(() => {
+      expect(screen.getByText(/Förifyllt av AI/)).toBeDefined()
+    })
+    // ...and the notes field is pre-filled from the recommendation.
+    expect(
+      (screen.getByPlaceholderText(/Anteckningar/) as HTMLTextAreaElement).value
+    ).toBe('Berör inte er verksamhet.')
+  })
+
+  it('does not mark as AI-suggested when a saved assessment exists', () => {
+    render(
+      <TestWrapper>
+        <AssessmentDetail data={mockAssessmentData} />
+      </TestWrapper>
+    )
+
+    expect(screen.queryByText(/Förifyllt av AI/)).toBeNull()
+  })
+
   it('saves assessment on confirm', async () => {
     mockCreateOrUpdateAssessment.mockResolvedValue({
       success: true,

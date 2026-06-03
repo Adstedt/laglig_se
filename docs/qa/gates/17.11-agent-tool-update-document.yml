@@ -1,0 +1,66 @@
+schema: 1
+story: '17.11'
+story_title: 'Agent Tool — Update Existing Documents (Section Edits via Approval)'
+gate: PASS
+status_reason: 'UX-001 (medium, the only blocker) closed cleanly: documentTitle now carried in params at lib/agent/tools/update-document.ts:243 with a CP-001 comment, asserted by the tool happy-path test. WALKER-001 also closed: shared renderImage helper extracted, inline-image branch added in renderInline with two new dedicated tests. Two low-severity advisory items remain (REL-001 deferred per story acceptance, COV-001 owner=qa) and do not block. Quality score 100.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-03T10:58:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'REL-001'
+    severity: low
+    status: deferred
+    finding: 'Activity-log agent-authorship stamp (AC 10) runs OUTSIDE the saveDocumentVersion transaction via fire-and-forget try/catch. Under DB unavailability the version saves but is mis-attributed to the human user. Story explicitly accepts this trade-off; gate v1 documented as "not a blocker for 17.11".'
+    suggested_action: 'Future hardening: extend saveDocumentVersion to accept an optional pendingActionId/agentAuthor flag so the stamp lands inside the same $transaction. Track as separate ticket.'
+    suggested_owner: dev
+  - id: 'COV-001'
+    severity: low
+    status: deferred
+    finding: 'AC 13 (system-prompt content) and AC 14 (TOOL_CONFIG chip labels + FileEdit icon) have NO automated coverage — only the manual smoke plan §10-11. Industry-standard for prompt/UI-chrome content.'
+    suggested_action: 'Optional 3-line smoke test: import TOOL_CONFIG from chat-message and assert update_document entry shape. Low priority — falls under QA tooling improvements.'
+    suggested_owner: qa
+
+quality_score: 100
+expires: '2026-06-17T10:58:00Z'
+
+evidence:
+  tests_reviewed: 64
+  risks_identified: 4
+  risks_resolved: 2
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    ac_gaps: [13, 14]  # AC 13/14 have NO automated tests — relies on manual smoke plan (COV-001 advisory only)
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'HTML walker escapes all text/attr values; javascript:|data:|vbscript: denylist now applied uniformly to BOTH block AND inline images (WALKER-001 fix extracted the shared renderImage helper that both paths use — no security surface widened). Triple workspace-scoping. tasks:edit SEC-001 gate inherited. CP-001 enforced + unit-tested.'
+  performance:
+    status: PASS
+    notes: 'Unchanged from gate v1. Tool: 1 findFirst. Dispatch: +1 findFirst for activity-log stamp. HTML walker O(n). Reindex via after() is fire-and-forget and content-hash-gated downstream.'
+  reliability:
+    status: PASS
+    notes: 'Dual-layer status guard correct (tool + dispatch re-assert). Heading-drift detection via SectionNotFoundError keeps row PENDING. REL-001 (non-atomic activity-log stamp) is acknowledged tech-debt accepted by the story and gate v1; documented as deferred future hardening but does not affect 17.11''s reliability for production ship. Flipped CONCERNS → PASS on the basis that the trade-off is decided and tracked, not unresolved.'
+  maintainability:
+    status: PASS
+    notes: 'WALKER-001 fix improved maintainability via DRY: renderImage is now a shared helper called from both renderInline and renderBlock — no parallel implementations to keep in sync. UX-001 fix removed a comment that documented divergence between tool and renderer (now they agree). JSDoc updated on update-document.ts to reflect the new params shape.'
+
+recommendations:
+  immediate: []  # All blockers closed
+  future:
+    - action: 'REL-001 — thread pendingActionId through saveDocumentVersion for atomic stamp (deferred, tech-debt)'
+      refs: ['lib/agent/tools/update-document.ts', 'app/actions/documents.ts:590']
+    - action: 'COV-001 — optional 3-line smoke test for TOOL_CONFIG.update_document shape'
+      refs: ['components/features/ai-chat/chat-message.tsx']
+
+history:
+  - at: '2026-06-03T09:45:00Z'
+    gate: CONCERNS
+    quality_score: 90
+    note: 'Initial review. UX-001 (medium, blocking) — tool fetched document.title but never wrote it to params, so renderer copy showed generic fallback in production. WALKER-001/REL-001/COV-001 flagged as low.'
+  - at: '2026-06-03T10:58:00Z'
+    gate: PASS
+    quality_score: 100
+    note: 'Re-review after apply-qa-fixes. UX-001 closed cleanly (documentTitle in params, test asserted). WALKER-001 closed cleanly (shared renderImage helper, inline branch added, 2 new tests). REL-001 and COV-001 remain as deferred advisory items per gate v1 guidance. Reliability NFR flipped CONCERNS → PASS — REL-001 trade-off is acknowledged and tracked, not unresolved.'

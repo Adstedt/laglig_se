@@ -23,6 +23,7 @@ import { TaskDetail } from './details/task-detail'
 import { DocumentDetail } from './details/document-detail'
 import { LawListItemDetail } from './details/law-list-item-detail'
 import { DocumentDraftDetail } from './details/document-draft-detail'
+import { DocumentUpdateDetail } from './details/document-update-detail'
 import { cn } from '@/lib/utils'
 
 // ---------------------------------------------------------------------------
@@ -51,6 +52,8 @@ function DetailContent({ item }: { item: ChatDetailItem }) {
       return <LawListItemDetail data={item.data} />
     case 'document-draft':
       return <DocumentDraftDetail data={item.data} />
+    case 'document-update':
+      return <DocumentUpdateDetail data={item.data} />
     default:
       return null
   }
@@ -99,6 +102,11 @@ function getDetailHeader(item: ChatDetailItem): {
       return {
         title: item.data.title || 'Utkast',
         subtitle: 'Förhandsvisning av utkast',
+      }
+    case 'document-update':
+      return {
+        title: item.data.documentTitle || 'Dokument',
+        subtitle: `Ändring: ${item.data.sectionHeading}`,
       }
     default:
       return { title: 'Detaljer', subtitle: null }

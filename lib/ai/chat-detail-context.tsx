@@ -68,6 +68,16 @@ export interface AssessmentDetailData {
     aiAnalysis: string | null
     userNotes: string | null
   } | null
+  /**
+   * Agent's proposed (not-yet-saved) assessment from a save_assessment preview.
+   * Pre-fills the form when there is no existingAssessment; shown as an AI
+   * suggestion. Distinct from existingAssessment, which is a saved decision.
+   */
+  recommendation?: {
+    status: AssessmentStatus
+    impactLevel: ImpactLevel
+    notes?: string
+  } | null
   documentTitle: string
   documentNumber: string
   /** Called when the user clicks "Klar" — navigates back to the parent view */
@@ -119,11 +129,27 @@ export interface DocumentDraftDetailData {
 }
 
 /**
+ * Story 17.11: read-only before/after preview of a proposed section-level edit
+ * to an existing styrdokument, opened in the detail panel via the update card's
+ * "Visa mer". Reads both snapshots from `params` (captured at propose time) —
+ * no re-fetch. The snapshots are arrays of Tiptap body nodes (no heading); the
+ * panel renders each into a wrapping doc-shell for HTML output.
+ */
+export interface DocumentUpdateDetailData {
+  pendingActionId: string
+  documentTitle: string
+  sectionHeading: string
+  oldSectionContentJson: unknown[]
+  newSectionContentJson: unknown[]
+}
+
+/**
  * Discriminated union of detail types that can be displayed in the sidebar.
  * 14.15b added: 'task', 'assessment', 'document', 'law-list-item'.
  * Story 14.23 removed the write-action preview variant — write tools now render
  * inline approval cards, not a sidebar preview.
  * Story 14.24 added 'document-draft' (read-only agent draft preview).
+ * Story 17.11 added 'document-update' (read-only before/after for a section edit).
  */
 export type ChatDetailItem =
   | { type: 'citation'; id: string; data: CitationDetailData }
@@ -133,6 +159,7 @@ export type ChatDetailItem =
   | { type: 'document'; id: string; data: DocumentDetailData }
   | { type: 'law-list-item'; id: string; data: LawListItemDetailData }
   | { type: 'document-draft'; id: string; data: DocumentDraftDetailData }
+  | { type: 'document-update'; id: string; data: DocumentUpdateDetailData }
 
 // ---------------------------------------------------------------------------
 // System messages (ephemeral, not persisted)

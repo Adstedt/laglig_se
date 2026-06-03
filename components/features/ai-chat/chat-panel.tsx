@@ -14,6 +14,7 @@ import { ChatInputModern } from './chat-input-modern'
 import { useChatAttachments } from '@/lib/hooks/use-chat-attachments'
 import { ChatError } from './chat-error'
 import { AssessmentResolution } from '@/components/features/changes/assessment-resolution'
+import { findLatestAssessmentRecommendation } from '@/lib/changes/assessment-preview'
 import { FollowupChips } from './followup-chips'
 import { useFollowupChips } from '@/lib/hooks/use-followup-chips'
 import {
@@ -309,10 +310,13 @@ function ChatPanelBody({
     if (!hasCompletedReply) return undefined
     if (contextType !== 'change' || !contextId || !lawListItemId)
       return undefined
+    // Pre-fill from the agent's save_assessment(execute:false) preview if present.
+    const recommendation = findLatestAssessmentRecommendation(messages)
     return (
       <AssessmentResolution
         changeEventId={contextId}
         lawListItemId={lawListItemId}
+        recommendation={recommendation}
         onComplete={onAssessmentSaved}
         onClose={onClose}
       />
@@ -322,6 +326,7 @@ function ChatPanelBody({
     contextType,
     contextId,
     lawListItemId,
+    messages,
     onAssessmentSaved,
     onClose,
   ])

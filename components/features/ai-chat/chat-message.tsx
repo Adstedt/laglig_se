@@ -16,6 +16,8 @@ import {
   ChevronRight,
   Search,
   FileText,
+  FileEdit,
+  FilePlus,
   Building2,
   ClipboardList,
   MessageCircleQuestion,
@@ -69,7 +71,11 @@ import {
   type ChatDetailItem,
   type AssessmentDetailData,
 } from '@/lib/ai/chat-detail-context'
-import type { ToolMeta, WriteToolResponse } from '@/lib/agent/tools/types'
+import type { ToolMeta } from '@/lib/agent/tools/types'
+import {
+  getAssessmentPreview,
+  extractRecommendation,
+} from '@/lib/changes/assessment-preview'
 
 // ---------------------------------------------------------------------------
 // Tool display configuration
@@ -261,6 +267,25 @@ const TOOL_CONFIG: Record<
     doneLabel: 'Ändrade status',
     proposalLabel: 'Föreslog statusändring',
     icon: FileText,
+  },
+  // Story 17.11: agent-proposed section-level edit to an existing styrdokument.
+  // Always a proposal — inline approval card is the only finalize path. Both
+  // PENDING + DONE labels per the 1428-001 owner-smoke finding.
+  update_document: {
+    label: 'Uppdaterar dokument',
+    doneLabel: 'Uppdaterade dokument',
+    proposalLabel: 'Föreslog ändring',
+    icon: FileEdit,
+  },
+  // Story 17.11b: agent-proposed insert of a NEW section into an existing
+  // styrdokument. Always a proposal — inline approval card is the only
+  // finalize path. Both PENDING + DONE labels per the 1428-001 owner-smoke
+  // finding.
+  add_document_section: {
+    label: 'Lägger till avsnitt',
+    doneLabel: 'Lade till avsnitt',
+    proposalLabel: 'Föreslog nytt avsnitt',
+    icon: FilePlus,
   },
   // Story 17.10: workspace-document reads (styrdokument).
   search_workspace_documents: {
@@ -1285,22 +1310,21 @@ function buildDetailItem(
     (output as { confirmation_required: boolean }).confirmation_required
 
   if (isAssessmentPreview) {
-    const writeResp = output as WriteToolResponse<unknown>
-    const params = writeResp.params ?? {}
+    // save_assessment returns its data under `preview` (not the generic
+    // WriteToolResponse `params`). Pull the recommendation through so the form
+    // opens pre-filled with the agent's proposal.
+    const preview = getAssessmentPreview(output)
     const assessmentData: AssessmentDetailData = {
-      changeEventId: (params.changeEventId as string) ?? '',
-      lawListItemId: (params.lawListItemId as string) ?? '',
-      amendmentSfs: (params.amendmentSfs as string) ?? '',
-      changeType: (params.changeType as string) ?? '',
-      affectedSections: (params.affectedSections as string[]) ?? [],
-      effectiveDate: params.effectiveDate
-        ? new Date(params.effectiveDate as string)
-        : null,
-      existingAssessment: params.existingAssessment
-        ? (params.existingAssessment as AssessmentDetailData['existingAssessment'])
-        : null,
-      documentTitle: (params.documentTitle as string) ?? '',
-      documentNumber: (params.documentNumber as string) ?? '',
+      changeEventId: preview?.changeEventId ?? '',
+      lawListItemId: preview?.lawListItemId ?? '',
+      amendmentSfs: '',
+      changeType: '',
+      affectedSections: [],
+      effectiveDate: null,
+      existingAssessment: null,
+      recommendation: extractRecommendation(preview),
+      documentTitle: '',
+      documentNumber: '',
     }
     return {
       type: 'assessment' as const,

@@ -35,6 +35,10 @@ import { UpdateComplianceStatusRenderer } from './agent-action-renderers/update-
 import { DraftDocumentRenderer } from './agent-action-renderers/draft-document-renderer'
 import { AddTaskCommentRenderer } from './agent-action-renderers/add-task-comment-renderer'
 import { TransitionDocumentStatusRenderer } from './agent-action-renderers/transition-document-status-renderer'
+// Story 17.11: section-level edit of an existing styrdokument.
+import { UpdateDocumentRenderer } from './agent-action-renderers/update-document-renderer'
+// Story 17.11b: insert of a NEW section into an existing styrdokument.
+import { AddDocumentSectionRenderer } from './agent-action-renderers/add-document-section-renderer'
 
 export const ACTION_TYPE_LABELS: Partial<
   Record<PendingAgentActionType, string>
@@ -50,6 +54,8 @@ export const ACTION_TYPE_LABELS: Partial<
   DRAFT_DOCUMENT: 'Utkast styrdokument',
   ADD_TASK_COMMENT: 'Kommentar till uppgift',
   TRANSITION_DOCUMENT_STATUS: 'Ändra dokumentstatus',
+  UPDATE_DOCUMENT: 'Uppdatera dokument',
+  ADD_DOCUMENT_SECTION: 'Lägg till avsnitt',
 }
 
 /** Per-type renderer registry. Story 14.23: all seven types registered. */
@@ -67,6 +73,8 @@ export const RENDERERS: Partial<
   DRAFT_DOCUMENT: DraftDocumentRenderer,
   ADD_TASK_COMMENT: AddTaskCommentRenderer,
   TRANSITION_DOCUMENT_STATUS: TransitionDocumentStatusRenderer,
+  UPDATE_DOCUMENT: UpdateDocumentRenderer,
+  ADD_DOCUMENT_SECTION: AddDocumentSectionRenderer,
 }
 
 /**

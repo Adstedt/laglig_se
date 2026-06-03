@@ -1616,6 +1616,20 @@ enum PendingAgentActionType {
   // as defence-in-depth). Dispatch calls the existing updateDocumentStatus
   // server action. Additive enum-value addition.
   TRANSITION_DOCUMENT_STATUS
+  // Story 17.11 — agent-proposed section-level edit to an existing workspace
+  // document. Approval-gated (no execute:true path). Dispatch calls the
+  // existing saveDocumentVersion server action with the full updated
+  // contentJson produced by updateSection(). DRAFT/IN_REVIEW only; APPROVED
+  // documents must branch via createDraftFromApproved first. Additive
+  // enum-value addition.
+  UPDATE_DOCUMENT
+  // Story 17.11b — agent-proposed insert of a NEW section into an existing
+  // workspace document. Approval-gated (mirrors UPDATE_DOCUMENT pattern). On
+  // approval dispatch calls addSection() to produce the full updated
+  // contentJson, then saveDocumentVersion appends a new version + reindexes.
+  // DRAFT/IN_REVIEW only; no-duplicate-heading + position-target-exists guards
+  // at both tool time AND dispatch. Additive enum-value addition.
+  ADD_DOCUMENT_SECTION
 }
 
 enum PendingAgentActionStatus {

@@ -32,6 +32,9 @@ import { createSuggestFollowupsTool } from './suggest-followups'
 import { createLinkTaskToDocumentTool } from './link-task-to-document'
 import { createLinkDocumentToTaskTool } from './link-document-to-task'
 import { createAddObligationTool } from './add-obligation'
+// Story 17.11b: agent-proposed insert of a NEW section into an existing
+// styrdokument (ADD_DOCUMENT_SECTION approval card).
+import { createAddDocumentSectionTool } from './add-document-section'
 // Story 14.28: propose an edit to a kravpunkt (UPDATE_REQUIREMENT approval card).
 import { createUpdateRequirementTool } from './update-requirement'
 import { createAssignTaskTool } from './assign-task'
@@ -41,6 +44,8 @@ import { createDraftStyrdokumentTool } from './draft-styrdokument'
 import { createAddTaskCommentTool } from './add-task-comment'
 // Story 14.30: agent-proposed styrdokument status transition (TRANSITION_DOCUMENT_STATUS).
 import { createTransitionDocumentStatusTool } from './transition-document-status'
+// Story 17.11: agent-proposed section-level edit to an existing styrdokument (UPDATE_DOCUMENT).
+import { createUpdateDocumentTool } from './update-document'
 // Story 17.10: workspace-document read tools (search / get / list styrdokument).
 import { createSearchWorkspaceDocumentsTool } from './search-workspace-documents'
 import { createGetWorkspaceDocumentTool } from './get-workspace-document'
@@ -127,12 +132,14 @@ type ToolName =
   | 'add_context_note'
   | 'link_task_to_document'
   | 'link_document_to_task'
+  | 'add_document_section'
   | 'add_obligation'
   | 'update_requirement'
   | 'assign_task'
   | 'draft_styrdokument'
   | 'add_task_comment'
   | 'transition_document_status'
+  | 'update_document'
   | 'search_workspace_documents'
   | 'get_workspace_document'
   | 'list_workspace_documents'
@@ -162,12 +169,16 @@ export const TOOL_REGISTRY_POLICY = {
   add_context_note: 'write',
   link_task_to_document: 'write',
   link_document_to_task: 'write',
+  // Story 17.11b: agent-proposed insert of a new section into a styrdokument.
+  add_document_section: 'write',
   add_obligation: 'write',
   update_requirement: 'write',
   assign_task: 'write',
   draft_styrdokument: 'write',
   add_task_comment: 'write',
   transition_document_status: 'write',
+  // Story 17.11: section-level edit of an existing styrdokument.
+  update_document: 'write',
   // Story 17.10: workspace-document reads. All three are 'read' tier (no
   // mutations) → auto-join ALWAYS_AVAILABLE via 19.7c (not in SKILL_GATED_TOOLS).
   search_workspace_documents: 'read',
@@ -270,6 +281,14 @@ export function createAgentTools(
       workspaceId,
       writeContext
     ),
+    // Story 17.11b: propose ADDING a new section to an existing styrdokument
+    // (ADD_DOCUMENT_SECTION pending action). Workspace + DRAFT/IN_REVIEW +
+    // duplicate-heading + position-target + non-empty-body guards at tool time;
+    // dispatch re-asserts.
+    add_document_section: createAddDocumentSectionTool(
+      workspaceId,
+      writeContext
+    ),
     add_obligation: createAddObligationTool(workspaceId, writeContext),
     // Story 14.28: propose a kravpunkt edit (UPDATE_REQUIREMENT pending action).
     update_requirement: createUpdateRequirementTool(workspaceId, writeContext),
@@ -283,6 +302,10 @@ export function createAgentTools(
       workspaceId,
       writeContext
     ),
+    // Story 17.11: propose a section-level edit to an existing styrdokument
+    // (UPDATE_DOCUMENT pending action). Workspace + DRAFT/IN_REVIEW + heading
+    // existence + no-op-edit guards at tool time; dispatch re-asserts.
+    update_document: createUpdateDocumentTool(workspaceId, writeContext),
     // Story 17.10: workspace-document reads. Each takes workspaceId only —
     // read tools never need userId / writeContext / role-write filtering.
     search_workspace_documents: createSearchWorkspaceDocumentsTool(workspaceId),

@@ -240,6 +240,7 @@ describe('save_assessment tool', () => {
         changeEventId: 'ce-1',
         lawListItemId: 'lli-1',
         impactLevel: 'HIGH',
+        recommendedStatus: 'ACTION_REQUIRED',
         analysis: 'Analysis text',
         recommendations: 'Recommendations text',
         execute: false,
@@ -249,9 +250,14 @@ describe('save_assessment tool', () => {
 
     expect(result).toHaveProperty('confirmation_required', true)
     expect(result).toHaveProperty('preview')
-    expect(
-      (result as { preview: { impactLevel: string } }).preview.impactLevel
-    ).toBe('HIGH')
+    const preview = (
+      result as {
+        preview: { impactLevel: string; recommendedStatus: string }
+      }
+    ).preview
+    expect(preview.impactLevel).toBe('HIGH')
+    // The recommended status is carried through so the form can pre-fill it.
+    expect(preview.recommendedStatus).toBe('ACTION_REQUIRED')
     expect((result as { _meta: { tool: string } })._meta.tool).toBe(
       'save_assessment'
     )
@@ -272,6 +278,7 @@ describe('save_assessment tool', () => {
         changeEventId: 'ce-1',
         lawListItemId: 'lli-1',
         impactLevel: 'LOW',
+        recommendedStatus: 'NOT_APPLICABLE',
         analysis: 'Low impact',
         recommendations: 'Monitor',
         execute: true,
@@ -286,9 +293,13 @@ describe('save_assessment tool', () => {
 
     // Verify the authenticated userId is used, not an arbitrary member
     const upsertCall = mockUpsert.mock.calls[0]![0] as {
-      create: { assessed_by: string }
+      create: { assessed_by: string; status: string }
+      update: { status: string }
     }
     expect(upsertCall.create.assessed_by).toBe('user-1')
+    // Persists the recommended status, not a hardcoded 'REVIEWED'.
+    expect(upsertCall.create.status).toBe('NOT_APPLICABLE')
+    expect(upsertCall.update.status).toBe('NOT_APPLICABLE')
   })
 
   it('uses authenticated userId for acknowledgement timestamp', async () => {
@@ -306,6 +317,7 @@ describe('save_assessment tool', () => {
         changeEventId: 'ce-1',
         lawListItemId: 'lli-1',
         impactLevel: 'LOW',
+        recommendedStatus: 'REVIEWED',
         analysis: 'Low impact',
         recommendations: 'Monitor',
         execute: true,

@@ -17,6 +17,7 @@ const {
   mockLinkDocumentToListItem,
   mockCreateComment,
   mockUpdateDocumentStatus,
+  mockSaveDocumentVersion,
 } = vi.hoisted(() => ({
   mockWithWorkspace: vi.fn(),
   mockCreateTask: vi.fn(),
@@ -30,6 +31,8 @@ const {
   mockCreateComment: vi.fn(),
   // Story 14.30: TRANSITION_DOCUMENT_STATUS dispatch target.
   mockUpdateDocumentStatus: vi.fn(),
+  // Story 17.11: UPDATE_DOCUMENT dispatch target.
+  mockSaveDocumentVersion: vi.fn(),
 }))
 
 vi.mock('@/lib/prisma', () => ({
@@ -46,6 +49,14 @@ vi.mock('@/lib/prisma', () => ({
     },
     workspaceDocument: {
       deleteMany: vi.fn(),
+      // Story 17.11: dispatch re-reads the live document for the status guard.
+      findFirst: vi.fn(),
+    },
+    // Story 17.11: dispatch stamps agent authorship onto the activity log row
+    // saveDocumentVersion writes (find by version_number, patch new_value).
+    activityLog: {
+      findFirst: vi.fn(),
+      update: vi.fn(),
     },
   },
 }))
@@ -65,6 +76,8 @@ vi.mock('@/app/actions/documents', () => ({
   linkDocumentToListItem: mockLinkDocumentToListItem,
   // Story 14.30: TRANSITION_DOCUMENT_STATUS dispatch target.
   updateDocumentStatus: mockUpdateDocumentStatus,
+  // Story 17.11: UPDATE_DOCUMENT dispatch target.
+  saveDocumentVersion: mockSaveDocumentVersion,
 }))
 
 vi.mock('@/app/actions/law-list-item-requirements', () => ({
@@ -875,6 +888,665 @@ describe('approvePendingAction → TRANSITION_DOCUMENT_STATUS', () => {
     expect(result.success).toBe(false)
     expect(result.error).toMatch(/ogiltig statusövergång/i)
     // Row NOT marked APPROVED.
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+  })
+})
+
+// Story 17.11: UPDATE_DOCUMENT dispatch — re-asserts the DRAFT/IN_REVIEW guard
+// from the LIVE document (not the propose-time snapshot), applies
+// updateSection() to produce the full updated contentJson, generates HTML, and
+// calls saveDocumentVersion. The dispatch is the authoritative status gate.
+describe('approvePendingAction → UPDATE_DOCUMENT', () => {
+  const DRAFT_DOC_CONTENT = {
+    type: 'doc',
+    content: [
+      {
+        type: 'heading',
+        attrs: { level: 2 },
+        content: [{ type: 'text', text: 'Syfte' }],
+      },
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'Old purpose body.' }],
+      },
+      {
+        type: 'heading',
+        attrs: { level: 2 },
+        content: [{ type: 'text', text: 'Ansvar' }],
+      },
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'Responsibility.' }],
+      },
+    ],
+  }
+  const NEW_BODY = [
+    {
+      type: 'paragraph',
+      content: [{ type: 'text', text: 'New purpose body.' }],
+    },
+  ]
+  const baseParams = {
+    documentId: 'd_1',
+    sectionHeading: 'Syfte',
+    oldSectionContentJson: [
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'Old purpose body.' }],
+      },
+    ],
+    newSectionContentJson: NEW_BODY,
+    changeSummary: 'Skärpt syftesformulering',
+    entity_version: '2026-06-01T10:00:00.000Z',
+  }
+
+  beforeEach(() =>
+    (
+      prisma.pendingAgentAction.update as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({})
+  )
+
+  it('happy path: re-reads doc, applies updateSection, calls saveDocumentVersion with full doc + HTML', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'UPDATE_DOCUMENT', params: baseParams })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'DRAFT',
+      workspace_id: 'ws_123',
+      current_version: { content_json: DRAFT_DOC_CONTENT },
+    })
+    mockSaveDocumentVersion.mockResolvedValue({
+      success: true,
+      data: { id: 'v_2', versionNumber: 2 },
+    })
+    ;(
+      prisma.activityLog.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'al_1',
+      new_value: {
+        version_number: 2,
+        change_summary: 'Skärpt syftesformulering',
+      },
+    })
+    ;(prisma.activityLog.update as ReturnType<typeof vi.fn>).mockResolvedValue(
+      {}
+    )
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(true)
+    expect(result.data?.resultRef).toEqual({
+      documentId: 'd_1',
+      versionId: 'v_2',
+      versionNumber: 2,
+    })
+
+    // saveDocumentVersion was called with the FULL updated doc (Syfte body
+    // replaced, Ansvar section preserved), and an HTML string.
+    expect(mockSaveDocumentVersion).toHaveBeenCalledTimes(1)
+    const [docId, fullContent, changeSummary, title, html] =
+      mockSaveDocumentVersion.mock.calls[0]!
+    expect(docId).toBe('d_1')
+    expect(changeSummary).toBe('Skärpt syftesformulering')
+    expect(title).toBeUndefined()
+    expect(typeof html).toBe('string')
+    expect(html).toContain('<h2>Syfte</h2>')
+    expect(html).toContain('<p>New purpose body.</p>')
+    expect(html).toContain('<h2>Ansvar</h2>')
+    expect(fullContent).toEqual({
+      type: 'doc',
+      content: [
+        DRAFT_DOC_CONTENT.content[0], // Syfte heading preserved
+        NEW_BODY[0], // body replaced
+        DRAFT_DOC_CONTENT.content[2], // Ansvar heading
+        DRAFT_DOC_CONTENT.content[3], // Ansvar body
+      ],
+    })
+  })
+
+  it("AC 10: stamps agent authorship onto saveDocumentVersion's activity log row", async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'UPDATE_DOCUMENT', params: baseParams })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'DRAFT',
+      workspace_id: 'ws_123',
+      current_version: { content_json: DRAFT_DOC_CONTENT },
+    })
+    mockSaveDocumentVersion.mockResolvedValue({
+      success: true,
+      data: { id: 'v_2', versionNumber: 2 },
+    })
+    ;(
+      prisma.activityLog.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'al_1',
+      new_value: {
+        version_number: 2,
+        change_summary: 'Skärpt syftesformulering',
+      },
+    })
+
+    await approvePendingAction('pa_1')
+
+    expect(prisma.activityLog.findFirst).toHaveBeenCalledWith({
+      where: expect.objectContaining({
+        entity_type: 'workspace_document',
+        entity_id: 'd_1',
+        action: 'document_version_saved',
+        new_value: { path: ['version_number'], equals: 2 },
+      }),
+      orderBy: { created_at: 'desc' },
+      select: { id: true, new_value: true },
+    })
+    expect(prisma.activityLog.update).toHaveBeenCalledWith({
+      where: { id: 'al_1' },
+      data: {
+        new_value: expect.objectContaining({
+          version_number: 2,
+          change_summary: 'Skärpt syftesformulering',
+          by: 'agent',
+          pendingActionId: 'pa_1',
+        }),
+      },
+    })
+  })
+
+  it.each(['APPROVED', 'SUPERSEDED', 'ARCHIVED'] as const)(
+    'AC 11: re-asserts status guard at dispatch — refuses %s, row stays PENDING',
+    async (status) => {
+      ;(
+        prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(
+        row({ action_type: 'UPDATE_DOCUMENT', params: baseParams })
+      )
+      ;(
+        prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
+        id: 'd_1',
+        status,
+        workspace_id: 'ws_123',
+        current_version: { content_json: DRAFT_DOC_CONTENT },
+      })
+
+      const result = await approvePendingAction('pa_1')
+
+      expect(result.success).toBe(false)
+      expect(result.error).toContain(status)
+      expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
+      expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+    }
+  )
+
+  it('keeps the row PENDING when the document is missing', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'UPDATE_DOCUMENT', params: baseParams })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(null)
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(false)
+    expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+  })
+
+  it('keeps the row PENDING when the heading drifted away since propose', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({
+        action_type: 'UPDATE_DOCUMENT',
+        params: { ...baseParams, sectionHeading: 'BorttagenRubrik' },
+      })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'DRAFT',
+      workspace_id: 'ws_123',
+      current_version: { content_json: DRAFT_DOC_CONTENT },
+    })
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/BorttagenRubrik/)
+    expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+  })
+
+  it('keeps the row PENDING when saveDocumentVersion fails', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'UPDATE_DOCUMENT', params: baseParams })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'DRAFT',
+      workspace_id: 'ws_123',
+      current_version: { content_json: DRAFT_DOC_CONTENT },
+    })
+    mockSaveDocumentVersion.mockResolvedValue({
+      success: false,
+      error: 'Database down',
+    })
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(false)
+    expect(result.error).toBe('Database down')
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+  })
+
+  it('inherits the tasks:edit gate (SEC-001) — AUDITOR cannot approve', async () => {
+    mockWithWorkspace.mockImplementationOnce(
+      (cb: (_c: typeof ctx) => unknown) =>
+        cb({ ...ctx, hasPermission: () => false })
+    )
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'UPDATE_DOCUMENT', params: baseParams })
+    )
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(false)
+    expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+  })
+})
+
+// Story 17.11b: ADD_DOCUMENT_SECTION dispatch — re-asserts the DRAFT/IN_REVIEW
+// guard + no-duplicate-heading + position-target from the LIVE document (not
+// the propose-time snapshot), applies addSection() to produce the full updated
+// contentJson, generates HTML, calls saveDocumentVersion, and stamps the
+// activity log with by/agent + operation:add_section.
+describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
+  const DRAFT_DOC_CONTENT = {
+    type: 'doc',
+    content: [
+      {
+        type: 'heading',
+        attrs: { level: 2 },
+        content: [{ type: 'text', text: 'Syfte' }],
+      },
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'Purpose body.' }],
+      },
+      {
+        type: 'heading',
+        attrs: { level: 2 },
+        content: [{ type: 'text', text: 'Ansvar' }],
+      },
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'Responsibility.' }],
+      },
+    ],
+  }
+  const NEW_BODY = [
+    {
+      type: 'paragraph',
+      content: [{ type: 'text', text: 'Ny avsnittstext.' }],
+    },
+  ]
+  const baseParams = {
+    documentId: 'd_1',
+    documentTitle: 'Arbetsmiljöpolicy',
+    newSectionHeading: 'Inledning',
+    newSectionLevel: 2 as const,
+    newSectionContentJson: NEW_BODY,
+    position: { at: 'end' as const },
+    changeSummary: 'Lägg till inledning',
+    entity_version: '2026-06-01T10:00:00.000Z',
+  }
+
+  beforeEach(() =>
+    (
+      prisma.pendingAgentAction.update as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({})
+  )
+
+  it('happy path: re-reads doc, applies addSection (end), calls saveDocumentVersion with full doc + HTML', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'ADD_DOCUMENT_SECTION', params: baseParams })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'DRAFT',
+      workspace_id: 'ws_123',
+      current_version: { content_json: DRAFT_DOC_CONTENT },
+    })
+    mockSaveDocumentVersion.mockResolvedValue({
+      success: true,
+      data: { id: 'v_2', versionNumber: 2 },
+    })
+    ;(
+      prisma.activityLog.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'al_1',
+      new_value: { version_number: 2, change_summary: 'Lägg till inledning' },
+    })
+    ;(prisma.activityLog.update as ReturnType<typeof vi.fn>).mockResolvedValue(
+      {}
+    )
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(true)
+    expect(result.data?.resultRef).toEqual({
+      documentId: 'd_1',
+      versionId: 'v_2',
+      versionNumber: 2,
+    })
+
+    expect(mockSaveDocumentVersion).toHaveBeenCalledTimes(1)
+    const [docId, fullContent, changeSummary, title, html] =
+      mockSaveDocumentVersion.mock.calls[0]!
+    expect(docId).toBe('d_1')
+    expect(changeSummary).toBe('Lägg till inledning')
+    expect(title).toBeUndefined()
+    expect(typeof html).toBe('string')
+    expect(html).toContain('<h2>Inledning</h2>')
+    expect(html).toContain('<p>Ny avsnittstext.</p>')
+    // Pre-existing sections preserved.
+    expect(html).toContain('<h2>Syfte</h2>')
+    expect(html).toContain('<h2>Ansvar</h2>')
+    // The new section was APPENDED at the end (position.at = 'end').
+    expect(fullContent).toEqual({
+      type: 'doc',
+      content: [
+        ...DRAFT_DOC_CONTENT.content,
+        {
+          type: 'heading',
+          attrs: { level: 2 },
+          content: [{ type: 'text', text: 'Inledning' }],
+        },
+        NEW_BODY[0],
+      ],
+    })
+  })
+
+  it('AC 10: stamps agent authorship + operation:add_section onto the activity log row', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'ADD_DOCUMENT_SECTION', params: baseParams })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'DRAFT',
+      workspace_id: 'ws_123',
+      current_version: { content_json: DRAFT_DOC_CONTENT },
+    })
+    mockSaveDocumentVersion.mockResolvedValue({
+      success: true,
+      data: { id: 'v_2', versionNumber: 2 },
+    })
+    ;(
+      prisma.activityLog.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'al_1',
+      new_value: { version_number: 2, change_summary: 'Lägg till inledning' },
+    })
+
+    await approvePendingAction('pa_1')
+
+    expect(prisma.activityLog.findFirst).toHaveBeenCalledWith({
+      where: expect.objectContaining({
+        entity_type: 'workspace_document',
+        entity_id: 'd_1',
+        action: 'document_version_saved',
+        new_value: { path: ['version_number'], equals: 2 },
+      }),
+      orderBy: { created_at: 'desc' },
+      select: { id: true, new_value: true },
+    })
+    expect(prisma.activityLog.update).toHaveBeenCalledWith({
+      where: { id: 'al_1' },
+      data: {
+        new_value: expect.objectContaining({
+          version_number: 2,
+          change_summary: 'Lägg till inledning',
+          by: 'agent',
+          pendingActionId: 'pa_1',
+          operation: 'add_section',
+        }),
+      },
+    })
+  })
+
+  it('inserts at position { at: "after", heading } when target exists', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({
+        action_type: 'ADD_DOCUMENT_SECTION',
+        params: {
+          ...baseParams,
+          position: { at: 'after', heading: 'Syfte' },
+        },
+      })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'DRAFT',
+      workspace_id: 'ws_123',
+      current_version: { content_json: DRAFT_DOC_CONTENT },
+    })
+    mockSaveDocumentVersion.mockResolvedValue({
+      success: true,
+      data: { id: 'v_2', versionNumber: 2 },
+    })
+    ;(
+      prisma.activityLog.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(null)
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(true)
+    const [, fullContent] = mockSaveDocumentVersion.mock.calls[0]!
+    // Inserted between the Syfte section and the Ansvar section.
+    expect(fullContent).toEqual({
+      type: 'doc',
+      content: [
+        DRAFT_DOC_CONTENT.content[0], // Syfte heading
+        DRAFT_DOC_CONTENT.content[1], // Syfte body
+        {
+          type: 'heading',
+          attrs: { level: 2 },
+          content: [{ type: 'text', text: 'Inledning' }],
+        },
+        NEW_BODY[0],
+        DRAFT_DOC_CONTENT.content[2], // Ansvar heading
+        DRAFT_DOC_CONTENT.content[3], // Ansvar body
+      ],
+    })
+  })
+
+  it.each(['APPROVED', 'SUPERSEDED', 'ARCHIVED'] as const)(
+    'AC 11: re-asserts status guard — refuses %s, row stays PENDING',
+    async (status) => {
+      ;(
+        prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+      ).mockResolvedValue(
+        row({ action_type: 'ADD_DOCUMENT_SECTION', params: baseParams })
+      )
+      ;(
+        prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+      ).mockResolvedValue({
+        id: 'd_1',
+        status,
+        workspace_id: 'ws_123',
+        current_version: { content_json: DRAFT_DOC_CONTENT },
+      })
+
+      const result = await approvePendingAction('pa_1')
+
+      expect(result.success).toBe(false)
+      expect(result.error).toContain(status)
+      expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
+      expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+    }
+  )
+
+  it('keeps the row PENDING when the document is missing', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'ADD_DOCUMENT_SECTION', params: baseParams })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(null)
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(false)
+    expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+  })
+
+  it('keeps the row PENDING when the heading was added manually since propose', async () => {
+    // Doc now CONTAINS an "Inledning" heading — addSection() throws
+    // SectionAlreadyExistsError and dispatch translates to a Swedish error.
+    const docWithDup = {
+      type: 'doc',
+      content: [
+        {
+          type: 'heading',
+          attrs: { level: 2 },
+          content: [{ type: 'text', text: 'Inledning' }],
+        },
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Manuell.' }],
+        },
+        ...DRAFT_DOC_CONTENT.content,
+      ],
+    }
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'ADD_DOCUMENT_SECTION', params: baseParams })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'DRAFT',
+      workspace_id: 'ws_123',
+      current_version: { content_json: docWithDup },
+    })
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/Inledning/)
+    expect(result.error).toMatch(/finns redan/)
+    expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+  })
+
+  it('keeps the row PENDING when position.heading was removed since propose', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({
+        action_type: 'ADD_DOCUMENT_SECTION',
+        params: {
+          ...baseParams,
+          position: { at: 'after', heading: 'BorttagenRubrik' },
+        },
+      })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'DRAFT',
+      workspace_id: 'ws_123',
+      current_version: { content_json: DRAFT_DOC_CONTENT },
+    })
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/BorttagenRubrik/)
+    expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+  })
+
+  it('keeps the row PENDING when saveDocumentVersion fails', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'ADD_DOCUMENT_SECTION', params: baseParams })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'DRAFT',
+      workspace_id: 'ws_123',
+      current_version: { content_json: DRAFT_DOC_CONTENT },
+    })
+    mockSaveDocumentVersion.mockResolvedValue({
+      success: false,
+      error: 'Database down',
+    })
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(false)
+    expect(result.error).toBe('Database down')
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+  })
+
+  it('inherits the tasks:edit gate (SEC-001) — AUDITOR cannot approve', async () => {
+    mockWithWorkspace.mockImplementationOnce(
+      (cb: (_c: typeof ctx) => unknown) =>
+        cb({ ...ctx, hasPermission: () => false })
+    )
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'ADD_DOCUMENT_SECTION', params: baseParams })
+    )
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(false)
+    expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
     expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
   })
 })
