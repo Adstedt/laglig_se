@@ -1,0 +1,323 @@
+schema: 1
+story: '17.17'
+story_title: 'Styrdokument Table + Doc Page Dual-Version UX'
+gate: PASS
+status_reason: |
+  Re-review v2.1: PASS holds (quality 96, +1 from v2.0's 95). 8 in-cycle
+  polish fixes + new rejectDraftReview server action surfaced from owner
+  live smoke against Supabase production data — all architecturally
+  additive, no new CONCERNS introduced, CONCERN-002 (DocumentEditor banner
+  RTL coverage) downgraded to INFO since live smoke functionally closed it.
+  217/217 story-affected tests pass (up from 197 — +20 from new
+  rejectDraftReview block). Story 17.16's alias-freeze invariant still
+  holds across all new code paths. Three LOW CONCERNS (lastMeaningfulChange
+  isolated tests, AC 12 contrast snapshot, editable-gate helper extraction)
+  remain open as optional nice-to-haves; none blocking.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-04T15:25:00Z'
+
+waiver: { active: false }
+
+# ============================================================================
+# Top issues — all LOW severity, all non-blocking, optional dev follow-ups
+# ============================================================================
+
+top_issues:
+  - id: 'CONCERN-001'
+    severity: low
+    finding: |
+      AC 5 `lastMeaningfulChange` helper at
+      `components/features/documents/document-table.tsx:89` has no isolated
+      unit test. The function derives the "Senast ändrad" display value via
+      `Math.max` over [doc.updated_at, current_draft_version?.created_at,
+      current_approved_version?.approved_at] — sound logic, but currently
+      covered only through render-time integration in the table tests
+      (which don't exercise the null-pointer edge cases the helper guards
+      against).
+    impact: |
+      A future refactor could silently regress the null-pointer handling
+      (e.g., switching the `if` guards to optional chaining without the
+      null check would yield `NaN` in the Math.max chain). The display
+      would then fall back to a Date(NaN), surfacing "Invalid Date" in the
+      table. Caught quickly during smoke, but cheap to defend against now.
+    suggested_action: |
+      Add 3 isolated unit tests for the helper:
+        (a) both draft + approved null → returns doc.updated_at
+        (b) draft null + approved set → returns max(updated_at, approved_at)
+        (c) both set → returns max of all three
+      Test file: extend
+      `tests/unit/components/features/documents/document-table.test.tsx`
+      with a small `describe('lastMeaningfulChange', ...)` block.
+    refs: ['components/features/documents/document-table.tsx:89-102']
+    suggested_owner: dev
+
+  - id: 'CONCERN-002'
+    severity: info  # v2.1 — DOWNGRADED from low. Live smoke functionally closed.
+    finding: |
+      AC 6 / AC 7 / AC 8 DocumentEditor extensions (secondary "Godkänd v{N}
+      av X den DATE" metadata indicator, Skicka / Godkänn / Neka / Förkasta
+      utkast action buttons, dual-state edit banner + AlertDialog) had no
+      isolated RTL test for their rendering at v2.0.
+    impact: |
+      v2.1 re-review update — the owner-led live smoke against Supabase
+      production data (2026-06-04) exercised every banner branch + every
+      action button end-to-end across multiple promote / Skicka / Neka /
+      Förkasta cycles on real dual-state data (Almåsa toilets policy).
+      Coverage is now functionally equivalent to (arguably better than)
+      what an RTL test would have given. The risk vector this CONCERN
+      was guarding against (DocumentEditor refactor silently breaking
+      prop-plumbing) is also strongly mitigated by the strict TypeScript
+      prop signature + the page-route integration that flowed real props
+      through the component during the smoke.
+    suggested_action: |
+      Accept the deferral. Path (b) from the v2.0 review note is the
+      established precedent (matches Story 17.16). No further action
+      required unless a future story plans to land heavy DocumentEditor
+      changes — at which point an RTL spot test for the new branches
+      would be sensible.
+    refs: ['components/features/documents/editor/document-editor.tsx']
+    suggested_owner: dev
+
+  - id: 'CONCERN-003'
+    severity: low
+    finding: |
+      AC 12 ("color contrast: composite badge meets WCAG AA contrast for
+      both approved and draft tone pills against the table row background,
+      both dark and light themes") has no isolated contrast snapshot test
+      for the composite badge specifically.
+    impact: |
+      Documentation-only — the composite badge renders two Badge primitive
+      instances, and Epic 22.1 establishes that the tone-aware `<Badge>`
+      primitive IS WCAG AA-validated (per the JSDoc on
+      `lib/ui/badge-tones.ts:46-49`). So the composite inherits contrast
+      compliance from its constituent primitives — there is no realistic
+      failure mode where the composite would fail AA when both halves
+      individually pass. But "inherited contrast" is an assumption, and
+      adding a snapshot would be defensive.
+    suggested_action: |
+      Optional follow-up — add a snapshot-based contrast assertion via
+      `axe-core` (already in the project per `tests/e2e/`) on the
+      composite badge in both themes. Low priority; integration test
+      territory. Defer unless QA wants to do it as part of a broader
+      contrast audit.
+    refs: ['components/features/documents/dual-status-badge.tsx', 'lib/ui/badge-tones.ts']
+    suggested_owner: dev
+
+  - id: 'CONCERN-004'
+    severity: low
+    finding: |
+      The `editable` gate at `document-editor.tsx:175-180` reads as a
+      3-clause composition:
+        const editable =
+          viewMode !== 'approved' &&
+          currentDraftStatus !== 'IN_REVIEW' &&
+          (currentDraftId != null ||
+           (currentStatus === 'DRAFT' && currentApprovedVersionId == null))
+      Correct under the v1.3 spec, but harder to scan + test in isolation
+      than a named helper.
+    impact: |
+      Readability + testability. A future dev tweaking the gate would
+      have to re-derive the v1.3 rationale from the comments. Extracting
+      to a `computeEditable` helper (matching the `computeRestoreGuard`
+      pattern that already shipped for AC 17) would (a) be unit-testable
+      in isolation with the full case matrix, and (b) move the JSDoc
+      explanation next to the predicate logic. Not blocking.
+    suggested_action: |
+      Optional dev follow-up — extract the gate to a helper in
+      `lib/utils/document-editability.ts` (sitting next to
+      `isDocumentEditable`) named `computeEditable(args)`, then unit-test
+      the case matrix (10 cases: 5 doc states × 2 viewMode values). The
+      existing `isDocumentEditable` helper stays untouched as the
+      backward-compatible primitive.
+    refs: ['components/features/documents/editor/document-editor.tsx:165-180', 'lib/utils/document-editability.ts']
+    suggested_owner: dev
+
+# ============================================================================
+# Quality score
+# ============================================================================
+# Formula: 100 - (20 × FAILs) - (10 × CONCERNS) = 100 - 0 - (0 medium × 10)
+# Adjusted downward 5 for the four LOW concerns above (none rises to medium
+# CONCERN threshold; this is a defensive deduction reflecting the gap between
+# "publishable" and "exemplary" coverage). Net: 95.
+
+quality_score: 96
+
+# Reviewed once on first pass (no PO/SM ping-pong needed — the v1.3
+# ratifications were comprehensive). Gate expires in 2 weeks (standard
+# window; this is a UX story without the foundational risk profile of 17.16).
+expires: '2026-06-18T13:25:00Z'
+
+# ============================================================================
+# Evidence
+# ============================================================================
+
+evidence:
+  tests_reviewed: 217  # v2.1 — +20 from rejectDraftReview block + smoke regression
+  risks_identified: 4  # All LOW severity, all non-blocking (CONCERN-002 downgraded to INFO)
+  trace:
+    ac_covered: [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17]
+    ac_partial: [5, 12]  # AC 5 covered via integration not isolated unit;
+                          # AC 12 inherits contrast from Epic 22.1 primitive
+    ac_gaps: []  # All 17 ACs have at least integration-level coverage
+  smoke_verification:
+    surface: 'Owner-led live smoke against Supabase production data 2026-06-04'
+    headline_docs:
+      - '319c0bb4 Almåsa toilets policy (Model B clean dual-state, v1 approved + v9 draft after multi-cycle)'
+      - '782726a9 Almåsa GDPR policy (Model B clean dual-state)'
+      - '6535b6ac Policy v2 (stable APPROVED — AC 17 Path C verification)'
+      - 'e120b65f Arbetsmiljöpolicy ARCHIVED (AC 17 Path D verification)'
+      - '90f4f611 Riskbedömning Lager 2026 (never-approved DRAFT regression)'
+      - '6bb5382a Arbetsmiljöpolicy 2026 (legacy Model A dual-state — regression verified)'
+    branches_exercised:
+      - 'composite badge clickable halves (AC 1)'
+      - 'right-half → editor draft + AC 6 indicator + AC 7 Skicka button + AC 8 banner + Förkasta'
+      - 'left-half → ?view=approved + Task 5 v1.3 frozen banner'
+      - 'Skicka → IN_REVIEW → Neka (soft reject) cycle 2x'
+      - 'Skicka → IN_REVIEW → Godkänn promote (full SQL invariant verification: alias advance, version timestamps, ActivityLog)'
+      - 'Förkasta + AlertDialog confirmation'
+      - 'history icon shortcut from table + AC 17 Path C disabled + hint'
+      - 'multi-cycle Skapa ny version → Godkänn (v3 → v6 + → v8)'
+      - 'filter chip intersection (AC 3/4) — dual-state in both Godkända and Utkast filters'
+    invariants_verified:
+      - 'Story 17.16 alias-on-approved (alias_frozen_on_approved=true on Model B clean docs)'
+      - 'Story 17.16 AC 6 atomic promote swap (alias advances ONLY at promote)'
+      - 'Story 17.16 AC 7 discard alias no-op (alias unchanged through Förkasta)'
+      - 'Per-version approved_at + superseded_at correctly cascaded through promote'
+      - 'ActivityLog audit chain captures every transition with precise timestamps'
+
+# ============================================================================
+# NFR validation
+# ============================================================================
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      All new server actions workspace-scoped via withWorkspace.
+      submitDraftForReview gates on tasks:edit (matches the
+      14.22-14.30 + 17.11/17.11b + 17.16 convention; the SF-1 fix from
+      Story 17.16 v1.1 + v1.3 PO ratification holds). Permission check
+      ordering is defensive (gate-before-fetch). ActivityLog preserves
+      audit trail. CP-001 explicitly asserted (no raw IDs in DOM) on the
+      composite badge. ?view=approved query param is a safe read-only
+      override; defensively gated by current_approved_version existence.
+      No new attack surface.
+  performance:
+    status: PASS
+    notes: |
+      AC 15 satisfied — SELECT shape extension on existing findMany,
+      no new query. New WHERE-clause status switch uses Story 17.16's
+      indexed columns (current_approved_version_id @unique,
+      current_draft_version_id @unique, secondary index on
+      (workspace_id, current_draft_version_id)). lastMeaningfulChange
+      is O(1) per row at render time. matchesStatusFilter is a simple
+      switch — O(1). computeRestoreGuard is O(1) per render. Composite
+      badge anchors are static — no per-render allocation.
+  reliability:
+    status: PASS
+    notes: |
+      All new server actions return typed ActionResult.
+      submitDraftForReview uses $transaction (atomic doc update +
+      ActivityLog) matching discardDraft shape. Required AlertDialog
+      confirmation on destructive Förkasta action (AC 8). Toast feedback
+      on success + error paths for every dual-state handler. Optimistic
+      local state updates with router.refresh() — fast UI + eventual
+      consistency via server re-fetch. viewMode='approved' cannot make a
+      stable-APPROVED doc editable (gate logic explicitly handles this).
+      Story 17.16's alias-freeze invariant still verified across paths
+      A/B/C/D in the existing test suite.
+  maintainability:
+    status: PASS
+    notes: |
+      JSDoc on every new public surface explains Model B invariants in
+      domain terms with AC numbers cited inline. FROZEN copy locked
+      with explicit comments matching the v1.3 PO ratification. File
+      List in Dev Agent Record is comprehensive. Mock-data builder
+      helpers in landing-v3 are intent-revealing. The editable gate
+      composition is correct but 3-clause — flagged as CONCERN-004 for
+      optional readability follow-up.
+
+# ============================================================================
+# Recommendations
+# ============================================================================
+
+recommendations:
+  immediate: []  # No must-fix-before-production items. All four findings are
+                 # non-blocking LOW-severity nice-to-haves.
+
+  future:
+    - action: |
+        Add 3 isolated unit tests for the lastMeaningfulChange helper in
+        document-table.test.tsx (covers null edge cases the helper guards
+        against but which aren't currently exercised). 5-minute addition.
+      refs: ['components/features/documents/document-table.tsx:89-102',
+             'tests/unit/components/features/documents/document-table.test.tsx']
+
+    - action: |
+        Consider extracting the DocumentEditor `editable` gate to a
+        computeEditable helper sitting next to isDocumentEditable in
+        lib/utils/document-editability.ts. Match the computeRestoreGuard
+        pattern that already shipped for AC 17 (small predicate + isolated
+        case-matrix tests). Improves readability + testability without
+        changing behaviour.
+      refs: ['components/features/documents/editor/document-editor.tsx:165-180',
+             'lib/utils/document-editability.ts:7']
+
+    - action: |
+        Owner runs a live smoke against a dual-state doc to verify the
+        full cycle (badge halves clickable + correct routing, banner
+        copy renders verbatim, AC 6 metadata indicator visible, Skicka →
+        Godkänn flow, history icon shortcut, AC 17 Återställ
+        state-aware disable). Precedent-aligned with Story 17.16's
+        successful smoke against Almåsa production data.
+      refs: ['docs/stories/17.17.dual-version-document-ux.md']
+
+    - action: |
+        Confirm with PO whether Story 17.18 (agent reads + citations)
+        can begin its dev cycle once 17.17 reaches Done, or whether the
+        SM+PO ratification pass against the 17.17 foundation needs to
+        run first (precedent from 17.16 → 17.17 suggests yes).
+      refs: ['docs/stories/17.18.dual-version-agent-reads-citations.md']
+
+# ============================================================================
+# History (append-only audit trail)
+# ============================================================================
+
+history:
+  - at: '2026-06-04T13:25:00Z'
+    gate: PASS
+    note: |
+      First review (v2.0). Deep review triggered by 17 ACs / new server
+      action / DocumentEditor refactor surface / diff > 500 lines. All 17
+      ACs traced to passing tests or integration coverage. Story 17.16's
+      load-bearing alias-freeze invariant still holds. PO v1.3
+      ratifications applied verbatim in code. Four LOW-severity
+      non-blocking concerns recorded (lastMeaningfulChange isolated
+      tests, DocumentEditor banner RTL tests, AC 12 contrast snapshot,
+      editable-gate helper extraction). Quality score 95.
+
+  - at: '2026-06-04T15:25:00Z'
+    gate: PASS  # re-confirmed
+    note: |
+      Re-review (v2.1) after owner live smoke against Supabase production
+      data surfaced 8 Model B coordination gaps + IN_REVIEW reject gap.
+      Dev (James) landed all fixes in-cycle (8 polish fixes + 1 new
+      rejectDraftReview server action with 5 unit tests). Diff scope:
+      ~1010 insertions across 7 files; all architecturally additive
+      (no AC re-interpretation, no schema change, no new attack surface).
+      Test bar maintained: 217/217 story-affected pass (up from 197 — +20
+      from the new rejectDraftReview block). Story 17.16 alias-freeze
+      invariant verified still holding through the live smoke (alias
+      advances ONLY at promote per AC 6; alias no-op through Förkasta
+      per AC 7; alias-on-approved confirmed via SQL on the headline
+      Almåsa toilets doc). Particularly notable smoke fixes: #5
+      (handleCreateDraft Model B-correct optimistic state — caught a
+      real Model A residue), #7 (Aktuell semantics + dual-state pill
+      context — resolved a genuine spec ambiguity in the compliance-
+      correct direction), #4 (new rejectDraftReview action — closed a
+      reviewer workflow gap unstated in the original spec).
+      CONCERN-002 downgraded from LOW to INFO — live smoke functionally
+      closed the DocumentEditor banner RTL coverage gap by exercising
+      every branch on real production data. CONCERN-001, 003, 004
+      unchanged. No new concerns introduced. Quality score 96 (+1).
+      Story Status: Ready for Done per dev's recommendation.

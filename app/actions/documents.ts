@@ -316,7 +316,31 @@ export async function getWorkspaceDocuments(
         where.document_type = validated.type
       }
       if (validated.status) {
-        where.status = validated.status
+        // Story 17.17 AC 3 / AC 4 — pointer-aware status filter.
+        // APPROVED → match any doc with an approved version (includes the
+        // dual-state "APPROVED with draft pending" case).
+        // DRAFT / IN_REVIEW → match the draft pointer + matching sub-status
+        // (so a dual-state doc shows under BOTH "Godkända" AND "Utkast"
+        // filters — by design; the doc IS both).
+        // ARCHIVED / SUPERSEDED → terminal top-level status (unchanged).
+        switch (validated.status) {
+          case 'APPROVED':
+            where.current_approved_version_id = { not: null }
+            break
+          case 'DRAFT':
+            where.current_draft_version_id = { not: null }
+            where.draft_status = 'DRAFT'
+            break
+          case 'IN_REVIEW':
+            where.current_draft_version_id = { not: null }
+            where.draft_status = 'IN_REVIEW'
+            break
+          case 'ARCHIVED':
+          case 'SUPERSEDED':
+          default:
+            where.status = validated.status
+            break
+        }
       }
       if (validated.search) {
         where.title = { contains: validated.search, mode: 'insensitive' }
@@ -345,6 +369,20 @@ export async function getWorkspaceDocuments(
           updated_at: true,
           creator: {
             select: { id: true, name: true, email: true },
+          },
+          // Story 17.17 AC 1 / Task 2 — dual-pointer fields surface the
+          // approved/draft state to the styrdokument table so the composite
+          // badge can render without a second query. AC 15 (no new server-
+          // side queries) still holds: this is a `select` shape extension
+          // on the existing `findMany`, not a new query.
+          current_approved_version_id: true,
+          current_draft_version_id: true,
+          draft_status: true,
+          current_approved_version: {
+            select: { version_number: true, approved_at: true },
+          },
+          current_draft_version: {
+            select: { version_number: true, created_at: true },
           },
         },
       })
@@ -1442,6 +1480,185 @@ export async function discardDraft(documentId: string): Promise<ActionResult> {
               err instanceof Error ? err.message : err
             )
           }
+        })
+
+        return { success: true }
+      }
+    )
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+/**
+ * Story 17.17 AC 7: Submit an in-progress draft for review.
+ *
+ * Small wrapper that flips `draft_status: DRAFT → IN_REVIEW` so the editor's
+ * Skicka för granskning button has a single explicit server action to call.
+ * The doc's top-level `status` is unchanged — under Model B, top-level status
+ * only tracks the doc's overall lifecycle (created → first approved → maybe
+ * archived), NOT the draft sub-state.
+ *
+ * Refuses if no draft is in progress, or if the draft is already in review.
+ * Same `tasks:edit` permission posture as `promoteDraftToApproved` (AC 6)
+ * and `discardDraft` (AC 7).
+ *
+ * No reindex callback — submitting for review doesn't change content, only
+ * the sub-status field; the 17.10b auto-reindex contract still tracks the
+ * approved version via the frozen alias.
+ */
+export async function submitDraftForReview(
+  documentId: string
+): Promise<ActionResult> {
+  try {
+    return await withWorkspace(
+      async ({ workspaceId, userId, hasPermission }) => {
+        if (!hasPermission('tasks:edit')) {
+          return {
+            success: false,
+            error: 'Du har inte behörighet att genomföra den här åtgärden',
+          }
+        }
+
+        const document = await prisma.workspaceDocument.findFirst({
+          where: { id: documentId, workspace_id: workspaceId },
+          select: {
+            id: true,
+            current_draft_version_id: true,
+            draft_status: true,
+            workspace_id: true,
+          },
+        })
+
+        if (!document) {
+          return { success: false, error: 'Dokument hittades inte' }
+        }
+
+        if (document.current_draft_version_id == null) {
+          return {
+            success: false,
+            error: 'Det finns inget pågående utkast att skicka för granskning.',
+          }
+        }
+
+        if (document.draft_status === 'IN_REVIEW') {
+          return {
+            success: false,
+            error: 'Utkastet är redan skickat för granskning.',
+          }
+        }
+
+        await prisma.$transaction(async (tx) => {
+          await tx.workspaceDocument.update({
+            where: { id: document.id },
+            data: { draft_status: 'IN_REVIEW' },
+          })
+
+          await tx.activityLog.create({
+            data: {
+              workspace_id: document.workspace_id,
+              user_id: userId,
+              entity_type: 'workspace_document',
+              entity_id: document.id,
+              action: 'document_draft_submitted_for_review',
+              new_value: {
+                draft_version_id: document.current_draft_version_id,
+                draft_status: 'IN_REVIEW',
+              },
+            },
+          })
+        })
+
+        return { success: true }
+      }
+    )
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+/**
+ * Story 17.17 smoke addendum: Soft-reject a draft that's in review.
+ *
+ * Reviewer's "Neka" action — flips `draft_status: IN_REVIEW → DRAFT` so the
+ * author can resume editing. Mirrors the legacy Model A "Neka" pattern
+ * which used to fire when top-level status was IN_REVIEW; under Model B
+ * clean dual-state, top-level status stays APPROVED so the legacy
+ * StatusTransitionControls config never reaches the IN_REVIEW branch.
+ *
+ * The draft pointer is NOT cleared (the draft content stays intact for the
+ * author to resume); only the sub-status flips. For a hard-reject (throw
+ * the draft away entirely), see {@link discardDraft}.
+ *
+ * Same `tasks:edit` permission posture as {@link submitDraftForReview}.
+ */
+export async function rejectDraftReview(
+  documentId: string
+): Promise<ActionResult> {
+  try {
+    return await withWorkspace(
+      async ({ workspaceId, userId, hasPermission }) => {
+        if (!hasPermission('tasks:edit')) {
+          return {
+            success: false,
+            error: 'Du har inte behörighet att genomföra den här åtgärden',
+          }
+        }
+
+        const document = await prisma.workspaceDocument.findFirst({
+          where: { id: documentId, workspace_id: workspaceId },
+          select: {
+            id: true,
+            current_draft_version_id: true,
+            draft_status: true,
+            workspace_id: true,
+          },
+        })
+
+        if (!document) {
+          return { success: false, error: 'Dokument hittades inte' }
+        }
+
+        if (document.current_draft_version_id == null) {
+          return {
+            success: false,
+            error: 'Det finns inget pågående utkast att neka.',
+          }
+        }
+
+        if (document.draft_status !== 'IN_REVIEW') {
+          return {
+            success: false,
+            error:
+              'Utkastet är inte skickat för granskning — det finns inget att neka.',
+          }
+        }
+
+        await prisma.$transaction(async (tx) => {
+          await tx.workspaceDocument.update({
+            where: { id: document.id },
+            data: { draft_status: 'DRAFT' },
+          })
+
+          await tx.activityLog.create({
+            data: {
+              workspace_id: document.workspace_id,
+              user_id: userId,
+              entity_type: 'workspace_document',
+              entity_id: document.id,
+              action: 'document_draft_review_rejected',
+              new_value: {
+                draft_version_id: document.current_draft_version_id,
+                draft_status: 'DRAFT',
+              },
+            },
+          })
         })
 
         return { success: true }

@@ -36,6 +36,7 @@ import {
 } from '@/components/features/documents/document-table'
 import {
   DocumentFilterControls,
+  matchesStatusFilter,
   type DocumentFilters,
 } from '@/components/features/documents/document-filters'
 
@@ -133,7 +134,12 @@ export function DocumentBrowserPage() {
           items = items.filter((d) => filters.types.includes(d.document_type))
         }
         if (filters.statuses.length > 1) {
-          items = items.filter((d) => filters.statuses.includes(d.status))
+          // Story 17.17 AC 3 / AC 4 — pointer-aware client-side match. A
+          // dual-state doc passes for BOTH the APPROVED filter AND the
+          // matching draft sub-status filter (the doc IS both at once).
+          items = items.filter((d) =>
+            filters.statuses.some((s) => matchesStatusFilter(d, s))
+          )
         }
 
         if (isLoadMore) {

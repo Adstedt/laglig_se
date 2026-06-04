@@ -43,8 +43,26 @@ import { TableContextMenu } from './table-context-menu'
 import { DocumentStatusBadge } from '@/components/features/documents/document-status-badge'
 import { StatusTransitionControls } from './status-transition-controls'
 import { DocumentSettingsPanel } from './document-settings-panel'
-import { isDocumentEditable } from '@/lib/utils/document-editability'
-import { createDraftFromApproved } from '@/app/actions/documents'
+import {
+  createDraftFromApproved,
+  discardDraft,
+  promoteDraftToApproved,
+  rejectDraftReview,
+  submitDraftForReview,
+} from '@/app/actions/documents'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { GitBranch, Trash2, CheckCircle2, Send, Undo2 } from 'lucide-react'
+import { format as formatDate } from 'date-fns'
+import { sv } from 'date-fns/locale'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -81,6 +99,21 @@ interface DocumentEditorProps {
     toStatus: string
     createdAt: string
   } | null
+  // Story 17.17 — dual-pointer model props. The page route derives these
+  // from Story 17.16's `getDocument` extension and passes them through so the
+  // editor can render the composite header indicator, route the action
+  // buttons (Förkasta utkast / Godkänn utkast / Skicka för granskning), and
+  // gate the read-only banner against the new pointer model rather than the
+  // top-level status alone.
+  currentDraftVersionId?: string | null
+  currentApprovedVersionId?: string | null
+  draftStatus?: 'DRAFT' | 'IN_REVIEW' | null
+  approvedMetadata?: {
+    versionNumber: number
+    approverName: string | null
+    approvedAt: string
+  } | null
+  viewMode?: 'approved' | 'default'
 }
 
 export function DocumentEditor({
@@ -94,12 +127,23 @@ export function DocumentEditor({
   reviewDate,
   documentType,
   latestComment,
+  currentDraftVersionId = null,
+  currentApprovedVersionId = null,
+  draftStatus = null,
+  approvedMetadata = null,
+  viewMode = 'default',
 }: DocumentEditorProps) {
   const router = useRouter()
   const [title, setTitle] = useState(initialTitle)
   const [currentVersionNumber, setCurrentVersionNumber] =
     useState(versionNumber)
   const [currentStatus, setCurrentStatus] = useState(status)
+  const [currentDraftStatus, setCurrentDraftStatus] = useState<
+    'DRAFT' | 'IN_REVIEW' | null
+  >(draftStatus)
+  const [currentDraftId, setCurrentDraftId] = useState<string | null>(
+    currentDraftVersionId
+  )
   const titleRef = useRef(initialTitle)
   // DOM ref for the title textarea — auto-grows so long titles wrap (not clip).
   const titleInputRef = useRef<HTMLTextAreaElement>(null)
@@ -108,7 +152,30 @@ export function DocumentEditor({
   const [diffToId, setDiffToId] = useState<string | undefined>()
   const [creatingDraft, setCreatingDraft] = useState(false)
   const [exporting, setExporting] = useState(false)
-  const editable = isDocumentEditable(currentStatus)
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false)
+  const [discarding, setDiscarding] = useState(false)
+  const [promoting, setPromoting] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [rejecting, setRejecting] = useState(false)
+
+  // Story 17.17 Task 5 v1.2 — pointer-aware `editable` gate (PO ratified).
+  // Read-only iff:
+  //   (a) viewMode === 'approved' (the ?view=approved deep-link forces the
+  //       read-only approved view regardless of draft state), OR
+  //   (b) the draft sub-status is IN_REVIEW (preserves today's "review is
+  //       frozen for the reviewer" invariant under Model B), OR
+  //   (c) there's no draft pointer AND the top-level status isn't an
+  //       editable one (stable APPROVED / SUPERSEDED / ARCHIVED).
+  //
+  // Editable when there's a draft to edit (currentDraftId != null + sub-
+  // status DRAFT) — that's the dual-state edit case AC 8 covers — OR when
+  // the never-approved DRAFT fallback applies.
+  const isDualState = currentDraftId != null && currentApprovedVersionId != null
+  const editable =
+    viewMode !== 'approved' &&
+    currentDraftStatus !== 'IN_REVIEW' &&
+    (currentDraftId != null ||
+      (currentStatus === 'DRAFT' && currentApprovedVersionId == null))
 
   const editor = useEditor({
     extensions: [
@@ -259,13 +326,96 @@ export function DocumentEditor({
     const result = await createDraftFromApproved(documentId)
     setCreatingDraft(false)
     if (result.success && result.data) {
-      setCurrentStatus('DRAFT')
+      // Story 17.17 smoke fix — Model B-correct optimistic state seed.
+      //
+      // Under Story 17.16, createDraftFromApproved does NOT flip the top-
+      // level status (it stays APPROVED throughout the draft window) and
+      // only populates the draft pointer. The legacy `setCurrentStatus(
+      // 'DRAFT')` left the UI in a half-broken intermediate state (Utkast
+      // badge but no dual-state banner / AC 6 indicator / Skicka button)
+      // until a manual page refresh kicked the server-prop chain.
+      //
+      // The correct optimistic update is: leave top-level status, seed the
+      // new draft pointer + sub-status, bump the version counter to the
+      // freshly-created draft's number. router.refresh() then back-fills
+      // any remaining prop-derived state (approvedMetadata, etc.) on the
+      // next render.
+      setCurrentDraftId(result.data.id)
+      setCurrentDraftStatus('DRAFT')
       setCurrentVersionNumber(result.data.versionNumber)
       router.refresh()
     } else {
       toast.error(result.error ?? 'Kunde inte skapa ny version')
     }
   }, [documentId, router])
+
+  // Story 17.17 AC 7 / AC 8 — dual-state action handlers wired to Story
+  // 17.16's server actions. Each one toasts on failure and refreshes the
+  // server-rendered tree on success so the new pointer state propagates.
+  const handleDiscardDraft = useCallback(async () => {
+    setDiscarding(true)
+    const result = await discardDraft(documentId)
+    setDiscarding(false)
+    setShowDiscardDialog(false)
+    if (result.success) {
+      setCurrentDraftId(null)
+      setCurrentDraftStatus(null)
+      toast.success('Utkastet förkastades. Den godkända versionen är gällande.')
+      router.refresh()
+    } else {
+      toast.error(result.error ?? 'Kunde inte förkasta utkastet')
+    }
+  }, [documentId, router])
+
+  const handleSubmitForReview = useCallback(async () => {
+    setSubmitting(true)
+    const result = await submitDraftForReview(documentId)
+    setSubmitting(false)
+    if (result.success) {
+      setCurrentDraftStatus('IN_REVIEW')
+      toast.success('Utkastet skickades för granskning.')
+      router.refresh()
+    } else {
+      toast.error(result.error ?? 'Kunde inte skicka utkastet för granskning')
+    }
+  }, [documentId, router])
+
+  const handlePromoteDraft = useCallback(async () => {
+    setPromoting(true)
+    const result = await promoteDraftToApproved(documentId)
+    setPromoting(false)
+    if (result.success) {
+      setCurrentStatus('APPROVED')
+      setCurrentDraftId(null)
+      setCurrentDraftStatus(null)
+      toast.success('Utkastet godkändes.')
+      router.refresh()
+    } else {
+      toast.error(result.error ?? 'Kunde inte godkänna utkastet')
+    }
+  }, [documentId, router])
+
+  const handleRejectReview = useCallback(async () => {
+    setRejecting(true)
+    const result = await rejectDraftReview(documentId)
+    setRejecting(false)
+    if (result.success) {
+      setCurrentDraftStatus('DRAFT')
+      toast.success('Utkastet skickades tillbaka till författaren.')
+      router.refresh()
+    } else {
+      toast.error(result.error ?? 'Kunde inte neka utkastet')
+    }
+  }, [documentId, router])
+
+  // Story 17.17 AC 6 — derived approved version number for the dual-state
+  // secondary metadata indicator. Null when the doc has no approved version
+  // (never-approved drafts).
+  const approvedDisplayDate = approvedMetadata
+    ? formatDate(new Date(approvedMetadata.approvedAt), 'd MMMM yyyy', {
+        locale: sv,
+      })
+    : null
 
   const handleExport = useCallback(
     async (format: 'docx' | 'pdf') => {
@@ -306,16 +456,62 @@ export function DocumentEditor({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Read-only banner for non-editable documents */}
+      {/* Read-only banner — Story 17.17 Task 5 v1.2 (PO ratified): pointer-
+          aware gating. The dual-state-read-only branch (viewMode='approved'
+          on a dual-state doc) uses the FROZEN Swedish copy locked in v1.3:
+          "Du visar Godkänd v{N} i läsläge. Ett utkast pågår." */}
       {!editable && (
         <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-sm text-amber-800">
-          {currentStatus === 'IN_REVIEW' &&
+          {viewMode === 'approved' &&
+            isDualState &&
+            approvedMetadata &&
+            `Du visar Godkänd v${approvedMetadata.versionNumber} i läsläge. Ett utkast pågår.`}
+          {viewMode === 'approved' &&
+            !isDualState &&
+            'Du visar den godkända versionen i läsläge.'}
+          {viewMode !== 'approved' &&
+            currentDraftStatus === 'IN_REVIEW' &&
+            'Detta utkast är skickat för granskning och kan inte redigeras.'}
+          {viewMode !== 'approved' &&
+            currentDraftStatus !== 'IN_REVIEW' &&
+            currentStatus === 'IN_REVIEW' &&
             'Detta dokument är under granskning och kan inte redigeras.'}
-          {currentStatus === 'APPROVED' &&
+          {viewMode !== 'approved' &&
+            currentDraftStatus !== 'IN_REVIEW' &&
+            currentStatus === 'APPROVED' &&
+            !isDualState &&
             'Detta dokument är godkänt och kan inte redigeras.'}
-          {currentStatus === 'SUPERSEDED' &&
+          {viewMode !== 'approved' &&
+            currentStatus === 'SUPERSEDED' &&
             'Detta dokument har ersatts av en nyare version.'}
-          {currentStatus === 'ARCHIVED' && 'Detta dokument är arkiverat.'}
+          {viewMode !== 'approved' &&
+            currentStatus === 'ARCHIVED' &&
+            'Detta dokument är arkiverat.'}
+        </div>
+      )}
+
+      {/* Story 17.17 AC 8 — dual-state edit banner. FROZEN copy per v1.1.
+          Renders only when the editor is showing a draft that replaces an
+          approved version (the dual-state edit case). Includes the
+          "Förkasta utkast" action with required AlertDialog confirmation. */}
+      {editable && isDualState && approvedMetadata && currentDraftId && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-sm text-amber-800">
+            <GitBranch className="h-4 w-4 shrink-0" />
+            <span>
+              {`Du redigerar Utkast v${currentVersionNumber} som ersätter Godkänd v${approvedMetadata.versionNumber} efter godkännande.`}
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-amber-800 hover:text-destructive"
+            onClick={() => setShowDiscardDialog(true)}
+            disabled={discarding}
+          >
+            <Trash2 className="mr-1 h-3.5 w-3.5" />
+            Förkasta utkast
+          </Button>
         </div>
       )}
 
@@ -330,29 +526,65 @@ export function DocumentEditor({
             <ArrowLeft className="mr-1 h-4 w-4" />
             Tillbaka
           </Button>
-          <DocumentStatusBadge status={currentStatus} />
+          {/* Story 17.17 smoke-found polish: in dual-state contexts the
+              metadata pill reflects the ACTIVE context (the draft being
+              edited / under review) rather than the doc's top-level status
+              (which under Model B stays APPROVED throughout the draft
+              window). The AC 6 secondary indicator below carries the
+              approved baseline info; the small pill now matches what the
+              user is actually doing in the editor.
+              - viewMode='approved' → top-level status (Godkänd — correct, you're viewing approved)
+              - dual-state edit/review → draft sub-status (Utkast / Under granskning)
+              - single-state → top-level status (today's behavior) */}
+          <DocumentStatusBadge
+            status={
+              isDualState && viewMode !== 'approved' && currentDraftStatus
+                ? currentDraftStatus
+                : currentStatus
+            }
+          />
           <span className="text-xs text-muted-foreground/60">
             v{currentVersionNumber} &middot; {authorName}
           </span>
-        </div>
-        <div className="flex items-center gap-3">
-          {editor && (
-            <span className="text-xs text-muted-foreground tabular-nums">
-              {editor.storage.characterCount?.words() ?? 0} ord
+          {/* Story 17.17 AC 6 — secondary "Godkänd v{N} av {name} den {date}"
+              indicator for the dual-state header. Reads `approvedMetadata`
+              (doc-level approved_by/approved_at + current_approved_version_id
+              joined approver name) so the approved metadata stays visible
+              throughout the revision window. */}
+          {isDualState && approvedMetadata && approvedDisplayDate && (
+            <span className="text-xs text-muted-foreground/60">
+              {`· Godkänd v${approvedMetadata.versionNumber}${
+                approvedMetadata.approverName
+                  ? ` av ${approvedMetadata.approverName}`
+                  : ''
+              } den ${approvedDisplayDate}`}
             </span>
           )}
-          <span
-            className={cn(
-              'text-sm',
-              saveStatus === 'unsaved'
-                ? 'text-amber-600'
-                : saveStatus === 'error'
-                  ? 'text-destructive'
-                  : 'text-muted-foreground'
+        </div>
+        <div className="flex items-center gap-3">
+          {/* Story 17.17 smoke-found polish: word count + save status group
+              as ONE metadata cluster with tight internal spacing + matching
+              text size, separated from the action buttons by the parent's
+              gap-3. Middot mirrors the AC 6 secondary-indicator pattern on
+              the left so the two info clusters visually rhyme. */}
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground tabular-nums">
+            {editor && (
+              <span>{editor.storage.characterCount?.words() ?? 0} ord</span>
             )}
-          >
-            {saveStatusText}
-          </span>
+            {editor && (
+              <span aria-hidden="true" className="text-muted-foreground/40">
+                ·
+              </span>
+            )}
+            <span
+              className={cn(
+                saveStatus === 'unsaved' && 'text-amber-600',
+                saveStatus === 'error' && 'text-destructive'
+              )}
+            >
+              {saveStatusText}
+            </span>
+          </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" disabled={exporting}>
@@ -386,9 +618,18 @@ export function DocumentEditor({
           />
           <VersionHistoryPanel
             documentId={documentId}
-            currentVersionNumber={currentVersionNumber}
+            // Story 17.17 smoke-found polish: panel's "Aktuell" tag marks the
+            // canonical approved baseline ("i kraft"), NOT whichever version
+            // the editor is currently displaying. For a dual-state edit on a
+            // doc with approved v8 + draft v9: Aktuell = v8, even though the
+            // editor metadata bar shows "v9" (what's being edited).
+            currentVersionNumber={
+              approvedMetadata?.versionNumber ?? currentVersionNumber
+            }
             onRestore={handleVersionRestore}
             onCompare={handleCompare}
+            documentStatus={currentStatus}
+            currentDraftVersionId={currentDraftId}
           />
           {editable && (
             <Button
@@ -400,12 +641,55 @@ export function DocumentEditor({
               Spara
             </Button>
           )}
+          {/* Story 17.17 AC 7 — dual-state primary forward actions ("Skicka
+              för granskning" / "Godkänn utkast"). Placed here on the right
+              action bar where the legacy "Skapa ny version" primary used to
+              live (now suppressed by StatusTransitionControls when a draft
+              pointer is set) so the muscle-memory pattern is preserved. */}
+          {currentDraftId &&
+            currentDraftStatus === 'DRAFT' &&
+            viewMode !== 'approved' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSubmitForReview}
+                disabled={submitting}
+              >
+                <Send className="mr-1 h-4 w-4" />
+                Skicka för granskning
+              </Button>
+            )}
+          {currentDraftId &&
+            currentDraftStatus === 'IN_REVIEW' &&
+            viewMode !== 'approved' && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRejectReview}
+                  disabled={rejecting}
+                >
+                  <Undo2 className="mr-1 h-4 w-4" />
+                  Neka
+                </Button>
+                <Button
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                  onClick={handlePromoteDraft}
+                  disabled={promoting}
+                >
+                  <CheckCircle2 className="mr-1 h-4 w-4" />
+                  Godkänn utkast
+                </Button>
+              </>
+            )}
           <StatusTransitionControls
             documentId={documentId}
             currentStatus={currentStatus}
             onStatusChange={handleStatusChange}
             onCreateDraft={handleCreateDraft}
             creatingDraft={creatingDraft}
+            currentDraftVersionId={currentDraftId}
           />
         </div>
       </div>
@@ -526,6 +810,32 @@ export function DocumentEditor({
         initialFromVersionId={diffFromId}
         initialToVersionId={diffToId}
       />
+
+      {/* Story 17.17 AC 8 — required confirmation dialog before discarding
+          a draft. Approved version stays effective; the draft version row
+          remains in version history (just stops being pointed at). */}
+      <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Förkasta utkastet?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {approvedMetadata
+                ? `Vill ni förkasta utkast v${currentVersionNumber}? Den godkända versionen v${approvedMetadata.versionNumber} förblir gällande.`
+                : 'Vill ni förkasta utkastet?'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={discarding}>Avbryt</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDiscardDraft}
+              disabled={discarding}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Förkasta utkast
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

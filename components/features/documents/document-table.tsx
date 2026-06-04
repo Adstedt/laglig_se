@@ -32,10 +32,12 @@ import {
   FileText,
   FileDown,
   Archive,
+  History,
 } from 'lucide-react'
 import { formatDistanceToNow, format } from 'date-fns'
 import { sv } from 'date-fns/locale'
-import { DocumentStatusBadge } from '@/components/features/documents/document-status-badge'
+import { DualStatusBadge } from '@/components/features/documents/dual-status-badge'
+import { VersionHistoryPanel } from '@/components/features/documents/editor/version-history-panel'
 import { getReviewDateStatus } from '@/lib/utils/review-date-status'
 import { SortableHeader } from '@/components/ui/sortable-header'
 import { cn } from '@/lib/utils'
@@ -62,6 +64,39 @@ export interface DocumentItem {
   created_at: string
   updated_at: string
   creator: { id: string; name: string | null; email: string } | null
+  // Story 17.17 AC 1 / AC 5 — dual-pointer fields populated by Story 17.16's
+  // schema. Feed the composite badge and the derived `last_meaningful_change`
+  // value for the "Senast uppdaterad" column.
+  current_approved_version_id: string | null
+  current_draft_version_id: string | null
+  draft_status: 'DRAFT' | 'IN_REVIEW' | null
+  current_approved_version: {
+    version_number: number
+    approved_at: string | null
+  } | null
+  current_draft_version: {
+    version_number: number
+    created_at: string
+  } | null
+}
+
+/**
+ * Story 17.17 AC 5 — derive the "Senast ändrad" timestamp from the doc's
+ * most-recent meaningful change: a draft save, the latest approval, or the
+ * doc's own `updated_at` (covers metadata-only changes like a review-date
+ * bump). Render-time derivation; no DB-level change or new query.
+ */
+function lastMeaningfulChange(doc: DocumentItem): Date {
+  const candidates: number[] = [new Date(doc.updated_at).getTime()]
+  if (doc.current_draft_version?.created_at) {
+    candidates.push(new Date(doc.current_draft_version.created_at).getTime())
+  }
+  if (doc.current_approved_version?.approved_at) {
+    candidates.push(
+      new Date(doc.current_approved_version.approved_at).getTime()
+    )
+  }
+  return new Date(Math.max(...candidates))
 }
 
 type SortField = 'title' | 'updated_at' | 'created_at' | 'review_date'
@@ -150,14 +185,32 @@ export function DocumentTable({
         id: 'status',
         accessorKey: 'status',
         header: 'Status',
-        cell: ({ row }) => (
-          <div className="whitespace-nowrap">
-            <DocumentStatusBadge status={row.original.status} />
-          </div>
-        ),
-        size: 160,
-        minSize: 140,
-        maxSize: 200,
+        cell: ({ row }) => {
+          const doc = row.original
+          return (
+            <div className="whitespace-nowrap">
+              <DualStatusBadge
+                documentId={doc.id}
+                documentTitle={doc.title}
+                status={doc.status}
+                draftStatus={doc.draft_status}
+                currentApprovedVersionId={doc.current_approved_version_id}
+                currentDraftVersionId={doc.current_draft_version_id}
+                currentApprovedVersionNumber={
+                  doc.current_approved_version?.version_number ?? null
+                }
+                currentDraftVersionNumber={
+                  doc.current_draft_version?.version_number ?? null
+                }
+              />
+            </div>
+          )
+        },
+        // Story 17.17 — composite "Godkänd v{N} · Utkast v{N+1} pågår" needs
+        // more room than the single badge. Bumped from 160/140/200.
+        size: 280,
+        minSize: 220,
+        maxSize: 360,
         enableSorting: false,
       },
       {
@@ -195,8 +248,13 @@ export function DocumentTable({
           <SortableHeader column={column} label="Senast uppdaterad" />
         ),
         cell: ({ row }) => (
+          // Story 17.17 AC 5 — derived "last meaningful change": MAX of the
+          // doc's `updated_at`, the draft's `created_at`, and the approved
+          // version's `approved_at`. Server-side ORDER BY still uses
+          // `updated_at` per AC 15 (no new queries); column header copy is
+          // unchanged per AC 5.
           <span className="text-muted-foreground text-sm">
-            {formatDistanceToNow(new Date(row.original.updated_at), {
+            {formatDistanceToNow(lastMeaningfulChange(row.original), {
               addSuffix: true,
               locale: sv,
             })}
@@ -222,6 +280,59 @@ export function DocumentTable({
         minSize: 120,
         maxSize: 200,
         enableSorting: true,
+      },
+      {
+        id: 'history',
+        header: '',
+        cell: ({ row }) => {
+          const doc = row.original
+          // Story 17.17 smoke-found polish: the panel's "Aktuell" label
+          // should mark the canonical approved baseline currently in force
+          // ("i kraft"), NOT whichever version the editor happens to be
+          // displaying. For a dual-state doc, "Aktuell" should be the
+          // approved version (the one that's compliance-active), not the
+          // draft that's still being worked on. Priority: approved → draft
+          // (never-approved fallback) → counter (legacy/edge case).
+          const aktuellVersionNumber =
+            doc.current_approved_version?.version_number ??
+            doc.current_draft_version?.version_number ??
+            doc.current_version_number
+          return (
+            <VersionHistoryPanel
+              documentId={doc.id}
+              currentVersionNumber={aktuellVersionNumber}
+              onRestore={() => {
+                /* No editor mounted here — page refreshes after restore
+                   succeeds via Next.js cache invalidation in the action. */
+              }}
+              onCompare={() => {
+                /* Diff view is editor-scoped; from the list view we just
+                   surface restore + the version timeline. */
+              }}
+              documentStatus={doc.status}
+              currentDraftVersionId={doc.current_draft_version_id}
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  aria-label={`Visa versionshistorik för ${doc.title}`}
+                  // Story 17.17 AC 14 — stop click bubbling so the row's
+                  // default editor-navigation handler does not double-fire.
+                  // Radix SheetTrigger's asChild composes its own onClick
+                  // through `composeEventHandlers`, so the Sheet still opens.
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <History className="h-4 w-4" />
+                </Button>
+              }
+            />
+          )
+        },
+        size: 40,
+        minSize: 40,
+        maxSize: 40,
+        enableSorting: false,
       },
       {
         id: 'actions',

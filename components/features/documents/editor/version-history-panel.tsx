@@ -91,6 +91,44 @@ interface VersionHistoryPanelProps {
   currentVersionNumber: number
   onRestore: (_versionNumber: number) => void
   onCompare: (_fromVersionId: string, _toVersionId: string) => void
+  // Story 17.17 AC 17 — Model B-aware Återställ button gating. Without these,
+  // the panel defaults to permissive (today's behaviour), so existing call
+  // sites that don't yet pass them continue to function without regression.
+  // Both panel mount points (document-editor + document-table via Story
+  // 17.17 AC 16) plumb the real values explicitly.
+  documentStatus?: string
+  currentDraftVersionId?: string | null
+  // Story 17.17 AC 16 — optional custom SheetTrigger child. The table-row
+  // mount point passes a compact History-icon-only button (since the row
+  // already exposes the version number in its own column). Editor mount
+  // keeps today's "History icon + version-number badge" combo.
+  trigger?: React.ReactNode
+}
+
+/**
+ * Story 17.17 AC 17 — Model B-aware Återställ gating. The
+ * `restoreDocumentVersion` server action refuses with branch-first guidance
+ * for Path C (APPROVED with no draft) and terminal-state guidance for Path D
+ * (ARCHIVED / SUPERSEDED) under Story 17.16 v2.1. The panel mirrors those
+ * refusals as inline-disabled UI so users never click through to a confusing
+ * error toast.
+ *
+ *  - Path A — dual-state (draft in progress): restore enabled.
+ *  - Path B — never-approved draft / in-review: restore enabled.
+ *  - Path C — APPROVED with no draft pointer: disabled + Swedish hint.
+ *  - Path D — ARCHIVED / SUPERSEDED: disabled + Swedish hint.
+ */
+function computeRestoreGuard(
+  documentStatus: string | undefined,
+  currentDraftVersionId: string | null | undefined
+): { enabled: boolean; hint: string | null } {
+  if (documentStatus === 'ARCHIVED' || documentStatus === 'SUPERSEDED') {
+    return { enabled: false, hint: 'Återaktivera dokumentet först' }
+  }
+  if (documentStatus === 'APPROVED' && currentDraftVersionId == null) {
+    return { enabled: false, hint: 'Skapa utkast för att återställa' }
+  }
+  return { enabled: true, hint: null }
 }
 
 export function VersionHistoryPanel({
@@ -98,7 +136,14 @@ export function VersionHistoryPanel({
   currentVersionNumber,
   onRestore,
   onCompare,
+  documentStatus,
+  currentDraftVersionId,
+  trigger,
 }: VersionHistoryPanelProps) {
+  const restoreGuard = computeRestoreGuard(
+    documentStatus,
+    currentDraftVersionId
+  )
   const [open, setOpen] = useState(false)
   const [versions, setVersions] = useState<DocumentVersionEntry[]>([])
   const [loading, setLoading] = useState(false)
@@ -154,12 +199,14 @@ export function VersionHistoryPanel({
     <>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="sm" className="gap-1.5">
-            <History className="h-4 w-4" />
-            <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
-              {currentVersionNumber}
-            </Badge>
-          </Button>
+          {trigger ?? (
+            <Button variant="ghost" size="sm" className="gap-1.5">
+              <History className="h-4 w-4" />
+              <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
+                {currentVersionNumber}
+              </Badge>
+            </Button>
+          )}
         </SheetTrigger>
         <SheetContent className="w-[400px] sm:max-w-[400px] p-0 flex flex-col">
           <SheetHeader className="px-4 pt-4 pb-2">
@@ -168,7 +215,7 @@ export function VersionHistoryPanel({
               Visa och hantera dokumentversioner
             </SheetDescription>
           </SheetHeader>
-          <ScrollArea className="flex-1 px-4">
+          <ScrollArea className="flex-1 pl-4 pr-5">
             {loading ? (
               <div className="py-8 text-center text-sm text-muted-foreground">
                 Laddar versioner...
@@ -252,15 +299,24 @@ export function VersionHistoryPanel({
                           {isSelectedForCompare ? 'Avmarkera' : 'Jämför'}
                         </Button>
                         {!isCurrent && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 px-2 text-xs"
-                            onClick={() => setRestoreTarget(version)}
-                          >
-                            <RotateCcw className="mr-1 h-3 w-3" />
-                            Återställ
-                          </Button>
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 px-2 text-xs"
+                              onClick={() => setRestoreTarget(version)}
+                              disabled={!restoreGuard.enabled}
+                              title={restoreGuard.hint ?? undefined}
+                            >
+                              <RotateCcw className="mr-1 h-3 w-3" />
+                              Återställ
+                            </Button>
+                            {restoreGuard.hint && (
+                              <span className="text-[10px] text-muted-foreground italic">
+                                {restoreGuard.hint}
+                              </span>
+                            )}
+                          </>
                         )}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

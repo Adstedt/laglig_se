@@ -144,6 +144,14 @@ interface StatusTransitionControlsProps {
   onStatusChange: (_newStatus?: string) => void
   onCreateDraft?: () => Promise<void>
   creatingDraft?: boolean
+  // Story 17.17 smoke-found coordination fix — when a draft pointer is set,
+  // the APPROVED config's "Skapa ny version" primary action is suppressed
+  // (calling createDraftFromApproved against a doc that already has a draft
+  // would refuse with Story 17.16's "Ett utkast pågår redan…" error). The
+  // new Skicka/Förkasta/Godkänn buttons in DocumentEditor's metadata bar
+  // handle the dual-state workflow instead. Overflow actions (Ersätt,
+  // Arkivera) stay visible — they remain valid for dual-state docs.
+  currentDraftVersionId?: string | null
 }
 
 export function StatusTransitionControls({
@@ -152,13 +160,26 @@ export function StatusTransitionControls({
   onStatusChange,
   onCreateDraft,
   creatingDraft,
+  currentDraftVersionId = null,
 }: StatusTransitionControlsProps) {
   const [pendingStatus, setPendingStatus] =
     useState<WorkspaceDocumentStatus | null>(null)
   const [comment, setComment] = useState('')
   const [updating, setUpdating] = useState(false)
 
-  const config = STATUS_ACTION_CONFIG[currentStatus as WorkspaceDocumentStatus]
+  const rawConfig =
+    STATUS_ACTION_CONFIG[currentStatus as WorkspaceDocumentStatus]
+
+  // Story 17.17 — suppress the primary action when a draft is already in
+  // progress. APPROVED + draft pending: the dual-state metadata-bar buttons
+  // (Skicka / Godkänn / Förkasta) cover what "Skapa ny version" would have
+  // done. Legacy DRAFT + draft pending (pre-17.16 createDraftFromApproved
+  // legacy state): the metadata-bar "Skicka för granskning" supersedes the
+  // legacy primary too, so suppress it consistently.
+  const config =
+    rawConfig != null && currentDraftVersionId != null
+      ? { ...rawConfig, primary: undefined }
+      : rawConfig
 
   const handleConfirm = useCallback(async () => {
     if (!pendingStatus) return

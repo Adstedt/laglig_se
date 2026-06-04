@@ -37,6 +37,52 @@ export interface DocumentFilters {
   statuses: string[]
 }
 
+/**
+ * Story 17.17 AC 3 / AC 4 — pointer-aware status filter predicate.
+ *
+ * Under Story 17.16's dual-pointer model, "Visa godkända" must include the
+ * APPROVED-with-draft-pending case (the doc IS still operationally approved
+ * even while a revision is in progress). Same logic for "Visa utkast" /
+ * "Under granskning" — a dual-state doc appears under BOTH the approved
+ * filter AND the matching draft sub-status filter, by design.
+ *
+ * Terminal states (ARCHIVED / SUPERSEDED) stay top-level-status-based; they
+ * don't intersect with the dual-pointer model.
+ *
+ * Shape mirrors the per-row fields exposed by `getWorkspaceDocuments`'s
+ * `select` extension; only the fields the predicate actually reads are
+ * required so callers can pass partial mocks in tests.
+ */
+export interface StatusFilterableDoc {
+  status: string
+  current_approved_version_id: string | null
+  current_draft_version_id: string | null
+  draft_status: 'DRAFT' | 'IN_REVIEW' | null
+}
+
+export function matchesStatusFilter(
+  doc: StatusFilterableDoc,
+  filterValue: string
+): boolean {
+  switch (filterValue) {
+    case 'APPROVED':
+      return doc.current_approved_version_id != null
+    case 'DRAFT':
+      return (
+        doc.current_draft_version_id != null && doc.draft_status === 'DRAFT'
+      )
+    case 'IN_REVIEW':
+      return (
+        doc.current_draft_version_id != null && doc.draft_status === 'IN_REVIEW'
+      )
+    case 'ARCHIVED':
+    case 'SUPERSEDED':
+      return doc.status === filterValue
+    default:
+      return doc.status === filterValue
+  }
+}
+
 interface DocumentFiltersProps {
   filters: DocumentFilters
   onFiltersChange: (_filters: DocumentFilters) => void

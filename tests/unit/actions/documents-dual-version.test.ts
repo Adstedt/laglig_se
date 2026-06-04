@@ -41,18 +41,18 @@ vi.mock('@/lib/prisma', () => ({
     $transaction: vi.fn((cb) =>
       cb({
         workspaceDocument: {
-          update: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (prisma as any).workspaceDocument.update,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          update: (prisma as any).workspaceDocument.update,
         },
         workspaceDocumentVersion: {
-          create: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (prisma as any).workspaceDocumentVersion.create,
-          update: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (prisma as any).workspaceDocumentVersion.update,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          create: (prisma as any).workspaceDocumentVersion.create,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          update: (prisma as any).workspaceDocumentVersion.update,
         },
         activityLog: {
-          create: // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (prisma as any).activityLog.create,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          create: (prisma as any).activityLog.create,
         },
       })
     ),
@@ -83,6 +83,8 @@ import {
   promoteDraftToApproved,
   discardDraft,
   autosaveDocument,
+  submitDraftForReview,
+  rejectDraftReview,
 } from '@/app/actions/documents'
 import { prisma } from '@/lib/prisma'
 
@@ -572,5 +574,162 @@ describe('autosaveDocument — Story 17.16 AC 13 (alias-leak fix)', () => {
     })
     expect(result.success).toBe(false)
     expect(prisma.workspaceDocumentVersion.update).not.toHaveBeenCalled()
+  })
+})
+
+// ============================================================================
+// submitDraftForReview — Story 17.17 AC 7
+// ============================================================================
+
+describe('submitDraftForReview — Story 17.17 AC 7', () => {
+  const DRAFT_DOC = {
+    id: 'd_1',
+    current_draft_version_id: 'v_draft',
+    draft_status: 'DRAFT' as const,
+    workspace_id: 'ws_1',
+  }
+
+  it('happy path: flips draft_status DRAFT → IN_REVIEW', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(DRAFT_DOC)
+
+    const result = await submitDraftForReview('d_1')
+
+    expect(result.success).toBe(true)
+    const docUpdate = fn(prisma.workspaceDocument.update).mock.calls[0]![0]
+    expect(docUpdate.data).toEqual({ draft_status: 'IN_REVIEW' })
+    // Top-level status is NOT touched — Model B separates lifecycle from
+    // draft sub-status.
+    expect(docUpdate.data.status).toBeUndefined()
+
+    expect(prisma.activityLog.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          action: 'document_draft_submitted_for_review',
+          new_value: expect.objectContaining({
+            draft_version_id: 'v_draft',
+            draft_status: 'IN_REVIEW',
+          }),
+        }),
+      })
+    )
+  })
+
+  it('refuses when no draft is in progress', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue({
+      ...DRAFT_DOC,
+      current_draft_version_id: null,
+    })
+    const result = await submitDraftForReview('d_1')
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/pågående utkast/i)
+    expect(prisma.workspaceDocument.update).not.toHaveBeenCalled()
+  })
+
+  it('refuses when draft is already IN_REVIEW', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue({
+      ...DRAFT_DOC,
+      draft_status: 'IN_REVIEW',
+    })
+    const result = await submitDraftForReview('d_1')
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/redan skickat/i)
+    expect(prisma.workspaceDocument.update).not.toHaveBeenCalled()
+  })
+
+  it('refuses when permission denied (tasks:edit)', async () => {
+    mockWithWorkspace.mockImplementationOnce(
+      (cb: (_c: typeof ctx) => unknown) =>
+        cb({ ...ctx, hasPermission: () => false })
+    )
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(DRAFT_DOC)
+    const result = await submitDraftForReview('d_1')
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/behörighet/i)
+  })
+
+  it('refuses when document is missing', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(null)
+    const result = await submitDraftForReview('d_missing')
+    expect(result.success).toBe(false)
+    expect(prisma.workspaceDocument.update).not.toHaveBeenCalled()
+  })
+})
+
+// ============================================================================
+// rejectDraftReview — Story 17.17 smoke addendum (Neka utkast)
+// ============================================================================
+
+describe('rejectDraftReview — Story 17.17 (Neka utkast)', () => {
+  const IN_REVIEW_DOC = {
+    id: 'd_1',
+    current_draft_version_id: 'v_draft',
+    draft_status: 'IN_REVIEW' as const,
+    workspace_id: 'ws_1',
+  }
+
+  it('happy path: flips draft_status IN_REVIEW → DRAFT (soft reject)', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(IN_REVIEW_DOC)
+
+    const result = await rejectDraftReview('d_1')
+
+    expect(result.success).toBe(true)
+    const docUpdate = fn(prisma.workspaceDocument.update).mock.calls[0]![0]
+    expect(docUpdate.data).toEqual({ draft_status: 'DRAFT' })
+    // Top-level status NOT touched. Draft pointer NOT cleared (the draft
+    // content stays for the author to resume editing).
+    expect(docUpdate.data.status).toBeUndefined()
+    expect(docUpdate.data.current_draft_version_id).toBeUndefined()
+
+    expect(prisma.activityLog.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          action: 'document_draft_review_rejected',
+          new_value: expect.objectContaining({
+            draft_version_id: 'v_draft',
+            draft_status: 'DRAFT',
+          }),
+        }),
+      })
+    )
+  })
+
+  it('refuses when no draft is in progress', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue({
+      ...IN_REVIEW_DOC,
+      current_draft_version_id: null,
+    })
+    const result = await rejectDraftReview('d_1')
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/pågående utkast/i)
+    expect(prisma.workspaceDocument.update).not.toHaveBeenCalled()
+  })
+
+  it('refuses when draft is in DRAFT (not yet in review)', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue({
+      ...IN_REVIEW_DOC,
+      draft_status: 'DRAFT',
+    })
+    const result = await rejectDraftReview('d_1')
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/inte skickat för granskning/i)
+    expect(prisma.workspaceDocument.update).not.toHaveBeenCalled()
+  })
+
+  it('refuses when permission denied (tasks:edit)', async () => {
+    mockWithWorkspace.mockImplementationOnce(
+      (cb: (_c: typeof ctx) => unknown) =>
+        cb({ ...ctx, hasPermission: () => false })
+    )
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(IN_REVIEW_DOC)
+    const result = await rejectDraftReview('d_1')
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/behörighet/i)
+  })
+
+  it('refuses when document is missing', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(null)
+    const result = await rejectDraftReview('d_missing')
+    expect(result.success).toBe(false)
+    expect(prisma.workspaceDocument.update).not.toHaveBeenCalled()
   })
 })
