@@ -2,7 +2,6 @@
 
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
-import { MapPin, ShieldCheck } from 'lucide-react'
 import { OrgCheckForm } from './org-check-form'
 import { useMediaQuery } from '@/lib/hooks/use-media-query'
 
@@ -13,19 +12,6 @@ const HeroProductShot = dynamic(
   () => import('./hero-product-shot').then((m) => m.HeroProductShot),
   { ssr: false, loading: () => <div className="aspect-[1640/1080] w-full" /> }
 )
-
-const trustClaims = [
-  {
-    icon: ShieldCheck,
-    label: 'GDPR från grunden',
-    sub: 'personuppgifter skyddade',
-  },
-  {
-    icon: MapPin,
-    label: 'Data lagras i EU',
-    sub: 'stannar inom EU',
-  },
-]
 
 export function HeroV3() {
   // Phones get a crisp static screenshot instead of the live navigable shot —
@@ -66,14 +52,10 @@ export function HeroV3() {
       </div>
 
       {/* Product shot — wider than the text column (Linear-style). Frame rises
-          in; the shot fades in when it finishes loading. */}
-      <div className="relative mx-auto w-full max-w-[1600px] px-4 sm:px-6">
+          in; the shot fades in when it finishes loading. Bottom padding carries
+          the hero into section 02 (the old trust strip lived here). */}
+      <div className="relative mx-auto w-full max-w-[1600px] px-4 pb-6 sm:px-6 md:pb-14">
         <div className="relative animate-fade-up-delay-3">
-          {/* Slow breathing warm halo behind the frame */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -inset-x-16 -inset-y-12 animate-pulse-slow rounded-[3rem] bg-gradient-to-br from-amber-100/50 via-orange-50/25 to-transparent blur-3xl"
-          />
           <div
             className="relative overflow-hidden rounded-[1.25rem] bg-card ring-1 ring-foreground/[0.07]"
             style={{
@@ -108,27 +90,6 @@ export function HeroV3() {
                 <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-card/80 to-transparent" />
               </div>
             )}
-          </div>
-        </div>
-      </div>
-
-      {/* Trust strip */}
-      <div className="container relative mx-auto px-4 pb-12 md:pb-16 lg:pb-20">
-        <div className="mx-auto max-w-7xl">
-          <div className="mt-12 flex flex-col gap-4 border-t border-border/60 pt-6 sm:flex-row sm:gap-12">
-            {trustClaims.map((claim) => (
-              <div key={claim.label} className="flex items-start gap-2.5">
-                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-foreground/70">
-                  <claim.icon className="h-3.5 w-3.5" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium leading-tight">
-                    {claim.label}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{claim.sub}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </div>

@@ -426,20 +426,6 @@ export function WhySectionGraph() {
             </div>
           </div>
         </div>
-
-        {/* Bridge into the showcase — "hålla ihop allt" → samlad, "visa det" →
-            spårbar, "systemet för resten" → #3. Hidden on mobile (takes too
-            much vertical space; the headline + pile already carry the point). */}
-        <div className="mx-auto mt-16 hidden max-w-2xl text-center md:mt-20 md:block">
-          <p className="text-2xl font-medium md:text-3xl">
-            Det svåra är inte att följa reglerna.
-            <br />
-            Det svåra är att hålla ihop allt de kräver — och kunna visa det.
-          </p>
-          <p className="mt-3 text-base text-muted-foreground">
-            Er bokföring har ett system. Det här är systemet för resten.
-          </p>
-        </div>
       </div>
     </section>
   )

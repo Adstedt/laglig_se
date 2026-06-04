@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { PricingSection } from '@/components/features/landing/pricing-section'
-import { FaqSection } from '@/components/features/landing/faq-section'
 import { BrowsePagesPrefetcher } from '@/components/features/landing/browse-pages-prefetcher'
 
 import { NavbarV3 } from '@/components/features/landing-v3/navbar-v3'
@@ -18,6 +17,7 @@ import { OpenDatabaseV3 } from '@/components/features/landing-v3/open-database-v
 import { InfrastructureSection } from '@/components/features/landing-v3/infrastructure-section'
 import { ByraerSection } from '@/components/features/landing-v3/byraer-section'
 import { TryNowSection } from '@/components/features/landing-v3/try-now-section'
+import { FaqV3 } from '@/components/features/landing-v3/faq-v3'
 import { CtaV3 } from '@/components/features/landing-v3/cta-v3'
 
 export const metadata = {
@@ -71,7 +71,7 @@ export default function LandingV3Page() {
         <ByraerSection />
         <TryNowSection />
         <PricingSection />
-        <FaqSection />
+        <FaqV3 />
         <CtaV3 />
       </main>
       <FooterV3 />
