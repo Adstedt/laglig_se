@@ -37,7 +37,7 @@ const regelverk: FooterLink[] = [
 
 const foretag: FooterLink[] = [
   { href: '#byraer', label: 'För revisorer & byråer' },
-  { href: 'mailto:contact@laglig.se', label: 'Kontakt' },
+  { href: 'mailto:dev@laglig.se', label: 'Kontakt' },
 ]
 
 const legal: FooterLink[] = [

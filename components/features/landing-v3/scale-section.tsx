@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
+import { SectionLabel } from './section-label'
 
 // "Funkar för hela företaget" — the SCALE story: the same platform fits a sole
 // trader and a 300-person group. Skyldigheterna (regelområden) grow with size;
@@ -93,9 +94,9 @@ export function ScaleSection() {
     >
       <div className="container relative mx-auto px-4">
         <div className="mx-auto max-w-7xl">
-          <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            En plattform, alla storlekar
-          </p>
+          <SectionLabel index="04" className="mb-4">
+            För alla storlekar
+          </SectionLabel>
 
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
             {/* LEFT — editorial */}
@@ -184,7 +185,7 @@ export function ScaleSection() {
                   </div>
 
                   {/* growing regelområden */}
-                  <p className="mb-2.5 mt-6 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+                  <p className="mb-2.5 mt-6 text-[12px] font-medium text-muted-foreground">
                     Regelområden ni omfattas av
                   </p>
                   <div className="flex flex-wrap gap-1.5">

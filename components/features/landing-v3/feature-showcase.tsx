@@ -19,7 +19,13 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { ScaledModalFrame, ShowcaseAtmosphere } from './showcase-utils'
+import { useMediaQuery } from '@/lib/hooks/use-media-query'
+import { SectionLabel, SubLabel } from './section-label'
+import {
+  ScaledModalFrame,
+  ShowcaseAtmosphere,
+  ShowcaseImageFrame,
+} from './showcase-utils'
 
 /**
  * Feature showcase — one framed "screenshot" that SHOWS the compliance OS.
@@ -225,35 +231,40 @@ const SURFACES: Surface[] = [
 export function FeatureShowcase() {
   const [activeSurface, setActiveSurface] = useState<SurfaceId>('efterlevnad')
   const [activeDocId, setActiveDocId] = useState(DOC_TABS[0]!.id)
+  // Phones get static screenshots instead of the live real components, which
+  // would scale down to illegible thumbnails (and ship heavy table/dnd JS).
+  const isDesktop = useMediaQuery('(min-width: 768px)')
 
   const surface = SURFACES.find((s) => s.id === activeSurface) ?? SURFACES[0]!
 
-  const body =
-    surface.id === 'efterlevnad' ? (
-      <LawItemModalReal key={activeDocId} docId={activeDocId} />
-    ) : surface.id === 'lagandringar' ? (
-      <ChangeAssessmentReal />
-    ) : surface.id === 'uppgifter' ? (
-      <UppgifterReal />
-    ) : surface.id === 'styrdokument' ? (
-      <StyrdokumentReal />
-    ) : (
-      <KontrollReal />
-    )
+  const body = !isDesktop ? null : surface.id === 'efterlevnad' ? (
+    <LawItemModalReal key={activeDocId} docId={activeDocId} />
+  ) : surface.id === 'lagandringar' ? (
+    <ChangeAssessmentReal />
+  ) : surface.id === 'uppgifter' ? (
+    <UppgifterReal />
+  ) : surface.id === 'styrdokument' ? (
+    <StyrdokumentReal />
+  ) : (
+    <KontrollReal />
+  )
 
   return (
     <section
       id="how-it-works"
-      className="relative scroll-mt-20 overflow-hidden bg-background py-24 md:py-32"
+      className="relative scroll-mt-20 overflow-hidden bg-background py-16 md:py-32"
     >
-      <ShowcaseAtmosphere />
+      {/* amber ambient wash — desktop only; on mobile it reads as an odd blob */}
+      <div className="hidden md:block">
+        <ShowcaseAtmosphere />
+      </div>
 
       <div className="container relative z-10 mx-auto px-4">
         {/* section intro — frame the whole offering before the tabs */}
-        <div className="mx-auto mb-10 max-w-2xl text-center">
-          <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Systemet för compliance
-          </p>
+        <div className="mx-auto mb-8 max-w-2xl text-center md:mb-10">
+          <SectionLabel index="02" align="center" className="mb-4">
+            Lösningen
+          </SectionLabel>
           <h2
             className="text-3xl font-medium leading-[1.1] tracking-tight md:text-4xl lg:text-5xl"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
@@ -268,7 +279,7 @@ export function FeatureShowcase() {
         </div>
 
         {/* surface tabs — switch between the five product surfaces */}
-        <div className="mx-auto mb-10 flex max-w-7xl flex-wrap justify-center gap-2">
+        <div className="mx-auto mb-8 flex max-w-7xl flex-wrap justify-center gap-2 md:mb-10">
           {SURFACES.map((s) => {
             const active = s.id === activeSurface
             return (
@@ -290,11 +301,9 @@ export function FeatureShowcase() {
         </div>
 
         {/* copy header — tailored per surface */}
-        <div className="mx-auto mb-12 grid max-w-7xl gap-8 lg:grid-cols-[1fr_1fr] lg:items-end lg:gap-16">
+        <div className="mx-auto mb-8 grid max-w-7xl gap-6 md:mb-12 lg:grid-cols-[1fr_1fr] lg:items-end lg:gap-16">
           <div>
-            <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              {surface.eyebrow}
-            </p>
+            <SubLabel className="mb-5">{surface.eyebrow}</SubLabel>
             <h3
               className="text-2xl font-medium leading-[1.12] tracking-tight md:text-3xl lg:text-[2.5rem]"
               style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
@@ -322,8 +331,9 @@ export function FeatureShowcase() {
           </ul>
         </div>
 
-        {/* Efterlevnad sub-tabs — only for the efterlevnad surface */}
-        {surface.id === 'efterlevnad' && (
+        {/* Efterlevnad sub-tabs — only for the efterlevnad surface (desktop;
+            the mobile fallback is a single static screenshot) */}
+        {surface.id === 'efterlevnad' && isDesktop && (
           <div className="mx-auto mb-5 flex max-w-7xl flex-wrap gap-2">
             {DOC_TABS.map((t) => {
               const active = t.id === activeDocId
@@ -354,11 +364,22 @@ export function FeatureShowcase() {
           </div>
         )}
 
-        {/* full-width mockup — the real surface, fed mocked data */}
+        {/* full-width mockup — the real surface fed mocked data on desktop, a
+            crisp swipeable screenshot on phones */}
         <div className="mx-auto max-w-7xl">
-          <ScaledModalFrame url={surface.url} designWidth={surface.designWidth}>
-            {body}
-          </ScaledModalFrame>
+          {isDesktop ? (
+            <ScaledModalFrame
+              url={surface.url}
+              designWidth={surface.designWidth}
+            >
+              {body}
+            </ScaledModalFrame>
+          ) : (
+            <ShowcaseImageFrame
+              src={`/images/landing-v3/showcase-${surface.id}.webp`}
+              alt={`${surface.eyebrow} i Laglig.se`}
+            />
+          )}
         </div>
       </div>
     </section>

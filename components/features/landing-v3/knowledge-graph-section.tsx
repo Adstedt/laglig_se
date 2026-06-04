@@ -1074,7 +1074,7 @@ export function KnowledgeGraphSection() {
         {/* Capabilities — the agent doesn't just answer, it acts across the
             whole system (autonomously, on approval). */}
         <div className="mx-auto mt-16 max-w-3xl text-center md:mt-24">
-          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground/50">
+          <p className="mb-3 font-safiro text-[13px] font-medium text-foreground/60">
             Och den agerar — inte bara svarar
           </p>
           <h3

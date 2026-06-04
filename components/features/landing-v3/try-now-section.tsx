@@ -1,4 +1,5 @@
 import { OrgCheckForm } from './org-check-form'
+import { SubLabel } from './section-label'
 
 /**
  * Mid-page conversion moment — wraps the org-number form widget that used to
@@ -17,9 +18,7 @@ export function TryNowSection() {
       <div className="container relative mx-auto px-4">
         <div className="mx-auto max-w-3xl">
           <div className="mb-10 text-center">
-            <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-              Testa direkt · 30 sekunder
-            </p>
+            <SubLabel className="mb-3">Testa direkt · 30 sekunder</SubLabel>
             <h2
               className="mb-4 text-3xl font-medium tracking-tight md:text-4xl lg:text-5xl"
               style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
@@ -39,10 +38,6 @@ export function TryNowSection() {
             />
             <div className="relative rounded-2xl border border-border/60 bg-card p-6 shadow-xl md:p-8">
               <OrgCheckForm />
-              <p className="mt-4 border-t border-border/60 pt-4 text-center text-xs text-muted-foreground">
-                Sen bygger vi er egen laglista – med allt ni behöver göra,
-                samlat och klart.
-              </p>
             </div>
           </div>
         </div>

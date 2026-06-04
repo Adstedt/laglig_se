@@ -148,7 +148,7 @@ function ComparisonColumn({ col, index }: { col: Column; index: number }) {
       </div>
 
       {/* context stack */}
-      <p className="mt-6 text-[11px] font-medium uppercase tracking-[0.08em] text-background/45">
+      <p className="mt-6 text-[12px] font-medium text-background/45">
         Känner till
       </p>
       <ul className="mt-3 flex-1 space-y-1.5">
@@ -216,9 +216,15 @@ export function AiComparisonSection() {
     <section className="relative pb-10 pt-20 md:pb-14 md:pt-28">
       <div className="container relative mx-auto px-4">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-background/50">
-            Med allt på ett ställe
-          </p>
+          <div className="mb-5 flex items-center justify-center gap-2.5">
+            <span className="font-safiro text-[15px] font-medium tabular-nums text-amber-400">
+              03
+            </span>
+            <span className="h-4 w-px bg-background/25" />
+            <span className="font-safiro text-[13px] font-medium text-background/60">
+              AI-agenten
+            </span>
+          </div>
           <h2
             className="mx-auto mb-5 max-w-2xl text-3xl font-medium leading-[1.1] tracking-tight md:text-5xl lg:text-6xl"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}

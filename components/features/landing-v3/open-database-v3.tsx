@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight, Search, BookOpen, Globe, FileText } from 'lucide-react'
+import { SectionLabel } from './section-label'
 import { SearchResultCard } from '@/components/features/search/search-result-card'
 import type { SearchResult } from '@/app/actions/search'
 
@@ -85,9 +86,9 @@ export function OpenDatabaseV3() {
     <section className="relative overflow-hidden bg-background py-12 md:py-20">
       <div className="container relative mx-auto px-4">
         <div className="mx-auto max-w-7xl">
-          <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            Sveriges öppna lagbok
-          </p>
+          <SectionLabel index="05" className="mb-4">
+            Öppen lagbok
+          </SectionLabel>
 
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
             {/* LEFT — editorial */}

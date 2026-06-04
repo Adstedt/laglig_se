@@ -1,4 +1,5 @@
 import { MapPin, Lock, KeyRound } from 'lucide-react'
+import { SectionLabel } from './section-label'
 
 // Trust signals only — spårbarhet/historik (shown in the showcase + AI chapter)
 // and the revisor access (owned by the Byråer section) are deliberately left
@@ -6,8 +7,8 @@ import { MapPin, Lock, KeyRound } from 'lucide-react'
 const facts = [
   {
     icon: MapPin,
-    title: 'Data lagras i Sverige',
-    desc: 'Era uppgifter stannar i Sverige – och lämnar aldrig EU.',
+    title: 'Data lagras i EU',
+    desc: 'Era uppgifter lagras och behandlas inom EU.',
   },
   {
     icon: Lock,
@@ -26,6 +27,9 @@ export function InfrastructureSection() {
     <section className="border-y bg-section-warm py-16 md:py-24">
       <div className="container mx-auto px-4">
         <div className="mx-auto mb-12 max-w-3xl text-center md:mb-16">
+          <SectionLabel index="06" align="center" className="mb-4">
+            Säkerhet
+          </SectionLabel>
           <h2
             className="mb-4 text-3xl font-medium tracking-tight md:text-4xl lg:text-5xl"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}

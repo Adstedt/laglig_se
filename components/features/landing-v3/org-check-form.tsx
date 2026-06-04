@@ -179,8 +179,10 @@ export function OrgCheckForm({
 
   const pill =
     'flex items-center gap-2 rounded-full border border-border bg-card py-1.5 pl-4 pr-1.5 shadow-sm transition focus-within:border-foreground/20 focus-within:ring-4 focus-within:ring-foreground/[0.06]'
+  // text-base (16px) on phones prevents iOS Safari from zooming on focus; the
+  // field shrinks back to text-sm from sm: up.
   const field =
-    'min-w-0 flex-1 bg-transparent py-1 text-sm outline-none placeholder:text-muted-foreground'
+    'min-w-0 flex-1 bg-transparent py-1 text-base outline-none placeholder:text-muted-foreground sm:text-sm'
   const action =
     'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-amber-400 px-4 text-sm font-semibold text-foreground shadow-sm shadow-amber-500/20 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:bg-amber-400/45 disabled:text-foreground/50 disabled:shadow-none'
 
@@ -207,7 +209,7 @@ export function OrgCheckForm({
 
       {/* identity — soft warm wash so the header reads as a branded surface */}
       <div className="bg-gradient-to-b from-secondary/60 to-transparent px-5 pb-4 pt-5">
-        <p className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <p className="mb-3 flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground">
           <Sparkles className="h-3 w-3 text-amber-500" />
           Din regelöversikt
         </p>
@@ -304,7 +306,7 @@ export function OrgCheckForm({
         (step === 1 ? (
           <form onSubmit={goNext}>
             {eyebrow && (
-              <p className="mb-2.5 flex items-center gap-1.5 pl-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">
+              <p className="mb-2.5 flex items-center gap-1.5 pl-1 font-safiro text-[13px] font-medium text-amber-700">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500/70 opacity-70" />
                   <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-600" />

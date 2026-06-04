@@ -8,6 +8,7 @@ import {
   History,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { SectionLabel } from './section-label'
 
 const points = [
   'Gratis för revisorn — egen inloggning, ni betalar inget',
@@ -37,9 +38,9 @@ export function ByraerSection() {
     <section id="byraer" className="scroll-mt-16 py-16 md:py-24">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-7xl">
-          <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            För revisorer och byråer
-          </p>
+          <SectionLabel index="07" className="mb-4">
+            Revisorer & byråer
+          </SectionLabel>
 
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
             {/* LEFT — editorial */}
@@ -73,7 +74,7 @@ export function ByraerSection() {
               </ul>
 
               <Button asChild>
-                <a href="mailto:contact@laglig.se">
+                <a href="mailto:dev@laglig.se">
                   Kontakta oss
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </a>

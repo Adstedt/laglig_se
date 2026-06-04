@@ -1,8 +1,10 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { MapPin, Database, ShieldCheck } from 'lucide-react'
+import Image from 'next/image'
+import { MapPin, ShieldCheck } from 'lucide-react'
 import { OrgCheckForm } from './org-check-form'
+import { useMediaQuery } from '@/lib/hooks/use-media-query'
 
 // Client-only: the product shot pulls in heavy interactive deps (tanstack-table,
 // dnd-kit) and dnd-kit's SSR ids cause hydration mismatches. Loading it client-
@@ -14,23 +16,22 @@ const HeroProductShot = dynamic(
 
 const trustClaims = [
   {
-    icon: Database,
-    label: '10 000+ lagar och regler',
-    sub: 'uppdateras varje dag',
+    icon: ShieldCheck,
+    label: 'GDPR från grunden',
+    sub: 'personuppgifter skyddade',
   },
   {
     icon: MapPin,
-    label: 'Data lagras i Sverige',
-    sub: 'tryggt och säkert',
-  },
-  {
-    icon: ShieldCheck,
-    label: 'Spårbart från start',
-    sub: 'redo när någon frågar',
+    label: 'Data lagras i EU',
+    sub: 'stannar inom EU',
   },
 ]
 
 export function HeroV3() {
+  // Phones get a crisp static screenshot instead of the live navigable shot —
+  // it keeps the heavy table/dnd JS off mobile and avoids an unreadable scale.
+  const isDesktop = useMediaQuery('(min-width: 768px)')
+
   return (
     <section className="relative overflow-hidden">
       {/* Headline block — constrained to the text column width. Lines reveal in
@@ -89,7 +90,24 @@ export function HeroV3() {
               aria-hidden
               className="pointer-events-none absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent"
             />
-            <HeroProductShot />
+            {isDesktop ? (
+              <HeroProductShot />
+            ) : (
+              // Linear-style focal partial: a legible crop of the laglista, the
+              // rest of the app bleeding off behind soft edge fades.
+              <div className="relative">
+                <Image
+                  src="/images/landing-v3/hero.webp"
+                  alt="Laglig.se – laglista med krav, status och ansvar per regelverk"
+                  width={1504}
+                  height={1391}
+                  className="block h-auto w-full"
+                  priority
+                />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-card to-transparent" />
+                <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-card/80 to-transparent" />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -97,7 +115,7 @@ export function HeroV3() {
       {/* Trust strip */}
       <div className="container relative mx-auto px-4 pb-12 md:pb-16 lg:pb-20">
         <div className="mx-auto max-w-7xl">
-          <div className="mt-12 grid grid-cols-1 gap-3 border-t border-border/60 pt-6 sm:grid-cols-3">
+          <div className="mt-12 flex flex-col gap-4 border-t border-border/60 pt-6 sm:flex-row sm:gap-12">
             {trustClaims.map((claim) => (
               <div key={claim.label} className="flex items-start gap-2.5">
                 <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted text-foreground/70">
