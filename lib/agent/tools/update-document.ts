@@ -144,8 +144,15 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — ändri
     }: Input) => {
       const startTime = Date.now()
 
-      // Workspace-scoped read: scopes ownership AND fetches the current version's
-      // content_json + the updated_at snapshot in one query.
+      // Story 17.16 AC 8: workspace-scoped read with the dual-pointer fields.
+      // The content the agent's edit is computed against MUST come from
+      // current_draft_version when set (draft-in-progress writeable case), or
+      // current_approved_version for the never-approved DRAFT case. Do NOT
+      // read current_version.content_json (the deprecated alias) — under the
+      // corrected Model B semantics, the alias points at the approved version
+      // during a revision window, which would cause the agent to compute its
+      // diff against approved content while writing to the draft pointer —
+      // silent draft corruption.
       const document = await prisma.workspaceDocument.findFirst({
         where: { id: document_id, workspace_id: workspaceId },
         select: {
@@ -153,7 +160,10 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — ändri
           title: true,
           status: true,
           updated_at: true,
-          current_version: { select: { content_json: true } },
+          current_draft_version_id: true,
+          current_approved_version_id: true,
+          current_draft_version: { select: { content_json: true } },
+          current_approved_version: { select: { content_json: true } },
         },
       })
       if (!document) {
@@ -165,9 +175,20 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — ändri
         )
       }
 
-      // AC 4: DRAFT or IN_REVIEW only. Reject APPROVED/SUPERSEDED/ARCHIVED with
-      // guidance pointing at createDraftFromApproved (app/actions/documents.ts:823).
-      if (document.status !== 'DRAFT' && document.status !== 'IN_REVIEW') {
+      // Story 17.16 AC 8 — reframed writeable predicate.
+      // Writeable iff:
+      //   - doc has a draft in progress (current_draft_version_id != null), OR
+      //   - doc is a never-approved DRAFT (no approved version exists yet)
+      // Observationally equivalent to the legacy `status ∈ DRAFT/IN_REVIEW`
+      // guard for all cases the existing 17.11/17.11b tests cover. Additionally
+      // allows the "APPROVED with current_draft_version_id" dual-state — which
+      // 17.11c will eventually exercise via auto-branch, but is not yet
+      // reachable via any UI/agent path in this story.
+      const writeable =
+        document.current_draft_version_id != null ||
+        (document.status === 'DRAFT' &&
+          document.current_approved_version_id == null)
+      if (!writeable) {
         return wrapToolError(
           'update_document',
           `Dokumentet kan inte ändras i status "${document.status}".`,
@@ -176,9 +197,10 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — ändri
         )
       }
 
-      // The document must already have a current version to edit (no version =
-      // empty / corrupt — surface clearly rather than blowing up downstream).
-      const currentContent = document.current_version?.content_json as
+      // Story 17.16 AC 8: content source = draft pointer when set, else
+      // approved pointer (never-approved DRAFT case). Never read the alias.
+      const currentContent = (document.current_draft_version?.content_json ??
+        document.current_approved_version?.content_json) as
         | TiptapDocumentJSON
         | null
         | undefined

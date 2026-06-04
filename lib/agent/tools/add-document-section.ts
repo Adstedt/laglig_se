@@ -159,8 +159,10 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — tillä
     }: Input) => {
       const startTime = Date.now()
 
-      // Workspace-scoped read: scopes ownership AND fetches the current version's
-      // content_json + the updated_at snapshot in one query.
+      // Story 17.16 AC 9: workspace-scoped read with the dual-pointer fields.
+      // Content source = draft pointer when set, else approved (never-approved
+      // DRAFT case). NEVER read current_version.content_json (the deprecated
+      // alias) — see update-document.ts AC 8 for the full rationale.
       const document = await prisma.workspaceDocument.findFirst({
         where: { id: document_id, workspace_id: workspaceId },
         select: {
@@ -168,7 +170,10 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — tillä
           title: true,
           status: true,
           updated_at: true,
-          current_version: { select: { content_json: true } },
+          current_draft_version_id: true,
+          current_approved_version_id: true,
+          current_draft_version: { select: { content_json: true } },
+          current_approved_version: { select: { content_json: true } },
         },
       })
       if (!document) {
@@ -180,8 +185,12 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — tillä
         )
       }
 
-      // AC 4: DRAFT or IN_REVIEW only. Mirrors 17.11's wording exactly.
-      if (document.status !== 'DRAFT' && document.status !== 'IN_REVIEW') {
+      // Story 17.16 AC 9 — reframed writeable predicate (mirrors AC 8).
+      const writeable =
+        document.current_draft_version_id != null ||
+        (document.status === 'DRAFT' &&
+          document.current_approved_version_id == null)
+      if (!writeable) {
         return wrapToolError(
           'add_document_section',
           `Dokumentet kan inte ändras i status "${document.status}".`,
@@ -190,7 +199,8 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — tillä
         )
       }
 
-      const currentContent = document.current_version?.content_json as
+      const currentContent = (document.current_draft_version?.content_json ??
+        document.current_approved_version?.content_json) as
         | TiptapDocumentJSON
         | null
         | undefined

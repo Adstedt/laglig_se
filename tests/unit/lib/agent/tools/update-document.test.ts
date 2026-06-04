@@ -41,38 +41,46 @@ function makeDoc(
     contentJson: unknown
   }> = {}
 ) {
+  const status = overrides.status ?? ('DRAFT' as const)
+  const contentJson =
+    overrides.contentJson ??
+    ({
+      type: 'doc',
+      content: [
+        {
+          type: 'heading',
+          attrs: { level: 2 },
+          content: [{ type: 'text', text: 'Syfte' }],
+        },
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Old purpose body.' }],
+        },
+        {
+          type: 'heading',
+          attrs: { level: 2 },
+          content: [{ type: 'text', text: 'Ansvar' }],
+        },
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Responsibility.' }],
+        },
+      ],
+    } as Record<string, unknown>)
+  // Story 17.16: dual-pointer fields. DRAFT/IN_REVIEW → draft pointer set;
+  // APPROVED → approved pointer set; SUPERSEDED/ARCHIVED → approved pointer
+  // (the historical anchor — both states correctly trigger the writeable
+  // predicate to refuse).
+  const isDraft = status === 'DRAFT' || status === 'IN_REVIEW'
   return {
     id: 'd_1',
     title: 'Arbetsmiljöpolicy',
-    status: overrides.status ?? ('DRAFT' as const),
+    status,
     updated_at: UPDATED_AT,
-    current_version: {
-      content_json:
-        overrides.contentJson ??
-        ({
-          type: 'doc',
-          content: [
-            {
-              type: 'heading',
-              attrs: { level: 2 },
-              content: [{ type: 'text', text: 'Syfte' }],
-            },
-            {
-              type: 'paragraph',
-              content: [{ type: 'text', text: 'Old purpose body.' }],
-            },
-            {
-              type: 'heading',
-              attrs: { level: 2 },
-              content: [{ type: 'text', text: 'Ansvar' }],
-            },
-            {
-              type: 'paragraph',
-              content: [{ type: 'text', text: 'Responsibility.' }],
-            },
-          ],
-        } as Record<string, unknown>),
-    },
+    current_draft_version_id: isDraft ? 'v_draft' : null,
+    current_approved_version_id: isDraft ? null : 'v_approved',
+    current_draft_version: isDraft ? { content_json: contentJson } : null,
+    current_approved_version: isDraft ? null : { content_json: contentJson },
   }
 }
 
@@ -211,9 +219,13 @@ describe('update_document — AC 4 guards (no pending row on failure)', () => {
   )
 
   it('rejects when the document has no current version', async () => {
+    // Story 17.16: under the dual-pointer model the tool reads
+    // current_draft_version / current_approved_version (NEVER the alias). Both
+    // are nulled to simulate a doc with no current content to edit.
     fn(prisma.workspaceDocument.findFirst).mockResolvedValue({
       ...makeDoc(),
-      current_version: null,
+      current_draft_version: null,
+      current_approved_version: null,
     })
 
     const result = await execOf(createUpdateDocumentTool('ws_1', CTX))({

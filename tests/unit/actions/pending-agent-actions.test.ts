@@ -958,7 +958,10 @@ describe('approvePendingAction → UPDATE_DOCUMENT', () => {
       id: 'd_1',
       status: 'DRAFT',
       workspace_id: 'ws_123',
-      current_version: { content_json: DRAFT_DOC_CONTENT },
+      current_draft_version_id: 'v_d',
+      current_approved_version_id: null,
+      current_draft_version: { content_json: DRAFT_DOC_CONTENT },
+      current_approved_version: null,
     })
     mockSaveDocumentVersion.mockResolvedValue({
       success: true,
@@ -1021,7 +1024,10 @@ describe('approvePendingAction → UPDATE_DOCUMENT', () => {
       id: 'd_1',
       status: 'DRAFT',
       workspace_id: 'ws_123',
-      current_version: { content_json: DRAFT_DOC_CONTENT },
+      current_draft_version_id: 'v_d',
+      current_approved_version_id: null,
+      current_draft_version: { content_json: DRAFT_DOC_CONTENT },
+      current_approved_version: null,
     })
     mockSaveDocumentVersion.mockResolvedValue({
       success: true,
@@ -1076,7 +1082,14 @@ describe('approvePendingAction → UPDATE_DOCUMENT', () => {
         id: 'd_1',
         status,
         workspace_id: 'ws_123',
-        current_version: { content_json: DRAFT_DOC_CONTENT },
+        // Story 17.16: approved-pointer-only mock for the refused-status case.
+        // Writeable predicate: current_draft_version_id=null AND status≠'DRAFT'
+        // → not writeable → refusal fires per AC 10 (status-based refusal copy
+        // preserved unchanged).
+        current_draft_version_id: null,
+        current_approved_version_id: 'v_a',
+        current_draft_version: null,
+        current_approved_version: { content_json: DRAFT_DOC_CONTENT },
       })
 
       const result = await approvePendingAction('pa_1')
@@ -1120,7 +1133,10 @@ describe('approvePendingAction → UPDATE_DOCUMENT', () => {
       id: 'd_1',
       status: 'DRAFT',
       workspace_id: 'ws_123',
-      current_version: { content_json: DRAFT_DOC_CONTENT },
+      current_draft_version_id: 'v_d',
+      current_approved_version_id: null,
+      current_draft_version: { content_json: DRAFT_DOC_CONTENT },
+      current_approved_version: null,
     })
 
     const result = await approvePendingAction('pa_1')
@@ -1143,7 +1159,10 @@ describe('approvePendingAction → UPDATE_DOCUMENT', () => {
       id: 'd_1',
       status: 'DRAFT',
       workspace_id: 'ws_123',
-      current_version: { content_json: DRAFT_DOC_CONTENT },
+      current_draft_version_id: 'v_d',
+      current_approved_version_id: null,
+      current_draft_version: { content_json: DRAFT_DOC_CONTENT },
+      current_approved_version: null,
     })
     mockSaveDocumentVersion.mockResolvedValue({
       success: false,
@@ -1240,7 +1259,10 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
       id: 'd_1',
       status: 'DRAFT',
       workspace_id: 'ws_123',
-      current_version: { content_json: DRAFT_DOC_CONTENT },
+      current_draft_version_id: 'v_d',
+      current_approved_version_id: null,
+      current_draft_version: { content_json: DRAFT_DOC_CONTENT },
+      current_approved_version: null,
     })
     mockSaveDocumentVersion.mockResolvedValue({
       success: true,
@@ -1304,7 +1326,10 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
       id: 'd_1',
       status: 'DRAFT',
       workspace_id: 'ws_123',
-      current_version: { content_json: DRAFT_DOC_CONTENT },
+      current_draft_version_id: 'v_d',
+      current_approved_version_id: null,
+      current_draft_version: { content_json: DRAFT_DOC_CONTENT },
+      current_approved_version: null,
     })
     mockSaveDocumentVersion.mockResolvedValue({
       success: true,
@@ -1361,7 +1386,10 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
       id: 'd_1',
       status: 'DRAFT',
       workspace_id: 'ws_123',
-      current_version: { content_json: DRAFT_DOC_CONTENT },
+      current_draft_version_id: 'v_d',
+      current_approved_version_id: null,
+      current_draft_version: { content_json: DRAFT_DOC_CONTENT },
+      current_approved_version: null,
     })
     mockSaveDocumentVersion.mockResolvedValue({
       success: true,
@@ -1407,7 +1435,12 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
         id: 'd_1',
         status,
         workspace_id: 'ws_123',
-        current_version: { content_json: DRAFT_DOC_CONTENT },
+        // Story 17.16: approved-pointer-only mock for the refused-status case
+        // (mirrors the UPDATE_DOCUMENT parameterized test above).
+        current_draft_version_id: null,
+        current_approved_version_id: 'v_a',
+        current_draft_version: null,
+        current_approved_version: { content_json: DRAFT_DOC_CONTENT },
       })
 
       const result = await approvePendingAction('pa_1')
@@ -1465,7 +1498,10 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
       id: 'd_1',
       status: 'DRAFT',
       workspace_id: 'ws_123',
-      current_version: { content_json: docWithDup },
+      current_draft_version_id: 'v_d',
+      current_approved_version_id: null,
+      current_draft_version: { content_json: docWithDup },
+      current_approved_version: null,
     })
 
     const result = await approvePendingAction('pa_1')
@@ -1495,7 +1531,10 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
       id: 'd_1',
       status: 'DRAFT',
       workspace_id: 'ws_123',
-      current_version: { content_json: DRAFT_DOC_CONTENT },
+      current_draft_version_id: 'v_d',
+      current_approved_version_id: null,
+      current_draft_version: { content_json: DRAFT_DOC_CONTENT },
+      current_approved_version: null,
     })
 
     const result = await approvePendingAction('pa_1')
@@ -1518,7 +1557,10 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
       id: 'd_1',
       status: 'DRAFT',
       workspace_id: 'ws_123',
-      current_version: { content_json: DRAFT_DOC_CONTENT },
+      current_draft_version_id: 'v_d',
+      current_approved_version_id: null,
+      current_draft_version: { content_json: DRAFT_DOC_CONTENT },
+      current_approved_version: null,
     })
     mockSaveDocumentVersion.mockResolvedValue({
       success: false,

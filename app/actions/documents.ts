@@ -106,10 +106,19 @@ export async function createDocument(
           },
         })
 
-        // Set current_version_id
+        // Story 17.16 AC 11: newly-created doc starts in the never-approved
+        // DRAFT state. Populate the alias AND the draft pointer (they point at
+        // the same row for never-approved docs — there's no approved version
+        // to protect yet) + draft_status='DRAFT' so the new model's "writeable
+        // iff current_draft_version_id is set" predicate accepts edits
+        // immediately.
         const updated = await tx.workspaceDocument.update({
           where: { id: doc.id },
-          data: { current_version_id: version.id },
+          data: {
+            current_version_id: version.id,
+            current_draft_version_id: version.id,
+            draft_status: 'DRAFT',
+          },
         })
 
         // ActivityLog: document_created
@@ -156,6 +165,13 @@ export async function getDocument(
         },
         include: {
           current_version: true,
+          // Story 17.16 AC 13: dual-pointer versions so the editor route (and
+          // other consumers downstream) can pick the right content source
+          // explicitly — draft when in progress, else approved. The legacy
+          // `current_version` (alias) is kept to avoid breaking the many other
+          // consumers of getDocument; Story 17.18 will migrate them.
+          current_draft_version: true,
+          current_approved_version: true,
           creator: {
             select: { id: true, name: true, email: true, avatar_url: true },
           },
@@ -350,6 +366,19 @@ export async function getWorkspaceDocuments(
   }
 }
 
+/**
+ * Story 17.16 NTH-2 boundary note: this function handles the **never-approved**
+ * IN_REVIEW → APPROVED transition (where `current_approved_version_id IS NULL`
+ * at the time of approval) plus all non-approval status transitions. The
+ * **dual-state** case (a doc that has a prior approved version AND a draft
+ * currently in progress) is handled by `promoteDraftToApproved` — that
+ * function atomically swaps the pointer slots, stamps version-level audit
+ * timestamps, and advances the deprecated `current_version_id` alias.
+ *
+ * Do NOT use this function to "promote" a draft on a dual-state doc — the
+ * pointer swap won't happen and the alias-freeze invariant from AC 4 + AC 5
+ * gets violated.
+ */
 export async function updateDocumentStatus(
   input: UpdateDocumentStatusInput
 ): Promise<ActionResult<{ id: string; status: WorkspaceDocumentStatus }>> {
@@ -511,7 +540,28 @@ export async function getLatestStatusComment(documentId: string): Promise<{
 // ============================================================================
 
 /**
- * Autosave: updates the current version in place (no new version number).
+ * Autosave: updates the current draft version's content in place (no new
+ * version number).
+ *
+ * Story 17.16 AC 13 / Task 8 (load-bearing): targets the **draft pointer**
+ * when set, NEVER the deprecated `current_version_id` alias. Under the
+ * corrected Model B semantics, the alias is frozen on the approved version
+ * during a draft window — writing to the alias would silently overwrite
+ * approved content with draft edits (a data-loss class bug surfaced during
+ * Story 17.16 live smoke).
+ *
+ * Target version selection:
+ *   1. `current_draft_version_id` if set (the normal draft-active path)
+ *   2. `current_approved_version_id` if set (never-approved DRAFT — the
+ *      doc's only version row IS the approved-and-draft target; same as
+ *      saveDocumentVersion Path B's alias semantics)
+ *   3. `current_version_id` fallback (defensive; should not be reachable
+ *      post-backfill)
+ *
+ * Refuses if the doc is APPROVED with no draft in progress — editor autosave
+ * should never reach this state under Model B (the editor only opens for
+ * docs that have a draft pointer set), but defensive guard catches any future
+ * regression.
  */
 export async function autosaveDocument(
   documentId: string,
@@ -525,12 +575,40 @@ export async function autosaveDocument(
         where: { id: documentId, workspace_id: workspaceId },
         select: {
           id: true,
+          status: true,
           current_version_id: true,
           current_version_number: true,
+          current_draft_version_id: true,
+          current_approved_version_id: true,
         },
       })
 
-      if (!document || !document.current_version_id) {
+      if (!document) {
+        return { success: false, error: 'Dokument hittades inte' }
+      }
+
+      // Story 17.16 AC 13: refuse autosave against APPROVED-no-draft. The
+      // editor shouldn't reach this state, but defensive guard prevents any
+      // future regression where autosave fires before branching.
+      if (
+        document.current_draft_version_id == null &&
+        document.status === WorkspaceDocumentStatus.APPROVED
+      ) {
+        return {
+          success: false,
+          error:
+            'Det godkända dokumentet kan inte ändras direkt. Skapa ett utkast först.',
+        }
+      }
+
+      // Target the draft pointer when set; else approved pointer (never-
+      // approved DRAFT case); else the alias as a defensive fallback.
+      const targetVersionId =
+        document.current_draft_version_id ??
+        document.current_approved_version_id ??
+        document.current_version_id
+
+      if (!targetVersionId) {
         return { success: false, error: 'Dokument hittades inte' }
       }
 
@@ -538,7 +616,7 @@ export async function autosaveDocument(
       const extractedText = extractPlaintext(html)
 
       await prisma.workspaceDocumentVersion.update({
-        where: { id: document.current_version_id },
+        where: { id: targetVersionId },
         data: {
           content_json: contentJson as never,
           content_html: html,
@@ -571,7 +649,7 @@ export async function autosaveDocument(
       return {
         success: true,
         data: {
-          id: document.current_version_id,
+          id: targetVersionId,
           versionNumber: document.current_version_number,
         },
       }
@@ -586,6 +664,24 @@ export async function autosaveDocument(
 
 /**
  * Explicit save: creates a new version with incremented version number.
+ *
+ * Story 17.16 AC 5 — three-path routing under Model B (dual-pointer):
+ *
+ *   - **Path A** (`current_draft_version_id IS NOT NULL`) — draft in progress.
+ *     New version row created; `current_draft_version_id` + `current_version_number`
+ *     advance; **`current_version_id` (deprecated alias) STAYS FROZEN** on the
+ *     approved version so the 17.10b auto-reindex keeps grounding `[Källa:]` in
+ *     approved content. `current_approved_version_id` and `status` are not
+ *     touched.
+ *
+ *   - **Path B** (`current_draft_version_id IS NULL` AND status ∈ DRAFT/IN_REVIEW
+ *     AND `current_approved_version_id IS NULL`) — never-approved doc. Today's
+ *     legacy flow: alias and draft pointer advance together (same value — there's
+ *     no approved version to protect).
+ *
+ *   - **Path C** (`current_draft_version_id IS NULL` AND status = APPROVED) —
+ *     defensive refusal. Editor autosave should never target an APPROVED-no-draft
+ *     doc directly; the user must branch a draft first via `createDraftFromApproved`.
  */
 export async function saveDocumentVersion(
   documentId: string,
@@ -598,17 +694,44 @@ export async function saveDocumentVersion(
     return await withWorkspace(async ({ workspaceId, userId }) => {
       const document = await prisma.workspaceDocument.findFirst({
         where: { id: documentId, workspace_id: workspaceId },
-        select: { id: true, current_version_number: true, workspace_id: true },
+        select: {
+          id: true,
+          status: true,
+          current_version_number: true,
+          current_draft_version_id: true,
+          current_approved_version_id: true,
+          workspace_id: true,
+        },
       })
 
       if (!document) {
         return { success: false, error: 'Dokument hittades inte' }
       }
 
+      // Story 17.16 AC 5: Path C — defensive guard against editor autosave
+      // accidentally targeting an APPROVED-no-draft doc directly. Under Model B,
+      // the only way to edit an APPROVED doc is to branch a draft first via
+      // createDraftFromApproved.
+      if (
+        document.current_draft_version_id == null &&
+        document.status === WorkspaceDocumentStatus.APPROVED
+      ) {
+        return {
+          success: false,
+          error:
+            'Det godkända dokumentet kan inte ändras direkt. Skapa ett utkast först.',
+        }
+      }
+
       const html = contentHtml ?? ''
       const extractedText = extractPlaintext(html)
 
       const newVersionNumber = document.current_version_number + 1
+
+      // Story 17.16 AC 5: Path A advances the draft pointer only (alias frozen
+      // on approved); Path B advances the alias too (never-approved doc — no
+      // approved to protect).
+      const isDraftInProgress = document.current_draft_version_id != null
 
       const version = await prisma.$transaction(async (tx) => {
         const ver = await tx.workspaceDocumentVersion.create({
@@ -625,8 +748,17 @@ export async function saveDocumentVersion(
         })
 
         const docUpdate: Record<string, unknown> = {
-          current_version_id: ver.id,
           current_version_number: newVersionNumber,
+          // Path A: only advance the draft pointer. Alias stays on approved.
+          // Path B: advance both alias and draft pointer (same target — they
+          // already point at the same row for never-approved docs).
+          current_draft_version_id: ver.id,
+        }
+        if (!isDraftInProgress) {
+          // Path B (never-approved DRAFT/IN_REVIEW): advance the deprecated
+          // alias too, matching today's legacy behavior. For Path A, the alias
+          // is FROZEN on the approved version per Story 17.16 AC 4 + AC 11.
+          docUpdate.current_version_id = ver.id
         }
         if (title !== undefined) {
           docUpdate.title = title
@@ -729,20 +861,83 @@ export async function getDocumentVersionContent(
 // Story 17.3: Restore Document Version
 // ============================================================================
 
+/**
+ * Restore an old version's content as a new current version.
+ *
+ * Story 17.16 QA CONCERN-001 fix (2026-06-04): Made Model B-aware. The legacy
+ * implementation advanced `current_version_id` (deprecated alias) on every
+ * restore, which under the corrected Model B alias-freeze semantics could
+ * silently leak historical content into the approved-tier index when a user
+ * restored an old version while a dual-state draft was in progress — exact
+ * same class of bug as the autosaveDocument alias-leak surfaced during the
+ * Story 17.16 live smoke.
+ *
+ * The fix mirrors `saveDocumentVersion`'s three-path routing exactly:
+ *
+ *   - **Path A** (`current_draft_version_id IS NOT NULL`) — restore creates a
+ *     new version, advances the draft pointer, alias frozen. The user can
+ *     "roll back the draft" to historical content without affecting the
+ *     approved baseline.
+ *
+ *   - **Path B** (never-approved DRAFT) — legacy behavior. Alias and draft
+ *     pointer advance together. No approved version to protect.
+ *
+ *   - **Path C** (APPROVED with no draft) — refusal. Restore semantically
+ *     means "make this old content the current effective content" — under
+ *     Model B that requires a draft cycle (createDraftFromApproved → restore
+ *     into the draft → promote). Refuse with the same Swedish error as
+ *     `saveDocumentVersion` Path C to guide the user.
+ *
+ *   - **Path D** (ARCHIVED/SUPERSEDED) — refusal. Restore on terminal-state
+ *     docs is meaningless; the doc is out of active editing.
+ */
 export async function restoreDocumentVersion(
   documentId: string,
   versionNumber: number
 ): Promise<ActionResult<{ id: string; versionNumber: number }>> {
   try {
     return await withWorkspace(async ({ workspaceId, userId }) => {
-      // Verify document belongs to workspace
+      // Story 17.16 QA-fix: read the dual-pointer fields so the path routing
+      // below can decide which pointer to advance.
       const document = await prisma.workspaceDocument.findFirst({
         where: { id: documentId, workspace_id: workspaceId },
-        select: { id: true, current_version_number: true, workspace_id: true },
+        select: {
+          id: true,
+          status: true,
+          current_version_number: true,
+          current_draft_version_id: true,
+          current_approved_version_id: true,
+          workspace_id: true,
+        },
       })
 
       if (!document) {
         return { success: false, error: 'Dokument hittades inte' }
+      }
+
+      // Story 17.16 QA-fix Path D: refuse on terminal-state docs.
+      if (
+        document.status === WorkspaceDocumentStatus.ARCHIVED ||
+        document.status === WorkspaceDocumentStatus.SUPERSEDED
+      ) {
+        return {
+          success: false,
+          error:
+            'Dokumentet är arkiverat eller upphävt och kan inte återställas. Återaktivera dokumentet först.',
+        }
+      }
+
+      // Story 17.16 QA-fix Path C: refuse on APPROVED-no-draft. Matches
+      // saveDocumentVersion Path C copy so the UX guidance is consistent.
+      if (
+        document.current_draft_version_id == null &&
+        document.status === WorkspaceDocumentStatus.APPROVED
+      ) {
+        return {
+          success: false,
+          error:
+            'Det godkända dokumentet kan inte ändras direkt. Skapa ett utkast först.',
+        }
       }
 
       // Fetch the old version's content and HTML
@@ -762,7 +957,11 @@ export async function restoreDocumentVersion(
       const newVersionNumber = document.current_version_number + 1
       const changeSummary = `Återställning från version ${versionNumber}`
 
-      // Create new version from old content and update document — all in transaction
+      // Story 17.16 QA-fix: Path A advances ONLY the draft pointer (alias
+      // frozen on approved); Path B advances both (never-approved, no approved
+      // to protect). Same routing as saveDocumentVersion AC 5.
+      const isDraftInProgress = document.current_draft_version_id != null
+
       const version = await prisma.$transaction(async (tx) => {
         const ver = await tx.workspaceDocumentVersion.create({
           data: {
@@ -777,15 +976,26 @@ export async function restoreDocumentVersion(
           },
         })
 
+        const docUpdate: Record<string, unknown> = {
+          current_version_number: newVersionNumber,
+          // Path A + Path B both advance the draft pointer to the restored
+          // content. The draft pointer is now the user's "working version"
+          // regardless of which path we're on.
+          current_draft_version_id: ver.id,
+        }
+        if (!isDraftInProgress) {
+          // Path B (never-approved DRAFT/IN_REVIEW): advance the deprecated
+          // alias too. For Path A, the alias is FROZEN on the approved
+          // version per Story 17.16 AC 4 + AC 11 — leaving the alias untouched
+          // preserves the load-bearing 17.10b auto-reindex compliance contract.
+          docUpdate.current_version_id = ver.id
+        }
+
         await tx.workspaceDocument.update({
           where: { id: document.id },
-          data: {
-            current_version_id: ver.id,
-            current_version_number: newVersionNumber,
-          },
+          data: docUpdate,
         })
 
-        // ActivityLog: document_version_restored
         await tx.activityLog.create({
           data: {
             workspace_id: document.workspace_id,
@@ -820,6 +1030,36 @@ export async function restoreDocumentVersion(
 // Story 17.4: Create Draft from Approved Document
 // ============================================================================
 
+/**
+ * Story 17.16 (foundation of `epic-17-addendum-dual-version-visibility`):
+ *
+ * Branches a new editable draft from a status=APPROVED document under Model B
+ * (dual-pointer). Behavior changed from Model A (status-flipping) on three
+ * load-bearing axes:
+ *
+ *   1. **`status` stays APPROVED.** The doc-level status describes overall
+ *      lifecycle; the draft sub-state is encoded in `current_draft_version_id`
+ *      + `draft_status`. Reads asking "is this approved?" continue to return
+ *      true throughout the revision window.
+ *
+ *   2. **`approved_by` / `approved_at` are preserved.** Auditor visits during
+ *      a revision window now see the correct approval metadata, not nulls.
+ *
+ *   3. **`current_version_id` (deprecated alias) is FROZEN on the approved
+ *      version.** This is the load-bearing invariant: the 17.10b auto-reindex
+ *      reads through the alias, and freezing it on approved content during
+ *      the draft window keeps `[Källa:]` citations grounded in approved
+ *      content for free — without requiring Story 17.18's full read refactor.
+ *      The alias finally advances inside `promoteDraftToApproved` (AC 6) when
+ *      the draft is finalized; `discardDraft` (AC 7) leaves it untouched.
+ *
+ * The editor route is migrated separately in Task 8 (AC 13) to read
+ * `current_draft_version.content_json` explicitly when a draft is set, so it
+ * loads draft content instead of the alias-pointed approved content.
+ *
+ * Refuses if a draft is already in progress (`current_draft_version_id IS NOT
+ * NULL`) to prevent two concurrent drafts on the same doc.
+ */
 export async function createDraftFromApproved(
   documentId: string
 ): Promise<ActionResult<{ id: string; versionNumber: number }>> {
@@ -831,6 +1071,8 @@ export async function createDraftFromApproved(
           id: true,
           status: true,
           current_version_number: true,
+          current_draft_version_id: true,
+          current_approved_version_id: true,
           workspace_id: true,
           current_version: {
             select: { content_json: true, content_html: true },
@@ -846,6 +1088,17 @@ export async function createDraftFromApproved(
         return {
           success: false,
           error: 'Endast godkända dokument kan skapa en ny version',
+        }
+      }
+
+      // Story 17.16 AC 4: refuse if a draft is already in progress. Prevents
+      // two concurrent drafts on the same doc (the new model can only point
+      // current_draft_version_id at ONE version at a time).
+      if (document.current_draft_version_id != null) {
+        return {
+          success: false,
+          error:
+            'Ett utkast pågår redan för det här dokumentet. Slutför eller förkasta det innan ni skapar ett nytt.',
         }
       }
 
@@ -872,29 +1125,33 @@ export async function createDraftFromApproved(
           },
         })
 
+        // Story 17.16 AC 4: populate ONLY the draft pointer + draft_status +
+        // version_number. Do NOT touch current_version_id (alias-freeze
+        // invariant). Do NOT touch status. Do NOT NULL approved_by/approved_at
+        // — the doc remains operationally APPROVED throughout the draft window.
         await tx.workspaceDocument.update({
           where: { id: document.id },
           data: {
-            current_version_id: ver.id,
+            current_draft_version_id: ver.id,
+            draft_status: 'DRAFT',
             current_version_number: newVersionNumber,
-            status: WorkspaceDocumentStatus.DRAFT,
-            approved_by: null,
-            approved_at: null,
           },
         })
 
-        // ActivityLog: status changed from APPROVED to DRAFT
+        // Story 17.16 AC 4: ActivityLog 'document_draft_created' (NEW action).
+        // The legacy 'document_status_changed' row is NOT written by this path
+        // anymore — under Model B, branching does not flip top-level status.
         await tx.activityLog.create({
           data: {
             workspace_id: document.workspace_id,
             user_id: userId,
             entity_type: 'workspace_document',
             entity_id: document.id,
-            action: 'document_status_changed',
-            old_value: { status: WorkspaceDocumentStatus.APPROVED },
+            action: 'document_draft_created',
             new_value: {
-              status: WorkspaceDocumentStatus.DRAFT,
-              comment: 'Ny version från godkänt dokument',
+              draft_version_id: ver.id,
+              draft_status: 'DRAFT',
+              source_approved_version_id: document.current_approved_version_id,
             },
           },
         })
@@ -902,24 +1159,294 @@ export async function createDraftFromApproved(
         return ver
       })
 
-      // Story 17.9b: APPROVED → DRAFT leaves the indexable set → de-index.
-      // after() so the response isn't blocked; failures are logged, not fatal.
-      after(async () => {
-        try {
-          await deindexWorkspaceDocument(document.id, workspaceId)
-        } catch (err) {
-          console.error(
-            `[createDraftFromApproved] WORKSPACE_DOCUMENT de-index failed for ${document.id} — retryable:`,
-            err instanceof Error ? err.message : err
-          )
-        }
-      })
+      // Story 17.16 AC 4: NO deindex. The doc remains operationally APPROVED
+      // throughout the draft window; the 17.10b reindex source (current_version
+      // alias) is frozen on the approved version, so the indexed content stays
+      // compliance-correct without any reindex churn.
 
       return {
         success: true,
         data: { id: version.id, versionNumber: newVersionNumber },
       }
     })
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+// ============================================================================
+// Story 17.16: Promote Draft to Approved + Discard Draft (Dual-Version Model)
+// ============================================================================
+
+/**
+ * Story 17.16 AC 6: Atomic transition that promotes the in-progress draft
+ * version to the new approved baseline. The single moment the deprecated
+ * `current_version_id` alias finally advances — it was frozen on the prior
+ * approved version throughout the draft window per `createDraftFromApproved`
+ * (AC 4) + `saveDocumentVersion` Path A (AC 5).
+ *
+ * Versus `updateDocumentStatus({newStatus: 'APPROVED'})`: this function is for
+ * the **dual-state** case (a doc that has BOTH a prior approved version AND a
+ * draft currently in progress). `updateDocumentStatus` continues to handle
+ * **never-approved** drafts (no prior approved version exists; the simple
+ * IN_REVIEW → APPROVED transition). Tests must cover both paths.
+ *
+ * Gated on `tasks:edit` — the established convention for agent-driven write
+ * paths and editor authoring across Stories 14.22 – 14.30 + 17.11 / 17.11b.
+ * A future story may introduce a dedicated `documents:approve` permission
+ * (e.g., OWNER + ADMIN only for separation-of-duties); that's out of scope
+ * here. Current `lib/auth/permissions.ts` carries `documents:add`,
+ * `documents:remove`, `tasks:edit` — `tasks:edit` is the only valid choice.
+ */
+export async function promoteDraftToApproved(
+  documentId: string
+): Promise<
+  ActionResult<{ newApprovedVersionId: string; versionNumber: number }>
+> {
+  try {
+    return await withWorkspace(
+      async ({ workspaceId, userId, hasPermission }) => {
+        if (!hasPermission('tasks:edit')) {
+          return {
+            success: false,
+            error: 'Du har inte behörighet att genomföra den här åtgärden',
+          }
+        }
+
+        const document = await prisma.workspaceDocument.findFirst({
+          where: { id: documentId, workspace_id: workspaceId },
+          select: {
+            id: true,
+            current_approved_version_id: true,
+            current_draft_version_id: true,
+            draft_status: true,
+            workspace_id: true,
+          },
+        })
+
+        if (!document) {
+          return { success: false, error: 'Dokument hittades inte' }
+        }
+
+        if (document.current_draft_version_id == null) {
+          return {
+            success: false,
+            error: 'Det finns inget pågående utkast att godkänna.',
+          }
+        }
+
+        if (document.draft_status !== 'IN_REVIEW') {
+          return {
+            success: false,
+            error:
+              'Utkastet måste vara skickat för granskning innan det kan godkännas.',
+          }
+        }
+
+        const now = new Date()
+        const draftVersionId = document.current_draft_version_id
+        const priorApprovedVersionId = document.current_approved_version_id
+
+        // Read the draft version's number so we can return it. (Cheap — small
+        // FK join; could be eliminated by extending the initial findFirst, but
+        // keeps the query lean for the common case where the read is rare.)
+        const draftVersion = await prisma.workspaceDocumentVersion.findUnique({
+          where: { id: draftVersionId },
+          select: { id: true, version_number: true },
+        })
+        if (!draftVersion) {
+          return {
+            success: false,
+            error: 'Utkastversionen hittades inte.',
+          }
+        }
+
+        await prisma.$transaction(async (tx) => {
+          // Stamp the OLD approved version (if any) with superseded_at.
+          if (priorApprovedVersionId != null) {
+            await tx.workspaceDocumentVersion.update({
+              where: { id: priorApprovedVersionId },
+              data: { superseded_at: now },
+            })
+          }
+
+          // Stamp the draft version (now promoted) with approved_at + approved_by.
+          await tx.workspaceDocumentVersion.update({
+            where: { id: draftVersionId },
+            data: { approved_at: now, approved_by: userId },
+          })
+
+          // Swap pointers + advance the deprecated alias to the just-promoted
+          // version (the moment the alias finally catches up). Doc-level
+          // approved_by/approved_at are denormalized convenience fields that
+          // mirror the just-promoted version's per-version metadata.
+          await tx.workspaceDocument.update({
+            where: { id: document.id },
+            data: {
+              current_approved_version_id: draftVersionId,
+              current_draft_version_id: null,
+              draft_status: null,
+              current_version_id: draftVersionId, // <-- alias advances HERE
+              status: WorkspaceDocumentStatus.APPROVED,
+              approved_by: userId,
+              approved_at: now,
+            },
+          })
+
+          await tx.activityLog.create({
+            data: {
+              workspace_id: document.workspace_id,
+              user_id: userId,
+              entity_type: 'workspace_document',
+              entity_id: document.id,
+              action: 'document_draft_promoted',
+              new_value: {
+                promoted_version_id: draftVersionId,
+                prior_approved_version_id: priorApprovedVersionId,
+                version_number: draftVersion.version_number,
+              },
+            },
+          })
+        })
+
+        // Reindex picks up the new approved content. 17.10b contract continues
+        // to apply — Story 17.18 may further refine the indexed-content source.
+        after(async () => {
+          try {
+            await indexWorkspaceDocument(document.id, workspaceId)
+          } catch (err) {
+            console.error(
+              `[promoteDraftToApproved] WORKSPACE_DOCUMENT reindex failed for ${document.id} — retryable:`,
+              err instanceof Error ? err.message : err
+            )
+          }
+        })
+
+        return {
+          success: true,
+          data: {
+            newApprovedVersionId: draftVersionId,
+            versionNumber: draftVersion.version_number,
+          },
+        }
+      }
+    )
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+/**
+ * Story 17.16 AC 7: Throw away the in-progress draft cleanly. The approved
+ * version stays effective and untouched; the deprecated `current_version_id`
+ * alias requires no change (it was already pinned to the approved version
+ * throughout the draft window).
+ *
+ * The discarded draft version row is NOT deleted — version history stays
+ * append-only. It just stops being pointed at. A follow-up story may surface
+ * "discarded drafts" in the version-history UI; out of scope here.
+ *
+ * Refuses if no draft is in progress, or if no approved version exists to
+ * fall back to (the user should archive the doc instead — `discardDraft`
+ * cannot be the path to a contentless doc).
+ *
+ * Same `tasks:edit` permission posture as `promoteDraftToApproved` (AC 6).
+ */
+export async function discardDraft(documentId: string): Promise<ActionResult> {
+  try {
+    return await withWorkspace(
+      async ({ workspaceId, userId, hasPermission }) => {
+        if (!hasPermission('tasks:edit')) {
+          return {
+            success: false,
+            error: 'Du har inte behörighet att genomföra den här åtgärden',
+          }
+        }
+
+        const document = await prisma.workspaceDocument.findFirst({
+          where: { id: documentId, workspace_id: workspaceId },
+          select: {
+            id: true,
+            current_approved_version_id: true,
+            current_draft_version_id: true,
+            draft_status: true,
+            workspace_id: true,
+          },
+        })
+
+        if (!document) {
+          return { success: false, error: 'Dokument hittades inte' }
+        }
+
+        if (document.current_draft_version_id == null) {
+          return {
+            success: false,
+            error: 'Det finns inget pågående utkast att förkasta.',
+          }
+        }
+
+        if (document.current_approved_version_id == null) {
+          return {
+            success: false,
+            error:
+              "Det finns ingen godkänd version att återgå till. Använd 'Arkivera dokument' istället om utkastet inte ska användas.",
+          }
+        }
+
+        const discardedDraftVersionId = document.current_draft_version_id
+        const discardedDraftStatus = document.draft_status
+
+        await prisma.$transaction(async (tx) => {
+          // Clear the draft pointers. The alias is already pinned to the
+          // approved version (frozen throughout the draft window per AC 4 +
+          // AC 5) — no alias change needed.
+          await tx.workspaceDocument.update({
+            where: { id: document.id },
+            data: {
+              current_draft_version_id: null,
+              draft_status: null,
+            },
+          })
+
+          await tx.activityLog.create({
+            data: {
+              workspace_id: document.workspace_id,
+              user_id: userId,
+              entity_type: 'workspace_document',
+              entity_id: document.id,
+              action: 'document_draft_discarded',
+              old_value: {
+                discarded_version_id: discardedDraftVersionId,
+                draft_status: discardedDraftStatus,
+              },
+            },
+          })
+        })
+
+        // Defensive reindex (non-load-bearing under Model B — the index
+        // already tracks approved content throughout the draft window via the
+        // frozen alias). Triggering here guarantees a clean post-condition
+        // even if the indexing pipeline was mid-flight on a stale signal.
+        after(async () => {
+          try {
+            await indexWorkspaceDocument(document.id, workspaceId)
+          } catch (err) {
+            console.error(
+              `[discardDraft] WORKSPACE_DOCUMENT reindex failed for ${document.id} — retryable:`,
+              err instanceof Error ? err.message : err
+            )
+          }
+        })
+
+        return { success: true }
+      }
+    )
   } catch (error) {
     if (error instanceof Error) {
       return { success: false, error: error.message }

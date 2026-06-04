@@ -69,12 +69,37 @@ async function DocumentEditorLoader({
     document_number: string | null
     document_type: string
     review_date: string | null
+    // Story 17.16 AC 13: dual-pointer versions. Editor reads draft when set
+    // (a revision is in progress), else approved (never-approved DRAFT case),
+    // else falls back to current_version (alias — should not be reachable
+    // post-backfill but defensively retained).
+    current_draft_version: {
+      content_json: Record<string, unknown>
+    } | null
+    current_approved_version: {
+      content_json: Record<string, unknown>
+    } | null
     current_version: {
       content_json: Record<string, unknown>
       created_at: string
     } | null
     creator: { name: string | null; email: string } | null
   }
+
+  // Story 17.16 AC 13 (Task 8): editor read order — draft → approved → alias
+  // fallback. The deprecated current_version alias is FROZEN on the approved
+  // version during a revision window (per Story 17.16 AC 4 + AC 5 + AC 11),
+  // so reading the alias when a draft is in progress would silently load the
+  // approved content as the editor's starting state — a data-loss class of
+  // bug (the user's edits would replay against the approved baseline instead
+  // of the draft baseline, effectively reverting whatever draft-only state
+  // existed). Reading the draft pointer explicitly avoids this.
+  const initialContent = doc.current_draft_version?.content_json ??
+    doc.current_approved_version?.content_json ??
+    doc.current_version?.content_json ?? {
+      type: 'doc',
+      content: [{ type: 'paragraph' }],
+    }
 
   return (
     <div className="flex h-full flex-col">
@@ -90,12 +115,7 @@ async function DocumentEditorLoader({
         <DocumentEditor
           documentId={doc.id}
           initialTitle={doc.title}
-          initialContent={
-            doc.current_version?.content_json ?? {
-              type: 'doc',
-              content: [{ type: 'paragraph' }],
-            }
-          }
+          initialContent={initialContent}
           status={doc.status}
           versionNumber={doc.current_version_number}
           authorName={doc.creator?.name ?? doc.creator?.email ?? 'Okänd'}

@@ -496,36 +496,47 @@ export async function approvePendingAction(
           case 'UPDATE_DOCUMENT': {
             const p = action.params as unknown as UpdateDocumentParams
 
-            // Re-read the live document. We do NOT trust the propose-time
-            // snapshot — state may have drifted (status flipped to APPROVED,
-            // section heading removed, etc.). Workspace-scoped via the where.
+            // Story 17.16 AC 10: re-read the live document with the dual-
+            // pointer fields. Content source MUST be current_draft_version
+            // (or current_approved_version for never-approved DRAFT) — NOT
+            // the deprecated current_version alias (which under Model B points
+            // at the approved version during a revision window and would cause
+            // the agent's diff to be computed against approved content while
+            // writing to the draft pointer).
             const document = await prisma.workspaceDocument.findFirst({
               where: { id: p.documentId, workspace_id: workspaceId },
               select: {
                 id: true,
                 status: true,
                 workspace_id: true,
-                current_version: { select: { content_json: true } },
+                current_draft_version_id: true,
+                current_approved_version_id: true,
+                current_draft_version: { select: { content_json: true } },
+                current_approved_version: { select: { content_json: true } },
               },
             })
             if (!document) {
               return { success: false, error: 'Dokumentet hittades inte' }
             }
 
-            // AC 11 — re-assert DRAFT/IN_REVIEW at dispatch time. saveDocumentVersion
-            // itself doesn't enforce this; the dispatch is the authoritative gate.
-            // Stale APPROVED/SUPERSEDED/ARCHIVED keeps the row PENDING.
-            if (
-              document.status !== 'DRAFT' &&
-              document.status !== 'IN_REVIEW'
-            ) {
+            // Story 17.16 AC 10 — reframed writeable predicate (mirrors
+            // update-document.ts AC 8). Observationally equivalent to the
+            // legacy `status ∈ DRAFT/IN_REVIEW` guard for all cases existing
+            // tests cover. Stale APPROVED-no-draft keeps the row PENDING.
+            const writeable =
+              document.current_draft_version_id != null ||
+              (document.status === 'DRAFT' &&
+                document.current_approved_version_id == null)
+            if (!writeable) {
               return {
                 success: false,
                 error: `Dokumentet kan inte uppdateras i status "${document.status}".`,
               }
             }
 
-            const currentContent = document.current_version?.content_json
+            const currentContent =
+              document.current_draft_version?.content_json ??
+              document.current_approved_version?.content_json
             if (
               !currentContent ||
               typeof currentContent !== 'object' ||
@@ -636,34 +647,40 @@ export async function approvePendingAction(
           case 'ADD_DOCUMENT_SECTION': {
             const p = action.params as unknown as AddDocumentSectionParams
 
-            // Re-read the live document. State may have drifted (status flipped,
-            // a heading was added/removed manually since propose, etc.).
+            // Story 17.16 AC 10: re-read with dual-pointer fields (mirrors the
+            // UPDATE_DOCUMENT branch). Content source = draft pointer when
+            // set, else approved; NEVER the deprecated current_version alias.
             const document = await prisma.workspaceDocument.findFirst({
               where: { id: p.documentId, workspace_id: workspaceId },
               select: {
                 id: true,
                 status: true,
                 workspace_id: true,
-                current_version: { select: { content_json: true } },
+                current_draft_version_id: true,
+                current_approved_version_id: true,
+                current_draft_version: { select: { content_json: true } },
+                current_approved_version: { select: { content_json: true } },
               },
             })
             if (!document) {
               return { success: false, error: 'Dokumentet hittades inte' }
             }
 
-            // AC 11 — re-assert DRAFT/IN_REVIEW. Dispatch is the authoritative
-            // gate; saveDocumentVersion does not enforce this itself.
-            if (
-              document.status !== 'DRAFT' &&
-              document.status !== 'IN_REVIEW'
-            ) {
+            // Story 17.16 AC 10 — reframed writeable predicate.
+            const writeable =
+              document.current_draft_version_id != null ||
+              (document.status === 'DRAFT' &&
+                document.current_approved_version_id == null)
+            if (!writeable) {
               return {
                 success: false,
                 error: `Dokumentet kan inte uppdateras i status "${document.status}".`,
               }
             }
 
-            const currentContent = document.current_version?.content_json
+            const currentContent =
+              document.current_draft_version?.content_json ??
+              document.current_approved_version?.content_json
             if (
               !currentContent ||
               typeof currentContent !== 'object' ||

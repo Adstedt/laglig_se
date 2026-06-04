@@ -58,7 +58,7 @@ model User {
   chat_messages ChatMessage[]
 
   // Story 14.27: Chat usage telemetry
-  chat_usage_events ChatUsageEvent[]
+  chat_usage_events   ChatUsageEvent[]
   agent_decision_logs AgentDecisionLog[]
 
   // Story 14.22: Agent approval cards
@@ -73,10 +73,13 @@ model User {
   compliance_status_logs ComplianceStatusLog[] @relation("ComplianceStatusLogChanger")
 
   // Epic 17: Document management relations
-  workspace_documents_created   WorkspaceDocument[]             @relation("WsDocCreator")
-  workspace_documents_approved  WorkspaceDocument[]             @relation("WsDocApprover")
-  workspace_doc_task_links      WorkspaceDocumentTaskLink[]     @relation("WsDocTaskLinkUser")
-  workspace_doc_list_item_links WorkspaceDocumentListItemLink[] @relation("WsDocListItemLinkUser")
+  workspace_documents_created     WorkspaceDocument[]             @relation("WsDocCreator")
+  workspace_documents_approved    WorkspaceDocument[]             @relation("WsDocApprover")
+  // Story 17.16: per-version approver (dual-version model — every version that
+  // was ever promoted to approved carries its own approver/approved_at audit).
+  workspace_doc_versions_approved WorkspaceDocumentVersion[]      @relation("WsDocVersionApprover")
+  workspace_doc_task_links        WorkspaceDocumentTaskLink[]     @relation("WsDocTaskLinkUser")
+  workspace_doc_list_item_links   WorkspaceDocumentListItemLink[] @relation("WsDocListItemLinkUser")
 
   // Story 17.16: Kravpunkter relations
   created_requirements       LawListItemRequirement[]  @relation("RequirementCreator")
@@ -173,7 +176,7 @@ model Workspace {
   chat_messages ChatMessage[]
 
   // Story 14.27: Chat usage telemetry
-  chat_usage_events ChatUsageEvent[]
+  chat_usage_events   ChatUsageEvent[]
   agent_decision_logs AgentDecisionLog[]
 
   // Story 14.22: Agent approval cards
@@ -2018,6 +2021,15 @@ enum WorkspaceDocumentStatus {
   ARCHIVED
 }
 
+// Story 17.16: Dual-version model — sub-state of the in-progress draft when
+// one exists on a doc. NOT a reuse of WorkspaceDocumentStatus (the doc-level
+// status retains its existing meaning for the overall document lifecycle).
+// Populated iff WorkspaceDocument.current_draft_version_id IS NOT NULL.
+enum DraftStatus {
+  DRAFT
+  IN_REVIEW
+}
+
 enum WorkspaceDocumentVersionSource {
   TIPTAP
   IMPORT
@@ -2035,6 +2047,21 @@ model WorkspaceDocument {
   // Version tracking
   current_version_id     String? @unique
   current_version_number Int     @default(0)
+
+  // Story 17.16: Dual-version pointers (Model B). At any moment a doc has one
+  // of these states (queryable from the two pointers alone):
+  //  - Both null → doc just created, no versions yet (transient edge case).
+  //  - Only current_draft_version_id → never-approved DRAFT.
+  //  - Only current_approved_version_id → stable APPROVED policy.
+  //  - Both → APPROVED policy with revision in progress (the new state Model A
+  //    couldn't represent). The deprecated `current_version_id` alias stays
+  //    FROZEN on the approved pointer during draft windows so 17.10b auto-
+  //    reindex keeps grounding [Källa:] in approved content (see Story 17.16
+  //    AC 4 + AC 5 + AC 11). promoteDraftToApproved advances the alias when
+  //    the draft is finalized; discardDraft is a no-op for the alias.
+  current_approved_version_id String?      @unique
+  current_draft_version_id    String?      @unique
+  draft_status                DraftStatus?
 
   // Template reference
   template_id String?
@@ -2058,16 +2085,19 @@ model WorkspaceDocument {
   last_marked_dirty_at DateTime?
 
   // Relations
-  workspace       Workspace                       @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
-  creator         User                            @relation("WsDocCreator", fields: [created_by], references: [id])
-  approver        User?                           @relation("WsDocApprover", fields: [approved_by], references: [id])
-  current_version WorkspaceDocumentVersion?       @relation("WorkspaceDocumentCurrentVersion", fields: [current_version_id], references: [id])
-  versions        WorkspaceDocumentVersion[]      @relation("WorkspaceDocumentVersions")
-  template        WorkspaceDocumentTemplate?      @relation(fields: [template_id], references: [id])
-  task_links      WorkspaceDocumentTaskLink[]
-  list_item_links WorkspaceDocumentListItemLink[]
+  workspace                Workspace                       @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  creator                  User                            @relation("WsDocCreator", fields: [created_by], references: [id])
+  approver                 User?                           @relation("WsDocApprover", fields: [approved_by], references: [id])
+  current_version          WorkspaceDocumentVersion?       @relation("WorkspaceDocumentCurrentVersion", fields: [current_version_id], references: [id])
+  // Story 17.16: Dual-version pointer relations (Model B foundation).
+  current_approved_version WorkspaceDocumentVersion?       @relation("WorkspaceDocumentCurrentApprovedVersion", fields: [current_approved_version_id], references: [id])
+  current_draft_version    WorkspaceDocumentVersion?       @relation("WorkspaceDocumentCurrentDraftVersion", fields: [current_draft_version_id], references: [id])
+  versions                 WorkspaceDocumentVersion[]      @relation("WorkspaceDocumentVersions")
+  template                 WorkspaceDocumentTemplate?      @relation(fields: [template_id], references: [id])
+  task_links               WorkspaceDocumentTaskLink[]
+  list_item_links          WorkspaceDocumentListItemLink[]
 
-  // Story 17.16: Kravpunkter evidence links
+  // Kravpunkter evidence links
   requirement_evidence_links RequirementEvidenceLink[]
 
   @@index([workspace_id, status])
@@ -2076,6 +2106,8 @@ model WorkspaceDocument {
   // Story 17.10b: partial-like index for the cron sweep (Postgres will use the
   // composite index when scanning for needs_reindex = true).
   @@index([needs_reindex, last_marked_dirty_at])
+  // Story 17.16: "docs with draft pending" query path (table filter chip etc.).
+  @@index([workspace_id, current_draft_version_id])
   @@map("workspace_documents")
 }
 
@@ -2098,12 +2130,28 @@ model WorkspaceDocumentVersion {
   created_by     String // User ID or "agent" — no FK, resolve display at query time
   created_at     DateTime @default(now())
 
+  // Story 17.16: Per-version approval audit (dual-version model). Populated
+  // by promoteDraftToApproved at the moment a draft is promoted; superseded_at
+  // stamped when a later version replaces this one as the approved baseline.
+  // Backfilled from ActivityLog correlation per AC 3 Pass 1 (idempotent).
+  approved_at   DateTime?
+  approved_by   String?
+  superseded_at DateTime?
+
   // Relations
-  document    WorkspaceDocument  @relation("WorkspaceDocumentVersions", fields: [document_id], references: [id], onDelete: Cascade)
-  current_for WorkspaceDocument? @relation("WorkspaceDocumentCurrentVersion")
+  document             WorkspaceDocument  @relation("WorkspaceDocumentVersions", fields: [document_id], references: [id], onDelete: Cascade)
+  current_for          WorkspaceDocument? @relation("WorkspaceDocumentCurrentVersion")
+  // Story 17.16: Back-relations to the dual pointers.
+  current_approved_for WorkspaceDocument? @relation("WorkspaceDocumentCurrentApprovedVersion")
+  current_draft_for    WorkspaceDocument? @relation("WorkspaceDocumentCurrentDraftVersion")
+  // Story 17.16: Per-version approver (nullable; resolved only for versions
+  // that were ever promoted to approved).
+  approver             User?              @relation("WsDocVersionApprover", fields: [approved_by], references: [id])
 
   @@unique([document_id, version_number])
   @@index([document_id, created_at])
+  // Story 17.16: "what was approved on date X" historical-query path.
+  @@index([document_id, approved_at])
   @@map("workspace_document_versions")
 }
 
