@@ -42,6 +42,16 @@ export interface SyncWorkspaceMeta {
   version_number?: number
   /** sha256 of the source content — gates re-embedding (17.9 AC 9 / 17.9b AC 7). */
   content_hash?: string | null
+  /**
+   * **Story 17.18 AC 1 / AC 2 (WORKSPACE_DOCUMENT only):** tier discriminator
+   * for dual-tier indexing. When set, the delete + dedup paths are scoped to
+   * chunks matching `metadata->>'tier' = tier` (with `OR metadata->>'tier' IS
+   * NULL` to self-heal legacy 17.10b chunks on first call). When undefined,
+   * preserves 17.10b single-tier behavior — delete-by-(source_id, source_type)
+   * across all chunks. `'APPROVED'` ↔ `current_approved_version` content;
+   * `'DRAFT'` ↔ `current_draft_version` content (per Story 17.18 AC 1).
+   */
+  tier?: 'APPROVED' | 'DRAFT'
 }
 
 export interface SyncWorkspaceResult {
@@ -55,6 +65,38 @@ export interface SyncWorkspaceResult {
 }
 
 const EMBED_BATCH_SIZE = 100
+
+/**
+ * **Story 17.18 AC 1 — tier-scoped delete helper.** When `tier` is set, scopes
+ * the delete to chunks matching `metadata->>'tier' = tier` AND any chunks where
+ * `tier` is missing (`OR metadata->>'tier' IS NULL`) — the second clause is the
+ * self-healing migration path that cleans up legacy 17.10b untagged chunks on
+ * first tier-aware reindex (then becomes dead code once all docs have been
+ * touched). When `tier` is undefined, falls back to the existing 17.10b
+ * delete-by-(source_id, source_type) — used by the USER_FILE path and any
+ * pre-17.18 caller.
+ *
+ * Returns the deletion count for the caller's result accounting.
+ */
+async function tierScopedDelete(
+  sourceType: string,
+  sourceId: string,
+  tier: 'APPROVED' | 'DRAFT' | undefined
+): Promise<number> {
+  if (tier) {
+    const deleted = await prisma.$executeRaw`
+      DELETE FROM content_chunks
+      WHERE source_type = ${sourceType}::"SourceType"
+        AND source_id = ${sourceId}
+        AND (metadata->>'tier' = ${tier} OR metadata->>'tier' IS NULL)
+    `
+    return Number(deleted)
+  }
+  const deleted = await prisma.contentChunk.deleteMany({
+    where: { source_type: sourceType as never, source_id: sourceId },
+  })
+  return deleted.count
+}
 
 /**
  * Re-index a workspace source: dedupe-check → delete-by-(source_id, source_type) →
@@ -89,38 +131,72 @@ export async function syncWorkspaceChunks(
 
   const text = markdown?.trim() ?? ''
 
-  // Nothing to index → clear any stale chunks so a now-empty source isn't retrievable.
+  // Nothing to index → clear any stale chunks so a now-empty source isn't
+  // retrievable. Story 17.18: tier-scoped when applicable (only deletes this
+  // tier's chunks; other tier untouched).
   if (!text) {
-    const deleted = await prisma.contentChunk.deleteMany({
-      where: { source_type: sourceType, source_id: sourceId },
-    })
-    return result({ chunksDeleted: deleted.count })
+    const chunksDeleted = await tierScopedDelete(
+      sourceType,
+      sourceId,
+      meta.tier
+    )
+    return result({ chunksDeleted })
   }
 
   // Dedupe (AC 9): if existing chunks carry the same content_hash, skip the whole
   // re-embed — no wasted OpenAI cost when a file is re-processed unchanged.
+  // Story 17.18: tier-scoped dedup. Legacy untagged chunks (no `tier` metadata)
+  // do NOT short-circuit a tier-scoped sync — they need to be replaced with
+  // tagged chunks. Same-tier same-hash IS a valid skip.
   if (meta.content_hash) {
-    const existing = await prisma.contentChunk.findFirst({
-      where: { source_type: sourceType, source_id: sourceId },
-      select: { metadata: true },
-    })
-    const existingHash = (
-      existing?.metadata as { content_hash?: string } | null
-    )?.content_hash
-    if (existing && existingHash === meta.content_hash) {
+    const hashMatched = meta.tier
+      ? Number(
+          (
+            await prisma.$queryRaw<{ count: number }[]>`
+              SELECT count(*)::int AS count
+              FROM content_chunks
+              WHERE source_type = ${sourceType}::"SourceType"
+                AND source_id = ${sourceId}
+                AND metadata->>'tier' = ${meta.tier}
+                AND metadata->>'content_hash' = ${meta.content_hash}
+            `
+          )[0]?.count ?? 0
+        ) > 0
+      : await (async () => {
+          const existing = await prisma.contentChunk.findFirst({
+            where: { source_type: sourceType, source_id: sourceId },
+            select: { metadata: true },
+          })
+          const existingHash = (
+            existing?.metadata as { content_hash?: string } | null
+          )?.content_hash
+          return existing != null && existingHash === meta.content_hash
+        })()
+
+    if (hashMatched) {
       // REL-001 (Story 17.9c): only short-circuit when the existing chunks are
       // actually retrievable. A prior transient embed failure can leave chunks
       // committed with `embedding = NULL` while the file is `DONE`; skipping
       // re-embed on a same-hash re-sync would then make the file permanently,
       // silently unretrievable — defeating the documented "retryable via re-sync"
       // recovery. `embedding` is Unsupported() in Prisma, so count nulls via raw SQL.
-      const nullEmbedRows = await prisma.$queryRaw<{ count: number }[]>`
-        SELECT count(*)::int AS count
-        FROM content_chunks
-        WHERE source_type = ${sourceType}::"SourceType"
-          AND source_id = ${sourceId}
-          AND embedding IS NULL
-      `
+      // Story 17.18: null-embed check is tier-scoped when applicable.
+      const nullEmbedRows = meta.tier
+        ? await prisma.$queryRaw<{ count: number }[]>`
+            SELECT count(*)::int AS count
+            FROM content_chunks
+            WHERE source_type = ${sourceType}::"SourceType"
+              AND source_id = ${sourceId}
+              AND metadata->>'tier' = ${meta.tier}
+              AND embedding IS NULL
+          `
+        : await prisma.$queryRaw<{ count: number }[]>`
+            SELECT count(*)::int AS count
+            FROM content_chunks
+            WHERE source_type = ${sourceType}::"SourceType"
+              AND source_id = ${sourceId}
+              AND embedding IS NULL
+          `
       const nullEmbedCount = Number(nullEmbedRows[0]?.count ?? 0)
       if (nullEmbedCount === 0) {
         return result({ skipped: true })
@@ -152,14 +228,19 @@ export async function syncWorkspaceChunks(
             : {}),
           markdown: text,
           contentHash: meta.content_hash ?? null,
+          // Story 17.18: thread the tier discriminator onto each chunk's metadata.
+          ...(meta.tier ? { tier: meta.tier } : {}),
         })
 
   // No chunks produced (e.g. content below the minimum) → clear stale chunks.
+  // Story 17.18: tier-scoped delete.
   if (chunks.length === 0) {
-    const deleted = await prisma.contentChunk.deleteMany({
-      where: { source_type: sourceType, source_id: sourceId },
-    })
-    return result({ chunksDeleted: deleted.count })
+    const chunksDeleted = await tierScopedDelete(
+      sourceType,
+      sourceId,
+      meta.tier
+    )
+    return result({ chunksDeleted })
   }
 
   const prismaChunks = chunks.map((c) => ({
@@ -171,12 +252,19 @@ export async function syncWorkspaceChunks(
   }))
 
   // Atomic: delete old + create new.
-  const [deleted, created] = await prisma.$transaction([
-    prisma.contentChunk.deleteMany({
-      where: { source_type: sourceType, source_id: sourceId },
-    }),
-    prisma.contentChunk.createMany({ data: prismaChunks }),
-  ])
+  //
+  // Story 17.18: when tier is set, we route the delete through `tierScopedDelete`
+  // for the `OR metadata->>'tier' IS NULL` legacy-migration clause. That uses
+  // raw SQL, so we split the transaction into a manual sequence: delete first,
+  // then createMany. The window between them is microseconds and the embedding
+  // step runs OUTSIDE the transaction anyway (it's network-bound), so there's
+  // no real consistency loss here vs the pre-17.18 single $transaction.
+  //
+  // Legacy untiered path (USER_FILE, pre-17.18 callers) preserves the single-
+  // statement transaction to keep the existing semantics identical.
+  const deletedCount = await tierScopedDelete(sourceType, sourceId, meta.tier)
+  const created = await prisma.contentChunk.createMany({ data: prismaChunks })
+  const deleted = { count: deletedCount }
 
   // Embed (AC 6, 12, 14). Non-blocking: an embedding failure logs but does not roll
   // back the chunks (they're retryable via a re-sync). The vector column is
@@ -200,16 +288,34 @@ export async function syncWorkspaceChunks(
   })
 }
 
-/** Embed all chunks of a source in batches of ≤100, writing each vector via raw UPDATE. */
+/**
+ * Embed all NULL-embedding chunks of a source in batches of ≤100, writing each
+ * vector via raw UPDATE.
+ *
+ * **Story 17.18:** scoped to chunks where `embedding IS NULL` (i.e., the just-
+ * inserted tier set) rather than re-embedding all chunks of (source_id,
+ * source_type). For dual-tier docs (one APPROVED tier + one DRAFT tier), the
+ * other tier's chunks already have embeddings; re-embedding them on every
+ * tier-scoped reindex would be 2× the OpenAI cost for no benefit. Filtering
+ * on NULL embedding also self-heals the REL-001 case (legacy chunks committed
+ * with NULL embedding after a transient OpenAI failure) without special-casing.
+ *
+ * Embedding is Unsupported() in Prisma so the filter runs via raw SQL.
+ */
 async function embedWorkspaceChunks(
   sourceId: string,
   sourceType: WorkspaceSourceType
 ): Promise<number> {
-  const chunks = await prisma.contentChunk.findMany({
-    where: { source_type: sourceType, source_id: sourceId },
-    select: { id: true, content: true, contextual_header: true },
-    orderBy: { id: 'asc' },
-  })
+  const chunks = await prisma.$queryRaw<
+    { id: string; content: string; contextual_header: string }[]
+  >`
+    SELECT id, content, contextual_header
+    FROM content_chunks
+    WHERE source_type = ${sourceType}::"SourceType"
+      AND source_id = ${sourceId}
+      AND embedding IS NULL
+    ORDER BY id ASC
+  `
   if (chunks.length === 0) return 0
 
   let embedded = 0

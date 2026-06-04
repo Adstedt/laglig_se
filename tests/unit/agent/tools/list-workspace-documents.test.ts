@@ -125,7 +125,7 @@ describe('createListWorkspaceDocumentsTool', () => {
     })
   })
 
-  it('maps result rows to {documentId, title, documentType, status, versionCount, lastUpdated, createdBy}', async () => {
+  it('maps result rows to {documentId, title, documentType, status, versionCount, lastUpdated, createdBy, ...Story 17.18 dual fields}', async () => {
     mockFindMany.mockResolvedValue([row(), row({ id: 'wd-2', creator: null })])
     const out = (await makeTool().execute({})) as {
       data: Array<{
@@ -136,6 +136,10 @@ describe('createListWorkspaceDocumentsTool', () => {
         versionCount: number
         lastUpdated: Date
         createdBy: string | null
+        currentApprovedVersionNumber: number | null
+        currentDraftVersionNumber: number | null
+        draftStatus: string | null
+        dualState: boolean
       }>
     }
 
@@ -148,6 +152,11 @@ describe('createListWorkspaceDocumentsTool', () => {
       versionCount: 3,
       lastUpdated: new Date('2026-05-30T10:00:00.000Z'),
       createdBy: 'Anna Adstedt',
+      // Story 17.18 AC 6 defaults when pointer fields absent from mock
+      currentApprovedVersionNumber: null,
+      currentDraftVersionNumber: null,
+      draftStatus: null,
+      dualState: false,
     })
     expect(out.data[1]?.createdBy).toBeNull()
   })
@@ -160,5 +169,115 @@ describe('createListWorkspaceDocumentsTool', () => {
     }
     expect(out.error).toBe(true)
     expect(out.message).toContain('connection reset')
+  })
+
+  // ==========================================================================
+  // Story 17.18 AC 6 — dual-pointer fields + dual_state_only filter (NTH-2)
+  // ==========================================================================
+
+  describe('Story 17.18 AC 6 — dual-pointer fields on each row', () => {
+    it('surfaces currentApprovedVersionNumber + currentDraftVersionNumber + draftStatus + dualState on dual-state rows', async () => {
+      mockFindMany.mockResolvedValue([
+        row({
+          id: 'wd-dual',
+          current_approved_version_id: 'v-app',
+          current_draft_version_id: 'v-draft',
+          draft_status: 'DRAFT',
+          current_approved_version: { version_number: 8 },
+          current_draft_version: { version_number: 9 },
+        }),
+      ])
+
+      const out = (await makeTool().execute({})) as {
+        data: Array<{
+          documentId: string
+          currentApprovedVersionNumber: number | null
+          currentDraftVersionNumber: number | null
+          draftStatus: string | null
+          dualState: boolean
+        }>
+      }
+
+      expect(out.data[0]).toMatchObject({
+        documentId: 'wd-dual',
+        currentApprovedVersionNumber: 8,
+        currentDraftVersionNumber: 9,
+        draftStatus: 'DRAFT',
+        dualState: true,
+      })
+    })
+
+    it('approved-only row: dualState false, draft fields null', async () => {
+      mockFindMany.mockResolvedValue([
+        row({
+          id: 'wd-app',
+          current_approved_version_id: 'v-app',
+          current_draft_version_id: null,
+          draft_status: null,
+          current_approved_version: { version_number: 5 },
+          current_draft_version: null,
+        }),
+      ])
+
+      const out = (await makeTool().execute({})) as {
+        data: Array<{
+          dualState: boolean
+          currentApprovedVersionNumber: number | null
+          currentDraftVersionNumber: number | null
+        }>
+      }
+
+      expect(out.data[0]?.dualState).toBe(false)
+      expect(out.data[0]?.currentApprovedVersionNumber).toBe(5)
+      expect(out.data[0]?.currentDraftVersionNumber).toBeNull()
+    })
+  })
+
+  describe('Story 17.18 AC 6 — dual_state_only filter (NTH-2)', () => {
+    it('translates dual_state_only=true to WHERE both pointer columns IS NOT NULL', async () => {
+      mockFindMany.mockResolvedValue([])
+      await makeTool().execute({ dual_state_only: true })
+
+      const where = mockFindMany.mock.calls[0]?.[0]?.where
+      expect(where).toMatchObject({
+        workspace_id: 'ws-1',
+        current_approved_version_id: { not: null },
+        current_draft_version_id: { not: null },
+      })
+    })
+
+    it('omits the dual-state predicate when dual_state_only is undefined', async () => {
+      mockFindMany.mockResolvedValue([])
+      await makeTool().execute({})
+
+      const where = mockFindMany.mock.calls[0]?.[0]?.where
+      expect(where).not.toHaveProperty('current_approved_version_id')
+      expect(where).not.toHaveProperty('current_draft_version_id')
+    })
+
+    it('omits the dual-state predicate when dual_state_only is false', async () => {
+      mockFindMany.mockResolvedValue([])
+      await makeTool().execute({ dual_state_only: false })
+
+      const where = mockFindMany.mock.calls[0]?.[0]?.where
+      expect(where).not.toHaveProperty('current_approved_version_id')
+      expect(where).not.toHaveProperty('current_draft_version_id')
+    })
+
+    it('combines dual_state_only with other filters', async () => {
+      mockFindMany.mockResolvedValue([])
+      await makeTool().execute({
+        document_type: 'POLICY',
+        dual_state_only: true,
+      })
+
+      const where = mockFindMany.mock.calls[0]?.[0]?.where
+      expect(where).toMatchObject({
+        workspace_id: 'ws-1',
+        document_type: 'POLICY',
+        current_approved_version_id: { not: null },
+        current_draft_version_id: { not: null },
+      })
+    })
   })
 })

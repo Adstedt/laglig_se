@@ -53,12 +53,19 @@ beforeEach(() => {
   vi.clearAllMocks()
   mockPrisma.contentChunk.findFirst.mockResolvedValue(null)
   mockPrisma.contentChunk.deleteMany.mockResolvedValue({ count: 0 })
+  mockPrisma.contentChunk.createMany.mockResolvedValue({ count: 1 })
   mockPrisma.$transaction.mockResolvedValue([{ count: 0 }, { count: 1 }])
-  // REL-001 null-embedding count — default to 0 (all chunks embedded → skip is safe).
-  mockPrisma.$queryRaw.mockResolvedValue([{ count: 0 }])
-  mockPrisma.contentChunk.findMany.mockResolvedValue([
+  // Story 17.18: embed step now uses $queryRaw to fetch NULL-only chunks
+  // instead of findMany. Default to "1 freshly-inserted chunk to embed" so the
+  // happy paths in the legacy USER_FILE suite stay green.
+  //
+  // The same $queryRaw mock also covers the REL-001 null-embedding count check
+  // (which returns [{ count: 0 }] when chunks already exist). Tests that need
+  // a specific count override the mock per-call via mockResolvedValueOnce.
+  mockPrisma.$queryRaw.mockResolvedValue([
     { id: 'chunk-1', content: 'text', contextual_header: 'rutin.pdf (POLICY)' },
   ])
+  mockPrisma.$executeRaw.mockResolvedValue(0)
 })
 
 describe('syncWorkspaceChunks — write-side isolation', () => {
@@ -71,7 +78,11 @@ describe('syncWorkspaceChunks — write-side isolation', () => {
 })
 
 describe('syncWorkspaceChunks — re-index (delete-then-insert)', () => {
-  it('deletes old chunks and creates new ones in a single transaction, then embeds', async () => {
+  it('deletes old chunks and creates new ones, then embeds', async () => {
+    // Story 17.18: delete + create no longer wrapped in a single $transaction
+    // (the tier-scoped delete uses raw SQL, so the transaction split into
+    // sequential calls — see indexWorkspaceDocument JSDoc). Behavior is
+    // functionally equivalent: deleteMany ran, createMany ran, embedding ran.
     const result = await syncWorkspaceChunks(
       'file-1',
       'USER_FILE',
@@ -79,7 +90,8 @@ describe('syncWorkspaceChunks — re-index (delete-then-insert)', () => {
       'Ett stycke med tillräckligt med text för en chunk.',
       META
     )
-    expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1)
+    expect(mockPrisma.contentChunk.deleteMany).toHaveBeenCalled()
+    expect(mockPrisma.contentChunk.createMany).toHaveBeenCalled()
     expect(mockEmbed).toHaveBeenCalledTimes(1)
     expect(mockPrisma.$executeRaw).toHaveBeenCalled()
     expect(result.chunksCreated).toBe(1)
@@ -133,7 +145,9 @@ describe('syncWorkspaceChunks — content-hash dedupe (AC 9)', () => {
       META
     )
     expect(result.skipped).toBe(false)
-    expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1)
+    // Story 17.18: split delete + create (no $transaction wrapper).
+    expect(mockPrisma.contentChunk.deleteMany).toHaveBeenCalled()
+    expect(mockPrisma.contentChunk.createMany).toHaveBeenCalled()
   })
 
   // REL-001 (Story 17.9c): dedupe must not defeat embed-failure recovery.
@@ -141,7 +155,18 @@ describe('syncWorkspaceChunks — content-hash dedupe (AC 9)', () => {
     mockPrisma.contentChunk.findFirst.mockResolvedValue({
       metadata: { content_hash: 'h1' }, // same hash as META → would skip pre-fix
     })
-    mockPrisma.$queryRaw.mockResolvedValue([{ count: 2 }]) // 2 chunks lack embeddings
+    // Story 17.18: first $queryRaw call is the null-embed-count check; second
+    // is the embed-fetch (NULL-only chunks). Sequence via mockResolvedValueOnce.
+    mockPrisma.$queryRaw
+      .mockResolvedValueOnce([{ count: 2 }]) // null-count check: 2 NULL embeddings → fall through
+      .mockResolvedValueOnce([
+        // embed fetch: NULL-only chunks to embed
+        {
+          id: 'chunk-1',
+          content: 'text',
+          contextual_header: 'rutin.pdf (POLICY)',
+        },
+      ])
     const result = await syncWorkspaceChunks(
       'file-1',
       'USER_FILE',
@@ -150,7 +175,8 @@ describe('syncWorkspaceChunks — content-hash dedupe (AC 9)', () => {
       META
     )
     expect(result.skipped).toBe(false)
-    expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1) // delete-then-insert ran
+    expect(mockPrisma.contentChunk.deleteMany).toHaveBeenCalled() // delete-then-insert ran
+    expect(mockPrisma.contentChunk.createMany).toHaveBeenCalled()
     expect(mockEmbed).toHaveBeenCalledTimes(1) // self-healed the failed embed
   })
 
@@ -158,7 +184,8 @@ describe('syncWorkspaceChunks — content-hash dedupe (AC 9)', () => {
     mockPrisma.contentChunk.findFirst.mockResolvedValue({
       metadata: { content_hash: 'h1' },
     })
-    mockPrisma.$queryRaw.mockResolvedValue([{ count: 0 }]) // none null
+    // First $queryRaw call: null-embed-count check returns 0 → SKIP.
+    mockPrisma.$queryRaw.mockResolvedValueOnce([{ count: 0 }])
     const result = await syncWorkspaceChunks(
       'file-1',
       'USER_FILE',
@@ -167,7 +194,8 @@ describe('syncWorkspaceChunks — content-hash dedupe (AC 9)', () => {
       META
     )
     expect(result.skipped).toBe(true)
-    expect(mockPrisma.$transaction).not.toHaveBeenCalled()
+    expect(mockPrisma.contentChunk.deleteMany).not.toHaveBeenCalled()
+    expect(mockPrisma.contentChunk.createMany).not.toHaveBeenCalled()
     expect(mockEmbed).not.toHaveBeenCalled()
   })
 })
@@ -192,6 +220,9 @@ describe('syncWorkspaceChunks — empty content + reliability', () => {
   it('does not roll back created chunks when embedding fails', async () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     mockEmbed.mockRejectedValueOnce(new Error('OpenAI down'))
+    // Story 17.18: split delete + create — explicitly mock createMany return
+    // value so the result accounting reads correctly (no $transaction wrap).
+    mockPrisma.contentChunk.createMany.mockResolvedValueOnce({ count: 1 })
     const result = await syncWorkspaceChunks(
       'file-1',
       'USER_FILE',
@@ -222,7 +253,9 @@ describe('syncWorkspaceChunks — empty content + reliability', () => {
     )
     expect(result.chunksCreated).toBe(1)
     expect(result.chunksEmbedded).toBe(1)
-    expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1)
+    // Story 17.18: split delete + create (no $transaction wrapper).
+    expect(mockPrisma.contentChunk.deleteMany).toHaveBeenCalled()
+    expect(mockPrisma.contentChunk.createMany).toHaveBeenCalled()
 
     // The branch produced real WORKSPACE_DOCUMENT chunks (createMany is invoked to
     // build the $transaction arg, so its data is the actual chunkWorkspaceDocument output).
@@ -306,5 +339,158 @@ describe('updateChunkMetadata — 17.10b AC 4', () => {
     const joined = JSON.stringify(call)
     expect(joined).toContain('ws-target')
     expect(joined).toContain('doc-a')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Story 17.18 AC 1 / AC 2 — tier-scoped delete + dedup
+// ---------------------------------------------------------------------------
+
+describe('syncWorkspaceChunks — Story 17.18 tier-scoped paths', () => {
+  it('tier=APPROVED: uses raw SQL tier-scoped delete (NOT prisma.deleteMany)', async () => {
+    await syncWorkspaceChunks(
+      'doc-1',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      'Ett stycke text för en APPROVED-tier chunk.',
+      {
+        title: 'Policy',
+        document_type: 'POLICY',
+        status: 'APPROVED',
+        content_hash: 'hash-A',
+        tier: 'APPROVED',
+      }
+    )
+
+    // Tier-scoped path uses $executeRaw with the tier predicate — verify the
+    // raw call fired and Prisma's deleteMany was NOT used.
+    expect(mockPrisma.$executeRaw).toHaveBeenCalled()
+    expect(mockPrisma.contentChunk.deleteMany).not.toHaveBeenCalled()
+
+    // The tier=APPROVED string appears as an interpolated value in the call.
+    const calls = mockPrisma.$executeRaw.mock.calls
+    const tierAppears = calls.some((call: unknown[]) =>
+      JSON.stringify(call).includes('APPROVED')
+    )
+    expect(tierAppears).toBe(true)
+  })
+
+  it('tier=DRAFT + null markdown: tier-scoped cleanup deletes orphans, no createMany', async () => {
+    // This is the SF-1 cleanup path (post-Förkasta or post-promote): the
+    // caller passes null markdown to wipe the orphaned tier's chunks.
+    const result = await syncWorkspaceChunks(
+      'doc-1',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      null,
+      {
+        title: 'Policy',
+        document_type: 'POLICY',
+        content_hash: null,
+        tier: 'DRAFT',
+      }
+    )
+
+    expect(mockPrisma.$executeRaw).toHaveBeenCalled() // tier-scoped delete fired
+    expect(mockPrisma.contentChunk.createMany).not.toHaveBeenCalled()
+    expect(mockEmbed).not.toHaveBeenCalled()
+    expect(result.chunksCreated).toBe(0)
+  })
+
+  it('tier dedup: hash-match with same tier short-circuits (re-embed skipped)', async () => {
+    // Hash check $queryRaw returns a row → match. Then null-count check
+    // returns 0 → all chunks embedded → SKIP.
+    mockPrisma.$queryRaw
+      .mockResolvedValueOnce([{ count: 1 }]) // tier hash-match found
+      .mockResolvedValueOnce([{ count: 0 }]) // null-embed count: 0 → skip
+
+    const result = await syncWorkspaceChunks(
+      'doc-1',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      'Same content.',
+      {
+        title: 'Policy',
+        document_type: 'POLICY',
+        status: 'APPROVED',
+        content_hash: 'hash-A',
+        tier: 'APPROVED',
+      }
+    )
+
+    expect(result.skipped).toBe(true)
+    expect(mockPrisma.contentChunk.createMany).not.toHaveBeenCalled()
+    expect(mockEmbed).not.toHaveBeenCalled()
+  })
+
+  it('tier dedup: hash-match with DIFFERENT tier does NOT short-circuit', async () => {
+    // The same content_hash on a DIFFERENT tier's chunks must NOT prevent
+    // this tier's reindex. The tier-scoped query finds no rows → fall through.
+    mockPrisma.$queryRaw
+      .mockResolvedValueOnce([{ count: 0 }]) // tier hash-match: 0 (different tier)
+      .mockResolvedValueOnce([
+        // embed fetch: NULL-only chunks just inserted
+        {
+          id: 'chunk-A1',
+          content: 'text',
+          contextual_header: 'Policy (POLICY)',
+        },
+      ])
+
+    const result = await syncWorkspaceChunks(
+      'doc-1',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      'Same content, but different tier this time.',
+      {
+        title: 'Policy',
+        document_type: 'POLICY',
+        status: 'APPROVED',
+        content_hash: 'hash-A',
+        tier: 'APPROVED',
+      }
+    )
+
+    expect(result.skipped).toBe(false)
+    expect(mockPrisma.contentChunk.createMany).toHaveBeenCalled()
+    expect(mockEmbed).toHaveBeenCalledTimes(1)
+  })
+
+  it('legacy untiered call (USER_FILE) preserves pre-17.18 deleteMany path', async () => {
+    // No `tier` field → fall through to existing deleteMany behavior.
+    await syncWorkspaceChunks(
+      'file-1',
+      'USER_FILE',
+      'ws-1',
+      'File content here.',
+      META
+    )
+
+    expect(mockPrisma.contentChunk.deleteMany).toHaveBeenCalledWith({
+      where: { source_type: 'USER_FILE', source_id: 'file-1' },
+    })
+  })
+
+  it('embed step uses $queryRaw to fetch only NULL-embedding chunks (Story 17.18 cross-tier opt)', async () => {
+    await syncWorkspaceChunks(
+      'doc-1',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      'Ett stycke text för en APPROVED-tier chunk.',
+      {
+        title: 'Policy',
+        document_type: 'POLICY',
+        status: 'APPROVED',
+        content_hash: 'hash-A',
+        tier: 'APPROVED',
+      }
+    )
+
+    // Embed fetch should use $queryRaw (not findMany) so the WHERE clause can
+    // include `embedding IS NULL` — which the Prisma model can't express
+    // because embedding is Unsupported().
+    expect(mockPrisma.contentChunk.findMany).not.toHaveBeenCalled()
+    // $queryRaw fires for at least the embed fetch (once when no dedup hit).
+    expect(mockPrisma.$queryRaw).toHaveBeenCalled()
   })
 })

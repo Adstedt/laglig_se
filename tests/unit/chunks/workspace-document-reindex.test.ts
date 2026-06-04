@@ -187,6 +187,257 @@ describe('indexWorkspaceDocument — 17.10b AC 3 (version_number in metadata)', 
   })
 })
 
+// ============================================================================
+// Story 17.18 AC 1 / AC 2 — dual-tier indexing (load-bearing)
+// ============================================================================
+//
+// Each test verifies the correct sync calls fire for a given pointer state:
+//   APPROVED-only → 1 APPROVED-tier index + 1 DRAFT-tier cleanup
+//   DRAFT-only    → 1 APPROVED-tier cleanup + 1 DRAFT-tier index
+//   dual-state    → 1 APPROVED-tier index + 1 DRAFT-tier index
+//   transition (promote / discardDraft) is the dual-state → APPROVED-only case;
+//   the DRAFT-tier cleanup call (SF-1 — physical deletion of orphaned chunks)
+//   is the load-bearing assertion that makes Story 17.16's after(reindex)
+//   contract land DRAFT chunks correctly.
+
+describe('indexWorkspaceDocument — Story 17.18 AC 1 dual-tier indexing', () => {
+  it('APPROVED-only doc: indexes APPROVED tier + cleans up DRAFT tier (null markdown)', async () => {
+    mockFindFirst.mockResolvedValue({
+      title: 'Arbetsmiljöpolicy',
+      document_type: 'POLICY',
+      status: 'APPROVED',
+      current_version_number: 5,
+      current_approved_version_id: 'v_5',
+      current_draft_version_id: null,
+      draft_status: null,
+      current_approved_version: {
+        content_html: '<h1>v5</h1>',
+        version_number: 5,
+      },
+      current_draft_version: null,
+      current_version: null,
+    })
+
+    await indexWorkspaceDocument('doc-1', 'ws-1')
+
+    // APPROVED tier indexed
+    expect(mockSync).toHaveBeenCalledWith(
+      'doc-1',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      'MD:<h1>v5</h1>',
+      expect.objectContaining({
+        tier: 'APPROVED',
+        status: 'APPROVED',
+        version_number: 5,
+        content_hash: expect.stringMatching(/^[a-f0-9]{64}$/),
+      })
+    )
+    // DRAFT tier cleanup — null markdown + tier scope deletes orphans
+    expect(mockSync).toHaveBeenCalledWith(
+      'doc-1',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      null,
+      expect.objectContaining({ content_hash: null, tier: 'DRAFT' })
+    )
+    expect(mockSync).toHaveBeenCalledTimes(2)
+  })
+
+  it('Dual-state doc: indexes BOTH tiers with correct metadata', async () => {
+    mockFindFirst.mockResolvedValue({
+      title: 'Almåsa toaletter',
+      document_type: 'POLICY',
+      status: 'APPROVED',
+      current_version_number: 9,
+      current_approved_version_id: 'v_8',
+      current_draft_version_id: 'v_9',
+      draft_status: 'DRAFT',
+      current_approved_version: {
+        content_html: '<p>approved v8</p>',
+        version_number: 8,
+      },
+      current_draft_version: {
+        content_html: '<p>draft v9</p>',
+        version_number: 9,
+      },
+      current_version: null,
+    })
+
+    await indexWorkspaceDocument('doc-dual', 'ws-1')
+
+    expect(mockSync).toHaveBeenCalledWith(
+      'doc-dual',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      'MD:<p>approved v8</p>',
+      expect.objectContaining({
+        tier: 'APPROVED',
+        status: 'APPROVED',
+        version_number: 8,
+      })
+    )
+    expect(mockSync).toHaveBeenCalledWith(
+      'doc-dual',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      'MD:<p>draft v9</p>',
+      expect.objectContaining({
+        tier: 'DRAFT',
+        status: 'DRAFT',
+        version_number: 9,
+      })
+    )
+    expect(mockSync).toHaveBeenCalledTimes(2)
+  })
+
+  it('Dual-state IN_REVIEW: draft tier carries status=IN_REVIEW from draft_status', async () => {
+    mockFindFirst.mockResolvedValue({
+      title: 'Policy under granskning',
+      document_type: 'POLICY',
+      status: 'APPROVED',
+      current_version_number: 4,
+      current_approved_version_id: 'v_3',
+      current_draft_version_id: 'v_4',
+      draft_status: 'IN_REVIEW',
+      current_approved_version: {
+        content_html: '<p>v3</p>',
+        version_number: 3,
+      },
+      current_draft_version: { content_html: '<p>v4</p>', version_number: 4 },
+      current_version: null,
+    })
+
+    await indexWorkspaceDocument('doc-ir', 'ws-1')
+
+    expect(mockSync).toHaveBeenCalledWith(
+      'doc-ir',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      'MD:<p>v4</p>',
+      expect.objectContaining({ tier: 'DRAFT', status: 'IN_REVIEW' })
+    )
+  })
+
+  it('Never-approved DRAFT doc: indexes DRAFT tier + cleans up APPROVED tier', async () => {
+    mockFindFirst.mockResolvedValue({
+      title: 'Nytt utkast',
+      document_type: 'POLICY',
+      status: 'DRAFT',
+      current_version_number: 1,
+      current_approved_version_id: null,
+      current_draft_version_id: 'v_1',
+      draft_status: 'DRAFT',
+      current_approved_version: null,
+      current_draft_version: {
+        content_html: '<p>brand new</p>',
+        version_number: 1,
+      },
+      current_version: null,
+    })
+
+    await indexWorkspaceDocument('doc-new', 'ws-1')
+
+    // APPROVED tier cleanup
+    expect(mockSync).toHaveBeenCalledWith(
+      'doc-new',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      null,
+      expect.objectContaining({ content_hash: null, tier: 'APPROVED' })
+    )
+    // DRAFT tier indexed
+    expect(mockSync).toHaveBeenCalledWith(
+      'doc-new',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      'MD:<p>brand new</p>',
+      expect.objectContaining({
+        tier: 'DRAFT',
+        status: 'DRAFT',
+        version_number: 1,
+      })
+    )
+    expect(mockSync).toHaveBeenCalledTimes(2)
+  })
+
+  it('SF-1 transition (post-Förkasta / post-promote): orphaned DRAFT tier physically deleted', async () => {
+    // The "after Förkasta" state — Story 17.16 AC 7 nulls the draft pointer.
+    // Story 17.18's reindex should now delete the orphan DRAFT chunks
+    // (NOT mark-stale per SF-1).
+    mockFindFirst.mockResolvedValue({
+      title: 'Förkastat utkast återställt',
+      document_type: 'POLICY',
+      status: 'APPROVED',
+      current_version_number: 7, // counter stays at the discarded draft's number
+      current_approved_version_id: 'v_6',
+      current_draft_version_id: null, // Förkasta cleared this
+      draft_status: null,
+      current_approved_version: {
+        content_html: '<p>v6</p>',
+        version_number: 6,
+      },
+      current_draft_version: null,
+      current_version: null,
+    })
+
+    await indexWorkspaceDocument('doc-post-forkasta', 'ws-1')
+
+    // DRAFT tier cleanup — passes null markdown which triggers
+    // tier-scoped deleteMany inside syncWorkspaceChunks (SF-1: physical removal)
+    expect(mockSync).toHaveBeenCalledWith(
+      'doc-post-forkasta',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      null,
+      expect.objectContaining({ content_hash: null, tier: 'DRAFT' })
+    )
+  })
+
+  it('Both pointers null + alias has content: legacy fallback path (defensive)', async () => {
+    // Pre-Story 17.16 doc that somehow escaped the backfill — should still
+    // index via the untiered legacy path. Both tier-scoped cleanups still
+    // fire (deleting any orphans of either tier), THEN the legacy index.
+    mockFindFirst.mockResolvedValue({
+      title: 'Legacy doc',
+      document_type: 'POLICY',
+      status: 'DRAFT',
+      current_version_number: 1,
+      current_approved_version_id: null,
+      current_draft_version_id: null,
+      draft_status: null,
+      current_approved_version: null,
+      current_draft_version: null,
+      current_version: { content_html: '<p>legacy</p>' },
+    })
+
+    await indexWorkspaceDocument('doc-legacy', 'ws-1')
+
+    // Both tiers cleaned up first (null markdown)
+    expect(mockSync).toHaveBeenCalledWith(
+      'doc-legacy',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      null,
+      expect.objectContaining({ tier: 'APPROVED', content_hash: null })
+    )
+    expect(mockSync).toHaveBeenCalledWith(
+      'doc-legacy',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      null,
+      expect.objectContaining({ tier: 'DRAFT', content_hash: null })
+    )
+    // Then legacy index with untagged meta (no tier field)
+    const legacyCall = mockSync.mock.calls.find(
+      (c: unknown[]) =>
+        c[3] === 'MD:<p>legacy</p>' &&
+        !('tier' in ((c[4] as Record<string, unknown>) ?? {}))
+    )
+    expect(legacyCall).toBeDefined()
+  })
+})
+
 describe('deindexWorkspaceDocument', () => {
   it('syncs with null content (clears all WORKSPACE_DOCUMENT chunks)', async () => {
     await deindexWorkspaceDocument('doc-1', 'ws-1')

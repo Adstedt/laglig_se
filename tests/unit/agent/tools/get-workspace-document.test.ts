@@ -169,4 +169,153 @@ describe('createGetWorkspaceDocumentTool', () => {
     }
     expect(out.data.approvedBy).toBeNull()
   })
+
+  // ==========================================================================
+  // Story 17.18 AC 5 — dual response shape + dualState + per-tier citationKey
+  // ==========================================================================
+
+  describe('Story 17.18 AC 5 — dual response shape', () => {
+    const DUAL_STATE_DOC = {
+      ...FULL_DOC,
+      // Almåsa-toilets-like dual state: approved v8 + draft v9.
+      status: 'APPROVED',
+      current_approved_version_id: 'v-app',
+      current_draft_version_id: 'v-draft',
+      draft_status: 'DRAFT',
+      current_approved_version: {
+        content_html: '<p>approved v8</p>',
+        version_number: 8,
+        approved_at: new Date('2026-05-22T10:00:00.000Z'),
+      },
+      current_draft_version: {
+        content_html: '<p>draft v9</p>',
+        version_number: 9,
+        created_at: new Date('2026-06-04T12:30:00.000Z'),
+      },
+      // Legacy alias still set under Model B's frozen-alias semantics.
+      current_version: {
+        content_html: '<p>approved v8</p>',
+        version_number: 8,
+      },
+    }
+
+    it('dual-state doc: populates approved + draft + dualState true', async () => {
+      mockFindFirst.mockResolvedValue(DUAL_STATE_DOC)
+
+      const out = (await makeTool().execute({ document_id: 'wd-1' })) as {
+        data: {
+          approved: {
+            versionNumber: number
+            citationKey: string
+            content: string
+          }
+          draft: {
+            versionNumber: number
+            citationKey: string
+            draftStatus: string
+            content: string
+          }
+          dualState: boolean
+          content: string
+        }
+      }
+
+      expect(out.data.dualState).toBe(true)
+      expect(out.data.approved.versionNumber).toBe(8)
+      expect(out.data.approved.citationKey).toBe('Dataskyddspolicy')
+      expect(out.data.approved.content).toContain('approved v8')
+      expect(out.data.draft.versionNumber).toBe(9)
+      // SF-2: citationKey uses draft.version_number (NOT approved+1).
+      expect(out.data.draft.citationKey).toBe('Dataskyddspolicy (utkast v9)')
+      expect(out.data.draft.draftStatus).toBe('DRAFT')
+      expect(out.data.draft.content).toContain('draft v9')
+      // Top-level content backward-compat: approved when present.
+      expect(out.data.content).toContain('approved v8')
+    })
+
+    it('approved-only doc: draft is null, dualState false, top-level content = approved', async () => {
+      mockFindFirst.mockResolvedValue({
+        ...DUAL_STATE_DOC,
+        current_draft_version_id: null,
+        draft_status: null,
+        current_draft_version: null,
+      })
+
+      const out = (await makeTool().execute({ document_id: 'wd-1' })) as {
+        data: {
+          approved: unknown
+          draft: null
+          dualState: boolean
+          content: string
+        }
+      }
+
+      expect(out.data.dualState).toBe(false)
+      expect(out.data.approved).not.toBeNull()
+      expect(out.data.draft).toBeNull()
+      expect(out.data.content).toContain('approved v8')
+    })
+
+    it('never-approved DRAFT doc: approved is null, draft populated, top-level content = draft (backward-compat fallback)', async () => {
+      mockFindFirst.mockResolvedValue({
+        ...DUAL_STATE_DOC,
+        status: 'DRAFT',
+        current_approved_version_id: null,
+        current_approved_version: null,
+        approver: null,
+        approved_at: null,
+        // Legacy alias also null for never-approved
+        current_version: { content_html: '<p>draft v9</p>', version_number: 9 },
+      })
+
+      const out = (await makeTool().execute({ document_id: 'wd-1' })) as {
+        data: {
+          approved: null
+          draft: { citationKey: string }
+          dualState: boolean
+          content: string
+        }
+      }
+
+      expect(out.data.dualState).toBe(false)
+      expect(out.data.approved).toBeNull()
+      expect(out.data.draft).not.toBeNull()
+      // Top-level content falls back to draft when no approved present.
+      expect(out.data.content).toContain('draft v9')
+      expect(out.data.draft.citationKey).toBe('Dataskyddspolicy (utkast v9)')
+    })
+
+    it('SF-2: multi-cycle dual-state uses draft.version_number directly (NOT approved+1)', async () => {
+      // Approved v8 but draft is v15 — a doc that went through promote/Förkasta
+      // cycles. The naive (approved+1) shape would give v9; SF-2 mandates v15.
+      mockFindFirst.mockResolvedValue({
+        ...DUAL_STATE_DOC,
+        current_draft_version: {
+          content_html: '<p>draft v15</p>',
+          version_number: 15,
+          created_at: new Date('2026-06-04T13:00:00.000Z'),
+        },
+      })
+
+      const out = (await makeTool().execute({ document_id: 'wd-1' })) as {
+        data: { draft: { citationKey: string; versionNumber: number } }
+      }
+
+      expect(out.data.draft.versionNumber).toBe(15)
+      expect(out.data.draft.citationKey).toBe('Dataskyddspolicy (utkast v15)')
+    })
+
+    it('IN_REVIEW draft sub-status surfaces in draft.draftStatus', async () => {
+      mockFindFirst.mockResolvedValue({
+        ...DUAL_STATE_DOC,
+        draft_status: 'IN_REVIEW',
+      })
+
+      const out = (await makeTool().execute({ document_id: 'wd-1' })) as {
+        data: { draft: { draftStatus: string } }
+      }
+
+      expect(out.data.draft.draftStatus).toBe('IN_REVIEW')
+    })
+  })
 })

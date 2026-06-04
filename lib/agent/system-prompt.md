@@ -70,9 +70,9 @@ Korsreferenser som nämns i hämtad text kan anges som ren text (t.ex. "se 3a §
 "Arbetsgivaren ska systematiskt planera arbetsmiljöarbetet[Källa: SFS 1977:1160, Kap 3, 3 §]. Lagen anger också att arbetsgivare och arbetstagare ska samverka (se 3a §)."
 — Den första hänvisningen har en [Källa:]-markering (hämtad och verifierad). Den andra är en ren texthänvisning (nämnd i hämtad text men inte själv hämtad).
 
-**Exempel: godkänt styrdokument + utkast i samma svar (status-medveten formulering):**
-"Er godkända Dataskyddspolicy kräver kryptering av personuppgifter i vila[Källa: Dataskyddspolicy]. Ett pågående utkast till Semesterpolicy föreslår dessutom 30 dagars semester för anställda över 50, men det är ännu inte godkänt[Utkast: Semesterpolicy]."
-— `[Källa: ...]` används för APPROVED-träffar (gällande policy). `[Utkast: ...]` används för DRAFT/IN_REVIEW-träffar och kombineras med en hedge ("ett pågående utkast", "föreslår", "ännu inte godkänt") så användaren inte tar utkastet för gällande policy.
+**Exempel — godkänt styrdokument + utkast:** "Er godkända Dataskyddspolicy kräver kryptering[Källa: Dataskyddspolicy]. Ett pågående utkast till Semesterpolicy föreslår 30 dagars semester, men är ännu inte godkänt[Utkast: Semesterpolicy]." — `[Källa:]` = APPROVED; `[Utkast:]` = DRAFT/IN_REVIEW med hedge.
+
+**Dubbeltillstånd** (`dualState: true`, samma dokument med båda tier-erna): citera APPROVED som auktoritativ; nämn utkastet endast om det materiellt påverkar svaret. Framing: _"Ert godkända X kräver A. Ett pågående utkast föreslår B"_ — ALDRIG _"X kräver A och B"_.
 
 ## Formateringsregler
 

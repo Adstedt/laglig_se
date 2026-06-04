@@ -91,13 +91,32 @@ export function hashDocumentContent(contentHtml: string): string {
 }
 
 /**
- * INDEX (or re-INDEX) a styrdokument: load its current version's `content_html`,
- * convert to markdown, chunk + embed as `WORKSPACE_DOCUMENT` chunks. Workspace-
- * scoped (cross-tenant isolation invariant). Chunk metadata carries `status` +
- * `version_number` (Story 17.10b).
+ * INDEX (or re-INDEX) a styrdokument across BOTH tiers (Story 17.18 AC 1).
  *
- * Hash-gated inside `syncWorkspaceChunks` — same content → skipped, no embed.
- * Null `current_version` → no-op short-circuit (a doc with no versions yet).
+ * **17.18 model (current):** under Story 17.16's dual-pointer schema, a doc
+ * may carry an approved version (`current_approved_version_id`) AND/OR a draft
+ * version (`current_draft_version_id`). Each tier is indexed independently so
+ * the agent's `search_workspace_documents` can return one hit per tier per doc
+ * (AC 3) and the citation layer can route `[Källa:]` to APPROVED-tier chunks
+ * and `[Utkast:]` to DRAFT-tier chunks (AC 4).
+ *
+ *  - `current_approved_version_id` set → APPROVED-tier chunks indexed from
+ *    `current_approved_version.content_html`. Carry `metadata.tier='APPROVED'`
+ *    + `metadata.status='APPROVED'`.
+ *  - `current_draft_version_id` set → DRAFT-tier chunks indexed from
+ *    `current_draft_version.content_html`. Carry `metadata.tier='DRAFT'` +
+ *    `metadata.status=draft_status` (`'DRAFT'` or `'IN_REVIEW'`).
+ *  - Either pointer null → the orphaned tier's chunks are **physically deleted**
+ *    (SF-1 — pinned by PO v1.1: removed, not marked-stale; keeps search query
+ *    simple + bounds index growth on multi-cycle docs). This is what makes
+ *    Story 17.16's `discardDraft` and `promoteDraftToApproved` cleanups work
+ *    via the existing `after(indexWorkspaceDocument(...))` callback contract.
+ *  - Both pointers null → legacy fallback to `current_version` (the deprecated
+ *    alias, untiered). Should not be reachable post-17.16 backfill but
+ *    defensively retained.
+ *
+ * Hash-gated inside `syncWorkspaceChunks` (per-tier) — same content per tier
+ * → skipped, no embed. Workspace-scoped (cross-tenant isolation invariant).
  */
 export async function indexWorkspaceDocument(
   documentId: string,
@@ -110,27 +129,107 @@ export async function indexWorkspaceDocument(
       document_type: true,
       status: true,
       current_version_number: true,
+      current_approved_version_id: true,
+      current_draft_version_id: true,
+      draft_status: true,
+      current_approved_version: {
+        select: { content_html: true, version_number: true },
+      },
+      current_draft_version: {
+        select: { content_html: true, version_number: true },
+      },
+      // Legacy alias for the both-pointers-null fallback path.
       current_version: { select: { content_html: true } },
     },
   })
   if (!doc) return
 
-  const contentHtml = doc.current_version?.content_html ?? ''
-  const markdown = htmlToMarkdown(contentHtml)
+  // ── APPROVED tier ─────────────────────────────────────────────────────────
+  if (doc.current_approved_version_id && doc.current_approved_version) {
+    const html = doc.current_approved_version.content_html
+    await syncWorkspaceChunks(
+      documentId,
+      'WORKSPACE_DOCUMENT',
+      workspaceId,
+      htmlToMarkdown(html),
+      {
+        title: doc.title,
+        document_type: doc.document_type,
+        status: 'APPROVED',
+        version_number: doc.current_approved_version.version_number,
+        content_hash: hashDocumentContent(html),
+        tier: 'APPROVED',
+      }
+    )
+  } else {
+    // SF-1 cleanup: no approved version → any orphaned APPROVED-tier chunks
+    // get deleted by passing null markdown with tier scope.
+    await syncWorkspaceChunks(
+      documentId,
+      'WORKSPACE_DOCUMENT',
+      workspaceId,
+      null,
+      { content_hash: null, tier: 'APPROVED' }
+    )
+  }
 
-  await syncWorkspaceChunks(
-    documentId,
-    'WORKSPACE_DOCUMENT',
-    workspaceId,
-    markdown,
-    {
-      title: doc.title,
-      document_type: doc.document_type,
-      status: doc.status,
-      version_number: doc.current_version_number,
-      content_hash: hashDocumentContent(contentHtml),
-    }
-  )
+  // ── DRAFT tier ────────────────────────────────────────────────────────────
+  if (doc.current_draft_version_id && doc.current_draft_version) {
+    const html = doc.current_draft_version.content_html
+    await syncWorkspaceChunks(
+      documentId,
+      'WORKSPACE_DOCUMENT',
+      workspaceId,
+      htmlToMarkdown(html),
+      {
+        title: doc.title,
+        document_type: doc.document_type,
+        // draft_status carries 'DRAFT' or 'IN_REVIEW'; defaults to 'DRAFT' if
+        // a brand-new doc hasn't been seeded yet (edge case — Story 17.16's
+        // createDocument extension does seed it).
+        status: doc.draft_status ?? 'DRAFT',
+        version_number: doc.current_draft_version.version_number,
+        content_hash: hashDocumentContent(html),
+        tier: 'DRAFT',
+      }
+    )
+  } else {
+    // SF-1 cleanup: no draft → any orphaned DRAFT-tier chunks get deleted.
+    await syncWorkspaceChunks(
+      documentId,
+      'WORKSPACE_DOCUMENT',
+      workspaceId,
+      null,
+      { content_hash: null, tier: 'DRAFT' }
+    )
+  }
+
+  // ── Legacy fallback ───────────────────────────────────────────────────────
+  // Both pointers null but the alias has content → pre-Story 17.16 doc that
+  // somehow escaped the backfill. Index via the untiered path so it remains
+  // searchable until the next save normalizes the pointer state.
+  if (
+    !doc.current_approved_version_id &&
+    !doc.current_draft_version_id &&
+    doc.current_version?.content_html
+  ) {
+    const html = doc.current_version.content_html
+    await syncWorkspaceChunks(
+      documentId,
+      'WORKSPACE_DOCUMENT',
+      workspaceId,
+      htmlToMarkdown(html),
+      {
+        title: doc.title,
+        document_type: doc.document_type,
+        status: doc.status,
+        version_number: doc.current_version_number,
+        content_hash: hashDocumentContent(html),
+        // No tier → untagged chunks; will be migrated to APPROVED-tier on
+        // the next reindex when pointers get populated.
+      }
+    )
+  }
 }
 
 /**

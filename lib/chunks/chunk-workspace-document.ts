@@ -122,6 +122,15 @@ export interface ChunkWorkspaceDocumentInput {
   markdown: string
   /** sha256 of `content_html` — stored in chunk metadata for dedupe (AC 7). */
   contentHash?: string | null
+  /**
+   * **Story 17.18 AC 2:** dual-tier discriminator. `'APPROVED'` chunks come from
+   * `current_approved_version` (canonical, citation grounds `[Källa:]`). `'DRAFT'`
+   * chunks come from `current_draft_version` (in-progress, citation grounds
+   * `[Utkast:]`). Undefined → legacy single-tier call (pre-17.18); the chunk
+   * carries no `tier` metadata and is treated as APPROVED-tier by the tier-scoped
+   * delete path's `OR metadata->>'tier' IS NULL` clause. Self-healing migration.
+   */
+  tier?: 'APPROVED' | 'DRAFT'
 }
 
 /**
@@ -142,6 +151,12 @@ export function chunkWorkspaceDocument(
     metadata.version_number = doc.versionNumber
   }
   if (doc.contentHash) metadata.content_hash = doc.contentHash
+  // Story 17.18 AC 2: tier discriminator on every chunk for dual-tier search
+  // routing. Omitted on legacy single-tier calls (pre-17.18); the tier-scoped
+  // delete path handles untagged chunks via `OR metadata->>'tier' IS NULL`.
+  if (doc.tier) {
+    metadata.tier = doc.tier
+  }
 
   return chunkWorkspaceMarkdown({
     sourceType: 'WORKSPACE_DOCUMENT',

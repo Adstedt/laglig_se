@@ -1,21 +1,28 @@
 /**
- * list_workspace_documents tool — Story 17.10: enumerate a workspace's
- * authored styrdokument without a semantic-search query.
+ * list_workspace_documents tool — Story 17.10 + extended by Story 17.18 AC 6.
  *
  * Use cases:
  *   - "what styrdokument do we have for this law/task?"
  *   - "list our policies in draft status"
  *   - "show me documents tagged to kravpunkt X"
+ *   - **Story 17.18:** "which policies are being revised right now?" via the
+ *     new `dual_state_only` filter — single tool call instead of enumerate-
+ *     all-then-filter-in-reasoning.
  *
- * Filters (AC 13): type + status are direct `where` clauses on the
- * `WorkspaceDocument` columns; the two `linked_*` filters go through the
- * established relations (`task_links` / `list_item_links`) using Prisma's
- * `some` operator. Workspace-scoped (AC 16) — the closure `workspaceId` is
- * the only tenant source.
+ * Filters (AC 13 + Story 17.18 AC 6): type + status + dualStateOnly +
+ * link-based filters. Workspace-scoped (AC 16).
  *
- * Ordered by `updated_at desc`; capped at 25 results (AC 15) — for deeper
- * exploration the agent uses `search_workspace_documents` (semantic) or
- * `get_workspace_document` (single).
+ * Ordered by `updated_at desc`; capped at 25 results (AC 15).
+ *
+ * **Story 17.18 AC 6 — extended row shape:** every row now exposes the
+ * dual-pointer state (`currentApprovedVersionNumber`, `currentDraftVersionNumber`,
+ * `draftStatus`, `dualState`) so the agent can render "Godkänd v3 + Utkast v4
+ * pågår"-style summaries without a separate get_workspace_document call.
+ *
+ * **NTH-2 ratification:** the `dual_state_only` filter is exposed on the Zod
+ * schema (LLM-visible tool spec), not just the server function's TypeScript
+ * signature. Verified by the registry-narrowing test which inspects the
+ * tool's published input schema.
  */
 
 import { tool, zodSchema } from 'ai'
@@ -50,6 +57,12 @@ const listWorkspaceDocumentsSchema = z.object({
     .describe(
       'UUID för en uppgift — endast styrdokument som är länkade till denna uppgift returneras.'
     ),
+  dual_state_only: z
+    .boolean()
+    .optional()
+    .describe(
+      'Story 17.18: när true returneras ENDAST dokument med pågående revision (både en godkänd version OCH ett pågående utkast). Användbart för "Vilka policyer pågår just nu revisions på?". Utelämna för att inkludera alla.'
+    ),
 })
 
 type ListWorkspaceDocumentsInput = z.infer<typeof listWorkspaceDocumentsSchema>
@@ -58,16 +71,21 @@ const MAX_RESULTS = 25
 
 export function createListWorkspaceDocumentsTool(workspaceId: string) {
   return tool({
-    description: `Lista styrdokument i arbetsytan, valfritt filtrerade på typ, status eller länkning till en specifik uppgift/laglistpost.
+    description: `Lista styrdokument i arbetsytan, valfritt filtrerade på typ, status, dubbeltillstånd, eller länkning till en specifik uppgift/laglistpost.
 
-Använd när du vill bläddra bland existerande styrdokument utan en specifik sökfråga — t.ex. "vilka rutiner har vi?", "vilka utkast ligger för granskning?", eller "vilka styrdokument är kopplade till den här lagen/uppgiften?". Använd \`search_workspace_documents\` istället när du har en sökfråga, och \`get_workspace_document\` när du vill läsa hela innehållet.
+Använd när du vill bläddra bland existerande styrdokument utan en specifik sökfråga — t.ex. "vilka rutiner har vi?", "vilka utkast ligger för granskning?", "vilka policyer pågår just nu revisions på?" (\`dual_state_only: true\`), eller "vilka styrdokument är kopplade till den här lagen/uppgiften?". Använd \`search_workspace_documents\` istället när du har en sökfråga, och \`get_workspace_document\` när du vill läsa hela innehållet.
 
-Returnerar upp till ${MAX_RESULTS} styrdokument sorterade efter senast uppdaterade. För varje träff: titel, dokumenttyp, status, antal versioner, senaste uppdateringen, och skapare.`,
+Returnerar upp till ${MAX_RESULTS} styrdokument sorterade efter senast uppdaterade. För varje träff: titel, dokumenttyp, status, godkänd versionsnummer (om finns), utkasts-versionsnummer (om pågår), utkasts-status, om dokumentet är i dubbeltillstånd, antal versioner, senaste uppdateringen, och skapare.`,
     inputSchema: zodSchema(listWorkspaceDocumentsSchema),
     execute: async (input: ListWorkspaceDocumentsInput) => {
       const startTime = Date.now()
-      const { document_type, status, linked_list_item_id, linked_task_id } =
-        input
+      const {
+        document_type,
+        status,
+        linked_list_item_id,
+        linked_task_id,
+        dual_state_only,
+      } = input
 
       try {
         const where: Prisma.WorkspaceDocumentWhereInput = {
@@ -79,6 +97,13 @@ Returnerar upp till ${MAX_RESULTS} styrdokument sorterade efter senast uppdatera
           }),
           ...(linked_list_item_id !== undefined && {
             list_item_links: { some: { list_item_id: linked_list_item_id } },
+          }),
+          // Story 17.18 AC 6: dual-state filter. A doc is in dual state iff
+          // BOTH current_approved_version_id AND current_draft_version_id are
+          // populated. Translated to Prisma: `not: null` on both pointer cols.
+          ...(dual_state_only === true && {
+            current_approved_version_id: { not: null },
+            current_draft_version_id: { not: null },
           }),
         }
 
@@ -94,6 +119,13 @@ Returnerar upp till ${MAX_RESULTS} styrdokument sorterade efter senast uppdatera
             updated_at: true,
             creator: { select: { name: true } },
             _count: { select: { versions: true } },
+            // Story 17.18 AC 6: dual-pointer fields surface on every row so
+            // the agent can render the composite state inline.
+            current_approved_version_id: true,
+            current_draft_version_id: true,
+            draft_status: true,
+            current_approved_version: { select: { version_number: true } },
+            current_draft_version: { select: { version_number: true } },
           },
         })
 
@@ -105,6 +137,16 @@ Returnerar upp till ${MAX_RESULTS} styrdokument sorterade efter senast uppdatera
           versionCount: r._count.versions,
           lastUpdated: r.updated_at,
           createdBy: r.creator?.name ?? null,
+          // Story 17.18 AC 6: dual-pointer summary fields.
+          currentApprovedVersionNumber:
+            r.current_approved_version?.version_number ?? null,
+          currentDraftVersionNumber:
+            r.current_draft_version?.version_number ?? null,
+          // Coerce undefined → null so the response shape is stable for callers.
+          draftStatus: r.draft_status ?? null,
+          dualState:
+            r.current_approved_version_id != null &&
+            r.current_draft_version_id != null,
         }))
 
         return wrapToolResponse('list_workspace_documents', results, startTime)

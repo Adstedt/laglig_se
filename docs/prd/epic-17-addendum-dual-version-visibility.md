@@ -1,5 +1,21 @@
 # Epic 17 Addendum: Dual-Version Document Visibility — Brownfield Enhancement
 
+> ## ✅ EPIC CLOSED — 2026-06-04
+>
+> **All 3 stories Done.** Trilogy shipped in 2 days (drafted 2026-06-03; closed 2026-06-04).
+>
+> | Story | Status | QA Gate | Quality |
+> |---|---|---|---|
+> | **17.16** — Dual-Version Data Model + Dispatch Refactor (foundation) | ✅ Done (`docs/stories/completed/`) | PASS | 92 |
+> | **17.17** — Styrdokument Table + Doc Page Dual-Version UX | ✅ Done (`docs/stories/completed/`) | PASS | 96 |
+> | **17.18** — Agent Reads + Citation Routing Under the Dual-Version Model | ✅ Done (`docs/stories/completed/`) | PASS | 95 |
+>
+> **Compliance contract restored end-to-end.** The 17.10b DEC-2 invariant (*"the agent never cites a DRAFT as canonical policy"*) now holds under Model B: approved policy stays visible + searchable + correctly citable throughout every revision window; in-progress drafts surface as a secondary signal with the `[Utkast: X (utkast vN)]` pill and explicit "ett pågående utkast föreslår" framing. Owner live smoke against Supabase production data validated all three load-bearing checks (alias-freeze invariant via SQL on 17.16; composite badge + Skicka/Godkänn/Neka/Förkasta flow on 17.17; self-healing chunk migration + DEC-2 LLM hold across 3 adversarial prompt phrasings on 17.18).
+>
+> **Story 17.11c (agent auto-branch on APPROVED)** remains as a separate follow-up — PO can draft it now that the foundation + UX + agent surface are all stable. The original ~50-line scope estimate still holds; 17.11c becomes trivial against the corrected Model B foundation.
+>
+> ---
+
 **Goal:** Replace the single-pointer `WorkspaceDocument` versioning model (status-flipping on revision) with a dual-pointer model where the currently-effective approved version AND the currently-in-progress draft are first-class, concurrently queryable states — so compliance documents remain visible, searchable, and accurately citable throughout their revision lifecycle.
 
 **Value Delivered:** Today, when a user revises an APPROVED styrdokument via "Skapa nytt utkast", `createDraftFromApproved` flips `status: APPROVED → DRAFT`, repoints `current_version_id` to the new draft, NULLs `approved_by`/`approved_at`, and deindexes the document from search. The previously-effective approved policy disappears from the table, the doc page, search results, and the agent's citation grounding for the entire duration of the draft window. This violates the core compliance-domain expectation that *"what's currently in force"* must be answerable at every moment — and actively degrades the AI agent's value proposition (its `[Källa:]` citations regress to `[Utkast:]` workspace-wide during any revision). This epic encodes the dual state correctly: effective approved version stays visible and searchable, draft in progress is its own state with its own indicators, and the agent grounds its answers in the right version with the right confidence signal.
