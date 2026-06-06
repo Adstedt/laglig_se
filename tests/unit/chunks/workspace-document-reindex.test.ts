@@ -60,6 +60,20 @@ const mockUpdateMany = (
 const mockSync = syncWorkspaceChunks as ReturnType<typeof vi.fn>
 const mockUpdateMeta = updateChunkMetadata as ReturnType<typeof vi.fn>
 
+/**
+ * AGENT-001 defense: indexWorkspaceDocument gates on content_json (the editor's
+ * source of truth). Tests that exercise the "this tier has content → index it"
+ * path must populate content_json with a non-empty Tiptap doc; tests that
+ * exercise the empty-tier cleanup path can leave content_json missing or set
+ * it to {} (the legacy divergence shape).
+ */
+const NON_EMPTY_TIPTAP_DOC = {
+  type: 'doc',
+  content: [
+    { type: 'paragraph', content: [{ type: 'text', text: 'placeholder' }] },
+  ],
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
 })
@@ -139,7 +153,10 @@ describe('indexWorkspaceDocument — 17.10b AC 3 (version_number in metadata)', 
       document_type: 'POLICY',
       status: 'DRAFT',
       current_version_number: 3,
-      current_version: { content_html: '<h1>Policy</h1>' },
+      current_version: {
+        content_html: '<h1>Policy</h1>',
+        content_json: NON_EMPTY_TIPTAP_DOC,
+      },
     })
 
     await indexWorkspaceDocument('doc-1', 'ws-1')
@@ -166,7 +183,10 @@ describe('indexWorkspaceDocument — 17.10b AC 3 (version_number in metadata)', 
       document_type: 'POLICY',
       status: 'APPROVED',
       current_version_number: 1,
-      current_version: { content_html: '<p>x</p>' },
+      current_version: {
+        content_html: '<p>x</p>',
+        content_json: NON_EMPTY_TIPTAP_DOC,
+      },
     })
 
     await indexWorkspaceDocument('doc-2', 'ws-1')
@@ -212,6 +232,7 @@ describe('indexWorkspaceDocument — Story 17.18 AC 1 dual-tier indexing', () =>
       draft_status: null,
       current_approved_version: {
         content_html: '<h1>v5</h1>',
+        content_json: NON_EMPTY_TIPTAP_DOC,
         version_number: 5,
       },
       current_draft_version: null,
@@ -255,10 +276,12 @@ describe('indexWorkspaceDocument — Story 17.18 AC 1 dual-tier indexing', () =>
       draft_status: 'DRAFT',
       current_approved_version: {
         content_html: '<p>approved v8</p>',
+        content_json: NON_EMPTY_TIPTAP_DOC,
         version_number: 8,
       },
       current_draft_version: {
         content_html: '<p>draft v9</p>',
+        content_json: NON_EMPTY_TIPTAP_DOC,
         version_number: 9,
       },
       current_version: null,
@@ -302,9 +325,14 @@ describe('indexWorkspaceDocument — Story 17.18 AC 1 dual-tier indexing', () =>
       draft_status: 'IN_REVIEW',
       current_approved_version: {
         content_html: '<p>v3</p>',
+        content_json: NON_EMPTY_TIPTAP_DOC,
         version_number: 3,
       },
-      current_draft_version: { content_html: '<p>v4</p>', version_number: 4 },
+      current_draft_version: {
+        content_html: '<p>v4</p>',
+        content_json: NON_EMPTY_TIPTAP_DOC,
+        version_number: 4,
+      },
       current_version: null,
     })
 
@@ -331,6 +359,7 @@ describe('indexWorkspaceDocument — Story 17.18 AC 1 dual-tier indexing', () =>
       current_approved_version: null,
       current_draft_version: {
         content_html: '<p>brand new</p>',
+        content_json: NON_EMPTY_TIPTAP_DOC,
         version_number: 1,
       },
       current_version: null,
@@ -375,6 +404,7 @@ describe('indexWorkspaceDocument — Story 17.18 AC 1 dual-tier indexing', () =>
       draft_status: null,
       current_approved_version: {
         content_html: '<p>v6</p>',
+        content_json: NON_EMPTY_TIPTAP_DOC,
         version_number: 6,
       },
       current_draft_version: null,
@@ -408,7 +438,10 @@ describe('indexWorkspaceDocument — Story 17.18 AC 1 dual-tier indexing', () =>
       draft_status: null,
       current_approved_version: null,
       current_draft_version: null,
-      current_version: { content_html: '<p>legacy</p>' },
+      current_version: {
+        content_html: '<p>legacy</p>',
+        content_json: NON_EMPTY_TIPTAP_DOC,
+      },
     })
 
     await indexWorkspaceDocument('doc-legacy', 'ws-1')
@@ -507,5 +540,217 @@ describe('markWorkspaceDocumentDirty — 17.10b AC 6 (cron-sweep dirty-mark)', (
       expect(arg.data.needs_reindex).toBe(true)
       expect(arg.data.last_marked_dirty_at).toBeInstanceOf(Date)
     }
+  })
+})
+
+// ============================================================================
+// AGENT-001 defensive content_json gate
+//
+// Surfaced during 17.11c smoke 2026-06-06: two Nordviken docs had empty
+// content_json ({}) but rich content_html (~1000 chars each from a legacy
+// seed). The indexer was sourcing chunks from content_html and producing
+// 4 phantom chunks per doc. The agent then read those chunks via
+// search_workspace_documents and presented them as truth — directly
+// contradicting the editor's "0 ord · Sparad" status.
+//
+// Fix: indexer gates chunking on content_json (the editor's source of truth).
+// If a tier's content_json is empty/missing/`{}`, that tier is treated as
+// empty regardless of what content_html says, and chunks for that tier are
+// cleaned up via the existing tier-scoped delete.
+//
+// Critical safety property: per-tier evaluation. An accidentally-cleared
+// DRAFT does NOT cascade to APPROVED-tier chunks (which the user expects
+// to keep surfacing the in-force policy via 17.16's alias-freeze).
+// ============================================================================
+
+describe('indexWorkspaceDocument — AGENT-001 defensive content_json gate', () => {
+  const EMPTY_JSON_SHAPES = [
+    null,
+    undefined,
+    {}, // The exact shape observed on the Nordviken docs
+    { type: 'doc' }, // No content array
+    { type: 'doc', content: [] }, // Empty content array
+    { type: 'doc', content: [{ type: 'paragraph' }] }, // Single empty paragraph (editor default)
+  ]
+
+  for (const [idx, emptyJson] of EMPTY_JSON_SHAPES.entries()) {
+    it(`APPROVED tier with empty content_json shape #${idx} (${JSON.stringify(emptyJson)}) cleans up + does NOT index`, async () => {
+      mockFindFirst.mockResolvedValue({
+        title: 'Diskrimineringspolicy',
+        document_type: 'POLICY',
+        status: 'APPROVED',
+        current_version_number: 1,
+        current_approved_version_id: 'v_approved',
+        current_draft_version_id: null,
+        draft_status: null,
+        current_approved_version: {
+          content_html:
+            '<h1>Phantom legacy content</h1><p>Stale from old seed</p>',
+          content_json: emptyJson,
+          version_number: 1,
+        },
+        current_draft_version: null,
+        current_version: null,
+      })
+
+      await indexWorkspaceDocument('doc-divergent', 'ws-1')
+
+      // No content-bearing index call for the APPROVED tier — content_json says empty.
+      const approvedIndexCall = mockSync.mock.calls.find(
+        (c: unknown[]) => typeof c[3] === 'string' && c[3] !== null
+      )
+      expect(approvedIndexCall).toBeUndefined()
+
+      // Both tier cleanups still fire (null markdown, tier-scoped).
+      expect(mockSync).toHaveBeenCalledWith(
+        'doc-divergent',
+        'WORKSPACE_DOCUMENT',
+        'ws-1',
+        null,
+        expect.objectContaining({ tier: 'APPROVED', content_hash: null })
+      )
+      expect(mockSync).toHaveBeenCalledWith(
+        'doc-divergent',
+        'WORKSPACE_DOCUMENT',
+        'ws-1',
+        null,
+        expect.objectContaining({ tier: 'DRAFT', content_hash: null })
+      )
+    })
+  }
+
+  it('SAFETY PROPERTY: empty DRAFT does NOT cascade to APPROVED chunks (17.16 alias-freeze respected)', async () => {
+    // User accidentally clears all content in the draft editor.
+    // Autosave fires → indexer runs.
+    // Expected: APPROVED chunks remain intact (sourced from the unchanged
+    // approved version row); only DRAFT chunks get cleaned.
+    mockFindFirst.mockResolvedValue({
+      title: 'Arbetsmiljöpolicy',
+      document_type: 'POLICY',
+      status: 'APPROVED',
+      current_version_number: 5,
+      current_approved_version_id: 'v_4',
+      current_draft_version_id: 'v_5',
+      draft_status: 'DRAFT',
+      current_approved_version: {
+        content_html:
+          '<h1>Approved Arbetsmiljöpolicy</h1><p>Den gällande policyn.</p>',
+        content_json: NON_EMPTY_TIPTAP_DOC, // Untouched, immutable per 17.16 AC 4
+        version_number: 4,
+      },
+      current_draft_version: {
+        content_html: '', // User cleared everything; saveDocumentVersion synced html too
+        content_json: { type: 'doc', content: [] }, // User-cleared empty state
+        version_number: 5,
+      },
+      current_version: null,
+    })
+
+    await indexWorkspaceDocument('doc-cleared-draft', 'ws-1')
+
+    // APPROVED tier: indexed with content (full chunk regeneration call).
+    expect(mockSync).toHaveBeenCalledWith(
+      'doc-cleared-draft',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      'MD:<h1>Approved Arbetsmiljöpolicy</h1><p>Den gällande policyn.</p>',
+      expect.objectContaining({
+        tier: 'APPROVED',
+        status: 'APPROVED',
+        version_number: 4,
+      })
+    )
+
+    // DRAFT tier: cleaned up (null markdown, tier-scoped delete).
+    expect(mockSync).toHaveBeenCalledWith(
+      'doc-cleared-draft',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      null,
+      expect.objectContaining({ tier: 'DRAFT', content_hash: null })
+    )
+
+    // Sanity: NO call cleaning the APPROVED tier with null markdown.
+    const approvedCleanup = mockSync.mock.calls.find((c: unknown[]) => {
+      const meta = c[4] as Record<string, unknown> | undefined
+      return c[3] === null && meta?.tier === 'APPROVED'
+    })
+    expect(approvedCleanup).toBeUndefined()
+  })
+
+  it('SAFETY PROPERTY (continued): empty APPROVED + content-bearing DRAFT preserves DRAFT chunks', async () => {
+    // Mirror of the above: if somehow the APPROVED tier is empty (e.g. an
+    // empty approved policy, which is intentionally approved) and the DRAFT
+    // has content, draft chunks must remain intact.
+    mockFindFirst.mockResolvedValue({
+      title: 'Edge case doc',
+      document_type: 'POLICY',
+      status: 'APPROVED',
+      current_version_number: 2,
+      current_approved_version_id: 'v_1',
+      current_draft_version_id: 'v_2',
+      draft_status: 'DRAFT',
+      current_approved_version: {
+        content_html: '',
+        content_json: {},
+        version_number: 1,
+      },
+      current_draft_version: {
+        content_html: '<p>New content the user is working on.</p>',
+        content_json: NON_EMPTY_TIPTAP_DOC,
+        version_number: 2,
+      },
+      current_version: null,
+    })
+
+    await indexWorkspaceDocument('doc-empty-approved', 'ws-1')
+
+    // DRAFT tier: indexed with content.
+    expect(mockSync).toHaveBeenCalledWith(
+      'doc-empty-approved',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      'MD:<p>New content the user is working on.</p>',
+      expect.objectContaining({ tier: 'DRAFT' })
+    )
+
+    // APPROVED tier: cleaned up.
+    expect(mockSync).toHaveBeenCalledWith(
+      'doc-empty-approved',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      null,
+      expect.objectContaining({ tier: 'APPROVED', content_hash: null })
+    )
+  })
+
+  it('non-divergent case: content_json matches content_html → normal indexing unchanged', async () => {
+    // Regression guard: the defensive check must not affect well-formed docs.
+    mockFindFirst.mockResolvedValue({
+      title: 'Healthy policy',
+      document_type: 'POLICY',
+      status: 'APPROVED',
+      current_version_number: 1,
+      current_approved_version_id: 'v_1',
+      current_draft_version_id: null,
+      draft_status: null,
+      current_approved_version: {
+        content_html: '<h1>Healthy policy</h1>',
+        content_json: NON_EMPTY_TIPTAP_DOC,
+        version_number: 1,
+      },
+      current_draft_version: null,
+      current_version: null,
+    })
+
+    await indexWorkspaceDocument('doc-healthy', 'ws-1')
+
+    expect(mockSync).toHaveBeenCalledWith(
+      'doc-healthy',
+      'WORKSPACE_DOCUMENT',
+      'ws-1',
+      'MD:<h1>Healthy policy</h1>',
+      expect.objectContaining({ tier: 'APPROVED', status: 'APPROVED' })
+    )
   })
 })

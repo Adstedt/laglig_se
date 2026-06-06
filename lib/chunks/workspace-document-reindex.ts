@@ -118,6 +118,40 @@ export function hashDocumentContent(contentHtml: string): string {
  * Hash-gated inside `syncWorkspaceChunks` (per-tier) — same content per tier
  * → skipped, no embed. Workspace-scoped (cross-tenant isolation invariant).
  */
+/**
+ * AGENT-001 defensive check: content_json is the editor's source of truth for
+ * "does this doc have content". If it's empty, missing, or shaped as the empty
+ * object {} (rather than a proper Tiptap doc with a content array), the tier
+ * is treated as empty for chunking — even if content_html somehow has stale
+ * legacy content from before (which would generate phantom chunks the agent
+ * could read as truth).
+ *
+ * Detects all empty-ish shapes:
+ *   - null / undefined
+ *   - {} (empty object — what some legacy paths wrote when clearing)
+ *   - { type: 'doc', content: [] } (Tiptap "no nodes" shape)
+ *   - { type: 'doc', content: [{ type: 'paragraph' }] } (single empty paragraph
+ *     — the default the editor produces for a "blank" doc; treat as empty so
+ *     a freshly-branched-from-empty draft doesn't get phantom chunks)
+ */
+function isEmptyTiptapDoc(json: unknown): boolean {
+  if (json == null) return true
+  if (typeof json !== 'object') return true
+  const obj = json as Record<string, unknown>
+  if (!Array.isArray(obj.content)) return true
+  const content = obj.content as Array<Record<string, unknown>>
+  if (content.length === 0) return true
+  // "Single empty paragraph" — the Tiptap editor's default starting state.
+  if (
+    content.length === 1 &&
+    content[0]?.type === 'paragraph' &&
+    !content[0]?.content
+  ) {
+    return true
+  }
+  return false
+}
+
 export async function indexWorkspaceDocument(
   documentId: string,
   workspaceId: string
@@ -133,13 +167,21 @@ export async function indexWorkspaceDocument(
       current_draft_version_id: true,
       draft_status: true,
       current_approved_version: {
-        select: { content_html: true, version_number: true },
+        select: {
+          content_html: true,
+          content_json: true,
+          version_number: true,
+        },
       },
       current_draft_version: {
-        select: { content_html: true, version_number: true },
+        select: {
+          content_html: true,
+          content_json: true,
+          version_number: true,
+        },
       },
       // Legacy alias for the both-pointers-null fallback path.
-      current_version: { select: { content_html: true } },
+      current_version: { select: { content_html: true, content_json: true } },
     },
   })
   if (!doc) return
@@ -147,20 +189,35 @@ export async function indexWorkspaceDocument(
   // ── APPROVED tier ─────────────────────────────────────────────────────────
   if (doc.current_approved_version_id && doc.current_approved_version) {
     const html = doc.current_approved_version.content_html
-    await syncWorkspaceChunks(
-      documentId,
-      'WORKSPACE_DOCUMENT',
-      workspaceId,
-      htmlToMarkdown(html),
-      {
-        title: doc.title,
-        document_type: doc.document_type,
-        status: 'APPROVED',
-        version_number: doc.current_approved_version.version_number,
-        content_hash: hashDocumentContent(html),
-        tier: 'APPROVED',
-      }
-    )
+    const json = doc.current_approved_version.content_json
+    if (isEmptyTiptapDoc(json)) {
+      // AGENT-001 defensive cleanup: content_json (editor's source of truth)
+      // says this tier is empty. Don't generate chunks from content_html even
+      // if it disagrees — that's a legacy divergence the indexer must heal,
+      // not propagate.
+      await syncWorkspaceChunks(
+        documentId,
+        'WORKSPACE_DOCUMENT',
+        workspaceId,
+        null,
+        { content_hash: null, tier: 'APPROVED' }
+      )
+    } else {
+      await syncWorkspaceChunks(
+        documentId,
+        'WORKSPACE_DOCUMENT',
+        workspaceId,
+        htmlToMarkdown(html),
+        {
+          title: doc.title,
+          document_type: doc.document_type,
+          status: 'APPROVED',
+          version_number: doc.current_approved_version.version_number,
+          content_hash: hashDocumentContent(html),
+          tier: 'APPROVED',
+        }
+      )
+    }
   } else {
     // SF-1 cleanup: no approved version → any orphaned APPROVED-tier chunks
     // get deleted by passing null markdown with tier scope.
@@ -176,23 +233,41 @@ export async function indexWorkspaceDocument(
   // ── DRAFT tier ────────────────────────────────────────────────────────────
   if (doc.current_draft_version_id && doc.current_draft_version) {
     const html = doc.current_draft_version.content_html
-    await syncWorkspaceChunks(
-      documentId,
-      'WORKSPACE_DOCUMENT',
-      workspaceId,
-      htmlToMarkdown(html),
-      {
-        title: doc.title,
-        document_type: doc.document_type,
-        // draft_status carries 'DRAFT' or 'IN_REVIEW'; defaults to 'DRAFT' if
-        // a brand-new doc hasn't been seeded yet (edge case — Story 17.16's
-        // createDocument extension does seed it).
-        status: doc.draft_status ?? 'DRAFT',
-        version_number: doc.current_draft_version.version_number,
-        content_hash: hashDocumentContent(html),
-        tier: 'DRAFT',
-      }
-    )
+    const json = doc.current_draft_version.content_json
+    if (isEmptyTiptapDoc(json)) {
+      // AGENT-001 defensive cleanup mirrors the APPROVED tier path. Critical
+      // safety property: this fires ONLY when the draft tier's content_json
+      // is empty — the approved tier (which 17.16's alias-freeze invariant
+      // keeps immutable during a draft window) is sourced from its own row
+      // and unaffected. So clearing a draft can't cascade to the approved
+      // chunks; the user's accidentally-emptied draft just stops showing
+      // phantom hits, the approved policy stays fully searchable.
+      await syncWorkspaceChunks(
+        documentId,
+        'WORKSPACE_DOCUMENT',
+        workspaceId,
+        null,
+        { content_hash: null, tier: 'DRAFT' }
+      )
+    } else {
+      await syncWorkspaceChunks(
+        documentId,
+        'WORKSPACE_DOCUMENT',
+        workspaceId,
+        htmlToMarkdown(html),
+        {
+          title: doc.title,
+          document_type: doc.document_type,
+          // draft_status carries 'DRAFT' or 'IN_REVIEW'; defaults to 'DRAFT' if
+          // a brand-new doc hasn't been seeded yet (edge case — Story 17.16's
+          // createDocument extension does seed it).
+          status: doc.draft_status ?? 'DRAFT',
+          version_number: doc.current_draft_version.version_number,
+          content_hash: hashDocumentContent(html),
+          tier: 'DRAFT',
+        }
+      )
+    }
   } else {
     // SF-1 cleanup: no draft → any orphaned DRAFT-tier chunks get deleted.
     await syncWorkspaceChunks(
@@ -207,11 +282,13 @@ export async function indexWorkspaceDocument(
   // ── Legacy fallback ───────────────────────────────────────────────────────
   // Both pointers null but the alias has content → pre-Story 17.16 doc that
   // somehow escaped the backfill. Index via the untiered path so it remains
-  // searchable until the next save normalizes the pointer state.
+  // searchable until the next save normalizes the pointer state. AGENT-001
+  // defense still applies here — content_json is the source of truth.
   if (
     !doc.current_approved_version_id &&
     !doc.current_draft_version_id &&
-    doc.current_version?.content_html
+    doc.current_version?.content_html &&
+    !isEmptyTiptapDoc(doc.current_version.content_json)
   ) {
     const html = doc.current_version.content_html
     await syncWorkspaceChunks(

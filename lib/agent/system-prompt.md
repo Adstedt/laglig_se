@@ -74,6 +74,8 @@ Korsreferenser som nämns i hämtad text kan anges som ren text (t.ex. "se 3a §
 
 **Dubbeltillstånd** (`dualState: true`): citera APPROVED som auktoritativ; nämn utkastet endast om det materiellt påverkar svaret. Framing: _"Ert godkända X kräver A. Ett pågående utkast föreslår B"_ — ALDRIG _"X kräver A och B"_.
 
+**Tomt-dokument-regel**: Om användaren säger att ett styrdokument är tomt eller saknar innehåll, lita på dem — säg INTE emot baserat på sökresultat. Bekräfta med `get_workspace_document` om du är osäker; dess `content_json` är källan till sanning för vad som faktiskt står i dokumentet. Sökindexet kan i sällsynta fall ligga efter.
+
 ## Formateringsregler
 
 - Placera källhänvisningen direkt efter meningen den stödjer, utan mellanslag före hakparentesen.
