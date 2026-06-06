@@ -229,3 +229,46 @@ describe('AddDocumentSectionRenderer — terminal states', () => {
     expect(container).toBeTruthy()
   })
 })
+
+// ============================================================================
+// Story 17.11c AC 9 — auto-branch header row
+// ============================================================================
+
+describe('AddDocumentSectionRenderer — Story 17.11c auto-branch header', () => {
+  it('renders the "Skapar nytt utkast v{N+1}" header when creates_draft=true on PENDING', () => {
+    render(
+      <AddDocumentSectionRenderer
+        action={action({
+          params: { ...baseParams, creates_draft: true, newVersionNumber: 4 },
+        })}
+        {...handlers()}
+      />
+    )
+    expandJustera()
+
+    expect(
+      screen.getByText(/Skapar nytt utkast v4 av Arbetsmiljöpolicy/)
+    ).toBeInTheDocument()
+  })
+
+  it('does NOT render the header when creates_draft is absent (existing Row 1/2 path)', () => {
+    render(<AddDocumentSectionRenderer action={action()} {...handlers()} />)
+    expandJustera()
+
+    expect(screen.queryByText(/Skapar nytt utkast/)).not.toBeInTheDocument()
+  })
+
+  it('CP-001: header copy uses natural-language title + version — no raw IDs', () => {
+    const { container } = render(
+      <AddDocumentSectionRenderer
+        action={action({
+          params: { ...baseParams, creates_draft: true, newVersionNumber: 4 },
+        })}
+        {...handlers()}
+      />
+    )
+    expandJustera()
+    expect(container.textContent ?? '').not.toContain(RAW_DOC_ID)
+    expect(container.textContent ?? '').not.toContain(RAW_PENDING_ID)
+  })
+})

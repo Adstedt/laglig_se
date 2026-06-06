@@ -37,6 +37,11 @@ interface UpdateDocumentParams {
   newSectionContentJson?: unknown[]
   changeSummary?: string
   entity_version?: string
+  // Story 17.11c AC 6: when true, the renderer prepends a "Skapar nytt utkast
+  // v{N+1} av {documentTitle}" header line above the diff card body to make
+  // the auto-branch intent explicit before the user approves.
+  creates_draft?: boolean
+  newVersionNumber?: number
 }
 
 function plainText(nodes: unknown): string {
@@ -147,6 +152,16 @@ export function UpdateDocumentRenderer({
       {...(secondaryAction !== undefined && { secondaryAction })}
     >
       <div className="space-y-3">
+        {/* Story 17.11c AC 9: auto-branch header. PENDING state only —
+            APPROVED state shows the actual saved version via resultRef. */}
+        {params.creates_draft === true &&
+          action.status === 'PENDING' &&
+          params.newVersionNumber != null && (
+            <p className="text-xs text-muted-foreground">
+              Skapar nytt utkast v{params.newVersionNumber} av {documentTitle}
+            </p>
+          )}
+
         <div className="space-y-1">
           <span className={`${LABEL_CLS} block`}>Avsnitt</span>
           <Badge tone="neutral" variant="outline" className="text-[10px]">

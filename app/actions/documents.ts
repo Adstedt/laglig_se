@@ -1216,6 +1216,176 @@ export async function createDraftFromApproved(
 }
 
 // ============================================================================
+// Story 17.11c: Agent Auto-Branch on APPROVED — atomic branch + write
+// ============================================================================
+
+/**
+ * Story 17.11c AC 1: Atomic branch + write. Called from the agent's
+ * `UPDATE_DOCUMENT` / `ADD_DOCUMENT_SECTION` dispatch when `params.creates_draft`
+ * is true and the doc is APPROVED-with-no-draft. Mirrors `createDraftFromApproved`'s
+ * `$transaction` body but writes the EDITED content directly (not a clone of
+ * the approved version) so the user sees ONE new version row (v(N+1) containing
+ * the agent's edit), not two (v(N+1) = clone + v(N+2) = edit).
+ *
+ * Why a sibling action vs Path D in `saveDocumentVersion`: Path C's refusal of
+ * APPROVED-no-draft is load-bearing for the editor autosave path. 17.11c is a
+ * semantically different operation (intentional branch + write), so it lives
+ * in its own server action.
+ *
+ * Refuses on:
+ *  - Document not found in workspace (workspace-scoped via `withWorkspace`).
+ *  - `status !== 'APPROVED'` (writeable predicate handled by the dispatch
+ *    fork — this guard is defense-in-depth).
+ *  - `current_draft_version_id != null` (draft already in progress — caller
+ *    should fall through to plain `saveDocumentVersion` against that draft).
+ *
+ * Writes TWO ActivityLog rows in the same transaction:
+ *  - `document_draft_created` — mirrors `createDraftFromApproved`'s shape;
+ *    enriched downstream by dispatch (AC 14) with
+ *    `{ by:'agent', pendingActionId, operation: 'auto_branch_then_<...>' }`.
+ *  - `document_version_saved` — mirrors `saveDocumentVersion`'s shape;
+ *    enriched downstream by dispatch (AC 8) with the standard
+ *    `{ by:'agent', pendingActionId, operation: 'update_section' | 'add_section' }`.
+ *
+ * Triggers `indexWorkspaceDocument` via `after()` post-commit so the new draft
+ * tier chunks land asynchronously (17.18 indexer handles the dual-tier write).
+ */
+export async function createDraftFromApprovedWithEdit(
+  documentId: string,
+  editedContentJson: object,
+  changeSummary: string,
+  contentHtml?: string
+): Promise<ActionResult<{ id: string; versionNumber: number }>> {
+  try {
+    return await withWorkspace(async ({ workspaceId, userId }) => {
+      const document = await prisma.workspaceDocument.findFirst({
+        where: { id: documentId, workspace_id: workspaceId },
+        select: {
+          id: true,
+          status: true,
+          current_version_number: true,
+          current_draft_version_id: true,
+          current_approved_version_id: true,
+          workspace_id: true,
+        },
+      })
+
+      if (!document) {
+        return { success: false, error: 'Dokument hittades inte' }
+      }
+
+      if (document.status !== WorkspaceDocumentStatus.APPROVED) {
+        return {
+          success: false,
+          error:
+            'Endast godkända dokument kan förgrenas via agentens auto-branch.',
+        }
+      }
+
+      // Mirrors createDraftFromApproved's AC 4 refusal copy verbatim so audit
+      // consumers see the same error string regardless of which path tried.
+      if (document.current_draft_version_id != null) {
+        return {
+          success: false,
+          error:
+            'Ett utkast pågår redan för det här dokumentet. Slutför eller förkasta det innan ni skapar ett nytt.',
+        }
+      }
+
+      const html = contentHtml ?? ''
+      const extractedText = extractPlaintext(html)
+      const newVersionNumber = document.current_version_number + 1
+
+      const version = await prisma.$transaction(async (tx) => {
+        const ver = await tx.workspaceDocumentVersion.create({
+          data: {
+            document_id: document.id,
+            version_number: newVersionNumber,
+            source: 'TIPTAP',
+            content_json: editedContentJson as never,
+            content_html: html,
+            extracted_text: extractedText,
+            change_summary: changeSummary,
+            created_by: userId,
+          },
+        })
+
+        // Alias-freeze invariant: only the draft pointer + draft_status advance.
+        // current_version_id (alias) stays on the approved version so 17.10b
+        // auto-reindex keeps grounding [Källa:] in approved content during the
+        // draft window — same semantics as createDraftFromApproved + Path A.
+        await tx.workspaceDocument.update({
+          where: { id: document.id },
+          data: {
+            current_draft_version_id: ver.id,
+            draft_status: 'DRAFT',
+            current_version_number: newVersionNumber,
+          },
+        })
+
+        // Twin ActivityLog rows: dispatch (AC 8 + AC 14) patches BOTH rows with
+        // agent-author + operation discriminator. The pairing lets audit
+        // consumers see the branch + write as a single semantic event.
+        await tx.activityLog.create({
+          data: {
+            workspace_id: document.workspace_id,
+            user_id: userId,
+            entity_type: 'workspace_document',
+            entity_id: document.id,
+            action: 'document_draft_created',
+            new_value: {
+              draft_version_id: ver.id,
+              draft_status: 'DRAFT',
+              source_approved_version_id: document.current_approved_version_id,
+            },
+          },
+        })
+
+        await tx.activityLog.create({
+          data: {
+            workspace_id: document.workspace_id,
+            user_id: userId,
+            entity_type: 'workspace_document',
+            entity_id: document.id,
+            action: 'document_version_saved',
+            new_value: {
+              version_number: newVersionNumber,
+              change_summary: changeSummary,
+            },
+          },
+        })
+
+        return ver
+      })
+
+      // 17.18 indexer keys off draft pointer presence — picks up the new tier
+      // on the next reindex pass. Same after()/hash-gating pattern as
+      // saveDocumentVersion (line 832).
+      after(async () => {
+        try {
+          await indexWorkspaceDocument(document.id, document.workspace_id)
+        } catch (err) {
+          console.error(
+            `[createDraftFromApprovedWithEdit] reindex failed for ${document.id} — retryable:`,
+            err instanceof Error ? err.message : err
+          )
+        }
+      })
+
+      return {
+        success: true,
+        data: { id: version.id, versionNumber: newVersionNumber },
+      }
+    })
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+// ============================================================================
 // Story 17.16: Promote Draft to Approved + Discard Draft (Dual-Version Model)
 // ============================================================================
 

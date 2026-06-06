@@ -170,6 +170,7 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — tillä
           title: true,
           status: true,
           updated_at: true,
+          current_version_number: true,
           current_draft_version_id: true,
           current_approved_version_id: true,
           current_draft_version: { select: { content_json: true } },
@@ -185,16 +186,22 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — tillä
         )
       }
 
-      // Story 17.16 AC 9 — reframed writeable predicate (mirrors AC 8).
+      // Story 17.11c AC 4 — writeable predicate widens to also accept
+      // APPROVED-with-no-draft (atomic auto-branch on approve). Same 3-shape
+      // matrix as update-document.ts.
+      const autoBranchEligible =
+        document.status === 'APPROVED' &&
+        document.current_draft_version_id == null
       const writeable =
         document.current_draft_version_id != null ||
         (document.status === 'DRAFT' &&
-          document.current_approved_version_id == null)
+          document.current_approved_version_id == null) ||
+        autoBranchEligible
       if (!writeable) {
         return wrapToolError(
           'add_document_section',
           `Dokumentet kan inte ändras i status "${document.status}".`,
-          'Endast utkast (DRAFT) eller dokument under granskning (IN_REVIEW) kan utökas av agenten. Be användaren förgrena en ny redigerbar version av det godkända dokumentet först.',
+          'Endast utkast (DRAFT/IN_REVIEW) eller godkända dokument utan pågående utkast kan utökas av agenten. Upphävda eller arkiverade dokument kan inte ändras.',
           startTime
         )
       }
@@ -271,6 +278,11 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — tillä
         // Story 14.31 staleness guard consumes this ISO-8601 UTC snapshot at
         // approve time — same shape as 17.11's update_document tool.
         entity_version: document.updated_at.toISOString(),
+        // Story 17.11c AC 6: dispatch reads creates_draft to fork between plain
+        // saveDocumentVersion and the new createDraftFromApprovedWithEdit.
+        // Renderer reads both to show the "Skapar nytt utkast v{N+1}" header.
+        creates_draft: autoBranchEligible,
+        newVersionNumber: document.current_version_number + 1,
       }
 
       const pendingActionId = await createPendingActionRow(

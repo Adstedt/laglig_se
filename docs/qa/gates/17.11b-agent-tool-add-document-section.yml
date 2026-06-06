@@ -1,0 +1,111 @@
+schema: 1
+story: '17.11b'
+story_title: 'Agent Tool — Add New Section to Existing Documents (Approval-Gated)'
+gate: PASS
+status_reason: |
+  All 14 ACs traced to passing tests; 133+ tests green across 6 affected suites
+  (76 in the 5 unit suites + 57 in pending-agent-actions including 10 new
+  ADD_DOCUMENT_SECTION dispatch branches). Implementation cleanly supersedes the
+  17.11 REL-001 trade-off via the AC 10 `operation: 'add_section'` discriminator
+  stamp. Two-layer security (workspace + writeable-predicate at both tool time
+  and dispatch) holds. Owner live smoke against Nordviken (2026-06-03) already
+  confirmed end-to-end propose → approve → version-append; this gate validates
+  the test-architecture side of the closure.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-05T10:32:00Z'
+
+quality_score: 95
+expires: '2026-06-19T10:32:00Z'
+
+evidence:
+  tests_reviewed: 133
+  risks_identified: 1
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      Workspace scoping enforced at BOTH tool time (lib/agent/tools/add-document-section.ts:166-186)
+      AND dispatch (app/actions/pending-agent-actions.ts:653-679). Writeable
+      predicate ("dual-pointer draft set OR never-approved DRAFT") re-asserted at
+      dispatch — never trust proposal snapshot. AUDITOR `tasks:edit` denial
+      covered explicitly. CP-001 guardrail: 13 renderer tests assert no raw
+      `documentId`/`pendingActionId`/heading-as-identifier rendered in DOM.
+  performance:
+    status: PASS
+    notes: |
+      One additional `findFirst` for position-target lookup (only when
+      `position.at ∈ {after,before}`). `findSectionBounds` is O(n) over top-level
+      doc children — negligible for any realistic styrdokument (typical 5-50
+      sections).
+  reliability:
+    status: CONCERNS
+    notes: |
+      REL-001 (inherited from 17.11): the AC 10 activity-log stamp is
+      fire-and-forget (try/catch + console.error). A missed stamp doesn't roll
+      back the version; downstream audit consumers may see a
+      `document_version_saved` row without the `by:'agent' / operation:'add_section'`
+      enrichment. Story explicitly accepts this trade-off (Dev Notes line 152).
+      Future hardening: fold the stamp into `saveDocumentVersion` itself with an
+      `agentAuthor?: { pendingActionId, operation }` param so both 17.11 + 17.11b
+      flip atomically. NOT a blocker — INFO-level, recommended follow-up.
+  maintainability:
+    status: PASS
+    notes: |
+      `addSection` co-locates with `updateSection`/`extractSection`/`hasSection`
+      in `lib/documents/update-document-section.ts` — single locus for section-
+      mutation logic. `findSectionBounds` stays module-private and is reused
+      directly without re-implementation. New `SectionAlreadyExistsError` follows
+      the same shape as the pre-existing `SectionNotFoundError`. Renderer reuses
+      17.11's `'document-update'` ChatDetailItem variant via `oldSectionContentJson: []`
+      — zero new detail-panel surface. Test layout mirrors 17.11's verbatim.
+
+top_issues:
+  - id: 'REL-001-inherited'
+    severity: low
+    summary: 'Activity-log stamp is fire-and-forget (inherited from 17.11)'
+    refs:
+      - 'app/actions/pending-agent-actions.ts:756-792'
+    suggested_owner: 'dev'
+
+recommendations:
+  immediate: []
+  future:
+    - action: |
+        REL-001 hardening: fold the agent-author + operation discriminator stamp
+        into `saveDocumentVersion` itself as a typed `agentAuthor?: { pendingActionId,
+        operation: 'update_section' | 'add_section' }` param so the stamp is part
+        of the same $transaction as the version append. Flips both 17.11 + 17.11b
+        atomically.
+      refs:
+        - 'app/actions/documents.ts:590'
+        - 'app/actions/pending-agent-actions.ts:756-792'
+        - 'app/actions/pending-agent-actions.ts (17.11 UPDATE_DOCUMENT branch)'
+    - action: |
+        Once 17.11c (agent auto-branch on APPROVED) lands, the dispatch branch's
+        writeable-predicate copy will need a third path. Consider extracting the
+        predicate + error message into a shared helper now that 17.11 + 17.11b +
+        17.11c all need the same shape.
+      refs:
+        - 'app/actions/pending-agent-actions.ts:669-679'
+
+evidence_extras:
+  registry_harness_bumps:
+    - 'tests/unit/agent/tools/registry-role-filter.test.ts — 33 → 34 (×3 sites + add_document_section assertion)'
+    - 'tests/unit/agent/tools/registry-narrowing.test.ts — 33 → 34 (×3) + baseline 32 → 33'
+  superseded_concerns_from_17.11_gate:
+    - 'REL-001 (future-hardening note): 17.11b ships the AC 10 `operation` discriminator,
+      which is exactly what 17.11''s gate identified as the trade-off''s eventual fix.
+      The atomic-stamp half of REL-001 remains, but the discriminator half is now closed.'
+  owner_live_smoke:
+    - 'date: 2026-06-03'
+    - 'workspace: Nordviken Hotell & Konferens AB'
+    - 'document: Arbetsmiljöpolicy (DRAFT)'
+    - 'result: clean A-grade — propose card → approve → v2 lands with new section,
+      auto-reindex confirmed via 17.10b after() hook, activity log shows agent
+      authorship with `operation: add_section`. This smoke also surfaced the
+      Dual-Version Document Visibility gap that motivated the 17.16/17.17/17.18
+      sub-epic (now closed 2026-06-04).'

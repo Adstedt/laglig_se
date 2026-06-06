@@ -208,13 +208,14 @@
 
 ## Epic 17: Document Management System (DMS)
 
-**Status:** Active (16 effectively done / 5 backlog). Core DMS, RAG pipeline, agent integration, and dual-version sub-epic all shipped. _Updated 2026-06-04._
+**Status:** Active (19 effectively done / 2 backlog). Core DMS, RAG pipeline, agent integration, dual-version sub-epic, and full authoring triad all shipped. _Updated 2026-06-06._
 
 **Recent progress:**
 - **17.10** (agent tools: search/read/list workspace documents) ✅ Done 2026-06-01, gate PASS 95.
 - **17.10b** (DRAFT/IN_REVIEW indexing + status-aware citations) ✅ Done 2026-06-02, gate PASS 97. Citation pipeline splits into `[Källa:]` (canonical APPROVED) vs `[Utkast:]` (DRAFT/IN_REVIEW).
-- **17.11** (`update_document` — agent-proposed section edit) 🔬 Ready for Review 2026-06-03, gate PASS 100. The 12th `PendingAgentActionType`.
-- **17.11b** (`add_document_section` — agent-proposed insert of NEW section) 🔬 Ready for Review 2026-06-03. The 13th `PendingAgentActionType`; brownfield-additive sibling of 17.11.
+- **17.11** (`update_document` — agent-proposed section edit) ✅ Done 2026-06-06, gate PASS 100. The 12th `PendingAgentActionType`.
+- **17.11b** (`add_document_section` — agent-proposed insert of NEW section) ✅ Done 2026-06-06, gate PASS 95. The 13th `PendingAgentActionType`; brownfield-additive sibling of 17.11.
+- **17.11c** (agent auto-branch on APPROVED — transparent branch + write in one approval card) ✅ Done 2026-06-06, gate PASS 95. New `createDraftFromApprovedWithEdit` server action runs atomic single-`$transaction` branch + write; renderer shows "Skapar nytt utkast v{N+1}" header on PENDING. Closes the authoring triad — agent now has full read/write/branch authority across all 4 dual-version states. DEC-2 contract validated under auto-branch via owner live smoke 2026-06-06.
 
 **Brownfield sub-epic (CLOSED 2026-06-04):** **Dual-Version Document Visibility** (`docs/prd/epic-17-addendum-dual-version-visibility.md`) — 3-story coordinated effort encoding the currently-effective approved version AND the in-progress draft as concurrent first-class pointers on `WorkspaceDocument`. Surfaced by 17.11b's live smoke (the legacy single-pointer schema was breaking the 17.10b `[Källa:]` citation contract during revision windows + wiping audit metadata + deindexing the doc). **17.16** (foundation: dual-pointer schema + dispatch refactor) ✅ Done 2026-06-03, gate PASS 92; **17.17** (styrdokument table + doc page dual-version UX) ✅ Done 2026-06-04, gate PASS 96; **17.18** (agent reads + citation routing under Model B) ✅ Done 2026-06-04, gate PASS 95 — compliance contract restored end-to-end, DEC-2 invariant holds under dual state, owner live smoke against Supabase production data validated 9/11 ACs end-to-end (composite badge, self-healing chunk migration, DEC-2 LLM hold across 3 adversarial prompt phrasings). Follow-up **17.11c** (agent auto-branch on APPROVED) PO can now draft against the corrected Model B foundation. Backlog also includes **17.9d** (file-aware citation pill, drafted not built).
 

@@ -24,6 +24,8 @@ import {
   linkDocumentToListItem,
   updateDocumentStatus,
   saveDocumentVersion,
+  // Story 17.11c AC 7: atomic branch + write for APPROVED-no-draft auto-branch.
+  createDraftFromApprovedWithEdit,
 } from './documents'
 // Story 17.11 + 17.11b: UPDATE_DOCUMENT / ADD_DOCUMENT_SECTION dispatch —
 // section-replace + section-add + server-side HTML.
@@ -151,6 +153,11 @@ interface UpdateDocumentParams {
   newSectionContentJson: unknown
   changeSummary: string
   entity_version: string
+  // Story 17.11c AC 6: forks the dispatch between plain saveDocumentVersion
+  // and createDraftFromApprovedWithEdit. Optional for backward-compat with
+  // pre-17.11c pending rows still in flight (default false).
+  creates_draft?: boolean
+  newVersionNumber?: number
 }
 
 // Story 17.11b — ADD_DOCUMENT_SECTION params (set by the add_document_section
@@ -170,6 +177,11 @@ interface AddDocumentSectionParams {
   position: InsertPosition
   changeSummary: string
   entity_version: string
+  // Story 17.11c AC 6: forks the dispatch between plain saveDocumentVersion
+  // and createDraftFromApprovedWithEdit. Optional for backward-compat with
+  // pre-17.11c pending rows still in flight (default false).
+  creates_draft?: boolean
+  newVersionNumber?: number
 }
 
 // ============================================================================
@@ -519,20 +531,39 @@ export async function approvePendingAction(
               return { success: false, error: 'Dokumentet hittades inte' }
             }
 
-            // Story 17.16 AC 10 — reframed writeable predicate (mirrors
-            // update-document.ts AC 8). Observationally equivalent to the
-            // legacy `status ∈ DRAFT/IN_REVIEW` guard for all cases existing
-            // tests cover. Stale APPROVED-no-draft keeps the row PENDING.
+            // Story 17.11c AC 7 — widened writeable predicate accepts the
+            // APPROVED-no-draft case as the auto-branch path. Three accepted
+            // shapes:
+            //   - existing draft in progress (writes against draft)
+            //   - never-approved DRAFT (writes against draft)
+            //   - APPROVED with no draft (atomic branch + write via the new
+            //     createDraftFromApprovedWithEdit server action — only when
+            //     params.creates_draft is true)
+            // SUPERSEDED / ARCHIVED stay non-writeable.
+            const autoBranchEligible =
+              document.status === 'APPROVED' &&
+              document.current_draft_version_id == null
             const writeable =
               document.current_draft_version_id != null ||
               (document.status === 'DRAFT' &&
-                document.current_approved_version_id == null)
+                document.current_approved_version_id == null) ||
+              autoBranchEligible
             if (!writeable) {
               return {
                 success: false,
                 error: `Dokumentet kan inte uppdateras i status "${document.status}".`,
               }
             }
+
+            // Story 17.11c AC 7: routing fork between auto-branch and plain save.
+            //   - creates_draft AND APPROVED-no-draft → call new server action.
+            //   - creates_draft AND has draft now (raced — user manually
+            //     branched between propose and approve) → graceful fall-through
+            //     to plain saveDocumentVersion against the now-existing draft.
+            //   - !creates_draft → existing path (Row 1 / Row 2 from decision
+            //     matrix).
+            const shouldAutoBranch =
+              p.creates_draft === true && autoBranchEligible
 
             const currentContent =
               document.current_draft_version?.content_json ??
@@ -571,16 +602,24 @@ export async function approvePendingAction(
 
             const contentHtml = tiptapDocToHtml(fullContentJson)
 
-            // saveDocumentVersion: appends a new version, bumps current_version_*,
-            // writes a `document_version_saved` ActivityLog row, AND triggers
-            // indexWorkspaceDocument via after() — all in one $transaction.
-            const saveResult = await saveDocumentVersion(
-              p.documentId,
-              fullContentJson as object,
-              p.changeSummary,
-              undefined,
-              contentHtml
-            )
+            // Story 17.11c AC 7: routing fork. Both paths write ONE new version
+            // and trigger the after() reindex; the difference is that the
+            // auto-branch path ALSO writes a paired document_draft_created
+            // ActivityLog row + populates current_draft_version_id atomically.
+            const saveResult = shouldAutoBranch
+              ? await createDraftFromApprovedWithEdit(
+                  p.documentId,
+                  fullContentJson as object,
+                  p.changeSummary,
+                  contentHtml
+                )
+              : await saveDocumentVersion(
+                  p.documentId,
+                  fullContentJson as object,
+                  p.changeSummary,
+                  undefined,
+                  contentHtml
+                )
             if (!saveResult.success || !saveResult.data) {
               return {
                 success: false,
@@ -588,12 +627,13 @@ export async function approvePendingAction(
               }
             }
 
-            // AC 10 — stamp agent authorship onto the auto-created
-            // `document_version_saved` row's new_value. We don't mint a redundant
-            // action label; we enrich the row saveDocumentVersion just wrote.
+            // AC 8 / AC 10 — stamp agent authorship + operation discriminator
+            // onto the auto-created `document_version_saved` row's new_value.
             // Matched on (entity_id, action, new_value.version_number) — unique
             // per (document, version). Fire-and-forget: a missed stamp doesn't
-            // roll back the version itself.
+            // roll back the version itself. Works identically for both the
+            // auto-branch path and the plain save path (both server actions
+            // write a document_version_saved row with the same shape).
             try {
               const logRow = await prisma.activityLog.findFirst({
                 where: {
@@ -620,6 +660,11 @@ export async function approvePendingAction(
                       ...existing,
                       by: 'agent',
                       pendingActionId: action.id,
+                      // Story 17.11c AC 8: operation discriminator distinguishes
+                      // a plain edit from an auto-branched edit for audit consumers.
+                      operation: shouldAutoBranch
+                        ? 'auto_branch_then_update_section'
+                        : 'update_section',
                     } as Prisma.InputJsonValue,
                   },
                 })
@@ -629,6 +674,53 @@ export async function approvePendingAction(
                 `[UPDATE_DOCUMENT] activity-log stamp failed for ${p.documentId}:`,
                 err instanceof Error ? err.message : err
               )
+            }
+
+            // Story 17.11c AC 14: when the auto-branch path fires, also stamp
+            // the paired `document_draft_created` row with the agent author +
+            // operation discriminator. Lets audit consumers see the branch +
+            // write as a single semantic event (vs a user-initiated branch via
+            // `createDraftFromApproved`, which writes the same action WITHOUT
+            // a `by` field). Fire-and-forget — same trade-off as the AC 8 stamp.
+            if (shouldAutoBranch) {
+              try {
+                const draftLogRow = await prisma.activityLog.findFirst({
+                  where: {
+                    entity_type: 'workspace_document',
+                    entity_id: p.documentId,
+                    action: 'document_draft_created',
+                    new_value: {
+                      path: ['draft_version_id'],
+                      equals: saveResult.data.id,
+                    },
+                  },
+                  orderBy: { created_at: 'desc' },
+                  select: { id: true, new_value: true },
+                })
+                if (draftLogRow) {
+                  const existing =
+                    draftLogRow.new_value &&
+                    typeof draftLogRow.new_value === 'object'
+                      ? (draftLogRow.new_value as Record<string, unknown>)
+                      : {}
+                  await prisma.activityLog.update({
+                    where: { id: draftLogRow.id },
+                    data: {
+                      new_value: {
+                        ...existing,
+                        by: 'agent',
+                        pendingActionId: action.id,
+                        operation: 'auto_branch_then_update_section',
+                      } as Prisma.InputJsonValue,
+                    },
+                  })
+                }
+              } catch (err) {
+                console.error(
+                  `[UPDATE_DOCUMENT] draft-created stamp failed for ${p.documentId}:`,
+                  err instanceof Error ? err.message : err
+                )
+              }
             }
 
             resultRef = {
@@ -666,17 +758,28 @@ export async function approvePendingAction(
               return { success: false, error: 'Dokumentet hittades inte' }
             }
 
-            // Story 17.16 AC 10 — reframed writeable predicate.
+            // Story 17.11c AC 7 — widened writeable predicate (mirrors
+            // UPDATE_DOCUMENT). Accepts APPROVED-no-draft as the auto-branch
+            // path; SUPERSEDED / ARCHIVED stay non-writeable.
+            const autoBranchEligible =
+              document.status === 'APPROVED' &&
+              document.current_draft_version_id == null
             const writeable =
               document.current_draft_version_id != null ||
               (document.status === 'DRAFT' &&
-                document.current_approved_version_id == null)
+                document.current_approved_version_id == null) ||
+              autoBranchEligible
             if (!writeable) {
               return {
                 success: false,
                 error: `Dokumentet kan inte uppdateras i status "${document.status}".`,
               }
             }
+
+            // Story 17.11c AC 7: routing fork — same shape as the UPDATE_DOCUMENT
+            // branch. Race-with-user-branch: falls through to plain save.
+            const shouldAutoBranch =
+              p.creates_draft === true && autoBranchEligible
 
             const currentContent =
               document.current_draft_version?.content_json ??
@@ -734,13 +837,21 @@ export async function approvePendingAction(
 
             const contentHtml = tiptapDocToHtml(fullContentJson)
 
-            const saveResult = await saveDocumentVersion(
-              p.documentId,
-              fullContentJson as object,
-              p.changeSummary,
-              undefined,
-              contentHtml
-            )
+            // Story 17.11c AC 7: routing fork — same shape as UPDATE_DOCUMENT.
+            const saveResult = shouldAutoBranch
+              ? await createDraftFromApprovedWithEdit(
+                  p.documentId,
+                  fullContentJson as object,
+                  p.changeSummary,
+                  contentHtml
+                )
+              : await saveDocumentVersion(
+                  p.documentId,
+                  fullContentJson as object,
+                  p.changeSummary,
+                  undefined,
+                  contentHtml
+                )
             if (!saveResult.success || !saveResult.data) {
               return {
                 success: false,
@@ -749,10 +860,10 @@ export async function approvePendingAction(
             }
 
             // AC 10 — stamp agent authorship + operation discriminator onto
-            // the auto-created `document_version_saved` row. The `operation`
-            // key distinguishes ADD from UPDATE for downstream audit
-            // consumers (supersedes REL-001 trade-off note from 17.11).
-            // Fire-and-forget: a missed stamp doesn't roll back the version.
+            // the `document_version_saved` row. operation distinguishes ADD
+            // from UPDATE; Story 17.11c additionally distinguishes auto-
+            // branched ADDs from plain ADDs for audit consumers. Fire-and-
+            // forget: a missed stamp doesn't roll back the version.
             try {
               const logRow = await prisma.activityLog.findFirst({
                 where: {
@@ -779,7 +890,9 @@ export async function approvePendingAction(
                       ...existing,
                       by: 'agent',
                       pendingActionId: action.id,
-                      operation: 'add_section',
+                      operation: shouldAutoBranch
+                        ? 'auto_branch_then_add_section'
+                        : 'add_section',
                     } as Prisma.InputJsonValue,
                   },
                 })
@@ -789,6 +902,49 @@ export async function approvePendingAction(
                 `[ADD_DOCUMENT_SECTION] activity-log stamp failed for ${p.documentId}:`,
                 err instanceof Error ? err.message : err
               )
+            }
+
+            // Story 17.11c AC 14: when the auto-branch path fires, also stamp
+            // the paired `document_draft_created` row. Mirrors UPDATE_DOCUMENT.
+            if (shouldAutoBranch) {
+              try {
+                const draftLogRow = await prisma.activityLog.findFirst({
+                  where: {
+                    entity_type: 'workspace_document',
+                    entity_id: p.documentId,
+                    action: 'document_draft_created',
+                    new_value: {
+                      path: ['draft_version_id'],
+                      equals: saveResult.data.id,
+                    },
+                  },
+                  orderBy: { created_at: 'desc' },
+                  select: { id: true, new_value: true },
+                })
+                if (draftLogRow) {
+                  const existing =
+                    draftLogRow.new_value &&
+                    typeof draftLogRow.new_value === 'object'
+                      ? (draftLogRow.new_value as Record<string, unknown>)
+                      : {}
+                  await prisma.activityLog.update({
+                    where: { id: draftLogRow.id },
+                    data: {
+                      new_value: {
+                        ...existing,
+                        by: 'agent',
+                        pendingActionId: action.id,
+                        operation: 'auto_branch_then_add_section',
+                      } as Prisma.InputJsonValue,
+                    },
+                  })
+                }
+              } catch (err) {
+                console.error(
+                  `[ADD_DOCUMENT_SECTION] draft-created stamp failed for ${p.documentId}:`,
+                  err instanceof Error ? err.message : err
+                )
+              }
             }
 
             resultRef = {

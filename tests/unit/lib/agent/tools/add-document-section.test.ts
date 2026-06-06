@@ -76,6 +76,9 @@ function makeDoc(
     title: overrides.title ?? 'Arbetsmiljöpolicy',
     status,
     updated_at: UPDATED_AT,
+    // Story 17.11c AC 6: tool reads current_version_number to compute
+    // newVersionNumber for the renderer header copy.
+    current_version_number: 3,
     current_draft_version_id: isDraft ? 'v_draft' : null,
     current_approved_version_id: isDraft ? null : 'v_approved',
     current_draft_version: isDraft ? { content_json: contentJson } : null,
@@ -232,8 +235,10 @@ describe('add_document_section — AC 4 guards (no pending row on failure)', () 
     expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
   })
 
-  it.each(['APPROVED', 'SUPERSEDED', 'ARCHIVED'] as const)(
-    'rejects status %s and guides toward createDraftFromApproved',
+  // Story 17.11c: APPROVED-no-draft moved out of the refusal set into the
+  // auto-branch path. Only SUPERSEDED + ARCHIVED stay non-writeable now.
+  it.each(['SUPERSEDED', 'ARCHIVED'] as const)(
+    'rejects status %s (still non-writeable post-17.11c)',
     async (status) => {
       fn(prisma.workspaceDocument.findFirst).mockResolvedValue(
         makeDoc({ status })
@@ -250,7 +255,8 @@ describe('add_document_section — AC 4 guards (no pending row on failure)', () 
 
       expect(result.error).toBe(true)
       expect(result.message).toContain(status)
-      expect(result.guidance).toMatch(/förgrena|redigerbar/)
+      // Refreshed refusal copy for the narrower non-writeable set.
+      expect(result.guidance).toMatch(/Upphävda|arkiverade/i)
       expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
     }
   )
@@ -362,5 +368,57 @@ describe('add_document_section — AC 4 guards (no pending row on failure)', () 
     expect(result.error).toBe(true)
     expect(result.message).toMatch(/tomt/)
     expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
+  })
+})
+
+// ============================================================================
+// Story 17.11c — APPROVED-no-draft auto-branch acceptance (AC 4, 6)
+// ============================================================================
+
+describe('add_document_section — Story 17.11c auto-branch on APPROVED', () => {
+  it('APPROVED-no-draft: accepts the proposal with creates_draft=true + newVersionNumber=N+1', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(
+      makeDoc({ status: 'APPROVED' })
+    )
+
+    const result = await execOf(createAddDocumentSectionTool('ws_1', CTX))({
+      document_id: 'd_1',
+      new_section_heading: 'Inledning',
+      new_section_level: 2,
+      new_section_content: NEW_BODY,
+      change_summary: 'Lägg till inledning på godkänd policy',
+      position: { at: 'start' },
+    })
+
+    expect(result.error).toBeUndefined()
+    expect(fn(prisma.pendingAgentAction.create)).toHaveBeenCalledTimes(1)
+
+    const call = fn(prisma.pendingAgentAction.create).mock.calls[0]![0]
+    expect(call.data.action_type).toBe('ADD_DOCUMENT_SECTION')
+    const params = call.data.params
+    expect(params.creates_draft).toBe(true)
+    // makeDoc fixture: current_version_number = 3 → newVersionNumber = 4.
+    expect(params.newVersionNumber).toBe(4)
+  })
+
+  it('DRAFT with no approved: creates_draft=false (existing Row 1 path unchanged)', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(
+      makeDoc({ status: 'DRAFT' })
+    )
+
+    const result = await execOf(createAddDocumentSectionTool('ws_1', CTX))({
+      document_id: 'd_1',
+      new_section_heading: 'Inledning',
+      new_section_level: 2,
+      new_section_content: NEW_BODY,
+      change_summary: 'X',
+      position: { at: 'end' },
+    })
+
+    expect(result.error).toBeUndefined()
+    const params = fn(prisma.pendingAgentAction.create).mock.calls[0]![0].data
+      .params
+    expect(params.creates_draft).toBe(false)
+    expect(params.newVersionNumber).toBe(4)
   })
 })

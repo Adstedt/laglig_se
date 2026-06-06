@@ -18,6 +18,7 @@ const {
   mockCreateComment,
   mockUpdateDocumentStatus,
   mockSaveDocumentVersion,
+  mockCreateDraftFromApprovedWithEdit,
 } = vi.hoisted(() => ({
   mockWithWorkspace: vi.fn(),
   mockCreateTask: vi.fn(),
@@ -33,6 +34,8 @@ const {
   mockUpdateDocumentStatus: vi.fn(),
   // Story 17.11: UPDATE_DOCUMENT dispatch target.
   mockSaveDocumentVersion: vi.fn(),
+  // Story 17.11c: auto-branch dispatch target (APPROVED-no-draft path).
+  mockCreateDraftFromApprovedWithEdit: vi.fn(),
 }))
 
 vi.mock('@/lib/prisma', () => ({
@@ -78,6 +81,8 @@ vi.mock('@/app/actions/documents', () => ({
   updateDocumentStatus: mockUpdateDocumentStatus,
   // Story 17.11: UPDATE_DOCUMENT dispatch target.
   saveDocumentVersion: mockSaveDocumentVersion,
+  // Story 17.11c: auto-branch dispatch target.
+  createDraftFromApprovedWithEdit: mockCreateDraftFromApprovedWithEdit,
 }))
 
 vi.mock('@/app/actions/law-list-item-requirements', () => ({
@@ -1068,7 +1073,12 @@ describe('approvePendingAction → UPDATE_DOCUMENT', () => {
     })
   })
 
-  it.each(['APPROVED', 'SUPERSEDED', 'ARCHIVED'] as const)(
+  // Story 17.11c: APPROVED moved out of the refuse-at-dispatch set into the
+  // auto-branch path (only when params.creates_draft=true). Pre-17.11c rows
+  // without creates_draft against APPROVED-no-draft fall through to
+  // saveDocumentVersion Path C, which refuses there. SUPERSEDED/ARCHIVED
+  // stay refused at the dispatch writeable predicate.
+  it.each(['SUPERSEDED', 'ARCHIVED'] as const)(
     'AC 11: re-asserts status guard at dispatch — refuses %s, row stays PENDING',
     async (status) => {
       ;(
@@ -1421,7 +1431,12 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
     })
   })
 
-  it.each(['APPROVED', 'SUPERSEDED', 'ARCHIVED'] as const)(
+  // Story 17.11c: APPROVED is now writeable at dispatch only via the auto-
+  // branch path (creates_draft=true). Pre-17.11c rows with no creates_draft
+  // flag still refuse via saveDocumentVersion Path C (covered separately).
+  // This parameterized guard keeps SUPERSEDED + ARCHIVED — the still-non-
+  // writeable states post-17.11c.
+  it.each(['SUPERSEDED', 'ARCHIVED'] as const)(
     'AC 11: re-asserts status guard — refuses %s, row stays PENDING',
     async (status) => {
       ;(
@@ -1589,6 +1604,425 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
 
     expect(result.success).toBe(false)
     expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+  })
+})
+
+// ============================================================================
+// Story 17.11c: dispatch routing fork — UPDATE_DOCUMENT auto-branch path
+// ============================================================================
+
+describe('approvePendingAction → UPDATE_DOCUMENT (Story 17.11c auto-branch)', () => {
+  const APPROVED_DOC_CONTENT = {
+    type: 'doc',
+    content: [
+      {
+        type: 'heading',
+        attrs: { level: 2 },
+        content: [{ type: 'text', text: 'Syfte' }],
+      },
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'Old purpose body.' }],
+      },
+    ],
+  }
+  const NEW_BODY = [
+    {
+      type: 'paragraph',
+      content: [{ type: 'text', text: 'New purpose body.' }],
+    },
+  ]
+  const branchParams = {
+    documentId: 'd_1',
+    sectionHeading: 'Syfte',
+    oldSectionContentJson: [
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'Old purpose body.' }],
+      },
+    ],
+    newSectionContentJson: NEW_BODY,
+    changeSummary: 'Skärpt syfte på godkänd policy',
+    entity_version: '2026-06-04T10:00:00.000Z',
+    creates_draft: true,
+    newVersionNumber: 4,
+  }
+
+  beforeEach(() =>
+    (
+      prisma.pendingAgentAction.update as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({})
+  )
+
+  it('creates_draft=true + APPROVED-no-draft → routes to createDraftFromApprovedWithEdit (NOT saveDocumentVersion)', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'UPDATE_DOCUMENT', params: branchParams })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'APPROVED',
+      workspace_id: 'ws_123',
+      current_draft_version_id: null,
+      current_approved_version_id: 'v_approved',
+      current_draft_version: null,
+      current_approved_version: { content_json: APPROVED_DOC_CONTENT },
+    })
+    mockCreateDraftFromApprovedWithEdit.mockResolvedValue({
+      success: true,
+      data: { id: 'v_4', versionNumber: 4 },
+    })
+    ;(
+      prisma.activityLog.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'al_save',
+      new_value: { version_number: 4 },
+    })
+    ;(prisma.activityLog.update as ReturnType<typeof vi.fn>).mockResolvedValue(
+      {}
+    )
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(true)
+    expect(mockCreateDraftFromApprovedWithEdit).toHaveBeenCalledTimes(1)
+    expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
+
+    // resultRef carries the new draft version's id + number.
+    expect(result.data?.resultRef).toEqual({
+      documentId: 'd_1',
+      versionId: 'v_4',
+      versionNumber: 4,
+    })
+  })
+
+  it('creates_draft=true + race (user manually branched): falls through to plain saveDocumentVersion', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'UPDATE_DOCUMENT', params: branchParams })
+    )
+    // Re-read state: doc now has a draft pointer (user raced + manually branched).
+    // autoBranchEligible is false → shouldAutoBranch is false → plain save fires.
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'APPROVED',
+      workspace_id: 'ws_123',
+      current_draft_version_id: 'v_existing_draft',
+      current_approved_version_id: 'v_approved',
+      current_draft_version: { content_json: APPROVED_DOC_CONTENT },
+      current_approved_version: { content_json: APPROVED_DOC_CONTENT },
+    })
+    mockSaveDocumentVersion.mockResolvedValue({
+      success: true,
+      data: { id: 'v_5', versionNumber: 5 },
+    })
+    ;(
+      prisma.activityLog.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({ id: 'al_save', new_value: { version_number: 5 } })
+    ;(prisma.activityLog.update as ReturnType<typeof vi.fn>).mockResolvedValue(
+      {}
+    )
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(true)
+    expect(mockCreateDraftFromApprovedWithEdit).not.toHaveBeenCalled()
+    expect(mockSaveDocumentVersion).toHaveBeenCalledTimes(1)
+  })
+
+  it('creates_draft=true + stale to SUPERSEDED: refuses with stale-status error, row stays PENDING', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'UPDATE_DOCUMENT', params: branchParams })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'SUPERSEDED',
+      workspace_id: 'ws_123',
+      current_draft_version_id: null,
+      current_approved_version_id: 'v_approved',
+      current_draft_version: null,
+      current_approved_version: { content_json: APPROVED_DOC_CONTENT },
+    })
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/SUPERSEDED/)
+    expect(mockCreateDraftFromApprovedWithEdit).not.toHaveBeenCalled()
+    expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
+    // Row stays PENDING (not flipped to APPROVED).
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+  })
+
+  it('auto-branch path: stamps BOTH document_draft_created AND document_version_saved log rows with operation discriminator (AC 8 + AC 14)', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'UPDATE_DOCUMENT', params: branchParams })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'APPROVED',
+      workspace_id: 'ws_123',
+      current_draft_version_id: null,
+      current_approved_version_id: 'v_approved',
+      current_draft_version: null,
+      current_approved_version: { content_json: APPROVED_DOC_CONTENT },
+    })
+    mockCreateDraftFromApprovedWithEdit.mockResolvedValue({
+      success: true,
+      data: { id: 'v_4', versionNumber: 4 },
+    })
+
+    // Two findFirst calls expected: document_version_saved (AC 8) +
+    // document_draft_created (AC 14).
+    const findFirstMock = prisma.activityLog.findFirst as ReturnType<
+      typeof vi.fn
+    >
+    findFirstMock
+      .mockResolvedValueOnce({
+        id: 'al_save',
+        new_value: { version_number: 4 },
+      })
+      .mockResolvedValueOnce({
+        id: 'al_branch',
+        new_value: { draft_version_id: 'v_4' },
+      })
+    ;(prisma.activityLog.update as ReturnType<typeof vi.fn>).mockResolvedValue(
+      {}
+    )
+
+    await approvePendingAction('pa_1')
+
+    // Both stamp calls landed.
+    expect(prisma.activityLog.update).toHaveBeenCalledTimes(2)
+
+    const calls = (prisma.activityLog.update as ReturnType<typeof vi.fn>).mock
+      .calls
+    const versionStamp = calls.find((c) => c[0]!.where.id === 'al_save')!
+    const branchStamp = calls.find((c) => c[0]!.where.id === 'al_branch')!
+
+    expect(versionStamp[0]!.data.new_value).toMatchObject({
+      by: 'agent',
+      pendingActionId: 'pa_1',
+      operation: 'auto_branch_then_update_section',
+    })
+    expect(branchStamp[0]!.data.new_value).toMatchObject({
+      by: 'agent',
+      pendingActionId: 'pa_1',
+      operation: 'auto_branch_then_update_section',
+    })
+  })
+})
+
+// ============================================================================
+// Story 17.11c: dispatch routing fork — ADD_DOCUMENT_SECTION auto-branch path
+// ============================================================================
+
+describe('approvePendingAction → ADD_DOCUMENT_SECTION (Story 17.11c auto-branch)', () => {
+  const APPROVED_DOC_CONTENT = {
+    type: 'doc',
+    content: [
+      {
+        type: 'heading',
+        attrs: { level: 2 },
+        content: [{ type: 'text', text: 'Syfte' }],
+      },
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'Purpose body.' }],
+      },
+    ],
+  }
+  const NEW_BODY = [
+    {
+      type: 'paragraph',
+      content: [{ type: 'text', text: 'Ny avsnittstext.' }],
+    },
+  ]
+  const branchParams = {
+    documentId: 'd_1',
+    documentTitle: 'Arbetsmiljöpolicy',
+    newSectionHeading: 'Inledning',
+    newSectionLevel: 2,
+    newSectionContentJson: NEW_BODY,
+    position: { at: 'start' },
+    changeSummary: 'Lägg till inledning på godkänd policy',
+    entity_version: '2026-06-04T10:00:00.000Z',
+    creates_draft: true,
+    newVersionNumber: 4,
+  }
+
+  beforeEach(() =>
+    (
+      prisma.pendingAgentAction.update as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({})
+  )
+
+  it('creates_draft=true + APPROVED-no-draft → routes to createDraftFromApprovedWithEdit', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'ADD_DOCUMENT_SECTION', params: branchParams })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'APPROVED',
+      workspace_id: 'ws_123',
+      current_draft_version_id: null,
+      current_approved_version_id: 'v_approved',
+      current_draft_version: null,
+      current_approved_version: { content_json: APPROVED_DOC_CONTENT },
+    })
+    mockCreateDraftFromApprovedWithEdit.mockResolvedValue({
+      success: true,
+      data: { id: 'v_4', versionNumber: 4 },
+    })
+    ;(
+      prisma.activityLog.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({ id: 'al_save', new_value: { version_number: 4 } })
+    ;(prisma.activityLog.update as ReturnType<typeof vi.fn>).mockResolvedValue(
+      {}
+    )
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(true)
+    expect(mockCreateDraftFromApprovedWithEdit).toHaveBeenCalledTimes(1)
+    expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
+  })
+
+  it('auto-branch path: stamps both log rows with operation=auto_branch_then_add_section', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'ADD_DOCUMENT_SECTION', params: branchParams })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'APPROVED',
+      workspace_id: 'ws_123',
+      current_draft_version_id: null,
+      current_approved_version_id: 'v_approved',
+      current_draft_version: null,
+      current_approved_version: { content_json: APPROVED_DOC_CONTENT },
+    })
+    mockCreateDraftFromApprovedWithEdit.mockResolvedValue({
+      success: true,
+      data: { id: 'v_4', versionNumber: 4 },
+    })
+
+    const findFirstMock = prisma.activityLog.findFirst as ReturnType<
+      typeof vi.fn
+    >
+    findFirstMock
+      .mockResolvedValueOnce({
+        id: 'al_save',
+        new_value: { version_number: 4 },
+      })
+      .mockResolvedValueOnce({
+        id: 'al_branch',
+        new_value: { draft_version_id: 'v_4' },
+      })
+    ;(prisma.activityLog.update as ReturnType<typeof vi.fn>).mockResolvedValue(
+      {}
+    )
+
+    await approvePendingAction('pa_1')
+
+    expect(prisma.activityLog.update).toHaveBeenCalledTimes(2)
+    const calls = (prisma.activityLog.update as ReturnType<typeof vi.fn>).mock
+      .calls
+    const versionStamp = calls.find((c) => c[0]!.where.id === 'al_save')!
+    const branchStamp = calls.find((c) => c[0]!.where.id === 'al_branch')!
+
+    expect(versionStamp[0]!.data.new_value).toMatchObject({
+      by: 'agent',
+      pendingActionId: 'pa_1',
+      operation: 'auto_branch_then_add_section',
+    })
+    expect(branchStamp[0]!.data.new_value).toMatchObject({
+      by: 'agent',
+      pendingActionId: 'pa_1',
+      operation: 'auto_branch_then_add_section',
+    })
+  })
+
+  it('creates_draft=true + race (user manually branched): falls through to plain saveDocumentVersion', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'ADD_DOCUMENT_SECTION', params: branchParams })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'APPROVED',
+      workspace_id: 'ws_123',
+      current_draft_version_id: 'v_existing_draft',
+      current_approved_version_id: 'v_approved',
+      current_draft_version: { content_json: APPROVED_DOC_CONTENT },
+      current_approved_version: { content_json: APPROVED_DOC_CONTENT },
+    })
+    mockSaveDocumentVersion.mockResolvedValue({
+      success: true,
+      data: { id: 'v_5', versionNumber: 5 },
+    })
+    ;(
+      prisma.activityLog.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({ id: 'al_save', new_value: { version_number: 5 } })
+    ;(prisma.activityLog.update as ReturnType<typeof vi.fn>).mockResolvedValue(
+      {}
+    )
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(true)
+    expect(mockCreateDraftFromApprovedWithEdit).not.toHaveBeenCalled()
+    expect(mockSaveDocumentVersion).toHaveBeenCalledTimes(1)
+  })
+
+  it('creates_draft=true + stale to ARCHIVED: refuses, row stays PENDING', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(
+      row({ action_type: 'ADD_DOCUMENT_SECTION', params: branchParams })
+    )
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'ARCHIVED',
+      workspace_id: 'ws_123',
+      current_draft_version_id: null,
+      current_approved_version_id: 'v_approved',
+      current_draft_version: null,
+      current_approved_version: { content_json: APPROVED_DOC_CONTENT },
+    })
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/ARCHIVED/)
+    expect(mockCreateDraftFromApprovedWithEdit).not.toHaveBeenCalled()
     expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
   })
 })

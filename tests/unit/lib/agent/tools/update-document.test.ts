@@ -77,6 +77,9 @@ function makeDoc(
     title: 'Arbetsmiljöpolicy',
     status,
     updated_at: UPDATED_AT,
+    // Story 17.11c AC 6: tool reads current_version_number to compute
+    // newVersionNumber for the renderer header copy.
+    current_version_number: 3,
     current_draft_version_id: isDraft ? 'v_draft' : null,
     current_approved_version_id: isDraft ? null : 'v_approved',
     current_draft_version: isDraft ? { content_json: contentJson } : null,
@@ -197,8 +200,10 @@ describe('update_document — AC 4 guards (no pending row on failure)', () => {
     expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
   })
 
-  it.each(['APPROVED', 'SUPERSEDED', 'ARCHIVED'] as const)(
-    'rejects status %s and guides toward createDraftFromApproved',
+  // Story 17.11c: APPROVED-no-draft moved out of the refusal set into the
+  // auto-branch path. Only SUPERSEDED + ARCHIVED stay non-writeable now.
+  it.each(['SUPERSEDED', 'ARCHIVED'] as const)(
+    'rejects status %s (still non-writeable post-17.11c)',
     async (status) => {
       fn(prisma.workspaceDocument.findFirst).mockResolvedValue(
         makeDoc({ status })
@@ -213,7 +218,8 @@ describe('update_document — AC 4 guards (no pending row on failure)', () => {
 
       expect(result.error).toBe(true)
       expect(result.message).toContain(status)
-      expect(result.guidance).toMatch(/förgrena|redigerbar/)
+      // Refreshed refusal copy for the narrower non-writeable set.
+      expect(result.guidance).toMatch(/Upphävda|arkiverade/i)
       expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
     }
   )
@@ -308,5 +314,62 @@ describe('update_document — AC 4 guards (no pending row on failure)', () => {
 
     expect(result.error).toBe(true)
     expect(result.message).toMatch(/Inga ändringar/)
+  })
+})
+
+// ============================================================================
+// Story 17.11c — APPROVED-no-draft auto-branch acceptance (AC 3, 6)
+// ============================================================================
+
+describe('update_document — Story 17.11c auto-branch on APPROVED', () => {
+  it('APPROVED-no-draft: accepts the proposal with creates_draft=true + newVersionNumber=N+1', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(
+      makeDoc({ status: 'APPROVED' })
+    )
+
+    const result = await execOf(createUpdateDocumentTool('ws_1', CTX))({
+      document_id: 'd_1',
+      section_heading: 'Syfte',
+      updated_content: NEW_BODY,
+      change_summary: 'Skärpt syftesformulering på godkänd policy',
+    })
+
+    expect(result.error).toBeUndefined()
+    expect(fn(prisma.pendingAgentAction.create)).toHaveBeenCalledTimes(1)
+
+    const call = fn(prisma.pendingAgentAction.create).mock.calls[0]![0]
+    expect(call.data.action_type).toBe('UPDATE_DOCUMENT')
+    const params = call.data.params
+    expect(params.creates_draft).toBe(true)
+    // makeDoc fixture: current_version_number = 3 → newVersionNumber = 4.
+    expect(params.newVersionNumber).toBe(4)
+    // Approved content was the source, so the captured old snapshot is the
+    // approved version's body (proves dispatch will apply the edit against
+    // approved content).
+    expect(params.oldSectionContentJson).toEqual([
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'Old purpose body.' }],
+      },
+    ])
+  })
+
+  it('DRAFT with no approved: creates_draft=false (existing Row 1 path unchanged)', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(
+      makeDoc({ status: 'DRAFT' })
+    )
+
+    const result = await execOf(createUpdateDocumentTool('ws_1', CTX))({
+      document_id: 'd_1',
+      section_heading: 'Syfte',
+      updated_content: NEW_BODY,
+      change_summary: 'X',
+    })
+
+    expect(result.error).toBeUndefined()
+    const params = fn(prisma.pendingAgentAction.create).mock.calls[0]![0].data
+      .params
+    expect(params.creates_draft).toBe(false)
+    expect(params.newVersionNumber).toBe(4)
   })
 })

@@ -204,3 +204,69 @@ describe('UpdateDocumentRenderer — terminal states', () => {
     expect(container).toBeTruthy()
   })
 })
+
+// ============================================================================
+// Story 17.11c AC 9 — auto-branch header row
+// ============================================================================
+
+describe('UpdateDocumentRenderer — Story 17.11c auto-branch header', () => {
+  it('renders the "Skapar nytt utkast v{N+1}" header when creates_draft=true on PENDING', () => {
+    render(
+      <UpdateDocumentRenderer
+        action={action({
+          params: { ...baseParams, creates_draft: true, newVersionNumber: 4 },
+        })}
+        {...handlers()}
+      />
+    )
+    expandJustera()
+
+    // Header line names the new version + document title in natural Swedish.
+    expect(
+      screen.getByText(/Skapar nytt utkast v4 av Arbetsmiljöpolicy/)
+    ).toBeInTheDocument()
+  })
+
+  it('does NOT render the header when creates_draft is absent (existing Row 1/2 path)', () => {
+    render(<UpdateDocumentRenderer action={action()} {...handlers()} />)
+    expandJustera()
+
+    expect(screen.queryByText(/Skapar nytt utkast/)).not.toBeInTheDocument()
+  })
+
+  it('CP-001: header copy uses natural-language title + version number — no raw IDs', () => {
+    const { container } = render(
+      <UpdateDocumentRenderer
+        action={action({
+          params: { ...baseParams, creates_draft: true, newVersionNumber: 4 },
+        })}
+        {...handlers()}
+      />
+    )
+    expandJustera()
+    // Raw document ID and pendingActionId must never leak into the DOM —
+    // checked across the whole rendered tree.
+    expect(container.textContent ?? '').not.toContain(RAW_DOC_ID)
+    expect(container.textContent ?? '').not.toContain(RAW_PENDING_ID)
+  })
+
+  it('does NOT render the header on APPROVED (post-approval resultRef takes over)', () => {
+    render(
+      <UpdateDocumentRenderer
+        action={action({
+          status: 'APPROVED',
+          decided_at: new Date(),
+          params: { ...baseParams, creates_draft: true, newVersionNumber: 4 },
+          result_ref: {
+            documentId: RAW_DOC_ID,
+            versionId: 'v_4',
+            versionNumber: 4,
+          },
+        })}
+        {...handlers()}
+      />
+    )
+
+    expect(screen.queryByText(/Skapar nytt utkast/)).not.toBeInTheDocument()
+  })
+})

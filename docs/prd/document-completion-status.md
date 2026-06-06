@@ -1,7 +1,7 @@
 # Document Completion Status
 
 **Document Version:** 2.1
-**Last Updated:** 2026-06-04 (Sarah, PO — dual-version sub-epic CLOSED: 17.16 ✅ Done 2026-06-03 + 17.17 ✅ Done 2026-06-04 + 17.18 ✅ Done 2026-06-04 — all three moved to `completed/`, gates PASS q92/q96/q95, compliance contract restored end-to-end, DEC-2 invariant holds under Model B, owner live smoke against Supabase production data validated 9/11 ACs end-to-end. 19.8 and 17.11c follow-up both now unblocked.)
+**Last Updated:** 2026-06-06 (Sarah, PO — **authoring triad closed**: **17.11c ✅ Done gate PASS 95** moved to `completed/`. Phase 5 authoring foundation FULLY shipped — 17.10/17.10b + 17.11/17.11b/17.11c (the full agent read/write/branch authority triad) + dual-version trilogy 17.16/17.17/17.18 all closed. Agent now spans all 4 dual-version states with DEC-2 compliance contract intact. Two smoke follow-ups surfaced for PO backlog: AGENT-001 [agent hallucinates content on empty-approved docs] + UX-prose-leak [agent leaks internal identifiers]. Next major authoring deliverable: 19.8.)
 **PRD Version:** 1.5
 
 ## Epic Summary
@@ -24,15 +24,15 @@
 | 14 | Compliance Agent | **21** / 1 | Done — 3 sibling additions shipped 2026-05-26 to 2026-05-28 (14.28 `update_requirement`, 14.29 `add_task_comment`, 14.30 `transition_document_status`); 14.31 (staleness retrofit) Approved-not-built |
 | 15 | BolagsAPI Integration & Company Enrichment | 3 / 0 | Mostly Done — SNI reference system remaining |
 | 16 | Conversion Funnel & First-Value Optimization | 4 / 0 | Done |
-| 17 | Document Management System | **16** / **5** | **Active** — core DMS + agent tools shipped (17.10 + 17.10b in `completed/`; 17.11 + 17.11b Ready for Review 2026-06-03). **Dual-Version Document Visibility brownfield sub-epic CLOSED 2026-06-04** (3-story epic at `docs/prd/epic-17-addendum-dual-version-visibility.md`: 17.16 ✅ Done gate PASS 92, 17.17 ✅ Done gate PASS 96, 17.18 ✅ Done gate PASS 95 — compliance contract restored end-to-end). Backlog also includes 17.9d (file-aware citation pill) + 17.11c (agent auto-branch follow-up; can now be drafted against the corrected Model B foundation). |
+| 17 | Document Management System | **19** / **2** | **Active** — core DMS + full agent authoring triad fully shipped (17.10 + 17.10b + **17.11 ✅ Done 2026-06-06 gate PASS 100** + **17.11b ✅ Done 2026-06-06 gate PASS 95** + **17.11c ✅ Done 2026-06-06 gate PASS 95** — all in `completed/`). **Dual-Version Document Visibility brownfield sub-epic CLOSED 2026-06-04** (3-story epic at `docs/prd/epic-17-addendum-dual-version-visibility.md`: 17.16 ✅ Done gate PASS 92, 17.17 ✅ Done gate PASS 96, 17.18 ✅ Done gate PASS 95). **Authoring triad closure 2026-06-06**: agent now has full read/write/branch authority over styrdokument across all 4 dual-version states; DEC-2 compliance contract validated under auto-branch path via owner live smoke. Remaining backlog: 17.9d (file-aware citation pill) + the 19.8 dependency. |
 | 19 | Agent Partner (skills + subagents) — new epic added 2026-04-19 | **10** / 7 | **Active** — foundation + skills tracks fully shipped. 19.1/19.2/19.3/19.4/19.4a/19.5/19.6/19.7a/b/c all in `completed/` (10 stories shipped between 2026-05-24 and 2026-05-27). Remaining: 19.4b (sequence with Epic 21), **19.8** (`draft_styrdokument` type-aware — **now unblocked**, dual-version foundation closed 2026-06-04), 19.9 + 19.10 (subagents — deferred), 19.11 + 19.12 (continuous governance), 19.13 (grounding eval). Tracked in detail at `docs/stories/EPIC-19-AGENT-PARTNER-CHECKLIST.md`. |
 | P | Performance (Caching & Optimization) | 4 / 1 | Mostly Done |
 
 **TOTAL: ~213 stories tracked across 18 epics + performance sprint**
-**Completed: ~173 stories (~81%)**
+**Completed: ~176 stories (~83%)**
 **11 of 18 epics fully complete**
 
-**Recent velocity (2026-05-24 → 2026-06-04):** 20 stories from Draft/Approved → `completed/` or Ready-for-Review in 11 days — 14.28/14.29/14.30 + 19.1/19.2/19.3/19.4/19.4a/19.5 + 19.6/19.7a/b/c + 17.10/17.10b + 17.11/17.11b (RfR) + dual-version trilogy 17.16/17.17/17.18. Same-day SM→PO→Dev→QA cycles are now the norm for small brownfield-additive work; the 3-story dual-version sub-epic was scoped → shipped in 2 days (drafted 2026-06-03, closed 2026-06-04).
+**Recent velocity (2026-05-24 → 2026-06-06):** 21 stories Draft/Approved → `completed/` in 13 days — 14.28/14.29/14.30 + 19.1/19.2/19.3/19.4/19.4a/19.5 + 19.6/19.7a/b/c + 17.10/17.10b + authoring triad 17.11/17.11b/17.11c + dual-version trilogy 17.16/17.17/17.18. Same-day SM→PO→Dev→QA cycles are now the norm for small brownfield-additive work; the 3-story dual-version sub-epic was scoped → shipped in 2 days; 17.11c shipped in a single same-day SM→PO→Dev→QA cycle 2026-06-06 with owner live smoke validation (4 probes including the load-bearing DEC-2 stress).
 
 ## Not Started Epics
 

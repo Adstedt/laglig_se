@@ -7,7 +7,7 @@
 **Linked epic:** [`docs/prd/epic-19-agent-partner-skills-subagents.md`](../prd/epic-19-agent-partner-skills-subagents.md)
 
 **Created:** 2026-04-19
-**Last updated:** 2026-06-04 (dual-version sub-epic CLOSED — **17.16 ✅ Done 2026-06-03 (gate PASS q92) · 17.17 ✅ Done 2026-06-04 (gate PASS q96) · 17.18 ✅ Done 2026-06-04 (gate PASS q95)**. Trilogy shipped in 2 days; compliance contract restored end-to-end; DEC-2 invariant holds under Model B. 19.8 and 17.11c follow-up both unblocked. 14 stories added to the Done column since the 2026-05-24 snapshot: 19.2, 19.3, 19.4, 19.4a, 19.6, 19.7a/b/c, 14.28, 14.29, 14.30, 17.10, 17.10b, 17.16, 17.17, 17.18. **17.11 + 17.11b remain Ready for Review pending QA-cycle.**)
+**Last updated:** 2026-06-06 (authoring triad closed — **17.11c ✅ Done 2026-06-06 (gate PASS q95)** moved to `completed/`. Same-day SM→PO→Dev→QA cycle: SM drafted v1.0; PO validate-story-draft GO 9.5/10; Dev implementation 24 new tests across 6 suites; QA PASS quality 95; owner live smoke 4/4 probes PASS including the load-bearing DEC-2 stress probe ("Den godkända versionen (v11) innehåller ännu inget avsnitt om åldersgräns" — the agent correctly framed the auto-branched draft as non-canonical). **Phase 5 (Authoring) fully shipped** — 17.10 + 17.10b + 17.11 + 17.11b + 17.11c + dual-version trilogy 17.16/17.17/17.18 all in `completed/`. 17 stories added to the Done column since the 2026-05-24 snapshot. **Next major authoring deliverable is 19.8** (`draft_styrdokument` type-aware). Two follow-ups surfaced in 17.11c smoke: AGENT-001 (agent hallucinates content on empty-approved docs) + UX-prose-leak (agent says `update_document`/`APPROVED` when explaining capabilities) — both PO-owned, candidates for 19.8's prompt sweep or standalone hardening.)
 **Owner:** Sarah (PO)
 
 ---
@@ -24,10 +24,10 @@
   *Three read tools on the 17.9c pattern over the 17.9b WORKSPACE_DOCUMENT chunks. No schema change, no migration. Token budget bumped 5500 → 6500 (conscious growth for a real new tool surface). CITE-002 collision disambiguator ships as designed. Owner smoke 8/8 PASS against Nordviken. Closed WDS-001 (no styrdokument discovery tool).*
 - [x] **17.10b** — DRAFT/IN_REVIEW indexing + status-aware citations ✅ **DONE** (2026-06-02, `completed/`; gate PASS 97 [q93→q97 post-smoke])
   *Indexable set widens from `{APPROVED}` to `{DRAFT, IN_REVIEW, APPROVED}`. Content-hash (not status) is the new reindex trigger. Citation pipeline splits into `[Källa:]` (canonical APPROVED) vs `[Utkast:]` (DRAFT/IN_REVIEW) with rehype `data-tier` attribute. System prompt teaches "enligt utkast till…" framing. New infra: `20260602100000_add_workspace_document_reindex_flags` migration + `/api/cron/sweep-draft-reindex` (60s idle debounce) + one-time backfill script. Owner smoke 5/5 PASS — including the **DEC-2 adversarial hold** ("Vad är vår officiella semesterpolicy?" against a DRAFT-only topic → agent refused honestly, zero `[Källa:]` for the DRAFT). **The compliance-sensitive contract held under the highest-stakes prompt.** QA caught + fixed an autosave→archive cron-sweep race in-review.*
-- [~] **17.11** — Agent tool: `update_document` (section edits via approval card) — 🔬 **READY FOR REVIEW 2026-06-03** (gate `docs/qa/gates/17.11-agent-tool-update-document.yml` = PASS, quality 100)
-  *Re-scoped 2026-05-22: `create_document` dropped (redundant with 14.24 `draft_styrdokument`); markdown↔Tiptap converters dropped; recast onto the `UPDATE_DOCUMENT` `PendingAgentAction` approval pattern. The 12th `PendingAgentActionType` on the established inline-approval pattern. Dispatch calls `updateSection()` to produce the full updated `contentJson`, `saveDocumentVersion` appends a new `WorkspaceDocumentVersion`, auto-reindex via 17.10b's `after()` hook picks up DRAFT/IN_REVIEW changes transparently. Owner live smoke 2026-06-03 confirmed the diff-card → approve → version-append flow end-to-end. Pre-`completed/` move per the manual-cycle workflow.*
-- [~] **17.11b** — Agent tool: `add_document_section` (insert NEW section into existing styrdokument via approval card) — 🔬 **READY FOR REVIEW 2026-06-03** (gate doc TBD)
-  *Brownfield-additive sibling of 17.11 surfaced by the 17.11 live smoke (the "add section" UX cliff). Reuses 17.11's section-utility, dispatch pattern, renderer chrome, and chat-detail panel **1:1** — purely additive. The 13th `PendingAgentActionType`; additive enum migration applied to Supabase by the owner. AC 10's `operation: 'add_section'` activity-log discriminator landed (supersedes 17.11's REL-001 future-hardening trade-off note). **194 story-affected unit tests + registry harness bumps 33→34 (in 3 places) + baseline 32→33** — all green. Owner live smoke 2026-06-03 against Nordviken's Arbetsmiljöpolicy: clean A-grade pass on propose card + v2 lands correctly. **This story's smoke surfaced the dual-version-visibility gap that motivates the new sub-epic below.***
+- [x] **17.11** — Agent tool: `update_document` (section edits via approval card) — ✅ **DONE 2026-06-06** (`docs/stories/completed/17.11.agent-tool-update-document.md`; gate PASS quality 100)
+  *Re-scoped 2026-05-22: `create_document` dropped (redundant with 14.24 `draft_styrdokument`); markdown↔Tiptap converters dropped; recast onto the `UPDATE_DOCUMENT` `PendingAgentAction` approval pattern. The 12th `PendingAgentActionType` on the established inline-approval pattern. Dispatch calls `updateSection()` to produce the full updated `contentJson`, `saveDocumentVersion` appends a new `WorkspaceDocumentVersion`, auto-reindex via 17.10b's `after()` hook picks up DRAFT/IN_REVIEW changes transparently. Owner live smoke 2026-06-03 confirmed the diff-card → approve → version-append flow end-to-end. Forward-aligned to 17.16's dual-pointer model during the sub-epic.*
+- [x] **17.11b** — Agent tool: `add_document_section` (insert NEW section into existing styrdokument via approval card) — ✅ **DONE 2026-06-06** (`docs/stories/completed/17.11b.agent-tool-add-document-section.md`; gate PASS quality 95)
+  *Brownfield-additive sibling of 17.11 surfaced by the 17.11 live smoke (the "add section" UX cliff). Reuses 17.11's section-utility, dispatch pattern, renderer chrome, and chat-detail panel **1:1** — purely additive. The 13th `PendingAgentActionType`. AC 10's `operation: 'add_section'` activity-log discriminator landed (supersedes 17.11's REL-001 future-hardening trade-off note — atomic-stamp half remains as a low-severity inherited concern, recommended follow-up). **133 story-affected unit tests + registry harness bumps 33→34 (in 3 places) + baseline 32→33** — all green at QA review. Owner live smoke 2026-06-03 against Nordviken's Arbetsmiljöpolicy: clean A-grade pass on propose card + v2 lands correctly. **This story's smoke surfaced the dual-version-visibility gap that motivated the 17.16/17.17/17.18 sub-epic (now closed).***
 
 ### Dual-Version Document Visibility — Brownfield sub-epic (CLOSED 2026-06-04)
 
@@ -39,8 +39,8 @@
   *Single-row composite status badge for the dual state (`Godkänd v3 · Utkast v4 pågår`); filter chip semantics; doc page header preserving approved metadata throughout draft windows; editor banner clarifying draft-replaces-approved; discard-draft button + Skicka/Godkänn/Neka/Förkasta flow wired to 17.16's new server actions. Owner live smoke validated full composite badge + lifecycle flow.*
 - [x] **17.18** — Agent reads + citation routing under the dual-version model — ✅ **DONE 2026-06-04** (`docs/stories/completed/17.18.dual-version-agent-reads-citations.md`; gate PASS quality 95)
   *Refactored `indexWorkspaceDocument` to maintain per-tier (APPROVED/DRAFT) chunks with self-healing legacy migration (`OR metadata->>'tier' IS NULL` clause — zero flag day); `search_workspace_documents` returns one hit per tier per doc with `dualState` flag; `get_workspace_document` returns both snapshots when present (nested `approved` + `draft` + `dualState` + backward-compat top-level `content`); `list_workspace_documents` exposes dual state + `dual_state_only` Zod-visible filter; citation grammar extended with `[Utkast: title (utkast vN)]` shape (`data-tier="draft"`); rehype pill renderer + Källa-pairing test landed. **17.10b DEC-2 contract preserved and explicitly adversarially tested under the new dual state — owner real-LLM smoke held across 3 adversarial prompt phrasings.** Architectural side-effect: 2× embedding cost win via `$queryRaw` with `embedding IS NULL` filter. Sweep cron at `* * * * *` (60s debounce) drives autosave→reindex; manual trigger validated end-to-end against Supabase production data.*
-- [ ] **17.11c** — Agent auto-branch on APPROVED (follow-up; **now unblocked** — PO can draft against the closed Model B foundation)
-  *When the agent calls `add_document_section` / `update_document` against an APPROVED doc with no draft pending, transparently create the draft AND write against it in a single approval card. ~50-line extension on top of 17.16's guard reframe (now trivial against the corrected Model B foundation). Intentionally kept separate from the dual-version epic to keep story boundaries clean.*
+- [x] **17.11c** — Agent auto-branch on APPROVED — ✅ **DONE 2026-06-06** (`docs/stories/completed/17.11c.agent-auto-branch-on-approved.md`; gate PASS quality 95)
+  *Closes the authoring triad. When the agent calls `update_document` / `add_document_section` against an APPROVED doc with no draft pending, the new `createDraftFromApprovedWithEdit` server action runs an atomic single-`$transaction` branch + write (ONE version row with the edit applied directly — solves the Two-Version Problem). Card shows "Skapar nytt utkast v{N+1} av X" header. Race-on-fell-through (user manually branched between propose and approve) gracefully falls through to plain `saveDocumentVersion`. AC 8 + AC 14 dual-stamp (`{by:'agent', pendingActionId, operation: 'auto_branch_then_<update|add>_section'}`) lands on BOTH `document_version_saved` AND `document_draft_created` rows — lets audit consumers distinguish agent-initiated branches from user-initiated ones. 24 new tests across 6 suites; full 861-test sweep clean. Owner live smoke 2026-06-06 against Nordviken: probes 1 (conceptual), 2 (update_document auto-branch card), 3 (add_document_section auto-branch card), 5 (DEC-2 stress under auto-branch) all PASS — DEC-2 contract held end-to-end ("Den godkända versionen (v11) innehåller ännu inget avsnitt om åldersgräns — det tillkommer först när ni godkänner utkastet"). Smoke surfaced two follow-ups: AGENT-001 (agent hallucinates content on empty-approved docs — separate finding) + UX-prose-leak (agent says `update_document`/`APPROVED` when explaining capabilities — small system-prompt guardrail follow-up).*
 
 ### Epic 14 — Agent approval-card primitives (Approved)
 
@@ -131,27 +131,26 @@
 | Sibling Epic 14 additions | 4 | 14.28/14.29/14.30 all shipped; 14.31 Approved-not-built (batches with the others) |
 | Epic 19 | 17 | Foundation track + skills track COMPLETE. 19.7 split into 19.7a/b/c (all Done). 19.13 added 2026-05-26 (legal-citation grounding eval, residual of archived Story 3.9). 19.4b sequences with next Epic 21 work |
 | **Dual-Version Document Visibility sub-epic** | 3 | ✅ **CLOSED 2026-06-04** — 17.16 Done (gate PASS q92) + 17.17 Done (gate PASS q96) + 17.18 Done (gate PASS q95). Compliance contract restored end-to-end; DEC-2 invariant holds under Model B. Unblocks 19.8. |
-| Future follow-up | 1 | **17.11c** agent auto-branch — PO can now draft against the closed Model B foundation |
+| Future follow-up | 0 | **17.11c shipped 2026-06-06** — triad closed |
 | **Total** | **34 stories** | Original ~26 + 11 surface items (split 19.7 a/b/c, new 19.13, new 17.10b, new 17.11b, new dual-version epic 17.16/17.17/17.18, new 17.11c follow-up). Realistic timeline now ~10–12 weeks with 2 devs given the scope expansion. |
 
-**Progress snapshot (2026-06-04 — post dual-version closure): 23 shipped · 2 Ready for Review · 0 Approved-ready-for-dev · 2 drafted-not-built · 7 remaining.**
+**Progress snapshot (2026-06-06 — authoring triad closed): 26 shipped · 0 Ready for Review · 0 Approved-ready-for-dev · 2 drafted-not-built · 6 remaining.**
 
-- ✅ **Shipped (23, in `completed/`):**
+- ✅ **Shipped (26, in `completed/`):**
   - Prereqs: 17.8 · 17.9 · 17.9b · 17.9c · 17.10 · 17.10b · 14.22 · 14.23 · 14.24
   - Siblings: 14.28 · 14.29 · 14.30
   - Epic 19 foundation: 19.1 · 19.2 · 19.3 · 19.4 · 19.4a · 19.5
   - Epic 19 skills: 19.6 · 19.7a · 19.7b · 19.7c
+  - **Authoring triad: 17.11 · 17.11b · 17.11c** (full agent read/write/branch authority over styrdokument)
   - **Dual-version sub-epic: 17.16 · 17.17 · 17.18** (shipped 2026-06-03 → 2026-06-04)
-- 🔬 **Ready for Review (2, pre-`completed/` move per the manual-cycle workflow):** 17.11 (gate PASS q100, owner smoke confirmed) · 17.11b (gate doc TBD; owner smoke confirmed)
 - 📝 **Drafted, not built (2):** 17.9d (file-aware citation pill) · 19.1b (promote chat attachment → Filer)
-- ⬜ **Remaining (7):** 14.31 (staleness retrofit, Approved-not-built) · 17.11c (agent auto-branch, **now unblocked**; spec TBD by PO) · 19.4b (cycle/finding readers, sequences with Epic 21) · 19.8 (`draft_styrdokument` type-aware, **now unblocked** by dual-version closure) · 19.9 (subagent runner) · 19.10 (ParallelAssessor) · 19.11 (reminders + cron) · 19.12 (AgentFeedback) · 19.13 (legal-citation grounding eval)
+- ⬜ **Remaining (6):** 14.31 (staleness retrofit, Approved-not-built) · 19.4b (cycle/finding readers, sequences with Epic 21) · 19.8 (`draft_styrdokument` type-aware) · 19.9 (subagent runner) · 19.10 (ParallelAssessor) · 19.11 (reminders + cron) · 19.12 (AgentFeedback) · 19.13 (legal-citation grounding eval)
 - ⬜ **Next to build:**
-  1. **QA-cycle 17.11 + 17.11b through to `completed/`** (gate exists for 17.11; 17.11b's gate doc to be created via QA review pass).
-  2. **PO drafts 17.11c spec** — ~50-line follow-up now trivial against the closed Model B foundation; can run same-day SM→PO→Dev→QA cycle.
-  3. **PO scopes 19.8** (`draft_styrdokument` type-aware) against the corrected dual-pointer schema — the next major authoring-track story.
-  4. **Then continue Epic 19 governance/eval tracks** (19.11/19.12/19.13) as time allows.
+  1. **PO scopes 19.8** (`draft_styrdokument` type-aware + Swedish template library seed) against the corrected dual-pointer schema — the next major authoring-track story. Larger scope (one skill + 8 type modules + ≥7 seed templates) so worth treating as a multi-cycle effort.
+  2. **PO triages the 17.11c smoke follow-ups:** AGENT-001 (agent hallucinates content on empty-approved docs) + UX-prose-leak (agent leaks internal identifiers in capability explanations). Likely candidates to roll into 19.8's prompt sweep OR as a standalone agent-prose-hygiene hardening story.
+  3. **Then continue Epic 19 governance/eval tracks** (19.11/19.12/19.13) as time allows.
 
-**Phases 1–4 fully shipped. Phase 5 (Authoring) is 3 of 3 *foundations* now built (17.10 + 17.10b ✅; 17.11/17.11b RfR; dual-version sub-epic ✅ closed 2026-06-04) — 19.8 is the next major authoring deliverable on top of the closed foundation.**
+**Phases 1–4 fully shipped. Phase 5 (Authoring) authoring triad fully closed — agent now has full read/write/branch authority over styrdokument across all 4 dual-version states (DRAFT, IN_REVIEW, APPROVED-no-draft, APPROVED-with-draft). 19.8 is the next major authoring deliverable; the type-aware skill + template seed sits on top of the now-complete read/write/branch foundation.**
 
 ---
 
@@ -173,15 +172,15 @@ This entire critical-path sequence is now shipped. The core agent-partner loop i
 
 "Hur står vi till?" is live with the `gap_analysis` skill producing tiered Swedish reports. Owner live-smoked end-to-end against Nordviken Hotell & Konferens AB.
 
-### Authoring proof-point (foundation closed 2026-06-04 — Phase 5 entering final mile)
+### Authoring proof-point (triad closed 2026-06-06 — only 19.8 remains)
 
 ```
-17.10 ✅ → 17.10b ✅ → 17.11 🔬 → 17.11b 🔬 → 17.16 ✅ → 17.17 ✅ → 17.18 ✅ → 17.11c → 19.8
+17.10 ✅ → 17.10b ✅ → 17.11 ✅ → 17.11b ✅ → 17.16 ✅ → 17.17 ✅ → 17.18 ✅ → 17.11c ✅ → 19.8
 ```
 
-**Material shift since the original plan — RESOLVED:** 17.11b's live smoke surfaced the dual-version-visibility gap, which sequenced a new 3-story sub-epic (17.16/17.17/17.18) before 19.8. Trilogy shipped 2026-06-03 → 2026-06-04 with owner live smoke validation. 19.8 (type-aware styrdokument drafting) now lands on the corrected Model B dual-pointer foundation; the legacy single-pointer model that would have silently regressed `[Källa:]` citations during revision windows is gone. Story 17.11c (agent auto-branch) becomes a small ~50-line extension on top of the closed foundation.
+**Material shift since the original plan — RESOLVED:** 17.11b's live smoke surfaced the dual-version-visibility gap, which sequenced a new 3-story sub-epic (17.16/17.17/17.18) before 19.8. Trilogy shipped 2026-06-03 → 2026-06-04 with owner live smoke validation. 17.11c shipped same-day 2026-06-06 on top of the closed foundation as designed (~150 lines including tests; close to the ~50-line estimate when measuring production code only). The auto-branch path runs an atomic single-`$transaction` branch + write via the new `createDraftFromApprovedWithEdit` server action — solves the Two-Version Problem (ONE version row per agent edit, not a clone-then-edit double-write).
 
-After 17.11c + 19.8 ship, the agent can: (a) draft a brand-new styrdokument from a type-aware template; (b) propose section edits to a DRAFT/IN_REVIEW; (c) propose adding sections; (d) transparently branch + edit when targeting an APPROVED — all while preserving the `[Källa:]` vs `[Utkast:]` compliance signal grammar throughout.
+After 17.11c shipped, the agent has full read/write/branch authority over styrdokument: (a) [pending 19.8] draft a brand-new styrdokument from a type-aware template; (b) ✅ propose section edits to a DRAFT/IN_REVIEW; (c) ✅ propose adding sections; (d) ✅ transparently branch + edit when targeting an APPROVED — all while preserving the `[Källa:]` vs `[Utkast:]` compliance signal grammar throughout. Owner live smoke 2026-06-06 confirmed the DEC-2 contract holds under the auto-branch path (probe 5: agent correctly cited approved v11 as canonical and framed auto-branched draft v12 as "ett pågående utkast föreslår").
 
 ### Remaining tracks (post-Phase-5)
 
@@ -193,9 +192,9 @@ After 17.11c + 19.8 ship, the agent can: (a) draft a brand-new styrdokument from
 
 ## 🔒 Definition of Done for the full vision
 
-- [~] All **9** prerequisite stories shipped (17.8 ✅, 17.9 ✅, 17.10 ✅, 17.10b ✅, 17.11 🔬 RfR, 17.11b 🔬 RfR, 14.22 ✅, 14.23 ✅, 14.24 ✅) — *7 of 9 Done; 2 RfR pending QA-cycle to `completed/`*
+- [x] All **9** prerequisite stories shipped (17.8 ✅, 17.9 ✅, 17.10 ✅, 17.10b ✅, 17.11 ✅, 17.11b ✅, 14.22 ✅, 14.23 ✅, 14.24 ✅) — *9 of 9 Done as of 2026-06-06*
 - [x] All **3** dual-version sub-epic stories shipped (17.16 ✅ Done gate PASS 92; 17.17 ✅ Done gate PASS 96; 17.18 ✅ Done gate PASS 95 — **sub-epic CLOSED 2026-06-04**)
-- [ ] Follow-up 17.11c shipped (agent auto-branch on APPROVED) — **now unblocked**; PO drafts against the closed Model B foundation
+- [x] Follow-up 17.11c shipped (agent auto-branch on APPROVED) — ✅ Done 2026-06-06 (gate PASS quality 95); closes the authoring triad
 - [~] All **4** sibling stories shipped (14.28 ✅, 14.29 ✅, 14.30 ✅, 14.31 Approved-not-built) — *3 of 4 Done*
 - [~] All **17** Epic 19 stories shipped (incl. 19.4a id-resolution ✅, 19.4b cycle/finding readers deferred, 19.7 split into a/b/c all ✅, 19.13 grounding eval added 2026-05-26) — *10 of 17 Done*
 - [ ] Composite feature flag `agent_partner_v2` enabled in ≥1 customer workspace for ≥2 weeks with no regressions

@@ -79,6 +79,7 @@ vi.mock('next/server', () => ({
 
 import {
   createDraftFromApproved,
+  createDraftFromApprovedWithEdit,
   saveDocumentVersion,
   promoteDraftToApproved,
   discardDraft,
@@ -731,5 +732,165 @@ describe('rejectDraftReview — Story 17.17 (Neka utkast)', () => {
     const result = await rejectDraftReview('d_missing')
     expect(result.success).toBe(false)
     expect(prisma.workspaceDocument.update).not.toHaveBeenCalled()
+  })
+})
+
+// ============================================================================
+// createDraftFromApprovedWithEdit — Story 17.11c AC 1, 2, 12
+// ============================================================================
+
+describe('createDraftFromApprovedWithEdit — Story 17.11c AC 1', () => {
+  const APPROVED_DOC = {
+    id: 'd_1',
+    status: 'APPROVED' as const,
+    current_version_number: 3,
+    current_draft_version_id: null,
+    current_approved_version_id: 'v_approved',
+    workspace_id: 'ws_1',
+  }
+
+  const editedContentJson = {
+    type: 'doc',
+    content: [
+      { type: 'paragraph', content: [{ type: 'text', text: 'edited' }] },
+    ],
+  }
+
+  it('happy path: writes ONE version row with edited content, ONE draft pointer update, TWO log rows', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(APPROVED_DOC)
+
+    const result = await createDraftFromApprovedWithEdit(
+      'd_1',
+      editedContentJson,
+      'Agentens auto-branch + tillägg',
+      '<p>edited</p>'
+    )
+
+    expect(result.success).toBe(true)
+    expect(result.data).toMatchObject({ id: 'v_new', versionNumber: 4 })
+
+    // ONE version row, with edited content directly (not a clone).
+    expect(prisma.workspaceDocumentVersion.create).toHaveBeenCalledTimes(1)
+    const versionCreate = fn(prisma.workspaceDocumentVersion.create).mock
+      .calls[0]![0]
+    expect(versionCreate.data).toMatchObject({
+      document_id: 'd_1',
+      version_number: 4,
+      source: 'TIPTAP',
+      content_json: editedContentJson,
+      content_html: '<p>edited</p>',
+      change_summary: 'Agentens auto-branch + tillägg',
+      created_by: 'user_42',
+    })
+
+    // Doc update advances draft pointer + draft_status + version_number; alias
+    // (current_version_id), status, approved_by, approved_at all left untouched.
+    expect(prisma.workspaceDocument.update).toHaveBeenCalledTimes(1)
+    const docUpdate = fn(prisma.workspaceDocument.update).mock.calls[0]![0]
+    expect(docUpdate.data).toMatchObject({
+      current_draft_version_id: 'v_new',
+      draft_status: 'DRAFT',
+      current_version_number: 4,
+    })
+    expect(docUpdate.data.current_version_id).toBeUndefined()
+    expect(docUpdate.data.status).toBeUndefined()
+    expect(docUpdate.data.approved_by).toBeUndefined()
+    expect(docUpdate.data.approved_at).toBeUndefined()
+
+    // TWO ActivityLog rows: document_draft_created + document_version_saved.
+    expect(prisma.activityLog.create).toHaveBeenCalledTimes(2)
+    const logs = fn(prisma.activityLog.create).mock.calls.map(
+      (call) => call[0]!.data
+    )
+    expect(logs[0]).toMatchObject({
+      entity_type: 'workspace_document',
+      entity_id: 'd_1',
+      action: 'document_draft_created',
+      new_value: {
+        draft_version_id: 'v_new',
+        draft_status: 'DRAFT',
+        source_approved_version_id: 'v_approved',
+      },
+    })
+    expect(logs[1]).toMatchObject({
+      entity_type: 'workspace_document',
+      entity_id: 'd_1',
+      action: 'document_version_saved',
+      new_value: {
+        version_number: 4,
+        change_summary: 'Agentens auto-branch + tillägg',
+      },
+    })
+  })
+
+  it('triggers indexWorkspaceDocument via after() post-commit (AC 1)', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(APPROVED_DOC)
+    mockIndexWorkspaceDocument.mockResolvedValue(undefined)
+
+    await createDraftFromApprovedWithEdit('d_1', editedContentJson, 'x')
+
+    expect(mockIndexWorkspaceDocument).toHaveBeenCalledWith('d_1', 'ws_1')
+  })
+
+  it('refuses when document is missing (workspace scoping)', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(null)
+
+    const result = await createDraftFromApprovedWithEdit(
+      'd_missing',
+      editedContentJson,
+      'x'
+    )
+
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/hittades inte/i)
+    expect(prisma.workspaceDocumentVersion.create).not.toHaveBeenCalled()
+    expect(prisma.activityLog.create).not.toHaveBeenCalled()
+  })
+
+  it('refuses when status is not APPROVED (defense-in-depth guard)', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue({
+      ...APPROVED_DOC,
+      status: 'DRAFT' as const,
+    })
+
+    const result = await createDraftFromApprovedWithEdit(
+      'd_1',
+      editedContentJson,
+      'x'
+    )
+
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/godkända/i)
+    expect(prisma.workspaceDocumentVersion.create).not.toHaveBeenCalled()
+  })
+
+  it('refuses when a draft is already in progress (race-with-dispatch defense)', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue({
+      ...APPROVED_DOC,
+      current_draft_version_id: 'v_existing',
+    })
+
+    const result = await createDraftFromApprovedWithEdit(
+      'd_1',
+      editedContentJson,
+      'x'
+    )
+
+    expect(result.success).toBe(false)
+    // Copy verbatim mirrors createDraftFromApproved's AC 4 refusal.
+    expect(result.error).toMatch(/utkast pågår redan/i)
+    expect(prisma.workspaceDocumentVersion.create).not.toHaveBeenCalled()
+    expect(prisma.activityLog.create).not.toHaveBeenCalled()
+  })
+
+  it('uses contentHtml = "" + extracted plaintext when contentHtml omitted', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(APPROVED_DOC)
+
+    await createDraftFromApprovedWithEdit('d_1', editedContentJson, 'x')
+
+    const versionCreate = fn(prisma.workspaceDocumentVersion.create).mock
+      .calls[0]![0]
+    expect(versionCreate.data.content_html).toBe('')
+    expect(versionCreate.data.extracted_text).toBe('')
   })
 })

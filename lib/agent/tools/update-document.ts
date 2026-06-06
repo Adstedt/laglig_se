@@ -160,6 +160,7 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — ändri
           title: true,
           status: true,
           updated_at: true,
+          current_version_number: true,
           current_draft_version_id: true,
           current_approved_version_id: true,
           current_draft_version: { select: { content_json: true } },
@@ -175,30 +176,33 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — ändri
         )
       }
 
-      // Story 17.16 AC 8 — reframed writeable predicate.
-      // Writeable iff:
-      //   - doc has a draft in progress (current_draft_version_id != null), OR
-      //   - doc is a never-approved DRAFT (no approved version exists yet)
-      // Observationally equivalent to the legacy `status ∈ DRAFT/IN_REVIEW`
-      // guard for all cases the existing 17.11/17.11b tests cover. Additionally
-      // allows the "APPROVED with current_draft_version_id" dual-state — which
-      // 17.11c will eventually exercise via auto-branch, but is not yet
-      // reachable via any UI/agent path in this story.
+      // Story 17.11c AC 3 — writeable predicate widens to also accept
+      // APPROVED-with-no-draft. Three accepted shapes:
+      //   - existing draft in progress (Row 2 from 17.11c decision matrix)
+      //   - never-approved DRAFT (Row 1)
+      //   - APPROVED with no draft (Row 3, new — triggers atomic auto-branch
+      //     via createDraftFromApprovedWithEdit on approve)
+      // SUPERSEDED / ARCHIVED stay non-writeable.
+      const autoBranchEligible =
+        document.status === 'APPROVED' &&
+        document.current_draft_version_id == null
       const writeable =
         document.current_draft_version_id != null ||
         (document.status === 'DRAFT' &&
-          document.current_approved_version_id == null)
+          document.current_approved_version_id == null) ||
+        autoBranchEligible
       if (!writeable) {
         return wrapToolError(
           'update_document',
           `Dokumentet kan inte ändras i status "${document.status}".`,
-          'Endast utkast (DRAFT) eller dokument under granskning (IN_REVIEW) kan redigeras av agenten. Be användaren förgrena en ny redigerbar version av det godkända dokumentet först.',
+          'Endast utkast (DRAFT/IN_REVIEW) eller godkända dokument utan pågående utkast kan redigeras av agenten. Upphävda eller arkiverade dokument kan inte ändras.',
           startTime
         )
       }
 
-      // Story 17.16 AC 8: content source = draft pointer when set, else
-      // approved pointer (never-approved DRAFT case). Never read the alias.
+      // Content source: draft pointer when set, else approved pointer (covers
+      // both never-approved DRAFT AND the new auto-branch-eligible case where
+      // the agent edits against the approved version's content directly).
       const currentContent = (document.current_draft_version?.content_json ??
         document.current_approved_version?.content_json) as
         | TiptapDocumentJSON
@@ -270,6 +274,12 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — ändri
         // Story 14.31 staleness guard (Approved, blockers cleared) consumes this
         // ISO-8601 UTC snapshot at approve time — see lib/agent/tools/update-requirement.ts:188.
         entity_version: document.updated_at.toISOString(),
+        // Story 17.11c AC 6: dispatch reads creates_draft to fork between plain
+        // saveDocumentVersion (existing path) and createDraftFromApprovedWithEdit
+        // (new atomic branch+write). Renderer reads creates_draft +
+        // newVersionNumber to show the "Skapar nytt utkast v{N+1}" header.
+        creates_draft: autoBranchEligible,
+        newVersionNumber: document.current_version_number + 1,
       }
 
       const pendingActionId = await createPendingActionRow(
