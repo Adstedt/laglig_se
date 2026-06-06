@@ -213,6 +213,12 @@ describe('extractSourcesFromToolResult', () => {
     // [Källa: Dataskyddspolicy] resolves via resolveSource's bare-label fallback.
     const resolved = resolveSource('Dataskyddspolicy', sourcesToMap(sources))
     expect(resolved?.title).toBe('Dataskyddspolicy')
+
+    // CTA enablement: workspaceDocumentId plumbed through so the pill can
+    // render an "Öppna styrdokument" navigation link in its hover card.
+    expect(polis!.workspaceDocumentId).toBe('wd-1')
+    expect(rutin!.workspaceDocumentId).toBe('wd-2')
+    expect(resolved?.workspaceDocumentId).toBe('wd-1')
   })
 
   it('appends a short id suffix on title collisions for disambiguation (Story 17.10, AC 21)', () => {

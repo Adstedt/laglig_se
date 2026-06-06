@@ -12,7 +12,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ExternalLink, Globe } from 'lucide-react'
+import { ArrowUpRight, ExternalLink, FileText, Globe } from 'lucide-react'
 import { track } from '@vercel/analytics'
 import { useCitationSources } from '@/lib/ai/citation-context'
 import { useChatDetailSafe } from '@/lib/ai/chat-detail-context'
@@ -95,6 +95,10 @@ export function CitationPillInline({
           }
         })()
       : null
+  // Workspace document sources carry a documentId so the pill can offer a
+  // "Öppna styrdokument" navigation CTA. Detect once and reuse below.
+  const workspaceDocId = source?.workspaceDocumentId ?? null
+  const isWorkspaceDocResolved = !!workspaceDocId
 
   const displayLabel = (() => {
     if (!label) return ''
@@ -200,7 +204,11 @@ export function CitationPillInline({
           onMouseLeave={handleLeave}
           onClick={handleClick}
           className={isActive ? 'ring-2 ring-primary bg-primary/10' : undefined}
-          {...(isWebSource ? { icon: <Globe className="h-3 w-3" /> } : {})}
+          {...(isWebSource
+            ? { icon: <Globe className="h-3 w-3" /> }
+            : isWorkspaceDocResolved
+              ? { icon: <FileText className="h-3 w-3" /> }
+              : {})}
         />
         <InlineCitationCardBody
           onMouseEnter={handleEnter}
@@ -232,6 +240,20 @@ export function CitationPillInline({
             >
               Visa i lagläsaren
               <ExternalLink className="h-3 w-3" />
+            </Link>
+          )}
+          {isWorkspaceDocResolved && workspaceDocId && (
+            <Link
+              href={`/workspace/styrdokument/${workspaceDocId}/edit`}
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline mt-2"
+              onClick={() => {
+                track('workspace_citation_clicked', {
+                  workspaceDocumentId: workspaceDocId,
+                })
+              }}
+            >
+              Öppna styrdokument
+              <ArrowUpRight className="h-3 w-3" />
             </Link>
           )}
           {isWebSource && source.url && (

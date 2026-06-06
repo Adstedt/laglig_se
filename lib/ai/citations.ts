@@ -23,6 +23,13 @@ export interface SourceInfo {
   anchorId: string | null
   /** External URL for web search sources (null/undefined for DB sources) */
   url?: string | null
+  /**
+   * Workspace document ID for styrdokument citations (set by
+   * search_workspace_documents / get_workspace_document tool extractors).
+   * When present, the citation pill renders an "Öppna styrdokument" CTA that
+   * navigates to `/workspace/styrdokument/{workspaceDocumentId}/edit`.
+   */
+  workspaceDocumentId?: string | null
 }
 
 /** Metadata shape attached to assistant messages via messageMetadata callback */
@@ -254,6 +261,8 @@ export function extractSourcesFromToolResult(
             slug: null,
             path: null,
             anchorId: null,
+            // Drives the "Öppna styrdokument" CTA on the citation pill.
+            workspaceDocumentId: item.documentId ?? null,
           })
         }
       }
