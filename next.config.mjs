@@ -147,13 +147,7 @@ const nextConfig = {
   //   - scripts/: one-off TS scripts run via `pnpm tsx scripts/...`.
   outputFileTracingExcludes: {
     // Global excludes — non-production directories that should never ship.
-    '*': [
-      'data/**',
-      'docs/**',
-      'tests/**',
-      '_prototype/**',
-      'scripts/**',
-    ],
+    '*': ['data/**', 'docs/**', 'tests/**', '_prototype/**', 'scripts/**'],
     // The two routes Vercel flagged + the cron family don't render PDFs;
     // Chromium (~64 MB) + puppeteer-core (~12 MB) are only legitimately
     // needed by /api/workspace/documents/*/export (the PDF export route)

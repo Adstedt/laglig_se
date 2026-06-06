@@ -12,11 +12,31 @@ const OUT = 'public/images/landing-v3'
 // that, shown fit-to-width on a ~390px phone, text stays readable (~10–12px).
 const TARGETS = [
   { id: 'cap-hero', file: 'hero', crop: { l: 0.0, t: 0.05, w: 0.47, h: 0.66 } },
-  { id: 'cap-efterlevnad', file: 'showcase-efterlevnad', crop: { l: 0.0, t: 0.06, w: 0.46, h: 0.5 } },
-  { id: 'cap-lagandringar', file: 'showcase-lagandringar', crop: { l: 0.09, t: 0.185, w: 0.5, h: 0.56 } },
-  { id: 'cap-uppgifter', file: 'showcase-uppgifter', crop: { l: 0.0, t: 0.085, w: 0.44, h: 0.9 } },
-  { id: 'cap-styrdokument', file: 'showcase-styrdokument', crop: { l: 0.0, t: 0.075, w: 0.46, h: 0.52 } },
-  { id: 'cap-kontroll', file: 'showcase-kontroll', crop: { l: 0.0, t: 0.075, w: 0.46, h: 0.46 } },
+  {
+    id: 'cap-efterlevnad',
+    file: 'showcase-efterlevnad',
+    crop: { l: 0.0, t: 0.06, w: 0.46, h: 0.5 },
+  },
+  {
+    id: 'cap-lagandringar',
+    file: 'showcase-lagandringar',
+    crop: { l: 0.09, t: 0.185, w: 0.5, h: 0.56 },
+  },
+  {
+    id: 'cap-uppgifter',
+    file: 'showcase-uppgifter',
+    crop: { l: 0.0, t: 0.085, w: 0.44, h: 0.9 },
+  },
+  {
+    id: 'cap-styrdokument',
+    file: 'showcase-styrdokument',
+    crop: { l: 0.0, t: 0.075, w: 0.46, h: 0.52 },
+  },
+  {
+    id: 'cap-kontroll',
+    file: 'showcase-kontroll',
+    crop: { l: 0.0, t: 0.075, w: 0.46, h: 0.46 },
+  },
 ]
 
 await mkdir(OUT, { recursive: true })
@@ -45,7 +65,9 @@ await page.evaluate(() => {
 })
 
 await page.locator('#cap-hero').waitFor({ state: 'visible', timeout: 30000 })
-await page.locator('#cap-kontroll').waitFor({ state: 'visible', timeout: 30000 })
+await page
+  .locator('#cap-kontroll')
+  .waitFor({ state: 'visible', timeout: 30000 })
 await page.waitForTimeout(4000)
 
 for (const t of TARGETS) {
@@ -63,7 +85,9 @@ for (const t of TARGETS) {
     .extract({ left, top, width, height })
     .webp({ quality: 86 })
     .toFile(`${OUT}/${t.file}.webp`)
-  console.log(`✓ ${t.file}.webp  crop ${width}x${height}  (src ${meta.width}x${meta.height})`)
+  console.log(
+    `✓ ${t.file}.webp  crop ${width}x${height}  (src ${meta.width}x${meta.height})`
+  )
 }
 
 await browser.close()
