@@ -32,7 +32,6 @@ import {
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
 
-const CRON_SECRET = process.env.CRON_SECRET
 const BATCH_LIMIT = 50 // tune via observation; matches process-chunks pattern
 
 interface SweepStats {
@@ -47,10 +46,14 @@ export async function GET(request: Request) {
 
   // Auth — production-only enforcement (matches cleanup-invitations + the
   // rest of the unit-tested cron routes). Dev + test environments skip the
-  // Bearer check so the cron is easy to trigger manually.
+  // Bearer check so the cron is easy to trigger manually. Read CRON_SECRET
+  // at request time (NOT module-load time) so unit tests that toggle the
+  // env var actually take effect — and so a missing CRON_SECRET in any
+  // environment is detected per-request rather than frozen at boot.
   const authHeader = request.headers.get('authorization')
-  if (process.env.NODE_ENV === 'production' && CRON_SECRET) {
-    if (authHeader !== `Bearer ${CRON_SECRET}`) {
+  const cronSecret = process.env.CRON_SECRET
+  if (process.env.NODE_ENV === 'production' && cronSecret) {
+    if (authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
   }
