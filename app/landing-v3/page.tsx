@@ -1,81 +1,8 @@
-import Link from 'next/link'
-import { PricingSection } from '@/components/features/landing/pricing-section'
-import { BrowsePagesPrefetcher } from '@/components/features/landing/browse-pages-prefetcher'
+import { redirect } from 'next/navigation'
 
-import { NavbarV3 } from '@/components/features/landing-v3/navbar-v3'
-import { FooterV3 } from '@/components/features/landing-v3/footer-v3'
-import { ForceLightTheme } from '@/components/features/landing-v2/force-light-theme'
-
-import { HeroV3 } from '@/components/features/landing-v3/hero-v3'
-import { WhySectionGraph as WhySection } from '@/components/features/landing-v3/why-section-graph'
-import { FeatureShowcase } from '@/components/features/landing-v3/feature-showcase'
-import { ScaleSection } from '@/components/features/landing-v3/scale-section'
-import { KnowledgeGraphSection } from '@/components/features/landing-v3/knowledge-graph-section'
-import { AiComparisonSection } from '@/components/features/landing-v3/ai-comparison-section'
-import { AiSectionBackdrop } from '@/components/features/landing-v3/ai-section-backdrop'
-import { OpenDatabaseV3 } from '@/components/features/landing-v3/open-database-v3'
-import { InfrastructureSection } from '@/components/features/landing-v3/infrastructure-section'
-import { ByraerSection } from '@/components/features/landing-v3/byraer-section'
-import { TryNowSection } from '@/components/features/landing-v3/try-now-section'
-import { FaqV3 } from '@/components/features/landing-v3/faq-v3'
-import { CtaV3 } from '@/components/features/landing-v3/cta-v3'
-
-export const metadata = {
-  title: 'Laglig.se – operativsystemet för compliance',
-  description:
-    'Laglig.se är compliance-plattformen för svenska företag: håll koll på lagar och regler, bevaka lagändringar, samla bevis och visa er efterlevnad. Byggt för AI-eran.',
-  // Keep noindex until landing-v3 is promoted to the live homepage.
-  robots: { index: false, follow: false },
-}
-
+// /landing-v3 was promoted to / on 2026-06-06. This route now permanently
+// redirects to the homepage so any external links / bookmarks / cached search
+// results pointing at /landing-v3 still land on the live page.
 export default function LandingV3Page() {
-  return (
-    <>
-      <ForceLightTheme />
-
-      <div className="sticky top-0 z-[60] w-full border-b border-amber-200 bg-amber-100/95 px-4 py-1.5 text-center text-xs font-medium text-amber-900 backdrop-blur">
-        Wireframe v3 · Fortnox-for-compliance positioning · structure + copy
-        only, polish not invested · live page is at{' '}
-        <Link href="/" className="underline">
-          /
-        </Link>{' '}
-        · patch prototype is at{' '}
-        <Link href="/landing-v2" className="underline">
-          /landing-v2
-        </Link>
-      </div>
-
-      <NavbarV3 />
-      <main>
-        <HeroV3 />
-        {/* Problem → Solution: the scale/"vem har koll" problem hands straight
-            into the product showcase (the Breadth text cards folded into the
-            showcase tabs, removing the duplication). */}
-        <WhySection />
-        <FeatureShowcase />
-        {/* AI chapter — comparison (the claim) + knowledge graph (the proof),
-            one continuous dark banner over a single faint graph texture */}
-        <div
-          id="ai"
-          className="relative isolate scroll-mt-16 overflow-hidden bg-foreground text-background"
-        >
-          <AiSectionBackdrop />
-          <div className="pointer-events-none absolute -top-24 right-0 h-96 w-96 rounded-full bg-amber-400/10 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-0 left-0 h-96 w-96 rounded-full bg-background/[0.04] blur-3xl" />
-          <AiComparisonSection />
-          <KnowledgeGraphSection />
-        </div>
-        <ScaleSection />
-        <OpenDatabaseV3 />
-        <InfrastructureSection />
-        <ByraerSection />
-        <TryNowSection />
-        <PricingSection />
-        <FaqV3 />
-        <CtaV3 />
-      </main>
-      <FooterV3 />
-      <BrowsePagesPrefetcher />
-    </>
-  )
+  redirect('/')
 }
