@@ -24,9 +24,14 @@ import { CtaV3 } from '@/components/features/landing-v3/cta-v3'
 // Compliance / Faq / Cta from `components/features/landing/`). The v2 patch
 // prototype remains archived at /landing-v2 for reference.
 export const metadata = {
-  title: 'Laglig.se – operativsystemet för compliance',
+  // `absolute` bypasses the root layout's `'%s | Laglig.se'` title template
+  // so we don't get the duplicated "Laglig.se ... | Laglig.se" suffix in SERPs.
+  title: {
+    absolute: 'Laglig.se – Operativsystemet för compliance',
+  },
+  // ~138 chars — full message lands in Google SERPs (truncation cap ~155).
   description:
-    'Laglig.se är compliance-plattformen för svenska företag: håll koll på lagar och regler, bevaka lagändringar, samla bevis och visa er efterlevnad. Byggt för AI-eran.',
+    'Compliance-plattformen för svenska företag — bevaka lagändringar, samla bevis och visa er efterlevnad. Byggt för AI-eran.',
 }
 
 export default function Home() {
