@@ -57,7 +57,7 @@ export function ChangeAssessmentModal({
           className={cn(
             'fixed top-[50%] left-[50%] z-50',
             'translate-x-[-50%] translate-y-[-50%]',
-            'w-full max-h-[90vh] max-w-[840px] p-0 gap-0',
+            'w-full max-h-[90vh] max-w-[1050px] p-0 gap-0',
             'bg-background border shadow-lg rounded-lg overflow-hidden',
             'focus:outline-none focus-visible:outline-none',
             'max-md:max-w-[95vw]',
