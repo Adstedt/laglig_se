@@ -335,6 +335,58 @@ describe('extractSourcesFromToolResult', () => {
     expect(sec2a!.path).toBe('kap3.§2a')
   })
 
+  it('extracts from get_workspace_document with workspaceDocumentId + draft citationKey (smoke fix)', () => {
+    const result = {
+      data: {
+        documentId: 'wd-42',
+        title: 'Semesterpolicy',
+        content: 'Denna policy reglerar semesterns intjänande och uttag.',
+        draft: { versionNumber: 5 },
+      },
+    }
+    const sources = extractSourcesFromToolResult(
+      'get_workspace_document',
+      result
+    )
+    // Bare title — drives [Källa: Semesterpolicy].
+    expect(sources['Semesterpolicy']).toBeDefined()
+    expect(sources['Semesterpolicy']!.workspaceDocumentId).toBe('wd-42')
+    expect(sources['Semesterpolicy']!.snippet).toContain('semester')
+    // Draft citationKey — drives [Utkast: Semesterpolicy (utkast v5)].
+    expect(sources['Semesterpolicy (utkast v5)']).toBeDefined()
+    expect(sources['Semesterpolicy (utkast v5)']!.workspaceDocumentId).toBe(
+      'wd-42'
+    )
+  })
+
+  it('extracts from list_workspace_documents with workspaceDocumentId per row (smoke fix)', () => {
+    const result = {
+      data: [
+        {
+          documentId: 'wd-1',
+          title: 'Brandskyddsrutin',
+          currentDraftVersionNumber: null,
+        },
+        {
+          documentId: 'wd-2',
+          title: 'Dataskyddspolicy',
+          currentDraftVersionNumber: 3,
+        },
+      ],
+    }
+    const sources = extractSourcesFromToolResult(
+      'list_workspace_documents',
+      result
+    )
+    expect(sources['Brandskyddsrutin']!.workspaceDocumentId).toBe('wd-1')
+    expect(sources['Dataskyddspolicy']!.workspaceDocumentId).toBe('wd-2')
+    // Draft citationKey only emitted when currentDraftVersionNumber is set.
+    expect(sources['Dataskyddspolicy (utkast v3)']!.workspaceDocumentId).toBe(
+      'wd-2'
+    )
+    expect(sources['Brandskyddsrutin (utkast v1)']).toBeUndefined()
+  })
+
   it('extracts from get_change_details', () => {
     const result = {
       data: {

@@ -94,3 +94,7 @@ tests/e2e-smoke-screenshots/
 
 # npm lockfile (project uses pnpm)
 package-lock.json
+
+# UAT testing artifacts (chrome-devtools agents)
+.uat-screenshots/
+.audit-screenshots/

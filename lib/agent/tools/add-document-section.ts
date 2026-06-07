@@ -143,7 +143,7 @@ export function createAddDocumentSectionTool(
 
 Använd när användaren vill UTÖKA ett dokument med en sektion som inte finns ännu — t.ex. "lägg till ett Syfte-avsnitt" eller "lägg till en ansvarsfördelning". För att ÄNDRA en befintlig sektion: använd istället \`update_document\`. För ett HELT NYTT dokument: använd istället \`draft_styrdokument\`.
 
-Endast DRAFT eller IN_REVIEW kan ändras. Godkända (APPROVED), upphävda eller arkiverade dokument måste först förgrenas till en ny version av användaren (createDraftFromApproved) innan agenten kan föreslå tillägg.
+Funkar mot DRAFT, IN_REVIEW samt APPROVED utan pågående utkast — i sista fallet skapas utkastet automatiskt när användaren godkänner förslaget (godkännandekortet visar "Skapar nytt utkast v{N+1}"). Upphävda eller arkiverade dokument kan inte ändras.
 
 Skicka rubriktexten i \`new_section_heading\`, rubriknivån (1–6) i \`new_section_level\`, och den nya sektionens BODY i \`new_section_content\` (Tiptap-JSON — array av block-noder eller ett doc-node). Skicka INTE med rubriken igen i body:n — den genereras automatiskt. Ange positionen i \`position\`: { at: "start" | "end" } eller { at: "after" | "before", heading: "..." } (heading matchas case-insensitivt).
 

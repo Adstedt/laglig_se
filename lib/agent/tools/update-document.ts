@@ -130,7 +130,7 @@ export function createUpdateDocumentTool(
 
 Använd när användaren vill uppdatera en avsnittstext i ett dokument som redan finns — t.ex. "uppdatera Syfte-avsnittet" eller "skärp ansvarsdelen i policyn". För ett HELT NYTT dokument: använd istället \`draft_styrdokument\`.
 
-Endast DRAFT eller IN_REVIEW kan ändras. Godkända (APPROVED), upphävda eller arkiverade dokument måste först förgrenas till en ny version av användaren (createDraftFromApproved) innan agenten kan föreslå en redigering.
+Funkar mot DRAFT, IN_REVIEW samt APPROVED utan pågående utkast — i sista fallet skapas utkastet automatiskt när användaren godkänner förslaget (godkännandekortet visar "Skapar nytt utkast v{N+1}"). Upphävda eller arkiverade dokument kan inte ändras.
 
 Skicka rubriken som ska redigeras i \`section_heading\` (matchas case-insensitivt) och den nya sektions-BODY:n i \`updated_content\` (Tiptap-JSON — antingen en array av block-noder eller ett doc-node). Rubriken bevaras automatiskt; skicka INTE med rubriken igen.
 

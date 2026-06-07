@@ -266,6 +266,95 @@ export function extractSourcesFromToolResult(
           })
         }
       }
+    } else if (toolName === 'get_workspace_document') {
+      // Story 17.10 + smoke fix: when the agent reads a doc directly (instead
+      // of via search), the citation pill should still resolve so the
+      // "Öppna styrdokument" CTA renders. Tool returns a single doc shape
+      // with `documentId` + `title` at the top level + nested approved/draft
+      // tier snapshots. Story 17.18 SF-2 draft citationKey shape requires
+      // BOTH the bare title AND the "title (utkast vN)" form to be in the
+      // source map so [Källa: title] AND [Utkast: title (utkast vN)] both
+      // resolve from the same agent turn.
+      const data = output.data as
+        | {
+            documentId?: string
+            title?: string
+            content?: string
+            draft?: { versionNumber?: number } | null
+          }
+        | undefined
+
+      if (data?.documentId && data?.title) {
+        const snippet =
+          typeof data.content === 'string'
+            ? data.content.slice(0, 200).replace(/\s+/g, ' ').trim() || null
+            : null
+
+        // Canonical/bare title — drives [Källa: <title>] resolution.
+        set(data.title, {
+          documentNumber: data.title,
+          title: data.title,
+          snippet,
+          slug: null,
+          path: null,
+          anchorId: null,
+          workspaceDocumentId: data.documentId,
+        })
+
+        // Draft-tier citationKey — drives [Utkast: <title> (utkast vN)]
+        // resolution. Mirrors Story 17.18 SF-2 shape used by search.
+        if (typeof data.draft?.versionNumber === 'number') {
+          const draftKey = `${data.title} (utkast v${data.draft.versionNumber})`
+          set(draftKey, {
+            documentNumber: draftKey,
+            title: data.title,
+            snippet,
+            slug: null,
+            path: null,
+            anchorId: null,
+            workspaceDocumentId: data.documentId,
+          })
+        }
+      }
+    } else if (toolName === 'list_workspace_documents') {
+      // Story 17.10 + smoke fix: when the agent lists docs (for triage or
+      // overview), each entry should resolve as a citation source so any
+      // follow-up [Källa: <title>] or [Utkast: <title> (utkast vN)] pill
+      // gets the workspaceDocumentId + renders the navigation CTA.
+      const data = output.data as
+        | Array<{
+            documentId?: string
+            title?: string
+            currentDraftVersionNumber?: number | null
+          }>
+        | undefined
+
+      if (Array.isArray(data)) {
+        for (const item of data) {
+          if (!item.documentId || !item.title) continue
+          set(item.title, {
+            documentNumber: item.title,
+            title: item.title,
+            snippet: null,
+            slug: null,
+            path: null,
+            anchorId: null,
+            workspaceDocumentId: item.documentId,
+          })
+          if (typeof item.currentDraftVersionNumber === 'number') {
+            const draftKey = `${item.title} (utkast v${item.currentDraftVersionNumber})`
+            set(draftKey, {
+              documentNumber: draftKey,
+              title: item.title,
+              snippet: null,
+              slug: null,
+              path: null,
+              anchorId: null,
+              workspaceDocumentId: item.documentId,
+            })
+          }
+        }
+      }
     } else if (toolName === 'get_change_details') {
       const data = output.data as
         | {
