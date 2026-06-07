@@ -418,9 +418,12 @@ describe('discardDraft — Story 17.16 AC 7', () => {
     current_draft_version_id: 'v_draft',
     draft_status: 'DRAFT' as const,
     workspace_id: 'ws_1',
+    // UAT smoke fix (2026-06-07): discardDraft now reads the approved
+    // version's number so it can roll current_version_number back.
+    current_approved_version: { version_number: 1 },
   }
 
-  it('happy path: pointers cleared, alias NOT touched (no-op invariant)', async () => {
+  it('happy path: pointers cleared, alias NOT touched, current_version_number rolled back to approved (UAT smoke fix)', async () => {
     fn(prisma.workspaceDocument.findFirst).mockResolvedValue(DUAL_STATE_DOC)
 
     const result = await discardDraft('d_1')
@@ -431,6 +434,10 @@ describe('discardDraft — Story 17.16 AC 7', () => {
     expect(docUpdate.data).toEqual({
       current_draft_version_id: null,
       draft_status: null,
+      // Roll back to approved version's number. Without this, a doc that was
+      // "Godkänd v1 · Utkast v2 pågår" would render as "Godkänd v2" post-
+      // discard because the draft creation bumped current_version_number to 2.
+      current_version_number: 1,
     })
     // CRITICAL: alias is NOT in the update payload — it was already pinned to
     // the approved version throughout the draft window (per AC 4 + AC 5).
@@ -470,11 +477,33 @@ describe('discardDraft — Story 17.16 AC 7', () => {
     fn(prisma.workspaceDocument.findFirst).mockResolvedValue({
       ...DUAL_STATE_DOC,
       current_approved_version_id: null, // never-approved DRAFT — can't discard
+      current_approved_version: null,
     })
     const result = await discardDraft('d_1')
     expect(result.success).toBe(false)
     expect(result.error).toMatch(/Arkivera dokument/i)
     expect(prisma.workspaceDocument.update).not.toHaveBeenCalled()
+  })
+
+  it('UAT smoke fix: arbitrary version numbers — Godkänd v5 + Utkast v6 discarded → rolls back to v5 (not v6)', async () => {
+    // Owner UAT 2026-06-07 (PR #69) observed: discarding "Godkänd v1 · Utkast
+    // v2 pågår" left the composite badge reading "Godkänd v2" — wrong. Root
+    // cause: createDraftFromApproved bumps current_version_number to N+1 when
+    // the draft is created, and discardDraft was not rolling it back. This
+    // test asserts the rollback against arbitrary v-number pairs to prove the
+    // fix isn't coincidentally hardcoded.
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue({
+      ...DUAL_STATE_DOC,
+      current_approved_version: { version_number: 5 },
+    })
+
+    const result = await discardDraft('d_1')
+
+    expect(result.success).toBe(true)
+    const docUpdate = fn(prisma.workspaceDocument.update).mock.calls[0]![0]
+    expect(docUpdate.data.current_version_number).toBe(5)
+    expect(docUpdate.data.current_draft_version_id).toBeNull()
+    expect(docUpdate.data.draft_status).toBeNull()
   })
 
   it('refuses when permission denied (tasks:edit)', async () => {

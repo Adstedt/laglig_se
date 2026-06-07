@@ -1585,6 +1585,12 @@ export async function discardDraft(documentId: string): Promise<ActionResult> {
             current_draft_version_id: true,
             draft_status: true,
             workspace_id: true,
+            // UAT smoke fix (2026-06-07): roll current_version_number back to
+            // the approved version's number so the composite badge renders
+            // "Godkänd v{N}" — not "Godkänd v{N+1}" — after discard. The draft
+            // creation path bumped current_version_number to N+1; without
+            // resetting it, the badge inherits the stale draft number.
+            current_approved_version: { select: { version_number: true } },
           },
         })
 
@@ -1599,7 +1605,10 @@ export async function discardDraft(documentId: string): Promise<ActionResult> {
           }
         }
 
-        if (document.current_approved_version_id == null) {
+        if (
+          document.current_approved_version_id == null ||
+          !document.current_approved_version
+        ) {
           return {
             success: false,
             error:
@@ -1609,9 +1618,12 @@ export async function discardDraft(documentId: string): Promise<ActionResult> {
 
         const discardedDraftVersionId = document.current_draft_version_id
         const discardedDraftStatus = document.draft_status
+        const approvedVersionNumber =
+          document.current_approved_version.version_number
 
         await prisma.$transaction(async (tx) => {
-          // Clear the draft pointers. The alias is already pinned to the
+          // Clear the draft pointers + roll current_version_number back to the
+          // approved version's number. The alias is already pinned to the
           // approved version (frozen throughout the draft window per AC 4 +
           // AC 5) — no alias change needed.
           await tx.workspaceDocument.update({
@@ -1619,6 +1631,7 @@ export async function discardDraft(documentId: string): Promise<ActionResult> {
             data: {
               current_draft_version_id: null,
               draft_status: null,
+              current_version_number: approvedVersionNumber,
             },
           })
 
