@@ -1089,6 +1089,15 @@ function CollapsedToolGroup({
     )
   }
 
+  // Keep the collapsed summary to a single line: show the first few runs as
+  // chips and fold the rest into a "+N till" affordance that expands the group.
+  // The chevron still reveals every per-call row, so nothing is lost.
+  const MAX_VISIBLE_RUNS = 4
+  const visibleRuns = runs.slice(0, MAX_VISIBLE_RUNS)
+  const hiddenRunCount = runs
+    .slice(MAX_VISIBLE_RUNS)
+    .reduce((n, r) => n + r.count, 0)
+
   return (
     <div className="space-y-0">
       {/* Headless auto-openers for items with sidebarHint === 'open'. These
@@ -1118,65 +1127,77 @@ function CollapsedToolGroup({
           className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0"
         />
 
-        <div className="flex items-center gap-x-1.5 gap-y-0 flex-1 min-w-0 flex-wrap text-left">
-          {runs.flatMap((run, i) => {
-            const cfg = TOOL_CONFIG[run.toolName]
-            // Story 19.4 follow-up (1a): a run of proposal tool calls uses the
-            // proposal label ("Föreslog kravpunkt") rather than the done label.
-            const isProposalRun = run.outputs.some(
-              (o) => extractPendingActionId(o) !== null
-            )
-            const baseLabel =
-              (isProposalRun && cfg?.proposalLabel) ||
-              cfg?.doneLabel ||
-              run.toolName
-            const label = baseLabel + (run.count > 1 ? ` (${run.count})` : '')
-            const clickable = isRunClickable(run)
-            const detailId = getRunDetailId(run)
-            const isActive =
-              clickable && chatDetail?.activeDetail?.id === detailId
-            const doneLabel =
-              TOOL_CONFIG[run.toolName]?.doneLabel ?? run.toolName
+        <div className="flex items-center gap-x-1.5 flex-1 min-w-0 text-left">
+          <div className="flex items-center gap-x-1.5 flex-1 min-w-0 flex-nowrap overflow-hidden [mask-image:linear-gradient(to_right,black_calc(100%-1.5rem),transparent)]">
+            {visibleRuns.flatMap((run, i) => {
+              const cfg = TOOL_CONFIG[run.toolName]
+              // Story 19.4 follow-up (1a): a run of proposal tool calls uses the
+              // proposal label ("Föreslog kravpunkt") rather than the done label.
+              const isProposalRun = run.outputs.some(
+                (o) => extractPendingActionId(o) !== null
+              )
+              const baseLabel =
+                (isProposalRun && cfg?.proposalLabel) ||
+                cfg?.doneLabel ||
+                run.toolName
+              const label = baseLabel + (run.count > 1 ? ` (${run.count})` : '')
+              const clickable = isRunClickable(run)
+              const detailId = getRunDetailId(run)
+              const isActive =
+                clickable && chatDetail?.activeDetail?.id === detailId
+              const doneLabel =
+                TOOL_CONFIG[run.toolName]?.doneLabel ?? run.toolName
 
-            const nodes: React.ReactNode[] = []
-            if (i > 0) {
-              nodes.push(
-                <span
-                  key={`sep-${run.firstIndex}-${run.toolName}`}
-                  className="text-muted-foreground/40 text-xs select-none"
-                  aria-hidden="true"
-                >
-                  ·
-                </span>
-              )
-            }
-            if (clickable) {
-              nodes.push(
-                <button
-                  key={`run-${run.firstIndex}-${run.toolName}`}
-                  type="button"
-                  onClick={() => handleRunClick(run)}
-                  aria-label={`Visa resultat: ${doneLabel}`}
-                  className={cn(
-                    'text-xs font-medium text-muted-foreground hover:text-foreground transition-colors rounded-sm -mx-0.5 px-0.5',
-                    isActive && 'text-foreground bg-primary/10'
-                  )}
-                >
-                  {label}
-                </button>
-              )
-            } else {
-              nodes.push(
-                <span
-                  key={`run-${run.firstIndex}-${run.toolName}`}
-                  className="text-xs font-medium text-muted-foreground"
-                >
-                  {label}
-                </span>
-              )
-            }
-            return nodes
-          })}
+              const nodes: React.ReactNode[] = []
+              if (i > 0) {
+                nodes.push(
+                  <span
+                    key={`sep-${run.firstIndex}-${run.toolName}`}
+                    className="text-muted-foreground/40 text-xs select-none shrink-0"
+                    aria-hidden="true"
+                  >
+                    ·
+                  </span>
+                )
+              }
+              if (clickable) {
+                nodes.push(
+                  <button
+                    key={`run-${run.firstIndex}-${run.toolName}`}
+                    type="button"
+                    onClick={() => handleRunClick(run)}
+                    aria-label={`Visa resultat: ${doneLabel}`}
+                    className={cn(
+                      'text-xs font-medium text-muted-foreground hover:text-foreground transition-colors rounded-sm -mx-0.5 px-0.5 shrink-0 whitespace-nowrap',
+                      isActive && 'text-foreground bg-primary/10'
+                    )}
+                  >
+                    {label}
+                  </button>
+                )
+              } else {
+                nodes.push(
+                  <span
+                    key={`run-${run.firstIndex}-${run.toolName}`}
+                    className="text-xs font-medium text-muted-foreground shrink-0 whitespace-nowrap"
+                  >
+                    {label}
+                  </span>
+                )
+              }
+              return nodes
+            })}
+          </div>
+
+          {hiddenRunCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setIsExpanded(true)}
+              className="shrink-0 whitespace-nowrap text-xs font-medium text-muted-foreground/70 hover:text-foreground transition-colors rounded-sm px-0.5"
+            >
+              +{hiddenRunCount} till
+            </button>
+          )}
         </div>
 
         <button
@@ -1437,7 +1458,7 @@ function ToolCallRow({
         <Icon className="h-3 w-3 text-muted-foreground shrink-0" />
         <span
           className={cn(
-            'text-xs',
+            'text-xs shrink-0 whitespace-nowrap',
             isDone
               ? 'text-muted-foreground'
               : isRunning
@@ -1448,7 +1469,7 @@ function ToolCallRow({
           {label}
         </span>
         {detail && (
-          <span className="text-xs text-muted-foreground/60 truncate min-w-0">
+          <span className="text-xs text-muted-foreground/60 truncate min-w-0 flex-1">
             — {detail}
           </span>
         )}
@@ -1457,7 +1478,7 @@ function ToolCallRow({
   }
 
   const rowClasses = cn(
-    'flex items-center gap-1.5 rounded-md min-w-0 overflow-hidden transition-colors',
+    'flex items-center gap-1.5 rounded-md w-full min-w-0 overflow-hidden transition-colors',
     compact
       ? 'py-0.5 px-1.5 hover:bg-muted/40'
       : cn(
@@ -1469,7 +1490,7 @@ function ToolCallRow({
   )
 
   return (
-    <div className="space-y-1 ml-px">
+    <div className="space-y-1 ml-px min-w-0">
       {isClickable ? (
         <button
           type="button"
