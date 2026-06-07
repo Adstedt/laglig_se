@@ -6,8 +6,13 @@
  */
 
 import { useState, useEffect } from 'react'
-import { FileWarning, ChevronRight, Sparkles } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import {
+  BookOpen,
+  ChevronRight,
+  ExternalLink,
+  FileText,
+  FileWarning,
+} from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -24,6 +29,18 @@ const CHANGE_TYPE_LABELS: Record<ChangeType, string> = {
   NEW_LAW: 'Ny lag',
   METADATA_UPDATE: 'Metadata',
   NEW_RULING: 'Nytt avgörande',
+}
+
+/**
+ * Distinguish laws (SFS) from föreskrifter (AFS, BFS, NFS, etc.) via the
+ * documentNumber prefix. BookOpen matches the icon convention used in
+ * components/features/changes/law-list-tabs-strip.tsx for laws; FileText is
+ * the generic document fallback for everything else.
+ */
+function DocumentIcon({ documentNumber }: { documentNumber: string }) {
+  const isLaw = documentNumber.toUpperCase().startsWith('SFS')
+  const Icon = isLaw ? BookOpen : FileText
+  return <Icon className="h-4 w-4" />
 }
 
 interface ChangePickerProps {
@@ -57,26 +74,30 @@ export function ChangePicker({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[520px] p-0 gap-0 overflow-hidden">
+      <DialogContent className="max-w-[520px] gap-0 overflow-hidden p-0">
         <DialogHeader className="px-6 pt-6 pb-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <DialogTitle className="text-lg font-semibold tracking-tight">
-                Välj en ändring att granska
-              </DialogTitle>
-              <div className="mt-1.5 flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                <p className="text-[13px] text-muted-foreground">
-                  Vi hjälper dig tolka ändringen och bedöma dess påverkan.
-                </p>
-              </div>
-            </div>
+          <DialogTitle className="text-lg font-semibold tracking-tight">
+            Välj en ändring att granska
+          </DialogTitle>
+          {/* Count folded inline with the subtitle so the top-right corner
+              stays clean (only the close × from DialogContent lives there). */}
+          <p className="mt-1.5 text-[13px] text-muted-foreground">
+            Vi hjälper dig tolka ändringen och bedöma dess påverkan
             {itemCount > 0 && (
-              <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground tabular-nums">
-                {itemCount} {itemCount === 1 ? 'ändring' : 'ändringar'}
-              </span>
+              <>
+                <span
+                  className="mx-1.5 text-muted-foreground/40"
+                  aria-hidden="true"
+                >
+                  ·
+                </span>
+                <span className="tabular-nums">
+                  {itemCount} {itemCount === 1 ? 'ändring' : 'ändringar'}
+                </span>
+              </>
             )}
-          </div>
+            .
+          </p>
         </DialogHeader>
 
         <div className="max-h-[440px] overflow-y-auto border-t">
@@ -100,42 +121,81 @@ export function ChangePicker({
               ))}
             </div>
           ) : changes && changes.length > 0 ? (
-            changes.map((change) => (
-              <button
-                key={`${change.id}-${change.listId}`}
-                onClick={() => {
-                  onSelect(change)
-                  onOpenChange(false)
-                }}
-                className="group flex w-full items-center gap-3 border-b px-6 py-4 text-left transition-colors last:border-b-0 hover:bg-accent/60 focus-visible:bg-accent/60 focus-visible:outline-none"
-              >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-100 bg-amber-50 text-amber-600 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-400">
-                  <FileWarning className="h-4 w-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    {change.amendmentSfs
-                      ? `${change.amendmentSfs} — Ändring i ${change.documentTitle}`
-                      : change.documentTitle}
-                  </p>
-                  <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <span className="tabular-nums">
-                      {change.documentNumber}
-                    </span>
-                    <span className="text-muted-foreground/40">·</span>
-                    <Badge
-                      variant="secondary"
-                      className="px-1.5 py-0 text-[10px] font-normal"
-                    >
-                      {CHANGE_TYPE_LABELS[change.changeType]}
-                    </Badge>
-                    <span className="text-muted-foreground/40">·</span>
-                    <span className="truncate">{change.listName}</span>
+            changes.map((change) => {
+              const select = () => {
+                onSelect(change)
+                onOpenChange(false)
+              }
+              return (
+                // Using a div with role=button (instead of a real <button>)
+                // because the row contains a nested <a> (the list-name link),
+                // which is invalid HTML inside <button>. Keyboard activation
+                // is preserved via the Enter/Space handler.
+                <div
+                  key={`${change.id}-${change.listId}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={select}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      select()
+                    }
+                  }}
+                  className="group flex w-full cursor-pointer items-center gap-3 border-b px-6 py-4 text-left transition-colors last:border-b-0 hover:bg-accent/60 focus-visible:bg-accent/60 focus-visible:outline-none"
+                >
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-100 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-400">
+                    <DocumentIcon documentNumber={change.documentNumber} />
                   </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">
+                      {change.amendmentSfs
+                        ? `${change.amendmentSfs} — Ändring i ${change.documentTitle}`
+                        : change.documentTitle}
+                    </p>
+                    {/* Meta row uses uniform plain-text styling so no element
+                        creates a vertical jump. The list-name is a real link
+                        that opens the specific laglista in a new tab; the
+                        document-number + change-type stay as plain spans. */}
+                    <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <span className="tabular-nums">
+                        {change.documentNumber}
+                      </span>
+                      <span
+                        className="text-muted-foreground/40"
+                        aria-hidden="true"
+                      >
+                        ·
+                      </span>
+                      <span>{CHANGE_TYPE_LABELS[change.changeType]}</span>
+                      <span
+                        className="text-muted-foreground/40"
+                        aria-hidden="true"
+                      >
+                        ·
+                      </span>
+                      <a
+                        href={`/laglistor?list=${change.listId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-0.5 truncate underline-offset-2 hover:text-foreground hover:underline focus-visible:text-foreground focus-visible:underline focus-visible:outline-none"
+                      >
+                        {change.listName}
+                        <ExternalLink
+                          className="h-3 w-3 shrink-0 opacity-60"
+                          aria-hidden="true"
+                        />
+                      </a>
+                    </div>
+                  </div>
+                  <ChevronRight
+                    className="h-4 w-4 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-muted-foreground"
+                    aria-hidden="true"
+                  />
                 </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-muted-foreground" />
-              </button>
-            ))
+              )
+            })
           ) : (
             <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
               <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
