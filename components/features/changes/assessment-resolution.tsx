@@ -9,6 +9,7 @@
  */
 
 import { Check, Loader2, Pencil, ShieldCheck, Sparkles } from 'lucide-react'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -171,7 +172,16 @@ export function AssessmentResolution({
             {onClose && (
               <Button
                 size="sm"
-                onClick={onClose}
+                onClick={() => {
+                  // Toast fires before close so it's visible by the time the
+                  // modal's 200ms fade-out completes — bridges the gap
+                  // between "in-modal confirmation" and "back on dashboard
+                  // with nothing to acknowledge the save."
+                  toast.success('Bedömning sparad', {
+                    description: 'Lagändringen är hanterad.',
+                  })
+                  onClose()
+                }}
                 className="h-8 gap-1.5 rounded-md"
               >
                 <Check className="h-3.5 w-3.5" />

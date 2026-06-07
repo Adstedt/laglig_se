@@ -16,6 +16,7 @@ import {
   Calendar,
   Info,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -259,7 +260,14 @@ function CompletedState({
           {onClose && (
             <Button
               size="sm"
-              onClick={onClose}
+              onClick={() => {
+                // Mirrors assessment-resolution.tsx — toast bridges the
+                // dismiss → dashboard gap with a persistent confirmation.
+                toast.success('Bedömning sparad', {
+                  description: 'Lagändringen är hanterad.',
+                })
+                onClose()
+              }}
               className="h-8 gap-1.5 rounded-md"
             >
               <Check className="h-3.5 w-3.5" />
