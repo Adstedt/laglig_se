@@ -74,29 +74,25 @@ export function ChangePicker({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[520px] gap-0 overflow-hidden p-0">
-        <DialogHeader className="px-6 pt-6 pb-4">
-          <DialogTitle className="text-lg font-semibold tracking-tight">
-            Välj en ändring att granska
-          </DialogTitle>
-          {/* Count folded inline with the subtitle so the top-right corner
-              stays clean (only the close × from DialogContent lives there). */}
-          <p className="mt-1.5 text-[13px] text-muted-foreground">
-            Vi hjälper dig tolka ändringen och bedöma dess påverkan
+      <DialogContent className="max-w-[624px] gap-0 overflow-hidden p-0">
+        {/* pr-12 reserves room on the title row for the close × that
+            DialogContent absolutely-positions at top-right. */}
+        <DialogHeader className="px-6 pt-6 pr-12 pb-4">
+          <div className="flex items-baseline justify-between gap-3">
+            <DialogTitle className="text-lg font-semibold tracking-tight">
+              Välj en ändring att granska
+            </DialogTitle>
+            {/* Count sits on the title row, baseline-aligned, as plain muted
+                text — no pill chrome, no separator, no awkward mid-sentence
+                interruption. Reads like a section count (e.g. "Files (12)"). */}
             {itemCount > 0 && (
-              <>
-                <span
-                  className="mx-1.5 text-muted-foreground/40"
-                  aria-hidden="true"
-                >
-                  ·
-                </span>
-                <span className="tabular-nums">
-                  {itemCount} {itemCount === 1 ? 'ändring' : 'ändringar'}
-                </span>
-              </>
+              <span className="shrink-0 text-xs font-medium text-muted-foreground tabular-nums">
+                {itemCount} {itemCount === 1 ? 'ändring' : 'ändringar'}
+              </span>
             )}
-            .
+          </div>
+          <p className="mt-1.5 text-[13px] text-muted-foreground">
+            Vi hjälper dig tolka ändringen och bedöma dess påverkan.
           </p>
         </DialogHeader>
 
