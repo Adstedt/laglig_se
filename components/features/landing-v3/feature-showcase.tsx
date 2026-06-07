@@ -240,7 +240,7 @@ const CARD_INFO: Record<SurfaceId, { title: string; desc: string }> = {
     desc: 'När en regel ändras läser AI:n ändringen mot er verksamhet och föreslår vad ni behöver göra.',
   },
   uppgifter: {
-    title: 'Koppla uppgifter till kraven',
+    title: 'Koppla uppgifter till kraven — och följ upp dem.',
     desc: 'Skapa uppgifter med ansvarig och deadline, kopplade till kravpunkterna de ska uppfylla.',
   },
   styrdokument: {
