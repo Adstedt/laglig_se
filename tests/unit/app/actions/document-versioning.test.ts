@@ -201,6 +201,7 @@ describe('restoreDocumentVersion', () => {
         const tx = {
           workspaceDocumentVersion: {
             create: vi.fn().mockResolvedValue(mockVer),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 5 }),
           },
           workspaceDocument: {
             update: vi.fn().mockResolvedValue({}),
@@ -244,6 +245,7 @@ describe('restoreDocumentVersion', () => {
                 capturedVersionData = args.data
                 return { id: 'ver-4', version_number: 4 }
               }),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 3 }),
           },
           workspaceDocument: { update: vi.fn().mockResolvedValue({}) },
           activityLog: { create: vi.fn().mockResolvedValue({}) },
@@ -279,6 +281,7 @@ describe('restoreDocumentVersion', () => {
             create: vi
               .fn()
               .mockResolvedValue({ id: 'ver-4', version_number: 4 }),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 3 }),
           },
           workspaceDocument: { update: vi.fn().mockResolvedValue({}) },
           activityLog: {
@@ -361,6 +364,7 @@ describe('restoreDocumentVersion', () => {
             create: vi
               .fn()
               .mockResolvedValue({ id: 'v_new', version_number: 5 }),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 4 }),
           },
           workspaceDocument: {
             update: vi
@@ -411,6 +415,7 @@ describe('restoreDocumentVersion', () => {
             create: vi
               .fn()
               .mockResolvedValue({ id: 'v_new', version_number: 4 }),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 3 }),
           },
           workspaceDocument: {
             update: vi
@@ -498,6 +503,7 @@ describe('saveDocumentVersion (ActivityLog)', () => {
             create: vi
               .fn()
               .mockResolvedValue({ id: 'ver-3', version_number: 3 }),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 2 }),
           },
           workspaceDocument: { update: vi.fn().mockResolvedValue({}) },
           activityLog: {

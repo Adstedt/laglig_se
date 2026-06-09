@@ -331,6 +331,60 @@ describe('createDraftFromApproved', () => {
         .source_approved_version_id
     ).toBe('v_approved')
   })
+
+  // Regression: the post-discard "orphaned version row" case.
+  // After discardDraft, the draft's version row is intentionally left in DB
+  // for audit, but current_version_number is rolled back to the approved
+  // version's number. createDraftFromApproved must derive newVersionNumber
+  // from MAX(version_number) + 1 — not from current_version_number + 1 —
+  // otherwise it collides with the orphaned row on the unique
+  // (document_id, version_number) constraint.
+  it('picks MAX(version_number)+1 to skip orphaned discarded-draft rows (UAT FU-001)', async () => {
+    // Doc state mirrors a just-discarded draft: parent says v1, but DB still
+    // has a stale v2 row from the discarded draft.
+    mockFindFirst.mockResolvedValue({
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      status: 'APPROVED',
+      current_version_number: 1,
+      current_draft_version_id: null,
+      current_approved_version_id: 'v_approved',
+      workspace_id: MOCK_WORKSPACE_ID,
+      current_version: {
+        content_json: { type: 'doc', content: [{ type: 'paragraph' }] },
+      },
+    })
+
+    let capturedNewVersion: Record<string, unknown> | null = null
+    mockTransaction.mockImplementation(
+      async (fn: (_tx: unknown) => Promise<unknown>) => {
+        const tx = {
+          workspaceDocumentVersion: {
+            create: vi
+              .fn()
+              .mockImplementation((args: { data: Record<string, unknown> }) => {
+                capturedNewVersion = args.data
+                return { id: 'ver-3', version_number: 3 }
+              }),
+            // DB has an orphaned v2 row from the discarded draft — MAX is 2.
+            findFirst: vi.fn().mockResolvedValue({ version_number: 2 }),
+          },
+          workspaceDocument: { update: vi.fn().mockResolvedValue({}) },
+          activityLog: { create: vi.fn().mockResolvedValue({}) },
+        }
+        return fn(tx)
+      }
+    )
+
+    const { createDraftFromApproved } = await import('@/app/actions/documents')
+    const result = await createDraftFromApproved('doc-1')
+
+    expect(result.success).toBe(true)
+    // Under the OLD bug, this would be 2 (current_version_number + 1) and
+    // collide with the orphaned row. Under the fix, it's 3 (MAX + 1).
+    expect(result.data?.versionNumber).toBe(3)
+    expect(capturedNewVersion).not.toBeNull()
+    expect(capturedNewVersion!.version_number).toBe(3)
+  })
 })
 
 describe('updateDocumentMetadata', () => {

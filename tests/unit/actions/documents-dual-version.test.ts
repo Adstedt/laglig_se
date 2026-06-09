@@ -36,11 +36,10 @@ vi.mock('@/lib/prisma', () => ({
       create: vi.fn(),
       update: vi.fn(),
       findUnique: vi.fn(),
-      // Story FU-001 fix: nextVersionNumber(tx, docId) calls findFirst on the
-      // versions table to compute MAX(version_number) + 1. Mock present so the
-      // tx pseudo-client below has a defined method to forward to; default
-      // vi.fn() resolves to undefined → helper returns 1, which is fine for
-      // tests that don't assert on the chosen version_number value.
+      // nextVersionNumber(tx, docId) computes MAX(version_number) + 1 from
+      // findFirst. Each test sets a per-row return value in beforeEach (or
+      // the test body) so the resulting newVersionNumber matches the test's
+      // expectations.
       findFirst: vi.fn(),
     },
     activityLog: { create: vi.fn() },
@@ -112,7 +111,14 @@ beforeEach(() => {
   )
   fn(prisma.workspaceDocumentVersion.create).mockResolvedValue({
     id: 'v_new',
-    version_number: 5,
+    version_number: 4,
+  })
+  // Latest version in DB is v3 → nextVersionNumber returns 4. Matches the
+  // create() stub above + the assertions in most tests in this file
+  // (createDraftFromApproved + createDraftFromApprovedWithEdit on a v3 doc).
+  // Individual tests can override.
+  fn(prisma.workspaceDocumentVersion.findFirst).mockResolvedValue({
+    version_number: 3,
   })
   fn(prisma.workspaceDocument.update).mockResolvedValue({})
   fn(prisma.activityLog.create).mockResolvedValue({})
@@ -222,6 +228,11 @@ describe('saveDocumentVersion — Story 17.16 AC 5 three-path routing', () => {
       current_draft_version_id: 'v_draft_prev',
       current_approved_version_id: 'v_approved',
       workspace_id: 'ws_1',
+    })
+    // Override beforeEach default: this Path A test runs against a v4 doc,
+    // so the latest version row in DB is v4 → newVersionNumber = 5.
+    fn(prisma.workspaceDocumentVersion.findFirst).mockResolvedValue({
+      version_number: 4,
     })
 
     const result = await saveDocumentVersion(
