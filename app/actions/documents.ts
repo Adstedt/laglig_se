@@ -18,7 +18,7 @@ import {
   type UpdateDocumentMetadataInput,
   type GetWorkspaceDocumentsInput,
 } from '@/lib/validation/documents'
-import { WorkspaceDocumentStatus } from '@prisma/client'
+import { Prisma, WorkspaceDocumentStatus } from '@prisma/client'
 import { getStorageClient } from '@/lib/supabase/storage'
 import { after } from 'next/server'
 import {
@@ -52,6 +52,34 @@ function extractPlaintext(html: string): string {
     .replace(/<[^>]*>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
+}
+
+/**
+ * Pick the next version_number for a new WorkspaceDocumentVersion row from
+ * MAX(version_number) + 1 over the actual versions table — NOT from
+ * WorkspaceDocument.current_version_number + 1.
+ *
+ * Why: discardDraft rolls current_version_number back to the approved version's
+ * number for the composite-badge display, but it intentionally leaves the
+ * discarded draft's version row in place for audit. So after discard,
+ * current_version_number + 1 collides with an orphaned row → unique-constraint
+ * failure on (document_id, version_number). MAX + 1 skips past the orphans
+ * and never collides. Same hazard would apply to any future flow that
+ * dereferences a version without deleting it.
+ *
+ * Must be called inside the same transaction as the create, so the read +
+ * write are atomic relative to other writers on this doc.
+ */
+async function nextVersionNumber(
+  tx: Prisma.TransactionClient,
+  documentId: string
+): Promise<number> {
+  const latest = await tx.workspaceDocumentVersion.findFirst({
+    where: { document_id: documentId },
+    orderBy: { version_number: 'desc' },
+    select: { version_number: true },
+  })
+  return (latest?.version_number ?? 0) + 1
 }
 
 const BUCKET_NAME = 'workspace-files'
@@ -771,14 +799,13 @@ export async function saveDocumentVersion(
       const html = contentHtml ?? ''
       const extractedText = extractPlaintext(html)
 
-      const newVersionNumber = document.current_version_number + 1
-
       // Story 17.16 AC 5: Path A advances the draft pointer only (alias frozen
       // on approved); Path B advances the alias too (never-approved doc — no
       // approved to protect).
       const isDraftInProgress = document.current_draft_version_id != null
 
       const version = await prisma.$transaction(async (tx) => {
+        const newVersionNumber = await nextVersionNumber(tx, document.id)
         const ver = await tx.workspaceDocumentVersion.create({
           data: {
             document_id: document.id,
@@ -829,7 +856,7 @@ export async function saveDocumentVersion(
           },
         })
 
-        return ver
+        return { ver, newVersionNumber }
       })
 
       // Story 17.10b: explicit checkpoint = real content change = embed now.
@@ -849,7 +876,7 @@ export async function saveDocumentVersion(
 
       return {
         success: true,
-        data: { id: version.id, versionNumber: newVersionNumber },
+        data: { id: version.ver.id, versionNumber: version.newVersionNumber },
       }
     })
   } catch (error) {
@@ -1004,7 +1031,6 @@ export async function restoreDocumentVersion(
         : tiptapDocToHtml(oldVersion.content_json)
       const extractedText = extractPlaintext(contentHtml)
 
-      const newVersionNumber = document.current_version_number + 1
       const changeSummary = `Återställning från version ${versionNumber}`
 
       // Story 17.16 QA-fix: Path A advances ONLY the draft pointer (alias
@@ -1013,6 +1039,7 @@ export async function restoreDocumentVersion(
       const isDraftInProgress = document.current_draft_version_id != null
 
       const version = await prisma.$transaction(async (tx) => {
+        const newVersionNumber = await nextVersionNumber(tx, document.id)
         const ver = await tx.workspaceDocumentVersion.create({
           data: {
             document_id: document.id,
@@ -1060,12 +1087,12 @@ export async function restoreDocumentVersion(
           },
         })
 
-        return ver
+        return { ver, newVersionNumber }
       })
 
       return {
         success: true,
-        data: { id: version.id, versionNumber: newVersionNumber },
+        data: { id: version.ver.id, versionNumber: version.newVersionNumber },
       }
     })
   } catch (error) {
@@ -1164,9 +1191,8 @@ export async function createDraftFromApproved(
         : tiptapDocToHtml(contentJson)
       const extractedText = extractPlaintext(contentHtml)
 
-      const newVersionNumber = document.current_version_number + 1
-
       const version = await prisma.$transaction(async (tx) => {
+        const newVersionNumber = await nextVersionNumber(tx, document.id)
         const ver = await tx.workspaceDocumentVersion.create({
           data: {
             document_id: document.id,
@@ -1211,7 +1237,7 @@ export async function createDraftFromApproved(
           },
         })
 
-        return ver
+        return { ver, newVersionNumber }
       })
 
       // Story 17.16 AC 4: NO deindex. The doc remains operationally APPROVED
@@ -1221,7 +1247,7 @@ export async function createDraftFromApproved(
 
       return {
         success: true,
-        data: { id: version.id, versionNumber: newVersionNumber },
+        data: { id: version.ver.id, versionNumber: version.newVersionNumber },
       }
     })
   } catch (error) {
@@ -1311,9 +1337,9 @@ export async function createDraftFromApprovedWithEdit(
 
       const html = contentHtml ?? ''
       const extractedText = extractPlaintext(html)
-      const newVersionNumber = document.current_version_number + 1
 
       const version = await prisma.$transaction(async (tx) => {
+        const newVersionNumber = await nextVersionNumber(tx, document.id)
         const ver = await tx.workspaceDocumentVersion.create({
           data: {
             document_id: document.id,
@@ -1372,7 +1398,7 @@ export async function createDraftFromApprovedWithEdit(
           },
         })
 
-        return ver
+        return { ver, newVersionNumber }
       })
 
       // 17.18 indexer keys off draft pointer presence — picks up the new tier
@@ -1391,7 +1417,7 @@ export async function createDraftFromApprovedWithEdit(
 
       return {
         success: true,
-        data: { id: version.id, versionNumber: newVersionNumber },
+        data: { id: version.ver.id, versionNumber: version.newVersionNumber },
       }
     })
   } catch (error) {
