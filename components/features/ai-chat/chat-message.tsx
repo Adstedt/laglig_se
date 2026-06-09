@@ -60,11 +60,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { MessageActions } from './message-actions'
-import {
-  hasCitationMarkers,
-  sourcesToMap,
-  type ChatMessageMetadata,
-} from '@/lib/ai/citations'
+import { sourcesToMap, type ChatMessageMetadata } from '@/lib/ai/citations'
 import { cn } from '@/lib/utils'
 import {
   useChatDetailSafe,
@@ -688,13 +684,11 @@ const streamdownPlugins = { code }
 
 // Rehype plugins array — stable reference to avoid Streamdown re-renders
 const citationRehypePlugins = [rehypeCitationPills]
-const emptyRehypePlugins: typeof citationRehypePlugins = []
 
 // Components mapping: <cite> → CitationPillInline
 const citationComponents = {
   cite: CitationPillInline,
 }
-const emptyComponents = {}
 
 const PROSE_CLASSES =
   'text-sm prose prose-sm dark:prose-invert max-w-none prose-p:leading-loose prose-p:my-3 prose-headings:font-semibold prose-headings:mt-6 prose-headings:mb-3 prose-ul:my-3 prose-li:my-1 prose-blockquote:border-l-2 prose-blockquote:border-primary/30 prose-blockquote:pl-3 prose-blockquote:text-muted-foreground prose-blockquote:italic'
@@ -1568,18 +1562,20 @@ function TextBlock({
   text: string
   isStreaming: boolean
 }) {
-  const hasCitations = hasCitationMarkers(text)
-
+  // Always wire the citation plugin + components — the plugin early-bails on
+  // citation-free text (see rehype-citation-pills.ts), so always-on is free.
+  // Conditionally swapping the plugin/components array based on text content
+  // caused Streamdown's cached AST to keep raw `[Källa: ...]` text after the
+  // marker appeared mid-stream; switching to a stable reference fixes the
+  // "needs hard refresh for the pill to render" symptom on localhost.
   return (
     <div className={cn(PROSE_CLASSES, 'chat-markdown')}>
       <Streamdown
         mode={isStreaming ? 'streaming' : 'static'}
         isAnimating={isStreaming}
         plugins={streamdownPlugins}
-        rehypePlugins={
-          hasCitations ? citationRehypePlugins : emptyRehypePlugins
-        }
-        components={hasCitations ? citationComponents : emptyComponents}
+        rehypePlugins={citationRehypePlugins}
+        components={citationComponents}
         className="streamdown"
       >
         {text}
