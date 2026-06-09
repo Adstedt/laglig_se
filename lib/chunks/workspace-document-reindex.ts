@@ -20,6 +20,7 @@
 import { createHash } from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { htmlToMarkdown } from '@/lib/transforms/html-to-markdown'
+import { tiptapDocToHtml } from '@/lib/documents/tiptap-to-html'
 import {
   syncWorkspaceChunks,
   updateChunkMetadata,
@@ -88,6 +89,23 @@ export function decideReindexOnContentChange(
 /** sha256 of the raw `content_html` — gates re-embedding (AC 7). */
 export function hashDocumentContent(contentHtml: string): string {
   return createHash('sha256').update(contentHtml, 'utf-8').digest('hex')
+}
+
+/**
+ * Pick the effective HTML for chunking. Per the WorkspaceDocumentVersion schema
+ * comment ("Tiptap JSON is source of truth"), `content_html` is a derived
+ * rendering — and any writer that ever leaves it empty (agent-authored drafts,
+ * autosave race, generateHTML hiccup) would otherwise produce zero chunks and
+ * leave the doc unsearchable. Render from `content_json` server-side as the
+ * fallback so the indexer always has real content when content_json does.
+ */
+function effectiveHtml(
+  contentHtml: string | null | undefined,
+  contentJson: unknown
+): string {
+  const html = contentHtml ?? ''
+  if (html.trim()) return html
+  return tiptapDocToHtml(contentJson)
 }
 
 /**
@@ -188,8 +206,8 @@ export async function indexWorkspaceDocument(
 
   // ── APPROVED tier ─────────────────────────────────────────────────────────
   if (doc.current_approved_version_id && doc.current_approved_version) {
-    const html = doc.current_approved_version.content_html
     const json = doc.current_approved_version.content_json
+    const html = effectiveHtml(doc.current_approved_version.content_html, json)
     if (isEmptyTiptapDoc(json)) {
       // AGENT-001 defensive cleanup: content_json (editor's source of truth)
       // says this tier is empty. Don't generate chunks from content_html even
@@ -232,8 +250,8 @@ export async function indexWorkspaceDocument(
 
   // ── DRAFT tier ────────────────────────────────────────────────────────────
   if (doc.current_draft_version_id && doc.current_draft_version) {
-    const html = doc.current_draft_version.content_html
     const json = doc.current_draft_version.content_json
+    const html = effectiveHtml(doc.current_draft_version.content_html, json)
     if (isEmptyTiptapDoc(json)) {
       // AGENT-001 defensive cleanup mirrors the APPROVED tier path. Critical
       // safety property: this fires ONLY when the draft tier's content_json
@@ -287,10 +305,13 @@ export async function indexWorkspaceDocument(
   if (
     !doc.current_approved_version_id &&
     !doc.current_draft_version_id &&
-    doc.current_version?.content_html &&
+    doc.current_version &&
     !isEmptyTiptapDoc(doc.current_version.content_json)
   ) {
-    const html = doc.current_version.content_html
+    const html = effectiveHtml(
+      doc.current_version.content_html,
+      doc.current_version.content_json
+    )
     await syncWorkspaceChunks(
       documentId,
       'WORKSPACE_DOCUMENT',

@@ -30,6 +30,7 @@ import { tool, zodSchema } from 'ai'
 import { z } from 'zod/v4'
 import { prisma } from '@/lib/prisma'
 import { htmlToMarkdown } from '@/lib/transforms/html-to-markdown'
+import { tiptapDocToHtml } from '@/lib/documents/tiptap-to-html'
 import { wrapToolResponse, wrapToolError, truncateMarkdown } from './utils'
 
 const getWorkspaceDocumentSchema = z.object({
@@ -50,14 +51,28 @@ const CONTENT_CHAR_LIMIT = CONTENT_TOKEN_LIMIT * 4 // 20,000
 /**
  * Convert content_html → markdown → optionally-truncated string with an AC 10
  * truncation hint appended in Swedish. Shared by both tiers in the dual shape.
+ *
+ * Per the schema (`WorkspaceDocumentVersion` — "Tiptap JSON is source of truth"),
+ * `content_json` is authoritative and `content_html` is a derived rendering.
+ * When `content_html` is empty/whitespace but `content_json` carries real
+ * content (agent-authored drafts that skipped HTML generation, autosave races,
+ * or any future writer that forgets to populate the derived field), fall back
+ * to server-side `tiptapDocToHtml(content_json)` so the tool returns the real
+ * document text rather than misreporting it as empty.
  */
-function buildTierContent(contentHtml: string | null | undefined): {
+function buildTierContent(
+  contentHtml: string | null | undefined,
+  contentJson?: unknown
+): {
   content: string
   contentHtml: string
   totalChars: number
   truncated: boolean
 } {
-  const html = contentHtml ?? ''
+  let html = contentHtml ?? ''
+  if (!html.trim() && contentJson != null) {
+    html = tiptapDocToHtml(contentJson)
+  }
   const rawMarkdown = html ? htmlToMarkdown(html) : ''
   const totalChars = rawMarkdown.length
   const content = truncateMarkdown(rawMarkdown, CONTENT_TOKEN_LIMIT)
@@ -107,6 +122,7 @@ Returnerar ett "hittades inte"-fel om dokumentet inte tillhör den aktiva arbets
             current_approved_version: {
               select: {
                 content_html: true,
+                content_json: true,
                 version_number: true,
                 approved_at: true,
               },
@@ -114,6 +130,7 @@ Returnerar ett "hittades inte"-fel om dokumentet inte tillhör den aktiva arbets
             current_draft_version: {
               select: {
                 content_html: true,
+                content_json: true,
                 version_number: true,
                 created_at: true,
               },
@@ -121,7 +138,11 @@ Returnerar ett "hittades inte"-fel om dokumentet inte tillhör den aktiva arbets
             // Legacy alias for backward-compat fallback when both pointers
             // null (defensive — should not be reachable post-17.16 backfill).
             current_version: {
-              select: { content_html: true, version_number: true },
+              select: {
+                content_html: true,
+                content_json: true,
+                version_number: true,
+              },
             },
             task_links: {
               select: {
@@ -156,7 +177,8 @@ Returnerar ett "hittades inte"-fel om dokumentet inte tillhör den aktiva arbets
         const approved = doc.current_approved_version
           ? (() => {
               const { content, contentHtml } = buildTierContent(
-                doc.current_approved_version.content_html
+                doc.current_approved_version.content_html,
+                doc.current_approved_version.content_json
               )
               return {
                 versionNumber: doc.current_approved_version.version_number,
@@ -174,7 +196,8 @@ Returnerar ett "hittades inte"-fel om dokumentet inte tillhör den aktiva arbets
         const draft = doc.current_draft_version
           ? (() => {
               const { content, contentHtml } = buildTierContent(
-                doc.current_draft_version.content_html
+                doc.current_draft_version.content_html,
+                doc.current_draft_version.content_json
               )
               return {
                 versionNumber: doc.current_draft_version.version_number,
@@ -197,8 +220,11 @@ Returnerar ett "hittades inte"-fel om dokumentet inte tillhör den aktiva arbets
         // (approved when present, else draft, else the deprecated alias as
         // the final defensive fallback).
         const effectiveTier = approved ?? draft
-        const legacyAlias = doc.current_version?.content_html
-          ? buildTierContent(doc.current_version.content_html)
+        const legacyAlias = doc.current_version
+          ? buildTierContent(
+              doc.current_version.content_html,
+              doc.current_version.content_json
+            )
           : null
         const topLevelContent =
           effectiveTier?.content ?? legacyAlias?.content ?? ''

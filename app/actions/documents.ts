@@ -28,6 +28,7 @@ import {
   markWorkspaceDocumentDirty,
   updateWorkspaceDocumentStatusMetadata,
 } from '@/lib/chunks/workspace-document-reindex'
+import { tiptapDocToHtml } from '@/lib/documents/tiptap-to-html'
 
 // ============================================================================
 // Types
@@ -95,13 +96,19 @@ export async function createDocument(
           },
         })
 
+        // Derive content_html from content_json so the doc is searchable from
+        // the moment it's written (templates + agent-authored drafts carry real
+        // JSON content; an empty string here would leave the indexer with
+        // nothing to chunk until the user opened the editor and re-saved).
+        const initialHtml = tiptapDocToHtml(contentJson)
         const version = await tx.workspaceDocumentVersion.create({
           data: {
             document_id: doc.id,
             version_number: 1,
             source: 'TIPTAP',
             content_json: contentJson,
-            content_html: '',
+            content_html: initialHtml,
+            extracted_text: extractPlaintext(initialHtml),
             created_by: userId,
           },
         })
@@ -988,8 +995,13 @@ export async function restoreDocumentVersion(
         return { success: false, error: 'Version hittades inte' }
       }
 
-      // Reuse stored HTML from the old version
-      const contentHtml = oldVersion.content_html ?? ''
+      // Reuse stored HTML from the old version; fall back to a render of the
+      // old version's content_json when the stored HTML is empty (older docs
+      // created before the derive-on-create fix above can have empty HTML).
+      const storedHtml = oldVersion.content_html ?? ''
+      const contentHtml = storedHtml.trim()
+        ? storedHtml
+        : tiptapDocToHtml(oldVersion.content_json)
       const extractedText = extractPlaintext(contentHtml)
 
       const newVersionNumber = document.current_version_number + 1
@@ -1143,8 +1155,13 @@ export async function createDraftFromApproved(
       const contentJson =
         document.current_version?.content_json ?? EMPTY_TIPTAP_DOC
 
-      // Reuse stored HTML from the current version
-      const contentHtml = document.current_version?.content_html ?? ''
+      // Reuse stored HTML from the current version; fall back to a render of
+      // contentJson when the stored HTML is empty (same legacy path as the
+      // restore-from-version action above).
+      const storedHtml = document.current_version?.content_html ?? ''
+      const contentHtml = storedHtml.trim()
+        ? storedHtml
+        : tiptapDocToHtml(contentJson)
       const extractedText = extractPlaintext(contentHtml)
 
       const newVersionNumber = document.current_version_number + 1
