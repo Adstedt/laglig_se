@@ -221,7 +221,7 @@ export function CitationPillInline({
           {isWebSource && webDomain && (
             <p className="text-[11px] text-muted-foreground">{webDomain}</p>
           )}
-          {!isWebSource && source.documentNumber && (
+          {!isWebSource && !isWorkspaceDocResolved && source.documentNumber && (
             <p className="text-[11px] text-muted-foreground">
               {source.documentNumber}
             </p>

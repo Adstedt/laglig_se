@@ -270,7 +270,8 @@ export function AssessmentResolution({
           placeholder="Anteckningar (valfritt)..."
           value={form.userNotes}
           onChange={(e) => form.setUserNotes(e.target.value)}
-          className="text-sm min-h-[60px] resize-none"
+          className="text-sm min-h-[140px] resize-y"
+          style={{ fieldSizing: 'content' } as React.CSSProperties}
         />
 
         <div className="flex items-center gap-1 pt-0.5">
