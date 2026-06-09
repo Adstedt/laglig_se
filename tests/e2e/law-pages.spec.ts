@@ -73,12 +73,14 @@ test.describe('Law Pages', () => {
     expect(text).toContain('<?xml')
     expect(text).toContain('<sitemapindex')
     // At minimum the first chunk must always exist.
-    expect(text).toMatch(/<loc>[^<]*\/sitemap\/0\.xml<\/loc>/)
+    expect(text).toMatch(/<loc>[^<]*\/sitemaps\/sitemap\/0\.xml<\/loc>/)
     expect(text).toMatch(/<lastmod>/)
   })
 
-  test('sitemap/0.xml is accessible and valid', async ({ request }) => {
-    const response = await request.get('/sitemap/0.xml')
+  test('sitemaps/sitemap/0.xml is accessible and valid', async ({
+    request,
+  }) => {
+    const response = await request.get('/sitemaps/sitemap/0.xml')
 
     expect(response.status()).toBe(200)
     expect(response.headers()['content-type']).toContain('xml')

@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { SITEMAP_CHUNK_SIZE } from '@/lib/constants/sitemap'
 
 // Regenerate the index at most once per day. Pairs with the same revalidate
-// window in app/sitemap.ts so the index and the chunks stay coherent.
+// window in app/sitemaps/sitemap.ts so the index and the chunks stay coherent.
 export const revalidate = 86_400
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://laglig.se'
@@ -23,8 +23,9 @@ function escapeXml(value: string): string {
 
 /**
  * Custom sitemap index. Next.js's `generateSitemaps` emits child sitemaps
- * at `/sitemap/[id].xml` but does NOT produce an index file — we build one
- * ourselves so GSC can be pointed at a single URL.
+ * at `/sitemaps/sitemap/[id].xml` (the URL inherits the folder layout of
+ * app/sitemaps/sitemap.ts) but does NOT produce an index file — we build
+ * one ourselves so GSC can be pointed at a single URL.
  *
  * Per-chunk `<lastmod>` is the MAX(updated_at) of the rows in that chunk,
  * which lets Google re-crawl only the chunks that actually changed. This is
@@ -63,7 +64,7 @@ export async function GET() {
 
   const entries = chunkLastmods
     .map((lastmod, id) => {
-      const loc = escapeXml(`${baseUrl}/sitemap/${id}.xml`)
+      const loc = escapeXml(`${baseUrl}/sitemaps/sitemap/${id}.xml`)
       return `  <sitemap>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod.toISOString()}</lastmod>\n  </sitemap>`
     })
     .join('\n')

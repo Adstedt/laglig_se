@@ -6,7 +6,7 @@
  * inside Googlebot's fetch timeout, and small enough that per-chunk
  * `<lastmod>` in the sitemap index gives Google a useful re-crawl signal.
  *
- * Used by `app/sitemap.ts` (via `generateSitemaps`) and
+ * Used by `app/sitemaps/sitemap.ts` (via `generateSitemaps`) and
  * `app/sitemap-index.xml/route.ts` so the chunk-size math cannot drift
  * between the two.
  */

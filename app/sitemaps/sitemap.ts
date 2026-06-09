@@ -50,8 +50,12 @@ function getPriority(contentType: ContentType): number {
 }
 
 /**
- * Next.js 16 splits the sitemap into N child files at `/sitemap/[id].xml`
- * based on the IDs returned here. Google's per-sitemap cap is 50,000 URLs
+ * Next.js 16 splits the sitemap into N child files at
+ * `/sitemaps/sitemap/[id].xml` (the URL inherits this file's folder layout
+ * under app/). The nested path is intentional — GSC caches per-URL fetch
+ * state, and the original `/sitemap/[id].xml` URLs got stuck in
+ * "Couldn't fetch" for 5+ weeks; moving the file gives Google a fresh URL
+ * to crawl. Google's per-sitemap cap is 50,000 URLs
  * (see SITEMAP_CHUNK_SIZE). We exclude non-ACTIVE rows so Google doesn't
  * crawl drafts/archived/repealed URLs that risk soft-404s on a fresh
  * domain — a separate decision is required before re-including REPEALED.
