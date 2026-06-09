@@ -30,6 +30,15 @@ export interface SourceInfo {
    * navigates to `/workspace/styrdokument/{workspaceDocumentId}/edit`.
    */
   workspaceDocumentId?: string | null
+  /**
+   * Which dual-state tier this citation represents. APPROVED → the pill's CTA
+   * opens the doc with `?view=approved` (read-only approved version). DRAFT →
+   * opens the default editor view (which loads the draft). Set by the
+   * search_workspace_documents / get_workspace_document / list_workspace_documents
+   * extractors based on which citationKey form (`<title>` vs `<title> (utkast vN)`)
+   * is being registered.
+   */
+  tier?: 'APPROVED' | 'DRAFT' | null
 }
 
 /** Metadata shape attached to assistant messages via messageMetadata callback */
@@ -231,6 +240,7 @@ export function extractSourcesFromToolResult(
             title?: string
             snippet?: string
             citationKey?: string
+            tier?: 'APPROVED' | 'DRAFT'
           }>
         | undefined
 
@@ -263,6 +273,7 @@ export function extractSourcesFromToolResult(
             anchorId: null,
             // Drives the "Öppna styrdokument" CTA on the citation pill.
             workspaceDocumentId: item.documentId ?? null,
+            tier: item.tier ?? null,
           })
         }
       }
@@ -299,6 +310,7 @@ export function extractSourcesFromToolResult(
           path: null,
           anchorId: null,
           workspaceDocumentId: data.documentId,
+          tier: 'APPROVED',
         })
 
         // Draft-tier citationKey — drives [Utkast: <title> (utkast vN)]
@@ -312,6 +324,7 @@ export function extractSourcesFromToolResult(
             slug: null,
             path: null,
             anchorId: null,
+            tier: 'DRAFT',
             workspaceDocumentId: data.documentId,
           })
         }
@@ -340,6 +353,7 @@ export function extractSourcesFromToolResult(
             path: null,
             anchorId: null,
             workspaceDocumentId: item.documentId,
+            tier: 'APPROVED',
           })
           if (typeof item.currentDraftVersionNumber === 'number') {
             const draftKey = `${item.title} (utkast v${item.currentDraftVersionNumber})`
@@ -351,6 +365,7 @@ export function extractSourcesFromToolResult(
               path: null,
               anchorId: null,
               workspaceDocumentId: item.documentId,
+              tier: 'DRAFT',
             })
           }
         }

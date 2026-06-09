@@ -244,11 +244,17 @@ export function CitationPillInline({
           )}
           {isWorkspaceDocResolved && workspaceDocId && (
             <Link
-              href={`/workspace/styrdokument/${workspaceDocId}/edit`}
+              // Approved-tier pill → `?view=approved` opens the read-only
+              // approved version. Draft-tier pill (and unknown-tier legacy) →
+              // default editor view, which loads the draft.
+              href={`/workspace/styrdokument/${workspaceDocId}/edit${
+                source.tier === 'APPROVED' ? '?view=approved' : ''
+              }`}
               className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline mt-2"
               onClick={() => {
                 track('workspace_citation_clicked', {
                   workspaceDocumentId: workspaceDocId,
+                  ...(source.tier ? { tier: source.tier } : {}),
                 })
               }}
             >
