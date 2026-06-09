@@ -98,3 +98,10 @@ package-lock.json
 # UAT testing artifacts (chrome-devtools agents)
 .uat-screenshots/
 .audit-screenshots/
+
+# Build-time generated sitemap files (written by scripts/generate-sitemaps.ts
+# during `postbuild`). Always regenerated on Vercel; never commit. The
+# committed public/sitemap-test.xml is a separate diagnostic fixture from PR #71
+# and is intentionally NOT covered by these patterns.
+public/sitemap-index.xml
+public/sitemaps/

@@ -6,9 +6,9 @@ dotenv.config({ path: '.env.local' })
 const prisma = new PrismaClient()
 
 /**
- * Mirror of app/sitemap.ts `getUrlPath` so this script can verify the post-fix
- * routing without importing the route file (which pulls Next-only deps).
- * Keep in sync with app/sitemap.ts.
+ * Mirror of app/sitemaps/sitemap.ts `getUrlPath` so this script can verify
+ * the post-fix routing without importing the route file (which pulls
+ * Next-only deps). Keep in sync with app/sitemaps/sitemap.ts.
  */
 function getUrlPath(contentType: ContentType, slug: string): string | null {
   switch (contentType) {

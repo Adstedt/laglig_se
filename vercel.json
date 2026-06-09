@@ -92,6 +92,10 @@
     {
       "path": "/api/cron/sweep-draft-reindex",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/refresh-sitemap",
+      "schedule": "30 16 * * *"
     }
   ]
 }
