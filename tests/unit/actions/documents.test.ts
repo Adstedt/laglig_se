@@ -17,6 +17,8 @@ vi.mock('@/lib/prisma', () => ({
     workspaceDocumentVersion: {
       create: vi.fn(),
       findMany: vi.fn(),
+      // nextVersionNumber helper reads MAX(version_number)+1 via findFirst.
+      findFirst: vi.fn(),
     },
     workspaceDocumentTemplate: {
       findUnique: vi.fn(),
@@ -801,6 +803,7 @@ describe('saveDocumentVersion — 17.10b AC 7 (immediate reindex on explicit che
       const tx = {
         workspaceDocumentVersion: {
           create: vi.fn().mockResolvedValue({ id: 'ver_3' }),
+          findFirst: vi.fn().mockResolvedValue({ version_number: 2 }),
         },
         workspaceDocument: { update: vi.fn().mockResolvedValue({}) },
         activityLog: { create: vi.fn().mockResolvedValue({}) },

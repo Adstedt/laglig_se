@@ -215,6 +215,7 @@ describe('createDraftFromApproved', () => {
         const tx = {
           workspaceDocumentVersion: {
             create: vi.fn().mockResolvedValue(mockVer),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 3 }),
           },
           workspaceDocument: {
             update: vi
@@ -293,6 +294,7 @@ describe('createDraftFromApproved', () => {
             create: vi
               .fn()
               .mockResolvedValue({ id: 'ver-3', version_number: 3 }),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 2 }),
           },
           workspaceDocument: { update: vi.fn().mockResolvedValue({}) },
           activityLog: {

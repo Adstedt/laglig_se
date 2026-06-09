@@ -617,10 +617,13 @@ describe('buildSystemPrompt', () => {
     expect(estimatedTokens).toBeGreaterThan(1500)
     // Story 17.10: bumped from 5500 → 6500. Prior ceiling had already been
     // breached at baseline (~5594) before 17.10's three workspace-document
-    // tool entries (+237 tokens after AC-18 terse-trim). The guardrail's job
-    // is to flag conscious growth — this is conscious, not creep. Revisit /
-    // shrink if a future story pushes past 6500 without comparable value.
-    expect(estimatedTokens).toBeLessThan(6500)
+    // tool entries (+237 tokens after AC-18 terse-trim).
+    // feat/ai-agent UAT bump: 6500 → 6750. Baseline grew ~60 tokens with the
+    // tightened guardrail rule (system-prompt.md) + the assess_change skill
+    // text rewording — both directly address UX leaks surfaced in UAT, so
+    // conscious growth not creep. Revisit / shrink if a future story pushes
+    // past 6750 without comparable value.
+    expect(estimatedTokens).toBeLessThan(6750)
   })
 })
 

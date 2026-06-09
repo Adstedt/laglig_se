@@ -102,6 +102,7 @@ describe('saveDocumentVersion', () => {
         const tx = {
           workspaceDocumentVersion: {
             create: vi.fn().mockResolvedValue(mockVer),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 2 }),
           },
           workspaceDocument: {
             update: vi.fn().mockResolvedValue({}),
@@ -164,6 +165,7 @@ describe('saveDocumentVersion', () => {
                   return { id: 'ver-2', version_number: 2 }
                 }
               ),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 1 }),
           },
           workspaceDocument: { update: vi.fn().mockResolvedValue({}) },
           activityLog: { create: vi.fn().mockResolvedValue({}) },
@@ -200,6 +202,7 @@ describe('saveDocumentVersion', () => {
             create: vi
               .fn()
               .mockResolvedValue({ id: 'ver-2', version_number: 2 }),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 1 }),
           },
           workspaceDocument: {
             update: vi

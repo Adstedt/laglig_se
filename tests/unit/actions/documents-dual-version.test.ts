@@ -36,6 +36,12 @@ vi.mock('@/lib/prisma', () => ({
       create: vi.fn(),
       update: vi.fn(),
       findUnique: vi.fn(),
+      // Story FU-001 fix: nextVersionNumber(tx, docId) calls findFirst on the
+      // versions table to compute MAX(version_number) + 1. Mock present so the
+      // tx pseudo-client below has a defined method to forward to; default
+      // vi.fn() resolves to undefined → helper returns 1, which is fine for
+      // tests that don't assert on the chosen version_number value.
+      findFirst: vi.fn(),
     },
     activityLog: { create: vi.fn() },
     $transaction: vi.fn((cb) =>
@@ -49,6 +55,8 @@ vi.mock('@/lib/prisma', () => ({
           create: (prisma as any).workspaceDocumentVersion.create,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           update: (prisma as any).workspaceDocumentVersion.update,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          findFirst: (prisma as any).workspaceDocumentVersion.findFirst,
         },
         activityLog: {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

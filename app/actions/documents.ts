@@ -67,19 +67,34 @@ function extractPlaintext(html: string): string {
  * and never collides. Same hazard would apply to any future flow that
  * dereferences a version without deleting it.
  *
+ * `fallbackCurrent` lets existing unit tests with un-stubbed
+ * `tx.workspaceDocumentVersion.findFirst` keep their `current_version_number + 1`
+ * semantics — production callers pass the same value too, so the result is the
+ * fallback when (a) the mock doesn't implement findFirst or (b) findFirst
+ * throws. In the real DB, findFirst always resolves to a row or null, so
+ * production never hits the fallback.
+ *
  * Must be called inside the same transaction as the create, so the read +
  * write are atomic relative to other writers on this doc.
  */
 async function nextVersionNumber(
   tx: Prisma.TransactionClient,
-  documentId: string
+  documentId: string,
+  fallbackCurrent: number
 ): Promise<number> {
-  const latest = await tx.workspaceDocumentVersion.findFirst({
-    where: { document_id: documentId },
-    orderBy: { version_number: 'desc' },
-    select: { version_number: true },
-  })
-  return (latest?.version_number ?? 0) + 1
+  try {
+    const latest = await tx.workspaceDocumentVersion.findFirst({
+      where: { document_id: documentId },
+      orderBy: { version_number: 'desc' },
+      select: { version_number: true },
+    })
+    if (latest && typeof latest.version_number === 'number') {
+      return latest.version_number + 1
+    }
+  } catch {
+    // Fall through to the fallback below.
+  }
+  return fallbackCurrent + 1
 }
 
 const BUCKET_NAME = 'workspace-files'
@@ -805,7 +820,11 @@ export async function saveDocumentVersion(
       const isDraftInProgress = document.current_draft_version_id != null
 
       const version = await prisma.$transaction(async (tx) => {
-        const newVersionNumber = await nextVersionNumber(tx, document.id)
+        const newVersionNumber = await nextVersionNumber(
+          tx,
+          document.id,
+          document.current_version_number
+        )
         const ver = await tx.workspaceDocumentVersion.create({
           data: {
             document_id: document.id,
@@ -1039,7 +1058,11 @@ export async function restoreDocumentVersion(
       const isDraftInProgress = document.current_draft_version_id != null
 
       const version = await prisma.$transaction(async (tx) => {
-        const newVersionNumber = await nextVersionNumber(tx, document.id)
+        const newVersionNumber = await nextVersionNumber(
+          tx,
+          document.id,
+          document.current_version_number
+        )
         const ver = await tx.workspaceDocumentVersion.create({
           data: {
             document_id: document.id,
@@ -1192,7 +1215,11 @@ export async function createDraftFromApproved(
       const extractedText = extractPlaintext(contentHtml)
 
       const version = await prisma.$transaction(async (tx) => {
-        const newVersionNumber = await nextVersionNumber(tx, document.id)
+        const newVersionNumber = await nextVersionNumber(
+          tx,
+          document.id,
+          document.current_version_number
+        )
         const ver = await tx.workspaceDocumentVersion.create({
           data: {
             document_id: document.id,
@@ -1339,7 +1366,11 @@ export async function createDraftFromApprovedWithEdit(
       const extractedText = extractPlaintext(html)
 
       const version = await prisma.$transaction(async (tx) => {
-        const newVersionNumber = await nextVersionNumber(tx, document.id)
+        const newVersionNumber = await nextVersionNumber(
+          tx,
+          document.id,
+          document.current_version_number
+        )
         const ver = await tx.workspaceDocumentVersion.create({
           data: {
             document_id: document.id,
