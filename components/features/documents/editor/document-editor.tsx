@@ -229,6 +229,25 @@ export function DocumentEditor({
     }
   }, [editor, editable])
 
+  // Re-seed Tiptap when the loaded version changes server-side (e.g. discardDraft
+  // → router.refresh() switches the page from draft v2 → approved v1). `useEditor`
+  // only consumes `content` at mount, so without this the editor keeps the
+  // discarded draft's body until a hard page reload. Watch versionNumber +
+  // viewMode (the two server-rendered identifiers for what's loaded) and reset
+  // content + title together. `emitUpdate: false` prevents the reset from
+  // looking like a user edit and re-triggering autosave.
+  const lastLoadedVersionRef = useRef<string>(`${versionNumber}|${viewMode}`)
+  useEffect(() => {
+    if (!editor) return
+    const next = `${versionNumber}|${viewMode}`
+    if (lastLoadedVersionRef.current === next) return
+    editor.commands.setContent(initialContent, { emitUpdate: false })
+    titleRef.current = initialTitle
+    setTitle(initialTitle)
+    setCurrentVersionNumber(versionNumber)
+    lastLoadedVersionRef.current = next
+  }, [editor, versionNumber, viewMode, initialContent, initialTitle])
+
   // Auto-grow the title textarea so a long title wraps to multiple lines
   // instead of clipping at the page edge (single-line <input> behaviour).
   useEffect(() => {
