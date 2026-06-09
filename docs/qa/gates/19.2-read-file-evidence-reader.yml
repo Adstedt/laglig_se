@@ -1,0 +1,113 @@
+schema: 1
+story: '19.2'
+story_title: 'read_file Unified Evidence Reader'
+gate: PASS
+status_reason: 'All 15 ACs implemented + verified by 10 new unit tests AND TWO live owner smokes — (1) depth read of a real brandskyddspolicy PDF (final section quoted verbatim + filename citation), and (2) a capstone gap-analysis where, when challenged, the agent admitted its snippet-only first pass was ungrounded, then called read_file 4× and produced a materially better content-grounded analysis with per-file citation pills. read_file is now live-proven (not just unit + PDF), demonstrating the search=find / read=comprehend thesis. Clean shared-core refactor (19.1 behaviour preserved — 10 tests still green); read-tier tool auto-wrapped by 19.5; lean execute envelope keeps base64 out of the audit log. One medium performance note (base64 tool-result persists across loop steps), bounded by the size caps and addressed by design in 19.9; rest are low.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-24T23:20:00Z'
+review_history:
+  - '2026-05-24T22:42:00Z — initial review, gate PASS (90), 5 issues (1 medium, 4 low)'
+  - '2026-05-24T23:05:00Z — capstone smoke added (read_file ×4, grounded gap analysis), score 94'
+  - '2026-05-24T23:20:00Z — post review-qa: READ-003 + READ-005 resolved in code; READ-001/002/004 dispositioned (deferred/wont_fix); score 95'
+
+waiver: { active: false }
+
+quality_score: 95
+expires: '2026-06-07T23:20:00Z'
+
+evidence:
+  tests_reviewed: 31
+  tests_result: '31/31 unit pass — read-file 11 (incl. READ-003 guidance-relay), attachments-to-content 10 (19.1 regression after shared-core refactor), registry-role-filter 5 (extended 15→16 + read_file∈AUDITOR), decision-log 5; tsc --noEmit 0 errors; eslint clean on all changed files; broad tests/unit/agent 158 pass / 2 fail (pre-existing 14.23 system-prompt.test.ts, confirmed pre-existing via clean-tree stash) — all reproduced'
+  smoke_test:
+    performed_by: 'Owner (Alexander)'
+    result: 'PASS — two live smokes in-app'
+    covered:
+      - 'DEPTH READ: "sök upp brandskyddspolicy och se vad som står längst ner" → "Sökte i uppladdade filer" → "Läste fil" → answer quoted the FINAL section ("Giltighet och revidering") verbatim with the 01-brandskyddspolicy.pdf citation pill. End-of-doc content = proof of full read, not a snippet. Real Supabase download + Anthropic content-block round-trip confirmed live.'
+      - 'CAPSTONE (read vs snippet, grounded): challenged with "läste du våra dokument?", the agent admitted the first pass was snippet-inference, then chained search_workspace_files → read_file ×4 ("Läste fil (4)") → search_workspace_files ×2, and re-issued a content-grounded gap analysis. Quality lifted from hedged ("07 saknar TROLIGEN regler för minderåriga") to confident+specific ("nämner ingenting om arbetstider/vilotider/förbjudna arbetsuppgifter") with per-file citation pills (07-…, 05-…, 01-…). The agent self-described the delta: "innehöll en del rätt, men av fel skäl — nu är bedömningen faktiskt grundad i vad dokumenten innehåller." This is the search=find / read=comprehend thesis demonstrated live.'
+      - 'Minor model-behavior note (not a tool defect): agent narrated "läst igenom alla era dokument" / "fem dokument" after read_file ×4 against 6 listed docs — a counting/over-claim wobble. The cited docs are grounded; the narration over-generalises. Candidate for prompt steering ("read each before claiming you read all"), tracked outside 19.2.'
+  smoke_not_covered:
+    - 'Image path (toModelOutput → image-data): provider-supported + unit-tested, NOT live-smoked, and not reachable via the agent loop today (text-based id source) — closes with 19.4 (READ-004)'
+    - 'agent_decision_logs row for read_file not inspected during smoke (recommended SQL provided; the live answer already proves content reached the model)'
+  risks_identified: 5
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    ac_gaps: []
+    notes:
+      - 'AC 3 workspace isolation: unit (cross-tenant fileId → wrapToolError, download NOT called) — both classify (execute) and resolve (toModelOutput) scope by {id, workspace_id}.'
+      - 'AC 5 native blocks: unit (file-data/image-data/text parts) + live PDF (provider rendered the document block). Image live-unverified (READ-004, low).'
+      - 'AC 6 lean envelope: unit (envelope has no base64; download not called by execute) — keeps AgentDecisionLog.output_json small.'
+      - 'AC 8/9 shared core + 19.1 refactor: behaviour preserved — all 10 attachments-to-content tests still pass.'
+      - 'AC 10/11 read-tier, no approval: registry test (read_file∈AUDITOR, count 16); code-verified no sidebarHint / not in SUGGEST_SIDEBAR_TOOLS.'
+
+top_issues:
+  - id: READ-001
+    severity: medium
+    status: deferred
+    resolution: 'review-qa 2026-05-24 — deferred to Story 19.9 (structural). The fix is to isolate heavy PDFs in the DocumentReader subagent so base64 never enters the main agent context; lowering the native-PDF threshold would degrade medium-PDF read quality without solving it, so no 19.2 patch applied. Bounded today by the 10 MB / 5 MB caps.'
+    summary: 'A read_file PDF/image is returned as a base64 tool_result, which persists in the conversation and is re-sent (uncached — cacheControl is on the system prompt, not tool results) on every subsequent step of the stepCountIs(10) loop. A 10 MB PDF read early in a long loop multiplies request size/cost. Bounded by the 10 MB PDF / 5 MB image caps; not a correctness defect.'
+    refs: ['lib/agent/tools/read-file.ts', 'lib/agent/file-content.ts']
+    suggested_owner: dev
+    suggested_fix: 'Story 19.9 DocumentReader / read_and_answer isolates heavy PDFs in a subagent so the base64 never enters the main agent context.'
+  - id: READ-002
+    severity: low
+    status: wont_fix
+    resolution: 'review-qa 2026-05-24 — by design. Making contentKind exact would force `execute` to download, defeating the AC-6 lean-envelope invariant (no base64 in the audit log). The envelope is an explicit UI/log hint; the model content (toModelOutput) is authoritative.'
+    summary: 'contentKind in the lean execute envelope is classified from MIME+size only and can drift from the actually-delivered content (e.g. a PDF ≤10 MB whose download fails in toModelOutput is delivered as text, but the envelope says "pdf"). Cosmetic.'
+    refs: ['lib/agent/file-content.ts', 'lib/agent/tools/read-file.ts']
+    suggested_owner: dev
+  - id: READ-003
+    severity: low
+    status: resolved
+    resolution: 'review-qa 2026-05-24 — toModelOutput error branch now relays `${message}\n${guidance}`; +1 unit test (guidance relay).'
+    summary: 'toModelOutput error-relay forwarded only the wrapToolError `message`, dropping `guidance` ("använd search_workspace_files"). Including the guidance helps the agent self-recover from a bad fileId.'
+    refs: ['lib/agent/tools/read-file.ts']
+    suggested_owner: dev
+  - id: READ-004
+    severity: low
+    status: deferred
+    resolution: 'review-qa 2026-05-24 — not closable in 19.2 code (needs 19.4 to surface non-text file ids, or a live env). Provider support + the image-data path are unit-tested. Live-verify when 19.4 lands.'
+    summary: 'Image path (toModelOutput → image-data) is provider-supported + unit-tested but not live-smoked, and unreachable via the agent loop today (search_workspace_files is text-based, so a no-OCR image has no surfaced fileId).'
+    refs: ['lib/agent/tools/read-file.ts']
+    suggested_owner: dev
+    suggested_fix: 'Live-verify once 19.4 (list_linked_artifacts) surfaces file ids regardless of text; or one-off Path-B script against real storage.'
+  - id: READ-005
+    severity: low
+    status: resolved
+    resolution: 'review-qa 2026-05-24 — added a `default: return { type: "text", value: "[Fil: kunde inte läsas]" }` after the toModelOutput switch; a future ResolvedFile kind degrades gracefully instead of returning undefined.'
+    summary: 'No defensive fallback return after the toModelOutput switch over ResolvedFile.kind. Exhaustive today (tsc passes); a future ResolvedFile variant would have silently returned undefined to the SDK.'
+    refs: ['lib/agent/tools/read-file.ts']
+    suggested_owner: dev
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Workspace isolation on BOTH paths (classify in execute, resolve in toModelOutput) via findFirst({ where: { id, workspace_id } }); cross-tenant fileId → wrapToolError, no bytes read (unit-tested). No per-file ACL beyond workspace membership exists in this schema, so reading any workspace file via the agent is consistent with the file model — no escalation path. No raw @anthropic-ai/sdk; the pdfs-2024-09-25 beta is auto-added by the provider (same path 19.1 PDFs already use), not a manual beta header.'
+  performance:
+    status: CONCERNS
+    notes: 'See READ-001 — base64 tool-result persists + re-sends across loop steps; bounded by size caps, designed fix in 19.9. execute is download-free (cheap classify); toModelOutput does ONE download for the bytes (no double-download; only a second cheap indexed findFirst). On-demand extraction (inherited from 19.1) runs synchronously inside toModelOutput for a not-yet-extracted DOCX/large-PDF — adds latency to that step.'
+  reliability:
+    status: PASS
+    notes: 'toModelOutput wraps IO in try/catch → text-note fallback so the model always receives something; error-envelope short-circuit avoids a needless re-resolve; workspace-scoped, never throws a 403. Fail-safe decision-log wrapper (19.5) covers the execute call.'
+  maintainability:
+    status: PASS
+    notes: 'Strong DRY refactor — routing core extracted to lib/agent/file-content.ts and shared by both the 19.1 converter (user-message parts) and read_file (tool-result parts); the two differ only in output mapping. Compile-enforced read-tier policy entry; 10 focused tests. Minor: READ-005 (no exhaustive guard).'
+
+recommendations:
+  immediate: []
+  resolved_in_review_qa:
+    - 'READ-003: guidance now relayed in the toModelOutput error branch (+1 test)'
+    - 'READ-005: defensive default added after the toModelOutput switch'
+  future:
+    - action: 'READ-001: route heavy PDFs through the 19.9 DocumentReader subagent to keep base64 out of the main agent context'
+      refs: ['lib/agent/tools/read-file.ts']
+    - action: 'READ-004: live-verify the image path once 19.4 surfaces non-text file ids'
+      refs: ['lib/agent/tools/read-file.ts']
+
+# Advisory — pre-existing branch failures, NOT introduced by 19.2 (confirmed via clean-tree stash).
+branch_advisory:
+  - id: BR-PROMPT
+    status: resolved
+    resolution: '2026-05-24 — both stale assertions fixed: `execute: false` → `förslagskort` (14.23 replaced the direct-write branch with the inline approval card; verified `execute: false` absent from the prompt md), and the token-budget ceiling re-baselined 4000 → 5500 with rationale (base prompt is ~4.5k now). Broad tests/unit/agent now 160/160 (was 158/2). Branch agent suite fully green.'
+    refs: ['tests/unit/agent/system-prompt.test.ts']
+    summary: 'execute:false assertion + ~4000-token budget — Story 14.23 prompt growth. Pre-existing (red on a clean tree). 19.2 added ~100 tokens (read_file steering bullet) to an already-over-budget prompt — the budget threshold was stale.'
+    suggested_owner: dev

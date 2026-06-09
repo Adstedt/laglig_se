@@ -200,7 +200,7 @@ export function KravpunkterChecklist({
 
       {/* Rows */}
       {hasRequirements && (
-        <ul className="space-y-1">
+        <ul className="divide-y divide-border/40">
           {requirements?.map((req) => (
             <KravpunktRow
               key={req.id}

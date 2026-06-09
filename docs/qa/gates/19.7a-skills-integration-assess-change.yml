@@ -1,0 +1,49 @@
+schema: 1
+story: "19.7a"
+story_title: "Skills integration + assess_change migration"
+gate: PASS
+status_reason: "Behaviour-preserving migration verified verbatim (git-diff of deleted literal vs PROCEDURE.md = byte-identical). Injection logic correct & well-placed; one low-severity dangling-tag-reference in the base prompt fixed in-review. 229/229 agent suite green."
+reviewer: "Quinn (Test Architect)"
+updated: "2026-05-26T22:18:00Z"
+re_reviewed: "2026-05-26T22:18:00Z — all claims independently re-verified from source (verbatim diff byte-identical, literal removed, 197A-001 fix holds, registry 27 + AUDITOR keeps activate_skill, 229/229 + 107/107 + tsc/eslint clean). Gate unchanged: PASS."
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 95
+
+evidence:
+  tests_reviewed: 37
+  risks_identified: 1
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8]
+    ac_gaps: []
+  notes: "Verbatim parity confirmed by reconstructing the deleted ASSESSMENT_WORKFLOW literal from git HEAD and diffing against PROCEDURE.md (byte-identical apart from extraction artifacts). activate-skill.test.ts runs against the real shipped skill, not a fixture."
+
+nfr_validation:
+  security: { status: PASS, notes: "activate_skill is read-tier; loadSkill resolves only against known-skill records (no path traversal); AUDITOR retains it." }
+  performance: { status: PASS, notes: "buildSystemPrompt now does sync loadSkill file reads on the change path (4 tiny local files) — negligible vs the prompt's async Prisma reads + Anthropic prompt cache. listSkills metadata cached (19.6); loadSkill body-caching is a carry-over follow-up, not blocking." }
+  reliability: { status: PASS, notes: "Unknown skill → graceful wrapToolError; loadSkill null → <skill> simply not pushed (no hot-path throw)." }
+  maintainability: { status: PASS, notes: "Data-driven injection; migration is a flat file set rather than a wall-of-string const." }
+
+findings:
+  - id: "197A-001"
+    severity: low
+    type: parity
+    status: resolved-in-review
+    desc: "Base prompt (system-prompt.md, in every context) carried a stale 'se assessment_workflow när det är aktivt' cross-reference pointing at the renamed tag (now <skill>). Content present but pointer dangling. Fixed: reworded to reference the skill by name (assess_change), avoiding the <skill> tag literal so the non-change guard test stays valid. Suites re-run green."
+    fixed_by: "Quinn (QA active refactoring)"
+    files: ["lib/agent/system-prompt.md"]
+
+recommendations:
+  immediate: []
+  future:
+    - "Cache loadSkill bodies in the 19.6 loader if skill count or chat QPS grows (loadSkill currently re-reads files per buildSystemPrompt call; listSkills metadata is already cached)."
+    - "19.7b: gap_analysis skill + KP-001 + add_obligation framing tweak."
+    - "19.7c: per-skill registry narrowing (ALWAYS_AVAILABLE / activeSkills) — designed against >=2 skills with a no-regression harness."
+
+verification_before_done:
+  - "Live smoke: open a change chat and confirm the assessment flow runs as before (now sourced from the assess_change skill file). Unit parity proves content carried over; the live run confirms identical model behaviour."
+
+recommended_status: "Ready for Done (pending owner live smoke)"

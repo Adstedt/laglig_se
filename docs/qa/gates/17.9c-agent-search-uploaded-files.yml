@@ -1,0 +1,73 @@
+schema: 1
+story: '17.9c'
+story_title: 'Agent Tool — Search a Workspace''s Uploaded Files (USER_FILE RAG)'
+gate: PASS
+status_reason: 'All 14 ACs met; the two carry-over concerns from 17.9 (REL-001 reliability bug + TEST-001 row-level isolation) are resolved with strong tests, cross-tenant isolation proven against a real DB, typecheck/lint clean. Pre-existing branch test failures are in untouched code and not attributable to this story.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-22T21:30:00Z'
+
+waiver: { active: false }
+
+quality_score: 90
+expires: '2026-06-05T21:30:00Z'
+
+evidence:
+  tests_reviewed: 20
+  tests_result: '7 tool + 10 sync + 1 citations unit (all pass); 3 integration (real DB) pass; tsc clean; eslint clean — all dev claims independently reproduced'
+  risks_identified: 2
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14]
+    ac_gaps: [8, 9]
+    notes:
+      - 'AC 3 (sourceTypes:[USER_FILE], never LEGAL_DOCUMENT) directly unit-asserted — the load-bearing contract.'
+      - 'AC 10 REL-001: 2 unit tests (re-embeds on null embeddings; still-skips when all embedded).'
+      - 'AC 11 TEST-001: row-level cross-tenant isolation proven against real DB (B seeded as similarity-1.0 temptation, still excluded).'
+      - 'AC 8 (system prompt) + AC 9 (TOOL_CONFIG) verified by inspection only — no automated assertion. Low severity (prompt/presentational).'
+
+top_issues:
+  - id: COV-001
+    severity: low
+    summary: 'AC 8 (system-prompt guidance) and AC 9 (TOOL_CONFIG entry) lack automated assertions — verified by inspection. A one-line expect(prompt).toContain(search_workspace_files) would close AC 8.'
+    refs: ['tests/unit/agent/system-prompt.test.ts']
+    suggested_owner: dev
+  - id: CITE-002
+    severity: low
+    summary: 'citationKey = filename collides if a workspace has two uploaded files with the same filename (first-wins via set()). Inherent to the documented design; more visible when 17.9b/17.10 unify USER_FILE + WORKSPACE_DOCUMENT search.'
+    refs: ['lib/ai/citations.ts', 'lib/agent/tools/search-workspace-files.ts']
+    suggested_owner: po
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Cross-tenant isolation proven at the row level against a real DB (TEST-001 resolved). Tool closure-scopes workspaceId; sourceTypes never widened beyond [USER_FILE]. Read-side filter load-bearing on 17.9 write-side invariant; both directions exercised.'
+  performance:
+    status: PASS
+    notes: 'Thin wrapper over already-reviewed retrieveContext. REL-001 adds one COUNT only on the dedupe-hit path — no new normal-path cost.'
+  reliability:
+    status: PASS
+    notes: 'IMPROVED. REL-001 fix closes the silent-permanent-unretrievability bug (failed embed + same content_hash re-sync now self-heals). Was 17.9 reliability CONCERNS; now resolved + tested.'
+  maintainability:
+    status: PASS
+    notes: 'Clean fork of search-laws conventions; well-documented decisions (documentNumber-carries-filename, REL-001 raw count). NOTE: branch-level token-budget test is red due to in-flight Story 14.23, not this story.'
+
+# Advisory — pre-existing branch failures in code NOT touched by 17.9c (confirmed via git diff).
+# These block the BRANCH merge but are not attributable to this story.
+branch_advisory:
+  - id: BR-PROMPT
+    refs: ['tests/unit/agent/system-prompt.test.ts']
+    summary: 'execute:false assertion + token budget (~4420 > 4000). Caused by Story 14.23 prompt growth (baseline ~4391 before 17.9c; AC-8 added ~29 tokens). Revisit the 4000 threshold when 14.23 lands.'
+    suggested_owner: dev
+  - id: BR-QUOTA
+    refs: ['tests/unit/usage/chat-quota-enforcement.test.ts', 'lib/agent/context-assembly.ts']
+    summary: 'Two 500-instead-of-200: prisma.chatMessage.findFirst undefined in buildPendingActionsContext — test mock omits chatMessage. Pre-existing mock gap, unrelated to 17.9c.'
+    suggested_owner: dev
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add an automated assertion for the search_workspace_files prompt guidance (AC 8 coverage)'
+      refs: ['tests/unit/agent/system-prompt.test.ts']
+    - action: 'When 17.9b/17.10 unify file + styrdokument search, disambiguate same-filename citation keys'
+      refs: ['lib/ai/citations.ts']
+    - action: 'Resolve the 3 pre-existing branch test failures before merging the branch (separate from 17.9c)'
+      refs: ['tests/unit/agent/system-prompt.test.ts', 'tests/unit/usage/chat-quota-enforcement.test.ts']

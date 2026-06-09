@@ -1,0 +1,57 @@
+schema: 1
+story: "19.7b"
+story_title: "gap_analysis skill + KP-001 framing + assess_change current-state enrichment"
+gate: PASS
+status_reason: "All 9 ACs met and verified against source; 19.7a parity intact; owner smoke confirmed both flows (gap_analysis tiered report + the assess_change enrichment's 'Läste laglistpost' read). Pure skill-content + one tool-description line — no code/schema/migration/tools/route change. Two smoke-surfaced items are pre-existing & out of scope: one fixed standalone, one tracked for 19.13."
+reviewer: "Quinn (Test Architect)"
+updated: "2026-05-26T23:10:00Z"
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 93
+
+evidence:
+  tests_reviewed: 234
+  risks_identified: 2
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    ac_gaps: []
+  notes: "gap_analysis loaded via the real-skill activate-skill.test.ts (not a fixture); KP-001 framing pinned by add-obligation.test.ts; 19.7a parity assertions unchanged & green; owner live-smoked both gap_analysis and the assess_change enrichment ('Läste laglistpost' chip = get_law_list_item fired in the change prep phase)."
+
+nfr_validation:
+  security: { status: PASS, notes: "No new write paths; gap_analysis tools declared-not-enforced (matches 19.7a; enforcement = 19.7c); enrichment readers are read-tier, auto-resolve only the active context item." }
+  performance: { status: PASS, notes: "gap_analysis fires 4 parallel diagnostics + <=5 write-tool calls; enrichment adds 1-2 reads to the change prep phase — all bounded, all pre-existing tools. 19.6 loadSkill body-read cost note carries over (non-blocking)." }
+  reliability: { status: PASS, notes: "Empty diagnostics -> good-news not error (PROCEDURE + CRITERIA); conditional list_linked_artifacts avoids an empty fetch." }
+  maintainability: { status: PASS, notes: "Entirely file-editable skill content — the agent got materially smarter with zero deploy-locked code." }
+
+findings:
+  - id: "197B-S1"
+    severity: medium
+    type: ux
+    status: resolved-out-of-band
+    desc: "wrapWriteToolResponse (utils.ts) hardcoded sidebarHint 'open' → every write tool auto-popped a sidebar dumping the raw {pendingActionId} envelope. Pre-existing since 2026-03-26 (commit 82a1415f), NOT 19.7b (no rendering code). Surfaced by the gap_analysis smoke (create_task)."
+    fixed_by: "Dev (James) — standalone change, separate from 19.7b"
+    files: ["lib/agent/tools/utils.ts", "tests/unit/agent/tools/utils.test.ts"]
+    note: "utils.ts -> 'none'; draft_styrdokument editor canvas is a separate renderer button, unaffected. Validated (234 suite green). Improves every approval-card flow."
+  - id: "GR-001"
+    severity: medium
+    type: accuracy
+    status: tracked
+    desc: "assess_change enrichment smoke produced a law-accuracy slip: agent labelled SFS 2019:503 the 'Lex Laval-reformen' (Lex Laval = 2010 posted-workers reform; 2019:503 = domestic utökad-fredsplikt reform) and cited §§ (41 a/b/e) needing source-verification. This is the underlying law-citation grounding layer — OUT of 19.7b scope (the enrichment correctly read current state; it doesn't govern change-data citation)."
+    owner_decision: "Tracked for 19.13 (grounding) — already flagged in PRD KP-001 note as a separate concern."
+    recommendation: "Prioritise a grounding/citation-verification story; confirm whether cited §-pills derive from retrieved SectionChange/amendment text or are model-generated (fabrication check). Highest-leverage accuracy risk for a legal-compliance product."
+
+recommendations:
+  immediate: []
+  future:
+    - "GR-001: legal-citation grounding/verification (19.13) — for a legal product this is the top accuracy risk; verify retrieved-vs-generated citations."
+    - "Now-dormant ToolAutoOpener: after 197B-S1, no tool emits sidebarHint 'open'. Harmless dead code; candidate cleanup if no read tool adopts auto-open."
+    - "Cache loadSkill bodies in the 19.6 loader if skill count / chat QPS grows (carry-over)."
+
+scope_separation:
+  - "19.7b gate covers the skill content only. The 197B-S1 sidebar fix is a separate standalone change (utils.ts + utils.test.ts) — commits independently."
+  - "GR-001 is orthogonal (law-data citation grounding), tracked for 19.13."
+
+recommended_status: "Ready for Done — ACs met, parity intact, owner-smoked both flows."

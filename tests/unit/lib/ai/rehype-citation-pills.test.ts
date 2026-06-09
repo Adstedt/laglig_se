@@ -109,4 +109,120 @@ describe('rehypeCitationPills', () => {
     expect((children[1] as Element).tagName).toBe('cite')
     expect((children[2] as Text).value).toBe('som reglerar')
   })
+
+  // -------------------------------------------------------------------------
+  // Story 17.10b: [Utkast: ...] form for DRAFT/IN_REVIEW styrdokument
+  // -------------------------------------------------------------------------
+
+  it('17.10b: transforms [Utkast: X] into <cite> with data-tier="draft" + preserves Utkast: prefix in chip text', () => {
+    const tree = makeTree('Se [Utkast: Semesterpolicy] för mer info.')
+    plugin(tree)
+    const children = getChildren(tree)
+    const cite = children.find(
+      (c) => c.type === 'element' && c.tagName === 'cite'
+    ) as Element
+    expect(cite).toBeDefined()
+    expect((cite.children[0] as Text).value).toBe('Utkast: Semesterpolicy')
+    expect((cite.properties as { 'data-tier'?: string })['data-tier']).toBe(
+      'draft'
+    )
+  })
+
+  it('17.10b: [Källa: X] gets data-tier="canonical" (existing chip stays bare-label)', () => {
+    const tree = makeTree('Se [Källa: Dataskyddspolicy] för detaljer.')
+    plugin(tree)
+    const children = getChildren(tree)
+    const cite = children.find(
+      (c) => c.type === 'element' && c.tagName === 'cite'
+    ) as Element
+    // Källa pill text is bare (no prefix), tier = canonical.
+    expect((cite.children[0] as Text).value).toBe('Dataskyddspolicy')
+    expect((cite.properties as { 'data-tier'?: string })['data-tier']).toBe(
+      'canonical'
+    )
+  })
+
+  it('17.10b: mixed Källa + Utkast in one text node produces two distinct cite tiers', () => {
+    const tree = makeTree(
+      'Er policy [Källa: GDPR-policy] kompletteras av [Utkast: Semesterpolicy].'
+    )
+    plugin(tree)
+    const children = getChildren(tree)
+    const cites = children.filter(
+      (c) => c.type === 'element' && c.tagName === 'cite'
+    ) as Element[]
+    expect(cites).toHaveLength(2)
+    expect(
+      (cites[0]!.properties as { 'data-tier'?: string })['data-tier']
+    ).toBe('canonical')
+    expect((cites[0]!.children[0] as Text).value).toBe('GDPR-policy')
+    expect(
+      (cites[1]!.properties as { 'data-tier'?: string })['data-tier']
+    ).toBe('draft')
+    expect((cites[1]!.children[0] as Text).value).toBe('Utkast: Semesterpolicy')
+  })
+
+  it('17.10b: does not transform partial [Utkast: ...', () => {
+    const tree = makeTree('text [Utkast: incomplete')
+    plugin(tree)
+    const children = getChildren(tree)
+    expect(children).toHaveLength(1)
+    expect((children[0] as Text).value).toBe('text [Utkast: incomplete')
+  })
+
+  // ==========================================================================
+  // Story 17.18 AC 8 — SF-2 draft citationKey "(utkast vN)" suffix verify-only
+  // ==========================================================================
+  //
+  // The existing 17.10b regex matches everything inside the [Utkast: ...]
+  // brackets, including parentheses for the version suffix. No regex change
+  // is required — the version suffix renders naturally inside the pill text.
+  // This test locks the verified behavior so a future regex tightening can't
+  // silently regress the SF-2 shape.
+
+  it('Story 17.18 SF-2: draft citationKey with (utkast vN) suffix renders inline', () => {
+    const tree = makeTree(
+      'Er Arbetsmiljöpolicy kräver årlig riskbedömning[Utkast: Arbetsmiljöpolicy (utkast v9)].'
+    )
+    plugin(tree)
+
+    const children = getChildren(tree)
+    const cite = children.find(
+      (c): c is Element => 'tagName' in c && c.tagName === 'cite'
+    )!
+    expect(cite).toBeDefined()
+    // The version suffix renders as part of the pill text.
+    expect((cite.children[0] as Text).value).toBe(
+      'Utkast: Arbetsmiljöpolicy (utkast v9)'
+    )
+    expect((cite.properties as { 'data-tier'?: string })['data-tier']).toBe(
+      'draft'
+    )
+  })
+
+  it('Story 17.18 SF-2: paired Källa + Utkast (utkast vN) for the SAME doc renders two distinct cites', () => {
+    // The dual-state grounding pattern from the system prompt — same doc,
+    // both tiers cited within one sentence. Each pill must carry its own
+    // data-tier so the chip renderer applies distinct styling.
+    const tree = makeTree(
+      'Er Arbetsmiljöpolicy[Källa: Arbetsmiljöpolicy] uppdateras i ett utkast[Utkast: Arbetsmiljöpolicy (utkast v9)].'
+    )
+    plugin(tree)
+
+    const children = getChildren(tree)
+    const cites = children.filter(
+      (c): c is Element => 'tagName' in c && c.tagName === 'cite'
+    )
+    expect(cites).toHaveLength(2)
+    expect(
+      (cites[0]!.properties as { 'data-tier'?: string })['data-tier']
+    ).toBe('canonical')
+    expect((cites[0]!.children[0] as Text).value).toBe('Arbetsmiljöpolicy')
+    expect(
+      (cites[1]!.properties as { 'data-tier'?: string })['data-tier']
+    ).toBe('draft')
+    expect((cites[1]!.children[0] as Text).value).toBe(
+      'Utkast: Arbetsmiljöpolicy (utkast v9)'
+    )
+  })
 })

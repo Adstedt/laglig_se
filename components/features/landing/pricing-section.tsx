@@ -85,7 +85,7 @@ export function PricingSection() {
           </div>
           <div className="flex items-center gap-2">
             <Check className="h-4 w-4 text-emerald-500" />
-            <span>Data lagras i Sverige</span>
+            <span>Data lagras i EU</span>
           </div>
         </div>
       </div>

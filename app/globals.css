@@ -74,6 +74,9 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Story 14.23 — agent-proposal "spine" accent (warm → sage) */
+    --spine-top: 140 30% 52%;
+    --spine-bot: 45 62% 58%;
   }
 
   .dark {
@@ -130,6 +133,8 @@
     --sidebar-accent-foreground: 0 0% 93%;
     --sidebar-border: 0 0% 13%;
     --sidebar-ring: 0 0% 64%;
+    --spine-top: 140 28% 48%;
+    --spine-bot: 45 55% 52%;
   }
 }
 
@@ -151,6 +156,55 @@ html {
 @layer utilities {
   .font-safiro {
     font-family: 'Safiro', system-ui, sans-serif !important;
+  }
+
+  /* Story 14.23 — agent proposal card: the signature warm→sage "spine" and the
+     calm "awaiting your decision" breathing dot. */
+  .agent-spine {
+    background: linear-gradient(
+      to bottom,
+      hsl(var(--spine-top)),
+      hsl(var(--spine-bot))
+    );
+    border-radius: 9999px;
+  }
+  /* AI-suggestion emphasis — reuses the agent-proposal accent (sage → amber)
+     so a pre-filled "Din bedömning" card reads clearly as an AI proposal until
+     the user saves. */
+  .ai-suggest-surface {
+    background-color: hsl(var(--spine-top) / 0.05);
+    box-shadow: inset 0 0 0 1px hsl(var(--spine-top) / 0.32);
+  }
+  .ai-suggest-banner {
+    background-color: hsl(var(--spine-top) / 0.1);
+    border: 1px solid hsl(var(--spine-top) / 0.28);
+  }
+  .ai-suggest-icon {
+    color: hsl(var(--spine-top));
+  }
+  .agent-dot-pending::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 9999px;
+    background: hsl(var(--spine-top) / 0.18);
+    animation: agentDotBreathe 3.2s ease-in-out infinite;
+  }
+  @keyframes agentDotBreathe {
+    0%,
+    100% {
+      opacity: 0.45;
+      transform: scale(0.85);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .agent-dot-pending::before {
+      animation: none;
+    }
   }
 
   /* Story 25.3: scroll-shadow technique (Lea Verou pattern). Subtle shadow
@@ -723,6 +777,33 @@ html {
   }
 
   .legal-document tr:hover td {
+    @apply bg-muted/30;
+  }
+
+  /* ---------- Chat (agent markdown) tables ----------
+     Brings agent-emitted markdown tables onto the app's table styling — the
+     same card surface / muted uppercase header / row hover as legal documents,
+     slightly denser for the chat column. Zero-specificity prose defaults
+     (@tailwindcss/typography uses :where()) are overridden by these. */
+  .chat-markdown table {
+    @apply my-4 w-full overflow-hidden rounded-md border border-border text-sm;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .chat-markdown th {
+    @apply border-b border-border bg-muted/60 px-3.5 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground;
+  }
+
+  .chat-markdown td {
+    @apply border-b border-border/50 bg-background px-3.5 py-2.5 text-left align-top;
+  }
+
+  .chat-markdown tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .chat-markdown tr:hover td {
     @apply bg-muted/30;
   }
 

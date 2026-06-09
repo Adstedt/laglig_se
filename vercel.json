@@ -82,6 +82,18 @@
       "schedule": "30 0 * * *"
     },
     {
+      "path": "/api/cron/expire-pending-actions",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/extract-files",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/sweep-draft-reindex",
+      "schedule": "* * * * *"
+    },
+    {
       "path": "/api/cron/refresh-sitemap",
       "schedule": "30 16 * * *"
     }

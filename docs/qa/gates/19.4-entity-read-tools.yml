@@ -1,0 +1,101 @@
+schema: 1
+story: '19.4'
+story_title: 'Agent Entity-Read Tools (Lazy Graph Traversal)'
+gate: PASS
+status_reason: 'PASS after the owner ran the live traversal smoke (the last gating residual) — it verified the full read-and-traverse loop. All 13 ACs implemented + workspace-isolated + unit-green (112/112 agent-tools dir; tsc 0 errors branch-wide; eslint clean), all dev-owned issues from the prior passes resolved + re-verified, and all four NFRs PASS. Two low follow-ups tracked, neither blocking: 194-003 (use-list-item-details.ts scope — owner-accepted into 19.4, untested merge) and 194-004 (uncapped linked-artifacts union — future/telemetry-gated). Only mechanical step left is committing the working tree (owner manual workflow).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-26T11:00:00Z'
+
+waiver: { active: false }
+
+quality_score: 95
+expires: '2026-06-09T11:00:00Z'
+
+history:
+  - at: '2026-05-26T10:15:00Z'
+    gate: CONCERNS
+    score: 90
+    note: 'Initial review. Code sound + secure; CONCERNS on stale File List / undocumented+uncommitted CP-001 + modal-refresh changes (194-001) and minor test gaps (194-002, 194-005).'
+  - at: '2026-05-26T10:40:00Z'
+    gate: CONCERNS
+    score: 95
+    note: 'Re-review after dev fixes. 194-001/002/005 resolved + verified. All NFRs PASS. Residual CONCERNS = unperformed live smoke + open PO decision (194-003) + uncommitted tree.'
+  - at: '2026-05-26T11:00:00Z'
+    gate: PASS
+    score: 95
+    note: 'Owner ran the full live traversal smoke → PASS. Last gating residual cleared. 194-003 owner-accepted into scope (tracked-low); 194-004 future. Story → Done, moved to completed/.'
+
+evidence:
+  tests_reviewed: 27
+  tests_result: 'QA-verified (not just dev-reported): 27/27 across the 5 targeted suites (reader-utils 9 [NEW], linked-artifacts-delegation 2 [NEW], get-task 5 [+1 not-found], get-law-list-item 7, list-linked-artifacts 4); full tests/unit/agent/tools dir 112/112 (20 files); tsc --noEmit 0 errors branch-wide; eslint clean. No migration.'
+  smoke_test:
+    performed_by: 'Owner (Alexander)'
+    result: 'PASS — full traversal loop verified live'
+    covered:
+      - 'LAW chat "är vi compliant?"/"vad saknas?" → get_law_list_item reads status + bevis gaps + prior assessments → follows to list_linked_artifacts → read_file on a bevis.'
+      - 'Write proposal (update_compliance_status / add_obligation) preceded by a read (read-before-propose steering fires).'
+      - 'Mirrors the bar 19.4a cleared (its smoke caught a real regression mid-run); 19.4 smoke reported clean.'
+  risks_identified: 5
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    ac_gaps: []
+    notes:
+      - 'Unit traceability complete (AC 2 caps, AC 3 names-not-IDs, AC 4/5/6 incl. not-found, AC 7 SF-A closure-workspaceId + delegation shape, AC 8 incl. not-found, AC 9 registry/NH-1, AC 11 steering, plus direct reader-utils helper coverage).'
+      - 'Behavioral/integration coverage now satisfied by the owner live smoke.'
+
+top_issues:
+  - id: 194-001
+    severity: low
+    status: resolved
+    summary: 'RESOLVED. File List + Change Log (v0.5) reconciled to cover the CP-001 enum-label fix + the use-list-item-details.ts modal-refresh tweak; dev edited only permitted sections (QA Results + gate untouched). Residual: commit the working tree (owner manual workflow) — not a code/QA blocker.'
+    refs: ['docs/stories/completed/19.4.entity-read-tools.md']
+    suggested_owner: dev
+  - id: 194-002
+    severity: low
+    status: resolved
+    summary: 'RESOLVED. New reader-utils.test.ts (9 tests) directly covers shortText boundary, userName/userNameOrNull fallbacks, isoDate, and the three enum→label helpers null handling. QA-verified passing.'
+    refs: ['tests/unit/agent/tools/reader-utils.test.ts']
+    suggested_owner: dev
+  - id: 194-005
+    severity: low
+    status: resolved
+    summary: 'RESOLVED. get_task not-found→wrapToolError test + linked-artifacts-delegation.test.ts (SF-A delegation shape + cross-workspace rejection). QA-verified passing.'
+    refs:
+      - 'tests/unit/agent/tools/get-task.test.ts'
+      - 'tests/unit/agent/tools/linked-artifacts-delegation.test.ts'
+    suggested_owner: dev
+  - id: 194-003
+    severity: low
+    status: tracked
+    summary: 'TRACKED (owner-accepted into 19.4). use-list-item-details.ts modal-refresh change is technically outside the story stated read-only scope (AC 13) but owner accepted it as part of this story at Done. Backward-compatible (undefined → falls back to initialData). The freshly-fetched-status-wins merge remains untested — add a test if it regresses.'
+    refs: ['lib/hooks/use-list-item-details.ts']
+    suggested_owner: dev
+    suggested_fix: 'Add a unit test for the status/priority merge precedence in a follow-up.'
+  - id: 194-004
+    severity: low
+    status: tracked
+    summary: 'TRACKED (future / telemetry-gated). loadLinkedArtifacts applies no take caps on the 5-way union (inherited unchanged from Epic-17). Fine at current per-workspace scale; cap tool-side only if large link sets appear in telemetry.'
+    refs: ['app/actions/linked-artifacts.ts', 'lib/agent/tools/list-linked-artifacts.ts']
+    suggested_owner: dev
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Workspace isolation holds on all three tools with tests: get_law_list_item where { id, law_list: { workspace_id } }; get_task where { id, workspace_id }; list_linked_artifacts via loadLinkedArtifacts rejecting item.law_list.workspace_id !== workspaceId AND skipping foreign-workspace tasks (cross-workspace → error, asserted directly). SF-A removed the session/cookies() dependency from the streaming loop. Names-not-IDs enforced (name ?? email ?? "Okänd"); no raw user ids emitted. No raw @anthropic-ai/sdk.'
+  performance:
+    status: PASS
+    notes: 'SF-1 caps at the Prisma take level (verified). The two findFirst readers are single bounded queries. The one uncapped path is the loadLinkedArtifacts union (194-004) — fine at current per-workspace scale.'
+  reliability:
+    status: PASS
+    notes: 'Every tool wraps in try/catch → wrapToolError with Swedish guidance; missing/foreign/not-found id fails safe to an error (unit-asserted on both readers), never a wrong read. End-to-end behavioral reliability now confirmed by the owner live smoke.'
+  maintainability:
+    status: PASS
+    notes: 'Clean — shared reader-utils, ContextHandle grammar unified, status/priority labels reuse the single source in badge-tones. File List/Change Log reconciled; helper-level test added. IMPACT_LEVEL_LABELS duplication in reader-utils has a logged consolidation follow-up — acceptable.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: '194-003: add a unit test for the use-list-item-details.ts status/priority merge precedence.'
+      refs: ['lib/hooks/use-list-item-details.ts']
+    - action: '194-004: cap the list_linked_artifacts union tool-side if large link sets appear in telemetry.'
+      refs: ['lib/agent/tools/list-linked-artifacts.ts']

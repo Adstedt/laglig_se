@@ -74,6 +74,10 @@ interface LeftPanelProps {
   onKravpunkterProgressChange?:
     | ((_progress: KravpunkterProgress) => void)
     | undefined
+  /** Override the initially-open accordion items (lets a consumer open several
+   *  sections at once). Falls back to focusField / the quiet default when
+   *  omitted, so existing call sites are unaffected. */
+  initialOpenItems?: string[] | undefined
 }
 
 // Accordion item values. Ordered to mirror the on-screen group order
@@ -162,9 +166,12 @@ export function LeftPanel({
   focusField,
   complianceReadOnly,
   onKravpunkterProgressChange,
+  initialOpenItems,
 }: LeftPanelProps) {
   const [openItems, setOpenItemsState] = useState<string[]>(() => {
-    // focusField wins — entry-point intent overrides any remembered state.
+    // Explicit override wins (e.g. landing showcase opening several sections).
+    if (initialOpenItems) return initialOpenItems
+    // focusField next — entry-point intent overrides any remembered state.
     if (focusField === 'kravpunkter') return KRAVPUNKTER_FOCUS_OPEN
     // Otherwise: last-used this session, falling back to the quiet default.
     return lastSessionOpen ?? DEFAULT_OPEN

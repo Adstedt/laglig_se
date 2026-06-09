@@ -23,6 +23,22 @@ export interface SourceInfo {
   anchorId: string | null
   /** External URL for web search sources (null/undefined for DB sources) */
   url?: string | null
+  /**
+   * Workspace document ID for styrdokument citations (set by
+   * search_workspace_documents / get_workspace_document tool extractors).
+   * When present, the citation pill renders an "Öppna styrdokument" CTA that
+   * navigates to `/workspace/styrdokument/{workspaceDocumentId}/edit`.
+   */
+  workspaceDocumentId?: string | null
+  /**
+   * Which dual-state tier this citation represents. APPROVED → the pill's CTA
+   * opens the doc with `?view=approved` (read-only approved version). DRAFT →
+   * opens the default editor view (which loads the draft). Set by the
+   * search_workspace_documents / get_workspace_document / list_workspace_documents
+   * extractors based on which citationKey form (`<title>` vs `<title> (utkast vN)`)
+   * is being registered.
+   */
+  tier?: 'APPROVED' | 'DRAFT' | null
 }
 
 /** Metadata shape attached to assistant messages via messageMetadata callback */
@@ -35,10 +51,12 @@ export interface ChatMessageMetadata {
 // ---------------------------------------------------------------------------
 
 /**
- * Check if text contains any [Källa: ...] markers.
+ * Check if text contains any [Källa: ...] or [Utkast: ...] markers.
+ * Story 17.10b adds the `[Utkast:]` form for DRAFT/IN_REVIEW styrdokument
+ * citations (DEC-3); both forms count as "this text references a source".
  */
 export function hasCitationMarkers(text: string): boolean {
-  return text.includes('[Källa:')
+  return text.includes('[Källa:') || text.includes('[Utkast:')
 }
 
 // ---------------------------------------------------------------------------
@@ -176,6 +194,182 @@ export function extractSourcesFromToolResult(
           }
         }
       }
+    } else if (toolName === 'search_workspace_files') {
+      // Story 17.9c: uploaded-file results. Files have no document number, so we
+      // carry the filename in `documentNumber` (keeps SourceInfo.documentNumber a
+      // non-optional string — no cross-cutting type change). The citationKey is the
+      // filename; resolveSource's bare-label fallback (sourceMap.get(trimmed))
+      // resolves `[Källa: <filename>]` against the keys we set here.
+      const data = output.data as
+        | Array<{
+            fileId?: string
+            filename?: string
+            snippet?: string
+            citationKey?: string
+          }>
+        | undefined
+
+      if (Array.isArray(data)) {
+        for (const item of data) {
+          const filename = item.citationKey ?? item.filename
+          if (!filename) continue
+          set(filename, {
+            documentNumber: filename,
+            title: item.filename ?? filename,
+            snippet: item.snippet ?? null,
+            slug: null,
+            path: null,
+            anchorId: null,
+          })
+        }
+      }
+    } else if (toolName === 'search_workspace_documents') {
+      // Story 17.10 (DEC-2 + AC 20/21): authored styrdokument. citationKey = title.
+      // Mirrors the file branch above (title carried in `documentNumber` to keep
+      // SourceInfo.documentNumber a non-optional string).
+      //
+      // CITE-002 collision disambiguator (AC 21): two styrdokument can share
+      // the same title (e.g. an older + a re-issued version both surfacing in
+      // a search). We pre-scan the result set for title collisions; only
+      // colliding titles get a short id suffix appended to the citationKey so
+      // the model can disambiguate. Single-occurrence titles stay clean
+      // (`[Källa: Dataskyddspolicy]`).
+      const data = output.data as
+        | Array<{
+            documentId?: string
+            title?: string
+            snippet?: string
+            citationKey?: string
+            tier?: 'APPROVED' | 'DRAFT'
+          }>
+        | undefined
+
+      if (Array.isArray(data)) {
+        // Pre-scan: how many times does each base title appear?
+        const titleCounts = new Map<string, number>()
+        for (const item of data) {
+          const t = item.citationKey ?? item.title
+          if (!t) continue
+          titleCounts.set(t, (titleCounts.get(t) ?? 0) + 1)
+        }
+
+        for (const item of data) {
+          const baseTitle = item.citationKey ?? item.title
+          if (!baseTitle) continue
+          const isColliding = (titleCounts.get(baseTitle) ?? 0) > 1
+          // Short id suffix = first 8 chars of the UUID (enough disambiguation
+          // for in-result-set collisions while staying visually compact).
+          const suffix =
+            isColliding && item.documentId
+              ? ` (${item.documentId.slice(0, 8)})`
+              : ''
+          const citationKey = `${baseTitle}${suffix}`
+          set(citationKey, {
+            documentNumber: citationKey,
+            title: item.title ?? baseTitle,
+            snippet: item.snippet ?? null,
+            slug: null,
+            path: null,
+            anchorId: null,
+            // Drives the "Öppna styrdokument" CTA on the citation pill.
+            workspaceDocumentId: item.documentId ?? null,
+            tier: item.tier ?? null,
+          })
+        }
+      }
+    } else if (toolName === 'get_workspace_document') {
+      // Story 17.10 + smoke fix: when the agent reads a doc directly (instead
+      // of via search), the citation pill should still resolve so the
+      // "Öppna styrdokument" CTA renders. Tool returns a single doc shape
+      // with `documentId` + `title` at the top level + nested approved/draft
+      // tier snapshots. Story 17.18 SF-2 draft citationKey shape requires
+      // BOTH the bare title AND the "title (utkast vN)" form to be in the
+      // source map so [Källa: title] AND [Utkast: title (utkast vN)] both
+      // resolve from the same agent turn.
+      const data = output.data as
+        | {
+            documentId?: string
+            title?: string
+            content?: string
+            draft?: { versionNumber?: number } | null
+          }
+        | undefined
+
+      if (data?.documentId && data?.title) {
+        const snippet =
+          typeof data.content === 'string'
+            ? data.content.slice(0, 200).replace(/\s+/g, ' ').trim() || null
+            : null
+
+        // Canonical/bare title — drives [Källa: <title>] resolution.
+        set(data.title, {
+          documentNumber: data.title,
+          title: data.title,
+          snippet,
+          slug: null,
+          path: null,
+          anchorId: null,
+          workspaceDocumentId: data.documentId,
+          tier: 'APPROVED',
+        })
+
+        // Draft-tier citationKey — drives [Utkast: <title> (utkast vN)]
+        // resolution. Mirrors Story 17.18 SF-2 shape used by search.
+        if (typeof data.draft?.versionNumber === 'number') {
+          const draftKey = `${data.title} (utkast v${data.draft.versionNumber})`
+          set(draftKey, {
+            documentNumber: draftKey,
+            title: data.title,
+            snippet,
+            slug: null,
+            path: null,
+            anchorId: null,
+            tier: 'DRAFT',
+            workspaceDocumentId: data.documentId,
+          })
+        }
+      }
+    } else if (toolName === 'list_workspace_documents') {
+      // Story 17.10 + smoke fix: when the agent lists docs (for triage or
+      // overview), each entry should resolve as a citation source so any
+      // follow-up [Källa: <title>] or [Utkast: <title> (utkast vN)] pill
+      // gets the workspaceDocumentId + renders the navigation CTA.
+      const data = output.data as
+        | Array<{
+            documentId?: string
+            title?: string
+            currentDraftVersionNumber?: number | null
+          }>
+        | undefined
+
+      if (Array.isArray(data)) {
+        for (const item of data) {
+          if (!item.documentId || !item.title) continue
+          set(item.title, {
+            documentNumber: item.title,
+            title: item.title,
+            snippet: null,
+            slug: null,
+            path: null,
+            anchorId: null,
+            workspaceDocumentId: item.documentId,
+            tier: 'APPROVED',
+          })
+          if (typeof item.currentDraftVersionNumber === 'number') {
+            const draftKey = `${item.title} (utkast v${item.currentDraftVersionNumber})`
+            set(draftKey, {
+              documentNumber: draftKey,
+              title: item.title,
+              snippet: null,
+              slug: null,
+              path: null,
+              anchorId: null,
+              workspaceDocumentId: item.documentId,
+              tier: 'DRAFT',
+            })
+          }
+        }
+      }
     } else if (toolName === 'get_change_details') {
       const data = output.data as
         | {
@@ -216,7 +410,15 @@ export function resolveSource(
   label: string,
   sourceMap: Map<string, SourceInfo>
 ): SourceInfo | null {
-  const trimmed = label.trim()
+  let trimmed = label.trim()
+
+  // Story 17.10b: chips emitted from [Utkast: <title>] carry the "Utkast: "
+  // prefix in their visible text (DEC-3 — the prefix is the user-facing draft
+  // marker). The source map is keyed by the title alone, so strip the prefix
+  // before lookup. Källa pills never carry a prefix in the chip text.
+  if (trimmed.startsWith('Utkast: ')) {
+    trimmed = trimmed.slice('Utkast: '.length).trim()
+  }
 
   // 1. Parse label to extract section reference and look up by path
   const parsed = parseCitationLabel(trimmed)

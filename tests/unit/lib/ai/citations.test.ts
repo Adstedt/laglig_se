@@ -22,6 +22,13 @@ describe('hasCitationMarkers', () => {
   it('returns true for partial marker', () => {
     expect(hasCitationMarkers('text [Källa: partial')).toBe(true)
   })
+
+  // Story 17.10b: [Utkast:] is the draft-tier citation form (DEC-3).
+  it('returns true when [Utkast: ...] present (17.10b draft tier)', () => {
+    expect(
+      hasCitationMarkers('enligt utkast till [Utkast: Semesterpolicy]')
+    ).toBe(true)
+  })
 })
 
 describe('anchorIdFromPath', () => {
@@ -119,6 +126,158 @@ describe('extractSourcesFromToolResult', () => {
     expect(doc!.anchorId).toBeNull()
   })
 
+  it('extracts filename-keyed entries from search_workspace_files (Story 17.9c)', () => {
+    const result = {
+      data: [
+        {
+          fileId: 'file-42',
+          filename: 'dataskyddspolicy.pdf',
+          category: 'POLICY',
+          snippet: 'Kryptering av personuppgifter krävs.',
+          relevanceScore: 0.88,
+          citationKey: 'dataskyddspolicy.pdf',
+        },
+      ],
+      _meta: {
+        tool: 'search_workspace_files',
+        executionTimeMs: 50,
+        resultCount: 1,
+      },
+    }
+
+    const sources = extractSourcesFromToolResult(
+      'search_workspace_files',
+      result
+    )
+
+    // Keyed by the filename (= citationKey) so [Källa: dataskyddspolicy.pdf] resolves.
+    const src = sources['dataskyddspolicy.pdf']
+    expect(src).toBeDefined()
+    // Filename carried in documentNumber (keeps the field non-optional — AC 7).
+    expect(src!.documentNumber).toBe('dataskyddspolicy.pdf')
+    expect(src!.title).toBe('dataskyddspolicy.pdf')
+    expect(src!.snippet).toBe('Kryptering av personuppgifter krävs.')
+    expect(src!.path).toBeNull()
+
+    // A bare filename label resolves via resolveSource's fallback (no doc-number parse).
+    const resolved = resolveSource(
+      'dataskyddspolicy.pdf',
+      sourcesToMap(sources)
+    )
+    expect(resolved?.documentNumber).toBe('dataskyddspolicy.pdf')
+  })
+
+  // Story 17.10 (AC 20 + 21): search_workspace_documents — title-keyed citations
+  // with collision disambiguation.
+  it('extracts title-keyed entries from search_workspace_documents (Story 17.10, AC 20)', () => {
+    const result = {
+      data: [
+        {
+          documentId: 'wd-1',
+          title: 'Dataskyddspolicy',
+          documentType: 'POLICY',
+          status: 'APPROVED',
+          snippet: 'Kryptering av personuppgifter.',
+          relevanceScore: 0.88,
+          citationKey: 'Dataskyddspolicy',
+        },
+        {
+          documentId: 'wd-2',
+          title: 'Brandskyddsrutin',
+          documentType: 'ROUTINE',
+          status: 'APPROVED',
+          snippet: 'Brandskyddsansvarig utses årligen.',
+          relevanceScore: 0.76,
+          citationKey: 'Brandskyddsrutin',
+        },
+      ],
+      _meta: { tool: 'search_workspace_documents' },
+    }
+
+    const sources = extractSourcesFromToolResult(
+      'search_workspace_documents',
+      result
+    )
+
+    // DEC-2: citationKey = title (clean — no collision in this set).
+    const polis = sources['Dataskyddspolicy']
+    expect(polis).toBeDefined()
+    expect(polis!.documentNumber).toBe('Dataskyddspolicy')
+    expect(polis!.title).toBe('Dataskyddspolicy')
+    expect(polis!.snippet).toContain('Kryptering')
+
+    const rutin = sources['Brandskyddsrutin']
+    expect(rutin).toBeDefined()
+    expect(rutin!.documentNumber).toBe('Brandskyddsrutin')
+
+    // [Källa: Dataskyddspolicy] resolves via resolveSource's bare-label fallback.
+    const resolved = resolveSource('Dataskyddspolicy', sourcesToMap(sources))
+    expect(resolved?.title).toBe('Dataskyddspolicy')
+
+    // CTA enablement: workspaceDocumentId plumbed through so the pill can
+    // render an "Öppna styrdokument" navigation link in its hover card.
+    expect(polis!.workspaceDocumentId).toBe('wd-1')
+    expect(rutin!.workspaceDocumentId).toBe('wd-2')
+    expect(resolved?.workspaceDocumentId).toBe('wd-1')
+  })
+
+  it('appends a short id suffix on title collisions for disambiguation (Story 17.10, AC 21)', () => {
+    const result = {
+      data: [
+        // Two styrdokument that happen to share the same title — e.g. an old
+        // and a re-issued version both surfaced by the search.
+        {
+          documentId: '0a0a0a0a-1111-2222-3333-444444444444',
+          title: 'Dataskyddspolicy',
+          snippet: 'Version 1 — pre-2024.',
+          relevanceScore: 0.9,
+          citationKey: 'Dataskyddspolicy',
+        },
+        {
+          documentId: 'bbbbcccc-1111-2222-3333-444444444444',
+          title: 'Dataskyddspolicy',
+          snippet: 'Version 2 — uppdaterad efter GDPR-revision.',
+          relevanceScore: 0.85,
+          citationKey: 'Dataskyddspolicy',
+        },
+        // A non-colliding doc — must still stay clean (no suffix).
+        {
+          documentId: '99999999-1111-2222-3333-444444444444',
+          title: 'Brandskyddsrutin',
+          snippet: 'Branrutiner.',
+          relevanceScore: 0.7,
+          citationKey: 'Brandskyddsrutin',
+        },
+      ],
+      _meta: { tool: 'search_workspace_documents' },
+    }
+
+    const sources = extractSourcesFromToolResult(
+      'search_workspace_documents',
+      result
+    )
+
+    // Colliding entries get a short id-suffix appended; bare title becomes
+    // ambiguous and is NOT a source key.
+    expect(sources['Dataskyddspolicy']).toBeUndefined()
+    expect(sources['Dataskyddspolicy (0a0a0a0a)']).toBeDefined()
+    expect(sources['Dataskyddspolicy (bbbbcccc)']).toBeDefined()
+
+    // Non-colliding entry stays clean.
+    expect(sources['Brandskyddsrutin']).toBeDefined()
+    expect(sources['Brandskyddsrutin (99999999)']).toBeUndefined()
+
+    // documentNumber carries the full disambiguated citationKey.
+    expect(sources['Dataskyddspolicy (0a0a0a0a)']!.documentNumber).toBe(
+      'Dataskyddspolicy (0a0a0a0a)'
+    )
+    // Display title stays the human-readable original (no suffix), so the
+    // citation pill renders cleanly even when the key is disambiguated.
+    expect(sources['Dataskyddspolicy (0a0a0a0a)']!.title).toBe(
+      'Dataskyddspolicy'
+    )
+  })
+
   it('extracts from get_document_details', () => {
     const result = {
       data: {
@@ -174,6 +333,58 @@ describe('extractSourcesFromToolResult', () => {
     expect(sec2a!.anchorId).toBe('K3P2a')
     expect(sec2a!.snippet).toContain('systematiskt planera')
     expect(sec2a!.path).toBe('kap3.§2a')
+  })
+
+  it('extracts from get_workspace_document with workspaceDocumentId + draft citationKey (smoke fix)', () => {
+    const result = {
+      data: {
+        documentId: 'wd-42',
+        title: 'Semesterpolicy',
+        content: 'Denna policy reglerar semesterns intjänande och uttag.',
+        draft: { versionNumber: 5 },
+      },
+    }
+    const sources = extractSourcesFromToolResult(
+      'get_workspace_document',
+      result
+    )
+    // Bare title — drives [Källa: Semesterpolicy].
+    expect(sources['Semesterpolicy']).toBeDefined()
+    expect(sources['Semesterpolicy']!.workspaceDocumentId).toBe('wd-42')
+    expect(sources['Semesterpolicy']!.snippet).toContain('semester')
+    // Draft citationKey — drives [Utkast: Semesterpolicy (utkast v5)].
+    expect(sources['Semesterpolicy (utkast v5)']).toBeDefined()
+    expect(sources['Semesterpolicy (utkast v5)']!.workspaceDocumentId).toBe(
+      'wd-42'
+    )
+  })
+
+  it('extracts from list_workspace_documents with workspaceDocumentId per row (smoke fix)', () => {
+    const result = {
+      data: [
+        {
+          documentId: 'wd-1',
+          title: 'Brandskyddsrutin',
+          currentDraftVersionNumber: null,
+        },
+        {
+          documentId: 'wd-2',
+          title: 'Dataskyddspolicy',
+          currentDraftVersionNumber: 3,
+        },
+      ],
+    }
+    const sources = extractSourcesFromToolResult(
+      'list_workspace_documents',
+      result
+    )
+    expect(sources['Brandskyddsrutin']!.workspaceDocumentId).toBe('wd-1')
+    expect(sources['Dataskyddspolicy']!.workspaceDocumentId).toBe('wd-2')
+    // Draft citationKey only emitted when currentDraftVersionNumber is set.
+    expect(sources['Dataskyddspolicy (utkast v3)']!.workspaceDocumentId).toBe(
+      'wd-2'
+    )
+    expect(sources['Brandskyddsrutin (utkast v1)']).toBeUndefined()
   })
 
   it('extracts from get_change_details', () => {
@@ -316,6 +527,148 @@ describe('extractSourcesFromToolResult', () => {
   it('returns empty for unknown tool', () => {
     const sources = extractSourcesFromToolResult('unknown', { data: {} })
     expect(Object.keys(sources)).toHaveLength(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Story 17.10b AC 9 / AC 10 / AC 11: status-aware citation labels.
+// The citationKey itself stays the bare title (display title stays clean per
+// AC 10); the agent picks the bracket form ([Källa:] vs [Utkast:]) based on
+// the `status` field returned by the tool. These tests verify the sourceMap
+// shape isn't affected by the status split (no status-specific keys).
+// ---------------------------------------------------------------------------
+
+describe('extractSourcesFromToolResult — search_workspace_documents status awareness (17.10b)', () => {
+  it('AC 10: citationKey stays the bare title regardless of status (Källa)', () => {
+    const sources = extractSourcesFromToolResult('search_workspace_documents', {
+      data: [
+        {
+          documentId: 'doc-1',
+          title: 'Diskrimineringspolicy',
+          status: 'APPROVED',
+          snippet: 'snippet',
+          citationKey: 'Diskrimineringspolicy',
+        },
+      ],
+    })
+
+    expect(sources['Diskrimineringspolicy']).toBeDefined()
+    expect(sources['Diskrimineringspolicy']!.documentNumber).toBe(
+      'Diskrimineringspolicy'
+    )
+    // Crucially: no bracketed/prefixed key. The display title is clean.
+    expect(sources['[Källa: Diskrimineringspolicy]']).toBeUndefined()
+  })
+
+  it('AC 10: citationKey stays the bare title for DRAFT/IN_REVIEW too (Utkast)', () => {
+    const sources = extractSourcesFromToolResult('search_workspace_documents', {
+      data: [
+        {
+          documentId: 'doc-1',
+          title: 'Semesterpolicy',
+          status: 'DRAFT',
+          snippet: 'snippet',
+          citationKey: 'Semesterpolicy',
+        },
+      ],
+    })
+
+    expect(sources['Semesterpolicy']).toBeDefined()
+    expect(sources['[Utkast: Semesterpolicy]']).toBeUndefined()
+    expect(sources['Utkast: Semesterpolicy']).toBeUndefined()
+  })
+
+  it('AC 9 + CITE-002: collision suffix still applies across mixed APPROVED + DRAFT pair', () => {
+    const sources = extractSourcesFromToolResult('search_workspace_documents', {
+      data: [
+        {
+          documentId: 'abcd1234-aaaa-bbbb-cccc-000000000001',
+          title: 'Diskrimineringspolicy',
+          status: 'APPROVED',
+          snippet: 'hr variant',
+          citationKey: 'Diskrimineringspolicy',
+        },
+        {
+          documentId: 'efgh5678-aaaa-bbbb-cccc-000000000002',
+          title: 'Diskrimineringspolicy',
+          status: 'DRAFT',
+          snippet: 'guest variant draft',
+          citationKey: 'Diskrimineringspolicy',
+        },
+      ],
+    })
+
+    // Both keys get an id-suffix because the bare title collides — regardless
+    // of status tier. Status is not part of the collision key.
+    expect(sources['Diskrimineringspolicy (abcd1234)']).toBeDefined()
+    expect(sources['Diskrimineringspolicy (efgh5678)']).toBeDefined()
+    expect(sources['Diskrimineringspolicy']).toBeUndefined()
+  })
+
+  it('AC 11: handles missing status on legacy chunks gracefully (no crash, no extra key)', () => {
+    // The tool layer (search-workspace-documents.ts) defaults missing status
+    // to 'APPROVED' before reaching this extractor — but the extractor itself
+    // doesn't read status. This test pins that contract: the source map shape
+    // is unaffected by whether status is APPROVED, DRAFT, or absent.
+    const sources = extractSourcesFromToolResult('search_workspace_documents', {
+      data: [
+        {
+          documentId: 'doc-legacy',
+          title: 'Legacy Policy',
+          // status DELIBERATELY OMITTED — legacy 17.9b chunk path
+          snippet: 'snippet',
+          citationKey: 'Legacy Policy',
+        },
+      ],
+    })
+    expect(sources['Legacy Policy']).toBeDefined()
+  })
+})
+
+describe('resolveSource — Utkast: prefix stripping (17.10b AC 9/10)', () => {
+  it('strips the "Utkast: " prefix before sourceMap lookup', () => {
+    const map = new Map<string, SourceInfo>([
+      [
+        'Diskrimineringspolicy',
+        {
+          documentNumber: 'Diskrimineringspolicy',
+          title: 'Diskrimineringspolicy',
+          snippet: 'draft policy',
+          slug: null,
+          path: null,
+          anchorId: null,
+        },
+      ],
+    ])
+
+    // The chip carries "Utkast: Diskrimineringspolicy" as its visible text
+    // (DEC-3) — the resolver must strip the prefix to hit the title-keyed map.
+    const resolved = resolveSource('Utkast: Diskrimineringspolicy', map)
+    expect(resolved?.documentNumber).toBe('Diskrimineringspolicy')
+  })
+
+  it('does NOT strip "Källa: " (canonical pills never carry the prefix in chip text)', () => {
+    const map = new Map<string, SourceInfo>([
+      [
+        'Diskrimineringspolicy',
+        {
+          documentNumber: 'Diskrimineringspolicy',
+          title: 'Diskrimineringspolicy',
+          snippet: 'approved policy',
+          slug: null,
+          path: null,
+          anchorId: null,
+        },
+      ],
+    ])
+
+    // A literal "Källa: X" label would fail lookup if it ever appeared (it
+    // doesn't — Källa pills render bare-label). This pins the asymmetry.
+    expect(resolveSource('Källa: Diskrimineringspolicy', map)).toBeNull()
+    // The bare title still resolves.
+    expect(resolveSource('Diskrimineringspolicy', map)?.documentNumber).toBe(
+      'Diskrimineringspolicy'
+    )
   })
 })
 

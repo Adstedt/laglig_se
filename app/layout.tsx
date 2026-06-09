@@ -16,11 +16,11 @@ import 'react-pdf/dist/Page/TextLayer.css'
 
 export const metadata: Metadata = {
   title: {
-    default: 'Laglig.se - Svenska lagar och juridisk efterlevnad',
+    default: 'Laglig.se – Lagefterlevnad & compliance för svenska företag',
     template: '%s | Laglig.se',
   },
   description:
-    'Laglig.se hjälper företag att förstå och följa svenska lagar. Utforska Svensk författningssamling (SFS) kostnadsfritt.',
+    'Med Laglig.se får svenska företag full koll på sin lagefterlevnad. Bevaka lagändringar, bygg laglistor och säkerställ compliance – kom igång gratis.',
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_BASE_URL || 'https://laglig.se'
   ),

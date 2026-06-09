@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Story 14.23 — Agent-förslag · "Spine & whisper" prototyp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script>
+      tailwind.config = {
+        darkMode: ['class'],
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Google Sans Flex', 'system-ui', 'sans-serif'],
+              safiro: ['Safiro', 'system-ui', 'sans-serif'],
+            },
+            colors: {
+              border: 'hsl(var(--border) / <alpha-value>)',
+              input: 'hsl(var(--input) / <alpha-value>)',
+              ring: 'hsl(var(--ring) / <alpha-value>)',
+              background: 'hsl(var(--background) / <alpha-value>)',
+              foreground: 'hsl(var(--foreground) / <alpha-value>)',
+              primary: {
+                DEFAULT: 'hsl(var(--primary) / <alpha-value>)',
+                foreground: 'hsl(var(--primary-foreground) / <alpha-value>)',
+              },
+              secondary: {
+                DEFAULT: 'hsl(var(--secondary) / <alpha-value>)',
+                foreground: 'hsl(var(--secondary-foreground) / <alpha-value>)',
+              },
+              destructive: {
+                DEFAULT: 'hsl(var(--destructive) / <alpha-value>)',
+                foreground: 'hsl(var(--destructive-foreground) / <alpha-value>)',
+              },
+              muted: {
+                DEFAULT: 'hsl(var(--muted) / <alpha-value>)',
+                foreground: 'hsl(var(--muted-foreground) / <alpha-value>)',
+              },
+              accent: {
+                DEFAULT: 'hsl(var(--accent) / <alpha-value>)',
+                foreground: 'hsl(var(--accent-foreground) / <alpha-value>)',
+              },
+              card: {
+                DEFAULT: 'hsl(var(--card) / <alpha-value>)',
+                foreground: 'hsl(var(--card-foreground) / <alpha-value>)',
+              },
+            },
+            borderRadius: {
+              lg: 'var(--radius)',
+              md: 'calc(var(--radius) - 2px)',
+              sm: 'calc(var(--radius) - 4px)',
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      @font-face {
+        font-family: 'Safiro';
+        src:
+          url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'),
+          url('../public/fonts/safiro-medium-webfont.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Google Sans Flex';
+        src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype');
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+      }
+      :root {
+        --background: 40 20% 98%;
+        --foreground: 30 10% 10%;
+        --card: 40 15% 99%;
+        --card-foreground: 30 10% 10%;
+        --primary: 30 15% 12%;
+        --primary-foreground: 40 20% 98%;
+        --secondary: 40 15% 95%;
+        --secondary-foreground: 30 10% 15%;
+        --muted: 40 12% 94%;
+        --muted-foreground: 30 8% 45%;
+        --accent: 40 15% 93%;
+        --accent-foreground: 30 10% 15%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 35 10% 88%;
+        --input: 35 10% 88%;
+        --ring: 30 15% 12%;
+        --radius: 0.5rem;
+        /* signature accent — warm→sage spine */
+        --spine-top: 140 30% 52%;
+        --spine-bot: 45 62% 58%;
+      }
+      .dark {
+        --background: 0 0% 10%;
+        --foreground: 0 0% 93%;
+        --card: 0 0% 12%;
+        --card-foreground: 0 0% 93%;
+        --primary: 0 0% 93%;
+        --primary-foreground: 0 0% 10%;
+        --secondary: 0 0% 17%;
+        --secondary-foreground: 0 0% 93%;
+        --muted: 0 0% 17%;
+        --muted-foreground: 0 0% 64%;
+        --accent: 0 0% 17%;
+        --accent-foreground: 0 0% 93%;
+        --destructive: 0 62.8% 50%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 19%;
+        --input: 0 0% 19%;
+        --ring: 0 0% 64%;
+        --spine-top: 140 28% 48%;
+        --spine-bot: 45 55% 52%;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        font-family: 'Google Sans Flex', system-ui, -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      .font-safiro { font-family: 'Safiro', system-ui, sans-serif; font-weight: 500; }
+
+      /* ── The signature: a soft warm→sage "spine" marking an agent proposal ── */
+      .agent-spine {
+        background: linear-gradient(
+          to bottom,
+          hsl(var(--spine-top)),
+          hsl(var(--spine-bot))
+        );
+        border-radius: 9999px;
+      }
+
+      /* awaiting-decision dot — a calm, slow breath (not a nagging blink) */
+      @keyframes breathe {
+        0%, 100% { opacity: 0.45; transform: scale(0.85); }
+        50%      { opacity: 1;    transform: scale(1); }
+      }
+      .dot-pending::before {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: 9999px;
+        background: hsl(var(--spine-top) / 0.18);
+        animation: breathe 3.2s ease-in-out infinite;
+      }
+
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .animate-spin { animation: spin 0.8s linear infinite; }
+
+      @keyframes cardIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .card-in { animation: cardIn 260ms cubic-bezier(0.16, 1, 0.3, 1); }
+
+      /* underline-style field: reads as text, reveals an input rule on focus */
+      .field-input {
+        background: transparent;
+        border: 0;
+        border-bottom: 1px solid hsl(var(--border) / 0.7);
+        border-radius: 0;
+        padding: 4px 0;
+        width: 100%;
+        outline: none;
+        transition: border-color 160ms ease;
+      }
+      .field-input:focus { border-bottom-color: hsl(var(--ring) / 0.8); }
+      textarea.field-input { resize: none; line-height: 1.55; }
+
+      .disclosure { overflow: hidden; transition: grid-template-rows 240ms cubic-bezier(0.16,1,0.3,1); display: grid; grid-template-rows: 0fr; }
+      .disclosure.open { grid-template-rows: 1fr; }
+      .disclosure > div { min-height: 0; }
+
+      .lexa-mark { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+      ::selection { background: hsl(var(--spine-top) / 0.25); }
+    </style>
+  </head>
+
+  <body class="bg-background text-foreground antialiased">
+    <!-- ===================== Chrome ===================== -->
+    <header class="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur">
+      <div class="mx-auto flex max-w-[860px] items-center gap-3 px-6 py-3">
+        <span class="lexa-mark grid h-7 w-7 place-items-center rounded-md font-safiro text-sm">L</span>
+        <div class="leading-tight">
+          <div class="font-safiro text-[15px]">Laglig · prototyp</div>
+          <div class="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+            14.23 — Agent-förslag · "Spine &amp; whisper"
+          </div>
+        </div>
+        <button id="theme-btn"
+          class="ml-auto inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-accent">
+          <i data-lucide="moon" class="h-3.5 w-3.5"></i><span id="theme-label">Mörkt</span>
+        </button>
+        <button id="reset-btn"
+          class="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-accent">
+          <i data-lucide="rotate-ccw" class="h-3.5 w-3.5"></i> Återställ
+        </button>
+      </div>
+    </header>
+
+    <!-- ===================== Chat column ===================== -->
+    <main class="mx-auto max-w-[640px] px-5 py-10 space-y-8">
+
+      <!-- — assistant turn 1 : a single proposal — -->
+      <section class="space-y-3">
+        <div class="flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+          <span class="lexa-mark grid h-5 w-5 place-items-center rounded-[5px] font-safiro text-[11px]">L</span>
+          Lexa
+        </div>
+        <div class="prose-sm space-y-3 text-[14px] leading-relaxed text-foreground/90">
+          <p>Baserat på er senaste skyddsrond ser jag en åtgärd som bör spåras. Jag föreslår att vi skapar en uppgift för det:</p>
+        </div>
+
+        <!-- SINGLE CARD -->
+        <div id="single" class="card-in"></div>
+      </section>
+
+      <!-- — assistant turn 2 : multiple proposals (batch) — -->
+      <section class="space-y-3">
+        <div class="flex items-center gap-2 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+          <span class="lexa-mark grid h-5 w-5 place-items-center rounded-[5px] font-safiro text-[11px]">L</span>
+          Lexa
+        </div>
+        <div class="prose-sm space-y-3 text-[14px] leading-relaxed text-foreground/90">
+          <p>Jag har brutit ner Arbetsmiljölagen i tre konkreta åtgärder för er. Granska och godkänn de ni vill skapa:</p>
+        </div>
+
+        <!-- BATCH CARD -->
+        <div id="batch" class="card-in"></div>
+      </section>
+
+      <!-- — state reference strip — -->
+      <section class="space-y-3 pt-4">
+        <div class="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">Tillstånd (referens)</div>
+        <div id="states" class="space-y-2.5"></div>
+      </section>
+    </main>
+
+    <script>
+      lucide.createIcons()
+      const $ = (s, r = document) => r.querySelector(s)
+      const el = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild }
+
+      /* ───────────────────────── building blocks ───────────────────────── */
+
+      // The card shell: a near-borderless surface with the signature spine.
+      function shell(inner, { busy = false } = {}) {
+        return `
+        <div class="relative overflow-hidden rounded-xl bg-card/70 ring-1 ring-border/45 shadow-[0_1px_2px_rgba(0,0,0,0.025)] ${busy ? 'opacity-90' : ''}">
+          <span class="agent-spine pointer-events-none absolute left-0 top-3 bottom-3 w-[3px]"></span>
+          <div class="pl-5 pr-4 py-4">${inner}</div>
+        </div>`
+      }
+
+      // whisper eyebrow: tiny glyph + "Förslag" · type
+      function eyebrow(type, dotState = 'pending') {
+        const dot = {
+          pending: `<span class="dot-pending relative inline-block h-[7px] w-[7px] rounded-full" style="background:hsl(var(--spine-top))"></span>`,
+          approved: `<span class="inline-block h-[7px] w-[7px] rounded-full bg-emerald-500"></span>`,
+          rejected: `<span class="inline-block h-[7px] w-[7px] rounded-full bg-muted-foreground/40"></span>`,
+        }[dotState]
+        return `
+        <div class="mb-1.5 flex items-center gap-2 text-[11px] tracking-[0.04em] text-muted-foreground">
+          ${dot}
+          <span class="font-medium">Förslag</span>
+          <span class="text-muted-foreground/40">·</span>
+          <span>${type}</span>
+        </div>`
+      }
+
+      // the AI-SDK move: a single plain-language line of WHAT WILL HAPPEN.
+      function leadLine(verb, rest) {
+        return `<p class="text-[14.5px] leading-snug text-foreground"><span class="font-medium">${verb}</span> ${rest}</p>`
+      }
+
+      function approveBtn(label = 'Godkänn') {
+        return `<button data-act="approve" class="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-[13px] font-medium text-primary-foreground transition-transform active:scale-[0.98] hover:opacity-90">
+          <i data-lucide="check" class="h-3.5 w-3.5"></i>${label}</button>`
+      }
+      function rejectBtn(label = 'Avvisa') {
+        return `<button data-act="reject" class="inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-[13px] text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/50">
+          ${label}</button>`
+      }
+
+      /* ───────────────────────── single card ───────────────────────── */
+      const TASK = {
+        title: 'Upprätta rutin för anmälan av olyckor och tillbud',
+        body: 'Dokumentera internt vem som ansvarar för anmälan till Arbetsmiljöverket, hur den görs och inom vilken tid. Krav enligt SFS 1977:1166, 2 §.',
+        prio: 'Hög',
+      }
+
+      function renderSingle(state = 'pending') {
+        const host = $('#single')
+        if (state === 'approved') {
+          host.innerHTML = shell(`
+            ${eyebrow('Ny uppgift', 'approved')}
+            <div class="flex items-start gap-2">
+              <div class="min-w-0 flex-1">
+                <p class="text-[14.5px] leading-snug text-foreground">${TASK.title}</p>
+                <a href="#" class="mt-1.5 inline-flex items-center gap-1 text-[12.5px] font-medium text-muted-foreground hover:text-foreground">
+                  Visa uppgift <i data-lucide="arrow-up-right" class="h-3 w-3"></i></a>
+              </div>
+              <span class="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                <i data-lucide="check" class="h-3 w-3"></i> Skapad</span>
+            </div>`)
+          lucide.createIcons(); return
+        }
+        // pending (editable behind disclosure)
+        host.innerHTML = shell(`
+          ${eyebrow('Ny uppgift', 'pending')}
+          ${leadLine('Skapa uppgift —', TASK.title)}
+          <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-muted-foreground">
+            <span class="inline-flex items-center gap-1.5"><i data-lucide="flag" class="h-3 w-3 text-amber-500"></i>${TASK.prio} prioritet</span>
+            <button data-toggle class="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">
+              <i data-lucide="sliders-horizontal" class="h-3 w-3"></i> Justera</button>
+          </div>
+
+          <div class="disclosure mt-0"><div><div class="mt-3 space-y-3 border-t border-border/45 pt-3">
+            <label class="block">
+              <span class="text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Titel</span>
+              <input class="field-input mt-1 text-[14px] font-medium" value="${TASK.title}">
+            </label>
+            <label class="block">
+              <span class="text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Beskrivning</span>
+              <textarea rows="3" class="field-input mt-1 text-[13.5px] text-foreground/90">${TASK.body}</textarea>
+            </label>
+          </div></div></div>
+
+          <div class="mt-3.5 flex items-center gap-1">
+            ${approveBtn()} ${rejectBtn()}
+          </div>`)
+        wireDisclosure(host)
+        wireDecision(host, () => renderSingle('approved'), () => renderRejected(host, 'Ny uppgift', TASK.title))
+        lucide.createIcons()
+      }
+
+      function renderRejected(host, type, title) {
+        host.innerHTML = shell(`
+          ${eyebrow(type, 'rejected')}
+          <p class="text-[14px] text-muted-foreground line-through">${title}</p>
+          <p class="mt-0.5 text-[12px] text-muted-foreground/70">Avvisat — inget skapades.</p>`)
+        lucide.createIcons()
+      }
+
+      /* ───────────────────────── batch card ───────────────────────── */
+      const ROWS = [
+        { type: 'Uppgift', verb: 'Skapa uppgift', icon: 'list-todo', title: 'Upprätta rutin för anmälan av olyckor och tillbud', meta: 'Hög prioritet', body: 'Dokumentera vem som ansvarar, hur anmälan görs och inom vilken tid. SFS 1977:1166, 2 §.' },
+        { type: 'Uppgift', verb: 'Skapa uppgift', icon: 'list-todo', title: 'Säkerställ arkivering av skyddsdokument', meta: 'Medel prioritet', body: 'Strukturera arkiv för meddelanden (5 år), register (10 år) och exponeringsregister (40 år). SFS 1977:1166, 3 §.' },
+        { type: 'Koppling', verb: 'Koppla dokument', icon: 'link', title: 'Brandskyddspolicy → uppgift om systematiskt brandskydd', meta: 'Styrdokument', body: 'Länkar er befintliga brandskyddspolicy till den föreslagna uppgiften.' },
+      ]
+
+      function batchRow(r, i) {
+        return `
+        <div class="group/row" data-row="${i}" data-status="pending">
+          <div class="flex items-center gap-2.5 rounded-lg px-2 py-2 transition-colors hover:bg-muted/40">
+            <span class="dot-pending relative inline-block h-[7px] w-[7px] shrink-0 rounded-full" style="background:hsl(var(--spine-top))" data-dot></span>
+            <i data-lucide="${r.icon}" class="h-3.5 w-3.5 shrink-0 text-muted-foreground"></i>
+            <button data-row-toggle class="min-w-0 flex-1 text-left">
+              <span class="block truncate text-[13.5px] text-foreground"><span class="text-muted-foreground">${r.verb} —</span> ${r.title}</span>
+            </button>
+            <div class="flex shrink-0 items-center gap-0.5" data-row-actions>
+              <button data-row-act="approve" title="Godkänn" class="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-emerald-500/10 hover:text-emerald-600">
+                <i data-lucide="check" class="h-4 w-4"></i></button>
+              <button data-row-act="reject" title="Avvisa" class="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
+                <i data-lucide="x" class="h-4 w-4"></i></button>
+            </div>
+          </div>
+          <div class="disclosure"><div><div class="ml-[26px] mr-2 mb-1 space-y-3 border-l border-border/45 pl-3">
+            <label class="block">
+              <span class="text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Titel</span>
+              <input class="field-input mt-1 text-[13.5px] font-medium" value="${r.title}">
+            </label>
+            <label class="block">
+              <span class="text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Beskrivning</span>
+              <textarea rows="2" class="field-input mt-1 text-[13px] text-foreground/90">${r.body}</textarea>
+            </label>
+          </div></div></div>
+        </div>`
+      }
+
+      function renderBatch() {
+        const host = $('#batch')
+        host.innerHTML = shell(`
+          <div class="mb-2.5 flex items-baseline justify-between">
+            <h3 class="font-safiro text-[15px] text-foreground">Föreslagna åtgärder</h3>
+            <span class="text-[12px] text-muted-foreground" data-count>3 förslag</span>
+          </div>
+          <div class="-mx-2 space-y-0.5" data-rows>
+            ${ROWS.map(batchRow).join('')}
+          </div>
+          <div class="mt-3 flex items-center gap-1 border-t border-border/45 pt-3" data-footer>
+            ${approveBtn('Godkänn alla')} ${rejectBtn('Avvisa alla')}
+            <span class="ml-auto text-[12px] text-muted-foreground" data-summary></span>
+          </div>`)
+
+        // row toggles
+        host.querySelectorAll('[data-row-toggle]').forEach((b) => {
+          b.addEventListener('click', () => {
+            const row = b.closest('[data-row]')
+            row.querySelector('.disclosure').classList.toggle('open')
+          })
+        })
+        // per-row decisions
+        host.querySelectorAll('[data-row-act]').forEach((b) => {
+          b.addEventListener('click', () => {
+            const row = b.closest('[data-row]')
+            setRowStatus(row, b.dataset.rowAct === 'approve' ? 'approved' : 'rejected')
+            updateSummary(host)
+          })
+        })
+        // approve all (sequential feel)
+        host.querySelector('[data-act="approve"]').addEventListener('click', async (e) => {
+          const btn = e.currentTarget
+          btn.innerHTML = '<i data-lucide="loader-2" class="h-3.5 w-3.5 animate-spin"></i>Godkänner…'
+          lucide.createIcons()
+          const pending = [...host.querySelectorAll('[data-row][data-status="pending"]')]
+          for (const row of pending) { await wait(420); setRowStatus(row, 'approved'); updateSummary(host) }
+          btn.outerHTML = ''
+          host.querySelector('[data-act="reject"]')?.remove()
+        })
+        host.querySelector('[data-act="reject"]').addEventListener('click', () => {
+          host.querySelectorAll('[data-row][data-status="pending"]').forEach((row) => setRowStatus(row, 'rejected'))
+          updateSummary(host)
+        })
+        lucide.createIcons()
+      }
+
+      function setRowStatus(row, status) {
+        row.dataset.status = status
+        const dot = row.querySelector('[data-dot]')
+        const actions = row.querySelector('[data-row-actions]')
+        const titleSpan = row.querySelector('[data-row-toggle] span')
+        row.querySelector('.disclosure').classList.remove('open')
+        if (status === 'approved') {
+          dot.className = 'inline-block h-[7px] w-[7px] shrink-0 rounded-full bg-emerald-500'
+          dot.removeAttribute('style')
+          actions.innerHTML = `<span class="inline-flex items-center gap-1 px-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400"><i data-lucide="check" class="h-3.5 w-3.5"></i>Godkänd</span>`
+        } else {
+          dot.className = 'inline-block h-[7px] w-[7px] shrink-0 rounded-full bg-muted-foreground/40'
+          dot.removeAttribute('style')
+          titleSpan.classList.add('line-through', 'text-muted-foreground')
+          actions.innerHTML = `<span class="px-1 text-[11px] text-muted-foreground">Avvisad</span>`
+        }
+        lucide.createIcons()
+      }
+
+      function updateSummary(host) {
+        const total = ROWS.length
+        const approved = host.querySelectorAll('[data-row][data-status="approved"]').length
+        const pending = host.querySelectorAll('[data-row][data-status="pending"]').length
+        const sum = host.querySelector('[data-summary]')
+        if (pending === 0) {
+          sum.textContent = `${approved} av ${total} godkända`
+          host.querySelector('[data-footer]').classList.add('opacity-60')
+        } else {
+          sum.textContent = ''
+        }
+      }
+
+      /* ───────────────────────── states reference ───────────────────────── */
+      function renderStates() {
+        const host = $('#states')
+        const approved = shell(`
+          ${eyebrow('Kravpunkt', 'approved')}
+          <p class="text-[14px] text-foreground">Dokumentera riskbedömning årligen</p>
+          <a href="#" class="mt-1.5 inline-flex items-center gap-1 text-[12.5px] font-medium text-muted-foreground hover:text-foreground">Visa i laglistan <i data-lucide="arrow-up-right" class="h-3 w-3"></i></a>`)
+        const rejected = shell(`
+          ${eyebrow('Ändra status', 'rejected')}
+          <p class="text-[14px] text-muted-foreground line-through">Arbetsmiljölagen → Uppfylld</p>
+          <p class="mt-0.5 text-[12px] text-muted-foreground/70">Avvisat.</p>`)
+        const expired = `
+          <div class="relative overflow-hidden rounded-xl bg-muted/30 ring-1 ring-border/40">
+            <div class="pl-5 pr-4 py-4">
+              <div class="mb-1.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+                <i data-lucide="clock" class="h-3.5 w-3.5"></i> Förslaget har gått ut
+              </div>
+              <p class="text-[14px] text-muted-foreground line-through">Tilldela uppgift till Anna</p>
+            </div>
+          </div>`
+        host.innerHTML = approved + rejected + expired
+        host.querySelectorAll(':scope > *').forEach((c) => c.classList.add('opacity-95'))
+        lucide.createIcons()
+      }
+
+      /* ───────────────────────── wiring helpers ───────────────────────── */
+      function wireDisclosure(host) {
+        const t = host.querySelector('[data-toggle]')
+        if (!t) return
+        t.addEventListener('click', () => host.querySelector('.disclosure').classList.toggle('open'))
+      }
+      function wireDecision(host, onApprove, onReject) {
+        host.querySelector('[data-act="approve"]')?.addEventListener('click', (e) => {
+          const b = e.currentTarget
+          b.innerHTML = '<i data-lucide="loader-2" class="h-3.5 w-3.5 animate-spin"></i>'
+          lucide.createIcons()
+          setTimeout(onApprove, 480)
+        })
+        host.querySelector('[data-act="reject"]')?.addEventListener('click', onReject)
+      }
+      const wait = (ms) => new Promise((r) => setTimeout(r, ms))
+
+      /* ───────────────────────── boot ───────────────────────── */
+      function boot() { renderSingle('pending'); renderBatch(); renderStates() }
+      boot()
+
+      $('#reset-btn').addEventListener('click', boot)
+      $('#theme-btn').addEventListener('click', () => {
+        const dark = document.documentElement.classList.toggle('dark')
+        $('#theme-label').textContent = dark ? 'Ljust' : 'Mörkt'
+        $('#theme-btn').querySelector('i').setAttribute('data-lucide', dark ? 'sun' : 'moon')
+        lucide.createIcons()
+      })
+    </script>
+  </body>
+</html>

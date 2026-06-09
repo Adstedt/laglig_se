@@ -100,7 +100,10 @@ describe('buildSystemPrompt', () => {
     // Tool guidance (AC 8)
     expect(prompt).toContain('<tool_guidance>')
     expect(prompt).toContain('get_company_context')
-    expect(prompt).toContain('execute: false')
+    // Story 14.23 removed the `execute: false` direct-write branch — write tools
+    // now propose via the inline approval card ("förslagskort"). Assert the
+    // current model rather than the retired execute:false phrasing.
+    expect(prompt).toContain('förslagskort')
 
     // Guardrails (AC 9-12)
     expect(prompt).toContain('<guardrails>')
@@ -126,6 +129,93 @@ describe('buildSystemPrompt', () => {
 
     // suggest_followups tool guidance
     expect(prompt).toContain('suggest_followups')
+  })
+
+  // Story 17.9c (AC 8): the prompt must surface the workspace-files search tool.
+  it('includes search_workspace_files tool guidance (Story 17.9c, AC 8)', async () => {
+    const prompt = await buildSystemPrompt()
+    expect(prompt).toContain('search_workspace_files')
+    // Tells the agent to cite uploaded-file hits by filename.
+    expect(prompt).toContain('[Källa: rutin.pdf]')
+  })
+
+  // Story 17.10 (AC 18): the prompt must surface all three workspace-document
+  // read tools (search / get / list) so the agent knows when to reach for them.
+  it('includes the three workspace-document tools (Story 17.10, AC 18)', async () => {
+    const prompt = await buildSystemPrompt()
+    expect(prompt).toContain('search_workspace_documents')
+    expect(prompt).toContain('get_workspace_document')
+    expect(prompt).toContain('list_workspace_documents')
+    // DEC-2: cite styrdokument by title. The new guidance line carries an
+    // explicit example.
+    expect(prompt).toContain('[Källa: Dataskyddspolicy]')
+  })
+
+  // Story 17.10b AC 12 / AC 14: status-aware hedging directive. The agent
+  // MUST be told to differentiate APPROVED hits (Källa, canonical) from
+  // DRAFT/IN_REVIEW hits (Utkast, hedged). This is the load-bearing safety
+  // surface — the prompt-layer half of "do not quote DRAFT as canonical".
+  it('teaches status-aware Källa vs Utkast hedging for workspace documents (17.10b AC 12)', async () => {
+    const prompt = await buildSystemPrompt()
+    // The full directive (substring match — exact wording per the story AC).
+    expect(prompt).toContain('Citera APPROVED-träffar som `[Källa: <titel>]`')
+    expect(prompt).toContain(
+      'Citera DRAFT/IN_REVIEW-träffar som `[Utkast: <titel>]`'
+    )
+    // The hedging-in-text instruction — agents must phrase non-APPROVED hits
+    // as drafts, never as canonical policy.
+    expect(prompt).toContain('enligt utkast till')
+    expect(prompt).toContain(
+      'ALDRIG "enligt …" eller "vår policy säger …" som om utkastet vore gällande policy'
+    )
+  })
+
+  // Story 17.10b AC 13: a worked mixed-status example so the agent has a
+  // concrete pattern to imitate (Källa + Utkast in the same response).
+  it('contains a mixed-status worked example for Källa + Utkast (17.10b AC 13)', async () => {
+    const prompt = await buildSystemPrompt()
+    expect(prompt).toContain('[Utkast: Semesterpolicy]')
+    expect(prompt).toContain('pågående utkast')
+  })
+
+  // DASH-WRITE-001: explicit rules for resolving lawListItemId in a workspace/
+  // global chat before calling write tools. The four rules (Lös upp /
+  // Verbalisera / Skicka explicit / Försök inte igen) are the load-bearing
+  // safety surface against silent wrong-law attribution. Surfaced 2026-06-02
+  // during a dashboard-chat gap-analysis probe where the agent activated
+  // gap_analysis, found the right law semantically, but didn't thread the
+  // resolved lawListItemId into subsequent write tool calls — and retried
+  // the same permanent-rejection error 6 + 2 times before self-diagnosing.
+  it('teaches the agent to resolve lawListItemId explicitly in workspace/global chats (DASH-WRITE-001)', async () => {
+    const prompt = await buildSystemPrompt()
+
+    // Rule 1: resolve via search_law_list_items, ask on ambiguity, never guess.
+    expect(prompt).toContain(
+      'Identifiera rätt laglistpost INNAN du anropar skrivverktyg'
+    )
+    expect(prompt).toContain('search_law_list_items')
+    expect(prompt).toContain('TVETYDIGT')
+    expect(prompt).toContain('Gissa ALDRIG')
+
+    // Rule 2: verbalise the choice in prose BEFORE creating the proposal card —
+    // gives the user a chance to catch wrong-law selection before approval.
+    expect(prompt).toContain('Verbalisera valet')
+    expect(prompt).toContain('ger användaren en chans att avbryta')
+
+    // Rule 3: pass lawListItemId explicitly; never reuse stale IDs across turns
+    // (context may have shifted from one law to another mid-conversation).
+    expect(prompt).toContain('Skicka `lawListItemId` explicit')
+    expect(prompt).toContain(
+      'Återanvänd ALDRIG en UUID från en TIDIGARE konversationstur'
+    )
+
+    // Rule 4: no retry-on-permanent-error (partial mitigation for TC-002).
+    // The two specific error messages the agent should treat as terminal.
+    expect(prompt).toContain(
+      'Försök INTE samma verktyg igen utan ändrade indata'
+    )
+    expect(prompt).toContain('Ingen laglistpost angiven')
+    expect(prompt).toContain('Laglistposten hittades inte')
   })
 
   it('includes company context section when companyContext is provided', async () => {
@@ -192,8 +282,78 @@ describe('buildSystemPrompt', () => {
       contextId: 'ce-2',
     })
 
-    expect(prompt).toContain('<assessment_workflow>')
+    // Story 19.7a: the assessment playbook is now the injected assess_change
+    // skill (the ASSESSMENT_WORKFLOW literal was removed).
+    expect(prompt).toContain('<skill>')
+    expect(prompt).toContain('Bedömningsflöde') // assess_change PROCEDURE body
     expect(prompt).toContain('suggest_followups')
+    expect(prompt).not.toContain('<assessment_workflow>')
+  })
+
+  it('injects assess_change for change context but not for global (Story 19.7a)', async () => {
+    const mockFindUnique = vi.mocked(prisma.changeEvent.findUnique)
+    mockFindUnique.mockResolvedValue({
+      id: 'ce-skill',
+      document_id: 'doc-1',
+      change_type: 'AMENDMENT',
+      amendment_sfs: null,
+      ai_summary: null,
+      changed_sections: null,
+      document: {
+        title: 'Testlagen',
+        document_number: 'SFS 2020:1',
+        effective_date: null,
+      },
+    } as never)
+
+    const changePrompt = await buildSystemPrompt({
+      contextType: 'change',
+      contextId: 'ce-skill',
+    })
+    expect(changePrompt).toContain('<skill>')
+    expect(changePrompt).toContain('Bedömningsflöde')
+
+    // Global: no primary skill → no <skill> block, but assess_change is
+    // advertised in <available_skills> (activatable via activate_skill).
+    const globalPrompt = await buildSystemPrompt({})
+    expect(globalPrompt).not.toContain('<skill>')
+    expect(globalPrompt).toContain('<available_skills>')
+    expect(globalPrompt).toContain('assess_change')
+  })
+
+  it('advertises gap_analysis + injects the assess_change current-state read + carries KP-001 framing (Story 19.7b)', async () => {
+    // Global: gap_analysis is advertised in <available_skills> (activation-only,
+    // never primary → no <skill> block from it). The base prompt carries the
+    // KP-001 kravpunkt-framing rule.
+    const globalPrompt = await buildSystemPrompt({})
+    expect(globalPrompt).toContain('<available_skills>')
+    expect(globalPrompt).toContain('gap_analysis')
+    expect(globalPrompt).not.toContain('<skill>')
+    expect(globalPrompt).toContain('verifierbart krav i påstående-presens') // KP-001
+
+    // Change: the assess_change <skill> body now includes the current-state read
+    // prep step (enrichment) — parity directives still present.
+    const mockFindUnique = vi.mocked(prisma.changeEvent.findUnique)
+    mockFindUnique.mockResolvedValue({
+      id: 'ce-7b',
+      document_id: 'doc-1',
+      change_type: 'AMENDMENT',
+      amendment_sfs: null,
+      ai_summary: null,
+      changed_sections: null,
+      document: {
+        title: 'Testlagen',
+        document_number: 'SFS 2020:1',
+        effective_date: null,
+      },
+    } as never)
+    const changePrompt = await buildSystemPrompt({
+      contextType: 'change',
+      contextId: 'ce-7b',
+    })
+    expect(changePrompt).toContain('get_law_list_item') // enrichment prep step
+    expect(changePrompt).toContain('Bedömningsflöde') // parity preserved
+    expect(changePrompt).toContain('suggest_followups') // parity preserved
   })
 
   it('includes section changes from SectionChange table in change context', async () => {
@@ -417,12 +577,53 @@ describe('buildSystemPrompt', () => {
     expect(prompt).not.toContain('Berörda paragrafer')
   })
 
-  it('stays within approximate token budget (~2000-4000 tokens)', async () => {
+  it('LAW block surfaces the law-list item id when provided (Story 19.4a)', async () => {
+    const prompt = await buildSystemPrompt({
+      contextType: 'law',
+      title: 'Arbetsmiljölag',
+      sfsNumber: 'SFS 1977:1160',
+      lawListItemId: 'item-1',
+    })
+    expect(prompt).toContain('Aktiv laglistpost-ID: item-1')
+    expect(prompt).toContain('Arbetsmiljölag (SFS 1977:1160)')
+  })
+
+  it('LAW block omits the id line when lawListItemId is undefined (SF-2)', async () => {
+    const prompt = await buildSystemPrompt({
+      contextType: 'law',
+      title: 'Arbetsmiljölag',
+      sfsNumber: 'SFS 1977:1160',
+    })
+    expect(prompt).not.toContain('Aktiv laglistpost-ID')
+    expect(prompt).toContain('Arbetsmiljölag (SFS 1977:1160)')
+  })
+
+  it('includes read-before-propose steering for the entity-readers (Story 19.4)', async () => {
     const prompt = await buildSystemPrompt()
-    // Rough approximation: 1 token ≈ 4 characters for Swedish text
+    expect(prompt).toContain('get_law_list_item')
+    // the read-before-propose instruction must be present
+    expect(prompt).toContain('INNAN du föreslår update_compliance_status')
+  })
+
+  it('stays within approximate token budget (~2000-5500 tokens)', async () => {
+    const prompt = await buildSystemPrompt()
+    // Rough approximation: 1 token ≈ 4 characters for Swedish text.
+    // Ceiling re-baselined 4000 → 5500: the base prompt legitimately grew with
+    // the Story 14.23 inline-approval ("förslagskort") guidance + the 17.9c/19.2
+    // tool bullets (~4.5k tokens now). This stays a guard against runaway growth;
+    // revisit when the 19.6 skills layer lands (candidate for the structured-parts
+    // / prompt-caching v2 refactor noted in Story 14.26).
     const estimatedTokens = prompt.length / 4
     expect(estimatedTokens).toBeGreaterThan(1500)
-    expect(estimatedTokens).toBeLessThan(4000)
+    // Story 17.10: bumped from 5500 → 6500. Prior ceiling had already been
+    // breached at baseline (~5594) before 17.10's three workspace-document
+    // tool entries (+237 tokens after AC-18 terse-trim).
+    // feat/ai-agent UAT bump: 6500 → 6750. Baseline grew ~60 tokens with the
+    // tightened guardrail rule (system-prompt.md) + the assess_change skill
+    // text rewording — both directly address UX leaks surfaced in UAT, so
+    // conscious growth not creep. Revisit / shrink if a future story pushes
+    // past 6750 without comparable value.
+    expect(estimatedTokens).toBeLessThan(6750)
   })
 })
 
@@ -620,5 +821,57 @@ describe('formatCompanyContext', () => {
 
     const result = formatCompanyContext(profile)!
     expect(result).toContain('Registrerad: 1998')
+  })
+
+  // Drift guard — when workspace.name disagrees with CompanyProfile.company_name
+  // (rename without re-sync; happened in prod 2026-06-02 against Nordviken),
+  // the user-facing workspace name MUST win and a warn MUST be logged.
+  describe('workspace-name drift guard', () => {
+    it('prefers workspace.name when it differs from profile.company_name and warns', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const profile = makeProfile({
+        company_name: 'Stale Original AB',
+      })
+      const result = formatCompanyContext(profile, 'Renamed Current AB')!
+      expect(result).toContain('Företag: Renamed Current AB')
+      expect(result).not.toContain('Stale Original AB')
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('[company-context drift]')
+      )
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('Renamed Current AB')
+      )
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('Stale Original AB')
+      )
+      warn.mockRestore()
+    })
+
+    it('does not warn when workspace.name matches profile.company_name', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const profile = makeProfile({ company_name: 'Same AB' })
+      const result = formatCompanyContext(profile, 'Same AB')!
+      expect(result).toContain('Företag: Same AB')
+      expect(warn).not.toHaveBeenCalled()
+      warn.mockRestore()
+    })
+
+    it('falls back to profile.company_name when workspaceName is undefined (backward compat)', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const profile = makeProfile({ company_name: 'Profile Only AB' })
+      const result = formatCompanyContext(profile)!
+      expect(result).toContain('Företag: Profile Only AB')
+      expect(warn).not.toHaveBeenCalled()
+      warn.mockRestore()
+    })
+
+    it('does not warn on whitespace-only differences', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const profile = makeProfile({ company_name: '  Trimmed AB' })
+      const result = formatCompanyContext(profile, 'Trimmed AB  ')!
+      expect(result).toContain('Företag: Trimmed AB')
+      expect(warn).not.toHaveBeenCalled()
+      warn.mockRestore()
+    })
   })
 })

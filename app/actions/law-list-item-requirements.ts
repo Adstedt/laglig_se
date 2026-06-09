@@ -67,6 +67,10 @@ const CreateRequirementSchema = z.object({
   listItemId: z.string().uuid(),
   text: z.string().min(1, 'Text krävs').max(500, 'Max 500 tecken'),
   responsibleUserId: z.string().uuid().nullable().optional(),
+  // Story 14.23: agent ADD_OBLIGATION proposals can opt the new kravpunkt into
+  // the "bevis krävs" gap signal at creation time (defaults false — silent
+  // rollout per Story 17.18).
+  bevisRequired: z.boolean().optional(),
 })
 
 const UpdateRequirementSchema = z
@@ -161,12 +165,13 @@ async function getRequirementWorkspaceContext(requirementId: string): Promise<{
 export async function createRequirement(
   listItemId: string,
   text: string,
-  opts?: { responsibleUserId?: string | null }
+  opts?: { responsibleUserId?: string | null; bevisRequired?: boolean }
 ): Promise<ActionResult<RequirementWithEvidence>> {
   const parsed = CreateRequirementSchema.safeParse({
     listItemId,
     text,
     responsibleUserId: opts?.responsibleUserId,
+    bevisRequired: opts?.bevisRequired,
   })
   if (!parsed.success) {
     return {
@@ -219,6 +224,10 @@ export async function createRequirement(
           position: nextPosition,
           created_by: ctx.userId,
           responsible_user_id: parsed.data.responsibleUserId ?? null,
+          // Story 14.23: opt-in bevis gap signal (defaults false).
+          ...(parsed.data.bevisRequired != null && {
+            bevis_required: parsed.data.bevisRequired,
+          }),
         },
       })
 

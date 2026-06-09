@@ -1,0 +1,42 @@
+schema: 1
+story: '17.9b'
+story_title: 'Chunk & Embed Authored Styrdokument into the RAG Pipeline'
+gate: PASS
+status_reason: 'All 8 ACs met and traced; cross-tenant isolation proven row-level against the real DB; the one core wiring gap (status transition → RAG action) was closed during review. tsc/eslint clean, no new test failures.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-22T23:10:00Z'
+
+waiver: { active: false }
+
+top_issues: []
+
+quality_score: 95
+
+evidence:
+  tests_reviewed: 33
+  risks_identified: 2
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Cross-tenant isolation proven at the row level (integration 2/2, real DB). Workspace-scoped index load + non-null-workspace write invariant + read-side clause; never widens sourceTypes. Indexing gated to APPROVED only — drafts/superseded never surface as authoritative.'
+  performance:
+    status: PASS
+    notes: 'Single-doc index off the response path via after(); content_hash dedupe avoids redundant embeds. No new hot-path cost.'
+  reliability:
+    status: PASS
+    notes: 'Fail-safe after() (errors logged, not fatal; re-approval re-runs INDEX). REL-001 null-embedding self-heal inherited from the shared sync.'
+  maintainability:
+    status: PASS
+    notes: 'Pure gate function + thin chunker wrapper + clear module boundaries; reuses the shared paragraph-merge core. No schema migration, no new deps.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'If a third workspace source type is added, convert SyncWorkspaceMeta from optional-fields to a discriminated union (currently slightly relaxes USER_FILE type strictness — backward-compatible tradeoff).'
+      refs: ['lib/chunks/sync-workspace-chunks.ts']
+    - action: 'At 17.10 (search consumer), add a citation-key disambiguator for same-title styrdokument when unifying USER_FILE + WORKSPACE_DOCUMENT.'
+      refs: ['lib/ai/citations.ts']

@@ -1,0 +1,211 @@
+schema: 1
+story: '17.11c'
+story_title: 'Agent Auto-Branch on APPROVED — One Approval, Branch + Write'
+gate: PASS
+status_reason: |
+  All 14 ACs traced to passing tests; 201 tests green across 7 affected suites
+  with 24 net new tests (7 server-action + 4 tool-guard + 8 dispatch + 7 renderer
+  + budget re-run). Full 861-test non-regression sweep clean — 17.11/17.11b/17.16/
+  17.17/17.18 all untouched. The load-bearing alias-freeze invariant from 17.16
+  AC 4 is preserved verbatim by the new `createDraftFromApprovedWithEdit` server
+  action — current_version_id, status, approved_by, approved_at all explicitly
+  NOT touched (verified by test + code read at lines 1316-1323). Two-Version
+  Problem solved as designed: ONE new version row per agent edit, containing the
+  edited content directly. Race-on-fell-through semantics work correctly: when
+  the user manually branches between propose and approve, the autoBranchEligible
+  flag flips to false → dispatch falls through to plain saveDocumentVersion
+  against the now-existing draft. AC 8 + AC 14 dual-stamp lets audit consumers
+  distinguish agent-initiated branches from user-initiated ones.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-06T21:05:00Z'
+
+quality_score: 95
+expires: '2026-06-20T21:05:00Z'
+
+evidence:
+  tests_reviewed: 201
+  new_tests_added: 24
+  risks_identified: 1
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      Three-layer defense:
+        1. Tool-time guard in update-document.ts / add-document-section.ts
+           (widened writeable predicate; SUPERSEDED/ARCHIVED still refuse).
+        2. Dispatch-time guard in pending-agent-actions.ts (re-asserts the
+           widened writeable predicate against the LIVE re-read doc).
+        3. Server-action-internal guard in createDraftFromApprovedWithEdit
+           (defense-in-depth: refuses if status≠APPROVED at the very last
+           moment, handles the extreme race where the doc transitioned
+           between dispatch read and server action call).
+      All three layers wrap in `withWorkspace` for workspace scoping. AUDITOR
+      `tasks:edit` denial inherited via the dispatch's existing gate (no change
+      needed for 17.11c).
+  performance:
+    status: PASS
+    notes: |
+      Auto-branch path: one $transaction with 1 version create + 1 doc update +
+      2 log creates (vs the existing plain-save path's 1 + 1 + 1 = +1 log row
+      and same scale). Plus one extra activityLog.findFirst + .update for the
+      AC 14 paired stamp (negligible — same shape as the AC 8 stamp). No new
+      hot paths. The `after()` reindex matches the existing saveDocumentVersion
+      pattern (line 832); 17.18 indexer auto-handles the new draft tier.
+  reliability:
+    status: CONCERNS
+    notes: |
+      REL-001 (inherited from 17.11 → 17.11b → now 17.11c): the AC 8 stamp AND
+      the new AC 14 stamp are both fire-and-forget (try/catch + console.error).
+      A missed stamp doesn't roll back the new version; downstream audit
+      consumers may see `document_version_saved` and/or `document_draft_created`
+      rows without the agent-author enrichment.
+
+      17.11c extends the scope of REL-001 — now THREE log rows could miss the
+      stamp instead of one. The recommended future hardening (fold the stamp
+      into the server actions themselves via a typed `agentAuthor?:` param)
+      would flip 17.11 + 17.11b + 17.11c all together when implemented.
+
+      NOT a blocker. Same trade-off the team has accepted three times now.
+  maintainability:
+    status: PASS
+    notes: |
+      `createDraftFromApprovedWithEdit` co-locates with `createDraftFromApproved`
+      (mirror shape, same `withWorkspace` + `$transaction` + `after()` skeleton).
+      The `autoBranchEligible` + `shouldAutoBranch` flag pattern in dispatch is
+      clean — a single boolean derives both the writeable check and the routing
+      decision. The widened predicate is a small additive disjunction (3 shapes
+      instead of 2). AC 8 + AC 14 stamps share 99% of their structure (same
+      try/catch + findFirst + update pattern, different JSONB-path keys) —
+      not extracted, accepted as duplication for readability.
+
+top_issues:
+  - id: 'REL-001-extended'
+    severity: low
+    summary: |
+      Fire-and-forget stamp pattern (inherited from 17.11/17.11b) now extends
+      to a second log row (AC 14 stamp on document_draft_created). Future
+      hardening should fold the stamp into saveDocumentVersion +
+      createDraftFromApprovedWithEdit as typed agentAuthor? params.
+    refs:
+      - 'app/actions/pending-agent-actions.ts:637-677'  # AC 8 stamp
+      - 'app/actions/pending-agent-actions.ts:679-724'  # AC 14 stamp
+    suggested_owner: 'dev'
+
+recommendations:
+  immediate: []
+  future:
+    - action: |
+        REL-001 atomicity hardening (cross-story): fold the agent-author +
+        operation discriminator stamps into saveDocumentVersion AND
+        createDraftFromApprovedWithEdit as typed `agentAuthor?: { pendingActionId,
+        operation }` params. Server actions stamp the rows inside the same
+        $transaction. Flips 17.11 + 17.11b + 17.11c all together.
+      refs:
+        - 'app/actions/documents.ts:724  # saveDocumentVersion'
+        - 'app/actions/documents.ts:1253 # createDraftFromApprovedWithEdit'
+        - 'app/actions/pending-agent-actions.ts (UPDATE_DOCUMENT + ADD_DOCUMENT_SECTION dispatch branches)'
+    - action: |
+        When 14.31 (staleness retrofit, currently Approved-not-built) ships,
+        the race-on-fell-through path becomes more interesting: the
+        entity_version snapshot the tool captured at propose-time can be
+        compared against the live updated_at at approve-time. If the user
+        edited the draft between propose and approve, surface a 14.31-style
+        stale-entity refusal instead of silently applying the agent's edit
+        on top of the user's intermediate state. Out of scope for 17.11c —
+        flagged as natural follow-up once 14.31 lands.
+      refs:
+        - 'docs/stories/17.11c.agent-auto-branch-on-approved.md (AC 7)'
+    - action: |
+        UX polish (low priority): the renderer header copy "Skapar nytt utkast
+        v{N+1}" uses the propose-time newVersionNumber snapshot. If the user
+        manually branches between propose and approve (the fell-through race),
+        the actual saved version will be N+2 not N+1 — the PENDING card shows
+        a slightly stale number until approve commits and resultRef takes
+        over. Acceptable per PO NTH-5 (self-corrects post-approval). If we
+        ever want tighter copy, the renderer could subscribe to live doc state
+        via a server-component refetch.
+      refs:
+        - 'components/features/ai-chat/agent-action-renderers/update-document-renderer.tsx:155-163'
+        - 'components/features/ai-chat/agent-action-renderers/add-document-section-renderer.tsx (mirror block)'
+
+evidence_extras:
+  load_bearing_invariants_verified:
+    - 'Alias-freeze (17.16 AC 4): current_version_id, status, approved_by, approved_at all explicitly NOT written by createDraftFromApprovedWithEdit (documents.ts:1316-1323). Verified by test assertion that docUpdate.data.current_version_id is undefined.'
+    - 'Two-Version Problem solved: ONE workspaceDocumentVersion.create call per agent edit, with content_json = editedContentJson (not a clone). Verified by happy-path test asserting toHaveBeenCalledTimes(1).'
+    - 'Race-on-fell-through: autoBranchEligible derived ONCE from the re-read doc state, then both writeable AND shouldAutoBranch consume it. If user raced and gained a draft, autoBranchEligible flips to false → shouldAutoBranch false → falls through to plain saveDocumentVersion. Verified by explicit test case.'
+    - '17.10b citation contract: unchanged. createDraftFromApprovedWithEdit does NOT touch current_version_id, so 17.10b auto-reindex keeps grounding [Källa:] in approved content during the draft window. No new test needed (covered by alias-freeze assertion).'
+  no_schema_changes:
+    - 'No migration. No enum value. No new PendingAgentActionType.'
+    - 'No registry-narrowing harness count bumps (no new tool registered).'
+  test_count_deltas:
+    - 'documents-dual-version.test.ts: 32 → 39 (+7)'
+    - 'update-document.test.ts: 12 → 14 (+2)'
+    - 'add-document-section.test.ts: 15 → 17 (+2)'
+    - 'pending-agent-actions.test.ts: 57 → 63 (net +6 = +8 new − 2 removed APPROVED cases from existing it.each loops)'
+    - 'update-document-renderer.test.tsx: 9 → 13 (+4)'
+    - 'add-document-section-renderer.test.tsx: 13 → 16 (+3)'
+    - 'system-prompt.test.ts: 39 → 39 (unchanged; budget re-run)'
+    - 'Total new: 24 across 6 suites; net +24 (the it.each shrinkage is intentional and replaced 1:1 with the new auto-branch path tests)'
+  closes_authoring_triad:
+    - 'With 17.11c shipped, the agent has full read/write/branch authority over styrdokument:'
+    - '  - 17.11 (update_document): edit existing sections on DRAFT/IN_REVIEW'
+    - '  - 17.11b (add_document_section): add new sections on DRAFT/IN_REVIEW'
+    - '  - 17.11c (auto-branch on APPROVED): same operations on APPROVED-no-draft, transparent draft creation'
+    - 'Citation grammar preserved across all three states via 17.10b + 17.18'
+    - 'Compliance contract (17.10b DEC-2: never cite DRAFT as canonical policy) holds under Model B in all 4 states (DRAFT, IN_REVIEW, APPROVED-no-draft, APPROVED-with-draft)'
+
+  owner_smoke_results_2026_06_06:
+    - probe_1:
+        prompt: 'Vad händer om jag ber dig uppdatera ett godkänt dokument?'
+        result: 'PASS'
+        validates: 'AC 11 prompt comprehension; agent verbally describes the auto-branch flow correctly (auto-create draft → propose change → user approves → approved version stays in force during draft window). Compliance framing intact.'
+    - probe_2:
+        prompt: 'Skärp Syfte-avsnittet i Policy för rengöring av toaletter'
+        result: 'PASS'
+        validates: 'AC 3 widened predicate + AC 7 dispatch fork + AC 9 renderer header — "Skapar nytt utkast v10 av Policy för rengöring av toaletter – Almåsa Havshotell AB" rendered exactly as spec''d above the diff card. CP-001 holds (natural Swedish, no raw IDs). 17.11 diff-card non-regression confirmed (AVSNITT/NUVARANDE/FÖRESLAGET all intact).'
+
+  out_of_scope_smoke_findings:
+    - id: 'AGENT-001'
+      severity: 'high (data integrity / agent quality)'
+      summary: 'Agent hallucinates content for empty-approved documents'
+      evidence: |
+        During 17.11c smoke (2026-06-06), owner sent two empty-approved doc UUIDs
+        and noted "är tom". The agent responded by asserting both docs had three
+        sections each with specific content (e.g. "Tillämpningsområde,
+        Diskrimineringsgrunder, HR-rutiner"; "Tillämpningsområde, Förbudet i 2
+        kap. 12 §, Klagomålshantering") and deflected the user's claim with
+        "Innehållet är kortfattat men inte tomt. Det är möjligt att dokumenten
+        ser tomma ut i er ... grund av hur editorn renderar dem, men texten
+        finns faktiskt där i systemet." The editor view (v1, Godkänd, 0 ord,
+        Sparad) confirms the docs are genuinely empty — agent fabricated the
+        section structure.
+      relationship_to_17_11c: |
+        NOT a regression introduced by 17.11c. The hallucination occurs on the
+        read tools (get_workspace_document / search_workspace_documents /
+        list_workspace_documents) which are Story 17.10 / 17.18 surfaces.
+        17.11c added the auto-branch path on update_document /
+        add_document_section, neither of which fired in this exchange. The
+        chunk-staleness mitigation in 17.18 (self-healing legacy migration via
+        `OR metadata->>'tier' IS NULL`) doesn't address the case where docs
+        were created empty + approved empty.
+      hypotheses_to_distinguish:
+        - 'H1 (most likely): Pure agent hallucination — agent searched the workspace law list, found Diskrimineringslagen 2 kap. 12 §, synthesized a plausible policy structure, presented it as fact. The Swedish deflection phrasing is textbook hallucination cover-up.'
+        - 'H2: Stale chunk metadata from a prior version of these docs that had content + got cleared without reindex. But chunks would carry body excerpts, not just heading names.'
+        - 'H3: get_workspace_document reading wrong source. Less likely post-17.16/17.18 (read tools verified to use draft/approved pointers, never the alias).'
+      confirming_probe: |
+        Ask the agent: "Vad står ordagrant i 1. Tillämpningsområde-avsnittet i
+        [bb2c1406...]?". If agent invents body text → H1 confirmed (pure
+        hallucination). If agent says "avsnittet finns inte" → H2 or H3
+        (something stale or wrong-source-read).
+      recommended_action: |
+        Spawn a separate finding/story owned by PO. Likely fix: system-prompt
+        guardrail explicitly forbidding the agent from asserting content
+        existence without a successful get_workspace_document call returning
+        non-empty content_json. Could ride into 19.8's prompt sweep, or as a
+        standalone hardening story (suggested id: 17.18b or AGENT-001-followup).
+      gate_impact: NONE
+      blocks_closure: false

@@ -11,8 +11,10 @@ import { LexaIcon } from '@/components/ui/lexa-icon'
 import { Button } from '@/components/ui/button'
 import { ChatMessageList } from './chat-message-list'
 import { ChatInputModern } from './chat-input-modern'
+import { useChatAttachments } from '@/lib/hooks/use-chat-attachments'
 import { ChatError } from './chat-error'
 import { AssessmentResolution } from '@/components/features/changes/assessment-resolution'
+import { findLatestAssessmentRecommendation } from '@/lib/changes/assessment-preview'
 import { FollowupChips } from './followup-chips'
 import { useFollowupChips } from '@/lib/hooks/use-followup-chips'
 import {
@@ -154,11 +156,15 @@ function ChatPanelStandalone({
   contextId,
   initialContext,
   initialMessage,
+  lawListItemId,
   ...rest
 }: StandaloneProps) {
   const chat = useChatInterface({
     contextType,
     contextId,
+    // Story 19.4a: CHANGE chats own the hook here (no hoisted `chat`), so
+    // forward the existing lawListItemId prop into the route body.
+    lawListItemId,
     initialContext,
     initialMessage,
   })
@@ -166,6 +172,7 @@ function ChatPanelStandalone({
     <ChatPanelBody
       contextType={contextType}
       contextId={contextId}
+      lawListItemId={lawListItemId}
       {...rest}
       chat={chat}
     />
@@ -268,12 +275,23 @@ function ChatPanelBody({
   const { questions: followupQuestions, dismiss: dismissFollowups } =
     useFollowupChips(messages, hasCompletedReply)
 
+  // Story 19.1: chat attachment state (picker/drag-drop/chips → sendMessage).
+  const {
+    pending: pendingAttachments,
+    addFiles: addAttachments,
+    remove: removeAttachment,
+    clear: clearAttachments,
+    error: attachmentError,
+    uploading: attachmentsUploading,
+  } = useChatAttachments()
+
   const handleSendMessage = useCallback(
     (content: string) => {
       dismissFollowups()
-      sendMessage(content)
+      sendMessage(content, pendingAttachments)
+      clearAttachments()
     },
-    [sendMessage, dismissFollowups]
+    [sendMessage, dismissFollowups, pendingAttachments, clearAttachments]
   )
 
   const handleFollowupClick = useCallback(
@@ -292,10 +310,13 @@ function ChatPanelBody({
     if (!hasCompletedReply) return undefined
     if (contextType !== 'change' || !contextId || !lawListItemId)
       return undefined
+    // Pre-fill from the agent's save_assessment(execute:false) preview if present.
+    const recommendation = findLatestAssessmentRecommendation(messages)
     return (
       <AssessmentResolution
         changeEventId={contextId}
         lawListItemId={lawListItemId}
+        recommendation={recommendation}
         onComplete={onAssessmentSaved}
         onClose={onClose}
       />
@@ -305,6 +326,7 @@ function ChatPanelBody({
     contextType,
     contextId,
     lawListItemId,
+    messages,
     onAssessmentSaved,
     onClose,
   ])
@@ -414,8 +436,13 @@ function ChatPanelBody({
         isLoading={isLoading}
         placeholder="Skriv din fråga..."
         showModelSelector={false}
-        showAttach={false}
+        showAttach={true}
         showQuickActions={false}
+        pendingAttachments={pendingAttachments}
+        onAttachFiles={addAttachments}
+        onRemoveAttachment={removeAttachment}
+        attachmentError={attachmentError}
+        attachmentsUploading={attachmentsUploading}
       />
     </div>
   )

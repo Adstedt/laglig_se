@@ -1,0 +1,73 @@
+schema: 1
+story: '14.28'
+story_title: 'update_requirement Approval'
+gate: PASS
+status_reason: 'The 8th PendingAgentAction type implemented faithfully to the established 14.22-24 write-tool + renderer-frame pattern, workspace-isolated (double-scoped) with the ownership-reassignment scope guard intact, unit-green (13/13 renderer + 63/63 across the four suites; 797/797 blast-radius regression; tsc 0; eslint clean), and OWNER-SMOKE-VERIFIED live (inline diff card → editable → approve flow, plus two FE polishes caught + fixed in the loop). Additive enum migration authored in repo convention + applied by the owner. One real gap — a missing TOOL_CONFIG chip-label AC — was caught by the smoke and fixed in code; it is a story-template finding, not a code defect.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-26T15:10:00Z'
+
+waiver: { active: false }
+
+quality_score: 95
+expires: '2026-06-09T15:10:00Z'
+
+evidence:
+  tests_reviewed: 13
+  tests_result: 'QA-verified: 13/13 renderer (added the canApprove-empty-text test in review) + 63/63 across the four 14.28 suites (extended-write-tools tool tests, agent-action-renderers, pending-agent-actions dispatch, registry-role-filter); dev-run 797/797 blast-radius regression (agent + lib/agent + actions + app/actions + ai-chat components); tsc --noEmit 0 errors branch-wide; eslint clean. Additive enum migration (applied by owner).'
+  smoke_test:
+    performed_by: 'Owner (Alexander)'
+    result: 'PASS — diff card + approve flow verified live during dev'
+    covered:
+      - 'LAW chat "markera kravpunkten … som uppfylld och lägg till en notis" → get_law_list_item → update_requirement → inline diff card "Förslag · Kravpunkt — uppfylld: Nej → Ja, kommentar" with Godkänn/Avvisa (NOT a silent save).'
+      - 'Diff renders only the changed fields; editable behind Justera; second turn proposed bevis-krävs edit as its own card.'
+      - 'FE polishes caught + fixed in the loop: boolean rows now show the labeled new value (~~Nej~~ → Ja [toggle]); TOOL_CONFIG chip label "Ändrar kravpunkt" (was rendering the raw tool name).'
+  risks_identified: 2
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    ac_gaps: []
+    notes:
+      - 'AC 1-3: additive enum + params shape (requirementId/patch/oldSnapshot/entity_version + lawListItemId for live-refresh); tool test asserts patch = changed fields only, unchanged keys absent.'
+      - 'AC 4-7: schema mirrors UpdateRequirementSchema; validation in execute for Swedish messages (sound deviation from the draft .refine); no-op + no-field + execute:true rejections tested.'
+      - 'AC 8-12: renderer registered in RENDERERS + ACTION_TYPE_LABELS (+ TOOL_CONFIG chip, post-smoke); diff renders only changed fields (tested), canApprove guard (tested), compact (tested), APPROVED + laglista link (tested). REJECTED/EXPIRED inherited from the shared renderer-frame (not separately asserted — low).'
+      - 'AC 13-15: dispatch → updateRequirement(requirementId, patch); result_ref={requirementId}; row stays PENDING on failure (tested); revalidatePath(/laglistor).'
+      - 'AC 16: entity_version captured by the tool + round-tripped through renderer edits (forward-compat with 14.31; comparison not yet added — by design).'
+      - 'AC 17-19: non-regression — updateRequirement + the 17.16/17.17 inline editors untouched; batch card includes the type via the compact variant; regression suite green.'
+
+top_issues:
+  - id: 1428-001
+    severity: low
+    status: resolved
+    summary: 'RESOLVED in code (story-template finding). The TOOL_CONFIG tool-call chip label for update_requirement was missing — the story ACs covered ACTION_TYPE_LABELS (card badge) + renderer registration but not the chat-message TOOL_CONFIG chip, so the chip shipped showing the raw "update_requirement" until the owner smoke caught it. Fixed (label "Ändrar kravpunkt" / "Föreslog ändring av kravpunkt"). Recommend adding a "TOOL_CONFIG chip label" item to the new-tool story checklist (the 19.x stories had it; this one did not).'
+    refs:
+      - 'components/features/ai-chat/chat-message.tsx'
+      - 'docs/stories/completed/14.28.update-requirement-approval.md'
+    suggested_owner: sm
+  - id: 1428-002
+    severity: low
+    status: open
+    summary: 'Minor renderer assertion gaps: the debounced edit → updatePendingActionParams round-trip (AC 9) and the REJECTED/EXPIRED variants (AC 11, inherited from the shared renderer-frame) are not directly asserted for this renderer. Both are low-risk — the debounce hook + frame are shared, separately-tested infra. Add if convenient.'
+    refs:
+      - 'tests/unit/components/features/ai-chat/agent-action-renderers.test.tsx'
+    suggested_owner: dev
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Write path, isolation double-scoped: tool findFirst on list_item.law_list.workspace_id + updateRequirement own withWorkspace/getRequirementWorkspaceContext check; approvePendingAction gates on tasks:edit (AUDITOR cannot finalize). Scope guard verified — responsibleUserId never in the tool schema or dispatch patch (ownership reassignment excluded). entity_version captured for 14.31. No raw @anthropic-ai/sdk.'
+  performance:
+    status: PASS
+    notes: 'Propose = one scoped findFirst + one pendingAgentAction.create; dispatch = one updateRequirement. No N+1, no added load.'
+  reliability:
+    status: PASS
+    notes: 'In-execute validation with Swedish wrapToolError (execute:true / no-field / no-op / not-found); dispatch returns {success:false} on failure and the row stays PENDING (not marked APPROVED — tested). Inline-only finalization (no execute:true direct write). End-to-end confirmed by the owner smoke.'
+  maintainability:
+    status: PASS
+    notes: 'Mirrors the 14.23 write-tool + renderer-frame pattern; reuses createPendingActionRow / wrapWriteToolResponse / the shared frame + debounce hook. The lone process gap (missing TOOL_CONFIG AC) is fixed in code + logged as a template finding (1428-001).'
+
+recommendations:
+  immediate: []
+  future:
+    - action: '1428-001: add a "TOOL_CONFIG chip label" item to the new-tool story checklist so future write tools do not ship with a raw chip name.'
+      refs: ['docs/stories/completed/14.28.update-requirement-approval.md']
+    - action: '1428-002: add a debounced-edit → updatePendingActionParams assertion + REJECTED/EXPIRED variant checks for the renderer.'
+      refs: ['tests/unit/components/features/ai-chat/agent-action-renderers.test.tsx']

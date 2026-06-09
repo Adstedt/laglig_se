@@ -162,4 +162,142 @@ describe('VersionHistoryPanel', () => {
       expect(screen.getByText('Laddar versioner...')).toBeInTheDocument()
     })
   })
+
+  // ==========================================================================
+  // Story 17.17 AC 17 — Model B-aware Återställ gating.
+  //
+  // The `restoreDocumentVersion` server action refuses on Path C
+  // (APPROVED with no draft) and Path D (ARCHIVED / SUPERSEDED) under
+  // Story 17.16 v2.1. The panel must mirror those refusals as inline-
+  // disabled UI so users don't click through to a confusing error toast.
+  // ==========================================================================
+
+  describe('AC 17 — Återställ button state-awareness (Model B)', () => {
+    it('Path A — dual-state doc: Återställ ENABLED, no hint', async () => {
+      const user = userEvent.setup()
+      render(
+        <VersionHistoryPanel
+          {...defaultProps}
+          documentStatus="APPROVED"
+          currentDraftVersionId="v-draft-active"
+        />
+      )
+      await user.click(screen.getByRole('button', { name: /3/i }))
+      await waitFor(() => {
+        const buttons = screen
+          .getAllByRole('button', { name: /Återställ/i })
+          // Filter out icon-only chrome that happens to label-match
+          .filter((b) => b.textContent?.includes('Återställ'))
+        expect(buttons.length).toBeGreaterThan(0)
+        for (const b of buttons) {
+          expect(b).not.toBeDisabled()
+        }
+        expect(
+          screen.queryByText(/Skapa utkast för att återställa/)
+        ).not.toBeInTheDocument()
+        expect(
+          screen.queryByText(/Återaktivera dokumentet först/)
+        ).not.toBeInTheDocument()
+      })
+    })
+
+    it('Path B — never-approved DRAFT: Återställ ENABLED, no hint', async () => {
+      const user = userEvent.setup()
+      render(
+        <VersionHistoryPanel
+          {...defaultProps}
+          documentStatus="DRAFT"
+          currentDraftVersionId="v-draft-only"
+        />
+      )
+      await user.click(screen.getByRole('button', { name: /3/i }))
+      await waitFor(() => {
+        const buttons = screen
+          .getAllByRole('button', { name: /Återställ/i })
+          .filter((b) => b.textContent?.includes('Återställ'))
+        for (const b of buttons) {
+          expect(b).not.toBeDisabled()
+        }
+      })
+    })
+
+    it('Path C — APPROVED with no draft: Återställ DISABLED + branch-first hint', async () => {
+      const user = userEvent.setup()
+      render(
+        <VersionHistoryPanel
+          {...defaultProps}
+          documentStatus="APPROVED"
+          currentDraftVersionId={null}
+        />
+      )
+      await user.click(screen.getByRole('button', { name: /3/i }))
+      await waitFor(() => {
+        const buttons = screen
+          .getAllByRole('button', { name: /Återställ/i })
+          .filter((b) => b.textContent?.includes('Återställ'))
+        expect(buttons.length).toBeGreaterThan(0)
+        for (const b of buttons) {
+          expect(b).toBeDisabled()
+        }
+        expect(
+          screen.getAllByText(/Skapa utkast för att återställa/).length
+        ).toBeGreaterThan(0)
+      })
+    })
+
+    it.each(['ARCHIVED', 'SUPERSEDED'] as const)(
+      'Path D — terminal status %s: Återställ DISABLED + reactivate-first hint',
+      async (status) => {
+        const user = userEvent.setup()
+        render(
+          <VersionHistoryPanel
+            {...defaultProps}
+            documentStatus={status}
+            currentDraftVersionId={null}
+          />
+        )
+        await user.click(screen.getByRole('button', { name: /3/i }))
+        await waitFor(() => {
+          const buttons = screen
+            .getAllByRole('button', { name: /Återställ/i })
+            .filter((b) => b.textContent?.includes('Återställ'))
+          for (const b of buttons) {
+            expect(b).toBeDisabled()
+          }
+          expect(
+            screen.getAllByText(/Återaktivera dokumentet först/).length
+          ).toBeGreaterThan(0)
+        })
+      }
+    )
+  })
+
+  // ==========================================================================
+  // Story 17.17 AC 16 — table-row mount uses a custom History-icon-only
+  // trigger via the `trigger` prop (the row already shows the version
+  // number in its own column).
+  // ==========================================================================
+
+  describe('AC 16 — custom trigger override', () => {
+    it('renders the consumer-supplied trigger when `trigger` prop is set', () => {
+      render(
+        <VersionHistoryPanel
+          {...defaultProps}
+          trigger={
+            <button aria-label="Visa versionshistorik för Arbetsmiljöpolicy">
+              custom-icon
+            </button>
+          }
+        />
+      )
+      expect(
+        screen.getByRole('button', {
+          name: /Visa versionshistorik för Arbetsmiljöpolicy/,
+        })
+      ).toBeInTheDocument()
+      // The default "History + currentVersionNumber badge" button is not
+      // rendered when a custom trigger is supplied.
+      expect(screen.queryByText('3')).not.toBeInTheDocument()
+    })
+  })
 })

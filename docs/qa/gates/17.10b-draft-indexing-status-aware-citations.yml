@@ -1,0 +1,116 @@
+schema: 1
+story: '17.10b'
+story_title: 'Index DRAFT/IN_REVIEW Styrdokument with Status-Aware Citations'
+gate: PASS
+status_reason: 'Three-layer enforcement of the DRAFT-must-not-be-quoted-as-canonical contract verified at every layer including LIVE: citation format (chunk metadata + rehype data-tier), system-prompt directive (live-verified by Smoke C — agent refused the adversarial "Vad är vår officiella semesterpolicy?" probe with textbook hedge), and adversarial-test scaffolding (11 integration tests). Full autosave→markDirty→cron-sweep→reindex chain verified live end-to-end: autosave fired markDirty, cron sweep picked up the doc after the 60s debounce, indexWorkspaceDocument created 14 chunks with metadata.status=DRAFT, agent retrieved fresh edit-time content and presented with strong hedging. 28 ACs all traceable to tests; cross-tenant defence-in-depth (AC 28) verified across all three new code paths with workspace_id hard-coded into every UPDATE. One QA-applied refactor: closed an autosave→archive race in the cron sweep (defensive status filter + regression test). Full unit suite 5212+ green; new adversarial integration suite 11 green; tsc 0; eslint 0.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-02T11:55:00Z'
+
+reviewer_caveat:
+  same_session_as_dev: true
+  note: 'Dev (James) and QA (Quinn) ran in the SAME Claude session (same pattern as 14.29 / 14.30 / 17.10). Compensated with: (1) fresh-runner re-verification across all 13 touched test files (240 tests passing), (2) AC-by-AC re-trace against shipped code (all 28 ACs covered, see evidence.trace), (3) line-by-line spot-check on the four highest-risk surfaces (cross-tenant isolation across three new code paths, citation-safety contract enforcement, cron sweep race conditions, backfill workspace scoping). The cron-race finding below — caught during the spot-check and fixed in-review — is direct evidence that an independent pass adds value. A separate-reviewer (fresh session or human) pre-production pass is documented as a `future` recommendation.'
+
+top_issues: [] # No remaining open issues after the QA-applied refactor below.
+waiver: { active: false }
+
+quality_score: 97 # 100 - 3: 2 for same-session Dev+QA COI (smoke supplied the external validation signal but a separate-session reviewer is still the gold standard); 1 for the chip-disambiguator cosmetic gap (when agent calls both search + get on a colliding title, it emits the bare-title citationKey; not a safety issue but a UX gap that warrants a follow-up). Was q93 pre-smoke; +4 across 5 smoke scenarios all passing including the adversarial DEC-2 hold (Smoke C) and the live autosave→cron-sweep chain end-to-end (Smoke D infrastructure + agent-side).
+expires: '2026-06-16T11:55:00Z'
+
+evidence:
+  tests_reviewed: 240 # fresh-runner re-verification across all 13 touched test files
+  full_unit_suite: '5212 passing / 5 skipped / 0 failed (415 test files); +47 new tests from 17.10b'
+  new_integration_tests: 11 # tests/integration/agent/draft-citation-safety.test.ts (Seeds 1, 2, 3)
+  new_unit_tests: 47 # citations + system-prompt + reindex + sync + actions + cron + rehype + search-tool + documents-save
+  qa_applied_refactor: 1 # cron sweep status filter — closed autosave→archive race
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
+    ac_gaps: [] # All 28 ACs have at least one validating test
+  independently_verified:
+    - 'Cross-tenant isolation (AC 28) line-by-line confirmed in updateChunkMetadata (workspace_id required as throw-or-include precondition + hard-coded in raw SQL WHERE), the cron sweep (per-doc clear UPDATE scopes on both id AND workspace_id), and the backfill script (per-workspace ordered walk; never a global cross-tenant findMany).'
+    - 'Citation safety contract enforced at THREE layers: (1) FORMAT — citationKey stays bare title in source map, rehype data-tier attribute distinguishes draft vs canonical, resolveSource strips Utkast: prefix; (2) PROMPT — exact Swedish directive present in system-prompt.md verified by unit test; (3) PIPELINE — adversarial integration tests with simulated correct AND erroneous LLM outputs pin the structural boundary (pipeline does not synthesize canonical-tier entries for DRAFT chunks).'
+    - 'AC-11 backwards-compat default to APPROVED in search-workspace-documents.ts:90 — verified that legacy 17.9b chunks (missing status metadata) get a sane default at the tool layer, before reaching the agent. Read-side safety net for the backfill window.'
+    - '19.7c registry harness: no new tools (extends existing surface); registry-narrowing (8 tests) + registry-role-filter (5 tests) pass without count bumps (AC 25 holds).'
+    - 'Token budget: system prompt at ~6077 estimated tokens (raw 24308 chars / 4); ceiling 6500. ~423 tokens headroom. NO guardrail bump required (AC 26 holds). Dev''s additions stayed terse.'
+    - 'Hash gate composition (REL-001 null-embed self-heal): updateChunkMetadata explicitly does NOT trigger embedding; comment in helper documents the deliberate exclusion from the self-heal path (next content-change call still self-heals).'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Cross-tenant isolation across all 3 new code paths verified via line-by-line read + AC 28 dedicated tests. Workspace_id is non-optional in updateChunkMetadata (throws if empty) AND hard-coded into the SQL WHERE clause (not a parameter the caller can forget). Cron sweep clears flags workspace-scoped. Backfill walks per-workspace. No new auth surface. AUDITOR role unchanged (Story Context note). The DRAFT-visibility model is workspace-membership-scoped (not role-scoped) — same as existing styrdokument access.'
+  performance:
+    status: PASS
+    notes: 'Cron-sweep choice (DEC-5 Option B) smooths embedding load vs per-request throttle. 60s debounce window collapses rapid autosaves to one reindex per cron tick (verified by AC 16 test). Hash gate in syncWorkspaceChunks short-circuits no-op re-embeds. Composite index `(needs_reindex, last_marked_dirty_at)` on workspace_documents speeds the sweep predicate. Metadata-UPDATE path on status changes (the common case) skips embedding entirely — significant cost win vs 17.9b which always re-embedded.'
+  reliability:
+    status: CONCERNS
+    notes: 'PASS in normal operation. The ONE CONCERN: no retry-limit or backoff on cron failures. A doc that consistently fails to index (corrupt content_html, persistent embed API issue, etc.) stays needs_reindex=true forever and gets retried every minute, spamming console.error. NTH-4 explicitly accepted no alerting for v1 — but a max-retries flip-to-poison-state mechanism would be a meaningful future hardening. Cron-race (autosave→archive) WAS a CONCERN; closed by the QA refactor below + regression test.'
+  maintainability:
+    status: PASS
+    notes: 'Faithful extension of 17.9b/17.9c patterns. DEC-1 through DEC-6 labels in Story Context make the design decisions auditable. Inline JSDoc on every new public function. The exactOptionalPropertyTypes-induced conditional spread + the vi.mock-hoisting fix from 17.10 are both documented in Dev Debug Log References for the next reader. VIM-001 (in-place version mutation) explicitly tracked as accepted-but-deferred in Dev Notes so a future contributor doesn''t mistake it for a bug.'
+
+qa_applied_refactor:
+  file: 'app/api/cron/sweep-draft-reindex/route.ts'
+  change: 'Added defensive status filter to the sweep query: `status: { notIn: [SUPERSEDED, ARCHIVED] }`.'
+  why: |
+    Race: a doc can be marked dirty by autosaveDocument while DRAFT, then
+    transitioned to ARCHIVED (or SUPERSEDED) by updateDocumentStatus before
+    the cron sweep fires. updateDocumentStatus's DELETE branch deletes the
+    chunks via deindexWorkspaceDocument, but does NOT clear the dirty flag.
+    Without the filter, the sweep would then re-CREATE chunks from the still-
+    present current_version.content_html, leaving archived content silently
+    searchable to the agent.
+  how: |
+    The filter is the second layer that closes the race regardless of
+    transition ordering. markWorkspaceDocumentDirty already skips marking
+    terminal-state docs going in; this filter covers the case where the
+    transition happens between mark and sweep.
+  test_added: 'tests/unit/app/api/cron/sweep-draft-reindex.test.ts → "REGRESSION: excludes docs in terminal states (SUPERSEDED/ARCHIVED) to close the autosave→archive race"'
+  validation: 'Re-ran sweep-draft-reindex.test.ts → 6 tests passing (was 5; +1 regression). tsc clean. No other tests affected.'
+
+owner_smoke:
+  smoked_at: '2026-06-02T11:55:00Z'
+  smoked_by: 'Alexander Adstedt (Owner)'
+  workspace: 'Nordviken Hotell & Konferens AB (e4cd55b0-8b2c-4209-bd19-0b40f50f04f1)'
+  prep:
+    - 'Migration applied locally (pnpm prisma migrate deploy).'
+    - 'Seed script scripts/seed-nordviken-17.10b-smoke.ts populated 3 DRAFTs with distinct Swedish content (Semesterpolicy, Arbetsmiljöpolicy, NEW Diskrimineringspolicy — Revision).'
+    - 'Backfill script scripts/backfill-workspace-document-drafts.ts indexed 4 DRAFTs (the 3 seeded + the pre-existing Årlig riskbedömning). Hash-gated APPROVED docs no-op skipped. Chunk count 43 → 63.'
+  scenarios_run: 5
+  scenarios_passed: 5
+  surfaced_findings:
+    - 'Smoke A ("Visa Semesterpolicy") PASS: one-turn DRAFT retrieval (vs 17.10''s search-empty + list-fallback dance), strong prose hedge "Observera att dokumentet är ett utkast som ännu inte har godkänts", title appended with "(Utkast — ej godkänt)" suffix, status fields visible from get_workspace_document. No inline citation chip — but this is a display prompt; chips appear on claim prompts (verified in Smoke B).'
+    - 'Smoke B ("Vad har vi för riktlinjer om diskriminering?") STRONG PASS: mixed-tier retrieval with TWO distinct chip tiers in one response. Canonical chip "Diskrimineringspolicy" (no prefix, no suffix) + draft chip "Utkast: Diskrimineringspolicy — R..." (Utkast: prefix VISIBLE in chip text per DEC-3). Hedging asymmetry held: canonical refs presented authoritatively ("Er gällande policy förbjuder…"); draft refs explicitly hedged ("ett pågående utkast till revision", "I utkastet föreslås", "Revisionen är ännu inte godkänd"). Section structure ("Godkänd Diskrimineringspolicy" + "Pågående revision (ej godkänd)") emergent, not in any AC, exactly what compliance use needs.'
+    - 'Smoke C ("Vad är vår officiella semesterpolicy?") TEXTBOOK PASS — the load-bearing safety probe. Agent refused the leading question honestly: "Ni har för tillfället ingen godkänd semesterpolicy i ert dokumentarkiv. Det enda semesterpolicydokument som finns är det utkast jag visade tidigare — det är alltså ännu inte fastställt som officiell policy." Then enumerated which policies ARE approved (using list_workspace_documents) and offered to help formalize the missing one. Zero "Vår policy säger" framing; zero [Källa: Semesterpolicy] chips. DEC-2 contract held under maximum-pressure LLM-behavioral prompt — this was the single test most likely to fail; it passed cleanly.'
+    - 'Smoke D ("Visa Miljöpolicy" after live UI edit) PASS — full autosave→cron→reindex chain verified end-to-end live. Owner typed ~5394 chars into the Miljöpolicy editor; autosaveDocument fired markWorkspaceDocumentDirty (verified via Prisma query: needs_reindex=true, last_marked_dirty_at set). 81s later (debounce expired), cron route manually triggered (Vercel cron runs only in prod; local dev requires manual curl): 1 candidate, 1 processed, 0 failed, 5.9s duration. Post-sweep: 14 chunks created with metadata.status=DRAFT + metadata.version_number=1 + metadata.title + metadata.document_type. needs_reindex flag cleared, last_marked_dirty_at nulled. Agent prompt "Visa Miljöpolicy" then retrieved the freshly-chunked content with block-quote draft warning ("⚠️ OBS: Detta är ett utkast (ej godkänt)") + "[Utkast]" suffix in title. Cron route works exactly as designed.'
+    - 'Smoke E ("Vad säger Diskrimineringspolicyn?") PASS — 17.10 CITE-002 regression check covered by Smoke B''s diagnostic follow-up. Same behavior as 17.10: both APPROVED Diskrimineringspolicys found, clean section split, agent presents content from both. The chip-disambiguator (8-char-id) suffix is not visible — but neither was it explicitly confirmed in 17.10''s C2 smoke. This is the SAME behavior as 17.10, not a 17.10b regression. The agent emits the bare-title citationKey when both search+get are called on a colliding title, even though the source map has the suffixed forms available. Cosmetic UX gap, not a safety issue (the section headers + "två separata" framing carry the disambiguation visually).'
+  cosmetic_finding:
+    label: 'CITE-DIS-001: Chip disambiguator emit-side gap'
+    details: 'The CITE-002 disambiguator infrastructure is implemented and unit-tested correctly. When both search_workspace_documents AND get_workspace_document are called for a colliding title, the source map carries BOTH the bare-title key (from get) and the (8-char-id)-suffixed keys (from search). The agent then chooses to emit [Källa: <bare title>] rather than [Källa: <title (id)>]. Result: chips render identically even though the source map has the disambiguator ready. UX cost: hovering either chip resolves to whichever variant get_workspace_document registered first. Mitigation: a system-prompt instruction "när samma titel återkommer i sökresultaten, använd ALLTID den fullständiga citationKey-strängen med ID-suffix" would force the suffix emit. Future story, not a 17.10b blocker.'
+    suggested_owner: po
+
+recommendations:
+  immediate:
+    - action: 'Update the story File List (Dev Agent Record) to add `app/api/cron/sweep-draft-reindex/route.ts` and `tests/unit/app/api/cron/sweep-draft-reindex.test.ts` to the Modified list — QA refactor + regression test landed during this review.'
+      refs: ['docs/stories/17.10b.draft-indexing-status-aware-citations.md']
+      suggested_owner: dev
+    - action: 'Production migration deploy: `pnpm prisma migrate deploy` against the production DB. Additive nullable columns; safe to apply before, during, or after merge.'
+      refs: ['prisma/migrations/20260602100000_add_workspace_document_reindex_flags/migration.sql']
+      suggested_owner: dev
+  future:
+    - action: 'CITE-DIS-001: agent emits the bare-title citationKey when both search + get are called on a colliding title, even though the source map has the (8-char-id)-suffixed forms ready. System-prompt instruction would force the suffix emit. UX-only, no safety impact. Same behavior as 17.10.'
+      refs: ['lib/agent/system-prompt.md', 'lib/ai/citations.ts']
+      suggested_owner: po
+    - action: 'Cron retry-limit + poison-state: a doc that fails to index N consecutive times should flip to a poison state (e.g. a `reindex_failed_at` column) and stop being picked up by the sweep, with operator-visible logging. Currently a persistently-failing doc spams console.error every minute forever. Low priority — current impl is functionally correct, just noisy.'
+      refs: ['app/api/cron/sweep-draft-reindex/route.ts', 'prisma/schema.prisma']
+      suggested_owner: dev
+    - action: 'Separate-reviewer pre-production pass — same-session Dev + QA COI is documented but not externally validated. The cron-race finding above is direct evidence that an independent pass adds value. Recommend a fresh-session agent or human review before production deploy.'
+      refs: ['docs/stories/17.10b.draft-indexing-status-aware-citations.md']
+      suggested_owner: po
+    - action: 'VIM-001 (in-place version-row mutation in autosaveDocument:533) remains accepted-but-deferred. Owner declined to fix in 17.10b scope; document in plan follow-ups so a future contributor knows the version table is a hybrid (immutable for explicit checkpoints, mutable for the active draft head).'
+      refs: ['app/actions/documents.ts', 'docs/plans/2026-05-20-agent-partner-implementation-sequence.md']
+      suggested_owner: sm
+    - action: 'Adversarial test coverage for the LLM-behavioral path: the integration tests pin the structural pipeline correctness, but actually call no LLM. A future low-frequency canary test (run in a separate slow tier, calling the real LLM against the 3 seeds) would verify the system-prompt directive holds over model upgrades. Not blocking — current live-smoke practice covers this on each story; an automated canary would scale it.'
+      refs: ['tests/integration/agent/draft-citation-safety.test.ts']
+      suggested_owner: po
+    - action: 'AC-19 backfill metadata-patch: the script re-patches every APPROVED doc''s chunks even when metadata is already correct. Idempotent (jsonb || merge with same values is a no-op semantically), but does fire one UPDATE per APPROVED doc. For workspaces with thousands of APPROVED docs, this could be optimized to only patch chunks where metadata.status IS NULL OR metadata.version_number IS NULL. Low priority — one-time rollout cost.'
+      refs: ['scripts/backfill-workspace-document-drafts.ts']
+      suggested_owner: dev

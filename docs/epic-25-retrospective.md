@@ -72,7 +72,7 @@ Replaced the silent auto-fire of law-list generation on first `/dashboard` visit
 1. **Anticipate post-smoke polish in AC count**: B.6 was approved with 50 ACs but shipped with 7 additional behaviors from v1.1 polish. The story Change Log captured this, but the original ACs understated the actual delivered surface. Future epics: either widen AC count to anticipate smoke-driven polish, OR formalize that the Change Log is the canonical post-merge record (and AC count is a v0.x target, not a contract).
 2. **Defer celebrate FAB to its own story**: the localStorage seen-flag mechanism + Sparkles variant + SWR auto-refresh emerged as v1.1 polish but is really its own ~150-LOC behavior. Could have been B.7. Lesson: when a flagged "out of scope" item from a prior story ("smart done-state restoration NOT implemented") comes up during smoke, ship it as a new story not as polish.
 3. **E2E tests earlier**: tests were unit-only across all 7 stories. The 7 bugs caught during 25.6 smoke would have been caught by E2E earlier in the epic. **This retrospective ships the first Epic 25 Playwright suite** (see `tests/e2e/epic-25/`).
-4. **Document the smoke procedure as a script**: smoke flows for 25.4/25.5/25.6 all referenced `pnpm tsx scripts/reset-almasa-onboarding.ts` + a 5-13 step manual procedure. A `scripts/smoke-epic-25.ts` orchestrator (or the Playwright E2E suite below) would have made smoke faster + more repeatable.
+4. **Document the smoke procedure as a script**: smoke flows for 25.4/25.5/25.6 all referenced `pnpm tsx scripts/reset-nordviken-onboarding.ts` + a 5-13 step manual procedure. A `scripts/smoke-epic-25.ts` orchestrator (or the Playwright E2E suite below) would have made smoke faster + more repeatable.
 
 ---
 
@@ -126,7 +126,7 @@ The new schema columns + OnboardingEvent rows stay in place (additive; no cleanu
 - **QA gates**: `docs/qa/gates/25.0-*.yml` through `25.6-*.yml` — per-story PASS gates with NFR validation
 - **Story files**: `docs/stories/25.2.*.md` through `docs/stories/25.6.*.md` (B.0/B.1 in `docs/stories/completed/`)
 - **E2E tests**: `tests/e2e/epic-25/onboarding-modal.spec.ts` — Playwright suite covering the highest-value flows (added as part of this retrospective)
-- **Reset helper**: `scripts/reset-almasa-onboarding.ts` — dev-only helper for re-smoking the full flow
+- **Reset helper**: `scripts/reset-nordviken-onboarding.ts` — dev-only helper for re-smoking the full flow
 
 ---
 

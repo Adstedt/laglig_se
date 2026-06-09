@@ -10,13 +10,15 @@ import { prisma } from '@/lib/prisma'
 import { withWorkspace } from '@/lib/auth/workspace-context'
 import { getStorageClient } from '@/lib/supabase/storage'
 import { z } from 'zod'
-import type { FileCategory } from '@prisma/client'
+import type { FileCategory, FileExtractionStatus } from '@prisma/client'
 import {
   assertWithinStorageQuota,
   formatBytesSwedish,
   StorageQuotaExceededError,
   type StorageWarning,
 } from '@/lib/usage/storage'
+import { createHash } from 'crypto'
+import { isExtractableMimeType } from '@/lib/documents/extractable-mime'
 
 // ============================================================================
 // Constants
@@ -36,6 +38,10 @@ const ALLOWED_MIME_TYPES = [
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'application/vnd.ms-powerpoint',
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  // Story 17.8: plain-text formats are extractable (direct → markdown).
+  'text/plain',
+  'text/markdown',
+  'text/csv',
 ]
 
 // ============================================================================
@@ -113,6 +119,9 @@ export interface FileFilters {
   dateFrom?: Date
   dateTo?: Date
   search?: string
+  // Filter by attachment state, derived from the link tables (no schema change):
+  // 'standalone' = no task/list-item/requirement links; 'linked' = has ≥1.
+  linkState?: 'standalone' | 'linked'
 }
 
 export interface PaginatedFilesResult {
@@ -134,7 +143,14 @@ export interface PaginatedFilesResult {
 const UpdateFileSchema = z.object({
   filename: z.string().min(1).max(255).optional(),
   category: z
-    .enum(['BEVIS', 'POLICY', 'AVTAL', 'CERTIFIKAT', 'OVRIGT'])
+    .enum([
+      'BEVIS',
+      'POLICY',
+      'AVTAL',
+      'CERTIFIKAT',
+      'OVRIGT',
+      'CHAT_ATTACHMENT',
+    ])
     .optional(),
   description: z.string().max(1000).optional().nullable(),
 })
@@ -334,6 +350,9 @@ export async function uploadFile(
       const arrayBuffer = await file.arrayBuffer()
       const buffer = Buffer.from(arrayBuffer)
 
+      // Story 17.8: content hash (dedupe + 17.9 incremental sync).
+      const contentHash = createHash('sha256').update(buffer).digest('hex')
+
       // Upload to Supabase Storage
       const storageClient = getStorageClient()
       const { error: uploadError } = await storageClient.storage
@@ -361,6 +380,12 @@ export async function uploadFile(
           mime_type: file.type,
           storage_path: storagePath,
           category,
+          // Story 17.8: queue extractable types for the extract-files cron;
+          // others are UNSUPPORTED. Extraction never runs inline (Vercel).
+          extraction_status: isExtractableMimeType(file.type)
+            ? 'PENDING'
+            : 'UNSUPPORTED',
+          content_hash: contentHash,
         },
         include: {
           uploader: {
@@ -422,6 +447,97 @@ export async function uploadFile(
     })
   } catch (error) {
     console.error('uploadFile error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Ett fel uppstod',
+    }
+  }
+}
+
+/**
+ * Story 17.8: Manually (re-)trigger extraction for a single file. Workspace-scoped
+ * — the extract-files cron is the bulk path; this is the on-demand/admin path
+ * (e.g. retrying a FAILED file). Re-downloads from Storage and re-runs extractFile.
+ */
+export async function extractWorkspaceFile(
+  fileId: string
+): Promise<ActionResult<{ status: FileExtractionStatus }>> {
+  try {
+    return await withWorkspace(async ({ workspaceId }) => {
+      const file = await prisma.workspaceFile.findFirst({
+        where: { id: fileId, workspace_id: workspaceId, is_folder: false },
+        select: {
+          id: true,
+          workspace_id: true,
+          uploaded_by: true,
+          mime_type: true,
+          storage_path: true,
+        },
+      })
+      if (!file || !file.storage_path) {
+        return { success: false, error: 'Filen hittades inte' }
+      }
+
+      const storageClient = getStorageClient()
+      const { data: blob, error } = await storageClient.storage
+        .from(BUCKET_NAME)
+        .download(file.storage_path)
+      if (error || !blob) {
+        return {
+          success: false,
+          error: 'Kunde inte hämta filen från lagringen',
+        }
+      }
+
+      const buffer = Buffer.from(await blob.arrayBuffer())
+      // Dynamic import keeps xlsx/papaparse/Anthropic out of the other file actions.
+      const { extractFile } = await import('@/lib/documents/extract-file')
+      const result = await extractFile(buffer, file.mime_type)
+
+      await prisma.workspaceFile.update({
+        where: { id: file.id },
+        data: {
+          extraction_status: result.status,
+          extracted_text: result.markdown,
+          extracted_at: new Date(),
+        },
+      })
+
+      // FILE_EXTRACTION cost telemetry (PDF/LLM path only). Fail-safe.
+      if (result.usage) {
+        try {
+          const { estimateCostUsd } = await import('@/lib/usage/cost-estimator')
+          await prisma.chatUsageEvent.create({
+            data: {
+              workspace_id: file.workspace_id,
+              user_id: file.uploaded_by,
+              model: result.usage.model,
+              context_type: 'FILE_EXTRACTION',
+              input_tokens: result.usage.inputTokens,
+              output_tokens: result.usage.outputTokens,
+              cost_usd_estimate: estimateCostUsd({
+                model: result.usage.model,
+                inputTokens: result.usage.inputTokens,
+                outputTokens: result.usage.outputTokens,
+                cacheReadInputTokens: 0,
+                cacheWriteInputTokens: 0,
+                reasoningTokens: 0,
+              }),
+            },
+          })
+        } catch (e) {
+          console.error(
+            '[extractWorkspaceFile] usage telemetry write failed:',
+            e
+          )
+        }
+      }
+
+      revalidatePath('/filer')
+      return { success: true, data: { status: result.status } }
+    })
+  } catch (error) {
+    console.error('extractWorkspaceFile error:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Ett fel uppstod',
@@ -634,6 +750,11 @@ export async function getWorkspaceFiles(
 
       if (filters?.category) {
         where.category = filters.category
+      } else {
+        // Story 19.1: chat attachments are conversational, not curated workspace
+        // files — exclude them from the default Filer listing. (An explicit
+        // category filter still resolves normally.)
+        where.category = { not: 'CHAT_ATTACHMENT' }
       }
 
       if (filters?.uploadedBy) {
@@ -893,6 +1014,13 @@ export async function deleteFile(fileId: string): Promise<ActionResult> {
 
       // Delete from database (cascades to links)
       await prisma.workspaceFile.delete({ where: { id: fileId } })
+
+      // Story 17.9 — de-index the file's RAG chunks. ContentChunk has no FK to its
+      // polymorphic source, so onDelete: Cascade is infeasible — clean up manually
+      // here so the agent can never retrieve a deleted file's content.
+      await prisma.contentChunk.deleteMany({
+        where: { source_type: 'USER_FILE', source_id: fileId },
+      })
 
       revalidatePath('/filer')
       revalidatePath('/tasks')
@@ -1258,9 +1386,19 @@ export async function deleteFilesBulk(
         await storageClient.storage.from(BUCKET_NAME).remove(paths)
       }
 
-      // Delete from database
+      // Delete from database. `deletedIds` is the permission-filtered set actually
+      // deleted (admins: any; others: own only) — never the raw `fileIds` input.
+      const deletedIds = files.map((f) => f.id)
       const deleteResult = await prisma.workspaceFile.deleteMany({
-        where: { id: { in: files.map((f) => f.id) } },
+        where: { id: { in: deletedIds } },
+      })
+
+      // Story 17.9 — de-index RAG chunks for exactly those files. ContentChunk has
+      // no FK to its polymorphic source, so cleanup is manual; mirroring the
+      // permission-filtered set guarantees we never de-index a file the caller
+      // couldn't delete.
+      await prisma.contentChunk.deleteMany({
+        where: { source_type: 'USER_FILE', source_id: { in: deletedIds } },
       })
 
       revalidatePath('/filer')
@@ -1864,6 +2002,25 @@ export async function getFolderContents(
               mode: 'insensitive',
             },
           },
+        ]
+      }
+      // Attachment filter: standalone vs linked. Uses a dedicated AND array so
+      // it never collides with the search OR above (both are ANDed together).
+      if (options?.filters?.linkState === 'linked') {
+        where.AND = [
+          {
+            OR: [
+              { task_links: { some: {} } },
+              { list_item_links: { some: {} } },
+              { requirement_evidence_links: { some: {} } },
+            ],
+          },
+        ]
+      } else if (options?.filters?.linkState === 'standalone') {
+        where.AND = [
+          { task_links: { none: {} } },
+          { list_item_links: { none: {} } },
+          { requirement_evidence_links: { none: {} } },
         ]
       }
 

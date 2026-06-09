@@ -201,6 +201,7 @@ describe('restoreDocumentVersion', () => {
         const tx = {
           workspaceDocumentVersion: {
             create: vi.fn().mockResolvedValue(mockVer),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 5 }),
           },
           workspaceDocument: {
             update: vi.fn().mockResolvedValue({}),
@@ -244,6 +245,7 @@ describe('restoreDocumentVersion', () => {
                 capturedVersionData = args.data
                 return { id: 'ver-4', version_number: 4 }
               }),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 3 }),
           },
           workspaceDocument: { update: vi.fn().mockResolvedValue({}) },
           activityLog: { create: vi.fn().mockResolvedValue({}) },
@@ -279,6 +281,7 @@ describe('restoreDocumentVersion', () => {
             create: vi
               .fn()
               .mockResolvedValue({ id: 'ver-4', version_number: 4 }),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 3 }),
           },
           workspaceDocument: { update: vi.fn().mockResolvedValue({}) },
           activityLog: {
@@ -330,6 +333,154 @@ describe('restoreDocumentVersion', () => {
     expect(result.success).toBe(false)
     expect(result.error).toBe('Version hittades inte')
   })
+
+  // ==========================================================================
+  // Story 17.16 QA CONCERN-001 fix — three-path routing tests
+  // (mirrors saveDocumentVersion AC 5; adds Path D for terminal-state refusal)
+  // ==========================================================================
+
+  it('Path A — draft in progress: advances draft pointer, FREEZES alias on approved (load-bearing)', async () => {
+    // Dual-state doc: status=APPROVED with draft in progress. Restore must
+    // target the draft pointer; alias must NOT be advanced (the load-bearing
+    // CRIT-1 invariant; restore was the matching alias-leak vector to the
+    // autosave bug surfaced during Story 17.16 live smoke).
+    mockFindFirst.mockResolvedValueOnce({
+      id: 'doc-1',
+      status: 'APPROVED',
+      current_version_number: 4,
+      current_draft_version_id: 'v_draft',
+      current_approved_version_id: 'v_approved',
+      workspace_id: MOCK_WORKSPACE_ID,
+    })
+    mockFindFirst.mockResolvedValueOnce({
+      content_json: { type: 'doc', content: [] },
+    })
+
+    let capturedDocUpdate: Record<string, unknown> | null = null
+    mockTransaction.mockImplementation(
+      async (fn: (_tx: unknown) => Promise<unknown>) => {
+        const tx = {
+          workspaceDocumentVersion: {
+            create: vi
+              .fn()
+              .mockResolvedValue({ id: 'v_new', version_number: 5 }),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 4 }),
+          },
+          workspaceDocument: {
+            update: vi
+              .fn()
+              .mockImplementation((args: { data: Record<string, unknown> }) => {
+                capturedDocUpdate = args.data
+                return {}
+              }),
+          },
+          activityLog: { create: vi.fn().mockResolvedValue({}) },
+        }
+        return fn(tx)
+      }
+    )
+
+    const { restoreDocumentVersion } = await import('@/app/actions/documents')
+    const result = await restoreDocumentVersion('doc-1', 2)
+
+    expect(result.success).toBe(true)
+    expect(capturedDocUpdate).toMatchObject({
+      current_draft_version_id: 'v_new',
+      current_version_number: 5,
+    })
+    // CRITICAL: alias MUST NOT be in the update payload (frozen on approved).
+    expect(capturedDocUpdate!.current_version_id).toBeUndefined()
+    expect(capturedDocUpdate!.current_approved_version_id).toBeUndefined()
+    expect(capturedDocUpdate!.status).toBeUndefined()
+  })
+
+  it('Path B — never-approved DRAFT: advances both alias and draft pointer together', async () => {
+    mockFindFirst.mockResolvedValueOnce({
+      id: 'doc-1',
+      status: 'DRAFT',
+      current_version_number: 3,
+      current_draft_version_id: null,
+      current_approved_version_id: null,
+      workspace_id: MOCK_WORKSPACE_ID,
+    })
+    mockFindFirst.mockResolvedValueOnce({
+      content_json: { type: 'doc', content: [] },
+    })
+
+    let capturedDocUpdate: Record<string, unknown> | null = null
+    mockTransaction.mockImplementation(
+      async (fn: (_tx: unknown) => Promise<unknown>) => {
+        const tx = {
+          workspaceDocumentVersion: {
+            create: vi
+              .fn()
+              .mockResolvedValue({ id: 'v_new', version_number: 4 }),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 3 }),
+          },
+          workspaceDocument: {
+            update: vi
+              .fn()
+              .mockImplementation((args: { data: Record<string, unknown> }) => {
+                capturedDocUpdate = args.data
+                return {}
+              }),
+          },
+          activityLog: { create: vi.fn().mockResolvedValue({}) },
+        }
+        return fn(tx)
+      }
+    )
+
+    const { restoreDocumentVersion } = await import('@/app/actions/documents')
+    const result = await restoreDocumentVersion('doc-1', 1)
+
+    expect(result.success).toBe(true)
+    // Both alias AND draft pointer advance (no approved to protect).
+    expect(capturedDocUpdate).toMatchObject({
+      current_draft_version_id: 'v_new',
+      current_version_id: 'v_new',
+      current_version_number: 4,
+    })
+  })
+
+  it('Path C — APPROVED with no draft: refuse with branch-first guidance', async () => {
+    mockFindFirst.mockResolvedValueOnce({
+      id: 'doc-1',
+      status: 'APPROVED',
+      current_version_number: 3,
+      current_draft_version_id: null, // no draft
+      current_approved_version_id: 'v_approved',
+      workspace_id: MOCK_WORKSPACE_ID,
+    })
+
+    const { restoreDocumentVersion } = await import('@/app/actions/documents')
+    const result = await restoreDocumentVersion('doc-1', 1)
+
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/godkända dokumentet kan inte ändras/i)
+    expect(mockTransaction).not.toHaveBeenCalled()
+  })
+
+  it.each(['ARCHIVED', 'SUPERSEDED'] as const)(
+    'Path D — refuses on terminal state %s',
+    async (status) => {
+      mockFindFirst.mockResolvedValueOnce({
+        id: 'doc-1',
+        status,
+        current_version_number: 3,
+        current_draft_version_id: null,
+        current_approved_version_id: 'v_old',
+        workspace_id: MOCK_WORKSPACE_ID,
+      })
+
+      const { restoreDocumentVersion } = await import('@/app/actions/documents')
+      const result = await restoreDocumentVersion('doc-1', 1)
+
+      expect(result.success).toBe(false)
+      expect(result.error).toMatch(/arkiverat|upphävt/i)
+      expect(mockTransaction).not.toHaveBeenCalled()
+    }
+  )
 })
 
 describe('saveDocumentVersion (ActivityLog)', () => {
@@ -352,6 +503,7 @@ describe('saveDocumentVersion (ActivityLog)', () => {
             create: vi
               .fn()
               .mockResolvedValue({ id: 'ver-3', version_number: 3 }),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 2 }),
           },
           workspaceDocument: { update: vi.fn().mockResolvedValue({}) },
           activityLog: {

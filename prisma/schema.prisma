@@ -4,6 +4,12 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
+  // Trim Prisma query-engine binaries to just (a) the local dev platform
+  // and (b) Vercel's Node 20 RHEL runtime. Default behaviour bundles every
+  // platform binary (linux x4 + darwin x2 + windows), inflating the
+  // serverless function bundle by ~50 MB. Verified contributor in the
+  // VERCEL_ANALYZE_BUILD_OUTPUT report (77 MB @prisma/client per function).
+  binaryTargets   = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
@@ -52,7 +58,11 @@ model User {
   chat_messages ChatMessage[]
 
   // Story 14.27: Chat usage telemetry
-  chat_usage_events ChatUsageEvent[]
+  chat_usage_events   ChatUsageEvent[]
+  agent_decision_logs AgentDecisionLog[]
+
+  // Story 14.22: Agent approval cards
+  pending_agent_actions PendingAgentAction[]
 
   // Epic 12: Template relations
   created_templates LawListTemplate[] @relation("TemplateCreator")
@@ -63,10 +73,13 @@ model User {
   compliance_status_logs ComplianceStatusLog[] @relation("ComplianceStatusLogChanger")
 
   // Epic 17: Document management relations
-  workspace_documents_created   WorkspaceDocument[]             @relation("WsDocCreator")
-  workspace_documents_approved  WorkspaceDocument[]             @relation("WsDocApprover")
-  workspace_doc_task_links      WorkspaceDocumentTaskLink[]     @relation("WsDocTaskLinkUser")
-  workspace_doc_list_item_links WorkspaceDocumentListItemLink[] @relation("WsDocListItemLinkUser")
+  workspace_documents_created     WorkspaceDocument[]             @relation("WsDocCreator")
+  workspace_documents_approved    WorkspaceDocument[]             @relation("WsDocApprover")
+  // Story 17.16: per-version approver (dual-version model — every version that
+  // was ever promoted to approved carries its own approver/approved_at audit).
+  workspace_doc_versions_approved WorkspaceDocumentVersion[]      @relation("WsDocVersionApprover")
+  workspace_doc_task_links        WorkspaceDocumentTaskLink[]     @relation("WsDocTaskLinkUser")
+  workspace_doc_list_item_links   WorkspaceDocumentListItemLink[] @relation("WsDocListItemLinkUser")
 
   // Story 17.16: Kravpunkter relations
   created_requirements       LawListItemRequirement[]  @relation("RequirementCreator")
@@ -163,7 +176,11 @@ model Workspace {
   chat_messages ChatMessage[]
 
   // Story 14.27: Chat usage telemetry
-  chat_usage_events ChatUsageEvent[]
+  chat_usage_events   ChatUsageEvent[]
+  agent_decision_logs AgentDecisionLog[]
+
+  // Story 14.22: Agent approval cards
+  pending_agent_actions PendingAgentAction[]
 
   // Story 5.5c: AI token quota counter (one row per workspace)
   workspace_usage WorkspaceUsage?
@@ -1298,6 +1315,13 @@ model WorkspaceFile {
   storage_path      String? // Supabase Storage path - null for folders
   category          FileCategory @default(OVRIGT)
 
+  // Story 17.8: Uploaded-file ingestion → structure-preserving markdown for the
+  // agent + RAG (17.9). Extraction runs async via the extract-files cron.
+  extracted_text    String?              @db.Text // canonical markdown representation
+  extraction_status FileExtractionStatus @default(PENDING)
+  extracted_at      DateTime?
+  content_hash      String? // sha256 of file bytes — dedupe + 17.9 incremental sync
+
   // Optional description
   description String? @db.Text
 
@@ -1326,6 +1350,17 @@ model WorkspaceFile {
   @@map("workspace_files")
 }
 
+// Story 17.8: Uploaded-file extraction lifecycle state.
+enum FileExtractionStatus {
+  PENDING // queued for the extract-files cron
+  PROCESSING // claimed by a cron run
+  DONE // markdown extracted + stored
+  EMPTY // no extractable text found
+  UNSUPPORTED // type not extractable (images, ppt, legacy .doc) — or pre-17.8 backfill
+  ENCRYPTED // password-protected, cannot read
+  FAILED // extraction error (incl. validation failure / oversized PDF)
+}
+
 // Story 6.7a: File category enum
 enum FileCategory {
   BEVIS // Evidence for compliance
@@ -1333,6 +1368,7 @@ enum FileCategory {
   AVTAL // Agreements/contracts
   CERTIFIKAT // Certificates
   OVRIGT // Other/miscellaneous
+  CHAT_ATTACHMENT // Story 19.1: uploaded in chat — conversational, excluded from Filer + RAG until promoted (19.1b)
 }
 
 // Story 6.7a: Many-to-many File <-> Task
@@ -1457,6 +1493,9 @@ model ChatMessage {
   workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  // Story 14.22: Agent approval cards anchored to the assistant message that proposed them
+  pending_agent_actions PendingAgentAction[]
+
   @@index([workspace_id, user_id, context_type, context_id])
   @@index([workspace_id, user_id, created_at])
   @@index([conversation_id])
@@ -1479,6 +1518,9 @@ enum ChatContextType {
   // Story 24.7 — per-call LLM telemetry for the granska-page grouping
   // proposer (claude-haiku-4-5). Distinguishes grouping cost from matching.
   IMPORT_GROUPING
+  // Story 17.8 — per-file LLM telemetry for the uploaded-file extraction
+  // pipeline (PDF→Claude Haiku). Distinguishes ingestion cost from chat/import.
+  FILE_EXTRACTION
 }
 
 // Story 14.27: Per-turn chat usage telemetry. One row per successful chat turn.
@@ -1516,6 +1558,135 @@ model ChatUsageEvent {
   @@index([workspace_id, user_id, created_at])
   @@index([context_type, created_at])
   @@map("chat_usage_events")
+}
+
+// ============================================================================
+// AGENT APPROVAL CARDS — Story 14.22
+// Persistent, inline agent action proposals (replaces the ephemeral sidebar
+// write-preview pattern). Workspace-scoped. chat_message_id is non-null: the FK
+// target is guaranteed by the pre-loop stub ChatMessage written in
+// app/api/chat/route.ts before the tool loop (see ADR-14.22-A). expires_at is
+// application-set to now()+7d at creation time (no DB default for now()+interval).
+// ============================================================================
+model PendingAgentAction {
+  id              String                   @id @default(uuid())
+  workspace_id    String
+  user_id         String
+  conversation_id String? // null = active conversation
+  chat_message_id String // FK to the assistant ChatMessage that proposed this action
+  context_type    ChatContextType          @default(GLOBAL)
+  context_id      String? // task_id or law_list_item_id depending on context_type
+  action_type     PendingAgentActionType
+  status          PendingAgentActionStatus @default(PENDING)
+  params          Json // editable snapshot of proposal parameters
+  result_ref      Json? // e.g. { taskId } after approve
+  created_at      DateTime                 @default(now())
+  decided_at      DateTime?
+  expires_at      DateTime // application-set to now()+7d at creation
+
+  // Relations
+  workspace    Workspace   @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  user         User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  chat_message ChatMessage @relation(fields: [chat_message_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id, user_id, conversation_id, status], map: "pending_agent_actions_scope_idx")
+  @@index([chat_message_id])
+  @@index([expires_at])
+  @@map("pending_agent_actions")
+}
+
+enum PendingAgentActionType {
+  CREATE_TASK
+  // Story 14.23 — extended approval types (4 new) + the two migrated sidebar
+  // write-preview tools (ADD_CONTEXT_NOTE, UPDATE_COMPLIANCE_STATUS). Additive
+  // enum-value additions only; ordered alphabetically after CREATE_TASK.
+  ADD_CONTEXT_NOTE
+  ADD_OBLIGATION
+  ASSIGN_TASK
+  LINK_DOCUMENT_TO_TASK
+  LINK_TASK_TO_DOCUMENT
+  UPDATE_COMPLIANCE_STATUS
+  // Story 14.28 — agent-proposed kravpunkt (requirement) edit. Additive enum-value addition.
+  UPDATE_REQUIREMENT
+  // Story 14.24 — agent-drafted styrdokument approval. Additive enum-value addition.
+  DRAFT_DOCUMENT
+  // Story 14.29 — agent-proposed task comment approval (append-only; no diff,
+  // no editor path). Dispatch calls the existing createComment server action.
+  // Additive enum-value addition.
+  ADD_TASK_COMMENT
+  // Story 14.30 — agent-proposed styrdokument status transition. Separation-of-
+  // duties: agent never proposes APPROVED (guarded at the tool AND the dispatch
+  // as defence-in-depth). Dispatch calls the existing updateDocumentStatus
+  // server action. Additive enum-value addition.
+  TRANSITION_DOCUMENT_STATUS
+  // Story 17.11 — agent-proposed section-level edit to an existing workspace
+  // document. Approval-gated (no execute:true path). Dispatch calls the
+  // existing saveDocumentVersion server action with the full updated
+  // contentJson produced by updateSection(). DRAFT/IN_REVIEW only; APPROVED
+  // documents must branch via createDraftFromApproved first. Additive
+  // enum-value addition.
+  UPDATE_DOCUMENT
+  // Story 17.11b — agent-proposed insert of a NEW section into an existing
+  // workspace document. Approval-gated (mirrors UPDATE_DOCUMENT pattern). On
+  // approval dispatch calls addSection() to produce the full updated
+  // contentJson, then saveDocumentVersion appends a new version + reindexes.
+  // DRAFT/IN_REVIEW only; no-duplicate-heading + position-target-exists guards
+  // at both tool time AND dispatch. Additive enum-value addition.
+  ADD_DOCUMENT_SECTION
+}
+
+enum PendingAgentActionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+  // Story 14.24 — draft document opened in the Tiptap editor, awaiting finalize/reject.
+  IN_EDITOR
+}
+
+// ============================================================================
+// AGENT DECISION LOG — Story 19.5
+// One row per agent tool invocation (reads, write proposals, failures) — the
+// audit trail complementing PendingAgentAction's proposal lifecycle. The soft
+// refs (chat_message_id, pending_action_id, accepted_by) are plain columns, NOT
+// FKs: an audit log is intentionally decoupled + durable (survives deletion of
+// the message/proposal/approver it references). workspace_id + user_id ARE FK
+// Cascade (a deleted workspace/user takes its logs with it — matches
+// ChatUsageEvent). Written fail-safe: a log error never breaks the tool call.
+// ============================================================================
+model AgentDecisionLog {
+  id                String               @id @default(uuid())
+  workspace_id      String
+  user_id           String
+  chat_message_id   String? // soft ref — null outside a chat turn (future cron/CLI)
+  pending_action_id String? // soft ref — set only for write proposals; exact approve/reject match key (Story 19.5 SF-1)
+  tool_name         String // free-form; String not enum so new tools ship without a migration
+  input_json        Json
+  output_json       Json? // null if execute threw before returning a result
+  proposed_at       DateTime             @default(now()) // wrapper-entry time
+  accepted_at       DateTime?
+  accepted_by       String? // soft ref — approver user id
+  outcome           AgentDecisionOutcome
+  model_version     String
+  created_at        DateTime             @default(now())
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([workspace_id, created_at])
+  @@index([workspace_id, user_id, created_at])
+  @@index([tool_name, created_at])
+  @@index([chat_message_id])
+  @@index([pending_action_id])
+  @@map("agent_decision_logs")
+}
+
+enum AgentDecisionOutcome {
+  SUCCESS // tool executed, non-write result returned
+  WRITE_PROPOSED // write tool returned a PendingAgentAction proposal
+  WRITE_ACCEPTED // proposal approved (accepted_at/accepted_by populated)
+  WRITE_REJECTED // proposal rejected or expired
+  ERROR // tool threw, or returned a ToolError envelope
 }
 
 // Story 25.0 (Epic 25): First-run onboarding modal telemetry.
@@ -1850,6 +2021,15 @@ enum WorkspaceDocumentStatus {
   ARCHIVED
 }
 
+// Story 17.16: Dual-version model — sub-state of the in-progress draft when
+// one exists on a doc. NOT a reuse of WorkspaceDocumentStatus (the doc-level
+// status retains its existing meaning for the overall document lifecycle).
+// Populated iff WorkspaceDocument.current_draft_version_id IS NOT NULL.
+enum DraftStatus {
+  DRAFT
+  IN_REVIEW
+}
+
 enum WorkspaceDocumentVersionSource {
   TIPTAP
   IMPORT
@@ -1868,6 +2048,21 @@ model WorkspaceDocument {
   current_version_id     String? @unique
   current_version_number Int     @default(0)
 
+  // Story 17.16: Dual-version pointers (Model B). At any moment a doc has one
+  // of these states (queryable from the two pointers alone):
+  //  - Both null → doc just created, no versions yet (transient edge case).
+  //  - Only current_draft_version_id → never-approved DRAFT.
+  //  - Only current_approved_version_id → stable APPROVED policy.
+  //  - Both → APPROVED policy with revision in progress (the new state Model A
+  //    couldn't represent). The deprecated `current_version_id` alias stays
+  //    FROZEN on the approved pointer during draft windows so 17.10b auto-
+  //    reindex keeps grounding [Källa:] in approved content (see Story 17.16
+  //    AC 4 + AC 5 + AC 11). promoteDraftToApproved advances the alias when
+  //    the draft is finalized; discardDraft is a no-op for the alias.
+  current_approved_version_id String?      @unique
+  current_draft_version_id    String?      @unique
+  draft_status                DraftStatus?
+
   // Template reference
   template_id String?
 
@@ -1882,22 +2077,37 @@ model WorkspaceDocument {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  // Relations
-  workspace       Workspace                       @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
-  creator         User                            @relation("WsDocCreator", fields: [created_by], references: [id])
-  approver        User?                           @relation("WsDocApprover", fields: [approved_by], references: [id])
-  current_version WorkspaceDocumentVersion?       @relation("WorkspaceDocumentCurrentVersion", fields: [current_version_id], references: [id])
-  versions        WorkspaceDocumentVersion[]      @relation("WorkspaceDocumentVersions")
-  template        WorkspaceDocumentTemplate?      @relation(fields: [template_id], references: [id])
-  task_links      WorkspaceDocumentTaskLink[]
-  list_item_links WorkspaceDocumentListItemLink[]
+  // Story 17.10b: cron-sweep debounce flags for DRAFT autosave reindex.
+  // `autosaveDocument` flips needs_reindex = true + records last_marked_dirty_at;
+  // /api/cron/sweep-draft-reindex picks rows where the dirty-mark has aged past
+  // DRAFT_REINDEX_DEBOUNCE_MS (60s) and clears the flag after indexing.
+  needs_reindex        Boolean   @default(false)
+  last_marked_dirty_at DateTime?
 
-  // Story 17.16: Kravpunkter evidence links
+  // Relations
+  workspace                Workspace                       @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+  creator                  User                            @relation("WsDocCreator", fields: [created_by], references: [id])
+  approver                 User?                           @relation("WsDocApprover", fields: [approved_by], references: [id])
+  current_version          WorkspaceDocumentVersion?       @relation("WorkspaceDocumentCurrentVersion", fields: [current_version_id], references: [id])
+  // Story 17.16: Dual-version pointer relations (Model B foundation).
+  current_approved_version WorkspaceDocumentVersion?       @relation("WorkspaceDocumentCurrentApprovedVersion", fields: [current_approved_version_id], references: [id])
+  current_draft_version    WorkspaceDocumentVersion?       @relation("WorkspaceDocumentCurrentDraftVersion", fields: [current_draft_version_id], references: [id])
+  versions                 WorkspaceDocumentVersion[]      @relation("WorkspaceDocumentVersions")
+  template                 WorkspaceDocumentTemplate?      @relation(fields: [template_id], references: [id])
+  task_links               WorkspaceDocumentTaskLink[]
+  list_item_links          WorkspaceDocumentListItemLink[]
+
+  // Kravpunkter evidence links
   requirement_evidence_links RequirementEvidenceLink[]
 
   @@index([workspace_id, status])
   @@index([workspace_id, document_type])
   @@index([workspace_id, created_at])
+  // Story 17.10b: partial-like index for the cron sweep (Postgres will use the
+  // composite index when scanning for needs_reindex = true).
+  @@index([needs_reindex, last_marked_dirty_at])
+  // Story 17.16: "docs with draft pending" query path (table filter chip etc.).
+  @@index([workspace_id, current_draft_version_id])
   @@map("workspace_documents")
 }
 
@@ -1920,12 +2130,28 @@ model WorkspaceDocumentVersion {
   created_by     String // User ID or "agent" — no FK, resolve display at query time
   created_at     DateTime @default(now())
 
+  // Story 17.16: Per-version approval audit (dual-version model). Populated
+  // by promoteDraftToApproved at the moment a draft is promoted; superseded_at
+  // stamped when a later version replaces this one as the approved baseline.
+  // Backfilled from ActivityLog correlation per AC 3 Pass 1 (idempotent).
+  approved_at   DateTime?
+  approved_by   String?
+  superseded_at DateTime?
+
   // Relations
-  document    WorkspaceDocument  @relation("WorkspaceDocumentVersions", fields: [document_id], references: [id], onDelete: Cascade)
-  current_for WorkspaceDocument? @relation("WorkspaceDocumentCurrentVersion")
+  document             WorkspaceDocument  @relation("WorkspaceDocumentVersions", fields: [document_id], references: [id], onDelete: Cascade)
+  current_for          WorkspaceDocument? @relation("WorkspaceDocumentCurrentVersion")
+  // Story 17.16: Back-relations to the dual pointers.
+  current_approved_for WorkspaceDocument? @relation("WorkspaceDocumentCurrentApprovedVersion")
+  current_draft_for    WorkspaceDocument? @relation("WorkspaceDocumentCurrentDraftVersion")
+  // Story 17.16: Per-version approver (nullable; resolved only for versions
+  // that were ever promoted to approved).
+  approver             User?              @relation("WsDocVersionApprover", fields: [approved_by], references: [id])
 
   @@unique([document_id, version_number])
   @@index([document_id, created_at])
+  // Story 17.16: "what was approved on date X" historical-query path.
+  @@index([document_id, approved_at])
   @@map("workspace_document_versions")
 }
 

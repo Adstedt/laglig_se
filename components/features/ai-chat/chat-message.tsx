@@ -10,10 +10,14 @@ import { useState, useMemo, useEffect, useId } from 'react'
 import type { UIMessage } from 'ai'
 import type { ChatContextType } from '@/lib/hooks/use-chat-interface'
 import { isTextUIPart, isReasoningUIPart, isToolUIPart } from 'ai'
+import { AgentActionCard } from './agent-action-card'
+import { AgentActionBatchCard } from './agent-action-batch-card'
 import {
   ChevronRight,
   Search,
   FileText,
+  FileEdit,
+  FilePlus,
   Building2,
   ClipboardList,
   MessageCircleQuestion,
@@ -24,7 +28,14 @@ import {
   Trash2,
   Eye,
   Globe,
+  FileSearch,
+  Paperclip,
+  Image as ImageIcon,
+  Sheet,
+  AlertTriangle,
+  Clock,
 } from 'lucide-react'
+import { getFileDownloadUrl } from '@/app/actions/files'
 import { Streamdown } from 'streamdown'
 import { code } from '@streamdown/code'
 import { CitationPillInline } from './citation-pill'
@@ -49,18 +60,18 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { MessageActions } from './message-actions'
-import {
-  hasCitationMarkers,
-  sourcesToMap,
-  type ChatMessageMetadata,
-} from '@/lib/ai/citations'
+import { sourcesToMap, type ChatMessageMetadata } from '@/lib/ai/citations'
 import { cn } from '@/lib/utils'
 import {
   useChatDetailSafe,
   type ChatDetailItem,
   type AssessmentDetailData,
 } from '@/lib/ai/chat-detail-context'
-import type { ToolMeta, WriteToolResponse } from '@/lib/agent/tools/types'
+import type { ToolMeta } from '@/lib/agent/tools/types'
+import {
+  getAssessmentPreview,
+  extractRecommendation,
+} from '@/lib/changes/assessment-preview'
 
 // ---------------------------------------------------------------------------
 // Tool display configuration
@@ -68,12 +79,85 @@ import type { ToolMeta, WriteToolResponse } from '@/lib/agent/tools/types'
 
 const TOOL_CONFIG: Record<
   string,
-  { label: string; doneLabel: string; icon: typeof Search; hidden?: boolean }
+  {
+    label: string
+    doneLabel: string
+    /** Done-state label when the output is a proposal (carries pendingActionId). */
+    proposalLabel?: string
+    icon: typeof Search
+    hidden?: boolean
+  }
 > = {
   search_laws: {
     label: 'Söker i lagdatabasen',
     doneLabel: 'Sökte i lagdatabasen',
     icon: Search,
+  },
+  // Story 17.9c: semantic search over the workspace's own uploaded files.
+  search_workspace_files: {
+    label: 'Söker i uppladdade filer',
+    doneLabel: 'Sökte i uppladdade filer',
+    icon: FileSearch,
+  },
+  // Story 19.2: read a full workspace file (PDF/image/extracted text).
+  read_file: {
+    label: 'Läser fil',
+    doneLabel: 'Läste fil',
+    icon: FileText,
+  },
+  // Story 19.4a: discovery over the company compliance graph.
+  search_law_list_items: {
+    label: 'Söker i laglistan',
+    doneLabel: 'Sökte i laglistan',
+    icon: Search,
+  },
+  search_tasks: {
+    label: 'Söker bland uppgifter',
+    doneLabel: 'Sökte bland uppgifter',
+    icon: ClipboardList,
+  },
+  // Story 19.4: lazy entity-readers (compliance-graph traversal).
+  get_law_list_item: {
+    label: 'Läser laglistpost',
+    doneLabel: 'Läste laglistpost',
+    icon: ClipboardList,
+  },
+  get_task: {
+    label: 'Läser uppgift',
+    doneLabel: 'Läste uppgift',
+    icon: ClipboardList,
+  },
+  list_linked_artifacts: {
+    label: 'Hämtar länkade dokument',
+    doneLabel: 'Hämtade länkade dokument',
+    icon: FileText,
+  },
+  // Story 19.3: workspace-wide diagnostic aggregates.
+  list_bevis_gaps: {
+    label: 'Letar efter bevisluckor',
+    doneLabel: 'Hittade bevisluckor',
+    icon: AlertTriangle,
+  },
+  list_unassessed_changes: {
+    label: 'Letar efter obedömda ändringar',
+    doneLabel: 'Hittade obedömda ändringar',
+    icon: FileSearch,
+  },
+  list_overdue: {
+    label: 'Letar efter försenade uppgifter',
+    doneLabel: 'Hittade försenade uppgifter',
+    icon: Clock,
+  },
+  list_stale_documents: {
+    label: 'Letar efter dokument att granska',
+    doneLabel: 'Hittade dokument att granska',
+    icon: FileText,
+  },
+  // Story 19.7a: load a skill's instructions mid-conversation.
+  activate_skill: {
+    label: 'Aktiverar färdighet',
+    doneLabel: 'Aktiverade färdighet',
+    icon: Brain,
   },
   get_document_details: {
     label: 'Hämtar dokument',
@@ -91,8 +175,9 @@ const TOOL_CONFIG: Record<
     icon: Building2,
   },
   create_task: {
-    label: 'Skapar uppgift',
+    label: 'Föreslår uppgift',
     doneLabel: 'Skapade uppgift',
+    proposalLabel: 'Föreslog uppgift',
     icon: ClipboardList,
   },
   update_compliance_status: {
@@ -110,6 +195,38 @@ const TOOL_CONFIG: Record<
     doneLabel: 'Lade till anteckning',
     icon: ClipboardList,
   },
+  // Story 14.23 write tools — were rendering raw tool names (no config entry).
+  add_obligation: {
+    label: 'Lägger till kravpunkt',
+    doneLabel: 'Lade till kravpunkt',
+    proposalLabel: 'Föreslog kravpunkt',
+    icon: ClipboardList,
+  },
+  // Story 14.28: propose an edit to a kravpunkt.
+  update_requirement: {
+    label: 'Ändrar kravpunkt',
+    doneLabel: 'Ändrade kravpunkt',
+    proposalLabel: 'Föreslog ändring av kravpunkt',
+    icon: ClipboardList,
+  },
+  link_task_to_document: {
+    label: 'Länkar dokument',
+    doneLabel: 'Länkade dokument',
+    proposalLabel: 'Föreslog länkning',
+    icon: FileText,
+  },
+  link_document_to_task: {
+    label: 'Länkar dokument till uppgift',
+    doneLabel: 'Länkade dokument till uppgift',
+    proposalLabel: 'Föreslog länkning',
+    icon: ClipboardList,
+  },
+  assign_task: {
+    label: 'Tilldelar uppgift',
+    doneLabel: 'Tilldelade uppgift',
+    proposalLabel: 'Föreslog tilldelning',
+    icon: ClipboardList,
+  },
   suggest_followups: {
     label: 'Förbereder uppföljningsfrågor',
     doneLabel: 'Förberedde uppföljningsfrågor',
@@ -120,6 +237,67 @@ const TOOL_CONFIG: Record<
     label: 'Söker på webben',
     doneLabel: 'Sökte på webben',
     icon: Globe,
+  },
+  // Story 14.24: drafting a full styrdokument generates the whole Tiptap doc as
+  // tool input — this can run several seconds, so the running label matters.
+  draft_styrdokument: {
+    label: 'Skriver utkast',
+    doneLabel: 'Skapade utkast',
+    proposalLabel: 'Skrev utkast',
+    icon: FileText,
+  },
+  // Story 14.29: agent-proposed task comment (always a proposal — the
+  // proposalLabel is what the chip actually shows; doneLabel is the
+  // never-used direct-write fallback).
+  add_task_comment: {
+    label: 'Föreslår kommentar',
+    doneLabel: 'Lade till kommentar',
+    proposalLabel: 'Föreslog kommentar',
+    icon: ClipboardList,
+  },
+  // Story 14.30: agent-proposed styrdokument status transition. Always a
+  // proposal — APPROVED is forbidden at both tool + dispatch layers
+  // (separation of duties); the proposalLabel is what the chip shows.
+  transition_document_status: {
+    label: 'Föreslår statusändring',
+    doneLabel: 'Ändrade status',
+    proposalLabel: 'Föreslog statusändring',
+    icon: FileText,
+  },
+  // Story 17.11: agent-proposed section-level edit to an existing styrdokument.
+  // Always a proposal — inline approval card is the only finalize path. Both
+  // PENDING + DONE labels per the 1428-001 owner-smoke finding.
+  update_document: {
+    label: 'Uppdaterar dokument',
+    doneLabel: 'Uppdaterade dokument',
+    proposalLabel: 'Föreslog ändring',
+    icon: FileEdit,
+  },
+  // Story 17.11b: agent-proposed insert of a NEW section into an existing
+  // styrdokument. Always a proposal — inline approval card is the only
+  // finalize path. Both PENDING + DONE labels per the 1428-001 owner-smoke
+  // finding.
+  add_document_section: {
+    label: 'Lägger till avsnitt',
+    doneLabel: 'Lade till avsnitt',
+    proposalLabel: 'Föreslog nytt avsnitt',
+    icon: FilePlus,
+  },
+  // Story 17.10: workspace-document reads (styrdokument).
+  search_workspace_documents: {
+    label: 'Söker i styrdokument',
+    doneLabel: 'Sökte i styrdokument',
+    icon: FileSearch,
+  },
+  get_workspace_document: {
+    label: 'Läser styrdokument',
+    doneLabel: 'Läste styrdokument',
+    icon: FileText,
+  },
+  list_workspace_documents: {
+    label: 'Listar styrdokument',
+    doneLabel: 'Listade styrdokument',
+    icon: FileText,
   },
 }
 
@@ -164,6 +342,20 @@ type RenderItem =
   | { kind: 'part'; part: any; index: number; webSources?: WebSourceRef[] }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | { kind: 'tool-group'; items: Array<{ part: any; index: number }> }
+
+// Story 14.23: inline agent approval cards are the only approval path. The
+// inline-approvals feature flag and the legacy sidebar preview fallback were
+// removed — proposal-carrying tool parts always render as an inline
+// AgentActionCard (1 row) or AgentActionBatchCard (2+ rows per message).
+
+/** Read `output.data.pendingActionId` from a tool result, if present. */
+function extractPendingActionId(output: unknown): string | null {
+  if (!output || typeof output !== 'object') return null
+  const data = (output as { data?: unknown }).data
+  if (!data || typeof data !== 'object') return null
+  const id = (data as { pendingActionId?: unknown }).pendingActionId
+  return typeof id === 'string' ? id : null
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function groupCompletedToolParts(parts: any[]): RenderItem[] {
@@ -245,6 +437,12 @@ function groupCompletedToolParts(parts: any[]): RenderItem[] {
 
     if (part.state === 'output-available') {
       hasSeenToolResult = true
+      // Story 19.4 follow-up (1a): proposal-carrying tool parts now coalesce
+      // like any other tool — a batch of N same-tool proposals shows
+      // "Föreslog kravpunkt (N)" instead of N stacked rows. Safe because the
+      // approval card renders once at message level from `pendingApprovalIds`
+      // (decoupled from these chips); a lone proposal still renders as a
+      // single-item row (count 1).
       currentGroup.push({ part, index: i })
     } else {
       flushGroup()
@@ -304,10 +502,13 @@ type AccordionSource =
       anchorId: string | null
     }
 
-/** Extract document numbers actually cited in text via [Källa: ...] markers */
+/**
+ * Extract document numbers actually cited in text via [Källa: ...] or
+ * [Utkast: ...] markers (17.10b — Utkast is the draft-tier citation form).
+ */
 function extractCitedDocNumbers(text: string): Set<string> {
   const cited = new Set<string>()
-  const re = /\[Källa:\s*([^\]]+)\]/g
+  const re = /\[(?:Källa|Utkast):\s*([^\]]+)\]/g
   let match
   while ((match = re.exec(text)) !== null) {
     const label = match[1]!.trim()
@@ -483,13 +684,11 @@ const streamdownPlugins = { code }
 
 // Rehype plugins array — stable reference to avoid Streamdown re-renders
 const citationRehypePlugins = [rehypeCitationPills]
-const emptyRehypePlugins: typeof citationRehypePlugins = []
 
 // Components mapping: <cite> → CitationPillInline
 const citationComponents = {
   cite: CitationPillInline,
 }
-const emptyComponents = {}
 
 const PROSE_CLASSES =
   'text-sm prose prose-sm dark:prose-invert max-w-none prose-p:leading-loose prose-p:my-3 prose-headings:font-semibold prose-headings:mt-6 prose-headings:mb-3 prose-ul:my-3 prose-li:my-1 prose-blockquote:border-l-2 prose-blockquote:border-primary/30 prose-blockquote:pl-3 prose-blockquote:text-muted-foreground prose-blockquote:italic'
@@ -525,8 +724,43 @@ export function ChatMessage({
   const parts = useMemo(() => message.parts ?? [], [message.parts])
   const renderItems = useMemo(() => groupCompletedToolParts(parts), [parts])
 
+  // Story 14.22: pending-approval ids for this message — union of live tool-part
+  // outputs and the persisted `metadata.pendingActionIds` (so the inline card is
+  // rediscoverable on history reload, where tool parts no longer exist). Rendered
+  // once at message level, gated on !isActive (see render below).
+  const pendingApprovalIds = useMemo(() => {
+    const ids = new Set<string>()
+    for (const part of parts) {
+      if (
+        isToolUIPart(part) &&
+        part.state === 'output-available' &&
+        'output' in part
+      ) {
+        const id = extractPendingActionId(part.output)
+        if (id) ids.add(id)
+      }
+    }
+    const metaIds = (metadata as { pendingActionIds?: string[] } | undefined)
+      ?.pendingActionIds
+    if (Array.isArray(metaIds)) for (const id of metaIds) ids.add(id)
+    return Array.from(ids)
+  }, [parts, metadata])
+
   if (isUser) {
     const textParts = message.parts?.filter((p) => p.type === 'text') ?? []
+    // Story 19.1: chat attachment chips persisted on the user message metadata.
+    const attachments =
+      (
+        metadata as
+          | {
+              attachments?: Array<{
+                fileId: string
+                filename: string
+                mimeType: string | null
+              }>
+            }
+          | undefined
+      )?.attachments ?? []
     return (
       <div className="group flex items-start gap-2 flex-row-reverse">
         <div className="flex-1 overflow-hidden text-right">
@@ -540,6 +774,44 @@ export function ChatMessage({
               </p>
             </div>
           ))}
+          {attachments.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap justify-end gap-1.5">
+              {attachments.map((att) => {
+                const mime = att.mimeType ?? ''
+                const Icon =
+                  mime === 'application/pdf'
+                    ? FileText
+                    : mime.startsWith('image/')
+                      ? ImageIcon
+                      : mime.includes('sheet') ||
+                          mime.includes('excel') ||
+                          mime === 'text/csv'
+                        ? Sheet
+                        : Paperclip
+                return (
+                  <button
+                    key={att.fileId}
+                    type="button"
+                    onClick={async () => {
+                      const res = await getFileDownloadUrl(att.fileId)
+                      if (res.success && res.data) {
+                        window.open(
+                          res.data.url,
+                          '_blank',
+                          'noopener,noreferrer'
+                        )
+                      }
+                    }}
+                    title={`Öppna ${att.filename}`}
+                    className="inline-flex max-w-[200px] items-center gap-1.5 rounded-md border border-border bg-muted/50 px-2 py-1 text-xs text-foreground/80 hover:bg-muted"
+                  >
+                    <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    <span className="truncate">{att.filename}</span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
         {onDelete && (
           <DeleteMessageButton onConfirm={() => onDelete(message.id)} />
@@ -584,6 +856,13 @@ export function ChatMessage({
               extractToolPartInfo(part, index)
             const config = TOOL_CONFIG[toolName]
             if (config?.hidden) return null
+            // Story 14.23: a proposal tool (pendingActionId in output) suppresses
+            // the sidebar auto-open — the inline AgentActionCard / batch card
+            // (rendered once at message level after streaming) is the approval
+            // surface.
+            const isProposal =
+              part.state === 'output-available' &&
+              extractPendingActionId(toolOutput) !== null
             return (
               <ToolCallRow
                 key={`tool-${index}`}
@@ -592,6 +871,7 @@ export function ChatMessage({
                 state={part.state}
                 detail={getToolDetail(toolName, input)}
                 output={toolOutput}
+                autoOpen={!isProposal}
               />
             )
           }
@@ -620,6 +900,27 @@ export function ChatMessage({
 
           return null
         })}
+
+        {/* Story 14.22/14.23: inline approval card(s) — rendered once per message
+            and only after the turn finishes streaming (avoids the mid-stream
+            mount + SWR-fetch re-render that made post-tool streaming choppy).
+            Sourced from live tool parts ∪ persisted metadata so the card survives
+            a chat exit/reenter. A lone proposal renders the standalone
+            single-action card (AC 20); 2+ proposals from one message consolidate
+            into a single batch card keyed by chat_message_id (=== message.id per
+            ADR-14.22-A). */}
+        {!isActive && pendingApprovalIds.length === 1 && (
+          <AgentActionCard
+            key={`approval-${pendingApprovalIds[0]}`}
+            pendingActionId={pendingApprovalIds[0]!}
+          />
+        )}
+        {!isActive && pendingApprovalIds.length >= 2 && (
+          <AgentActionBatchCard
+            key={`batch-${message.id}`}
+            chatMessageId={message.id}
+          />
+        )}
 
         {!isActive && sourceMap.size > 0 && (
           <SourcesAccordion
@@ -782,6 +1083,15 @@ function CollapsedToolGroup({
     )
   }
 
+  // Keep the collapsed summary to a single line: show the first few runs as
+  // chips and fold the rest into a "+N till" affordance that expands the group.
+  // The chevron still reveals every per-call row, so nothing is lost.
+  const MAX_VISIBLE_RUNS = 4
+  const visibleRuns = runs.slice(0, MAX_VISIBLE_RUNS)
+  const hiddenRunCount = runs
+    .slice(MAX_VISIBLE_RUNS)
+    .reduce((n, r) => n + r.count, 0)
+
   return (
     <div className="space-y-0">
       {/* Headless auto-openers for items with sidebarHint === 'open'. These
@@ -811,57 +1121,77 @@ function CollapsedToolGroup({
           className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0"
         />
 
-        <div className="flex items-center gap-x-1.5 gap-y-0 flex-1 min-w-0 flex-wrap text-left">
-          {runs.flatMap((run, i) => {
-            const label =
-              (TOOL_CONFIG[run.toolName]?.doneLabel ?? run.toolName) +
-              (run.count > 1 ? ` (${run.count})` : '')
-            const clickable = isRunClickable(run)
-            const detailId = getRunDetailId(run)
-            const isActive =
-              clickable && chatDetail?.activeDetail?.id === detailId
-            const doneLabel =
-              TOOL_CONFIG[run.toolName]?.doneLabel ?? run.toolName
+        <div className="flex items-center gap-x-1.5 flex-1 min-w-0 text-left">
+          <div className="flex items-center gap-x-1.5 flex-1 min-w-0 flex-nowrap overflow-hidden [mask-image:linear-gradient(to_right,black_calc(100%-1.5rem),transparent)]">
+            {visibleRuns.flatMap((run, i) => {
+              const cfg = TOOL_CONFIG[run.toolName]
+              // Story 19.4 follow-up (1a): a run of proposal tool calls uses the
+              // proposal label ("Föreslog kravpunkt") rather than the done label.
+              const isProposalRun = run.outputs.some(
+                (o) => extractPendingActionId(o) !== null
+              )
+              const baseLabel =
+                (isProposalRun && cfg?.proposalLabel) ||
+                cfg?.doneLabel ||
+                run.toolName
+              const label = baseLabel + (run.count > 1 ? ` (${run.count})` : '')
+              const clickable = isRunClickable(run)
+              const detailId = getRunDetailId(run)
+              const isActive =
+                clickable && chatDetail?.activeDetail?.id === detailId
+              const doneLabel =
+                TOOL_CONFIG[run.toolName]?.doneLabel ?? run.toolName
 
-            const nodes: React.ReactNode[] = []
-            if (i > 0) {
-              nodes.push(
-                <span
-                  key={`sep-${run.firstIndex}-${run.toolName}`}
-                  className="text-muted-foreground/40 text-xs select-none"
-                  aria-hidden="true"
-                >
-                  ·
-                </span>
-              )
-            }
-            if (clickable) {
-              nodes.push(
-                <button
-                  key={`run-${run.firstIndex}-${run.toolName}`}
-                  type="button"
-                  onClick={() => handleRunClick(run)}
-                  aria-label={`Visa resultat: ${doneLabel}`}
-                  className={cn(
-                    'text-xs font-medium text-muted-foreground hover:text-foreground transition-colors rounded-sm -mx-0.5 px-0.5',
-                    isActive && 'text-foreground bg-primary/10'
-                  )}
-                >
-                  {label}
-                </button>
-              )
-            } else {
-              nodes.push(
-                <span
-                  key={`run-${run.firstIndex}-${run.toolName}`}
-                  className="text-xs font-medium text-muted-foreground"
-                >
-                  {label}
-                </span>
-              )
-            }
-            return nodes
-          })}
+              const nodes: React.ReactNode[] = []
+              if (i > 0) {
+                nodes.push(
+                  <span
+                    key={`sep-${run.firstIndex}-${run.toolName}`}
+                    className="text-muted-foreground/40 text-xs select-none shrink-0"
+                    aria-hidden="true"
+                  >
+                    ·
+                  </span>
+                )
+              }
+              if (clickable) {
+                nodes.push(
+                  <button
+                    key={`run-${run.firstIndex}-${run.toolName}`}
+                    type="button"
+                    onClick={() => handleRunClick(run)}
+                    aria-label={`Visa resultat: ${doneLabel}`}
+                    className={cn(
+                      'text-xs font-medium text-muted-foreground hover:text-foreground transition-colors rounded-sm -mx-0.5 px-0.5 shrink-0 whitespace-nowrap',
+                      isActive && 'text-foreground bg-primary/10'
+                    )}
+                  >
+                    {label}
+                  </button>
+                )
+              } else {
+                nodes.push(
+                  <span
+                    key={`run-${run.firstIndex}-${run.toolName}`}
+                    className="text-xs font-medium text-muted-foreground shrink-0 whitespace-nowrap"
+                  >
+                    {label}
+                  </span>
+                )
+              }
+              return nodes
+            })}
+          </div>
+
+          {hiddenRunCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setIsExpanded(true)}
+              className="shrink-0 whitespace-nowrap text-xs font-medium text-muted-foreground/70 hover:text-foreground transition-colors rounded-sm px-0.5"
+            >
+              +{hiddenRunCount} till
+            </button>
+          )}
         </div>
 
         <button
@@ -976,51 +1306,45 @@ function getToolDetail(
 /**
  * Build the ChatDetailItem for a tool result based on sidebarHint routing.
  * - save_assessment → 'assessment' detail type
- * - other write tools (confirmation_required) → 'write-preview'
  * - everything else → 'tool-result'
+ *
+ * Story 14.23: the generic write-action sidebar route was removed — write
+ * tools now render inline approval cards (AgentActionCard / batch card), not a
+ * sidebar preview. save_assessment keeps its dedicated 'assessment' detail.
  */
 function buildDetailItem(
   toolCallId: string,
   toolName: string,
   output: unknown
 ): ChatDetailItem {
-  const isWritePreview =
+  const isAssessmentPreview =
+    toolName === 'save_assessment' &&
     output &&
     typeof output === 'object' &&
     'confirmation_required' in output &&
     (output as { confirmation_required: boolean }).confirmation_required
 
-  if (isWritePreview) {
-    if (toolName === 'save_assessment') {
-      // Route to assessment detail — extract data from the write tool response
-      const writeResp = output as WriteToolResponse<unknown>
-      const params = writeResp.params ?? {}
-      const assessmentData: AssessmentDetailData = {
-        changeEventId: (params.changeEventId as string) ?? '',
-        lawListItemId: (params.lawListItemId as string) ?? '',
-        amendmentSfs: (params.amendmentSfs as string) ?? '',
-        changeType: (params.changeType as string) ?? '',
-        affectedSections: (params.affectedSections as string[]) ?? [],
-        effectiveDate: params.effectiveDate
-          ? new Date(params.effectiveDate as string)
-          : null,
-        existingAssessment: params.existingAssessment
-          ? (params.existingAssessment as AssessmentDetailData['existingAssessment'])
-          : null,
-        documentTitle: (params.documentTitle as string) ?? '',
-        documentNumber: (params.documentNumber as string) ?? '',
-      }
-      return {
-        type: 'assessment' as const,
-        id: toolCallId,
-        data: assessmentData,
-      }
+  if (isAssessmentPreview) {
+    // save_assessment returns its data under `preview` (not the generic
+    // WriteToolResponse `params`). Pull the recommendation through so the form
+    // opens pre-filled with the agent's proposal.
+    const preview = getAssessmentPreview(output)
+    const assessmentData: AssessmentDetailData = {
+      changeEventId: preview?.changeEventId ?? '',
+      lawListItemId: preview?.lawListItemId ?? '',
+      amendmentSfs: '',
+      changeType: '',
+      affectedSections: [],
+      effectiveDate: null,
+      existingAssessment: null,
+      recommendation: extractRecommendation(preview),
+      documentTitle: '',
+      documentNumber: '',
     }
     return {
-      type: 'write-preview',
+      type: 'assessment' as const,
       id: toolCallId,
-      toolName,
-      data: output as WriteToolResponse<unknown>,
+      data: assessmentData,
     }
   }
 
@@ -1082,10 +1406,17 @@ function ToolCallRow({
     return () => clearTimeout(timer)
   }, [autoOpen, isDone, sidebarHint, chatDetail, toolCallId, toolName, output])
 
-  const label = isDone
-    ? (config?.doneLabel ?? toolName)
-    : isError
-      ? `${config?.label ?? toolName} misslyckades`
+  // Story 14.22: a completed create_task whose output is a proposal (carries a
+  // pendingActionId) reads "Föreslog uppgift", not "Skapade uppgift" — nothing
+  // was created until the user approves the card. The bare doneLabel still
+  // applies to the legacy execute:true path (actual creation, no pendingActionId).
+  const isProposalOutput = isDone && extractPendingActionId(output) !== null
+  const label = isError
+    ? `${config?.label ?? toolName} misslyckades`
+    : isDone
+      ? isProposalOutput && config?.proposalLabel
+        ? config.proposalLabel
+        : (config?.doneLabel ?? toolName)
       : (config?.label ?? toolName)
 
   const handleClick = (e: React.MouseEvent<HTMLElement>) => {
@@ -1121,7 +1452,7 @@ function ToolCallRow({
         <Icon className="h-3 w-3 text-muted-foreground shrink-0" />
         <span
           className={cn(
-            'text-xs',
+            'text-xs shrink-0 whitespace-nowrap',
             isDone
               ? 'text-muted-foreground'
               : isRunning
@@ -1132,7 +1463,7 @@ function ToolCallRow({
           {label}
         </span>
         {detail && (
-          <span className="text-xs text-muted-foreground/60 truncate min-w-0">
+          <span className="text-xs text-muted-foreground/60 truncate min-w-0 flex-1">
             — {detail}
           </span>
         )}
@@ -1141,7 +1472,7 @@ function ToolCallRow({
   }
 
   const rowClasses = cn(
-    'flex items-center gap-1.5 rounded-md min-w-0 overflow-hidden transition-colors',
+    'flex items-center gap-1.5 rounded-md w-full min-w-0 overflow-hidden transition-colors',
     compact
       ? 'py-0.5 px-1.5 hover:bg-muted/40'
       : cn(
@@ -1153,7 +1484,7 @@ function ToolCallRow({
   )
 
   return (
-    <div className="space-y-1 ml-px">
+    <div className="space-y-1 ml-px min-w-0">
       {isClickable ? (
         <button
           type="button"
@@ -1231,18 +1562,20 @@ function TextBlock({
   text: string
   isStreaming: boolean
 }) {
-  const hasCitations = hasCitationMarkers(text)
-
+  // Always wire the citation plugin + components — the plugin early-bails on
+  // citation-free text (see rehype-citation-pills.ts), so always-on is free.
+  // Conditionally swapping the plugin/components array based on text content
+  // caused Streamdown's cached AST to keep raw `[Källa: ...]` text after the
+  // marker appeared mid-stream; switching to a stable reference fixes the
+  // "needs hard refresh for the pill to render" symptom on localhost.
   return (
-    <div className={PROSE_CLASSES}>
+    <div className={cn(PROSE_CLASSES, 'chat-markdown')}>
       <Streamdown
         mode={isStreaming ? 'streaming' : 'static'}
         isAnimating={isStreaming}
         plugins={streamdownPlugins}
-        rehypePlugins={
-          hasCitations ? citationRehypePlugins : emptyRehypePlugins
-        }
-        components={hasCitations ? citationComponents : emptyComponents}
+        rehypePlugins={citationRehypePlugins}
+        components={citationComponents}
         className="streamdown"
       >
         {text}

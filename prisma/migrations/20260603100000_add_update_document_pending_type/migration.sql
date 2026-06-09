@@ -1,0 +1,24 @@
+-- Story 17.11: agent-proposed section-level edit to an existing workspace
+-- document flows through the inline approval card as the 12th
+-- PendingAgentAction type. The update_document tool creates an UPDATE_DOCUMENT
+-- proposal; on approval, dispatch calls updateSection() to produce the full
+-- updated contentJson, generates contentHtml, then calls the existing
+-- saveDocumentVersion server action (app/actions/documents.ts:590), which
+-- appends a new WorkspaceDocumentVersion, bumps current_version_id /
+-- current_version_number, writes a document_version_saved ActivityLog row,
+-- AND triggers indexWorkspaceDocument via after() — all in one $transaction.
+--
+-- Guards: DRAFT or IN_REVIEW only. APPROVED/SUPERSEDED/ARCHIVED documents must
+-- branch a new editable version via createDraftFromApproved first. Enforced
+-- at TWO layers (tool refusal + dispatch refusal as the authoritative gate).
+-- This migration only adds the enum value; the guards live in TypeScript.
+--
+-- Additive ONLY: a single enum-value addition. Zero table / column / index
+-- change. Backward-compatible — existing rows are untouched.
+--
+-- NOTE: applied manually by the developer (do not auto-apply / reset).
+
+-- AlterEnum
+-- (PostgreSQL 12+ allows ADD VALUE in a transaction as long as the new value is
+--  not USED in the same migration — it isn't here.)
+ALTER TYPE "PendingAgentActionType" ADD VALUE 'UPDATE_DOCUMENT';

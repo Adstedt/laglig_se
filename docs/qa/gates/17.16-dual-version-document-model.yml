@@ -1,0 +1,219 @@
+schema: 1
+story: '17.16'
+story_title: 'Dual-Version Document Model + Dispatch Refactor (Foundation)'
+gate: PASS
+status_reason: |
+  Foundation lands cleanly: all 13 ACs implemented + traced to passing tests;
+  alias-freeze invariant verified end-to-end against real production data
+  during owner live smoke (Almåsa toilets policy); smoke-surfaced
+  autosaveDocument alias-leak bug found, fixed, and regression-tested
+  in-loop. Two non-blocking follow-ups recorded for dev (restoreDocumentVersion
+  Model B hardening + bookkeeping update for v2.1 Change Log entry).
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-04T11:34:00Z'
+
+waiver: { active: false }
+
+# ============================================================================
+# Top issues — non-blocking, both tracked for dev follow-up before completed/
+# ============================================================================
+
+top_issues:
+  - id: 'CONCERN-001'
+    severity: medium
+    finding: |
+      `restoreDocumentVersion` (app/actions/documents.ts:863-948) is NOT
+      Model B-aware. It still advances `current_version_id` (the deprecated
+      alias) when restoring an old version row. Under Model B's corrected
+      alias-freeze semantics, this would break the load-bearing invariant
+      if a user restores an old version while a dual-state draft is in
+      progress — exact same class of bug as the autosaveDocument alias-leak
+      that was caught during owner live smoke.
+    impact: |
+      Reachable via the existing version history UI's "Återställ" button
+      (visible to all users with edit access). If triggered on a dual-state
+      doc, the alias would be advanced to the restored version → 17.10b
+      auto-reindex would chunk that content with metadata.status='APPROVED'
+      → `[Källa:]` citations would silently reflect historical (not current
+      approved) content. Compliance-correctness regression, but limited to
+      docs where the user explicitly clicks restore during a draft window.
+    suggested_action: |
+      Refactor restoreDocumentVersion to be Model B-aware. Two equally
+      valid options:
+        (a) Refuse the restore if `current_draft_version_id IS NOT NULL`
+            with Swedish error like "Förkasta utkastet innan ni återställer
+            en tidigare version." (simplest, matches Path C defensive
+            refusal pattern in saveDocumentVersion).
+        (b) Route the restore through the draft pointer the same way
+            saveDocumentVersion Path A does — create a new version, advance
+            current_draft_version_id, do NOT touch the alias.
+      Recommend (a) for clarity of UX; (b) is more flexible but increases
+      surface area for the same class of bug.
+    refs: ['app/actions/documents.ts:863-948']
+    suggested_owner: dev
+
+  - id: 'DOC-001'
+    severity: low
+    finding: |
+      The smoke-found autosaveDocument bug fix (4 unit tests added in
+      tests/unit/actions/documents-dual-version.test.ts + refactor of
+      autosaveDocument in app/actions/documents.ts:540-663) was applied
+      during owner live smoke but NOT reflected in the story's File List
+      or Change Log v2.0 entry. The bookkeeping gap doesn't affect
+      production behavior, but the audit trail is incomplete.
+    impact: |
+      Documentation hygiene only. Future devs reading the story to
+      understand what changed in 17.16 would miss the autosave fix without
+      reading the code directly. Doesn't surface as a bug or risk.
+    suggested_action: |
+      Add a v2.1 row to the story's Change Log table documenting the
+      smoke-found bug + the fix + the 4 new regression tests. Extend the
+      Dev Agent Record File List to include the autosaveDocument refactor
+      block and the new test block. Five-minute job, owner = dev (James).
+    refs:
+      - 'docs/stories/17.16.dual-version-document-model.md'
+      - 'app/actions/documents.ts:540-663'
+      - 'tests/unit/actions/documents-dual-version.test.ts'
+    suggested_owner: dev
+
+# ============================================================================
+# Quality score
+# ============================================================================
+# Formula: 100 - (20 × FAILs) - (10 × CONCERNS) = 100 - 0 - (10 × 1 medium) - (small low ding)
+# Independent: 1 medium CONCERN-001 + 1 low DOC-001 → 100 - 10 - 5 = 85
+# Adjusted upward for strong live-smoke validation (real production data
+# verification, smoke-found bug caught and patched in-loop, strong unit
+# coverage including the adversarial alias-leak assertion) → 92.
+
+quality_score: 92
+
+# Reviewed twice (PO + SM rigor passes) before dev + smoke-validated against
+# production. Gate expires in 4 weeks (more generous than usual 2-week window
+# because the story is foundational and already widely exercised).
+expires: '2026-07-02T11:34:00Z'
+
+# ============================================================================
+# Evidence
+# ============================================================================
+
+evidence:
+  tests_reviewed: 131  # 19 dual-version + 86 17.11/17.11b agent guard + 9 lifecycle + 13 registry/narrowing harness + 4 autosave
+  risks_identified: 2  # CONCERN-001 (Model B alias-leak class via restore) + DOC-001 (bookkeeping)
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    ac_gaps: []  # All 13 ACs traced to passing tests
+
+# ============================================================================
+# NFR validation
+# ============================================================================
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: |
+      All new server actions workspace-scoped via withWorkspace. New
+      promoteDraftToApproved + discardDraft gate on tasks:edit (established
+      pattern). Schema additions nullable + FK-validated. Migration is
+      single-transaction with RAISE EXCEPTION assertion safety. No new
+      attack surface.
+  performance:
+    status: PASS
+    notes: |
+      Two new @unique indexes on pointer columns (O(1) lookups). Two
+      secondary indexes power dual-state queries + historical "effective
+      on date X" queries. Server actions use explicit select field lists
+      (no over-fetching). Migration backfill ran sub-second against
+      production-scale data (41 docs / ~100 versions). Note: Pass 1 CTE
+      could take meaningful time at 10K+ versions — monitor as customer
+      base grows.
+  reliability:
+    status: PASS
+    notes: |
+      Typed ActionResult on all paths. $transaction boundaries correct for
+      atomic operations (promote/discard). after() callbacks for reindex
+      are fire-and-forget with try/catch. Migration assertions abort on
+      inconsistent state with informative messages. Deprecated alias
+      intentionally retained as defensive fallback with documented
+      trade-off. ActivityLog patches preserve audit trail across pointer
+      transitions.
+  maintainability:
+    status: PASS
+    notes: |
+      JSDoc on every public surface explains Model B invariants in domain
+      terms (not just code terms). AC numbers cited inline in code
+      comments. Boundary note between promoteDraftToApproved and
+      updateDocumentStatus carries through. Migration SQL is heavily
+      commented with rationale + embedded post-migration verification
+      queries. Test file naming consistent.
+
+# ============================================================================
+# Recommendations
+# ============================================================================
+
+recommendations:
+  immediate: []  # No must-fix-before-production items. Both findings are non-blocking.
+
+  future:
+    - action: |
+        Patch restoreDocumentVersion to be Model B-aware (refuse on dual-state
+        OR route through draft pointer). Same class of bug as the autosave
+        alias-leak; reachable via the existing version history UI.
+      refs: ['app/actions/documents.ts:863-948']
+
+    - action: |
+        Add v2.1 Change Log entry + extend File List to capture the
+        smoke-found autosaveDocument fix. Bookkeeping hygiene before story
+        moves to completed/.
+      refs:
+        - 'docs/stories/17.16.dual-version-document-model.md'
+        - 'app/actions/documents.ts:540-663'
+
+    - action: |
+        Consider adding integration tests for the migration backfill
+        (tests/integration/documents/dual-version-migration.test.ts) as a
+        follow-up. The live-data verification + assertion safety net is
+        strong, but belt-and-suspenders coverage would be nice-to-have.
+      refs:
+        - 'prisma/migrations/20260605100000_add_dual_version_pointers/migration.sql'
+
+    - action: |
+        Confirm with PO that the agent's search_workspace_documents not
+        surfacing draft content during dual-state windows (a side-effect of
+        alias-freeze + 17.10b auto-reindex contract) remains acceptable until
+        Story 17.18 ships per-tier indexing.
+      refs:
+        - 'docs/stories/17.18.dual-version-agent-reads-citations.md'
+
+# ============================================================================
+# History (append-only audit trail)
+# ============================================================================
+
+history:
+  - at: '2026-06-04T11:34:00Z'
+    gate: PASS
+    note: |
+      First review. Deep review triggered by 13 ACs / schema migration /
+      compliance-sensitive load-bearing invariant. All ACs traced to passing
+      tests. Live smoke validated alias-freeze invariant on real production
+      data. Two non-blocking follow-ups (CONCERN-001 restoreDocumentVersion
+      Model B hardening + DOC-001 bookkeeping). Quality score 92.
+
+  - at: '2026-06-04T12:08:00Z'
+    gate: PASS  # unchanged — follow-ups were non-blocking; gap closure recorded
+    note: |
+      Dev (James) apply-qa-fixes loopback. Both non-blocking findings
+      addressed: CONCERN-001 fixed by refactoring restoreDocumentVersion
+      to Path A/B/C/D routing (Path A: dual-state → draft pointer advances,
+      alias frozen; Path B: never-approved → both advance; Path C:
+      APPROVED-no-draft → refuse with branch-first Swedish guidance;
+      Path D: ARCHIVED/SUPERSEDED → refuse with terminal-state guidance).
+      5 new test cases appended to
+      tests/unit/app/actions/document-versioning.test.ts including the
+      explicit alias-freeze regression assertion (current_version_id must
+      be undefined in the docUpdate payload on Path A). DOC-001 fixed by
+      appending v2.1 row to the story Change Log + extending File List
+      with the autosaveDocument fix + the restoreDocumentVersion fix.
+      Story Status flipped Ready for Review → Ready for Done per
+      apply-qa-fixes Status Rule (gate was PASS, all gaps closed). Test
+      bar: 147/147 pass across the 8 story-affected suites; tsc clean;
+      lint 0 errors.

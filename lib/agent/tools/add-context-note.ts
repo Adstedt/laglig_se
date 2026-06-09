@@ -1,17 +1,28 @@
 /**
  * add_context_note tool — add a note explaining why a law matters to this company
  * Story 14.7c, Task 4 (AC: 4, 5-7)
+ * Story 14.23, Task 7.1: migrated to the inline pending-action pattern. Always
+ * proposes a PendingAgentAction of type ADD_CONTEXT_NOTE; the execute=true
+ * direct-write branch is removed (the sidebar preview path is gone). The
+ * approve dispatch performs the actual business_context append.
  */
 
 import { tool, zodSchema } from 'ai'
 import { z } from 'zod/v4'
 import { prisma } from '@/lib/prisma'
-import { wrapWriteToolResponse, wrapToolResponse, wrapToolError } from './utils'
+import { wrapWriteToolResponse, wrapToolError } from './utils'
+import {
+  createPendingActionRow,
+  type PendingActionToolContext,
+} from './pending-action'
 
 const addContextNoteSchema = z.object({
   lawListItemId: z
     .string()
-    .describe('ID of the LawListItem to add the note to'),
+    .optional()
+    .describe(
+      'ID of the LawListItem to add the note to. Utelämna i en lag-chatt — då används den aktiva laglistposten automatiskt (Story 19.4a).'
+    ),
   note: z
     .string()
     .describe('Context note explaining why this law matters to the company'),
@@ -19,14 +30,15 @@ const addContextNoteSchema = z.object({
     .boolean()
     .optional()
     .default(false)
-    .describe(
-      'false = return proposal for confirmation, true = execute the action'
-    ),
+    .describe('Ignored — this action always requires inline approval'),
 })
 
 type AddContextNoteInput = z.infer<typeof addContextNoteSchema>
 
-export function createAddContextNoteTool(workspaceId: string) {
+export function createAddContextNoteTool(
+  workspaceId: string,
+  context?: PendingActionToolContext
+) {
   return tool({
     description: `Lägg till en kontextanteckning som förklarar varför en specifik lag är relevant
 för detta företag.
@@ -37,18 +49,30 @@ Använd detta verktyg när du tillsammans med användaren har identifierat varf�
 Anteckningen sparas i LawListItem.business_context. Om det redan finns en anteckning
 läggs den nya till med en separator.
 
-Bekräftelsemönster: Anropa ALLTID först med execute=false för att visa ett förslag.
-Vänta tills användaren godkänner innan du anropar med execute=true.
+Anropa verktyget direkt — det skapar ett inline-förslagskort som användaren granskar och
+godkänner. Kortet är bekräftelsen: beskriv inte anteckningen i löpande text och fråga inte
+om lov först.
 
 Returnerar fel om lawListItemId inte hittas eller inte tillhör den aktiva arbetsytan.`,
     inputSchema: zodSchema(addContextNoteSchema),
-    execute: async ({ lawListItemId, note, execute }: AddContextNoteInput) => {
+    execute: async ({ lawListItemId, note }: AddContextNoteInput) => {
       const startTime = Date.now()
+
+      // Story 19.4a: default to the active law-list item from the chat context.
+      const resolvedId = lawListItemId ?? context?.lawListItemId
+      if (!resolvedId) {
+        return wrapToolError(
+          'add_context_note',
+          'Ingen laglistpost angiven.',
+          'Ange lawListItemId, eller använd search_law_list_items för att hitta rätt post i bevakningslistan.',
+          startTime
+        )
+      }
 
       // Validate item exists and belongs to workspace
       const item = await prisma.lawListItem.findFirst({
         where: {
-          id: lawListItemId,
+          id: resolvedId,
           law_list: { workspace_id: workspaceId },
         },
         include: {
@@ -66,43 +90,27 @@ Returnerar fel om lawListItemId inte hittas eller inte tillhör den aktiva arbet
       }
 
       const lawTitle =
-        item.document?.title ?? item.document?.document_number ?? lawListItemId
+        item.document?.title ?? item.document?.document_number ?? resolvedId
 
-      if (!execute) {
-        return wrapWriteToolResponse(
-          'add_context_note',
-          'add_context_note',
-          { lawListItemId, note },
-          `Lägg till kontextanteckning för ${lawTitle}: "${note}"`,
-          startTime
-        )
-      }
+      const params = { lawListItemId: resolvedId, lawTitle, note }
 
-      try {
-        const existingContext = item.business_context ?? ''
-        const updatedContext = existingContext
-          ? `${existingContext}\n\n---\n\n${note}`
-          : note
+      const pendingActionId = await createPendingActionRow(
+        workspaceId,
+        context,
+        'ADD_CONTEXT_NOTE',
+        params
+      )
 
-        await prisma.lawListItem.update({
-          where: { id: lawListItemId },
-          data: { business_context: updatedContext },
-        })
-
-        return wrapToolResponse(
-          'add_context_note',
-          { lawListItemId, lawTitle, noteAdded: note },
-          startTime
-        )
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err)
-        return wrapToolError(
-          'add_context_note',
-          `Kunde inte lägga till anteckning: ${message}`,
-          'Ett tekniskt fel uppstod. Försök igen om en stund.',
-          startTime
-        )
-      }
+      const envelope = wrapWriteToolResponse(
+        'add_context_note',
+        'add_context_note',
+        params,
+        `Lägg till kontextanteckning för ${lawTitle}: "${note}"`,
+        startTime
+      )
+      return pendingActionId
+        ? { ...envelope, data: { pendingActionId } }
+        : envelope
     },
   })
 }

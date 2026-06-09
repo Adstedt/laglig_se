@@ -20,11 +20,21 @@ import { getServerSession } from '@/lib/auth/session'
 import { getWorkspaceContext } from '@/lib/auth/workspace-context'
 import { createAgentTools } from '@/lib/agent/tools'
 import { createWebSearchTool } from '@/lib/agent/web-search-config'
+// Story 19.1: chat attachment → content blocks + last-message merge.
+import { attachmentsToContent } from '@/lib/agent/attachments-to-content'
+import { buildModelMessages } from '@/lib/agent/build-model-messages'
+// Story 19.5: role-based tool filter.
+import type { WorkspaceRole } from '@prisma/client'
 import {
   buildSystemPrompt,
   formatCompanyContext,
 } from '@/lib/agent/system-prompt'
+// Story 19.7c: derive the context's primary skill to narrow the tool registry.
+import { getPrimarySkillForContext } from '@/lib/agent/skill-loader'
+import { buildPendingActionsContext } from '@/lib/agent/context-assembly'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
+import { randomUUID } from 'node:crypto'
 import {
   extractSourcesFromToolResult,
   type SourceInfo,
@@ -77,11 +87,15 @@ export async function POST(req: Request) {
     const userId = session.user.id
 
     let workspaceId: string
+    let role: WorkspaceRole | undefined // Story 19.5: drives the tool-registry filter
     try {
       const ctx = await getWorkspaceContext()
       workspaceId = ctx.workspaceId
+      role = ctx.role
     } catch {
-      // Fallback if workspace context unavailable
+      // Fallback if workspace context unavailable (unauthenticated edge). role
+      // stays undefined → full set, but write server actions still enforce
+      // withWorkspace (defense in depth) and a 'default' workspace can't persist.
       workspaceId = 'default'
     }
 
@@ -164,10 +178,22 @@ export async function POST(req: Request) {
 
     // Parse request body
     const body = await req.json()
-    const { messages, contextType, contextId, ...initialContext } = body as {
+    const {
+      messages,
+      contextType,
+      contextId,
+      lawListItemId,
+      attachmentIds,
+      ...initialContext
+    } = body as {
       messages: UIMessage[]
       contextType?: 'global' | 'task' | 'law' | 'change'
       contextId?: string
+      // Story 19.4a: active LawListItem id (CHANGE sends it explicitly; LAW falls
+      // back to contextId, which that mount sets to the listItemId).
+      lawListItemId?: string
+      // Story 19.1: chat attachment file ids (top-level body field, not message parts)
+      attachmentIds?: string[]
       title?: string
       description?: string
       sfsNumber?: string
@@ -187,28 +213,117 @@ export async function POST(req: Request) {
     // Resolve thinking budget for this context
     const thinkingBudget = contextType ? (THINKING_BUDGET[contextType] ?? 0) : 0
 
-    // Build system prompt with company context
-    const profile = await prisma.companyProfile.findFirst({
-      where: { workspace_id: workspaceId },
-    })
-    const companyContext = formatCompanyContext(profile)
+    const contextTypeUpper = (contextType ?? 'global').toUpperCase() as
+      | 'GLOBAL'
+      | 'TASK'
+      | 'LAW'
+      | 'CHANGE'
+
+    // Story 19.4a: resolve the active law-list item id — prefer the explicit
+    // body field (CHANGE sends it), else fall back to contextId for a LAW chat
+    // (the LAW mount sets contextId = listItemId). Threaded into the system
+    // prompt (surfaced to the agent) + the tool context (write-tool default).
+    const resolvedLawListItemId =
+      lawListItemId ??
+      (contextTypeUpper === 'LAW' ? (contextId ?? undefined) : undefined)
+
+    // Build system prompt with company context.
+    // Fetch workspace.name alongside the profile so formatCompanyContext can
+    // prefer the user-facing name on identity drift (the workspace was renamed
+    // but the CompanyProfile.company_name was never re-synced — fired in prod
+    // 2026-06-02 against the Nordviken test workspace; agent kept naming
+    // drafts after stale Bolagsverket data).
+    const [profile, workspaceRow] = await Promise.all([
+      prisma.companyProfile.findFirst({ where: { workspace_id: workspaceId } }),
+      workspaceId !== 'default'
+        ? prisma.workspace.findUnique({
+            where: { id: workspaceId },
+            select: { name: true },
+          })
+        : Promise.resolve(null),
+    ])
+    const companyContext = formatCompanyContext(
+      profile,
+      workspaceRow?.name ?? undefined
+    )
+
+    // Story 14.22: agent feedback loop — inject pending/decided action proposals
+    // as workflow state. Built before the stub message so it reflects the
+    // previous turn's state (the current stub is excluded by content != '').
+    const pendingActionsBlock =
+      workspaceId !== 'default'
+        ? await buildPendingActionsContext({
+            workspaceId,
+            userId,
+            contextType: contextTypeUpper,
+            contextId: contextId ?? null,
+          })
+        : null
+
     const systemPrompt = await buildSystemPrompt({
       companyContext,
       contextType,
       contextId,
+      lawListItemId: resolvedLawListItemId,
       thinkingEnabled: thinkingBudget > 0,
+      ...(pendingActionsBlock ? { pendingActionsBlock } : {}),
       ...initialContext,
     })
 
-    // Create agent tools with workspace + user scoping
-    const tools = createAgentTools(workspaceId, userId)
+    // Story 14.22 / ADR-14.22-A: preallocate the assistant message id and write
+    // a STUB ChatMessage BEFORE streamText() so any PendingAgentAction created
+    // mid-tool-loop has a valid chat_message_id FK target. Its content is filled
+    // in onFinish (update, not create). The client no longer saves the assistant
+    // message — route.ts is the sole writer. Skip for the synthetic 'default'
+    // workspace fallback (FK to a non-existent workspace row would fail).
+    const assistantMessageId = randomUUID()
+    if (workspaceId !== 'default') {
+      await prisma.chatMessage.create({
+        data: {
+          id: assistantMessageId,
+          workspace_id: workspaceId,
+          user_id: userId,
+          role: 'ASSISTANT',
+          content: '',
+          context_type: contextTypeUpper,
+          context_id: contextId ?? null,
+        },
+      })
+    }
 
-    // Select model based on environment variable
+    // Select model up-front (Story 19.5) so the resolved name threads into both
+    // the agent tools (AgentDecisionLog.model_version) and the model selection.
     const modelProvider = process.env.AI_CHAT_MODEL ?? 'openai'
+    const modelName =
+      modelProvider === 'anthropic' ? 'claude-sonnet-4-6' : 'gpt-4-turbo'
 
-    // Anthropic web search: conditionally add to tools (Story 14.21)
+    // Create agent tools with workspace + user scoping + role filter (Story 19.5).
+    // assistantMessageId + chat context are threaded so write tools can persist a
+    // PendingAgentAction; modelVersion + role drive logging + the AUDITOR filter.
+    // Story 19.7c: narrow the registry to the context's primary skill (+ the
+    // ALWAYS_AVAILABLE baseline). Activation-only skills (gap_analysis) never
+    // appear here — their tools are all baseline. Mid-conversation activate_skill
+    // → activeSkills re-injection stays deferred (the live path is the tool result).
+    const primarySkill = getPrimarySkillForContext(contextType)
+    const activeSkills = primarySkill ? [primarySkill] : []
+
+    const tools = createAgentTools(
+      workspaceId,
+      userId,
+      {
+        assistantMessageId,
+        contextType: contextTypeUpper,
+        contextId: contextId ?? null,
+        lawListItemId: resolvedLawListItemId,
+        modelVersion: modelName,
+      },
+      role,
+      activeSkills
+    )
+
+    // Anthropic web search (Story 14.21). Story 19.5: AUDITOR is read-only — no web_search.
     const allTools =
-      modelProvider === 'anthropic'
+      modelProvider === 'anthropic' && role !== 'AUDITOR'
         ? { ...tools, web_search: createWebSearchTool() }
         : tools
     const model =
@@ -251,29 +366,47 @@ export async function POST(req: Request) {
           }
         : systemPrompt
 
+    // Story 19.1: convert chat attachments → Claude content blocks, merged into
+    // the last user message only. Skip for the synthetic 'default' workspace.
+    const attachmentBlocks =
+      attachmentIds && attachmentIds.length > 0 && workspaceId !== 'default'
+        ? await attachmentsToContent(attachmentIds, workspaceId)
+        : []
+
     // Stream the response with tool use support
     // smoothStream buffers tokens and releases at word boundaries for smooth UI
     const result = streamText({
       model,
       system: systemMessage,
-      messages: messages.map((m) => ({
-        role: m.role as 'user' | 'assistant' | 'system',
-        content:
-          m.parts
-            ?.filter((p) => p.type === 'text')
-            .map((p) => ('text' in p ? p.text : ''))
-            .join('\n') ?? '',
-      })),
+      messages: buildModelMessages(messages, attachmentBlocks),
       tools: allTools,
       stopWhen: stepCountIs(10),
       experimental_transform: smoothStream({
         chunking: /[\s\S]/,
         delayInMs: 8,
       }),
+      // Surface SDK-level streaming errors (AI SDK rejections, Zod input
+      // validation failures, transport errors) at the route boundary so they
+      // appear in dev/prod logs instead of being swallowed by the stream.
+      // Per-step structured tool errors are intentionally NOT logged here —
+      // tools that return `{error: true, message: ...}` (e.g. search "no
+      // matches") are handled by the agent loop as normal control flow.
+      onError: ({ error }) => {
+        const e = error as
+          | Error
+          | { message?: string; cause?: unknown; issues?: unknown }
+        console.error('[CHAT STREAM ERROR]', {
+          name: (e as Error)?.name,
+          message: e?.message ?? String(e),
+          cause: e?.cause,
+          issues: (e as { issues?: unknown })?.issues,
+          stack: (e as Error)?.stack?.split('\n').slice(0, 5).join('\n'),
+        })
+      },
       // Story 14.27: persistent usage telemetry. Writes one ChatUsageEvent row per
       // successful chat turn. Fail-safe — telemetry write errors are logged but
       // never propagated to the stream response.
-      onFinish: async ({ totalUsage, steps }) => {
+      onFinish: async ({ text, totalUsage, steps, sources }) => {
         try {
           const inputTokens = totalUsage.inputTokens ?? 0
           const outputTokens = totalUsage.outputTokens ?? 0
@@ -294,9 +427,8 @@ export async function POST(req: Request) {
 
           const reasoningTokens = totalUsage.reasoningTokens ?? 0
 
-          const modelName =
-            modelProvider === 'anthropic' ? 'claude-sonnet-4-6' : 'gpt-4-turbo'
-
+          // Story 19.5: `modelName` is now resolved once at the top of the handler
+          // (reused here + for AgentDecisionLog.model_version).
           const costUsdEstimate = estimateCostUsd({
             model: modelName,
             inputTokens,
@@ -306,11 +438,86 @@ export async function POST(req: Request) {
             reasoningTokens,
           })
 
-          const contextTypeUpper = (contextType ?? 'global').toUpperCase() as
-            | 'GLOBAL'
-            | 'TASK'
-            | 'LAW'
-            | 'CHANGE'
+          // Story 14.22 / ADR-14.22-A: derive the assistant message's citation
+          // metadata from the completed steps + sources (deterministic at
+          // onFinish — does NOT rely on the response-transform messageMetadata
+          // callback, whose timing relative to onFinish is not guaranteed). This
+          // is persisted on the stub so reloaded history renders citation pills
+          // identically to the live turn (which still streams via messageMetadata).
+          const finalCitationSources: Record<string, SourceInfo> = {}
+          for (const src of sources ?? []) {
+            const s = src as unknown as {
+              sourceType?: string
+              url?: string
+              title?: string
+            }
+            if (s.sourceType === 'url' && s.url) {
+              const key = `web:${s.url}`
+              if (!(key in finalCitationSources)) {
+                let domain: string
+                try {
+                  domain = new URL(s.url).hostname.replace(/^www\./, '')
+                } catch {
+                  domain = s.url
+                }
+                finalCitationSources[key] = {
+                  documentNumber: domain,
+                  title: s.title ?? null,
+                  snippet: null,
+                  slug: null,
+                  path: null,
+                  anchorId: null,
+                  url: s.url,
+                }
+              }
+            }
+          }
+          // Story 14.22: also collect any PendingAgentAction ids proposed this
+          // turn so the inline approval card is rediscoverable on history reload
+          // (tool parts are not persisted — only text + metadata are).
+          const pendingActionIds: string[] = []
+          for (const step of steps ?? []) {
+            const toolResults =
+              (
+                step as unknown as {
+                  toolResults?: Array<{
+                    toolName?: string
+                    output?: unknown
+                    result?: unknown
+                  }>
+                }
+              ).toolResults ?? []
+            for (const tr of toolResults) {
+              const out = tr.output ?? tr.result
+              const extracted = extractSourcesFromToolResult(
+                tr.toolName ?? '',
+                out
+              )
+              for (const [key, info] of Object.entries(extracted)) {
+                if (!(key in finalCitationSources)) {
+                  finalCitationSources[key] = info
+                }
+              }
+              const pid = (
+                out as { data?: { pendingActionId?: unknown } } | undefined
+              )?.data?.pendingActionId
+              if (typeof pid === 'string') pendingActionIds.push(pid)
+            }
+          }
+
+          const metaObj: Record<string, unknown> = {}
+          if (Object.keys(finalCitationSources).length > 0) {
+            metaObj.citationSources = finalCitationSources
+          }
+          if (pendingActionIds.length > 0) {
+            metaObj.pendingActionIds = pendingActionIds
+          }
+          const assistantMetadata:
+            | Prisma.InputJsonValue
+            | typeof Prisma.JsonNull =
+            Object.keys(metaObj).length > 0
+              ? (metaObj as unknown as Prisma.InputJsonValue)
+              : Prisma.JsonNull
 
           // Story 5.5c: ChatUsageEvent (Story 14.27 audit log) + WorkspaceUsage
           // (denormalised counter for quota check) MUST commit together so
@@ -358,6 +565,13 @@ export async function POST(req: Request) {
             })
 
             await prisma.$transaction([
+              // ADR-14.22-A: fill the pre-loop stub assistant message with the
+              // final content + citation metadata. Same transaction as the usage
+              // writes so a turn either fully persists or fully rolls back.
+              prisma.chatMessage.update({
+                where: { id: assistantMessageId },
+                data: { content: text ?? '', metadata: assistantMetadata },
+              }),
               prisma.chatUsageEvent.create({
                 data: {
                   workspace_id: workspaceId,
@@ -418,6 +632,11 @@ export async function POST(req: Request) {
     return result.toUIMessageStreamResponse({
       sendReasoning: true,
       sendSources: true,
+      // ADR-14.22-A: pin the assistant UI-message id to the pre-loop stub id so
+      // the client reconciles message.id to the persisted row — the inline
+      // AgentActionCard (keyed off the tool output's pendingActionId) and history
+      // reload both line up against the same ChatMessage.
+      generateMessageId: () => assistantMessageId,
       messageMetadata: ({
         part,
       }: {

@@ -36,6 +36,13 @@ vi.mock('@/lib/auth/workspace-context', () => ({
   ),
 }))
 
+// Story 17.9b: createDraftFromApproved now schedules a WORKSPACE_DOCUMENT de-index via
+// next/server's `after()` (valid only inside a request scope — throws in the test env).
+// Mock as a no-op so the action's success path isn't masked by an out-of-scope throw.
+vi.mock('next/server', () => ({
+  after: vi.fn(),
+}))
+
 vi.mock('@tiptap/core', () => ({
   generateHTML: vi.fn(() => '<p>Content</p>'),
 }))
@@ -188,11 +195,13 @@ describe('createDraftFromApproved', () => {
     vi.clearAllMocks()
   })
 
-  it('creates new version and sets DRAFT status', async () => {
+  it('creates new draft version and populates the draft pointer (Story 17.16 AC 4)', async () => {
     mockFindFirst.mockResolvedValue({
       id: '550e8400-e29b-41d4-a716-446655440000',
       status: 'APPROVED',
       current_version_number: 3,
+      current_draft_version_id: null,
+      current_approved_version_id: 'v_approved',
       workspace_id: MOCK_WORKSPACE_ID,
       current_version: {
         content_json: { type: 'doc', content: [{ type: 'paragraph' }] },
@@ -206,6 +215,7 @@ describe('createDraftFromApproved', () => {
         const tx = {
           workspaceDocumentVersion: {
             create: vi.fn().mockResolvedValue(mockVer),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 3 }),
           },
           workspaceDocument: {
             update: vi
@@ -228,12 +238,23 @@ describe('createDraftFromApproved', () => {
 
     expect(result.success).toBe(true)
     expect(result.data?.versionNumber).toBe(4)
+
+    // Story 17.16 AC 4: doc update populates the draft pointer + draft_status +
+    // version_number. Does NOT advance the deprecated `current_version_id`
+    // alias (it stays frozen on the prior approved version throughout the
+    // draft window so 17.10b auto-reindex keeps `[Källa:]` compliance-correct).
+    // Does NOT touch status / approved_by / approved_at (those are preserved
+    // — the doc remains operationally APPROVED throughout the draft window).
     expect(capturedDocUpdate).toMatchObject({
-      status: 'DRAFT',
-      approved_by: null,
-      approved_at: null,
+      current_draft_version_id: 'ver-4',
+      draft_status: 'DRAFT',
       current_version_number: 4,
     })
+    // The legacy Model A fields MUST be absent from the update payload.
+    expect(capturedDocUpdate!.status).toBeUndefined()
+    expect(capturedDocUpdate!.approved_by).toBeUndefined()
+    expect(capturedDocUpdate!.approved_at).toBeUndefined()
+    expect(capturedDocUpdate!.current_version_id).toBeUndefined()
   })
 
   it('rejects non-approved documents', async () => {
@@ -252,11 +273,13 @@ describe('createDraftFromApproved', () => {
     expect(result.error).toContain('godkända dokument')
   })
 
-  it('creates ActivityLog entry for status change', async () => {
+  it('creates ActivityLog entry document_draft_created (Story 17.16 AC 4)', async () => {
     mockFindFirst.mockResolvedValue({
       id: '550e8400-e29b-41d4-a716-446655440000',
       status: 'APPROVED',
       current_version_number: 2,
+      current_draft_version_id: null,
+      current_approved_version_id: 'v_approved',
       workspace_id: MOCK_WORKSPACE_ID,
       current_version: {
         content_json: { type: 'doc', content: [] },
@@ -271,6 +294,7 @@ describe('createDraftFromApproved', () => {
             create: vi
               .fn()
               .mockResolvedValue({ id: 'ver-3', version_number: 3 }),
+            findFirst: vi.fn().mockResolvedValue({ version_number: 2 }),
           },
           workspaceDocument: { update: vi.fn().mockResolvedValue({}) },
           activityLog: {
@@ -289,14 +313,77 @@ describe('createDraftFromApproved', () => {
     const { createDraftFromApproved } = await import('@/app/actions/documents')
     await createDraftFromApproved('doc-1')
 
+    // Story 17.16 AC 4: NEW action name. The legacy `document_status_changed`
+    // is NOT written by this path anymore — under Model B, branching does not
+    // flip top-level status, so logging a status change would be misleading.
     expect(capturedLogData).toMatchObject({
-      action: 'document_status_changed',
+      action: 'document_draft_created',
       entity_type: 'workspace_document',
-      old_value: { status: 'APPROVED' },
     })
-    expect((capturedLogData!.new_value as Record<string, unknown>).status).toBe(
-      'DRAFT'
+    expect(
+      (capturedLogData!.new_value as Record<string, unknown>).draft_version_id
+    ).toBe('ver-3')
+    expect(
+      (capturedLogData!.new_value as Record<string, unknown>).draft_status
+    ).toBe('DRAFT')
+    expect(
+      (capturedLogData!.new_value as Record<string, unknown>)
+        .source_approved_version_id
+    ).toBe('v_approved')
+  })
+
+  // Regression: the post-discard "orphaned version row" case.
+  // After discardDraft, the draft's version row is intentionally left in DB
+  // for audit, but current_version_number is rolled back to the approved
+  // version's number. createDraftFromApproved must derive newVersionNumber
+  // from MAX(version_number) + 1 — not from current_version_number + 1 —
+  // otherwise it collides with the orphaned row on the unique
+  // (document_id, version_number) constraint.
+  it('picks MAX(version_number)+1 to skip orphaned discarded-draft rows (UAT FU-001)', async () => {
+    // Doc state mirrors a just-discarded draft: parent says v1, but DB still
+    // has a stale v2 row from the discarded draft.
+    mockFindFirst.mockResolvedValue({
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      status: 'APPROVED',
+      current_version_number: 1,
+      current_draft_version_id: null,
+      current_approved_version_id: 'v_approved',
+      workspace_id: MOCK_WORKSPACE_ID,
+      current_version: {
+        content_json: { type: 'doc', content: [{ type: 'paragraph' }] },
+      },
+    })
+
+    let capturedNewVersion: Record<string, unknown> | null = null
+    mockTransaction.mockImplementation(
+      async (fn: (_tx: unknown) => Promise<unknown>) => {
+        const tx = {
+          workspaceDocumentVersion: {
+            create: vi
+              .fn()
+              .mockImplementation((args: { data: Record<string, unknown> }) => {
+                capturedNewVersion = args.data
+                return { id: 'ver-3', version_number: 3 }
+              }),
+            // DB has an orphaned v2 row from the discarded draft — MAX is 2.
+            findFirst: vi.fn().mockResolvedValue({ version_number: 2 }),
+          },
+          workspaceDocument: { update: vi.fn().mockResolvedValue({}) },
+          activityLog: { create: vi.fn().mockResolvedValue({}) },
+        }
+        return fn(tx)
+      }
     )
+
+    const { createDraftFromApproved } = await import('@/app/actions/documents')
+    const result = await createDraftFromApproved('doc-1')
+
+    expect(result.success).toBe(true)
+    // Under the OLD bug, this would be 2 (current_version_number + 1) and
+    // collide with the orphaned row. Under the fix, it's 3 (MAX + 1).
+    expect(result.data?.versionNumber).toBe(3)
+    expect(capturedNewVersion).not.toBeNull()
+    expect(capturedNewVersion!.version_number).toBe(3)
   })
 })
 

@@ -1,90 +1,140 @@
-import Link from 'next/link'
-import { ArrowRight, Eye, ClipboardCheck, Network } from 'lucide-react'
-
+import {
+  ArrowRight,
+  Eye,
+  Check,
+  Scale,
+  ClipboardCheck,
+  FileText,
+  History,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { SectionLabel } from './section-label'
 
-const partnerPoints = [
+const points = [
+  'Gratis för revisorn — egen inloggning, ni betalar inget',
+  'Allt samlat och spårbart — slipp jaga underlag i mejl och pärmar',
+  'Inga partneravgifter, inga bindningar',
+]
+
+// What the invited auditor sees — read-only access to the full, traceable
+// picture (reinforces the page's auditability thread).
+const access = [
   {
-    icon: Eye,
-    title: 'Gratis för revisorn',
-    desc: 'Era klienter bjuder in er med en egen inloggning. Ni betalar inget – och får allt ni behöver för att granska.',
+    icon: Scale,
+    title: 'Laglista & efterlevnad',
+    sub: '42 krav · status per punkt',
   },
   {
     icon: ClipboardCheck,
-    title: 'Allt på ett ställe',
-    desc: 'Anmärkningar, åtgärder och bevis – samlat och spårbart. Ni slipper jaga underlag i mejl och pärmar.',
+    title: 'Kontroller & anmärkningar',
+    sub: 'Lagefterlevnadskontroll Q1 2026',
   },
-  {
-    icon: Network,
-    title: 'Vi bygger det tillsammans',
-    desc: 'Plattformen växer ihop med revisorer och konsulter. Inga partneravgifter, inga bindningar.',
-  },
+  { icon: FileText, title: 'Bevis & dokument', sub: 'kopplade till rätt krav' },
+  { icon: History, title: 'Aktivitet & historik', sub: 'vem, vad och när' },
 ]
 
 export function ByraerSection() {
   return (
-    <section className="py-16 md:py-24">
+    <section id="byraer" className="scroll-mt-16 py-16 md:py-24">
       <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-12 grid items-end gap-8 lg:grid-cols-2">
-            <div>
-              <p
-                className="mb-3 text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground"
-                style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
-              >
-                För revisorer och byråer
-              </p>
+        <div className="mx-auto max-w-7xl">
+          <SectionLabel index="07" className="mb-4">
+            Revisorer & byråer
+          </SectionLabel>
+
+          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
+            {/* LEFT — editorial */}
+            <div className="lg:col-span-5">
               <h2
-                className="text-3xl font-medium tracking-tight md:text-4xl lg:text-5xl"
+                className="mb-6 text-4xl font-medium leading-[1.1] tracking-tight md:text-5xl lg:text-[3rem]"
                 style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
               >
-                Funkar ihop med er revisor.
+                Funkar ihop med
+                <br />
+                <span className="text-foreground/40">er revisor.</span>
               </h2>
-            </div>
-            <p className="text-lg leading-relaxed text-muted-foreground">
-              Att följa lagen är ett lagarbete. Revisorer och konsulter är en
-              del av hur svenska företag håller koll – så vi har byggt
-              plattformen för att funka för dem också.
-            </p>
-          </div>
 
-          <div className="mb-10 grid gap-4 md:grid-cols-3">
-            {partnerPoints.map((point) => (
-              <div key={point.title} className="rounded-2xl border bg-card p-6">
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-foreground text-background">
-                  <point.icon className="h-5 w-5" />
+              <p className="mb-6 max-w-md text-lg leading-relaxed text-muted-foreground">
+                Att följa reglerna är ett lagarbete. Era klienter bjuder in er
+                med en egen inloggning — ni ser allt som behövs för att granska,
+                men ändrar ingenting.
+              </p>
+
+              <ul className="mb-8 space-y-3">
+                {points.map((p) => (
+                  <li key={p} className="flex items-start gap-2.5">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-400/15 text-amber-700">
+                      <Check className="h-3 w-3" />
+                    </span>
+                    <span className="text-[14px] leading-relaxed text-foreground/80">
+                      {p}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              <Button asChild>
+                <a href="mailto:dev@laglig.se">
+                  Kontakta oss
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </a>
+              </Button>
+            </div>
+
+            {/* RIGHT — the auditor's read-only view */}
+            <div className="lg:col-span-7">
+              <div className="rounded-3xl border bg-card/50 p-4 shadow-[0_1px_0_0_rgb(0_0_0_/_0.02),0_12px_32px_-16px_rgb(0_0_0_/_0.10)] backdrop-blur-sm md:p-5">
+                <div className="overflow-hidden rounded-2xl border border-border/70 bg-card">
+                  {/* header */}
+                  <div className="flex items-center gap-3 border-b border-border/60 px-4 py-3.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-foreground text-[11px] font-semibold text-background">
+                      AR
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium">Andersson Revision</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        Inbjuden revisor · Nordviken Hotell &amp; Konferens AB
+                      </p>
+                    </div>
+                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-amber-400/15 px-2.5 py-1 text-[11px] font-medium text-amber-800 ring-1 ring-amber-400/30">
+                      <Eye className="h-3 w-3" />
+                      Läsbehörighet
+                    </span>
+                  </div>
+
+                  {/* what the auditor can see */}
+                  <div className="divide-y divide-border/60">
+                    {access.map((a) => (
+                      <div
+                        key={a.title}
+                        className="flex items-center gap-3 px-4 py-3.5"
+                      >
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-secondary text-foreground/55 ring-1 ring-border/60">
+                          <a.icon className="h-4 w-4" />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[13.5px] font-medium">{a.title}</p>
+                          <p className="text-[11.5px] text-muted-foreground">
+                            {a.sub}
+                          </p>
+                        </div>
+                        <Eye className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* footer */}
+                  <div className="flex items-center justify-between border-t border-border/60 bg-muted/20 px-4 py-3 text-[12px]">
+                    <span className="text-muted-foreground">
+                      Ser allt — ändrar ingenting.
+                    </span>
+                    <span className="font-medium text-amber-900">
+                      Allt spårbart
+                    </span>
+                  </div>
                 </div>
-                <h3
-                  className="mb-2 text-base font-semibold"
-                  style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
-                >
-                  {point.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {point.desc}
-                </p>
               </div>
-            ))}
-          </div>
-
-          <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border bg-muted/30 p-6 md:flex-row md:items-center md:p-8">
-            <div>
-              <p
-                className="text-base font-semibold"
-                style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
-              >
-                Vill ni tipsa era klienter om Laglig.se?
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Hör av er – vi berättar gärna hur ni kan jobba med plattformen.
-              </p>
             </div>
-            <Button asChild>
-              <Link href="/kontakt">
-                Kontakta oss
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
           </div>
         </div>
       </div>

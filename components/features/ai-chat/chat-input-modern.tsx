@@ -22,6 +22,10 @@ import {
   Scale,
   Lightbulb,
   ListChecks,
+  X,
+  Image as ImageIcon,
+  Sheet,
+  Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
@@ -82,6 +86,26 @@ const MODELS: ModelOption[] = [
 
 const DEFAULT_MODEL: ModelOption = MODELS[0]!
 
+// Story 19.1: a chat attachment chip shown before send.
+interface ChatInputAttachment {
+  fileId: string
+  filename: string
+  mimeType: string | null
+}
+
+/** Accept filter mirrors the server's ALLOWED_MIME_TYPES (app/actions/files.ts). */
+const ATTACH_ACCEPT =
+  '.pdf,.png,.jpg,.jpeg,.gif,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.csv'
+
+function attachmentIcon(mime: string | null) {
+  if (!mime) return Paperclip
+  if (mime === 'application/pdf') return FileText
+  if (mime.startsWith('image/')) return ImageIcon
+  if (mime.includes('sheet') || mime.includes('excel') || mime === 'text/csv')
+    return Sheet
+  return Paperclip
+}
+
 interface ChatInputModernProps {
   onSend: (_message: string) => void
   onStop?: (() => void) | undefined
@@ -94,6 +118,12 @@ interface ChatInputModernProps {
   showAttach?: boolean
   showQuickActions?: boolean
   isExpanded?: boolean
+  // Story 19.1: chat attachments
+  pendingAttachments?: ChatInputAttachment[]
+  onAttachFiles?: (_files: File[]) => void
+  onRemoveAttachment?: (_fileId: string) => void
+  attachmentError?: string | null
+  attachmentsUploading?: boolean
 }
 
 export const ChatInputModern = forwardRef<
@@ -112,13 +142,23 @@ export const ChatInputModern = forwardRef<
     showAttach = true,
     showQuickActions = true,
     isExpanded = false,
+    pendingAttachments,
+    onAttachFiles,
+    onRemoveAttachment,
+    attachmentError,
+    attachmentsUploading = false,
   },
   ref
 ) {
   const [input, setInput] = useState('')
   const [selectedModel, setSelectedModel] = useState(DEFAULT_MODEL)
   const [mounted, setMounted] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const attachments = pendingAttachments ?? []
+  const hasAttachments = attachments.length > 0
 
   // Prevent hydration mismatch with DropdownMenu
   useEffect(() => {
@@ -131,8 +171,27 @@ export const ChatInputModern = forwardRef<
   const trimmedInput = input.trim()
   const isOverLimit = input.length > MAX_MESSAGE_LENGTH
   const showCounter = input.length > SHOW_COUNTER_THRESHOLD
+  // Story 19.1: allow attachment-only sends; block while an upload is in flight.
   const canSend =
-    trimmedInput.length > 0 && !isOverLimit && !disabled && !isLoading
+    (trimmedInput.length > 0 || hasAttachments) &&
+    !isOverLimit &&
+    !disabled &&
+    !isLoading &&
+    !attachmentsUploading
+
+  const handlePickFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : []
+    if (files.length > 0) onAttachFiles?.(files)
+    e.target.value = '' // allow re-picking the same file
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    if (!onAttachFiles) return
+    const files = e.dataTransfer.files ? Array.from(e.dataTransfer.files) : []
+    if (files.length > 0) onAttachFiles(files)
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -218,6 +277,14 @@ export const ChatInputModern = forwardRef<
       {/* Input area */}
       <form onSubmit={handleSubmit}>
         <div
+          onDragOver={(e) => {
+            if (onAttachFiles) {
+              e.preventDefault()
+              setIsDragging(true)
+            }
+          }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={handleDrop}
           className={cn(
             'relative flex flex-col rounded-xl',
             'border border-border bg-background',
@@ -226,9 +293,61 @@ export const ChatInputModern = forwardRef<
             'transition-all duration-200',
             isOverLimit &&
               'border-destructive/50 focus-within:border-destructive',
+            isDragging && 'border-primary ring-2 ring-primary/30',
             (disabled || isLoading) && 'opacity-60'
           )}
         >
+          {/* Hidden file input (Story 19.1) */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept={ATTACH_ACCEPT}
+            className="hidden"
+            onChange={handlePickFiles}
+            aria-hidden="true"
+            tabIndex={-1}
+          />
+
+          {/* Attachment chips (Story 19.1) */}
+          {(hasAttachments || attachmentsUploading || !!attachmentError) && (
+            <div className="flex flex-wrap items-center gap-2 px-4 pt-3">
+              {attachments.map((att) => {
+                const Icon = attachmentIcon(att.mimeType)
+                return (
+                  <span
+                    key={att.fileId}
+                    className="inline-flex max-w-[220px] items-center gap-1.5 rounded-md border border-border bg-muted/50 px-2 py-1 text-xs text-foreground/80"
+                  >
+                    <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    <span className="truncate">{att.filename}</span>
+                    {onRemoveAttachment && (
+                      <button
+                        type="button"
+                        onClick={() => onRemoveAttachment(att.fileId)}
+                        className="shrink-0 rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                        aria-label={`Ta bort ${att.filename}`}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    )}
+                  </span>
+                )
+              })}
+              {attachmentsUploading && (
+                <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Laddar upp…
+                </span>
+              )}
+              {attachmentError && (
+                <span className="text-xs text-destructive">
+                  {attachmentError}
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Textarea */}
           <textarea
             ref={textareaRef}
@@ -267,8 +386,14 @@ export const ChatInputModern = forwardRef<
                     <TooltipTrigger asChild>
                       <button
                         type="button"
-                        onClick={onAttach}
-                        disabled={disabled || isLoading || !onAttach}
+                        onClick={() =>
+                          onAttachFiles
+                            ? fileInputRef.current?.click()
+                            : onAttach?.()
+                        }
+                        disabled={
+                          disabled || isLoading || (!onAttachFiles && !onAttach)
+                        }
                         className={cn(
                           'rounded-lg transition-all duration-150',
                           'text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted',
@@ -283,7 +408,7 @@ export const ChatInputModern = forwardRef<
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="top">
-                      <p>Bifoga fil (kommer snart)</p>
+                      <p>Bifoga fil</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

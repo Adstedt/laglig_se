@@ -13,7 +13,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import useSWR from 'swr'
 import { HemChat } from '@/components/features/dashboard/hem-chat'
-import { ChangeAssessmentView } from '@/components/features/dashboard/change-assessment-view'
+import { ChangeAssessmentModal } from '@/components/features/changes/change-assessment-modal'
 import { LawListGenerationProgress } from '@/components/features/dashboard/law-list-generation-progress'
 import { FirstRunModal } from '@/components/features/onboarding-modal/first-run-modal'
 import { OnboardingFab } from '@/components/features/onboarding-modal/onboarding-fab'
@@ -294,17 +294,24 @@ export function HemPage({
           <LawListGenerationProgress initialStatus={generationStatus ?? null} />
         </div>
       )}
-      {activeChange ? (
-        <ChangeAssessmentView change={activeChange} onBack={handleBack} />
-      ) : (
-        <HemChat
-          mode="full"
-          dashboardData={dashboardData}
-          userName={userName}
-          onSelectChange={handleSelectChange}
-          initialView={initialView}
-        />
-      )}
+      <HemChat
+        mode="full"
+        dashboardData={dashboardData}
+        userName={userName}
+        onSelectChange={handleSelectChange}
+        initialView={initialView}
+      />
+      {/* Single source of truth for the change-assessment UX: this is the
+          SAME modal that /laglistor?tab=changes uses (ChangesTab line 173).
+          Modal self-controls visibility via `change !== null`. onClose maps
+          to handleBack so the existing setActiveChange(null) + router.refresh()
+          pattern is preserved. onAssessmentSaved also refreshes so the
+          dashboard's "N nya lagändringar" count updates without closing. */}
+      <ChangeAssessmentModal
+        change={activeChange}
+        onClose={handleBack}
+        onAssessmentSaved={() => router.refresh()}
+      />
     </div>
   )
 }

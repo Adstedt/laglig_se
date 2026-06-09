@@ -1,0 +1,86 @@
+schema: 1
+story: '19.1'
+story_title: 'Chat Attachment Upload + Claude Content-Block Conversion'
+gate: PASS
+status_reason: 'All 17 ACs implemented + verified: 19 passing unit tests (tsc/eslint clean) for the logic core, and the owner''s manual app smoke-test passed end-to-end on BOTH chat surfaces after the hem-chat fix (attach → agent reads PDF/DOCX in-turn → excluded from Filer/search → chip persists + downloads → 5-file/32MB guards → drag-drop). Cross-tenant isolation sound. One non-blocking follow-up (STO-001 storage lifecycle) tracked.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-24T16:10:00Z'
+
+waiver: { active: false }
+
+quality_score: 92
+expires: '2026-06-07T16:10:00Z'
+
+evidence:
+  tests_reviewed: 19
+  tests_result: '19/19 unit pass (converter 10, route-mapper 4, attachment-validation 5); tsc clean; eslint clean; chat-quota route consumer still passes'
+  smoke_test:
+    performed_by: 'Owner (Alexander)'
+    result: 'PASS — verified live'
+    covered:
+      - 'PDF ≤10MB attached → agent answers from file content (document block)'
+      - 'DOCX → readable in-turn (on-demand extraction)'
+      - 'Excluded from Filer + search_workspace_files (AC 15/16)'
+      - 'Chip persists on reload + downloads (AC 13)'
+      - '5-file + 32MB guards (AC 4/5); drag-drop; chip remove'
+      - 'Both surfaces: chat-panel AND dashboard hem-chat (post Increment-4 fix)'
+  risks_identified: 2
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+    ac_gaps: []
+    notes:
+      - 'AC 1-7/13 (interactive UI) verified via the owner manual smoke-test (not automated); AC 5/8-12 also unit-tested.'
+      - 'Increment 4: AC-1 wiring initially missed the hem-chat surface (only chat-panel); fixed + smoke-verified on all 3 hem-chat inputs.'
+
+top_issues:
+  - id: STO-001
+    severity: low
+    summary: 'Sent CHAT_ATTACHMENT files accumulate with no cleanup path — invisible in Filer (by design), count toward storage quota, retained for history chips + read_file. Storage bloat over time. Out of 19.1 scope (no AC required retention); track as a follow-up.'
+    refs: ['lib/hooks/use-chat-attachments.ts', 'app/api/cron/extract-files/route.ts']
+    suggested_owner: po
+    suggested_fix: 'Follow-up story: retention/cleanup cron for old unreferenced CHAT_ATTACHMENT files, or a manageable "chat-uppladdningar" view.'
+  - id: UX-001
+    severity: low
+    summary: 'Attachment-only message sends an empty {type:text,text:""} part alongside the doc block. Cosmetic; consider dropping the empty text part.'
+    refs: ['lib/agent/build-model-messages.ts']
+    suggested_owner: dev
+
+# Resolved during this gate cycle.
+resolved_issues:
+  - id: SMOKE-001
+    was: medium
+    resolution: 'Owner manual smoke-test passed end-to-end on both chat surfaces (2026-05-24). Interactive attach/chip/upload/send flow verified live.'
+  - id: HEM-CHAT-GAP
+    was: 'AC-1 surface gap (dashboard launcher had no attach button)'
+    resolution: 'Increment 4 wired useChatAttachments + showAttach into all 3 hem-chat.tsx inputs; smoke-verified.'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Cross-tenant isolation on the converter read (findFirst scoped to id+workspace_id) verified + unit-tested + smoke-confirmed (attachment excluded from search/Filer). Uploads via existing validated uploadFile. No raw @anthropic-ai/sdk usage.'
+  performance:
+    status: PASS
+    notes: 'Request bounded (base64-aware 32MB / 5 files). On-demand extraction adds latency for large not-yet-extracted files in-turn — acceptable for v1; smoke-test confirmed DOCX read in-turn.'
+  reliability:
+    status: PASS
+    notes: 'Logic fail-safe (placeholders on miss/wrong-ws, best-effort cleanup) + the end-to-end flow now verified live on both surfaces. SMOKE-001 resolved.'
+  maintainability:
+    status: PASS
+    notes: 'Clean modules + 19 unit tests. STO-001 (storage lifecycle) is out-of-scope future work, not a defect in delivered code — tracked as a follow-up.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'STO-001: retention/cleanup for sent CHAT_ATTACHMENT files (or a manageable view)'
+      refs: ['app/api/cron/extract-files/route.ts']
+    - action: 'UX-001: drop the empty text part on attachment-only sends'
+      refs: ['lib/agent/build-model-messages.ts']
+    - action: 'Confirm whether change-assessment-view.tsx should also get the attach UI (left showAttach=false)'
+      refs: ['components/features/dashboard/change-assessment-view.tsx']
+
+# Advisory — pre-existing branch failures, NOT introduced by 19.1.
+branch_advisory:
+  - id: BR-PROMPT
+    refs: ['tests/unit/agent/system-prompt.test.ts']
+    summary: 'execute:false assertion + token budget — Story 14.23 prompt growth. Pre-existing; resolve before the branch merges.'
+    suggested_owner: dev

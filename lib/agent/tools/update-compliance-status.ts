@@ -1,12 +1,20 @@
 /**
  * update_compliance_status tool — update a LawListItem's compliance status
  * Story 14.7c, Task 2 (AC: 2, 5-7)
+ * Story 14.23, Task 7.2: migrated to the inline pending-action pattern. Always
+ * proposes a PendingAgentAction of type UPDATE_COMPLIANCE_STATUS; the
+ * execute=true direct-write branch is removed. The approve dispatch performs
+ * the actual status update.
  */
 
 import { tool, zodSchema } from 'ai'
 import { z } from 'zod/v4'
 import { prisma } from '@/lib/prisma'
-import { wrapWriteToolResponse, wrapToolResponse, wrapToolError } from './utils'
+import { wrapWriteToolResponse, wrapToolError } from './utils'
+import {
+  createPendingActionRow,
+  type PendingActionToolContext,
+} from './pending-action'
 
 const STATUS_LABELS: Record<string, string> = {
   EJ_PABORJAD: 'Ej påbörjad',
@@ -17,7 +25,12 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const updateComplianceStatusSchema = z.object({
-  lawListItemId: z.string().describe('ID of the LawListItem to update'),
+  lawListItemId: z
+    .string()
+    .optional()
+    .describe(
+      'ID of the LawListItem to update. Utelämna i en lag-chatt — då används den aktiva laglistposten automatiskt (Story 19.4a).'
+    ),
   newStatus: z
     .enum([
       'EJ_PABORJAD',
@@ -34,14 +47,15 @@ const updateComplianceStatusSchema = z.object({
     .boolean()
     .optional()
     .default(false)
-    .describe(
-      'false = return proposal for confirmation, true = execute the action'
-    ),
+    .describe('Ignored — this action always requires inline approval'),
 })
 
 type UpdateComplianceStatusInput = z.infer<typeof updateComplianceStatusSchema>
 
-export function createUpdateComplianceStatusTool(workspaceId: string) {
+export function createUpdateComplianceStatusTool(
+  workspaceId: string,
+  context?: PendingActionToolContext
+) {
   return tool({
     description: `Uppdatera efterlevnadsstatusen för en lag i användarens bevakningslista.
 
@@ -50,8 +64,9 @@ Använd detta verktyg när användaren vill ändra en lags efterlevnadsstatus, t
 
 Giltiga statusar: EJ_PABORJAD, PAGAENDE, UPPFYLLD, EJ_UPPFYLLD, EJ_TILLAMPLIG.
 
-Bekräftelsemönster: Anropa ALLTID först med execute=false för att visa ett förslag
-med gammal → ny status. Vänta tills användaren godkänner innan du anropar med execute=true.
+Anropa verktyget direkt — det skapar ett inline-förslagskort med gammal → ny status som
+användaren granskar och godkänner. Kortet är bekräftelsen: beskriv inte ändringen i löpande
+text och fråga inte om lov först.
 
 Returnerar fel om lawListItemId inte hittas eller inte tillhör den aktiva arbetsytan.`,
     inputSchema: zodSchema(updateComplianceStatusSchema),
@@ -59,14 +74,24 @@ Returnerar fel om lawListItemId inte hittas eller inte tillhör den aktiva arbet
       lawListItemId,
       newStatus,
       reason,
-      execute,
     }: UpdateComplianceStatusInput) => {
       const startTime = Date.now()
+
+      // Story 19.4a: default to the active law-list item from the chat context.
+      const resolvedId = lawListItemId ?? context?.lawListItemId
+      if (!resolvedId) {
+        return wrapToolError(
+          'update_compliance_status',
+          'Ingen laglistpost angiven.',
+          'Ange lawListItemId, eller använd search_law_list_items för att hitta rätt post i bevakningslistan.',
+          startTime
+        )
+      }
 
       // Validate item exists and belongs to workspace
       const item = await prisma.lawListItem.findFirst({
         where: {
-          id: lawListItemId,
+          id: resolvedId,
           law_list: { workspace_id: workspaceId },
         },
         include: {
@@ -84,51 +109,38 @@ Returnerar fel om lawListItemId inte hittas eller inte tillhör den aktiva arbet
       }
 
       const lawTitle =
-        item.document?.title ?? item.document?.document_number ?? lawListItemId
+        item.document?.title ?? item.document?.document_number ?? resolvedId
       const oldStatusLabel =
         STATUS_LABELS[item.compliance_status] ?? item.compliance_status
       const newStatusLabel = STATUS_LABELS[newStatus] ?? newStatus
 
-      if (!execute) {
-        return wrapWriteToolResponse(
-          'update_compliance_status',
-          'update_compliance_status',
-          { lawListItemId, newStatus, reason },
-          `Ändra efterlevnadsstatus för ${lawTitle}: ${oldStatusLabel} → ${newStatusLabel}. Anledning: ${reason}`,
-          startTime
-        )
+      const params = {
+        lawListItemId: resolvedId,
+        lawTitle,
+        newStatus,
+        oldStatus: item.compliance_status,
+        oldStatusLabel,
+        newStatusLabel,
+        reason,
       }
 
-      try {
-        // Story 21.22: status changes are logged via the activity log only
-        // (the previous behavior of appending to compliance_actions polluted
-        // the human-authored compliance narrative with timestamped log entries).
-        await prisma.lawListItem.update({
-          where: { id: lawListItemId },
-          data: {
-            compliance_status: newStatus,
-          },
-        })
+      const pendingActionId = await createPendingActionRow(
+        workspaceId,
+        context,
+        'UPDATE_COMPLIANCE_STATUS',
+        params
+      )
 
-        return wrapToolResponse(
-          'update_compliance_status',
-          {
-            lawListItemId,
-            oldStatus: item.compliance_status,
-            newStatus,
-            lawTitle,
-          },
-          startTime
-        )
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err)
-        return wrapToolError(
-          'update_compliance_status',
-          `Kunde inte uppdatera status: ${message}`,
-          'Ett tekniskt fel uppstod. Försök igen om en stund.',
-          startTime
-        )
-      }
+      const envelope = wrapWriteToolResponse(
+        'update_compliance_status',
+        'update_compliance_status',
+        params,
+        `Ändra efterlevnadsstatus för ${lawTitle}: ${oldStatusLabel} → ${newStatusLabel}. Anledning: ${reason}`,
+        startTime
+      )
+      return pendingActionId
+        ? { ...envelope, data: { pendingActionId } }
+        : envelope
     },
   })
 }

@@ -166,7 +166,7 @@
 
 ## Epic 14: Compliance Agent
 
-**Status:** Done (18 completed, 5 backlog — exceeded original 14-story estimate; Phase 6 added 2026-04-24 for prompt-caching + usage telemetry as 5.5 prereqs)
+**Status:** Core Done (21 completed). Phase 5 (Agent Approval Cards) **fully shipped** — 14.22 + 14.23 + 14.24 (inline-card stack) + 14.28 (`update_requirement`, gate PASS 95) + 14.29 (`add_task_comment`, gate PASS 92) + 14.30 (`transition_document_status`, gate PASS 93) all in `completed/`. **Only 14.31 (proposal staleness retrofit) remains** — Approved-not-built, batches with 14.28/14.30 per its own deps. Phase 6 (prompt-caching + usage telemetry, 14.26/14.27) Done. Original estimate was 14 stories; now 21 actual + 1 backlog due to the 4-story inline-approval sibling track (14.28–14.31). _Updated 2026-06-03._
 
 **Goal:** Build an AI compliance partner that provides contextual, cited legal guidance through conversational interaction with company-aware tooling.
 
@@ -208,17 +208,26 @@
 
 ## Epic 17: Document Management System (DMS)
 
-**Status:** Partial (9 completed — core DMS operational, advanced features remaining)
+**Status:** Active (19 effectively done / 2 backlog). Core DMS, RAG pipeline, agent integration, dual-version sub-epic, and full authoring triad all shipped. _Updated 2026-06-06._
+
+**Recent progress:**
+- **17.10** (agent tools: search/read/list workspace documents) ✅ Done 2026-06-01, gate PASS 95.
+- **17.10b** (DRAFT/IN_REVIEW indexing + status-aware citations) ✅ Done 2026-06-02, gate PASS 97. Citation pipeline splits into `[Källa:]` (canonical APPROVED) vs `[Utkast:]` (DRAFT/IN_REVIEW).
+- **17.11** (`update_document` — agent-proposed section edit) ✅ Done 2026-06-06, gate PASS 100. The 12th `PendingAgentActionType`.
+- **17.11b** (`add_document_section` — agent-proposed insert of NEW section) ✅ Done 2026-06-06, gate PASS 95. The 13th `PendingAgentActionType`; brownfield-additive sibling of 17.11.
+- **17.11c** (agent auto-branch on APPROVED — transparent branch + write in one approval card) ✅ Done 2026-06-06, gate PASS 95. New `createDraftFromApprovedWithEdit` server action runs atomic single-`$transaction` branch + write; renderer shows "Skapar nytt utkast v{N+1}" header on PENDING. Closes the authoring triad — agent now has full read/write/branch authority across all 4 dual-version states. DEC-2 contract validated under auto-branch via owner live smoke 2026-06-06.
+
+**Brownfield sub-epic (CLOSED 2026-06-04):** **Dual-Version Document Visibility** (`docs/prd/epic-17-addendum-dual-version-visibility.md`) — 3-story coordinated effort encoding the currently-effective approved version AND the in-progress draft as concurrent first-class pointers on `WorkspaceDocument`. Surfaced by 17.11b's live smoke (the legacy single-pointer schema was breaking the 17.10b `[Källa:]` citation contract during revision windows + wiping audit metadata + deindexing the doc). **17.16** (foundation: dual-pointer schema + dispatch refactor) ✅ Done 2026-06-03, gate PASS 92; **17.17** (styrdokument table + doc page dual-version UX) ✅ Done 2026-06-04, gate PASS 96; **17.18** (agent reads + citation routing under Model B) ✅ Done 2026-06-04, gate PASS 95 — compliance contract restored end-to-end, DEC-2 invariant holds under dual state, owner live smoke against Supabase production data validated 9/11 ACs end-to-end (composite badge, self-healing chunk migration, DEC-2 LLM hold across 3 adversarial prompt phrasings). Follow-up **17.11c** (agent auto-branch on APPROVED) PO can now draft against the corrected Model B foundation. Backlog also includes **17.9d** (file-aware citation pill, drafted not built).
 
 **Goal:** Provide a complete in-app document management system where users create, edit, version, and export compliance documents (policies, risk assessments, action plans) using a Tiptap rich text editor — and where the AI compliance agent can read, search, create, and update those documents as a first-class participant.
 
-**Delivers:** Tiptap-based rich text editor with Word-like UX, Document & DocumentVersion data models with full version control, document lifecycle management (DRAFT → APPROVED → ARCHIVED), .docx import/export and PDF export, compliance document templates, text extraction from uploaded files, workspace document embedding into RAG pipeline, 5 new agent tools for document interaction
+**Delivers:** Tiptap-based rich text editor with Word-like UX, Document & DocumentVersion data models with full version control, document lifecycle management (DRAFT → APPROVED → ARCHIVED), .docx import/export and PDF export, compliance document templates, text extraction from uploaded files, workspace document embedding into RAG pipeline, **6 shipped agent tools** for document interaction (`search_workspace_documents` / `get_workspace_document` / `list_workspace_documents` — Story 17.10; `update_document` — 17.11; `add_document_section` — 17.11b; agent document *creation* ships via Epic 14's `draft_styrdokument`, Story 14.24). **Shipped via dual-version sub-epic (2026-06-04):** Model B dual-pointer schema (`current_approved_version_id` + `current_draft_version_id` + `draft_status`), composite status badge in styrdokument table, doc page header preserving approved metadata throughout draft windows, editor banner clarifying draft-replaces-approved, discard-draft + promote-draft server actions (Skicka/Godkänn/Neka/Förkasta flow), agent read tools surfacing dual state with the citation grammar extended (`[Källa:]` for canonical APPROVED + `[Utkast: title (utkast vN)]` for in-progress DRAFT; DEC-2 invariant holds under Model B).
 
 **Requirements covered:** FR7 (compliance workspace), FR25 (audit trail), FR27 (evidence/documentation)
 
 **Dependencies:** Epic 6 (WorkspaceFile — Done), Epic 14 (Agent tools — Done), Story 14.14 (Chunk/embed pipeline — Done)
 
-**Priority:** High — closes the documentation gap in the compliance workflow. Users track obligations and execute tasks but cannot create the actual documents auditors ask for. Also the largest remaining blocker for full agent usefulness (agent currently blind to workspace documentation).
+**Priority:** High — closes the documentation gap in the compliance workflow. Users track obligations and execute tasks but cannot create the actual documents auditors ask for. **The dual-version sub-epic is also a compliance-correctness fix** (auditor visits during a revision window currently see DRAFT-state docs — undermines the textbook ISO 9001/14001/45001 "control of documents" criterion).
 
 **Note:** Designed for future Office 365 integration (Microsoft Graph API + WOPI) as an additive phase — not included in this epic.
 
@@ -242,15 +251,21 @@
 
 ## Epic 19: Agent Partner — Attachments, Skills, Subagents & Continuous Governance
 
-**Status:** Planned (0 completed — 12 stories scoped + 4 sibling stories in Epic 14)
+**Status:** Active (10 of 17 completed — foundation + skills tracks fully shipped). _Updated 2026-06-04._
+
+**Shipped (10, all in `completed/`):** 19.1 (chat attachments) · 19.2 (`read_file` evidence reader) · 19.3 (4 diagnostic tools) · 19.4 (entity-readers + ContextHandle traversal) · 19.4a (id-resolution + discovery) · 19.5 (role filter + AgentDecisionLog) · 19.6 (skill loader) · 19.7a (skills integration + `assess_change`) · 19.7b (`gap_analysis` + KP-001) · 19.7c (per-skill registry narrowing + no-regression harness). 20-story velocity between 2026-05-24 → 2026-06-04 across Epic 14 siblings + 17.10/17.10b + the Epic 19 foundation/skills tracks + the dual-version trilogy 17.16/17.17/17.18.
+
+**Remaining (7):** 19.4b (cycle/finding readers — sequence with Epic 21) · **19.8** (`draft_styrdokument` type-aware — **now unblocked**, Epic 17 dual-version foundation closed 2026-06-04) · 19.9 + 19.10 (subagents — deferred until single-agent loop is fully dogfooded) · 19.11 (reminders + cron) · 19.12 (AgentFeedback thumbs + proactive cards) · 19.13 (legal-citation grounding eval, added 2026-05-26 from GR-001 surfacing).
+
+**Earlier scoping (2026-05-24):** retrieval track deepened from the architect-reviewed knowledge-traversal brief — added 19.4a (agent id-resolution + entity discovery; also hardens shipped write tools) and 19.4b (cycle/finding readers), and refined 19.4 to a lazy-traversal/`ContextHandle` model. **Skills scoping (2026-05-26):** 19.7 split into 19.7a/b/c. **Authoring scoping (2026-05-28):** 19.8 re-scoped from `draft_policy` → `draft_styrdokument` (one skill + `types/<docType>.md` modules per `WorkspaceDocumentType` — see PRD 19.8 entry + plan addendum).
 
 **Goal:** Evolve the Laglig compliance agent from "informs users" to "helps users complete compliance work" by adding the architectural primitives required for autonomous, context-aware assistance: chat file attachment reading, a self-hosted skills layer (domain playbooks as markdown files), subagents (isolated specialists), diagnostic gap-detection tools, role-based tool filtering, and continuous-governance loops (reminders, weekly pulse, feedback).
 
-**Delivers:** Chat attachment upload + Claude content-block wiring, 9 new agent tools (read_file, 4 entity-reads, 4 diagnostics), role-filtered tool registry + AgentDecisionLog audit trail, self-hosted Skills layer (SKILL.md loader + directory convention + context activation), 3 shipped skills (assess_change migrated, gap_analysis, draft_policy), 3 subagents (LegalReasoner, DocumentReader, ParallelAssessor), Reminder/scheduling tools, weekly pulse cron, AgentFeedback model + thumbs UI, proactive hem-chat cards, seed Swedish styrdokument template library.
+**Delivers:** Chat attachment upload + Claude content-block wiring; an agent **read/traversal tier** over the compliance entity graph (id-resolution + `search_law_list_items` discovery in 19.4a; lazy `get_law_list_item`/`get_task`/`list_linked_artifacts` entity-readers with a shared `ContextHandle` shape in 19.4; `get_cycle`/`get_finding` readers in 19.4b) plus `read_file` and 4 diagnostic tools; role-filtered tool registry + AgentDecisionLog audit trail; self-hosted Skills layer (SKILL.md loader + directory convention + context activation); 3 shipped skills (assess_change migrated, gap_analysis, draft_styrdokument — type-aware via `types/*.md` modules per `WorkspaceDocumentType`); 3 subagents (LegalReasoner, DocumentReader, ParallelAssessor); Reminder/scheduling tools, weekly pulse cron, AgentFeedback model + thumbs UI, proactive hem-chat cards, seed Swedish styrdokument template library.
 
 **Requirements covered:** FR4 (enhanced), FR5 (enhanced), FR7 (enhanced), FR25 (audit trail — agent decisions), NFR2 (accuracy), NFR3 (hallucination prevention), NFR24 (cite-first answers)
 
-**Dependencies:** Epic 14 (Agent — Done; Stories 14.22–14.24 Approved as pre-req for approval-card reuse), Epic 17 (DMS — Partial; Stories 17.8–17.11 Draft as pre-req for text extraction + RAG + document tools), Epic 11 (Admin shell — Done, for future monitoring views), Epic 6 (Kanban/Task — Done). Sibling stories 14.26–14.29 coordinated with Epic 14.
+**Dependencies:** Epic 14 (Agent — core Done; approval-card Phase 5 in flight — 14.22 Ready for Review, 14.23/14.24 Approved as pre-req for approval-card reuse), Epic 17 (DMS — Partial; Stories 17.8–17.11 Draft as pre-req for text extraction + RAG + document tools), Epic 11 (Admin shell — Done, for future monitoring views), Epic 6 (Kanban/Task — Done). Sibling stories 14.26–14.29 coordinated with Epic 14.
 
 **Note:** Brownfield enhancement. Self-hosted only — no Anthropic Files API, no managed Skills beta, no code execution tool. Keeps stack provider-neutral and ZDR-clean. Single composite feature flag `agent_partner_v2` per workspace gates the entire epic.
 
@@ -377,10 +392,10 @@
 
 ---
 
-**Total Stories Tracked:** ~257+ across 25 epics (~166 completed, ~89+ backlog; Epic 18 stories TBD, Epic 19 12 stories scoped, Epic 20 3 stories scoped + completed, Epic 21 14 stories scoped — **13 completed, 1 deferred (21.10)**, 1 in backlog (21.15), Epic 22 4 stories scoped, Epic 23 5 stories scoped, Epic 24 6 stories scoped, Epic 25 7 stories scoped — B.0 pre-MVP)
+**Total Stories Tracked:** ~257+ across 25 epics (~166 completed, ~89+ backlog; Epic 18 stories TBD, Epic 19 14 stories scoped (incl. 19.4a id-resolution + 19.4b cycle/finding readers, added 2026-05-24), Epic 20 3 stories scoped + completed, Epic 21 14 stories scoped — **13 completed, 1 deferred (21.10)**, 1 in backlog (21.15), Epic 22 4 stories scoped, Epic 23 5 stories scoped, Epic 24 6 stories scoped, Epic 25 7 stories scoped — B.0 pre-MVP)
 
 **Epic Status:** 12 Done (incl. Epic 21 substantially-done as of 2026-04-27, UAT-ready with 1 deferred 21.10 + 1 backlogged 21.15), 4 Partial / Active, 9 Not Started / Planned (incl. Epic 23, Epic 24, Epic 25)
 
-**Last updated:** 2026-05-06
+**Last updated:** 2026-05-24 (Epic 19 retrieval track: added 19.4a id-resolution + 19.4b cycle/finding readers, refined 19.4 — from the architect-reviewed knowledge-traversal brief)
 
 ---

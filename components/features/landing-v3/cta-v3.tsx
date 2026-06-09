@@ -15,12 +15,12 @@ export function CtaV3() {
             className="mb-5 text-3xl font-medium tracking-tight md:text-4xl lg:text-5xl"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
           >
-            Få koll på lagarna
+            Få koll på reglerna
             <br className="hidden sm:block" /> – på det enkla sättet.
           </h2>
           <p className="mb-10 text-lg opacity-80">
-            Skapa er laglista på två minuter. Eller sök i lagboken gratis, helt
-            utan konto. Ni bestämmer – och er data är alltid er.
+            Skapa er laglista på två minuter och låt AI:n hålla koll på resten —
+            eller sök fritt i lagboken, helt utan konto.
           </p>
 
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -49,7 +49,7 @@ export function CtaV3() {
           </div>
 
           <p className="mt-8 text-xs opacity-60">
-            15 dagar gratis · Lagboken är alltid fri · Data lagras i Sverige
+            15 dagar gratis · Lagboken är alltid fri · Data lagras i EU
           </p>
         </div>
       </div>

@@ -1,0 +1,81 @@
+schema: 1
+story: '14.30'
+story_title: '`transition_document_status` Approval'
+gate: PASS
+status_reason: 'Surgical, behaviour-preserving expansion (11th PendingAgentActionType) on the 14.28 / 14.23 / 14.29 inline-approval pattern. All 20 ACs traced; **three-layer separation-of-duties defence** (Zod schema enum exclusion + tool runtime guard + dispatch authoritative gate) provably refuses APPROVED at all entry points. Owner live smoke A/C/D/E all PASS — including the critical Smoke C where the agent textbook-refused "Sätt den nu som godkänd" with explicit separation-of-duties reasoning. Mid-smoke UX refactor moved AC 10 pills into the lead summary. Three cross-cutting follow-ups surfaced (WDS-001 / TC-001 / ATC-001 inherited).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-28T11:30:00Z'
+
+reviewer_caveat:
+  same_session_as_dev: true
+  note: 'Dev (James) and QA (Quinn) ran in the SAME Claude session (same pattern as 14.29). Compensated with: fresh-runner test re-verification, AC-by-AC re-trace, AND the owner-driven live smoke serving as the external validation lever — particularly Smoke C (the load-bearing security check) which was end-to-end probed in real chat.'
+
+owner_signoff:
+  live_smoke: 'PASS'
+  attested_by: 'owner'
+  date: '2026-05-28'
+  smoke_results:
+    A_happy_path: 'PASS (after the mid-smoke pills refactor) — DRAFT → IN_REVIEW. Initially the summary line rendered raw enum ("DRAFT → IN_REVIEW") because AC 10s signature pills were buried inside children behind Justera; refactored the renderer to put <DocumentStatusBadge> pills directly in the lead summary. Subsequent retries clean.'
+    E_bonus_reverse: 'PASS — IN_REVIEW → DRAFT (reverse direction) rendered the pills correctly post-fix.'
+    C_separation_of_duties: 'PASS (THE critical security check). Owner prompted "Sätt den nu som godkänd" → agent refused with a textbook Swedish response: "att godkänna ett styrdokument är ett manuellt beslut … avsiktlig åtskillnad av ansvar". NO card was created — Zod schema enum + runtime guard held at the first layer; the dispatch guard never had to fire. Two-layer defence provably load-bearing.'
+    D_invalid_ladder: 'PASS — Owner prompted "Ersätt utkastet" (DRAFT → SUPERSEDED, invalid). AC 5 tool error surfaced AND the agent translated it into UX-friendly Swedish, listing the actually-allowed transitions (Under granskning, Arkiverad) and offering "Vill ni arkivera istället?" alternative.'
+    B_reject_path: 'SKIPPED (formality — Avvisa is the shared inline-approval-card behaviour already verified by 14.28 / 14.29).'
+  surfaced_findings:
+    - 'WDS-001 (NEW): no workspace-document discovery tool. `search_workspace_files` is USER_FILE-only (Story 17.9c); no equivalent searches the WORKSPACE_DOCUMENT chunks shipped in 17.9b. The agent had to be handed the styrdokument ID explicitly. Not a 14.30 defect (in fact, agent behavior was honest/correct), but a real coverage gap exposed by this story. Logged in the implementation-sequence plan.'
+    - 'TC-001 (NEW): tool-chip error state. When a tool ERRORS (e.g. invalid-ladder), the chip falls back to TOOL_CONFIG.doneLabel (e.g. "Ändrade status") because proposalLabel only fires when there is a pendingActionId. NOT 14.30-specific — every write tool has this same fallback. Cosmetic but misleading. Cross-cutting follow-up.'
+    - 'ATC-001 (inherited from 14.29): approval-card Textarea focus-ring asymmetry, still pending.'
+  unresolved_low_priority:
+    - 'During Smoke A the rendered card initially showed raw enum (DRAFT → IN_REVIEW) despite source code that should have written oldStatusLabel/newStatusLabel into params. The DB query that would have localised this was NOT run because the pills-in-summary refactor made the visible-UI question moot (DocumentStatusBadge looks up its own labels via STATUS_CONFIG). `summarizePendingAction` in context-assembly still reads from params with raw-enum fallback, so the system-prompt block would inherit the same fallback behavior if labels turn out to be missing. Low priority to chase.'
+
+top_issues: [] # no code-level issues
+waiver: { active: false }
+
+quality_score: 93 # 100 − 7: 4 for same-session COI (mitigated by external smoke), 2 for the mid-smoke UX miss (AC 10's pills-in-lead should have been caught earlier — unit tests checked the data path but not visual prominence), 1 for the unresolved params-labels mystery + cosmetic test/UI nits. No FAILs, no CONCERNS.
+expires: '2026-06-11T11:30:00Z'
+
+evidence:
+  tests_reviewed: 93 # 12 new (5 tool + 4 renderer + 3 dispatch) + others touched
+  new_tests: 12
+  count_bumps: 5 # registry-role-filter ×3 + registry-narrowing ×2 distinct it() blocks (28 → 29 / [] 27 → 28)
+  full_unit_suite: '5142/5142 unit tests passing (411 files, 5 skipped, 0 failed); tsc --noEmit exit 0 branch-wide; eslint exit 0 on touched files'
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, '12b', 13, 14, 15, 16, 17, 18, 19, 20]
+    ac_gaps: []
+  independently_verified:
+    - 'Three-layer APPROVED defence: Zod schema enum excludes APPROVED at input parsing; runtime tool guard refuses any APPROVED that bypasses the schema (e.g. direct-execute); dispatch refuses APPROVED authoritatively even if injected into params (tested explicitly).'
+    - 'Workspace-scoped doc lookup denormalises title + status + entity_version in one query.'
+    - 'AC 14-style affectedSwrKeys carve-out logged: styrdokument surface is server-rendered (only one SWR consumer in the surface, doesnt key off the document); revalidatePath is sufficient.'
+    - 'AC 10 pills now render in the LEAD summary (not buried behind Justera) per the signature-UX requirement.'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: '**Three-layer defence on APPROVED.** Zod enum excludes the value at input parsing; runtime tool guard catches any direct-execute bypass with a Swedish ToolError; dispatch refuses params.newStatus===APPROVED authoritatively (tested with explicit injection). Smoke C in real chat held under both natural ("godkänn dokumentet") and sneaky ("sätt status till APPROVED") prompts. Authorization gate inherited (hasPermission tasks:edit at dispatch top — AUDITOR blocked). Workspace-scoped reads. Zod input validation.'
+  performance:
+    status: PASS
+    notes: 'One workspace-scoped findFirst at tool time; dispatch reuses existing updateDocumentStatus. Negligible cost.'
+  reliability:
+    status: PASS
+    notes: 'Dispatch failure (incl. drifted "Ogiltig statusövergång") keeps row PENDING via the early-return-before-update pattern. Always-proposal pattern means errors are recoverable. Owner Smoke D confirmed end-to-end.'
+  maintainability:
+    status: PASS
+    notes: 'Mirrors 14.28 / 14.29 patterns faithfully. Tests in shared files. Two principled deviations documented: AC 14-style affectedSwrKeys deferral + the mid-smoke pills-in-lead refactor (responsive to AC 10s signature-UX language).'
+
+recommendations:
+  immediate: [] # Smoke complete (C/A/D/E PASS; B skipped as formality). Migration applied. Story Done.
+  future:
+    - action: 'WDS-001: ship a styrdokument discovery tool (extend search_workspace_files with a documentType switch, OR a separate search_workspace_documents tool over the 17.9b chunks). This story made the gap concrete.'
+      refs: ['lib/agent/tools/search-workspace-files.ts', 'lib/rag']
+      suggested_owner: dev
+    - action: 'TC-001: add an error state to TOOL_CONFIG chip rendering (errorLabel?, or distinguish error vs success in the post-completion display). Cross-cutting — affects all write tools.'
+      refs: ['components/features/ai-chat/chat-message.tsx']
+      suggested_owner: dev
+    - action: 'ATC-001 (inherited from 14.29): approval-card Textarea focus-ring asymmetry — still pending.'
+      refs: ['components/ui/textarea.tsx', 'components/features/ai-chat/agent-action-renderers/renderer-frame.tsx']
+      suggested_owner: dev
+    - action: 'Unresolved low-priority: investigate whether oldStatusLabel/newStatusLabel actually land in params at propose-time (the DB query was not run during smoke because the pills refactor made the visible-UI question moot). If missing, context-assembly summarizePendingAction will still show raw enum in the system-prompt block.'
+      refs: ['lib/agent/tools/transition-document-status.ts', 'lib/agent/context-assembly.ts']
+      suggested_owner: dev
+    - action: 'Get a separate-reviewer pass (fresh-session agent or human) — same-session Dev + QA COI is documented but not externally validated.'
+      refs: ['docs/stories/completed/14.30.transition-document-status-approval.md']
+      suggested_owner: po

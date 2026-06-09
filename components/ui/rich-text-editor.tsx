@@ -174,6 +174,9 @@ export function RichTextEditor({
           '[&_hr]:my-4 [&_hr]:border-border',
           '[&_img]:max-w-full [&_img]:rounded-md'
         ),
+        // Chrome's spellchecker flags correct Swedish words (wrong dictionary);
+        // disable it here to remove the red-squiggle noise on legal content.
+        spellcheck: 'false',
       },
     },
   })

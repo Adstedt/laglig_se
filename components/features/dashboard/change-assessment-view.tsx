@@ -23,6 +23,7 @@ import {
   useChatDetail,
   type AssessmentDetailData,
 } from '@/lib/ai/chat-detail-context'
+import { findLatestAssessmentRecommendation } from '@/lib/changes/assessment-preview'
 import { useChatInterface } from '@/lib/hooks/use-chat-interface'
 import { useFollowupChips } from '@/lib/hooks/use-followup-chips'
 import type { UnacknowledgedChange } from '@/lib/changes/change-utils'
@@ -96,9 +97,15 @@ function ChangeAssessmentViewInner({
     setTimeout(() => inputRef.current?.focus(), 100)
   }, [])
 
-  // Open assessment detail in sidebar when first reply completes
+  // Open assessment detail in sidebar when first reply completes. Pre-fill from
+  // the agent's save_assessment preview if one was emitted; otherwise open blank
+  // (safety net if the agent skipped the tool). One-shot on hasCompletedReply:
+  // by then streaming is done, so `messages` already holds the tool output, and
+  // re-running on every `messages` change would re-call openDetail with the same
+  // id and toggle the panel shut.
   useEffect(() => {
     if (!hasCompletedReply) return
+    const recommendation = findLatestAssessmentRecommendation(messages)
     const assessmentData: AssessmentDetailData = {
       changeEventId: change.id,
       lawListItemId: change.lawListItemId,
@@ -107,6 +114,7 @@ function ChangeAssessmentViewInner({
       affectedSections: [],
       effectiveDate: change.effectiveDate ?? null,
       existingAssessment: null,
+      recommendation,
       documentTitle: change.documentTitle,
       documentNumber: change.documentNumber,
       onComplete: onBack,

@@ -13,8 +13,11 @@ import { useConsent } from '@/components/providers/consent-provider'
 const menuLinks = [
   { href: '#how-it-works', label: 'Så fungerar det' },
   { href: '#pricing', label: 'Priser' },
-  { href: '/om-oss', label: 'Om oss' },
-  { href: '/kontakt', label: 'Kontakt' },
+  // Mirrors landing-v3 footer pattern (components/features/landing-v3/footer-v3.tsx).
+  // No /om-oss page exists; removed to stop RSC prefetch 404s caught during
+  // UAT (PR #69, FU-006). /kontakt now opens mailto so support routes through
+  // the existing dev@laglig.se inbox.
+  { href: 'mailto:dev@laglig.se', label: 'Kontakt' },
 ]
 
 const legalLinks = [

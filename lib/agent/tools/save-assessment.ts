@@ -15,6 +15,13 @@ const saveAssessmentSchema = z.object({
   impactLevel: z
     .enum(['HIGH', 'MEDIUM', 'LOW', 'NONE'])
     .describe('Assessed impact level of the change'),
+  recommendedStatus: z
+    .enum(['REVIEWED', 'ACTION_REQUIRED', 'NOT_APPLICABLE', 'DEFERRED'])
+    .describe(
+      'Recommended assessment status, matching your prose recommendation: ' +
+        'REVIEWED (Granskad), ACTION_REQUIRED (Åtgärd krävs), ' +
+        'NOT_APPLICABLE (Ej tillämplig), DEFERRED (Uppskjuten)'
+    ),
   analysis: z
     .string()
     .describe('Analysis of how the change affects the company'),
@@ -50,6 +57,7 @@ Sätt execute=false först för att visa förhandsgranskning, sedan execute=true
             changeEventId: input.changeEventId,
             lawListItemId: input.lawListItemId,
             impactLevel: input.impactLevel,
+            recommendedStatus: input.recommendedStatus,
             analysis: input.analysis,
             recommendations: input.recommendations,
           },
@@ -77,7 +85,7 @@ Sätt execute=false först för att visa förhandsgranskning, sedan execute=true
             change_event_id: input.changeEventId,
             law_list_item_id: input.lawListItemId,
             workspace_id: workspaceId,
-            status: 'REVIEWED',
+            status: input.recommendedStatus,
             impact_level: input.impactLevel,
             ai_analysis: input.analysis,
             ai_recommendations: [input.recommendations],
@@ -85,7 +93,7 @@ Sätt execute=false först för att visa förhandsgranskning, sedan execute=true
             assessed_at: now,
           },
           update: {
-            status: 'REVIEWED',
+            status: input.recommendedStatus,
             impact_level: input.impactLevel,
             ai_analysis: input.analysis,
             ai_recommendations: [input.recommendations],

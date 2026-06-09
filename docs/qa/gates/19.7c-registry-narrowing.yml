@@ -1,0 +1,56 @@
+schema: 1
+story: '19.7c'
+story_title: 'Per-skill tool-registry narrowing + no-regression harness'
+gate: PASS
+status_reason: 'Surgical, behaviour-preserving registry narrowing — all 9 ACs met and traced, role filter composed (not replaced) so AUDITOR/auth semantics provably unchanged, fail-open by construction. The two live smokes (the story''s defined owner step) are owner-attested PASS (run on a separate machine, not re-captured in this repo). Lone residual is a cosmetic AC1 doc-count nit.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-05-27T21:10:00Z'
+
+top_issues: [] # no code-level issues
+waiver: { active: false }
+
+owner_signoff:
+  live_smoke: 'PASS (attested)'
+  attested_by: 'owner'
+  date: '2026-05-27'
+  evidence_basis: 'Owner attestation only — run in a Claude Code session on another machine, not resumable/committed here. No transcript, screenshots, or tool-trace recorded in this repo; origin/feat/ai-agent unchanged at bc9d6b95. NOT independently QA-observed.'
+
+quality_score: 95 # 100 − 5 for the residual cosmetic AC1 doc-count nit. No FAILs, no CONCERNS. (Live smoke owner-attested, so no longer a deduction.)
+expires: '2026-06-10T21:10:00Z'
+
+evidence:
+  tests_reviewed: 13 # 8 new harness + 5 untouched sibling (registry-role-filter), re-run green
+  full_suite: '242/242 agent unit tests (37 files); tsc --noEmit exit 0 branch-wide; eslint exit 0 on touched files'
+  risks_identified: 1 # accepted + documented: hand-maintained flow-required constants in the harness
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    ac_gaps: []
+  independently_verified:
+    - 'The "trap" (AC6) is real: assess_change/PROCEDURE.md calls get_company_context/search_laws/get_change_details/suggest_followups but does NOT declare them — all reads, so covered by ALWAYS_AVAILABLE.'
+    - 'gap_analysis is contextTypes: [] → getPrimarySkillForContext returns null for global/task/law → activeSkills=[], matching route + harness assumptions.'
+    - 'Only non-route caller (generate-law-list.ts:212) omits activeSkills → undefined → full set; legacy backward-compat (AC3) preserved exactly.'
+    - 'save_assessment is the lone whitelist entry not already in ALWAYS_AVAILABLE → change context = full (27).'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Authorization-adjacent role filter touched by COMPOSITION only — role clause evaluated first and unchanged; narrowing is strictly subtractive per context and cannot widen a role''s set. AUDITOR provably unaffected (asserted by test). No new auth surface or external input.'
+  performance:
+    status: PASS
+    notes: 'One Set construction per call on the narrowing path; legacy path returns the existing object with zero allocation. Union over ≤27 names. No per-request cost of note.'
+  reliability:
+    status: PASS
+    notes: 'Fail-open: a misconfiguration degrades to "more tools available," never "assessment silently breaks." The harness guards the one real failure mode (a context losing a tool its flow uses).'
+  maintainability:
+    status: PASS
+    notes: 'Single predicate, derived constants, clear comments. One accepted debt: the per-context flow-required sets are hand-maintained from the PROCEDUREs — documented in the test header, with a "sanity: 27 tools" tripwire that fails if the factory set drifts.'
+
+recommendations:
+  immediate: [] # the two live smokes are owner-attested PASS (see owner_signoff). If a re-run/evidence becomes available, attach it to convert the attestation into captured proof.
+  future:
+    - action: 'When ALWAYS_AVAILABLE shrinks (more SKILL_GATED_TOOLS), complete the skills'' tools frontmatter to exhaustive lists.'
+      refs: ['lib/agent/skills/assess_change/SKILL.md', 'lib/agent/skills/gap_analysis/SKILL.md']
+      suggested_owner: dev
+    - action: 'Cosmetic: AC1 prose "18 reads + 9 ad-hoc writes" counts route-injected web_search; the built baseline is 26. Code derivation is correct — doc nit only.'
+      refs: ['docs/stories/19.7c.registry-narrowing.md']
+      suggested_owner: sm

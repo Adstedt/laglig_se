@@ -16,6 +16,7 @@ import {
   Calendar,
   Info,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -26,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 import { useAssessmentForm } from '@/lib/hooks/use-assessment-form'
 import {
   STATUS_OPTIONS,
@@ -33,6 +35,7 @@ import {
   STATUS_LABELS,
   IMPACT_LABELS,
   STATUS_VARIANT,
+  AiSuggestionHint,
 } from '@/components/features/changes/assessment-resolution'
 import {
   useChatDetail,
@@ -95,13 +98,22 @@ interface AssessmentDetailProps {
 export function AssessmentDetail({ data }: AssessmentDetailProps) {
   const { addSystemMessage } = useChatDetail()
 
+  // A saved assessment always wins. Otherwise, if the agent proposed one via a
+  // save_assessment preview, pre-fill from it and flag it as an AI suggestion.
+  const isAiSuggested = !data.existingAssessment && !!data.recommendation
   const initial = data.existingAssessment
     ? {
         status: data.existingAssessment.status as AssessmentStatus,
         impactLevel: data.existingAssessment.impactLevel as ImpactLevel,
         userNotes: data.existingAssessment.userNotes ?? '',
       }
-    : undefined
+    : data.recommendation
+      ? {
+          status: data.recommendation.status,
+          impactLevel: data.recommendation.impactLevel,
+          userNotes: data.recommendation.notes ?? '',
+        }
+      : undefined
 
   const form = useAssessmentForm({
     changeEventId: data.changeEventId,
@@ -183,7 +195,7 @@ export function AssessmentDetail({ data }: AssessmentDetailProps) {
           {...(data.onComplete ? { onClose: data.onComplete } : {})}
         />
       ) : (
-        <EditingState form={form} />
+        <EditingState form={form} isAiSuggested={isAiSuggested} />
       )}
     </div>
   )
@@ -203,21 +215,24 @@ function CompletedState({
   if (!form.assessment) return null
 
   return (
-    <div className="rounded-lg border bg-card overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-3 bg-emerald-50 dark:bg-emerald-950/20 border-b">
-        <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-        <span className="text-sm font-medium">Bedömning sparad</span>
-        <span className="text-[11px] text-muted-foreground ml-auto">
-          {new Date(form.assessment.assessedAt).toLocaleDateString('sv-SE', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        </span>
-      </div>
-      <div className="px-4 py-3 space-y-3">
+    <div className="relative overflow-hidden rounded-xl bg-card/70 shadow-[0_1px_2px_rgba(0,0,0,0.025)] ring-1 ring-border/45">
+      <span className="agent-spine pointer-events-none absolute bottom-3 left-0 top-3 w-[3px]" />
+      <div className="space-y-3 py-4 pl-5 pr-4">
+        <div className="flex items-center gap-2 text-[11px] tracking-[0.04em]">
+          <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+          <span className="font-safiro font-medium text-foreground">
+            Bedömning sparad
+          </span>
+          <span className="ml-auto text-[11px] text-muted-foreground">
+            {new Date(form.assessment.assessedAt).toLocaleDateString('sv-SE', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </span>
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
             <span className="text-[11px] text-muted-foreground block mb-1">
@@ -241,22 +256,33 @@ function CompletedState({
             {form.assessment.userNotes}
           </p>
         )}
-        <div className="flex gap-2 pt-1">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={form.startEditing}
-            className="gap-1.5 h-9 flex-1"
-          >
-            <Pencil className="h-3.5 w-3.5" />
-            Ändra
-          </Button>
+        <div className="flex items-center gap-1 pt-0.5">
           {onClose && (
-            <Button size="sm" onClick={onClose} className="gap-1.5 h-9 flex-1">
+            <Button
+              size="sm"
+              onClick={() => {
+                // Mirrors assessment-resolution.tsx — toast bridges the
+                // dismiss → dashboard gap with a persistent confirmation.
+                toast.success('Bedömning sparad', {
+                  description: 'Lagändringen är hanterad.',
+                })
+                onClose()
+              }}
+              className="h-8 gap-1.5 rounded-md"
+            >
               <Check className="h-3.5 w-3.5" />
               Klar
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={form.startEditing}
+            className="h-8 gap-1.5 rounded-md"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            Ändra
+          </Button>
         </div>
       </div>
     </div>
@@ -265,16 +291,29 @@ function CompletedState({
 
 function EditingState({
   form,
+  isAiSuggested = false,
 }: {
   form: ReturnType<typeof useAssessmentForm>
+  isAiSuggested?: boolean
 }) {
   return (
-    <div className="rounded-lg border bg-card overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-3 bg-muted/30 border-b">
-        <Pencil className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm font-medium">Din bedömning</span>
-      </div>
-      <div className="px-4 py-3 space-y-3">
+    <div
+      className={cn(
+        'relative overflow-hidden rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.025)]',
+        isAiSuggested
+          ? 'ai-suggest-surface'
+          : 'bg-card/70 ring-1 ring-border/45'
+      )}
+    >
+      <span className="agent-spine pointer-events-none absolute bottom-3 left-0 top-3 w-[3px]" />
+      <div className="space-y-3 py-4 pl-5 pr-4">
+        <div className="flex items-center gap-2 text-[11px] tracking-[0.04em]">
+          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="font-safiro font-medium text-foreground">
+            Din bedömning
+          </span>
+        </div>
+        {isAiSuggested && <AiSuggestionHint />}
         <div className="grid grid-cols-2 gap-3">
           <div>
             <span className="text-[11px] text-muted-foreground block mb-1">
@@ -326,22 +365,12 @@ function EditingState({
           className="text-sm min-h-[80px] resize-none"
         />
 
-        <div className="flex gap-2 pt-1">
-          {form.isEditing && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => form.startEditing()}
-              className="h-9 flex-1"
-            >
-              Avbryt
-            </Button>
-          )}
+        <div className="flex items-center gap-1 pt-0.5">
           <Button
             size="sm"
             onClick={form.save}
             disabled={form.saving}
-            className="gap-1.5 h-9 flex-1"
+            className="h-8 gap-1.5 rounded-md"
           >
             {form.saving ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -350,6 +379,16 @@ function EditingState({
             )}
             Spara bedömning
           </Button>
+          {form.isEditing && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => form.startEditing()}
+              className="h-8 rounded-md"
+            >
+              Avbryt
+            </Button>
+          )}
         </div>
         {form.saveError && (
           <p className="text-xs text-destructive text-center">

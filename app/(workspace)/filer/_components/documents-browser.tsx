@@ -43,6 +43,7 @@ import {
   Folder,
   SortAsc,
   FileType,
+  Paperclip,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -78,6 +79,7 @@ import type {
   FolderTreeNode,
   FolderInfo,
   BreadcrumbSegment,
+  FileFilters,
 } from '@/app/actions/files'
 import type { FileCategory } from '@prisma/client'
 
@@ -113,10 +115,14 @@ export default function DocumentsBrowser({
   )
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'size'>('date')
   const [fileTypeFilter, setFileTypeFilter] = useState<string | 'all'>('all')
+  // Attachment filter: all files, standalone (no links), or linked (bilagor).
+  const [linkFilter, setLinkFilter] = useState<'all' | 'standalone' | 'linked'>(
+    'all'
+  )
   const [page, setPage] = useState(1)
 
   // View state
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
   const [isUploading, setIsUploading] = useState(false)
   const [showSidebar] = useState(true)
 
@@ -139,11 +145,12 @@ export default function DocumentsBrowser({
 
   // Build filters for SWR
   const filters = useMemo(() => {
-    const f: { search?: string; category?: FileCategory } = {}
+    const f: FileFilters = {}
     if (debouncedSearch) f.search = debouncedSearch
     if (categoryFilter !== 'all') f.category = categoryFilter
+    if (linkFilter !== 'all') f.linkState = linkFilter
     return f
-  }, [debouncedSearch, categoryFilter])
+  }, [debouncedSearch, categoryFilter, linkFilter])
 
   // SWR hooks for data fetching with caching
   const {
@@ -506,6 +513,25 @@ export default function DocumentsBrowser({
                   {categoryLabels[cat]}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+
+          {/* Attachment filter: standalone vs linked (bilagor från uppgifter/laglistor) */}
+          <Select
+            value={linkFilter}
+            onValueChange={(v) => {
+              setLinkFilter(v as 'all' | 'standalone' | 'linked')
+              setPage(1)
+            }}
+          >
+            <SelectTrigger className="w-[150px] h-9">
+              <Paperclip className="h-4 w-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Alla filer</SelectItem>
+              <SelectItem value="standalone">Fristående</SelectItem>
+              <SelectItem value="linked">Bilagor</SelectItem>
             </SelectContent>
           </Select>
 

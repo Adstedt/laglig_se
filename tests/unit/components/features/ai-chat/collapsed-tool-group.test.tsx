@@ -583,8 +583,10 @@ describe('CollapsedToolGroup (story 14.18)', () => {
 
       expect(mockOpenDetail).toHaveBeenCalledTimes(1)
       const callArg = mockOpenDetail.mock.calls[0]?.[0] as ChatDetailItem
-      expect(callArg.type).toBe('write-preview')
-      if (callArg.type === 'write-preview') {
+      // Story 14.23: the 'write-preview' sidebar route was removed — a write-tool
+      // output without a pendingActionId now routes to 'tool-result'.
+      expect(callArg.type).toBe('tool-result')
+      if (callArg.type === 'tool-result') {
         expect(callArg.toolName).toBe('create_task')
       }
     } finally {

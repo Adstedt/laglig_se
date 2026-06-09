@@ -6,17 +6,17 @@
 
 **Delivers:**
 - Chat file attachments (PDF/DOCX/XLSX/images) with server-side extraction and Claude-native content-block wiring
-- Five new retrieval tools and four new diagnostic tools giving the agent full sight into workspace compliance state
+- A read/traversal tier giving the agent full sight into workspace compliance state: entity-readers (`get_law_list_item`, `get_task`, `list_linked_artifacts`) on a lazy-traversal model, entity *discovery* + id-resolution (`search_law_list_items`, threading `lawListItemId` into context — also hardens shipped write tools), cycle/finding readers (`get_cycle`, `get_finding`), plus four diagnostic tools
 - Role-based tool registry filter (AUDITOR → read-only) and an `AgentDecisionLog` audit trail
 - A self-hosted Skills layer: file-based SKILL.md/PROCEDURE.md/STYLE.md convention, skill loader, context-bound activation, meta-tool override
 - Two shipped skills: `assess_change` (migrating the existing monolithic ASSESSMENT_WORKFLOW) and `gap_analysis` (new)
-- A third skill (`draft_policy`) plus a seeded library of 3–5 canonical Swedish styrdokument templates
+- A third skill (`draft_styrdokument` — type-aware, one skill covers all `WorkspaceDocumentType` values via `types/*.md` modules) plus a seeded library of canonical Swedish templates (≥1 per type)
 - Three subagents: `LegalReasoner` (conservative interpretation), `DocumentReader` (heavy-PDF isolation), `ParallelAssessor` (bulk change triage)
 - Continuous governance: reminders, weekly pulse cron, agent feedback loop, proactive hem-chat cards
 
 **Requirements covered:** FR4 (enhanced), FR5 (enhanced), FR7 (enhanced), FR25 (audit trail — agent decisions), NFR2 (accuracy), NFR3 (hallucination prevention), NFR24 (cite-first answers)
 
-**Estimated stories:** 12 (plus 4 sibling stories added to Epic 14 — see Sibling Work below)
+**Estimated stories:** 14 — the original 12 plus **19.4a** (id-resolution + discovery, foundational) and **19.4b** (cycle/finding readers), added 2026-05-24 from the architect-reviewed knowledge-traversal brief. (Plus 4 sibling stories added to Epic 14 — see Sibling Work below.)
 
 **Dependencies:**
 - **Epic 14** (Compliance Agent) — Done: provides tool registry, system-prompt assembly, streaming chat, context-type model. **Stories 14.22, 14.23, 14.24** (Approved, pre-req): the `PendingAgentAction` model + `AgentActionCard` inline approval pattern that every new write tool plugs into.
@@ -35,7 +35,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ Skills  (self-hosted domain playbooks, loaded per context)  │
-│  • assess_change    • gap_analysis    • draft_policy        │
+│  • assess_change    • gap_analysis    • draft_styrdokument  │
 │  • (future) find_or_create_evidence, onboarding, audit_prep │
 │                                                             │
 │ Each skill bundles: SKILL.md (frontmatter) + PROCEDURE.md   │
@@ -87,7 +87,7 @@ Stories 17.8–17.11 ship the foundational DMS-side agent capabilities:
 - 17.10 adds `search_workspace_documents`, `get_workspace_document`, `list_workspace_documents`
 - 17.11 adds `create_document`, `update_document`
 
-Epic 19 depends on all four. The genuinely new scope here is (a) **consumer-side plumbing** for attachments in chat, (b) **entity-read tools** (kravpunkter, tasks, linked artifacts) that 17.10 doesn't cover, (c) **diagnostic tools** that surface gaps, (d) the **skills layer** that orchestrates these tools into named workflows, (e) **subagents** for isolation/parallelism, and (f) **continuous governance** closing the loop.
+Epic 19 depends on all four. The genuinely new scope here is (a) **consumer-side plumbing** for attachments in chat, (b) a **read/traversal tier** over the compliance entity graph that 17.10 doesn't cover — id-resolution + discovery (19.4a), lazy entity-readers (19.4), and cycle/finding readers (19.4b); the graph already exists as Prisma relations, so this is *exposing* edges, not modelling them, (c) **diagnostic tools** that surface gaps, (d) the **skills layer** that orchestrates these tools into named workflows, (e) **subagents** for isolation/parallelism, and (f) **continuous governance** closing the loop.
 
 ---
 
@@ -106,8 +106,14 @@ New agent tool `read_file(fileId)` that reads any WorkspaceFile (uploaded bevis,
 **19.3 — Agent diagnostic tools (bevis gaps, overdue, stale docs, unassessed changes)**
 Four new read-only tools: `list_bevis_gaps`, `list_unassessed_changes`, `list_overdue`, `list_stale_documents`. All are thin Prisma queries workspace-scoped through existing relations. These power the "what should I do today?" global-context flow and the proactive hem-chat cards in 19.12. No approval flow — these are pure reads. **Deps:** none.
 
+**19.4a — Agent id-resolution + entity discovery** *(foundational — added 2026-05-24)*
+The entity-readers (19.4) and the **already-shipped** law-item write tools (`add_obligation`, `add_context_note`, `update_compliance_status`) all require a `lawListItemId` — but there is no clean path for the agent to obtain one today. The tool-context closure carries `contextId` (`lib/agent/tools/pending-action.ts:24`), but **`contextId` ≠ `lawListItemId`**: in `chat-panel.tsx` they are distinct props, and for a LAW context `contextId` is the document id/slug. The LAW system-prompt block injects only `{lawName} ({sfsNumber})` (`system-prompt.ts:261`) — not the item id. This story (a) threads the active `lawListItemId` into both the tool-context closure **and** the LAW system-prompt block, and (b) adds `search_law_list_items(query)` (+ `search_tasks(query)`) — workspace-scoped title/SFS lookups so the agent can resolve an entry node in a GLOBAL chat. **Also hardens the shipped write tools** (which today only work when the id leaks in via conversation text), giving this story standalone value beyond enabling the readers. **Deps:** none. **Unblocks:** 19.4 (corrects its former "Deps: none"). Architectural detail: [`docs/agent-knowledge-traversal-brief.md`](../agent-knowledge-traversal-brief.md) (Finding B).
+
 **19.4 — Agent entity-read tools (law list item, task, linked artifacts)**
-Three new read-only tools: `get_law_list_item(id)` (full state: requirements, evidence counts, status, assignment, business_context), `get_task(id)` (details + comments + links + attachments), `list_linked_artifacts(listItemId)` (thin wrapper over existing `getLinkedArtifactsForListItem`). Fills the retrieval gap — Story 17.10 covers workspace *documents* but not the broader compliance entity graph. **Deps:** none; coexists with 17.10.
+Consolidated read-only entity-readers built on the **lazy-traversal** model: each returns the node's *own* state, fully hydrated, plus *typed handles* to its neighbours (`ContextHandle = { id, type, label, count? }`, defined once in `lib/agent/tools/types.ts`) — **not** fully-hydrated neighbours. The agent follows edges on demand (depth ≈ 1 hop per call; the graph has cycles). `get_law_list_item(id)` → status, business_context, compliance_narrative, status-log summary + handles to requirements/bevis, change_assessments, linked tasks, linked artifacts, and document; `get_task(id)` → details + capped comments + links + attachments; `list_linked_artifacts(listItemId)` → thin wrapper over existing `getLinkedArtifactsForListItem` (`app/actions/linked-artifacts.ts`). **One consolidated reader per entity** — no granular per-relation tools in v1 (add only on telemetry signal). **Hard caps** on the node's own collections (≈10 comments, assessment *conclusions* truncated, plain-text not raw HTML) so a pathological item can't blow the context window. Exposes participant **names, not raw user IDs** (coordinates with 19.5's role filter; aligned with the no-mentions decision in 14.29). Ships *with* a "read-before-you-propose" system-prompt steering block (not a follow-up). Fills the retrieval gap — Story 17.10 covers workspace *documents* but not the broader compliance entity graph. **No caching in v1** (workspace-scoped reads dwarfed by the LLM round-trip; if profiling later demands it, invalidate at the `approvePendingAction` chokepoint). **Deps:** 19.4a (id-resolution); coexists with 17.10. Architectural detail: [`docs/agent-knowledge-traversal-brief.md`](../agent-knowledge-traversal-brief.md).
+
+**19.4b — Cycle/finding entity-readers** *(added 2026-05-24; not on the foundation critical path)*
+`get_cycle(id)` and `get_finding(id)` over Epic 21 models, same lazy/`ContextHandle` shape as 19.4. Lets the agent traverse `cycle → items → law-items → kravpunkter → findings → corrective tasks` for the read-mostly AUDITOR persona ("vilka punkter saknar bevis?", "sammanfatta öppna avvikelser och deras åtgärder"). **Sequence to ride with the next Epic 21 work** — reads the same models, so build it when Epic 21 is next touched rather than coupling it to the flagship. **Deps:** 19.4 (`ContextHandle` shape + reader conventions). Out of scope for the whole read-tier: traversing the *generic* legal graph (cross-references, förarbeten on `LegalDocument`) — commoditisable and already covered by `get_document_details`; separable as its own legal-research story if ever wanted.
 
 **19.5 — Role-based tool registry filter + `AgentDecisionLog`**
 Extends `createAgentTools(workspaceId, userId, role)` signature with `role` parameter. Tool registry is filtered: AUDITOR receives only read + diagnostic tools; MEMBER receives read + write; HR_MANAGER/ADMIN/OWNER receive all. New Prisma model `AgentDecisionLog` (id, workspace_id, user_id, chat_message_id?, tool_name, input_json, output_json, proposed_at, accepted_at?, accepted_by?, outcome, model_version). Every tool's `execute` wraps in a try/finally that writes a log row. **Note:** complements `PendingAgentAction` (which tracks proposal *lifecycle*) — `AgentDecisionLog` tracks every tool *call*, including pure reads and rejected-before-proposal states. **Deps:** none.
@@ -120,10 +126,28 @@ New directory `lib/agent/skills/` with the convention `<skill-name>/SKILL.md + P
 **19.7 — Ship `assess_change` and `gap_analysis` skills**
 Migrate the existing `ASSESSMENT_WORKFLOW` string literal in `lib/agent/system-prompt.ts` to `lib/agent/skills/assess_change/`. PROCEDURE.md captures the existing 9-step workflow verbatim; STYLE.md defines Swedish citation format (`SFS 2018:218 3 kap. 2 §`) + tone rules + two worked examples (material change, clarifying change). New skill `lib/agent/skills/gap_analysis/`: PROCEDURE.md runs the four diagnostic tools from 19.3 in parallel, scores risk (impact × evidence gap × overdue × change frequency heuristic), produces a structured Swedish report where every line item has a Tier-2 proposal attached. Remove the inline `ASSESSMENT_WORKFLOW` constant once the skill file is live. **Deps:** 19.3, 19.6.
 
+> **KP-001 — kravpunkt framing rule (surfaced 2026-05-24 during 19.4a smoke):** the gap_analysis STYLE.md MUST frame proposed kravpunkter as **verifiable obligations/criteria in declarative present tense** — e.g. *"MBL-förhandling genomförs och dokumenteras inför beslut om viktigare verksamhetsförändringar (11 §)"* — matching the existing template house style (*"Rutin … är dokumenterad"*, *"Ansvarig är utsedd"*). **NOT imperative to-dos** (*"Genomför …", "Säkerställ …", "Skicka …"*), which conflate the *requirement* (the kravpunkt) with the *action* (which belongs in an Uppgift/Task) and make "checked" ambiguous. Include ≥2 before/after reframes as STYLE exemplars. **Also applies to the shipped `add_obligation` tool** (used ad-hoc outside any skill), so add the same one-line framing rule to its tool description / system-prompt guidance — otherwise the rule only governs the gap_analysis path. Related minor signal: the agent adds whatever kravpunkt it's asked for without a germaneness check (a riskbedömning kravpunkt was accepted under MBL); citation-precision of proposed kravpunkter is a separate 19.13/grounding concern.
+
 ### Authoring track
 
-**19.8 — `draft_policy` skill + Swedish template library seed**
-New skill `lib/agent/skills/draft_policy/`: PROCEDURE.md (12 steps: search for existing → company context → select template → pull law requirements → draft sections → propose review task → propose link to kravpunkter), STRUCTURE.md (canonical Swedish styrdokument structure: Syfte / Omfattning / Ansvar / Genomförande / Uppföljning / Referenser), CITATION.md (Swedish legal citation rules), examples/ (2 good Swedish policies). Seed script `scripts/seed-document-templates.ts` populates `WorkspaceDocumentTemplate` with 3–5 canonical templates: Dataskyddspolicy (GDPR), Arbetsmiljöpolicy (AFS), Incidenthanteringsrutin, Riskbedömning, Leverantörs-/personuppgiftsbiträdespolicy. Each template includes `metadata.applicable_law_ids[]`. **Deps:** 17.11 (create_document tool), 14.24 (DRAFT_DOCUMENT approval card), 19.6 (skill loader).
+**19.8 — `draft_styrdokument` skill (type-aware) + Swedish template library seed**
+*Re-scoped 2026-05-28 from `draft_policy` to `draft_styrdokument` — one skill, parameterised by `WorkspaceDocumentType`, not eight skills. See "Why one skill, not per-type" below.*
+
+Three layers, cleanly separated:
+
+1. **Skill — `lib/agent/skills/draft_styrdokument/`** (one). `SKILL.md` (`tools: [search_workspace_files, get_law_list_item, list_linked_artifacts, create_document, draft_styrdokument]`; `contextTypes: []` — activation-only, like `gap_analysis`). `PROCEDURE.md` (English, 12 steps: resolve `docType` → search for existing → company context → **load `types/<docType>.md` module** → pull law requirements → draft sections → run type-specific quality checks → propose review task → propose link to kravpunkter). `STYLE.md` (cross-cutting Swedish tone + KP-001 verifiable-obligation framing + GR-001 citation-grounding rule — written once, applies to every type). `CRITERIA.md` (cross-cutting guardrails: must-cite, currency, no-internal-identifiers per CP-001).
+
+2. **Per-type modules — `lib/agent/skills/draft_styrdokument/types/*.md`** (one per `WorkspaceDocumentType`: `policy.md`, `risk_assessment.md`, `action_plan.md`, `procedure.md`, `instruction.md`, `checklist.md`, `report.md`, `other.md`). Each holds the type-specific **STRUCTURE** (the canonical Swedish skeleton — e.g. Riskbedömning = riskkälla × sannolikhet × konsekvens matrix per AFS 2001:1; Handlingsplan = åtgärd/ansvarig/klart-senast/status table per AFS §10; Policy = Syfte/Omfattning/Ansvar/Principer; Checklista = verifierbara kontrollpunkter), **per-type STYLE** (verb form, perspective — Policy is declarative "vi ska"; Instruktion is imperative "utför"; Checklista is verifierbar "är genomförd"), and **per-type CRITERIA** (machine-checkable invariants — *riskbedömning MUST contain a matrix table*; *handlingsplan MUST have ansvarig + klart-datum on every row*; *checklista items MUST be verifiable yes/no, not actions*). These criteria upgrade the existing generic quality gate in `lib/agent/tools/draft-styrdokument.ts` (today: ≥3 blocks + ≥1 heading) to a type-aware gate.
+
+3. **Templates — `WorkspaceDocumentTemplate` seed** (data, not skill content). `scripts/seed-document-templates.ts` ships ≥1 canonical template per type — minimum: Dataskyddspolicy (POLICY/GDPR), Arbetsmiljöpolicy (POLICY/AFS), Incidenthanteringsrutin (PROCEDURE), Riskbedömning arbetsmiljö (RISK_ASSESSMENT/AFS — *includes* the matrix table scaffold), Handlingsplan arbetsmiljö (ACTION_PLAN/AFS — *includes* the action-rows table), SBA-checklista (CHECKLIST), Leverantörs-/personuppgiftsbiträdespolicy (POLICY/GDPR). Each template carries `metadata.applicable_law_ids[]` + `metadata.docType` so the skill can match user intent → template → type module.
+
+**Why one skill, not per-type** (the alternative — `draft_policy` / `draft_riskbedomning` / … as separate skills — was considered and rejected 2026-05-28):
+- The document type is a **known parameter**, not a routing decision (the user picks it in "Nytt dokument", or it's trivially inferred from the request). Skills exist to solve a *which-workflow* problem (`assess_change` vs `gap_analysis`); the type isn't that problem.
+- 19.7c's per-skill registry narrowing scales **per skill** (activation, whitelist, harness). Eight `draft_*` skills would multiply that overhead for one workflow.
+- **KP-001** (verifiable-obligation framing) and **GR-001** (citation grounding) are cross-cutting — eight skills would duplicate those guardrails 8× and they would drift.
+- A consultant still gets an ownable "Riskbedömning playbook" — it's `types/risk_assessment.md`, edited without a deploy per Principle #2.
+
+**Deps:** 17.11 (`update_document` tool — `create_document` was dropped 2026-05-22 in favour of the existing `draft_styrdokument`/DRAFT_DOCUMENT approval pattern; see checklist line 26), 14.24 (DRAFT_DOCUMENT approval card), 19.6 (skill loader), 19.7c (registry narrowing — gates the skill-specific tools when active).
 
 ### Subagent track
 
@@ -189,7 +213,7 @@ These can be drafted and scheduled independently of Epic 19. Recommend schedulin
 - **Mitigation:** Hard cap of 10 concurrent subagents per parent turn; soft cap of 20 total per workspace per day (configurable). Subagent result serialized at ≤2,000 tokens to prevent context bloat on the main agent. `weekly-pulse` cron uses a single subagent per workspace, not fan-out.
 - **Rollback:** Feature flag per subagent type; disable `ParallelAssessor` entirely and fall back to sequential processing.
 
-**Primary Risk 4 — Tool registry bloat.** Epic 19 adds ~12 tools on top of Epic 14/17's existing ~15. At 30+ tools, the system prompt bloats and tool routing accuracy degrades.
+**Primary Risk 4 — Tool registry bloat.** Epic 19 adds ~15 tools on top of Epic 14/17's existing ~15 (the retrieval track 19.4a/19.4/19.4b alone contributes the entity-readers + `search_law_list_items` + cycle/finding readers). At 30+ tools, the system prompt bloats and tool routing accuracy degrades.
 
 - **Mitigation:** Tool registry is filtered per active skill (19.6) — skills whitelist their required tools, so the agent only sees the subset relevant to the current procedure. Atomic always-available tools capped at ~15. If total exceeds 30, introduce `discover_tools(intent)` meta-tool in a follow-up.
 - **Rollback:** Skill-layer filtering is opt-in — disabling the skill layer returns to flat registry.
@@ -203,10 +227,10 @@ These can be drafted and scheduled independently of Epic 19. Recommend schedulin
 
 ## Definition of Done
 
-- [ ] All 12 stories completed with their ACs met
+- [ ] All 14 stories completed with their ACs met (incl. 19.4a id-resolution + 19.4b cycle/finding readers)
 - [ ] Sibling Stories 14.28–14.31 completed (coordinated with Epic 14)
 - [ ] Prisma migrations merged: `AgentDecisionLog`, `Reminder`, `AgentFeedback`, `FileCategory` enum extension, `via_agent` columns on affected tables
-- [ ] Three skills live: `assess_change` (migrated), `gap_analysis` (new), `draft_policy` (new)
+- [ ] Three skills live: `assess_change` (migrated), `gap_analysis` (new), `draft_styrdokument` (new, type-aware with `types/*.md` modules per `WorkspaceDocumentType`)
 - [ ] Three subagents live: `LegalReasoner`, `DocumentReader`, `ParallelAssessor`
 - [ ] Two cron endpoints live: `fire-reminders` (daily), `weekly-pulse` (weekly)
 - [ ] Template library seeded with ≥3 Swedish styrdokument templates
@@ -247,3 +271,4 @@ Epic goal: **deliver a compliance agent that can read, reason, and act across th
 | Date | Version | Description | Author |
 |------|---------|-------------|--------|
 | 2026-04-19 | v0.1 | Initial epic outline — 12 stories, 4 sibling Epic 14 additions, full conceptual model + risk analysis | Sarah (PO) |
+| 2026-05-24 | v0.2 | Retrieval track deepened from the architect-reviewed knowledge-traversal brief (`docs/agent-knowledge-traversal-brief.md`). **Added 19.4a** (agent id-resolution + entity discovery — `search_law_list_items`, thread `lawListItemId` into context; corrects 19.4's former "Deps: none" and also hardens already-shipped law-item write tools). **Added 19.4b** (`get_cycle`/`get_finding` readers over Epic 21 models; sequences with next Epic 21 work). **Refined 19.4** to a lazy-traversal / `ContextHandle` model (was eager "full state"): consolidated reader per entity, hard caps, names-not-IDs, read-before-propose steering, no caching v1. Updated Delivers, "genuinely new scope", Risk 4 tool count, story count 12→14, DoD. Canonical tool names keep Epic 19's no-`_context` convention. | John (PM) |

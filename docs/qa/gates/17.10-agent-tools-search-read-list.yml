@@ -1,0 +1,88 @@
+schema: 1
+story: '17.10'
+story_title: 'Agent Tools — Search, Read & List Workspace Documents (Styrdokument)'
+gate: PASS
+status_reason: 'Three read tools shipped on the established 17.9c pattern, with the 17.9b WORKSPACE_DOCUMENT index as the data source. All 25 ACs traced; cross-tenant isolation verified across three independent layers (closure workspaceId + Prisma where.workspace_id + 17.9b write-side invariant); CITE-002 collision disambiguator implemented and tested; 19.7c registry harness coupling (AC 25) handled with the count-bump tripwire in the same commit. Full unit suite 5165/5165 green; tsc 0; eslint 0. **Owner live smoke 2026-06-01 PASS across all 8 scenarios** (A1/A2/A3/A5/B1/C2/D/E) — multi-tool composition validated as the agent norm; CITE-002 collision behavior validated as healthy asymmetry between list (no-content → "looks like dupes") and search+get (content-aware → "två separata"); cross-tenant isolation held; graceful search→list→ask degradation emerged for unindexed DRAFTs.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-01T15:30:00Z'
+
+reviewer_caveat:
+  same_session_as_dev: true
+  note: 'Dev (James) and QA (Quinn) ran in the SAME Claude session (same pattern as 14.29 / 14.30). Compensated with: fresh-runner test re-verification (104/104 across touched files), AC-by-AC re-trace against shipped code, line-by-line spot-check on the four highest-risk surfaces (cross-tenant isolation × 3 tools, htmlToMarkdown-not-extracted_text constraint, sourceTypes strictness, CITE-002 collision logic edge cases). A separate-reviewer pass before production is documented as a `future` recommendation.'
+
+top_issues: [] # no code-level issues
+waiver: { active: false }
+
+quality_score: 95 # +1 over q94 — owner live smoke PASS across all 8 scenarios provides the external validation the same-session COI caveat called for. 100 − 5: 3 for same-session Dev+QA COI (smoke partially compensates but is not a full third-party review), 1 for AC-21 UX-call documentation owe-pad, 1 for the CITE-002 theoretical edge cases that remain unhardened (missing-documentId in collision, 8-char prefix collisions). No FAILs, no CONCERNS.
+expires: '2026-06-15T15:30:00Z'
+
+evidence:
+  tests_reviewed: 104 # touched-area re-run from fresh runner
+  full_unit_suite: '5165/5165 unit tests passing (414 test files, 5 skipped, 0 failed); tsc --noEmit exit 0 branch-wide; eslint exit 0 on touched files'
+  new_tests: 22 # 6 + 7 + 7 tool tests + 2 citations + 1 system-prompt assertion
+  count_bumps: 5 # registry-narrowing.test.ts (sanity + undefined×2 + []) + registry-role-filter.test.ts ×3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
+    ac_gaps: []
+  independently_verified:
+    - 'Factory tool count: AST-counted 33 policy keys → 32 factory tools (− route-injected web_search). Matches AC 17 + AC 25 expectations exactly.'
+    - 'All 3 new tools have policy = `read`; none in SKILL_GATED_TOOLS (= {save_assessment} only); they auto-join ALWAYS_AVAILABLE per 19.7c.'
+    - 'Cross-tenant isolation across all 3 tools: closure workspaceId + Prisma where.workspace_id + 17.9b write-side invariant (3 independent layers).'
+    - 'get-workspace-document Prisma select EXPLICITLY omits extracted_text (Prisma-enforced, not just commented). Content read via htmlToMarkdown(content_html) (AC 9 / C3).'
+    - 'sourceTypes: [WORKSPACE_DOCUMENT] is a literal array, no input-path widening possible.'
+    - 'CITE-002 collision disambiguator traced through 5 edge cases; works correctly for realistic cases; 2 theoretical edge cases (missing-documentId in collision; 8-char UUID prefix collision) documented as low-priority future hardening.'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Three independent isolation layers for workspace-document access: (1) closure-captured workspaceId, (2) Prisma where.workspace_id filter (line-by-line verified across all 3 tools, not just claimed), (3) 17.9b write-side invariant (every WORKSPACE_DOCUMENT chunk has non-null workspace_id at index time). No new auth surface. AUDITOR keeps all 3 (read-tier). Read-only tools; no PII handling beyond what 17.9b/17.9c already do.'
+  performance:
+    status: PASS
+    notes: 'Thin tool wrappers over existing infrastructure: search → existing retrieveContext (pgvector + Cohere rerank); get → one workspace-scoped findFirst with bounded include; list → findMany capped at 25. Negligible additional cost.'
+  reliability:
+    status: PASS
+    notes: 'All 3 tools wrap exceptions as Swedish ToolError (no propagation). Empty-result paths return a structured Swedish error. CITE-002 disambiguator is deterministic (pre-scan + conditional suffix); no fallback ambiguity for realistic data.'
+  maintainability:
+    status: PASS
+    notes: 'Faithfully mirrors 17.9c pattern (USER_FILE search). DEC-1 (separate styrdokument search) + DEC-2 (cite by title) honored. Tests in their own per-tool files (read-tool convention, not the shared write-tool convention). Two debug-log honesty notes (truncateMarkdown unit + vi.mock hoisting) show good self-awareness from Dev.'
+
+owner_signoff:
+  smoked_at: '2026-06-01T15:00:00Z'
+  smoked_by: 'Alexander Adstedt (Owner)'
+  workspace: 'Nordviken Hotell & Konferens AB (e4cd55b0-8b2c-4209-bd19-0b40f50f04f1)'
+  seed_prep: 'scripts/seed-nordviken-17.10-smoke.ts — idempotent, touches only Nordviken. Required because Nordviken had 21 styrdokument but 0 WORKSPACE_DOCUMENT chunks (17.9b indexes APPROVED-only per DEC-2, and many existing APPROVED docs were stubs <100 chars). Seed: promoted 2× Diskrimineringspolicy DRAFT→APPROVED with distinct Swedish content (HR/rekrytering vs Gäster/kundbemötande — the natural CITE-002 collision pair); linked an APPROVED doc to existing test task for A5; syncWorkspaceChunks on 5 APPROVED+content docs → 43 chunks indexed.'
+  scenarios_run: 8  # A1, A2, A3, A5, B1, C2, D, E (B2/B4 absorbed by B1; C1 absorbed by C2; A4 not needed once A2 demonstrated default-grouping)
+  scenarios_passed: 8
+  surfaced_findings:
+    - 'CITE-002 collision behavior is healthier than the spec strictly requires: the **list** surface honestly flags same-titled docs as "troligen dubbletter" (A2 — correct heuristic with no content visible); the **search+get** surface declares "två separata" with distinct content summaries (C2 — content-aware path). Both interpretations correct on the same data, complementary not contradictory. Worth documenting as canonical behavior, not a defect.'
+    - 'Multi-tool composition is the agent norm, not the exception: A1 chained 3 tools (search_workspace_documents + search_legal_documents + get_workspace_document); A5 chained 3 (sökte uppgift + läste uppgift + list_workspace_documents with linked_task_id); B1 chained 2 (search → get). Agent is *planning* with the tools, not picking one. Strongest signal that the 17.10 surface shape fits the agent reasoning loop.'
+    - 'D scenario surfaced the strongest empirical motivation for **17.10b** (DRAFT/IN_REVIEW indexing + status-aware citations): search returned empty for a DRAFT-only query → agent fell back to list by title → asked user to disambiguate → second turn for content. Three round-trips for what could be one with content-aware DRAFT indexing. The graceful-degradation emerged without being prompted (good agent behavior), but the user friction is real. Filed as Task #2.'
+    - 'Inline citation pills (B1) vs bottom Källor (A1): the citation surface adapts to response shape — section-level chips for long-form summaries, summary line for short answers. Emergent, not designed; works well; worth being aware of as more flows ship.'
+    - 'Agent embellishes get_workspace_document responses with `godkänd av <name>` + version provenance (not in 17.10 spec but pulled from the get payload). Reasonable surfacing.'
+  cross_tenant_verification:
+    method: 'Owner smoke E — same prompt run in a different workspace; Nordviken''s 43 chunks did not appear. Confirms closure-captured workspaceId + Prisma where.workspace_id + 17.9b write-side invariant compose correctly end-to-end (the three independent isolation layers each held under load).'
+    result: PASS
+  recommendation_to_close: 'Yes — move story to completed/, status → Done. CITE-002 / token-budget bump / same-session COI items already documented in `recommendations.future` below; smoke supplies the external-validation signal the gate''s same_session_as_dev caveat asked for.'
+
+recommendations:
+  immediate: []  # Owner smoke complete; no immediate follow-ups remaining.
+    # No migration step (no schema change) — unlike 14.29 / 14.30.
+  future:
+    - action: 'Get a separate-reviewer pass (fresh-session agent or human) — same-session Dev + QA COI is documented but not externally validated.'
+      refs: ['docs/stories/17.10.agent-tools-search-read-list.md']
+      suggested_owner: po
+    - action: 'CITE-002 defence-in-depth: handle the theoretical edge case of a colliding title where one item is missing documentId. Tool currently always sets it, so this is theoretical, but a small "drop the no-id row" or "fall back to sourceId-prefix" addition would close it cleanly.'
+      refs: ['lib/ai/citations.ts']
+      suggested_owner: dev
+    - action: 'AC 21 strict-reading vs UX-call: Dev''s implementation only suffixes the citationKey, keeping the display title clean (better UX). Worth a PO sign-off note that this UX-call is the canonical behaviour.'
+      refs: ['lib/ai/citations.ts']
+      suggested_owner: po
+    - action: 'Token-budget guardrail bump 5500→6500: calibration call worth a PO/architect sanity-check on the long-term ceiling policy. Comment in tests/unit/agent/system-prompt.test.ts already calls this out as conscious-growth-not-creep, but a policy decision (when do we revisit?) would help.'
+      refs: ['tests/unit/agent/system-prompt.test.ts', 'lib/agent/system-prompt.md']
+      suggested_owner: po
+    - action: 'Out-of-scope but related — `WDS-001` (no styrdokument discovery tool) raised in 14.30 smoke is now CLOSED by this story (`search_workspace_documents` is the discovery tool). Update the plan to reflect that 17.10 absorbs WDS-001.'
+      refs: ['docs/plans/2026-05-20-agent-partner-implementation-sequence.md']
+      suggested_owner: sm
+    - action: 'New follow-up empirically motivated by the D smoke — **17.10b: Index DRAFT/IN_REVIEW with status-aware citations.** Scope: extend 17.9b indexing to any-status-with-content; chunk metadata carries status; citation key format splits ([Källa: X] for APPROVED, [Utkast: X] for DRAFT/IN_REVIEW); system prompt teaches the agent to phrase non-APPROVED hits as "enligt utkast till X" (not as canonical policy); debounced reindex on DRAFT content change; backfill script; adversarial tests proving the agent does NOT quote DRAFT as canonical. Compliance-sensitive — DEC-2 traded discoverability for citation safety; 17.10b restores discoverability without giving up safety. Tracked as Task #2 in the smoke session.'
+      refs: ['docs/stories/17.10.agent-tools-search-read-list.md', 'lib/chunks/workspace-document-reindex.ts', 'lib/ai/citations.ts']
+      suggested_owner: sm

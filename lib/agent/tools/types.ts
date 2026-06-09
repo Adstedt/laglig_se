@@ -31,3 +31,22 @@ export interface ToolError {
   guidance: string
   _meta: ToolMeta
 }
+
+/**
+ * Story 19.4: a typed pointer to a neighbour node in the compliance graph.
+ * The entity-readers return handles (not fully-hydrated neighbours) so the agent
+ * traverses edges on demand. One shape across every reader = one traversal grammar.
+ */
+export interface ContextHandle {
+  id: string
+  type:
+    | 'law_item'
+    | 'task'
+    | 'document'
+    | 'file'
+    | 'requirement'
+    | 'change_assessment'
+    | 'finding'
+  label: string
+  count?: number
+}

@@ -31,7 +31,7 @@ const faqs = [
   {
     question: 'Är min data säker?',
     answer:
-      'Ja. Vi använder krypterad överföring (TLS 1.3), lagrar all data i Sverige (GDPR-compliant), och delar aldrig information med tredje part.',
+      'Ja. Vi använder krypterad överföring (TLS 1.3), lagrar all data inom EU (GDPR-compliant), och delar aldrig information med tredje part.',
   },
   {
     question: 'Vilka lagar täcker ni?',

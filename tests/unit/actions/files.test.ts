@@ -59,6 +59,11 @@ vi.mock('@/lib/prisma', () => ({
     complianceEvidenceSnapshot: {
       findMany: vi.fn().mockResolvedValue([]),
     },
+    // Story 17.9 — deleteFile + deleteFilesBulk now de-index the file's
+    // USER_FILE RAG chunks. Default to 0 deleted so existing delete tests pass.
+    contentChunk: {
+      deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
+    },
   },
 }))
 
