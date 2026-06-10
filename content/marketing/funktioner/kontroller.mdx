@@ -10,8 +10,8 @@ primaryCta:
 showOrgCheck: true
 heroMedia:
   type: 'screenshot'
-  src: '/images/marketing/funktioner/kontroller/kravpunkter.png'
-  alt: 'Kravpunkter som checklista i Laglig — avbockade krav med ansvarig och status, grunden för en lagefterlevnadskontroll'
+  src: '/images/marketing/funktioner/kontroller/cykel.png'
+  alt: 'Pågående lagefterlevnadskontroll i Laglig med bedömningar, motiveringar, signaturer och framsteg per lagkrav'
 relatedCatalogLaws:
   - documentNumber: 'SFS 1977:1160'
     title: 'Arbetsmiljölag (1977:1160)'
@@ -28,6 +28,8 @@ relatedCatalogLaws:
 relatedPages:
   - '/funktioner/ai-agent'
   - '/branscher/bygg'
+  - '/branscher/hotell-restaurang'
+  - '/branscher/it'
 faq:
   - question: 'Vad är en lagefterlevnadskontroll?'
     answer: 'En lagefterlevnadskontroll är en systematisk genomgång av att verksamheten uppfyller kraven i de lagar som gäller den, dokumenterad så att den håller vid en revision. I praktiken går ni igenom era kravpunkter, bedömer status och noterar eventuella avvikelser med åtgärd och ansvarig.'
@@ -39,6 +41,8 @@ faq:
     answer: 'Ja. Kontrollrapporter kan exporteras och delas med revisorer, ledning eller styrelse. Eftersom kontrollen bygger på er laglista är spårbarheten inbyggd — det syns vilka krav som gåtts igenom, av vem och med vilket resultat.'
   - question: 'Vad händer med avvikelser vi hittar under en kontroll?'
     answer: 'Avvikelser blir åtgärder med ansvarig och datum, så att de inte tappas bort efter kontrollen. Nästa kontrollcykel visar om de är åtgärdade, vilket ger en tydlig förbättringskurva över tid — precis det en revisor vill se.'
+  - question: 'Räcker det med en checklista i Excel för lagefterlevnadskontroll?'
+    answer: 'Det går, men det blir snabbt ospårbart: arket tappar kopplingen till laglistan när lagar ändras, det finns ingen historik mellan åren och avvikelser hanteras vid sidan av. När kontrollen i stället byggs direkt på laglistan hänger krav, bedömning och åtgärd ihop — och revisionsbeläggen skapas medan ni arbetar, inte kvällen innan revisionen.'
 ---
 
 Att ha en laglista är ett krav i de flesta ledningssystem. Men en laglista räcker inte — ni måste också kunna visa att ni *utvärderar* efterlevnaden av kraven, regelbundet och dokumenterat. Det är där lagefterlevnadskontrollen kommer in, och det är ofta här det skaver: kontrollen lever i ett kalkylark eller en Word-mall som öppnas en gång om året, fylls i på måfå och sedan glöms bort tills nästa revision.
@@ -54,6 +58,15 @@ I Laglig är kontrollen inte ett separat dokument utan en cykel byggd på er bef
 Varje lag i laglistan kan brytas ned i konkreta kravpunkter — "rutin är dokumenterad", "ansvarig är utsedd", "återkommande kontroll genomförs". Under kontrollen bockar ni av varje kravpunkt, noterar status och kopplar bevis. Det abstrakta lagkravet blir en konkret fråga med ett tydligt svar.
 
 <SplitFeature
+  eyebrow="Kravpunkter"
+  title="Från paragraf till avbockningsbar checklista"
+  media={{ type: 'screenshot', src: '/images/marketing/funktioner/kontroller/kravpunkter.png', alt: 'Kravpunkter som checklista i Laglig — avbockade krav med ansvarig och status, grunden för en lagefterlevnadskontroll' }}
+  mediaSide="right"
+>
+  <p>Kravpunkterna är samma som ni arbetar med i laglistan till vardags — kontrollen bockar av dem i ett fryst ögonblick. Det ni gör löpande under året är samma sak som ni visar upp vid kontrollen, utan att bygga om något.</p>
+</SplitFeature>
+
+<SplitFeature
   eyebrow="Genomförande"
   title="Kontrollen blir ett lagarbete"
   media={{ type: 'photo', src: '/images/marketing/people/kontroll-genomgang.jpg', alt: 'Två kollegor går tillsammans igenom en kontroll med dokument och laptop vid ett bord' }}
@@ -64,7 +77,16 @@ Varje lag i laglistan kan brytas ned i konkreta kravpunkter — "rutin är dokum
 
 ## Dokumenterat resultat och rapport
 
-När kontrollen är klar har ni en rapport som visar exakt vilka krav som gåtts igenom, av vem, med vilket resultat och vilka avvikelser som hittats. Den kan exporteras och delas med revisor, ledning eller styrelse. Spårbarheten är inbyggd, eftersom allt utgår från er laglista.
+När kontrollen är klar har ni en rapport som visar exakt vilka krav som gåtts igenom, av vem, med vilket resultat och vilka avvikelser som hittats — omfattning, bedömningsfördelning och avvikelser samlade i ett dokument. Den kan exporteras som PDF och delas med revisor, ledning eller styrelse. Spårbarheten är inbyggd, eftersom allt utgår från er laglista: varje bedömning går att följa tillbaka till kravet och lagen den gäller.
+
+<SplitFeature
+  eyebrow="Rapport"
+  title="Revisionsrapporten skriver sig själv"
+  media={{ type: 'screenshot', src: '/images/marketing/funktioner/kontroller/rapport.png', alt: 'Genererad revisionsrapport i Laglig med omfattning, metod och sammanfattning samt knapp för PDF-export' }}
+  mediaSide="left"
+>
+  <p>När sista bedömningen är signerad genereras rapporten — omfattning, kriterier, metod, bedömningsfördelning och avvikelser, klar att ladda ner som PDF. Det som brukar vara en kväll i Word inför revisionen blir en knapptryckning.</p>
+</SplitFeature>
 
 ## Återkommande cykler
 
@@ -79,7 +101,9 @@ Efterlevnad är inte en engångshändelse. I Laglig genomför ni kontroller per 
   <p>Mycket av efterlevnaden avgörs där arbetet sker — utrymningsvägar, brandskydd, skyddsutrustning. Med Laglig dokumenterar ni kontrollen med kravpunkter, status och bevis kopplade till rätt lag, så att det ni ser på plats hamnar i protokollet direkt.</p>
 </SplitFeature>
 
-## Redo för ISO-revision
+## Redo för ISO-revision — utvärdering av efterlevnad enligt 9.1.2
 
-Oavsett om ni arbetar mot ISO 14001, ISO 45001 eller ett eget ledningssystem, är det utvärderingen av lagefterlevnaden som ofta blir den svaga punkten vid revision. Med Laglig är kontrollen redan gjord, dokumenterad och kopplad till rätt krav — ni behöver inte rekonstruera ett års arbete kvällen innan revisorn kommer.
+Både ISO 14001 och ISO 45001 kräver att ni utvärderar efterlevnaden av bindande krav och behåller dokumenterad information som bevis på resultatet — det är kapitel 9.1.2, och det är ofta här revisorn borrar. Det är precis det en kontroll i Laglig producerar: en dokumenterad utvärdering byggd på er laglista, med bedömningar, avvikelser och åtgärder som revisorn kan följa från resultat tillbaka till krav.
+
+Många löser i dag kravet med ett Excel-ark eller en Word-mall. Det går — men arket tappar kopplingen till laglistan samma dag en lag ändras, har ingen historik mellan åren och hanterar avvikelser vid sidan av. Med kontrollen i Laglig bygger utvärderingen alltid på den aktuella listan, och varje genomförd cykel lägger sig till en historik som visar förbättring över tid. Oavsett om ni arbetar mot ISO 14001, ISO 45001 eller ett eget ledningssystem behöver ni inte rekonstruera ett års arbete kvällen innan revisorn kommer.
 

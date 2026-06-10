@@ -92,8 +92,9 @@ export async function seedIndustryWorkspace(
     select: { id: true },
   })
   if (!owner) {
-    console.error(`Owner ${spec.ownerEmail} not found`)
-    process.exit(1)
+    // throw (not process.exit) so the caller's .finally($disconnect) runs
+    // and owns the exit code (QA-26.4-G)
+    throw new Error(`Owner ${spec.ownerEmail} not found`)
   }
 
   // 1) Workspace (upsert by slug; clearly fictitious, NO org_number) --------
@@ -171,8 +172,8 @@ export async function seedIndustryWorkspace(
   const byNumber = new Map(docs.map((d) => [d.document_number, d]))
   const missing = wanted.filter((w) => !byNumber.has(w))
   if (missing.length) {
-    console.error(`MISSING laws (fix the spec): ${missing.join(', ')}`)
-    process.exit(1)
+    // throw, not process.exit — see owner check above (QA-26.4-G)
+    throw new Error(`MISSING laws (fix the spec): ${missing.join(', ')}`)
   }
 
   // 4) Default list + groups + items (wipe & recreate for determinism) ------
