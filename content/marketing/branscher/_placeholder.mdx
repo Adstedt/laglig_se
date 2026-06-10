@@ -1,0 +1,8 @@
+{/*
+  Keeps the dynamic-import glob (`import(\`@/content/marketing/<kind>/${slug}.mdx\`)`)
+  resolvable while this folder has no published pages — Turbopack fails with
+  "Module not found: <dynamic> '.mdx'" on an empty context, which breaks the
+  whole dev compile (discovered 2026-06-10). Underscore files are excluded
+  from routing, sitemap and validation. Delete this file once the folder has
+  real content if you like — or leave it; it is inert.
+*/}

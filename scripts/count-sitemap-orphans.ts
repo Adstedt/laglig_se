@@ -1,38 +1,12 @@
 import { PrismaClient, ContentType } from '@prisma/client'
 import * as dotenv from 'dotenv'
+// Story 26.3 (QA): third copy of the URL mapping replaced with the shared
+// single source of truth — was a hand-maintained "keep in sync" mirror.
+import { getPublicUrlPath as getUrlPath } from '@/lib/catalog/public-url'
 
 dotenv.config({ path: '.env.local' })
 
 const prisma = new PrismaClient()
-
-/**
- * Mirror of app/sitemaps/sitemap.ts `getUrlPath` so this script can verify
- * the post-fix routing without importing the route file (which pulls
- * Next-only deps). Keep in sync with app/sitemaps/sitemap.ts.
- */
-function getUrlPath(contentType: ContentType, slug: string): string | null {
-  switch (contentType) {
-    case ContentType.SFS_LAW:
-      return `/lagar/${slug}`
-    case ContentType.SFS_AMENDMENT:
-      return `/lagar/andringar/${slug}`
-    case ContentType.AGENCY_REGULATION:
-      return `/foreskrifter/${slug}`
-    case ContentType.EU_REGULATION:
-      return `/eu/forordningar/${slug}`
-    case ContentType.EU_DIRECTIVE:
-      return `/eu/direktiv/${slug}`
-    case ContentType.COURT_CASE_AD:
-    case ContentType.COURT_CASE_HD:
-    case ContentType.COURT_CASE_HOVR:
-    case ContentType.COURT_CASE_HFD:
-    case ContentType.COURT_CASE_MOD:
-    case ContentType.COURT_CASE_MIG:
-      return null
-    default:
-      return null
-  }
-}
 
 const REPORTED_SLUGS_AND_EXPECTED_PREFIXES: Array<[string, string]> = [
   ['lag-om-andring-i-lagen-om-bostadsbidrag-2004-477', '/lagar/andringar/'],

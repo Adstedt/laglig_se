@@ -10,6 +10,7 @@ import {
   Scale,
   Bell,
   ListChecks,
+  ClipboardList,
   FileText,
   ClipboardCheck,
   Sparkles,
@@ -21,9 +22,16 @@ import {
   HeartPulse,
   Factory,
   Truck,
-  ShoppingCart,
   Cpu,
   Building2,
+  Lock,
+  Network,
+  Users,
+  Flame,
+  Leaf,
+  Megaphone,
+  Banknote,
+  Award,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -45,10 +53,20 @@ import {
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu'
 
+import {
+  FUNKTIONER_NAV,
+  BRANSCHER_NAV,
+  OMRADEN_NAV,
+  resolveNavHref,
+  type MarketingNavItem,
+} from '@/lib/marketing/nav-links'
+
 // ── Mega-menu content ───────────────────────────────────────────────────────
-// Produkt + Branscher are built as mega-menu shells. Feature/industry items use
-// landing anchors for now; swap the hrefs to dedicated pages (/funktioner/…,
-// /branscher/…) once those are built.
+// Produkt/Branscher/Områden route data lives in lib/marketing/nav-links.ts
+// (client-safe, canonical slugs). Items resolve per render against the
+// `publishedRoutes` prop: published page → real link; unpublished Produkt
+// item → homepage-anchor fallback; unpublished bransch/område → "Kommer
+// snart". Icons stay here — lucide components aren't serializable data.
 
 type MenuLink = {
   href: string
@@ -57,62 +75,39 @@ type MenuLink = {
   icon?: LucideIcon
 }
 
-const PRODUKT_FEATURES: MenuLink[] = [
-  {
-    href: '#how-it-works',
-    title: 'Efterlevnad',
-    desc: 'Laglista & krav på ett ställe',
-    icon: Scale,
-  },
-  {
-    href: '#how-it-works',
-    title: 'Lagändringar',
-    desc: 'AI bedömer varje ändring',
-    icon: Bell,
-  },
-  {
-    href: '#how-it-works',
-    title: 'Uppgifter',
-    desc: 'Åtgärder med ansvar & datum',
-    icon: ListChecks,
-  },
-  {
-    href: '#how-it-works',
-    title: 'Styrdokument',
-    desc: 'Policyer kopplade till krav',
-    icon: FileText,
-  },
-  {
-    href: '#how-it-works',
-    title: 'Kontroll',
-    desc: 'Bevisa efterlevnad',
-    icon: ClipboardCheck,
-  },
-  {
-    href: '#ai',
-    title: 'AI-agenten',
-    desc: 'Gör jobbet — ni godkänner',
-    icon: Sparkles,
-  },
-]
+// Icon per canonical route. Områden icons follow the iconForArea conventions
+// from org-check-form.tsx (Lock=GDPR, Flame=brandskydd, Leaf=miljö, …) so the
+// same concept carries the same icon across surfaces.
+const NAV_ICONS: Record<string, LucideIcon> = {
+  '/funktioner/laglista': Scale,
+  '/funktioner/kravpunkter': ClipboardList,
+  '/funktioner/lagandringar': Bell,
+  '/funktioner/uppgifter': ListChecks,
+  '/funktioner/styrdokument': FileText,
+  '/funktioner/kontroller': ClipboardCheck,
+  '/funktioner/ai-agent': Sparkles,
+  '/branscher/hotell-restaurang': UtensilsCrossed,
+  '/branscher/bygg': HardHat,
+  '/branscher/vard-omsorg': HeartPulse,
+  '/branscher/industri': Factory,
+  '/branscher/transport': Truck,
+  '/branscher/it': Cpu,
+  '/branscher/fastighet': Building2,
+  '/omraden/gdpr': Lock,
+  '/omraden/nis2': Network,
+  '/omraden/arbetsmiljo': Users,
+  '/omraden/brandskydd': Flame,
+  '/omraden/miljo': Leaf,
+  '/omraden/visselblasarlagen': Megaphone,
+  '/omraden/penningtvatt': Banknote,
+  '/omraden/iso-14001': Award,
+}
 
 const PRODUKT_MORE: MenuLink[] = [
-  { href: '#how-it-works', title: 'Så fungerar det' },
-  { href: '#skala', title: 'För hela företaget' },
-  { href: '#pricing', title: 'Priser' },
-  { href: '#faq', title: 'Vanliga frågor' },
-]
-
-// TODO: point each to /branscher/<slug> when industry pages exist.
-const BRANSCHER: MenuLink[] = [
-  { href: '#testa', title: 'Restaurang & hotell', icon: UtensilsCrossed },
-  { href: '#testa', title: 'Bygg & anläggning', icon: HardHat },
-  { href: '#testa', title: 'Vård & omsorg', icon: HeartPulse },
-  { href: '#testa', title: 'Industri & tillverkning', icon: Factory },
-  { href: '#testa', title: 'Transport & logistik', icon: Truck },
-  { href: '#testa', title: 'Handel & e-handel', icon: ShoppingCart },
-  { href: '#testa', title: 'IT & tech', icon: Cpu },
-  { href: '#testa', title: 'Fastighet', icon: Building2 },
+  { href: '/#how-it-works', title: 'Så fungerar det' },
+  { href: '/#skala', title: 'För hela företaget' },
+  { href: '/#pricing', title: 'Priser' },
+  { href: '/#faq', title: 'Vanliga frågor' },
 ]
 
 const REGELVERK: MenuLink[] = [
@@ -145,29 +140,104 @@ const REGELVERK: MenuLink[] = [
 const triggerCls =
   'h-9 rounded-full bg-transparent px-4 text-sm text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground data-[state=open]:bg-foreground/[0.04]'
 
-function FeatureLink({ item }: { item: MenuLink }) {
+const featureLinkCls =
+  'group/item flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-foreground/[0.03]'
+
+function FeatureLinkBody({
+  item,
+  comingSoon = false,
+}: {
+  item: {
+    title: string
+    desc?: string | undefined
+    icon?: LucideIcon | undefined
+  }
+  comingSoon?: boolean
+}) {
   return (
-    <NavigationMenuLink asChild>
-      <a
-        href={item.href}
-        className="group/item flex items-start gap-3 rounded-lg p-2.5 transition-colors hover:bg-accent"
-      >
-        {item.icon && (
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-secondary text-foreground/60 transition-colors group-hover/item:text-foreground">
-            <item.icon className="h-4 w-4" />
-          </span>
-        )}
-        <span className="min-w-0">
-          <span className="block text-sm font-medium leading-none">
-            {item.title}
-          </span>
-          {item.desc && (
-            <span className="mt-1 block text-[12.5px] leading-snug text-muted-foreground">
-              {item.desc}
+    <>
+      {item.icon && (
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-foreground/70 ring-1 ring-border/50 transition-all group-hover/item:bg-amber-100 group-hover/item:text-amber-700 group-hover/item:ring-amber-200/70">
+          <item.icon className="h-[18px] w-[18px]" />
+        </span>
+      )}
+      <span className="min-w-0">
+        <span className="block text-sm font-medium leading-none">
+          {item.title}
+          {comingSoon && (
+            <span className="ml-2 rounded-full bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+              Kommer snart
             </span>
           )}
         </span>
-      </a>
+        {item.desc && (
+          <span className="mt-1 block truncate text-[12.5px] leading-snug text-muted-foreground">
+            {item.desc}
+          </span>
+        )}
+      </span>
+    </>
+  )
+}
+
+function FeatureLink({ item }: { item: MenuLink }) {
+  // Real routes go through next/link (client nav + prefetch); root-relative
+  // homepage anchors keep a plain <a> so the browser handles in-page scroll.
+  const isRoute = item.href.startsWith('/') && !item.href.includes('#')
+  return (
+    <NavigationMenuLink asChild>
+      {isRoute ? (
+        <Link href={item.href} className={featureLinkCls}>
+          <FeatureLinkBody item={item} />
+        </Link>
+      ) : (
+        <a href={item.href} className={featureLinkCls}>
+          <FeatureLinkBody item={item} />
+        </a>
+      )}
+    </NavigationMenuLink>
+  )
+}
+
+/** Desktop menu item for marketing pages — resolves against publishedRoutes. */
+function MarketingNavLink({
+  item,
+  publishedRoutes,
+}: {
+  item: MarketingNavItem
+  publishedRoutes: readonly string[]
+}) {
+  const resolved = resolveNavHref(item, publishedRoutes)
+  const withIcon = {
+    title: item.label,
+    desc: item.desc,
+    icon: NAV_ICONS[item.route],
+  }
+
+  if (resolved.type === 'coming-soon') {
+    return (
+      <div
+        aria-disabled="true"
+        className={cn(
+          featureLinkCls,
+          'cursor-default opacity-60 hover:bg-transparent'
+        )}
+      >
+        <FeatureLinkBody item={withIcon} comingSoon />
+      </div>
+    )
+  }
+  return (
+    <NavigationMenuLink asChild>
+      {resolved.type === 'route' ? (
+        <Link href={resolved.href} className={featureLinkCls}>
+          <FeatureLinkBody item={withIcon} />
+        </Link>
+      ) : (
+        <a href={resolved.href} className={featureLinkCls}>
+          <FeatureLinkBody item={withIcon} />
+        </a>
+      )}
     </NavigationMenuLink>
   )
 }
@@ -216,7 +286,45 @@ function MobileLink({
   )
 }
 
-export function NavbarV3() {
+/** Mobile list item for marketing pages — same resolution as desktop. */
+function MobileMarketingLink({
+  item,
+  publishedRoutes,
+  onClick,
+}: {
+  item: MarketingNavItem
+  publishedRoutes: readonly string[]
+  onClick: () => void
+}) {
+  const resolved = resolveNavHref(item, publishedRoutes)
+  if (resolved.type === 'coming-soon') {
+    return (
+      <span
+        aria-disabled="true"
+        className="block rounded-lg px-3 py-2 text-sm text-muted-foreground/60"
+      >
+        {item.label}
+        <span className="ml-2 rounded-full bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+          Kommer snart
+        </span>
+      </span>
+    )
+  }
+  return (
+    <MobileLink href={resolved.href} onClick={onClick}>
+      {item.label}
+    </MobileLink>
+  )
+}
+
+export function NavbarV3({
+  publishedRoutes = [],
+}: {
+  /** routes with live MDX pages — computed server-side via
+   *  getPublishedMarketingRoutes(); default [] keeps items in fallback /
+   *  "Kommer snart" state for render sites that don't pass it */
+  publishedRoutes?: string[]
+}) {
   const [isOpen, setIsOpen] = React.useState(false)
   const [hasScrolled, setHasScrolled] = React.useState(false)
   const [mounted, setMounted] = React.useState(false)
@@ -260,21 +368,24 @@ export function NavbarV3() {
                   Produkt
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <div className="grid w-[640px] grid-cols-[1.5fr_1fr]">
+                  <div className="grid w-[800px] grid-cols-[1.7fr_1fr]">
                     <div className="p-3">
-                      <p className="px-2.5 pb-1.5 pt-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                      <p className="px-2.5 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-700">
                         Funktioner
                       </p>
                       <ul className="grid grid-cols-2 gap-0.5">
-                        {PRODUKT_FEATURES.map((item) => (
-                          <li key={item.title}>
-                            <FeatureLink item={item} />
+                        {FUNKTIONER_NAV.map((item) => (
+                          <li key={item.label}>
+                            <MarketingNavLink
+                              item={item}
+                              publishedRoutes={publishedRoutes}
+                            />
                           </li>
                         ))}
                       </ul>
                     </div>
                     <div className="border-l border-border/60 bg-muted/30 p-3">
-                      <p className="px-2.5 pb-1.5 pt-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                      <p className="px-2.5 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-700">
                         Mer
                       </p>
                       <ul className="space-y-0.5">
@@ -302,14 +413,41 @@ export function NavbarV3() {
                   Branscher
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <div className="w-[560px] p-3">
-                    <p className="px-2.5 pb-1.5 pt-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                  <div className="w-[720px] p-3">
+                    <p className="px-2.5 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-700">
                       Hitta reglerna för din bransch
                     </p>
-                    <ul className="grid grid-cols-2 gap-0.5">
-                      {BRANSCHER.map((item) => (
-                        <li key={item.title}>
-                          <FeatureLink item={item} />
+                    <ul className="grid grid-cols-2 gap-1">
+                      {BRANSCHER_NAV.map((item) => (
+                        <li key={item.label}>
+                          <MarketingNavLink
+                            item={item}
+                            publishedRoutes={publishedRoutes}
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+
+              {/* Områden — mega menu */}
+              <NavigationMenuItem>
+                <NavigationMenuTrigger className={triggerCls}>
+                  Områden
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <div className="w-[720px] p-3">
+                    <p className="px-2.5 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-700">
+                      Regelområden att ha koll på
+                    </p>
+                    <ul className="grid grid-cols-2 gap-1">
+                      {OMRADEN_NAV.map((item) => (
+                        <li key={item.label}>
+                          <MarketingNavLink
+                            item={item}
+                            publishedRoutes={publishedRoutes}
+                          />
                         </li>
                       ))}
                     </ul>
@@ -337,7 +475,7 @@ export function NavbarV3() {
               <NavigationMenuItem>
                 <NavigationMenuLink asChild>
                   <Link
-                    href="#pricing"
+                    href="/#pricing"
                     className="inline-flex h-9 items-center justify-center rounded-full bg-transparent px-4 text-sm text-muted-foreground transition-colors hover:bg-foreground/[0.04] hover:text-foreground"
                   >
                     Priser
@@ -394,17 +532,38 @@ export function NavbarV3() {
               </SheetHeader>
               <div className="mt-8 flex flex-col">
                 <MobileSection title="Produkt">
-                  {[...PRODUKT_FEATURES, ...PRODUKT_MORE].map((i) => (
+                  {FUNKTIONER_NAV.map((i) => (
+                    <MobileMarketingLink
+                      key={i.label}
+                      item={i}
+                      publishedRoutes={publishedRoutes}
+                      onClick={close}
+                    />
+                  ))}
+                  {PRODUKT_MORE.map((i) => (
                     <MobileLink key={i.title} href={i.href} onClick={close}>
                       {i.title}
                     </MobileLink>
                   ))}
                 </MobileSection>
                 <MobileSection title="Branscher">
-                  {BRANSCHER.map((i) => (
-                    <MobileLink key={i.title} href={i.href} onClick={close}>
-                      {i.title}
-                    </MobileLink>
+                  {BRANSCHER_NAV.map((i) => (
+                    <MobileMarketingLink
+                      key={i.label}
+                      item={i}
+                      publishedRoutes={publishedRoutes}
+                      onClick={close}
+                    />
+                  ))}
+                </MobileSection>
+                <MobileSection title="Områden">
+                  {OMRADEN_NAV.map((i) => (
+                    <MobileMarketingLink
+                      key={i.label}
+                      item={i}
+                      publishedRoutes={publishedRoutes}
+                      onClick={close}
+                    />
                   ))}
                 </MobileSection>
                 <MobileSection title="Regelverk">
@@ -415,7 +574,7 @@ export function NavbarV3() {
                   ))}
                 </MobileSection>
                 <Link
-                  href="#pricing"
+                  href="/#pricing"
                   onClick={close}
                   className="border-b border-border/50 px-3 py-3 text-base font-medium"
                 >

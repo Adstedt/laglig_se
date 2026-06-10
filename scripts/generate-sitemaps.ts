@@ -27,44 +27,20 @@
 
 import { PrismaClient, ContentType } from '@prisma/client'
 import { mkdir, writeFile } from 'node:fs/promises'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import matter from 'gray-matter'
 import { LEGAL_DOCS } from '@/components/features/legal/legal-doc-registry'
 import { SITEMAP_CHUNK_SIZE } from '@/lib/constants/sitemap'
+import { getPublicUrlPath } from '@/lib/catalog/public-url'
 
 const prisma = new PrismaClient()
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://laglig.se'
 const publicDir = join(process.cwd(), 'public')
 
-// Verbatim copy of getUrlPath from the pre-static app/sitemaps/sitemap.ts.
-// The `_exhaustive: never` arm makes a future ContentType addition a TS
-// build error instead of a silent 404.
-function getUrlPath(contentType: ContentType, slug: string): string | null {
-  switch (contentType) {
-    case ContentType.SFS_LAW:
-      return `/lagar/${slug}`
-    case ContentType.SFS_AMENDMENT:
-      return `/lagar/andringar/${slug}`
-    case ContentType.AGENCY_REGULATION:
-      return `/foreskrifter/${slug}`
-    case ContentType.EU_REGULATION:
-      return `/eu/forordningar/${slug}`
-    case ContentType.EU_DIRECTIVE:
-      return `/eu/direktiv/${slug}`
-    case ContentType.COURT_CASE_AD:
-    case ContentType.COURT_CASE_HD:
-    case ContentType.COURT_CASE_HOVR:
-    case ContentType.COURT_CASE_HFD:
-    case ContentType.COURT_CASE_MOD:
-    case ContentType.COURT_CASE_MIG:
-      return null
-    default: {
-      const _exhaustive: never = contentType
-      void _exhaustive
-      return null
-    }
-  }
-}
+// Story 26.3: getUrlPath moved verbatim to lib/catalog/public-url.ts
+// (shared with the marketing catalog-link resolver — single source of truth).
 
 function getPriority(contentType: ContentType): number {
   if (contentType === ContentType.SFS_LAW) return 0.7
@@ -86,6 +62,35 @@ type UrlEntry = {
   lastmod: Date
   changefreq: 'daily' | 'weekly' | 'yearly'
   priority: number
+}
+
+// Story 26.1: marketing-page auto-registration. Walks content/marketing/
+// and emits one entry per published MDX file — editorial adds a file, the
+// next deploy registers it; no per-page coordination. Underscore-prefixed
+// files (_template.mdx, drafts) never publish. Priority 0.8 sits between
+// catalog (0.7) and homepage (1.0). The list of kinds mirrors
+// MARKETING_KINDS in lib/marketing/frontmatter-schemas.ts — extend BOTH
+// when a new kind (jamfor, kundcase) ships.
+const MARKETING_KINDS = ['funktioner', 'branscher', 'omraden'] as const
+
+function getMarketingUrls(): UrlEntry[] {
+  const contentRoot = join(process.cwd(), 'content', 'marketing')
+  const urls: UrlEntry[] = []
+  for (const kind of MARKETING_KINDS) {
+    const dir = join(contentRoot, kind)
+    if (!existsSync(dir)) continue
+    for (const file of readdirSync(dir)) {
+      if (!file.endsWith('.mdx') || file.startsWith('_')) continue
+      const slug = file.replace(/\.mdx$/, '')
+      urls.push({
+        loc: `${baseUrl}/${kind}/${slug}`,
+        lastmod: statSync(join(dir, file)).mtime,
+        changefreq: 'weekly',
+        priority: 0.8,
+      })
+    }
+  }
+  return urls
 }
 
 function renderUrlset(urls: UrlEntry[]): string {
@@ -129,7 +134,7 @@ async function buildChildSitemap(id: number): Promise<{
   })
 
   const documentUrls: UrlEntry[] = documents.flatMap((doc) => {
-    const path = getUrlPath(doc.content_type, doc.slug)
+    const path = getPublicUrlPath(doc.content_type, doc.slug)
     if (path === null) return []
     return [
       {
@@ -181,6 +186,7 @@ async function buildChildSitemap(id: number): Promise<{
             changefreq: 'yearly' as const,
             priority: 0.4,
           })),
+          ...getMarketingUrls(),
           ...documentUrls,
         ]
       : documentUrls
@@ -195,6 +201,104 @@ async function buildChildSitemap(id: number): Promise<{
   const lastmod = max ?? now
 
   return { xml: renderUrlset(allUrls), lastmod }
+}
+
+// ── Story 26.3: build-time dead-link warnings ───────────────────────────────
+// After sitemap generation, resolve every marketing page's relatedCatalogLaws
+// frontmatter against the DB and write .next/marketing-link-warnings.txt.
+// WARNINGS, not errors — an unmatched link renders as plain text on the page
+// (graceful), so it must never fail a deploy. Shares only the pure URL mapper
+// with lib/marketing/catalog-link.ts; the resolver itself binds the Next
+// prisma singleton, which doesn't belong in a standalone script.
+
+type FrontmatterLawEntry = {
+  documentNumber?: string
+  slug?: string
+  title?: string
+}
+
+async function checkMarketingCatalogLinks(): Promise<void> {
+  const contentRoot = join(process.cwd(), 'content', 'marketing')
+  const pages: Array<{ page: string; entries: FrontmatterLawEntry[] }> = []
+
+  for (const kind of MARKETING_KINDS) {
+    const dir = join(contentRoot, kind)
+    if (!existsSync(dir)) continue
+    for (const file of readdirSync(dir)) {
+      if (!file.endsWith('.mdx') || file.startsWith('_')) continue
+      // next build already Zod-validated this frontmatter minutes earlier in
+      // the same pipeline — a light parse is enough here.
+      const { data } = matter(readFileSync(join(dir, file), 'utf-8'))
+      const entries = Array.isArray(data.relatedCatalogLaws)
+        ? (data.relatedCatalogLaws as FrontmatterLawEntry[])
+        : []
+      if (entries.length > 0) {
+        pages.push({ page: `${kind}/${file}`, entries })
+      }
+    }
+  }
+
+  const allEntries = pages.flatMap((p) => p.entries)
+  const documentNumbers = allEntries
+    .map((e) => e.documentNumber)
+    .filter((v): v is string => Boolean(v))
+  const slugs = allEntries
+    .map((e) => e.slug)
+    .filter((v): v is string => Boolean(v))
+
+  const rows =
+    allEntries.length === 0
+      ? []
+      : await prisma.legalDocument.findMany({
+          where: {
+            status: 'ACTIVE',
+            OR: [
+              ...(documentNumbers.length
+                ? [{ document_number: { in: documentNumbers } }]
+                : []),
+              ...(slugs.length ? [{ slug: { in: slugs } }] : []),
+            ],
+          },
+          select: { document_number: true, slug: true, content_type: true },
+        })
+
+  const byDocumentNumber = new Map(rows.map((r) => [r.document_number, r]))
+  const bySlug = new Map(rows.map((r) => [r.slug, r]))
+
+  const warnings: string[] = []
+  for (const { page, entries } of pages) {
+    for (const entry of entries) {
+      const row =
+        (entry.documentNumber
+          ? byDocumentNumber.get(entry.documentNumber)
+          : undefined) ?? (entry.slug ? bySlug.get(entry.slug) : undefined)
+      const id = entry.documentNumber ?? entry.slug ?? entry.title ?? '(empty)'
+      if (!row) {
+        warnings.push(`${page}: "${id}" — no ACTIVE catalog row`)
+      } else if (getPublicUrlPath(row.content_type, row.slug) === null) {
+        warnings.push(
+          `${page}: "${id}" — no public page for ${row.content_type}`
+        )
+      }
+    }
+  }
+
+  const outPath = join(process.cwd(), '.next', 'marketing-link-warnings.txt')
+  await mkdir(dirname(outPath), { recursive: true })
+  await writeFile(
+    outPath,
+    warnings.join('\n') + (warnings.length ? '\n' : ''),
+    'utf8'
+  )
+
+  if (warnings.length > 0) {
+    console.warn(
+      `[generate-sitemaps] ${warnings.length} unmatched catalog link(s) — see .next/marketing-link-warnings.txt`
+    )
+    for (const w of warnings) console.warn(`  [CATALOG_LINK_UNMATCHED] ${w}`)
+  } else {
+    console.log('[generate-sitemaps] 0 unmatched catalog links')
+  }
 }
 
 async function main(): Promise<void> {
@@ -222,6 +326,9 @@ async function main(): Promise<void> {
   console.log(
     `[generate-sitemaps] wrote public/sitemap-index.xml (${count} children)`
   )
+
+  // Story 26.3: dead-link audit for marketing pages (warnings, never fatal)
+  await checkMarketingCatalogLinks()
   console.log(
     `[generate-sitemaps] done — ${total} ACTIVE rows, ${count} chunks, ` +
       `${Date.now() - startedAt}ms`

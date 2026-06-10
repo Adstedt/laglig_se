@@ -1,0 +1,87 @@
+schema: 1
+story: '26.3'
+story_title: 'Catalog-Link Primitive (<CatalogLawList> Live Data Path)'
+gate: PASS
+status_reason: >-
+  All 13 ACs implemented with exemplary evidence — end-to-end against the
+  production catalog proved the feature premise (real DB slug differs from
+  the hand-typed guess; resolver returned the verified href + authoritative
+  title; fake law flagged in the warnings file). Review found and fixed a
+  THIRD copy of the URL mapping in scripts/count-sitemap-orphans.ts, fully
+  realizing AC 1's single-source-of-truth intent.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-10T13:20:00+02:00'
+
+top_issues:
+  - id: QA-26.3-1
+    severity: low
+    suggested_owner: dev
+    title: 'documentNumber matching is exact — no trim/normalization'
+    description: >-
+      A trailing space or case variance in frontmatter (e.g. "SFS 1977:1160 ")
+      resolves as unmatched. The warnings pipeline catches it (by design), but
+      a .trim() in catalogLawEntrySchema is cheap insurance. Fold into any
+      26.4-era touch of the schemas.
+  - id: QA-26.3-2
+    severity: low
+    suggested_owner: dev
+    title: 'Script-embedded audit logic not unit-testable'
+    description: >-
+      checkMarketingCatalogLinks() in generate-sitemaps.ts is prisma-bound and
+      unexported; verified end-to-end against the live DB but has no unit
+      tests. Extracting the pure match-diff would make it testable. Note:
+      scripts/ is tsc-EXCLUDED (discovered this review via a near-miss import
+      error caught only by runtime execution) — treat tsx runs as the gate for
+      script changes.
+waiver: { active: false }
+
+quality_score: 97
+expires: '2026-06-24T00:00:00+02:00'
+
+evidence:
+  tests_reviewed: 26
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      Read-only public-data queries via parameterized Prisma `in` filters;
+      no user input reaches the resolver (repo-authored frontmatter,
+      Zod-validated at build).
+  performance:
+    status: PASS
+    notes: >-
+      One batched, index-backed query per page (unit-asserted); empty-entries
+      short-circuit; cost lands at SSG build time; script audit batches ALL
+      pages into one query.
+  reliability:
+    status: PASS
+    notes: >-
+      No dead links by construction (unmatched → plain text + warning + audit
+      file); ACTIVE-only filter; accepted behavior documented — a DB outage at
+      build time fails the build rather than silently shipping degraded pages
+      (catalog routes already carry this exposure).
+  maintainability:
+    status: PASS
+    notes: >-
+      URL mapping now genuinely single-sourced (three copies → one, incl. the
+      orphan-counter script fixed in review); _exhaustive guard preserved;
+      clear resolver/script boundary (pure mapper shared, singleton not).
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add .trim() normalization to catalogLawEntrySchema fields (QA-26.3-1)'
+      refs: ['lib/marketing/frontmatter-schemas.ts']
+    - action: 'Extract pure match-diff from checkMarketingCatalogLinks for unit testing (QA-26.3-2)'
+      refs: ['scripts/generate-sitemaps.ts']
+    - action: >-
+        26.4 editorial guidance: author relatedCatalogLaws with documentNumber
+        (stable, human-verifiable) over slug (machine-generated, e.g.
+        "arbetsmiljolag-19771160-1977-1160") — the live run showed slugs are
+        not guessable.
+      refs: ['content/marketing/funktioner/_template.mdx']
