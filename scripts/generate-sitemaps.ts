@@ -25,6 +25,7 @@
  *   NEXT_PUBLIC_BASE_URL=https://www.laglig.se pnpm tsx scripts/generate-sitemaps.ts
  */
 
+import * as dotenv from 'dotenv'
 import { PrismaClient, ContentType } from '@prisma/client'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
@@ -33,6 +34,11 @@ import matter from 'gray-matter'
 import { LEGAL_DOCS } from '@/components/features/legal/legal-doc-registry'
 import { SITEMAP_CHUNK_SIZE } from '@/lib/constants/sitemap'
 import { getPublicUrlPath } from '@/lib/catalog/public-url'
+
+// Standalone tsx script: next build loads .env.local itself, but postbuild
+// runs outside Next, so DATABASE_URL must be loaded here (no-op on Vercel
+// where the platform provides env and no .env.local exists).
+dotenv.config({ path: '.env.local' })
 
 const prisma = new PrismaClient()
 
