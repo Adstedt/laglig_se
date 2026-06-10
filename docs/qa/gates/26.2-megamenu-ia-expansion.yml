@@ -1,0 +1,71 @@
+schema: 1
+story: '26.2'
+story_title: 'Megamenu IA Expansion (Branscher + Områden)'
+gate: PASS
+status_reason: >-
+  All 14 ACs implemented and evidenced. Clean architecture: canonical route
+  data single-sourced (client-safe), one resolveNavHref() path drives desktop
+  menu, mobile sheet and footer; published-state flip proven live with a
+  temporary canonical page. Cross-page anchor bug fixed and grep-verified.
+  16 new tests + full suite 5,555 green; no refactoring required in review.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-10T10:55:00+02:00'
+
+top_issues:
+  - id: QA-26.2-1
+    severity: low
+    suggested_owner: dev
+    title: 'Desktop megamenu rendering untested (mobile sheet is the proxy)'
+    description: >-
+      Component tests assert nav state via the mobile sheet (same resolved
+      data; Radix hover menus are flaky in happy-dom). The desktop
+      NavigationMenu markup path (MarketingNavLink desktop variant) has no
+      direct render test. Risk is low — shared resolution logic is fully
+      tested and the desktop path was visually verified — but a Playwright
+      e2e hover check would close it. Fold into the e2e pass that 26.4 will
+      want anyway.
+waiver: { active: false }
+
+quality_score: 98
+expires: '2026-06-24T00:00:00+02:00'
+
+evidence:
+  tests_reviewed: 16
+  risks_identified: 1
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No new surface: static nav data, serializable prop, no user input.'
+  performance:
+    status: PASS
+    notes: >-
+      Route data static; resolution is O(items×routes) over tiny arrays;
+      published routes computed server-side at SSG; FeatureLink upgraded to
+      next/link gives Regelverk prefetch for free.
+  reliability:
+    status: PASS
+    notes: >-
+      No dead links by construction (published→link, fallback→anchor,
+      else non-interactive); slug-exactness tests pin all 22 routes verbatim
+      incl. an å/ä/ö regex guard; state-flip proven live.
+  maintainability:
+    status: PASS
+    notes: >-
+      Single source of truth for routes/labels; icons isolated in the client
+      file with a route-keyed map; "extend BOTH" comments link nav-links and
+      the sitemap walker kinds list.
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add a Playwright hover test for the desktop megamenu in the 26.4 e2e pass (closes QA-26.2-1)'
+      refs: ['components/features/landing-v3/navbar-v3.tsx']
+    - action: >-
+        When the /branscher index page is eventually built, restore the
+        "Alla branscher" footer link and consider a Handel & e-handel page if
+        org-check SNI data shows demand (PO-recorded backlog items).
+      refs: ['lib/marketing/nav-links.ts']

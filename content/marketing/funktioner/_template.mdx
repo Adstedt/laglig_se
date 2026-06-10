@@ -1,0 +1,81 @@
+---
+# ── Marketing-page frontmatter reference ─────────────────────────────────────
+# Files prefixed with "_" are NEVER published (no route, no sitemap).
+# Copy this file, drop the leading underscore, and fill every required field.
+# Validation runs at build time: a missing/invalid field FAILS `next build`
+# and names the file + field. Schemas: lib/marketing/frontmatter-schemas.ts
+#
+# REQUIRED FIELDS ↓
+
+# Page <title> (also JSON-LD Article headline). Keep ≤60 chars for SERPs.
+title: 'Lagefterlevnadskontroller för svenska företag'
+
+# Meta description, ≤170 chars (schema-enforced). Write for the click.
+description: 'Planera, genomför och dokumentera lagefterlevnadskontroller. Laglig håller koll på vilka krav som gäller er — och vad som ändrats sedan sist.'
+
+# Hero copy. Eyebrow = short Safiro label above the title (sentence case).
+heroEyebrow: 'Funktion · Kontroller'
+heroTitle: 'Lagefterlevnad ni kan visa upp'
+heroSubtitle: 'Återkommande kontroller med kravpunkter ur er egen laglista — inte ett kalkylark som ingen öppnar.'
+
+# Primary CTA. href is UTM-tagged automatically per placement — write it bare.
+primaryCta:
+  label: 'Testa gratis'
+  href: '/signup'
+
+# true → renders the org-number test (<OrgCheckCta>) as the mid-page
+# conversion section. Recommended for industry + feature pages.
+showOrgCheck: true
+
+# Laws this page links into the catalog (rendered by <CatalogLawList>).
+# Give documentNumber (preferred, e.g. "AFS 2023:12" / "SFS 1977:1160")
+# or slug (the /lagar/[slug] path segment). title is the visible fallback
+# label; anchor deep-links to a section on the law page.
+relatedCatalogLaws:
+  - documentNumber: 'SFS 1977:1160'
+    title: 'Arbetsmiljölag (1977:1160)'
+  - slug: 'afs-2023-12'
+    title: 'AFS 2023:12'
+
+# Sibling marketing pages for <RelatedPagesGrid> (internal routes only).
+relatedPages:
+  - '/funktioner/laglista'
+  - '/branscher/bygg'
+
+# REQUIRED: ≥3 page-specific Q&As. Renders as <FaqAccordion> AND emits
+# FAQPage JSON-LD from the same data (parity is mandatory — never add FAQ
+# markup that isn't visible on the page). No boilerplate questions reused
+# across pages.
+faq:
+  - question: 'Vad är en lagefterlevnadskontroll?'
+    answer: 'En systematisk genomgång av att verksamheten uppfyller kraven i de lagar som gäller den — dokumenterad så att den håller vid revision.'
+  - question: 'Hur ofta bör vi göra kontroller?'
+    answer: 'De flesta ledningssystem (t.ex. ISO 14001) kräver minst årlig utvärdering av lagefterlevnad. Laglig låter er sätta cykler per område.'
+  - question: 'Kan vi exportera resultatet?'
+    answer: 'Ja — kontrollrapporter kan exporteras och delas med revisorer och ledning.'
+
+# OPTIONAL FIELDS ↓
+
+# Hero media. type: screenshot → framed in <ScreenshotFrame> (browser chrome);
+# type: photo → rendered bare. Assets live in
+# public/images/marketing/{kind}/{slug}/ (people photos: .../people/).
+# WebP preferred. alt is required — write it for a screen reader, not for SEO.
+# Generated people imagery is produced OFFLINE (Nano Banana 2 / Gemini key,
+# held by Alexander): Scandinavian workplace realism, natural light, warm
+# grading that sits on the cream palette. Never glossy stock-photo look.
+# Review → optimize to WebP → commit. The key never enters this repo.
+heroMedia:
+  type: 'screenshot'
+  src: '/images/marketing/funktioner/kontroller/hero.webp'
+  alt: 'Kontrollvy i Laglig med kravpunkter och status per område'
+
+# ogVariant: reserved for future OG-image art direction. Omit.
+---
+
+Skriv brödtexten här i vanlig markdown. `##`-rubriker blir Safiro-rubriker,
+länkar och listor får sidans typografi automatiskt (se mdx-components.tsx).
+
+Sektionskomponenter droppas in direkt i texten där de behövs:
+
+{/* <SplitFeature> för produktdjup, <CatalogLawList> för laglistan,
+    <FaqAccordion> renderas alltid av mallen — skriv inte ut den här. */}

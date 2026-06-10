@@ -8,24 +8,23 @@ import { Cookie, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useConsent } from '@/components/providers/consent-provider'
+import {
+  BRANSCHER_NAV,
+  OMRADEN_NAV,
+  resolveNavHref,
+  type MarketingNavItem,
+} from '@/lib/marketing/nav-links'
 
-type FooterLink = { href: string; label: string }
+type FooterLink = { href: string; label: string; comingSoon?: boolean }
 
+// Homepage anchors are root-relative so the footer works identically on `/`
+// and on marketing pages (Story 26.2 — chrome is shared via MarketingShell).
 const produkt: FooterLink[] = [
-  { href: '#how-it-works', label: 'Så fungerar det' },
-  { href: '#ai', label: 'AI-agenten' },
-  { href: '#skala', label: 'För hela företaget' },
-  { href: '#pricing', label: 'Priser' },
-  { href: '#faq', label: 'Vanliga frågor' },
-]
-
-// TODO: swap to /branscher/<slug> when industry pages exist.
-const branscher: FooterLink[] = [
-  { href: '#testa', label: 'Restaurang & hotell' },
-  { href: '#testa', label: 'Bygg & anläggning' },
-  { href: '#testa', label: 'Vård & omsorg' },
-  { href: '#testa', label: 'Industri & tillverkning' },
-  { href: '#testa', label: 'Alla branscher' },
+  { href: '/#how-it-works', label: 'Så fungerar det' },
+  { href: '/#ai', label: 'AI-agenten' },
+  { href: '/#skala', label: 'För hela företaget' },
+  { href: '/#pricing', label: 'Priser' },
+  { href: '/#faq', label: 'Vanliga frågor' },
 ]
 
 const regelverk: FooterLink[] = [
@@ -36,9 +35,23 @@ const regelverk: FooterLink[] = [
 ]
 
 const foretag: FooterLink[] = [
-  { href: '#byraer', label: 'För revisorer & byråer' },
+  { href: '/#byraer', label: 'För revisorer & byråer' },
   { href: 'mailto:dev@laglig.se', label: 'Kontakt' },
 ]
+
+/** Marketing-nav items → footer links: published page → live link,
+ *  otherwise muted "Kommer snart" text (no dead hrefs in the footer). */
+function toFooterLinks(
+  items: MarketingNavItem[],
+  publishedRoutes: readonly string[]
+): FooterLink[] {
+  return items.map((item) => {
+    const resolved = resolveNavHref(item, publishedRoutes)
+    return resolved.type === 'coming-soon'
+      ? { href: '', label: item.label, comingSoon: true }
+      : { href: resolved.href, label: item.label }
+  })
+}
 
 const legal: FooterLink[] = [
   { href: '/villkor', label: 'Användarvillkor' },
@@ -56,25 +69,46 @@ function Column({ title, links }: { title: string; links: FooterLink[] }) {
     <div>
       <h3 className="mb-3.5 text-[13px] font-semibold">{title}</h3>
       <ul className="space-y-2.5">
-        {links.map((l) => (
-          <li key={l.label}>
-            <Link
-              href={l.href}
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {l.label}
-            </Link>
-          </li>
-        ))}
+        {links.map((l) =>
+          l.comingSoon ? (
+            <li key={l.label}>
+              <span
+                aria-disabled="true"
+                className="text-sm text-muted-foreground/50"
+              >
+                {l.label}
+                <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/40">
+                  Kommer snart
+                </span>
+              </span>
+            </li>
+          ) : (
+            <li key={l.label}>
+              <Link
+                href={l.href}
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {l.label}
+              </Link>
+            </li>
+          )
+        )}
       </ul>
     </div>
   )
 }
 
-export function FooterV3() {
+export function FooterV3({
+  publishedRoutes = [],
+}: {
+  /** see NavbarV3 — computed server-side via getPublishedMarketingRoutes() */
+  publishedRoutes?: string[]
+}) {
   const { openSettings } = useConsent()
   const [email, setEmail] = React.useState('')
   const year = new Date().getFullYear()
+  const branscher = toFooterLinks(BRANSCHER_NAV, publishedRoutes)
+  const omraden = toFooterLinks(OMRADEN_NAV, publishedRoutes)
 
   const handleNewsletter = (e: React.FormEvent) => {
     e.preventDefault()
@@ -124,17 +158,12 @@ export function FooterV3() {
             </form>
           </div>
 
-          {/* Link columns */}
-          <div className="lg:col-span-2">
+          {/* Link columns — 5 columns nested in the remaining 8/12 */}
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-8 lg:grid-cols-5">
             <Column title="Produkt" links={produkt} />
-          </div>
-          <div className="lg:col-span-2">
             <Column title="Branscher" links={branscher} />
-          </div>
-          <div className="lg:col-span-2">
+            <Column title="Områden" links={omraden} />
             <Column title="Regelverk" links={regelverk} />
-          </div>
-          <div className="lg:col-span-2">
             <Column title="Företag" links={foretag} />
           </div>
         </div>

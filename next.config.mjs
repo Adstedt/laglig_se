@@ -1,5 +1,19 @@
 import { withSentryConfig } from '@sentry/nextjs'
 import bundleAnalyzer from '@next/bundle-analyzer'
+import createMDX from '@next/mdx'
+
+// Story 26.1: MDX content surface for marketing pages. Content lives in
+// content/marketing/**/*.mdx and is loaded via dynamic import in the
+// app/(marketing) routes — pageExtensions is deliberately NOT extended, so
+// .mdx files can never become routable pages on their own.
+// Plugins are passed as strings (Turbopack requirement: no JS functions
+// cross the Rust boundary). remark-frontmatter keeps the YAML block out of
+// the rendered output; parsing/validation happens in lib/marketing/content.ts.
+const withMDX = createMDX({
+  options: {
+    remarkPlugins: ['remark-frontmatter'],
+  },
+})
 
 // Story P.4: Bundle analyzer configuration
 const withBundleAnalyzer = bundleAnalyzer({
@@ -51,6 +65,10 @@ const securityHeaders = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Story 26.4: hide the dev-mode indicator badge so it never overlaps
+  // marketing-screenshot captures (it floats bottom-left in dev; never ships
+  // to production regardless).
+  devIndicators: false,
   productionBrowserSourceMaps: false, // Disable source maps in production for security
   typescript: {
     ignoreBuildErrors: false,
@@ -130,6 +148,28 @@ const nextConfig = {
   // Story 14.9: Include system prompt .md file in serverless function bundles
   outputFileTracingIncludes: {
     '/api/chat': ['./lib/agent/system-prompt.md'],
+    // Story 26.1: OG generator reads the Safiro .woff + marketing MDX
+    // frontmatter from the function filesystem. Keys are declared in BOTH
+    // shapes — URL path AND route-group filesystem path — because the
+    // tracer's key convention for route-group routes is ambiguous across
+    // Next/Vercel versions (QA-26.1-1). Redundant keys are harmless;
+    // verify GET /og-image/<kind>/<slug> returns image/png on the first
+    // preview deploy.
+    '/og-image/[kind]/[slug]': [
+      './public/fonts/safiro-medium-webfont.woff',
+      './content/marketing/**/*.mdx',
+    ],
+    '/(marketing)/og-image/[kind]/[slug]': [
+      './public/fonts/safiro-medium-webfont.woff',
+      './content/marketing/**/*.mdx',
+    ],
+    // Marketing routes read content/marketing at render/build time.
+    '/funktioner/[slug]': ['./content/marketing/**/*.mdx'],
+    '/branscher/[slug]': ['./content/marketing/**/*.mdx'],
+    '/omraden/[slug]': ['./content/marketing/**/*.mdx'],
+    '/(marketing)/funktioner/[slug]': ['./content/marketing/**/*.mdx'],
+    '/(marketing)/branscher/[slug]': ['./content/marketing/**/*.mdx'],
+    '/(marketing)/omraden/[slug]': ['./content/marketing/**/*.mdx'],
   },
 
   // Serverless function size cap (250 MB unzipped). The Next.js file tracer
@@ -279,8 +319,8 @@ const nextConfig = {
   },
 }
 
-// Story P.4: Wrap with bundle analyzer, then Sentry
-export default withSentryConfig(withBundleAnalyzer(nextConfig), {
+// Story P.4: Wrap with bundle analyzer, then Sentry (MDX innermost — Story 26.1)
+export default withSentryConfig(withBundleAnalyzer(withMDX(nextConfig)), {
   // Sentry webpack plugin options
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,

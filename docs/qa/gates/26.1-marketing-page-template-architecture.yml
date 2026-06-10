@@ -1,0 +1,68 @@
+schema: 1
+story: '26.1'
+story_title: 'Marketing-Page Template Architecture + MDX Content Surface + Metadata Bundle'
+gate: PASS
+status_reason: >-
+  Re-review after dev fix round: both testable findings closed with
+  high-quality tests (analytics chain incl. negative path; SplitFeature
+  alternation contract), and the OG-route tracing risk is hedged with
+  dual-shape keys — downgraded medium→low since no real content ships before
+  26.4 and a preview-deploy 500 is instantly visible and fixable. All NFRs
+  PASS; AC trace gap closed (22/22 covered).
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-10T01:15:00+02:00'
+
+top_issues:
+  - id: QA-26.1-1
+    severity: low # downgraded from medium in fix round (dual-shape tracing keys hedge)
+    suggested_owner: dev
+    title: 'OG route asset tracing — verify once on first Vercel preview deploy'
+    description: >-
+      Code-level hedge applied (both URL-shaped and route-group-shaped
+      outputFileTracingIncludes keys). Closing action carried to Story 26.4
+      checklist: GET /og-image/<kind>/<slug> on the preview deploy must
+      return image/png.
+waiver: { active: false }
+
+quality_score: 95
+expires: '2026-06-24T00:00:00+02:00'
+
+evidence:
+  tests_reviewed: 48
+  risks_identified: 4
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      JSON-LD </script> breakout fixed + regression-tested; slug validation
+      blocks traversal; no secrets in repo; analytics consent-gated.
+  performance:
+    status: PASS
+    notes: 'SSG pages, edge-cached OG, next/image; Lighthouse 92/96/96 (prod build).'
+  reliability:
+    status: PASS
+    notes: >-
+      Build-time frontmatter gate proven in real build; 404 paths verified;
+      negative-path test added for the org-check lookup failure.
+  maintainability:
+    status: PASS
+    notes: >-
+      Labels and FAQ single-sourced; 26.2/26.3/26.7 contracts documented;
+      48 focused unit tests across schemas/lib/components.
+
+recommendations:
+  immediate: []
+  future:
+    - action: >-
+        26.4 checklist item: verify /og-image/<kind>/<slug> returns image/png
+        on the first Vercel preview deploy (closes QA-26.1-1).
+      refs: ['next.config.mjs', 'app/(marketing)/og-image/[kind]/[slug]/route.tsx']
+    - action: >-
+        Repo-level follow-up (correctly out of this story's scope per the
+        epic's catalog-untouched rule): adopt serializeJsonLd() for
+        app/(public)/lagar/[id]/page.tsx JSON-LD.
+      refs: ['app/(public)/lagar/[id]/page.tsx', 'lib/marketing/get-page-metadata.ts']
