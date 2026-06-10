@@ -392,10 +392,28 @@
 
 ---
 
+## Epic 27: Company Profile Interview
+
+**Status:** Planned (0 completed — 3 stories scoped)
+
+**Goal:** Make the company profile (`business_description`, `activity_flags`, `contextual_answers`) the user-verified, comprehensive primary input to law-list generation: upgrade the existing LLM company analyzer to a structured 2–4 sentence, confidence-scored draft; surface it as an editable "Så här förstår vi er verksamhet" card in the onboarding wizard; replace the static activity-question checklist with a 2–4 question adaptive micro-interview (confidence × legal impact), expanding on the no-org-lookup path where the profile would otherwise be near-empty.
+
+**Delivers:** Story 27.1 — analyzer prompt upgrade + per-dimension confidence, `contextualAnswers`/`hasCollectiveAgreement` exposure in `get_company_context`, CompanyInfoStep analyzer-race fix. Story 27.2 — editable profile-summary card with flag chips in the (renamed) ActivityQuestionsStep, `trackEvent()` funnel instrumentation. Story 27.3 — adaptive micro-interview (Opus 4.8) writing Q&A pairs to the hitherto-unused `contextual_answers` field, question-level telemetry.
+
+**Requirements covered:** Evidence base from the 2026-06-10 model A/B on a real workspace (Ekens Golv): `business_description` proved the single highest-leverage generation input (~10-law retail block traced to one clause); analyzer one-line cap, silent race-condition drop, and unplumbed profile fields identified as the gaps this epic closes.
+
+**Dependencies:** Epic 4 (wizard — Done), Epic 25 (first-run modal — adjacent surface, dev-time priority on conflicts), feat/tracking-events (`trackEvent()` + the 2026-06-10 `employeeCount`/`activityFlags` tool exposure, landed). Known pre-req fix: `add_laws_to_list` within-batch duplicate crash (one-liner) before A/B verification runs.
+
+**Note:** Brownfield enhancement. No schema migration — populates and plumbs existing fields only. Each story independently shippable and revertible. See `docs/prd/epic-27-company-profile-interview.md`.
+
+**Priority:** High — directly upgrades the activation funnel's "wow" moment (generated laglista quality) and compounds: the same profile feeds the chat agent and change monitoring via the shared `get_company_context` tool.
+
+---
+
 **Total Stories Tracked:** ~257+ across 25 epics (~166 completed, ~89+ backlog; Epic 18 stories TBD, Epic 19 14 stories scoped (incl. 19.4a id-resolution + 19.4b cycle/finding readers, added 2026-05-24), Epic 20 3 stories scoped + completed, Epic 21 14 stories scoped — **13 completed, 1 deferred (21.10)**, 1 in backlog (21.15), Epic 22 4 stories scoped, Epic 23 5 stories scoped, Epic 24 6 stories scoped, Epic 25 7 stories scoped — B.0 pre-MVP)
 
 **Epic Status:** 12 Done (incl. Epic 21 substantially-done as of 2026-04-27, UAT-ready with 1 deferred 21.10 + 1 backlogged 21.15), 4 Partial / Active, 9 Not Started / Planned (incl. Epic 23, Epic 24, Epic 25)
 
-**Last updated:** 2026-05-24 (Epic 19 retrieval track: added 19.4a id-resolution + 19.4b cycle/finding readers, refined 19.4 — from the architect-reviewed knowledge-traversal brief)
+**Last updated:** 2026-06-10 (added Epic 27: Company Profile Interview, 3 stories. NOTE: Epic 26 (marketing pages, 12 stories, see `docs/prd/epic-26-marketing-pages-seo-content-engine.md`) shipped its first stories but was never registered in this list — entry + stats refresh pending)
 
 ---

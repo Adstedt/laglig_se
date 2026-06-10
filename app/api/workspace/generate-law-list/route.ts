@@ -97,11 +97,14 @@ export async function POST() {
         Sentry.withScope((scope) => {
           scope.setTag('skill', 'generate-law-list')
           scope.setContext('generation_result', {
+            model: result.model,
             listId: result.listId,
             itemCount: result.itemCount,
             groups: result.groups,
             inputTokens: result.tokensUsed.input,
             outputTokens: result.tokensUsed.output,
+            cacheReadInputTokens: result.tokensUsed.cacheRead,
+            cacheWriteInputTokens: result.tokensUsed.cacheWrite,
             durationMs: result.durationMs,
           })
           Sentry.captureMessage('Law list generation completed', 'info')

@@ -6,18 +6,31 @@
  * Same tool registry as the chat agent, plus skill-specific tools.
  */
 
-import { generateText, stepCountIs } from 'ai'
+import { generateText, stepCountIs, type ModelMessage } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
 import { prisma } from '@/lib/prisma'
 import { createAgentTools } from '@/lib/agent/tools'
 import { createGetTemplateLawsTool } from '@/lib/agent/tools/get-template-laws'
 import { createAddLawsToListTool } from '@/lib/agent/tools/add-laws-to-list'
 
+// Model A/B override for generation-quality comparison. Sonnet 4.6 is the
+// cost baseline; set LAW_LIST_GENERATION_MODEL=claude-opus-4-8 (or
+// claude-fable-5) in .env.local to compare output quality. The skill sets no
+// sampling params or thinking config, so all three models accept the same call.
+const GENERATION_MODEL =
+  process.env.LAW_LIST_GENERATION_MODEL ?? 'claude-sonnet-4-6'
+
 export interface GenerateLawListResult {
   listId: string | null
   itemCount: number
   groups: string[]
-  tokensUsed: { input: number; output: number }
+  model: string
+  tokensUsed: {
+    input: number
+    output: number
+    cacheRead: number
+    cacheWrite: number
+  }
   durationMs: number
 }
 
@@ -180,6 +193,41 @@ const UNIVERSAL_AB_LAWS: Array<{
   },
 ]
 
+/**
+ * Move the conversation cache breakpoints to the tail of the message list.
+ *
+ * The agent loop re-sends the entire message history on every step, and the
+ * template tool results are huge (the arbetsmiljö template alone is ~90k
+ * tokens) — without message-level breakpoints each step re-bills the full
+ * history at base input price. Marking the last two messages `ephemeral`
+ * makes the next step read the shared prefix from cache at 0.1× price.
+ *
+ * Two breakpoints (not one) because Anthropic's cache lookup only scans ~20
+ * content blocks backwards from each breakpoint — a step with many parallel
+ * tool calls can push the previous breakpoint position out of that window.
+ * Anthropic allows 4 breakpoints total: 1 on the system prompt + these 2
+ * stays within budget. Existing anthropic providerOptions are stripped first
+ * so breakpoints never accumulate across steps.
+ */
+function withTailCacheBreakpoints(messages: ModelMessage[]): ModelMessage[] {
+  return messages.map((message, index) => {
+    const { anthropic: _stale, ...otherProviderOptions } =
+      message.providerOptions ?? {}
+
+    if (index < messages.length - 2) {
+      return { ...message, providerOptions: otherProviderOptions }
+    }
+
+    return {
+      ...message,
+      providerOptions: {
+        ...otherProviderOptions,
+        anthropic: { cacheControl: { type: 'ephemeral' } },
+      },
+    } as ModelMessage
+  })
+}
+
 export async function generateLawList(
   workspaceId: string,
   userId: string
@@ -217,18 +265,15 @@ export async function generateLawList(
   }
 
   const result = await generateText({
-    model: anthropic('claude-sonnet-4-6'),
-    // Anthropic prompt caching v1. Wrap the system prompt in a
-    // SystemModelMessage so we can attach `cacheControl: { type: 'ephemeral' }`
-    // (5-min TTL). The Anthropic provider reads cache_control from
-    // message-level providerOptions — top-level options aren't sufficient.
-    //
-    // Why this matters: the agent loop runs UP TO 20 steps (stepCountIs(20)
-    // below) and each step re-sends the system prompt + tool definitions at
-    // full price. SYSTEM_PROMPT is ~7700 chars (~2350 tokens, well above the
-    // 1024-token minimum Sonnet 4.6 requires for caching) — caching cuts
-    // 30-40% off per-generation cost. Mirrors the same pattern in
-    // app/api/chat/route.ts:241-252.
+    model: anthropic(GENERATION_MODEL),
+    // Anthropic prompt caching, two tiers (5-min TTL on both):
+    //  1. System breakpoint (below): caches tool definitions + SYSTEM_PROMPT
+    //     (~2350 tokens, above Sonnet's 1024-token caching minimum). Mirrors
+    //     app/api/chat/route.ts.
+    //  2. Conversation breakpoints (prepareStep below): each step re-marks the
+    //     two newest messages so the growing history — dominated by ~90k-token
+    //     template tool results — is read from cache instead of re-billed at
+    //     full input price on every one of the up-to-20 steps.
     system: {
       role: 'system' as const,
       content: SYSTEM_PROMPT,
@@ -247,6 +292,9 @@ export async function generateLawList(
     ],
     tools,
     stopWhen: stepCountIs(20),
+    prepareStep: ({ messages }) => ({
+      messages: withTailCacheBreakpoints(messages),
+    }),
     onStepFinish: async (event) => {
       for (const toolCall of event.toolCalls) {
         const label = TOOL_STEP_LABELS[toolCall.toolName] ?? toolCall.toolName
@@ -282,13 +330,26 @@ export async function generateLawList(
 
   const durationMs = Date.now() - startTime
 
+  // AI SDK v6 cache-write field location varies by provider/version — same
+  // dual lookup as app/api/chat/route.ts (Story 14.26 runtime evidence).
+  const usageAsRecord = result.totalUsage as unknown as {
+    cacheCreationInputTokens?: number
+    inputTokenDetails?: { cacheWriteTokens?: number }
+  }
+
   return {
     listId: lawList?.id ?? null,
     itemCount: lawList?._count.items ?? 0,
     groups: lawList?.groups.map((g) => g.name) ?? [],
+    model: GENERATION_MODEL,
     tokensUsed: {
       input: result.totalUsage.inputTokens ?? 0,
       output: result.totalUsage.outputTokens ?? 0,
+      cacheRead: result.totalUsage.cachedInputTokens ?? 0,
+      cacheWrite:
+        usageAsRecord.cacheCreationInputTokens ??
+        usageAsRecord.inputTokenDetails?.cacheWriteTokens ??
+        0,
     },
     durationMs,
   }
