@@ -3,7 +3,7 @@ import { Mail } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Verifiera e-post | Laglig.se',
+  title: 'Verifiera e-post',
   description: 'Verifiera din e-postadress',
 }
 

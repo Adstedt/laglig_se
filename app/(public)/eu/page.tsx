@@ -22,11 +22,11 @@ interface EuPageProps {
 }
 
 export const metadata: Metadata = {
-  title: 'EU-lagstiftning | Laglig.se',
+  title: 'EU-lagstiftning',
   description:
     'Bläddra bland EU-förordningar och EU-direktiv som gäller i Sverige.',
   openGraph: {
-    title: 'EU-lagstiftning | Laglig.se',
+    title: 'EU-lagstiftning',
     description:
       'Bläddra bland EU-förordningar och EU-direktiv som gäller i Sverige.',
     type: 'website',

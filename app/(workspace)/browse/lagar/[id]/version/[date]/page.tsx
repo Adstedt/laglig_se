@@ -28,7 +28,7 @@ export async function generateMetadata({
 
   if (!law) {
     return {
-      title: 'Lag hittades inte | Laglig.se',
+      title: 'Lag hittades inte',
     }
   }
 
@@ -39,7 +39,7 @@ export async function generateMetadata({
   })
 
   return {
-    title: `${law.title} - Version ${formattedDate} | Laglig.se`,
+    title: `${law.title} - Version ${formattedDate}`,
     description: `Historisk version av ${law.title} (${law.document_number}) som gällde per ${formattedDate}.`,
     robots: {
       index: false, // Don't index historical versions

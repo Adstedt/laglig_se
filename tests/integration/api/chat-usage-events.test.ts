@@ -47,8 +47,22 @@ vi.mock('@/lib/prisma', () => ({
     chatUsageEvent: {
       create: mockChatUsageEventCreate,
     },
+    // ADR-14.22-A pre-loop stub message: created before the tool loop,
+    // filled with final content inside the onFinish $transaction.
+    chatMessage: {
+      create: vi.fn().mockResolvedValue({ id: 'stub-assistant-message-id' }),
+      update: vi.fn().mockResolvedValue({}),
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
+    // Story 14.22 buildPendingActionsContext (lib/agent/context-assembly)
+    pendingAgentAction: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
     workspace: {
       findUniqueOrThrow: mockWorkspaceFindUniqueOrThrow,
+      // 2026-06-02 identity-drift fix: route fetches workspace.name for
+      // formatCompanyContext alongside the CompanyProfile.
+      findUnique: vi.fn().mockResolvedValue({ name: 'Test Workspace' }),
     },
     workspaceUsage: {
       upsert: mockWorkspaceUsageUpsert,
@@ -191,6 +205,20 @@ describe('POST /api/chat — ChatUsageEvent telemetry (Story 14.27)', () => {
     })
     // cost_usd_estimate is computed via estimateCostUsd — verify it's a positive number
     expect(call.data.cost_usd_estimate).toBeGreaterThan(0)
+
+    // Quota counter excludes cache reads/writes (they're subsets of
+    // inputTokens): 9500 − 8000 cache_read − 0 cache_write + 500 output = 2000.
+    // Regression for the ~8× over-counting bug where the full cached replay
+    // burned user quota.
+    expect(mockWorkspaceUsageUpsert).toHaveBeenCalledTimes(1)
+    const upsertCall = mockWorkspaceUsageUpsert.mock.calls[0]?.[0] as {
+      create: { tokens_used_this_period: bigint }
+      update: { tokens_used_this_period: { increment: bigint } }
+    }
+    expect(upsertCall.create.tokens_used_this_period).toBe(BigInt(2000))
+    expect(upsertCall.update.tokens_used_this_period.increment).toBe(
+      BigInt(2000)
+    )
   })
 
   it('captures step_count from the steps array on multi-step turns', async () => {

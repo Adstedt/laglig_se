@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 import { ResetPasswordForm } from './_reset-password-form'
 
 export const metadata: Metadata = {
-  title: 'Återställ lösenord | Laglig.se',
+  title: 'Återställ lösenord',
   description: 'Återställ ditt lösenord',
 }
 

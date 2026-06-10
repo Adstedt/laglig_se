@@ -23,11 +23,11 @@ interface RattskallolPageProps {
 }
 
 export const metadata: Metadata = {
-  title: 'Bläddra i svensk lagstiftning | Laglig.se',
+  title: 'Bläddra i svensk lagstiftning',
   description:
     'Utforska över 170 000 svenska lagar och EU-lagstiftning. Filtrera och bläddra i vår omfattande juridiska databas.',
   openGraph: {
-    title: 'Bläddra i svensk lagstiftning | Laglig.se',
+    title: 'Bläddra i svensk lagstiftning',
     description: 'Utforska över 170 000 svenska lagar och EU-lagstiftning.',
     type: 'website',
     locale: 'sv_SE',

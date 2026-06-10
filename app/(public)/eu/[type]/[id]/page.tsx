@@ -22,6 +22,7 @@ import { DocumentContent } from '@/components/features/document-content'
 import { DocumentHero } from '@/components/features/document-hero'
 import { DocumentPageLayout } from '@/components/features/document-page-layout'
 import { DocumentIntroAccordion } from '@/components/features/document-intro'
+import { buildSeoDescription, cleanText } from '@/lib/seo/meta'
 import { BackToTopButton } from '@/app/(public)/lagar/[id]/toc-client'
 import { FloatingImplementationsButton } from './floating-implementations-button'
 import { RelatedDocsPrefetcher } from '@/components/features/eu-legislation'
@@ -75,7 +76,7 @@ export async function generateMetadata({
 
   const typeInfo = EU_TYPE_MAP[type]
   if (!typeInfo) {
-    return { title: 'EU-dokument hittades inte | Laglig.se' }
+    return { title: 'EU-dokument hittades inte' }
   }
 
   const document = await getCachedEuLegislationMetadata(
@@ -84,20 +85,22 @@ export async function generateMetadata({
   )
 
   if (!document) {
-    return { title: 'EU-dokument hittades inte | Laglig.se' }
+    return { title: 'EU-dokument hittades inte' }
   }
 
-  const description =
-    document.summary?.substring(0, 155) ||
-    document.full_text?.substring(0, 155) ||
-    `Läs ${document.title} i sin helhet`
+  const title = cleanText(document.title)
+  const description = buildSeoDescription({
+    summary: document.summary,
+    fullText: document.full_text,
+    fallback: `${typeInfo.name} i fulltext på svenska – läs ${document.title} på Laglig.se.`,
+  })
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://laglig.se'
 
   return {
-    title: `${document.title} | Laglig.se`,
+    title,
     description,
     openGraph: {
-      title: document.title,
+      title,
       description,
       type: 'article',
       url: `${baseUrl}/eu/${type}/${document.slug}`,
@@ -105,7 +108,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: document.title,
+      title,
       description,
     },
     alternates: {

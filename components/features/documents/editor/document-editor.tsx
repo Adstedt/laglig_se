@@ -24,6 +24,7 @@ type TiptapContent = Record<string, any>
 import { EditorToolbar } from './editor-toolbar'
 import { SlashCommandExtension } from './slash-command'
 import { useDocumentAutosave } from '@/lib/hooks/use-document-autosave'
+import { trackEvent } from '@/lib/track-event'
 import { autosaveDocument } from '@/app/actions/documents'
 import { Button } from '@/components/ui/button'
 import {
@@ -404,6 +405,7 @@ export function DocumentEditor({
     const result = await promoteDraftToApproved(documentId)
     setPromoting(false)
     if (result.success) {
+      trackEvent('document_approved', { documentId })
       setCurrentStatus('APPROVED')
       setCurrentDraftId(null)
       setCurrentDraftStatus(null)

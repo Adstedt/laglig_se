@@ -12,7 +12,7 @@
 import { useCallback, useState, useRef, useMemo, useEffect } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport, type UIMessage } from 'ai'
-import { track } from '@vercel/analytics'
+import { trackEvent } from '@/lib/track-event'
 import {
   getChatHistory,
   saveChatMessage,
@@ -159,7 +159,7 @@ export function useChatInterface(
         .map((p) => ('text' in p ? p.text : ''))
         .join('')
 
-      track('ai_chat_response_complete', {
+      trackEvent('ai_chat_response_complete', {
         responseLength: responseText.length,
         durationMs: duration,
       })
@@ -176,7 +176,7 @@ export function useChatInterface(
     },
     onError: (err) => {
       // Track error
-      track('ai_chat_error', {
+      trackEvent('ai_chat_error', {
         errorType: getErrorType(err),
         errorMessage: err.message,
       })
@@ -187,7 +187,7 @@ export function useChatInterface(
         const match = err.message.match(/(\d+)/)
         if (match && match[1]) {
           setRetryAfter(parseInt(match[1], 10))
-          track('ai_chat_rate_limited', { userId: 'unknown' })
+          trackEvent('ai_chat_rate_limited', { userId: 'unknown' })
         }
       }
     },
@@ -277,7 +277,7 @@ export function useChatInterface(
       lastMessageRef.current = content
 
       // Track message sent
-      track('ai_chat_message_sent', {
+      trackEvent('ai_chat_message_sent', {
         contextType,
         messageLength: content.length,
         hasContext: !!contextId,

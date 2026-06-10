@@ -12,6 +12,7 @@ import {
   clearOnboardingData,
 } from '@/lib/onboarding/onboarding-store'
 import { selectQuestions } from '@/lib/onboarding/question-selector'
+import { trackEvent } from '@/lib/track-event'
 import type { InvitationWithDetails } from '@/app/actions/invitations'
 import type { WorkspaceOnboardingData } from '@/lib/validation/workspace'
 import type { ActivityFlags } from './activity-questions-step'
@@ -76,16 +77,19 @@ export function OnboardingWizard({
   const handleCompanyInfoNext = (data: WorkspaceOnboardingData) => {
     setFormData(data)
     setSubmitError(null)
+    trackEvent('onboarding_step_completed', { step: 'company_info' })
     setCurrentStep((prev) => prev + 1)
   }
 
   const handleActivityQuestionsNext = (flags: ActivityFlags) => {
     setActivityFlags(flags)
+    trackEvent('onboarding_step_completed', { step: 'activity_questions' })
     setCurrentStep((prev) => prev + 1)
   }
 
   const handleTierPickerNext = (tier: PickedTier) => {
     setPickedTier(tier)
+    trackEvent('onboarding_step_completed', { step: 'tier_picker', tier })
     setCurrentStep((prev) => prev + 1)
   }
 
@@ -169,6 +173,11 @@ export function OnboardingWizard({
         }
         return
       }
+
+      trackEvent('onboarding_completed', {
+        tier: pickedTier ?? 'unknown',
+        ...(result.workspaceId ? { workspaceId: result.workspaceId } : {}),
+      })
 
       clearOnboardingData()
       const targetUrl = getSafeRedirectUrl(redirect)

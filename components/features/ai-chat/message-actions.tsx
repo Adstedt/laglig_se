@@ -8,7 +8,7 @@
 import { useState } from 'react'
 import { Copy, Check, ThumbsUp, ThumbsDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { track } from '@vercel/analytics'
+import { trackEvent } from '@/lib/track-event'
 
 interface MessageActionsProps {
   messageId: string
@@ -28,7 +28,7 @@ export function MessageActions({
     try {
       await navigator.clipboard.writeText(content)
       setCopied(true)
-      track('ai_chat_copy', { messageId })
+      trackEvent('ai_chat_copy', { messageId })
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
       console.error('Failed to copy:', err)
@@ -40,7 +40,7 @@ export function MessageActions({
     setFeedback(newFeedback)
 
     if (newFeedback) {
-      track('ai_chat_feedback', {
+      trackEvent('ai_chat_feedback', {
         messageId,
         feedback: newFeedback,
       })

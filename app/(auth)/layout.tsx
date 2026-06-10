@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 
 export const metadata: Metadata = {
-  title: 'Konto | Laglig.se',
+  title: 'Konto',
   description: 'Logga in eller skapa konto på Laglig.se',
 }
 

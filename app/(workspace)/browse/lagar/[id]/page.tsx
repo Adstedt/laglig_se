@@ -48,11 +48,11 @@ export async function generateMetadata({
   const law = await getCachedLawMetadata(id)
 
   if (!law) {
-    return { title: 'Lag hittades inte | Laglig.se' }
+    return { title: 'Lag hittades inte' }
   }
 
   return {
-    title: `${law.title} - ${law.document_number} | Laglig.se`,
+    title: `${law.title} - ${law.document_number}`,
     description:
       law.summary?.substring(0, 155) ||
       `Läs ${law.title} i sin helhet på Laglig.se`,

@@ -19,7 +19,7 @@ import { ChatMessageList } from './chat-message-list'
 import { ChatInput } from './chat-input'
 import { ChatError } from './chat-error'
 import { useChatInterface } from '@/lib/hooks/use-chat-interface'
-import { track } from '@vercel/analytics'
+import { trackEvent } from '@/lib/track-event'
 
 interface ChatModalProps {
   isOpen: boolean
@@ -39,7 +39,7 @@ export function ChatModal({ isOpen, onClose }: ChatModalProps) {
   // Track modal open
   useEffect(() => {
     if (isOpen) {
-      track('ai_chat_opened', { location: 'modal' })
+      trackEvent('ai_chat_opened', { location: 'modal' })
     }
   }, [isOpen])
 

@@ -7,7 +7,7 @@ import { getCurrentUser } from '@/lib/auth/session'
 import { prisma } from '@/lib/prisma'
 
 export const metadata: Metadata = {
-  title: 'Onboarding | Laglig.se',
+  title: 'Onboarding',
   description: 'Skapa din workspace för att komma igång',
 }
 

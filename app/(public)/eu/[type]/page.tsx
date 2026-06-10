@@ -44,14 +44,14 @@ export async function generateMetadata({
   const typeInfo = EU_TYPE_MAP[type]
 
   if (!typeInfo) {
-    return { title: 'Typ hittades inte | Laglig.se' }
+    return { title: 'Typ hittades inte' }
   }
 
   return {
-    title: `${typeInfo.namePlural} | Laglig.se`,
+    title: `${typeInfo.namePlural}`,
     description: `Utforska ${typeInfo.namePlural.toLowerCase()} som gäller i Sverige. Sök bland EU-lagstiftning med svensk text.`,
     openGraph: {
-      title: `${typeInfo.namePlural} | Laglig.se`,
+      title: `${typeInfo.namePlural}`,
       description: `Utforska ${typeInfo.namePlural.toLowerCase()} som gäller i Sverige.`,
       type: 'website',
     },

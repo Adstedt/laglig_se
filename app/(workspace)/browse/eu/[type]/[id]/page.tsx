@@ -59,7 +59,7 @@ export async function generateMetadata({
 
   const typeInfo = EU_TYPE_MAP[type]
   if (!typeInfo) {
-    return { title: 'EU-dokument hittades inte | Laglig.se' }
+    return { title: 'EU-dokument hittades inte' }
   }
 
   const document = await getCachedEuLegislationMetadata(
@@ -68,11 +68,11 @@ export async function generateMetadata({
   )
 
   if (!document) {
-    return { title: 'EU-dokument hittades inte | Laglig.se' }
+    return { title: 'EU-dokument hittades inte' }
   }
 
   return {
-    title: `${document.title} | Laglig.se`,
+    title: `${document.title}`,
     description:
       document.summary?.substring(0, 155) ||
       `Läs ${document.title} i sin helhet`,

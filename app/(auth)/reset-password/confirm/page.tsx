@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { ConfirmPasswordForm } from './_confirm-password-form'
 
 export const metadata: Metadata = {
-  title: 'Nytt lösenord | Laglig.se',
+  title: 'Nytt lösenord',
   description: 'Ange ditt nya lösenord',
 }
 

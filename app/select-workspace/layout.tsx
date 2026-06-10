@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card'
 import { getCurrentUser } from '@/lib/auth/session'
 
 export const metadata: Metadata = {
-  title: 'Välj arbetsplats | Laglig.se',
+  title: 'Välj arbetsplats',
   description: 'Välj vilken arbetsplats du vill arbeta i',
 }
 

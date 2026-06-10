@@ -147,13 +147,16 @@ export function tokensHardCap(limit: number | null): number | null {
 /**
  * Display helper: convert a token count to an "≈ X AI-frågor" estimate.
  *
- * Counter formula (chat route 2026-05-05): quota counts only input + output —
- * cache_read and cache_write are excluded as Story 14.26 infrastructure
- * optimization, not user-visible work. Empirical Almåsa session 2026-05-05:
- * mean ~28K (input + output) per turn across mixed Sonnet 4.6 contexts
- * including multi-step tool use, so the 30K divisor remains a fair proxy
- * for "how many turns can a Solo workspace afford within their 3M cap."
+ * Counter formula (chat route 2026-05-05, fixed 2026-06-10): quota counts only
+ * fresh input + output — cache_read and cache_write (subsets of Anthropic's
+ * total inputTokens) are excluded as Story 14.26 infrastructure optimization,
+ * not user-visible work. The original 30K divisor came from the Almåsa session
+ * 2026-05-05, measured while the counter still included cached tokens; under
+ * the corrected formula, June 2026 production data shows ~15K (fresh input +
+ * output) per turn across mixed Sonnet 4.6 contexts including multi-step tool
+ * use, so 15K is the fair proxy for "how many turns can a Solo workspace
+ * afford within their 3M cap."
  */
 export function tokensToApproxQueries(tokens: number): number {
-  return Math.round(tokens / 30_000)
+  return Math.round(tokens / 15_000)
 }

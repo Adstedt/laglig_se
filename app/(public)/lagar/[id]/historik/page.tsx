@@ -35,12 +35,12 @@ export async function generateMetadata({
 
   if (!law) {
     return {
-      title: 'Lag hittades inte | Laglig.se',
+      title: 'Lag hittades inte',
     }
   }
 
   return {
-    title: `Ändringshistorik - ${law.title} | Laglig.se`,
+    title: `Ändringshistorik - ${law.title}`,
     description: `Se alla ändringar och historiska versioner av ${law.title} (${law.document_number}).`,
   }
 }

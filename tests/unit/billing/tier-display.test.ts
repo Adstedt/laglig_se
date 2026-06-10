@@ -23,8 +23,10 @@ describe('getTierDisplay', () => {
     const solo = getTierDisplay('SOLO')
     // The features list IS derived from TIER_LIMITS — verify a few load-bearing entries.
     expect(solo.features).toContain('1 användare')
-    // 3M tokens at 30K/turn = ~100 frågor (matches tokensToApproxQueries)
-    expect(solo.features.some((f) => f.includes('100 AI-frågor'))).toBe(true)
+    // 3M tokens at 15K/turn = ~200 frågor (matches tokensToApproxQueries;
+    // divisor recalibrated 2026-06-10 when the quota counter stopped charging
+    // cached tokens)
+    expect(solo.features.some((f) => f.includes('200 AI-frågor'))).toBe(true)
     expect(solo.features.some((f) => f.includes('3M tokens'))).toBe(true)
     expect(solo.features).toContain(`${TIER_LIMITS.SOLO.storageGB} GB lagring`)
   })
@@ -39,7 +41,7 @@ describe('getTierDisplay', () => {
           f.includes(`${ADDON_SEAT_MONTHLY_SEK} SEK/extra plats`)
       )
     ).toBe(true)
-    expect(team.features.some((f) => f.includes('300 AI-frågor'))).toBe(true)
+    expect(team.features.some((f) => f.includes('600 AI-frågor'))).toBe(true)
     expect(team.features.some((f) => f.includes('9M tokens'))).toBe(true)
     expect(team.features).toContain(`${TIER_LIMITS.TEAM.storageGB} GB lagring`)
   })

@@ -23,7 +23,7 @@ import {
   type ChatContextInitial,
   type UseChatInterfaceReturn,
 } from '@/lib/hooks/use-chat-interface'
-import { track } from '@vercel/analytics'
+import { trackEvent } from '@/lib/track-event'
 import { cn } from '@/lib/utils'
 import { getChatHistory, type ChatMessageData } from '@/app/actions/ai-chat'
 import {
@@ -263,7 +263,7 @@ function ChatPanelBody({
 
   // Track panel open
   useEffect(() => {
-    track('ai_chat_opened', { location: analyticsLocation })
+    trackEvent('ai_chat_opened', { location: analyticsLocation })
     // Focus input when opened
     setTimeout(() => inputRef.current?.focus(), 100)
   }, [analyticsLocation])

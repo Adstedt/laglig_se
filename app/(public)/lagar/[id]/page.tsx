@@ -35,6 +35,7 @@ import { DocumentIntroAccordion } from '@/components/features/document-intro'
 import { getImplementedEuDirectives } from '@/app/actions/cross-references'
 import { cleanLawHtml } from '@/lib/sfs/clean-law-html'
 import { getLatestAmendmentSfs } from '@/lib/sfs/latest-amendment'
+import { buildSeoDescription, documentSeoTitle } from '@/lib/seo/meta'
 
 // ISR: Revalidate every hour
 // Static generation for top 500 laws (Story 2.19)
@@ -90,20 +91,23 @@ export async function generateMetadata({
   const law = await getCachedLawMetadata(id)
 
   if (!law) {
-    return { title: 'Lag hittades inte | Laglig.se' }
+    return { title: 'Lag hittades inte' }
   }
 
-  const description =
-    law.summary?.substring(0, 155) ||
-    law.full_text?.substring(0, 155) ||
-    `Läs ${law.title} i sin helhet på Laglig.se`
+  const title = documentSeoTitle(law.title, law.document_number)
+  const description = buildSeoDescription({
+    summary: law.summary,
+    applicabilityHint: law.applicability_hint,
+    fullText: law.full_text,
+    fallback: `Läs ${law.title} i fulltext på Laglig.se – uppdaterad lagtext med ändringar, paragraf för paragraf.`,
+  })
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://laglig.se'
 
   return {
-    title: `${law.title} - ${law.document_number} | Laglig.se`,
+    title,
     description,
     openGraph: {
-      title: law.title,
+      title,
       description,
       type: 'article',
       url: `${baseUrl}/lagar/${law.slug}`,
@@ -111,7 +115,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: law.title,
+      title,
       description,
     },
     alternates: {
