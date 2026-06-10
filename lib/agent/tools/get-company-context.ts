@@ -15,7 +15,9 @@ export function createGetCompanyContextTool(workspaceId: string) {
     description: `Hämta företagets profil och efterlevnadsstatus (compliance posture).
 
 Använd detta verktyg när du behöver förstå vem användaren är och hur deras efterlevnadsläge ser ut.
-Det returnerar: företagsprofil (namn, org.nummer, SNI-kod, bransch, storlek, verksamhetsbeskrivning),
+Det returnerar: företagsprofil (namn, org.nummer, SNI-kod, bransch, exakt antal anställda, verksamhetsbeskrivning),
+verksamhetsflaggor (activityFlags — t.ex. kemikalier, bygg, minderåriga anställda, personuppgifter; använd dessa
+för att fånga lagkrav som flaggorna utlöser, t.ex. regler om minderårigas arbetsmiljö),
 skattestatus (F-skatt, moms, arbetsgivare), utlandsägande, FI-reglering, pågående förfaranden,
 en sammanfattning av bevakningslistor med antal lagar, fördelning av efterlevnadsstatus,
 och antal väntande lagändringar som inte har hanterats.
@@ -98,6 +100,15 @@ Returnerar alltid data även om vissa fält är tomma — använd det som finns.
           sniCode: profile.sni_code ?? null,
           industryLabel: profile.industry_label ?? null,
           employeeCountRange: profile.employee_count_range ?? null,
+          // Exact headcount from Bolagsverket enrichment. Lets the agent apply
+          // size-triggered duties (10+/25+/50+ thresholds) definitively instead
+          // of hedging — employeeCountRange is often null for enriched profiles.
+          employeeCount: profile.employee_count ?? null,
+          // Onboarding/enrichment flags ({ construction, personalData,
+          // minorEmployees, chemicals, ... }). Surfaced so flag-triggered law
+          // areas (e.g. minderårigas arbetsmiljö) reach the agent — the law
+          // list generation prompt tells the model to search on these.
+          activityFlags: profile.activity_flags ?? null,
           organizationType: profile.organization_type ?? null,
           complianceMaturity: profile.compliance_maturity ?? null,
           hasComplianceOfficer: profile.has_compliance_officer,

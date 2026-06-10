@@ -276,9 +276,13 @@ describe('get_company_context tool', () => {
       certifications: [],
       profile_completeness: 90,
       legal_form: null,
-      employee_count: null,
+      employee_count: 41,
       address: null,
-      activity_flags: null,
+      activity_flags: {
+        construction: true,
+        personalData: true,
+        minorEmployees: true,
+      },
       last_onboarding_at: null,
       municipality: null,
       website_url: null,
@@ -313,6 +317,12 @@ describe('get_company_context tool', () => {
     const result = await tool.execute({}, makeExecuteArgs())
     const data = (result as { data: Record<string, unknown> }).data
 
+    expect(data.employeeCount).toBe(41)
+    expect(data.activityFlags).toEqual({
+      construction: true,
+      personalData: true,
+      minorEmployees: true,
+    })
     expect(data.businessDescription).toBe(
       'IT-konsultföretag med fokus på compliance'
     )
@@ -379,6 +389,8 @@ describe('get_company_context tool', () => {
     const result = await tool.execute({}, makeExecuteArgs())
     const data = (result as { data: Record<string, unknown> }).data
 
+    expect(data.employeeCount).toBeNull()
+    expect(data.activityFlags).toBeNull()
     expect(data.businessDescription).toBeNull()
     expect(data.taxStatus).toBeNull()
     expect(data.foreignOwned).toBe(false)
