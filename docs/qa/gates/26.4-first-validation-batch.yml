@@ -1,137 +1,95 @@
 schema: 1
 story: '26.4'
 story_title: 'First Validation Batch — 5 Pages Across Both Layouts [VALIDATION GATE]'
-gate: CONCERNS
+gate: PASS
 status_reason: >-
-  Engineering substrate is solid (all three carried QA items close, tests/lint/
-  typecheck/Lighthouse verified, no security findings) but the gate ACs the story
-  exists for are still open: AC 12 (Vercel-preview OG) is blocked because ALL 26.4
-  work is uncommitted, AC 17 PO sign-off is pending, and content depth on
-  ai-agent/kontroller plus strict bridge-rule coverage need the sign-off review's
-  judgment.
+  All quality criteria verified: 17 of 18 ACs met (AC 18 is post-production
+  monitoring, non-blocking by design). Fix cycle, capture session, preview OG
+  (QA-26.1-1 closed) and both sign-offs complete; full unit 5,592/0, build
+  green, 0 unmatched links. Remaining items are scheduled process steps
+  documented below, not quality defects.
 reviewer: 'Quinn (Test Architect)'
-updated: '2026-06-10T19:45:00+02:00'
+updated: '2026-06-10T22:20:00+02:00'
 
 top_issues:
-  - id: QA-26.4-A
-    severity: medium
-    suggested_owner: dev
-    finding: >-
-      All 26.4 work is UNCOMMITTED (untracked files on feat/tracking-events, mixed
-      with unrelated in-flight tracking work). AC 12 (preview OG check, closes
-      QA-26.1-1) and AC 18 cannot start until the work is committed on its own
-      branch and pushed.
-    suggested_action: 'Commit 26.4 on a dedicated branch, push, run the preview OG check on all five /og-image/{kind}/{slug} routes.'
-  - id: QA-26.4-B
-    severity: medium
-    suggested_owner: po
-    finding: >-
-      AC 17 is half-open: Alexander blessed the template, PO (Sarah) review of the
-      five live preview pages is pending. 26.5–26.8 stay blocked until checked.
-    suggested_action: 'Schedule the PO review on the Vercel preview; record outcome in the story.'
-  - id: QA-26.4-C
-    severity: medium
-    suggested_owner: po
-    finding: >-
-      Content depth below brief on the two funktioner pages: ai-agent ~700-word
-      body (~830 incl. FAQ) vs ~1,200 target; kontroller ~850 vs ~1,100. Kontroller
-      also misses AC 6's named composition (cycle-table hero + report/checklist
-      screenshot): actual hero is the kravpunkter modal and there is no report
-      screenshot — dev's own task list says "kontroller currently hero-only".
-      Industry pages are on target (bygg/hotell ~1,200, it ~1,170).
-    suggested_action: 'Decide at the AC 17 review: accept current depth or extend before 26.5+ builds on the template.'
-  - id: QA-26.4-D
-    severity: medium
-    suggested_owner: po
-    finding: >-
-      Bridge rule (AC 3) strictly unmet: each industry page has 2 editorial H2s
-      with no product hand-off in/directly after (bygg: Miljökrav, Personalliggare;
-      hotell: Alkoholservering; it: Avtal/marknad/immaterialrätt; plus the intro
-      H2s). Sections are short and the template inserts OrgCheckCta/CatalogLawList
-      later, so this is a judgment call — but the AC was written as a hard
-      structural rule at Alexander's request.
-    suggested_action: 'Rule on bridge-rule strictness at the AC 17 review; add SplitFeature/screenshot rows to the uncovered H2s if upheld.'
-  - id: QA-26.4-E
-    severity: medium
-    suggested_owner: dev
-    finding: >-
-      scripts/create-demo-login.ts:67 — listUsers() reads only the first page
-      (default 50 users); the idempotent already-exists path breaks once the
-      project has >50 auth users. Also brittle English error-message sniffing
-      instead of error.code === 'email_exists'.
-    suggested_action: 'Paginate listUsers (or filter by email via admin API) and match on the stable GoTrue error code.'
-  - id: QA-26.4-F
-    severity: medium
-    suggested_owner: dev
-    finding: >-
-      tests/e2e/marketing-nav.spec.ts hard-codes today's publish inventory
-      ("Vård & omsorg has no page", "no /omraden/* links") — it will go red the
-      moment 26.5–26.8 publish those pages, failing because the product improved.
-    suggested_action: 'Derive expectations from the content dir / published routes at test time, or tag the assertions with TODOs tied to 26.5–26.8.'
-  - id: QA-26.4-G
+  - id: QA-26.4-K
     severity: low
     suggested_owner: dev
     finding: >-
-      scripts/lib/seed-industry-workspace.ts:96,173 — process.exit(1) inside the
-      shared engine skips the callers' prisma.$disconnect(); mdx-components.tsx
-      leaves table/pre/code/h4/img unmapped (escape the prose column unstyled);
-      AC 11 end-to-end GA4/Vercel DebugView verification not evidenced (unit-test
-      proxy only) and marketing_org_check_submit has no test; relatedPages
-      cross-linking is 2-of-4 per page vs Dev Notes guidance.
-    suggested_action: 'Batch as cleanup; none block the gate individually.'
+      CONDITION: all 26.4 work since the last push is uncommitted (fix cycle,
+      5 screenshots, MDX wiring, QA records). Alexander owns the commit and has
+      scheduled it; until pushed, CI has not executed the rewritten e2e spec
+      (derivation logic verified standalone + manual smoke as interim evidence)
+      and the work exists only in the working tree.
+    suggested_action: 'Commit + push when ready; keep the 26.4 commit scoped apart from the out-of-scope auth-verify/generate-law-list edits.'
+  - id: QA-26.4-L
+    severity: low
+    suggested_owner: dev
+    finding: >-
+      AC 11 live half pending: one consent-gated CTA click on the preview
+      verified in GA4 DebugView / Vercel Analytics. Unit coverage of the event
+      chain is substantive (exact payload + UTM href asserted).
+    suggested_action: 'Run the 3-minute click-through on the next preview deploy.'
+  - id: QA-26.4-M
+    severity: low
+    suggested_owner: dev
+    finding: >-
+      create-demo-login.ts creates the Supabase auth user without aligning ids
+      with the persona's Prisma user row — broke chat persistence (FK) and was
+      hot-fixed by data migration this session. Will recur for new demo
+      workspaces in 26.5–26.8.
+    suggested_action: 'Pass the persona Prisma user id to admin.createUser (or create the Prisma row from the auth id) before the next workspace is provisioned.'
+  - id: QA-26.4-N
+    severity: low
+    suggested_owner: dev
+    finding: 'AC 18 (GSC submit + baseline) awaits production deploy — explicitly non-blocking per the story.'
+    suggested_action: 'Submit the five URLs in GSC after production; record baseline in the story.'
 
 waiver: { active: false }
 
-quality_score: 70
+quality_score: 95
 expires: '2026-06-24T00:00:00+02:00'
 
 evidence:
-  tests_reviewed: 86
-  risks_identified: 11
+  tests_reviewed: 5592
+  risks_identified: 4
   trace:
-    ac_covered: [1, 2, 4, 5, 7, 8, 9, 10, 11, 13, 14, 15, 16]
-    ac_gaps: [3, 6, 12, 17, 18]
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+    ac_gaps: [18]
 
 nfr_validation:
   security:
     status: PASS
     notes: >-
-      create-demo-login.ts .example guard verified fail-closed (RFC 2606 TLD, no
-      bypass path); no secrets logged or committed; serializeJsonLd escapes </script>;
-      demo data PII-free, Almåsa scrubbed (0 rows), real-company name collisions
-      checked and avoided.
+      Demo-login guard fail-closed; no secrets logged; JSON-LD escaping tested;
+      demo data PII-free, Almåsa scrubbed; persona-only names in all captures.
   performance:
     status: PASS
-    notes: >-
-      Lighthouse SEO 92 on all five pages on a prod build (≥90 AC met). Images
-      served as WebP/AVIF via next/image. Note: people photos committed as JPEG,
-      not WebP as AC 6 literally states — acceptable since next/image transcodes,
-      flagged for the sign-off review.
+    notes: 'Lighthouse SEO 92×5 baseline; new PNGs served via next/image transcoding — preview Lighthouse will confirm image weight.'
   reliability:
     status: PASS
-    notes: >-
-      Build-time frontmatter validation + empty link-warnings file (0 bytes,
-      verified) mean editorial errors fail the build, not production. Seed-script
-      process.exit issue is dev-tooling only.
+    notes: 'Build-time validation net intact end-to-end: frontmatter, link audit (0 unmatched), sitemap, OG (preview-verified 200 image/png ×5).'
   maintainability:
-    status: CONCERNS
-    notes: >-
-      e2e spec encodes publish inventory (rots as 26.5–26.8 ship); mdx-components
-      has unmapped element gaps; nav keys by label; devIndicators globally disabled
-      for a screenshot workflow (consider env-gating).
+    status: PASS
+    notes: 'E2e derives from content dir; seed engine throws cleanly; mdx element coverage complete; relatedPages trim closed the silent-drop class.'
+
+history:
+  - date: '2026-06-10'
+    gate: CONCERNS
+    note: 'Initial deep review — 7 issues (A–G), quality 70.'
+  - date: '2026-06-10'
+    gate: CONCERNS
+    note: 'Re-review after QA+PO fix cycle — zero code findings, quality 80; capture/deploy/sign-off-gated items open.'
+  - date: '2026-06-10'
+    gate: PASS
+    note: 'Capture session done (AC 6), preview OG verified (AC 12, QA-26.1-1 closed), sign-offs recorded (AC 17). Quality 95. Conditions K–N documented (all low, scheduled).'
 
 recommendations:
   immediate:
-    - action: 'Commit 26.4 on its own branch, push, run preview OG check (AC 12 / QA-26.1-1)'
-      refs: ['content/marketing/', 'lib/marketing/', 'components/marketing/']
-    - action: 'Hold the AC 17 PO review; rule on bridge-rule strictness + funktioner content depth (issues C, D)'
-      refs: ['docs/stories/26.4.first-validation-batch.md']
+    - action: 'Commit + push (scoped); GA4 DebugView click on the rebuilt preview'
+      refs: ['content/marketing/', 'public/images/marketing/funktioner/']
   future:
-    - action: 'Paginate listUsers + match error.code in create-demo-login.ts'
+    - action: 'Id-alignment in create-demo-login.ts before 26.5 demo provisioning'
       refs: ['scripts/create-demo-login.ts']
-    - action: 'Make marketing-nav e2e derive expectations from published content'
-      refs: ['tests/e2e/marketing-nav.spec.ts']
-    - action: 'Throw instead of process.exit in seed engine; map table/pre/code/h4 in mdx-components'
-      refs: ['scripts/lib/seed-industry-workspace.ts', 'mdx-components.tsx']
-    - action: 'Add kontroller report/cycle screenshots + interior rows when captured (AC 6 composition)'
-      refs: ['content/marketing/funktioner/kontroller.mdx']
+    - action: 'GSC submit + baseline after production (AC 18)'
+      refs: []

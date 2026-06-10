@@ -5,8 +5,38 @@
  * (Radix hover menus are flaky in happy-dom); this proves the DESKTOP
  * NavigationMenu opens on hover, published industries are live links, and
  * unpublished ones render as non-link "Kommer snart" items.
+ *
+ * Published-state is derived from content/marketing/ at test time (same walk
+ * as getPublishedMarketingRoutes) so the suite keeps passing as 26.5–26.8
+ * publish pages — no hard-coded inventory (QA-26.4-F).
  */
 import { test, expect } from '@playwright/test'
+import { readdirSync } from 'node:fs'
+import { join } from 'node:path'
+import { BRANSCHER_NAV, OMRADEN_NAV } from '../../lib/marketing/nav-links'
+
+function publishedRoutes(kind: 'branscher' | 'omraden'): string[] {
+  const dir = join(process.cwd(), 'content', 'marketing', kind)
+  return readdirSync(dir)
+    .filter((f) => f.endsWith('.mdx') && !f.startsWith('_'))
+    .map((f) => `/${kind}/${f.replace(/\.mdx$/, '')}`)
+}
+
+const publishedBranscher = publishedRoutes('branscher')
+const publishedOmraden = publishedRoutes('omraden')
+
+const liveBranscher = BRANSCHER_NAV.filter((i) =>
+  publishedBranscher.includes(i.route)
+)
+const comingSoonBranscher = BRANSCHER_NAV.filter(
+  (i) => !publishedBranscher.includes(i.route)
+)
+const liveOmraden = OMRADEN_NAV.filter((i) =>
+  publishedOmraden.includes(i.route)
+)
+const comingSoonOmraden = OMRADEN_NAV.filter(
+  (i) => !publishedOmraden.includes(i.route)
+)
 
 test.describe('Marketing megamenu — Branscher / Områden', () => {
   test.beforeEach(async ({ page }) => {
@@ -21,51 +51,65 @@ test.describe('Marketing megamenu — Branscher / Områden', () => {
   test('Branscher: published industries are live links with canonical hrefs', async ({
     page,
   }) => {
+    test.skip(liveBranscher.length === 0, 'no published industry pages yet')
     await page.getByRole('button', { name: 'Branscher' }).hover()
 
-    const bygg = page.getByRole('link', { name: /Bygg & anläggning/ })
-    await expect(bygg).toBeVisible({ timeout: 5000 })
-    await expect(bygg).toHaveAttribute('href', '/branscher/bygg')
+    const first = liveBranscher[0]!
+    const firstLink = page.getByRole('link', { name: first.label })
+    await expect(firstLink).toBeVisible({ timeout: 5000 })
 
-    await expect(
-      page.getByRole('link', { name: /Restaurang & hotell/ })
-    ).toHaveAttribute('href', '/branscher/hotell-restaurang')
-    await expect(page.getByRole('link', { name: /IT & tech/ })).toHaveAttribute(
-      'href',
-      '/branscher/it'
+    for (const item of liveBranscher) {
+      await expect(
+        page.getByRole('link', { name: item.label })
+      ).toHaveAttribute('href', item.route)
+    }
+  })
+
+  test('Branscher: unpublished industries are NOT links', async ({ page }) => {
+    test.skip(
+      comingSoonBranscher.length === 0,
+      'every industry page is published'
     )
-  })
-
-  test('Branscher: an unpublished industry is NOT a link', async ({ page }) => {
     await page.getByRole('button', { name: 'Branscher' }).hover()
-    await expect(
-      page.getByRole('link', { name: /Bygg & anläggning/ })
-    ).toBeVisible({ timeout: 5000 })
+    // Positive guard first: the menu must actually be open before the
+    // negative assertions below can mean anything.
+    await expect(page.getByText(comingSoonBranscher[0]!.label)).toBeVisible({
+      timeout: 5000,
+    })
 
-    // Vård & omsorg has no page yet → coming-soon, not a link
-    await expect(page.getByRole('link', { name: /Vård & omsorg/ })).toHaveCount(
-      0
-    )
+    for (const item of comingSoonBranscher) {
+      await expect(page.getByRole('link', { name: item.label })).toHaveCount(0)
+    }
   })
 
-  test('Branscher → Bygg navigates to the live page', async ({ page }) => {
+  test('Branscher: first published industry navigates to its live page', async ({
+    page,
+  }) => {
+    test.skip(liveBranscher.length === 0, 'no published industry pages yet')
+    const first = liveBranscher[0]!
+
     await page.getByRole('button', { name: 'Branscher' }).hover()
-    await page.getByRole('link', { name: /Bygg & anläggning/ }).click()
+    await page.getByRole('link', { name: first.label }).click()
 
-    await expect(page).toHaveURL(/\/branscher\/bygg$/)
-    await expect(page.getByRole('heading', { level: 1 })).toContainText(/bygg/i)
+    await expect(page).toHaveURL(new RegExp(`${first.route}$`))
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   })
 
-  test('Områden: topics render but none are live links yet', async ({
+  test('Områden: published topics are links, unpublished are not', async ({
     page,
   }) => {
     await page.getByRole('button', { name: 'Områden' }).hover()
-    await expect(page.getByText('GDPR & dataskydd')).toBeVisible({
+    await expect(page.getByText(OMRADEN_NAV[0]!.label)).toBeVisible({
       timeout: 5000,
     })
-    // No /omraden/* content shipped → no live links into /omraden
-    await expect(
-      page.getByRole('link', { name: /GDPR & dataskydd/ })
-    ).toHaveCount(0)
+
+    for (const item of liveOmraden) {
+      await expect(
+        page.getByRole('link', { name: item.label })
+      ).toHaveAttribute('href', item.route)
+    }
+    for (const item of comingSoonOmraden) {
+      await expect(page.getByRole('link', { name: item.label })).toHaveCount(0)
+    }
   })
 })

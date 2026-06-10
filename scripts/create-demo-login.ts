@@ -52,6 +52,21 @@ const admin = createClient(url, serviceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 })
 
+/** listUsers() is paginated (default 50/page) — walk all pages so the
+ *  idempotent re-run path keeps working past 50 auth users (QA-26.4-E). */
+async function findUserByEmail(target: string) {
+  const perPage = 1000
+  for (let page = 1; ; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage })
+    if (error) throw error
+    const match = data.users.find(
+      (u) => u.email?.toLowerCase() === target.toLowerCase()
+    )
+    if (match) return match
+    if (data.users.length < perPage) return null
+  }
+}
+
 async function main(): Promise<void> {
   const { data: created, error } = await admin.auth.admin.createUser({
     email,
@@ -67,10 +82,13 @@ async function main(): Promise<void> {
   }
 
   // Already exists → reset the password instead (idempotent re-runs).
-  if (/already.*(registered|exists)/i.test(error.message)) {
-    const { data: list, error: listErr } = await admin.auth.admin.listUsers()
-    if (listErr) throw listErr
-    const existing = list.users.find((u) => u.email === email)
+  // Match on GoTrue's stable error code, with the message regex as fallback
+  // for older supabase-js versions that don't surface `code` (QA-26.4-E).
+  const isExisting =
+    error.code === 'email_exists' ||
+    /already.*(registered|exists)/i.test(error.message)
+  if (isExisting) {
+    const existing = await findUserByEmail(email)
     if (!existing)
       throw new Error(`user exists but not found by listUsers: ${email}`)
     const { error: updateErr } = await admin.auth.admin.updateUserById(

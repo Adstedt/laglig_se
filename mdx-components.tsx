@@ -84,6 +84,50 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       </blockquote>
     ),
     hr: (props) => <hr className={`${PROSE} my-10 border-border`} {...props} />,
+    h4: ({ children, ...props }) => (
+      <h4
+        className={`${PROSE} mt-6 font-safiro text-lg font-medium tracking-tight text-foreground`}
+        {...props}
+      >
+        {children}
+      </h4>
+    ),
+    table: ({ children, ...props }) => (
+      <div className={`${PROSE} mt-6 overflow-x-auto`}>
+        <table
+          className="w-full border-collapse text-left text-[15px] text-muted-foreground"
+          {...props}
+        >
+          {children}
+        </table>
+      </div>
+    ),
+    th: ({ children, ...props }) => (
+      <th
+        className="border-b border-border py-2 pr-4 font-safiro font-medium text-foreground"
+        {...props}
+      >
+        {children}
+      </th>
+    ),
+    td: ({ children, ...props }) => (
+      <td className="border-b border-border py-2 pr-4 align-top" {...props}>
+        {children}
+      </td>
+    ),
+    pre: ({ children, ...props }) => (
+      <pre
+        className={`${PROSE} mt-6 overflow-x-auto rounded-lg border border-border bg-muted p-4 text-sm`}
+        {...props}
+      >
+        {children}
+      </pre>
+    ),
+    code: ({ children, ...props }) => (
+      <code className="rounded bg-muted px-1.5 py-0.5 text-sm" {...props}>
+        {children}
+      </code>
+    ),
     // Marketing section components usable inline in any MDX body (Story 26.4
     // bridge rows). These render full-width — they are not PROSE-wrapped.
     SplitFeature,
