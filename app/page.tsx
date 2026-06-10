@@ -4,6 +4,7 @@ import { BrowsePagesPrefetcher } from '@/components/features/landing/browse-page
 import { NavbarV3 } from '@/components/features/landing-v3/navbar-v3'
 import { FooterV3 } from '@/components/features/landing-v3/footer-v3'
 import { ForceLightTheme } from '@/components/features/landing-v2/force-light-theme'
+import { getPublishedMarketingRoutes } from '@/lib/marketing/content'
 
 import { HeroV3 } from '@/components/features/landing-v3/hero-v3'
 import { WhySectionGraph as WhySection } from '@/components/features/landing-v3/why-section-graph'
@@ -35,11 +36,15 @@ export const metadata = {
 }
 
 export default function Home() {
+  // Story 26.2: live marketing pages light up their nav/footer items;
+  // unpublished ones fall back to anchors (Produkt) or "Kommer snart".
+  const publishedRoutes = getPublishedMarketingRoutes()
+
   return (
     <>
       <ForceLightTheme />
 
-      <NavbarV3 />
+      <NavbarV3 publishedRoutes={publishedRoutes} />
       <main>
         <HeroV3 />
         {/* Problem → Solution: the scale/"vem har koll" problem hands straight
@@ -68,7 +73,7 @@ export default function Home() {
         <FaqV3 />
         <CtaV3 />
       </main>
-      <FooterV3 />
+      <FooterV3 publishedRoutes={publishedRoutes} />
       <BrowsePagesPrefetcher />
     </>
   )

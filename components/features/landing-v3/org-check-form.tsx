@@ -93,6 +93,7 @@ export function OrgCheckForm({
   className,
   eyebrow,
   resultMode = 'inline',
+  onPreviewSuccess,
 }: {
   className?: string
   eyebrow?: string
@@ -100,6 +101,9 @@ export function OrgCheckForm({
    *  or in a modal (`modal`) — used in the hero so the result doesn't balloon
    *  the form column and break the surrounding layout */
   resultMode?: 'inline' | 'modal'
+  /** fired once per successful company-preview fetch — marketing pages use
+   *  this for analytics (Story 26.1); the homepage omits it (no-op) */
+  onPreviewSuccess?: (_preview: PreviewResponse) => void
 }) {
   const [step, setStep] = useState<1 | 2>(1)
   const [orgNumber, setOrgNumber] = useState('')
@@ -153,6 +157,7 @@ export function OrgCheckForm({
           Array.isArray(data.areas)
         ) {
           setPreview(data as PreviewResponse)
+          onPreviewSuccess?.(data as PreviewResponse)
         }
       } catch {
         setError('unavailable')
@@ -160,7 +165,7 @@ export function OrgCheckForm({
         setIsLoading(false)
       }
     },
-    [orgNumber, websiteUrl, orgReady]
+    [orgNumber, websiteUrl, orgReady, onPreviewSuccess]
   )
 
   const reset = useCallback(() => {

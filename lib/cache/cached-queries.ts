@@ -103,6 +103,7 @@ export const getCachedLawMetadata = unstable_cache(
           title: true,
           document_number: true,
           summary: true,
+          applicability_hint: true,
           full_text: true,
           slug: true,
         },

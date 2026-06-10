@@ -5,7 +5,7 @@ import { getPendingInvitations } from '@/app/actions/invitations'
 import { OnboardingWizard } from './_components/onboarding-wizard'
 
 export const metadata: Metadata = {
-  title: 'Skapa workspace | Laglig.se',
+  title: 'Skapa workspace',
   description: 'Skapa din workspace för att komma igång',
 }
 

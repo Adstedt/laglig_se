@@ -15,6 +15,7 @@ import {
 import { AmendmentPageContent } from '@/components/features/amendment'
 import { DocumentPageLayout } from '@/components/features/document-page-layout'
 import { getDocumentTheme } from '@/lib/document-themes'
+import { buildSeoDescription, documentSeoTitle } from '@/lib/seo/meta'
 import { cn } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
@@ -31,26 +32,40 @@ export async function generateMetadata({
 
   if (!amendment) {
     return {
-      title: 'Ändringsförfattning hittades inte | Laglig.se',
+      title: 'Ändringsförfattning hittades inte',
     }
   }
 
   const metadata = amendment.metadata as { base_law_sfs?: string } | null
   const baseLawInfo = metadata?.base_law_sfs
-    ? ` - ändrar ${metadata.base_law_sfs}`
+    ? ` som ändrar ${metadata.base_law_sfs}`
     : ''
 
+  const title = documentSeoTitle(amendment.title, amendment.document_number)
+  const description = buildSeoDescription({
+    summary: amendment.summary,
+    fullText: amendment.full_text,
+    fallback: `Ändringsförfattning ${amendment.document_number}${baseLawInfo}. Läs ändringarna i fulltext på Laglig.se.`,
+  })
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://laglig.se'
+
   return {
-    title: `${amendment.title} | Laglig.se`,
-    description:
-      amendment.summary?.substring(0, 155) ||
-      `Läs ${amendment.document_number}${baseLawInfo} på Laglig.se`,
+    title,
+    description,
     openGraph: {
-      title: amendment.title,
-      description:
-        amendment.summary?.substring(0, 155) ||
-        `Ändringsförfattning ${amendment.document_number}`,
+      title,
+      description,
       type: 'article',
+      url: `${baseUrl}/lagar/andringar/${amendment.slug}`,
+      siteName: 'Laglig.se',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
+    alternates: {
+      canonical: `${baseUrl}/lagar/andringar/${amendment.slug}`,
     },
   }
 }

@@ -16,6 +16,7 @@ import { BookOpen, ExternalLink, FileDown } from 'lucide-react'
 import { DocumentContent } from '@/components/features/document-content'
 import { DocumentHero } from '@/components/features/document-hero'
 import { DocumentPageLayout } from '@/components/features/document-page-layout'
+import { buildSeoDescription, documentSeoTitle } from '@/lib/seo/meta'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,6 +33,7 @@ async function getDocument(slug: string) {
       document_number: true,
       slug: true,
       content_type: true,
+      summary: true,
       full_text: true,
       html_content: true,
       source_url: true,
@@ -51,9 +53,32 @@ export async function generateMetadata({
     return { title: 'Föreskrift ej hittad' }
   }
 
+  const title = documentSeoTitle(doc.title, doc.document_number)
+  const description = buildSeoDescription({
+    summary: doc.summary,
+    fullText: doc.full_text,
+    fallback: `Myndighetsföreskrift ${doc.document_number} – läs ${doc.title} i fulltext på Laglig.se.`,
+  })
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://laglig.se'
+
   return {
-    title: `${doc.title} - ${doc.document_number}`,
-    description: `Myndighetsföreskrift: ${doc.title}`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'article',
+      url: `${baseUrl}/foreskrifter/${doc.slug}`,
+      siteName: 'Laglig.se',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
+    alternates: {
+      canonical: `${baseUrl}/foreskrifter/${doc.slug}`,
+    },
   }
 }
 

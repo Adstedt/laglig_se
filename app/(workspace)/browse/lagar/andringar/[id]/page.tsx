@@ -20,12 +20,12 @@ export async function generateMetadata({
 
   if (!amendment) {
     return {
-      title: 'Ändringsförfattning hittades inte | Laglig.se',
+      title: 'Ändringsförfattning hittades inte',
     }
   }
 
   return {
-    title: `${amendment.title} | Laglig.se`,
+    title: `${amendment.title}`,
     description:
       amendment.summary?.substring(0, 155) ||
       `Läs ${amendment.document_number} på Laglig.se`,

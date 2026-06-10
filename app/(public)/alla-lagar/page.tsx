@@ -4,7 +4,7 @@ import { ContentType } from '@prisma/client'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Alla lagar - Svensk författningssamling | Laglig.se',
+  title: 'Alla lagar - Svensk författningssamling',
   description:
     'Utforska alla svenska lagar i Svensk författningssamling (SFS). Sök och läs lagtexter kostnadsfritt.',
   openGraph: {

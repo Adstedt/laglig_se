@@ -16,6 +16,7 @@ import {
   X,
 } from 'lucide-react'
 import { WorkspaceDocumentType } from '@prisma/client'
+import { trackEvent } from '@/lib/track-event'
 import {
   Dialog,
   DialogContent,
@@ -196,6 +197,7 @@ export function CreateDocumentDialog({
       }
 
       const docId = result.data!.id
+      trackEvent('document_created', { documentType: data.documentType })
 
       if (
         stagedTasks.length > 0 ||

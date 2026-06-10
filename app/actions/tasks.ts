@@ -19,6 +19,7 @@ import {
 } from './legal-document-modal'
 import { createTaskNotification } from '@/lib/notifications/task-notifications'
 import { notifyIfFindingTaskCompleted } from '@/lib/compliance-audit/notify-finding-task-completed'
+import { trackAsync } from '@/lib/analytics'
 import { NotificationType } from '@prisma/client'
 
 // ============================================================================
@@ -690,6 +691,12 @@ export async function updateTaskStatus(
       // Story 21.8: notify lead auditor when a corrective-action task is
       // completed (genuine transition: was NOT completed AND target is done).
       if (!wasCompleted && column.is_done) {
+        // Vercel-only: server actions can't reach GA4 without the Measurement
+        // Protocol. The genuine completion transition is computed here (covers
+        // every move surface — kanban, list, modal), so this is the single
+        // authoritative point for the metric.
+        trackAsync('task_completed', { taskId })
+
         notifyIfFindingTaskCompleted({
           taskId,
           workspaceId,

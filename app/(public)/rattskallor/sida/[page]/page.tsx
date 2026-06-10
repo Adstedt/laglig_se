@@ -46,15 +46,15 @@ export async function generateMetadata({
   return {
     title:
       page === 1
-        ? 'Bläddra i svensk lagstiftning | Laglig.se'
-        : `Sida ${page} - Bläddra i svensk lagstiftning | Laglig.se`,
+        ? 'Bläddra i svensk lagstiftning'
+        : `Sida ${page} - Bläddra i svensk lagstiftning`,
     description:
       'Utforska över 170 000 svenska lagar och EU-lagstiftning. Filtrera och bläddra i vår omfattande juridiska databas.',
     openGraph: {
       title:
         page === 1
-          ? 'Bläddra i svensk lagstiftning | Laglig.se'
-          : `Sida ${page} - Bläddra i svensk lagstiftning | Laglig.se`,
+          ? 'Bläddra i svensk lagstiftning'
+          : `Sida ${page} - Bläddra i svensk lagstiftning`,
       description: 'Utforska över 170 000 svenska lagar och EU-lagstiftning.',
       type: 'website',
       locale: 'sv_SE',

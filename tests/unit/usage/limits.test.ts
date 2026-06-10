@@ -167,8 +167,8 @@ describe('AI quota helpers (used by 5.5c, defined here for single-source-of-trut
     expect(tokensHardCap(null)).toBeNull()
   })
 
-  it('tokensToApproxQueries(3M) = 100', () => {
-    expect(tokensToApproxQueries(3_000_000)).toBe(100)
+  it('tokensToApproxQueries(3M) = 200', () => {
+    expect(tokensToApproxQueries(3_000_000)).toBe(200)
   })
 
   it('tokensToApproxQueries(15K) rounds to 1', () => {

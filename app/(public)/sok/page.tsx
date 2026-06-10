@@ -20,7 +20,7 @@ interface SearchPageProps {
 }
 
 export const metadata: Metadata = {
-  title: 'Sök i svensk lagstiftning | Laglig.se',
+  title: 'Sök i svensk lagstiftning',
   description: 'Sök bland 100 000+ svenska lagar och EU-lagstiftning.',
 }
 

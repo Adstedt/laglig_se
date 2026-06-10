@@ -13,7 +13,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { ArrowUpRight, ExternalLink, FileText, Globe } from 'lucide-react'
-import { track } from '@vercel/analytics'
+import { trackEvent } from '@/lib/track-event'
 import { useCitationSources } from '@/lib/ai/citation-context'
 import { useChatDetailSafe } from '@/lib/ai/chat-detail-context'
 import {
@@ -125,7 +125,7 @@ export function CitationPillInline({
 
     // Web sources: open URL directly in new tab (no sidebar)
     if (isWebResolved && source.url) {
-      track('web_citation_clicked', {
+      trackEvent('web_citation_clicked', {
         domain: webPillDomain ?? '',
         url: source.url,
       })
@@ -232,7 +232,7 @@ export function CitationPillInline({
               target="_blank"
               className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline mt-2"
               onClick={() => {
-                track('citation_clicked', {
+                trackEvent('citation_clicked', {
                   documentNumber: source.documentNumber,
                   ...(source.anchorId ? { anchorId: source.anchorId } : {}),
                 })
@@ -252,7 +252,7 @@ export function CitationPillInline({
               }`}
               className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline mt-2"
               onClick={() => {
-                track('workspace_citation_clicked', {
+                trackEvent('workspace_citation_clicked', {
                   workspaceDocumentId: workspaceDocId,
                   ...(source.tier ? { tier: source.tier } : {}),
                 })
@@ -269,7 +269,7 @@ export function CitationPillInline({
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline mt-2"
               onClick={() => {
-                track('web_citation_clicked', {
+                trackEvent('web_citation_clicked', {
                   domain: webDomain ?? '',
                   url: source.url ?? '',
                 })

@@ -539,7 +539,18 @@ export async function POST(req: Request) {
           // before the next turn) shouldn't penalise them. Cost-rate signal
           // for billing-side analysis is preserved separately on
           // ChatUsageEvent.cache_*_input_tokens columns + cost_usd_estimate.
-          const totalTokens = inputTokens + outputTokens
+          //
+          // Anthropic's inputTokens is the TOTAL billed input — cache reads and
+          // writes are subsets of it (same semantics as estimateCostUsd's
+          // fresh_input carve-out). Subtract them so multi-step tool turns,
+          // where the cached conversation prefix is re-billed every step, don't
+          // inflate the counter ~8× (observed: ~120K charged vs ~15K fair per
+          // turn, June 2026 production data).
+          const totalTokens =
+            Math.max(
+              0,
+              inputTokens - cacheReadInputTokens - cacheWriteInputTokens
+            ) + outputTokens
 
           if (workspaceId === 'default') {
             // Synthetic fallback — write the event log only, no counter

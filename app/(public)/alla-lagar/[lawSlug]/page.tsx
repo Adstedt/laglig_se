@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { buildSeoDescription, documentSeoTitle } from '@/lib/seo/meta'
 import type { Metadata } from 'next'
 
 interface PageProps {
@@ -22,25 +23,31 @@ export async function generateMetadata({
       title: true,
       document_number: true,
       summary: true,
+      applicability_hint: true,
       full_text: true,
     },
   })
 
   if (!law) {
     return {
-      title: 'Lag hittades inte | Laglig.se',
+      title: 'Lag hittades inte',
     }
   }
 
-  const description =
-    law.summary || law.full_text?.substring(0, 155) || law.title
+  const title = documentSeoTitle(law.title, law.document_number)
+  const description = buildSeoDescription({
+    summary: law.summary,
+    applicabilityHint: law.applicability_hint,
+    fullText: law.full_text,
+    fallback: `Läs ${law.title} i fulltext på Laglig.se – uppdaterad lagtext med ändringar, paragraf för paragraf.`,
+  })
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://laglig.se'
 
   return {
-    title: `${law.title} - ${law.document_number} | Laglig.se`,
+    title,
     description,
     openGraph: {
-      title: law.title,
+      title,
       description,
       type: 'article',
       url: `${baseUrl}/alla-lagar/${lawSlug}`,
@@ -48,7 +55,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: law.title,
+      title,
       description,
     },
     alternates: {

@@ -21,11 +21,11 @@ interface LagarPageProps {
 }
 
 export const metadata: Metadata = {
-  title: 'Svenska lagar (SFS) | Laglig.se',
+  title: 'Svenska lagar (SFS)',
   description:
     'Bläddra bland alla svenska lagar från Svensk författningssamling (SFS). Filtrera på status, kategori och datum.',
   openGraph: {
-    title: 'Svenska lagar (SFS) | Laglig.se',
+    title: 'Svenska lagar (SFS)',
     description:
       'Bläddra bland alla svenska lagar från Svensk författningssamling (SFS).',
     type: 'website',

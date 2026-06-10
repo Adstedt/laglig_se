@@ -22,6 +22,7 @@ import {
   MessageSquare,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { trackEvent } from '@/lib/track-event'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { FulfilledToggle } from '@/components/ui/fulfilled-toggle'
@@ -154,6 +155,7 @@ export function KravpunkterChecklist({
     }
     const result = await createRequirement(listItemId, text)
     if (result.success && result.data) {
+      trackEvent('requirement_created', { listItemId })
       setNewText('')
       setIsAdding(false)
       // Append optimistically and revalidate.

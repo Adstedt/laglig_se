@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 import { SignupForm } from './_signup-form'
 
 export const metadata: Metadata = {
-  title: 'Skapa konto | Laglig.se',
+  title: 'Skapa konto',
   description: 'Registrera dig på Laglig.se',
 }
 
