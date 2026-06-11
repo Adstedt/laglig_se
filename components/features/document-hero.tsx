@@ -115,7 +115,7 @@ export function DocumentHero({
 
   return (
     <header className={cn('pb-4', className)}>
-      <div className="flex flex-wrap items-start gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start">
         {/* Theme icon box — hidden on mobile to save space */}
         <div
           className={cn(
@@ -141,7 +141,9 @@ export function DocumentHero({
           </div>
         </div>
 
-        {actions && <div className="shrink-0 self-start">{actions}</div>}
+        {actions && (
+          <div className="shrink-0 self-stretch sm:self-start">{actions}</div>
+        )}
       </div>
 
       {hasQuickInfo && (
