@@ -410,6 +410,20 @@
 
 ---
 
+## Backlog Candidate: SOSFS/HSLF-FS Agency Regulation Ingestion
+
+**Status:** Backlog (not scoped — registered 2026-06-11)
+
+**Goal:** Extend the agency-regulation ingestion pipeline (`lib/agency/` — the Epic 9 AFS pattern: scraper → HTML/PDF transformer → chapter splitter → registry) to Socialstyrelsen's författningssamlingar (**SOSFS**, **HSLF-FS**). The 26.5 research workflow's catalog spot-check (2026-06-11) found **zero SOSFS/HSLF-FS documents in the catalog** — a structural gap, not missing rows. Concretely blocks linkable references to SOSFS 2011:9 (ledningssystem för systematiskt kvalitetsarbete — THE core regulation for vård & omsorg buyers), SOSFS 2015:10 (basal hygien) and HSLF-FS 2017:37 (läkemedelshantering).
+
+**Trigger/decision:** Alexander, 2026-06-11 — vård & omsorg marketing page (Story 26.5) ships with these as prose-only mentions; ingestion is a follow-up pipeline similar to AFS. Becomes higher priority if/when vård & omsorg becomes a target customer segment in-product (laglista generation for vårdgivare needs these regulations, not just the marketing page).
+
+**Dependencies:** Epic 9 pipeline (Done — pattern to replicate). Source: Socialstyrelsen publishes HSLF-FS as PDFs; check `lib/agency/agency-pdf-registry.ts` fit.
+
+**Priority:** Medium — unblocks vård & omsorg as both a content vertical and a product segment.
+
+---
+
 **Total Stories Tracked:** ~257+ across 25 epics (~166 completed, ~89+ backlog; Epic 18 stories TBD, Epic 19 14 stories scoped (incl. 19.4a id-resolution + 19.4b cycle/finding readers, added 2026-05-24), Epic 20 3 stories scoped + completed, Epic 21 14 stories scoped — **13 completed, 1 deferred (21.10)**, 1 in backlog (21.15), Epic 22 4 stories scoped, Epic 23 5 stories scoped, Epic 24 6 stories scoped, Epic 25 7 stories scoped — B.0 pre-MVP)
 
 **Epic Status:** 12 Done (incl. Epic 21 substantially-done as of 2026-04-27, UAT-ready with 1 deferred 21.10 + 1 backlogged 21.15), 4 Partial / Active, 9 Not Started / Planned (incl. Epic 23, Epic 24, Epic 25)

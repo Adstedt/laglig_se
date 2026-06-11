@@ -99,17 +99,22 @@ test.describe('Marketing megamenu — Branscher / Områden', () => {
     page,
   }) => {
     await page.getByRole('button', { name: 'Områden' }).hover()
-    await expect(page.getByText(OMRADEN_NAV[0]!.label)).toBeVisible({
+    // Scope to the desktop navigation: label substrings like "Arbetsmiljö"
+    // and "Miljö" also occur in footer/body links — page-wide negative
+    // assertions false-positive the moment such a page publishes.
+    const nav = page.getByRole('navigation').first()
+    await expect(nav.getByText(OMRADEN_NAV[0]!.label)).toBeVisible({
       timeout: 5000,
     })
 
     for (const item of liveOmraden) {
-      await expect(
-        page.getByRole('link', { name: item.label })
-      ).toHaveAttribute('href', item.route)
+      await expect(nav.getByRole('link', { name: item.label })).toHaveAttribute(
+        'href',
+        item.route
+      )
     }
     for (const item of comingSoonOmraden) {
-      await expect(page.getByRole('link', { name: item.label })).toHaveCount(0)
+      await expect(nav.getByRole('link', { name: item.label })).toHaveCount(0)
     }
   })
 })
