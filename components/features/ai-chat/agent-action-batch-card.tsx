@@ -21,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import {
   getPendingAgentActionsByMessage,
   approvePendingAction,
+  approvePendingActions,
   rejectPendingAction,
   updatePendingActionParams,
 } from '@/app/actions/pending-agent-actions'
@@ -120,18 +121,20 @@ export function AgentActionBatchCard({
       })
   }
 
-  // AC 18: sequential approve in array (created_at) order so a row that depends
-  // on a prior row (e.g. link after create) dispatches after its prerequisite.
-  // Partial success is allowed — failed rows stay PENDING with their error.
+  // AC 18: one server call approves all pending rows. Document edits on the same
+  // document are consolidated server-side into ONE new version (not one per
+  // edit); other actions dispatch in created_at order so dependencies (e.g. link
+  // after create) are honoured. Partial success is allowed — failed rows stay
+  // PENDING with their error surfaced.
   const handleApproveAll = async () => {
     setBusy(true)
     setSummary(null)
-    let success = 0
     try {
-      for (const row of pendingRows) {
-        const result = await approvePendingAction(row.id)
-        if (result.success) success++
+      const result = await approvePendingActions(pendingRows.map((r) => r.id))
+      if (!result.success || !result.data) {
+        throw new Error(result.error ?? 'Kunde inte godkänna förslagen')
       }
+      const { approved, failed, errors } = result.data
       // Story 14.24 (AC 20): IN_EDITOR rows are never in pendingRows (PENDING-only),
       // so they're skipped for free — note them in the summary.
       const inEditor = actions.filter((a) => a.status === 'IN_EDITOR').length
@@ -139,8 +142,13 @@ export function AgentActionBatchCard({
         inEditor > 0
           ? ` (${inEditor} hoppad${inEditor > 1 ? 'e' : ''} över — öppen i editor)`
           : ''
-      setSummary(`${success} av ${pendingRows.length} godkända${skipNote}`)
+      setSummary(`${approved} av ${pendingRows.length} godkända${skipNote}`)
+      if (failed > 0 && errors[0]) {
+        toast.error(errors[0])
+      }
       await revalidateAll()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Kunde inte godkänna')
     } finally {
       setBusy(false)
     }

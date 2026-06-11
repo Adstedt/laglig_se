@@ -1297,7 +1297,8 @@ export async function createDraftFromApprovedWithEdit(
   documentId: string,
   editedContentJson: object,
   changeSummary: string,
-  contentHtml?: string
+  contentHtml?: string,
+  title?: string
 ): Promise<ActionResult<{ id: string; versionNumber: number }>> {
   try {
     return await withWorkspace(async ({ workspaceId, userId }) => {
@@ -1363,6 +1364,9 @@ export async function createDraftFromApprovedWithEdit(
             current_draft_version_id: ver.id,
             draft_status: 'DRAFT',
             current_version_number: newVersionNumber,
+            // Optional agent rename applied atomically with the branch (title
+            // lives on the document, shared across versions).
+            ...(title !== undefined ? { title } : {}),
           },
         })
 

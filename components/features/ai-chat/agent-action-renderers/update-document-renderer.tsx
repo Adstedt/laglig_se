@@ -35,6 +35,8 @@ interface UpdateDocumentParams {
   sectionHeading?: string
   oldSectionContentJson?: unknown[]
   newSectionContentJson?: unknown[]
+  // Optional rename — when present, the card shows the proposed new title.
+  newTitle?: string
   changeSummary?: string
   entity_version?: string
   // Story 17.11c AC 6: when true, the renderer prepends a "Skapar nytt utkast
@@ -66,12 +68,21 @@ export function UpdateDocumentRenderer({
   const params = (action.params ?? {}) as UpdateDocumentParams
   const chatDetail = useChatDetailSafe()
 
-  const sectionHeading = params.sectionHeading ?? '(okänt avsnitt)'
   // CP-001 (AC 6): the document's natural-language title — never the id —
   // appears in the visible card copy. The tool stamps `documentTitle` into
   // params at propose time (lib/agent/tools/update-document.ts); the generic
   // fallback only triggers on a legacy pre-fix proposal row.
   const documentTitle = params.documentTitle ?? 'styrdokumentet'
+
+  // A proposal may be a section edit, a rename (newTitle), or both.
+  const hasSectionEdit =
+    typeof params.sectionHeading === 'string' &&
+    params.sectionHeading.length > 0
+  const sectionHeading = params.sectionHeading ?? '(okänt avsnitt)'
+  const newTitle =
+    typeof params.newTitle === 'string' && params.newTitle.trim().length > 0
+      ? params.newTitle.trim()
+      : undefined
 
   const oldNodes = Array.isArray(params.oldSectionContentJson)
     ? params.oldSectionContentJson
@@ -82,7 +93,12 @@ export function UpdateDocumentRenderer({
   const oldExcerpt = plainText(oldNodes).slice(0, 200)
   const newExcerpt = plainText(newNodes).slice(0, 200)
 
-  const summary = `Uppdatera avsnittet "${sectionHeading}" i ${documentTitle}`
+  const summary =
+    hasSectionEdit && newTitle
+      ? `Uppdatera avsnittet "${sectionHeading}" och byt namn på ${documentTitle}`
+      : newTitle
+        ? `Byt namn på ${documentTitle} till "${newTitle}"`
+        : `Uppdatera avsnittet "${sectionHeading}" i ${documentTitle}`
 
   const openCanvas = () => {
     chatDetail?.openDetail({
@@ -162,12 +178,26 @@ export function UpdateDocumentRenderer({
             </p>
           )}
 
-        <div className="space-y-1">
-          <span className={`${LABEL_CLS} block`}>Avsnitt</span>
-          <Badge tone="neutral" variant="outline" className="text-[10px]">
-            {sectionHeading}
-          </Badge>
-        </div>
+        {newTitle && (
+          <div className="space-y-1">
+            <span className={`${LABEL_CLS} block`}>Nytt namn</span>
+            <p className="text-[13px] leading-snug text-foreground">
+              <span className="text-muted-foreground line-through">
+                {documentTitle}
+              </span>{' '}
+              → {newTitle}
+            </p>
+          </div>
+        )}
+
+        {hasSectionEdit && (
+          <div className="space-y-1">
+            <span className={`${LABEL_CLS} block`}>Avsnitt</span>
+            <Badge tone="neutral" variant="outline" className="text-[10px]">
+              {sectionHeading}
+            </Badge>
+          </div>
+        )}
 
         {params.changeSummary && (
           <div className="space-y-1">
@@ -178,19 +208,23 @@ export function UpdateDocumentRenderer({
           </div>
         )}
 
-        <div className="space-y-1">
-          <span className={`${LABEL_CLS} block`}>Nuvarande</span>
-          <p className="line-clamp-3 text-[13px] leading-snug text-muted-foreground line-through">
-            {oldExcerpt || '(tom)'}
-          </p>
-        </div>
+        {hasSectionEdit && (
+          <div className="space-y-1">
+            <span className={`${LABEL_CLS} block`}>Nuvarande</span>
+            <p className="line-clamp-3 text-[13px] leading-snug text-muted-foreground line-through">
+              {oldExcerpt || '(tom)'}
+            </p>
+          </div>
+        )}
 
-        <div className="space-y-1">
-          <span className={`${LABEL_CLS} block`}>Föreslaget</span>
-          <p className="line-clamp-3 text-[13px] leading-snug text-foreground">
-            {newExcerpt || '(tom)'}
-          </p>
-        </div>
+        {hasSectionEdit && (
+          <div className="space-y-1">
+            <span className={`${LABEL_CLS} block`}>Föreslaget</span>
+            <p className="line-clamp-3 text-[13px] leading-snug text-foreground">
+              {newExcerpt || '(tom)'}
+            </p>
+          </div>
+        )}
       </div>
     </ActionRendererFrame>
   )

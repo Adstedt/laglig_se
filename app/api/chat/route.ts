@@ -505,6 +505,23 @@ export async function POST(req: Request) {
             }
           }
 
+          // AI SDK v6: onFinish `text` is the FINAL step's text only (top-level
+          // accumulation across all steps only lands in v7 — see migration guide
+          // 7.0). When the model writes prose in the SAME step it calls a write
+          // tool (e.g. an update_document proposal + explanation), that prose
+          // lives in a non-final step and `text` comes back empty. Persisting
+          // content '' then makes getChatHistory's empty-stub filter swallow the
+          // whole turn — approval cards included — on reload. Join every step's
+          // text so the proposal narrative survives the round-trip.
+          const assistantText =
+            (steps ?? [])
+              .map((s) => (s as { text?: string }).text ?? '')
+              .map((t) => t.trim())
+              .filter((t) => t.length > 0)
+              .join('\n\n') ||
+            text ||
+            ''
+
           const metaObj: Record<string, unknown> = {}
           if (Object.keys(finalCitationSources).length > 0) {
             metaObj.citationSources = finalCitationSources
@@ -581,7 +598,7 @@ export async function POST(req: Request) {
               // writes so a turn either fully persists or fully rolls back.
               prisma.chatMessage.update({
                 where: { id: assistantMessageId },
-                data: { content: text ?? '', metadata: assistantMetadata },
+                data: { content: assistantText, metadata: assistantMetadata },
               }),
               prisma.chatUsageEvent.create({
                 data: {

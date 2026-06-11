@@ -9,15 +9,18 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { SWRConfig } from 'swr'
 import type { PendingAgentAction } from '@prisma/client'
 
-const { mockGetByMessage, mockApprove, mockReject } = vi.hoisted(() => ({
-  mockGetByMessage: vi.fn(),
-  mockApprove: vi.fn(),
-  mockReject: vi.fn(),
-}))
+const { mockGetByMessage, mockApprove, mockApproveAll, mockReject } =
+  vi.hoisted(() => ({
+    mockGetByMessage: vi.fn(),
+    mockApprove: vi.fn(),
+    mockApproveAll: vi.fn(),
+    mockReject: vi.fn(),
+  }))
 
 vi.mock('@/app/actions/pending-agent-actions', () => ({
   getPendingAgentActionsByMessage: mockGetByMessage,
   approvePendingAction: mockApprove,
+  approvePendingActions: mockApproveAll,
   rejectPendingAction: mockReject,
   updatePendingActionParams: vi.fn(async () => ({ success: true })),
 }))
@@ -87,33 +90,39 @@ describe('AgentActionBatchCard', () => {
     expect(screen.getByTestId('row-pa_3')).toBeInTheDocument()
   })
 
-  it('"Godkänn alla" approves every PENDING row sequentially and shows the summary', async () => {
-    mockApprove.mockResolvedValue({ success: true })
+  it('"Godkänn alla" approves all pending rows in one batch call and shows the summary', async () => {
+    mockApproveAll.mockResolvedValue({
+      success: true,
+      data: { approved: 3, failed: 0, errors: [] },
+    })
     renderCard()
     await screen.findByText('Föreslagna åtgärder')
 
     fireEvent.click(screen.getByRole('button', { name: /Godkänn alla/ }))
 
-    await waitFor(() => expect(mockApprove).toHaveBeenCalledTimes(3))
-    expect(mockApprove).toHaveBeenNthCalledWith(1, 'pa_1')
-    expect(mockApprove).toHaveBeenNthCalledWith(3, 'pa_3')
+    // One consolidated call with every pending id (not one call per row — that
+    // was the v13→v19 version-explosion bug).
+    await waitFor(() => expect(mockApproveAll).toHaveBeenCalledTimes(1))
+    expect(mockApproveAll).toHaveBeenCalledWith(['pa_1', 'pa_2', 'pa_3'])
+    expect(mockApprove).not.toHaveBeenCalled()
     expect(await screen.findByText('3 av 3 godkända')).toBeInTheDocument()
   })
 
   it('partial failure: summary reflects only the successes, failures stay', async () => {
-    mockApprove
-      .mockResolvedValueOnce({ success: true })
-      .mockResolvedValueOnce({
-        success: false,
-        error: 'Uppgiften behöver skapas först',
-      })
-      .mockResolvedValueOnce({ success: true })
+    mockApproveAll.mockResolvedValue({
+      success: true,
+      data: {
+        approved: 2,
+        failed: 1,
+        errors: ['Uppgiften behöver skapas först'],
+      },
+    })
     renderCard()
     await screen.findByText('Föreslagna åtgärder')
 
     fireEvent.click(screen.getByRole('button', { name: /Godkänn alla/ }))
 
-    await waitFor(() => expect(mockApprove).toHaveBeenCalledTimes(3))
+    await waitFor(() => expect(mockApproveAll).toHaveBeenCalledTimes(1))
     expect(await screen.findByText('2 av 3 godkända')).toBeInTheDocument()
   })
 

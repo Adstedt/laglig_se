@@ -47,13 +47,23 @@ const schema = z.object({
   section_heading: z
     .string()
     .min(1)
+    .optional()
     .describe(
-      'Rubriktext för den sektion som ska ersättas. Matchas case-insensitivt mot heading-noderna i dokumentet.'
+      'Rubriktext för den sektion som ska ersättas. Matchas case-insensitivt mot heading-noderna i dokumentet. Utelämnas om du bara byter dokumentets namn (new_title).'
     ),
   updated_content: z
     .any()
+    .optional()
     .describe(
-      'Tiptap-/ProseMirror-JSON för den nya sektionens BODY (det som kommer efter rubriken). Antingen en array av block-noder ([paragraph, ...]) eller ett doc-node {type:"doc", content:[...]}. Rubriken bevaras — skicka inte med rubriken igen.'
+      'Tiptap-/ProseMirror-JSON för den nya sektionens BODY (det som kommer efter rubriken). Antingen en array av block-noder ([paragraph, ...]) eller ett doc-node {type:"doc", content:[...]}. Rubriken bevaras — skicka inte med rubriken igen. Krävs tillsammans med section_heading; utelämnas vid ren namnbyte.'
+    ),
+  new_title: z
+    .string()
+    .min(1)
+    .max(200)
+    .optional()
+    .describe(
+      'Nytt namn/titel för dokumentet. Använd när dokumentets titel ska bytas (t.ex. fel företagsnamn i rubriken). Kan kombineras med en sektionsändring eller skickas ensam.'
     ),
   change_summary: z
     .string()
@@ -126,9 +136,9 @@ export function createUpdateDocumentTool(
   context?: PendingActionToolContext
 ) {
   return tool({
-    description: `Föreslå en ÄNDRING av en specifik sektion i ett befintligt styrdokument (WorkspaceDocument).
+    description: `Föreslå en ÄNDRING av en specifik sektion i ett befintligt styrdokument (WorkspaceDocument) och/eller BYT NAMN på dokumentet.
 
-Använd när användaren vill uppdatera en avsnittstext i ett dokument som redan finns — t.ex. "uppdatera Syfte-avsnittet" eller "skärp ansvarsdelen i policyn". För ett HELT NYTT dokument: använd istället \`draft_styrdokument\`.
+Använd när användaren vill uppdatera en avsnittstext i ett dokument som redan finns — t.ex. "uppdatera Syfte-avsnittet" eller "skärp ansvarsdelen i policyn". Använd ALSO för att byta dokumentets titel/namn (\`new_title\`) — t.ex. när titeln nämner fel företag. En sektionsändring och ett namnbyte kan skickas tillsammans i samma förslag, eller var för sig (skicka bara \`new_title\` för ett rent namnbyte). För ett HELT NYTT dokument: använd istället \`draft_styrdokument\`.
 
 Funkar mot DRAFT, IN_REVIEW samt APPROVED utan pågående utkast — i sista fallet skapas utkastet automatiskt när användaren godkänner förslaget (godkännandekortet visar "Skapar nytt utkast v{N+1}"). Upphävda eller arkiverade dokument kan inte ändras.
 
@@ -140,9 +150,30 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — ändri
       document_id,
       section_heading,
       updated_content,
+      new_title,
       change_summary,
     }: Input) => {
       const startTime = Date.now()
+
+      // Story 26.x — update_document now also renames the document. An edit is a
+      // SECTION edit (section_heading + updated_content) and/or a RENAME
+      // (new_title); at least one must be present. Both can ride in one proposal
+      // (e.g. fix a paragraph AND correct the title) — and on approval they
+      // resolve to a single new version (no extra version for the rename).
+      const hasSectionEdit =
+        typeof section_heading === 'string' &&
+        section_heading.length > 0 &&
+        updated_content !== undefined
+      const wantsRename =
+        typeof new_title === 'string' && new_title.trim().length > 0
+      if (!hasSectionEdit && !wantsRename) {
+        return wrapToolError(
+          'update_document',
+          'Inget att ändra angavs.',
+          'Ange antingen section_heading + updated_content för en sektionsändring, eller new_title för att byta dokumentets namn (eller båda).',
+          startTime
+        )
+      }
 
       // Story 17.16 AC 8: workspace-scoped read with the dual-pointer fields.
       // The content the agent's edit is computed against MUST come from
@@ -217,59 +248,75 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — ändri
         )
       }
 
-      // AC 4: section_heading must exist (case-insensitive). Inform with a clear
-      // message so the agent can re-issue with the correct heading text.
-      if (!hasSection(currentContent, section_heading)) {
-        return wrapToolError(
-          'update_document',
-          `Rubriken "${section_heading}" finns inte i dokumentet.`,
-          'Använd den exakta rubriktexten som finns i dokumentet (matchas case-insensitivt). Läs dokumentet med get_workspace_document för att se rubrikerna.',
-          startTime
-        )
+      // Section-edit validation only runs when a section edit was requested. A
+      // pure rename skips it entirely (no heading to locate, no body to diff).
+      let oldSectionContentJson: ReturnType<typeof extractSection> | undefined
+      let newSectionContentJson: TiptapNode[] | undefined
+      if (hasSectionEdit) {
+        const heading = section_heading as string
+
+        // AC 4: section_heading must exist (case-insensitive). Inform with a clear
+        // message so the agent can re-issue with the correct heading text.
+        if (!hasSection(currentContent, heading)) {
+          return wrapToolError(
+            'update_document',
+            `Rubriken "${heading}" finns inte i dokumentet.`,
+            'Använd den exakta rubriktexten som finns i dokumentet (matchas case-insensitivt). Läs dokumentet med get_workspace_document för att se rubrikerna.',
+            startTime
+          )
+        }
+
+        // Capture old section body (AC 2/3) via the same locator the dispatch will
+        // use. extractSection cannot throw here — hasSection just confirmed it.
+        oldSectionContentJson = extractSection(currentContent, heading)
+
+        // Normalize the agent's `updated_content` into TiptapNode[] (handles
+        // bare array / doc-node / single-node shapes).
+        const normalized = normalizeBodyNodes(updated_content)
+        if (normalized === null) {
+          return wrapToolError(
+            'update_document',
+            'Det nya innehållet är inte giltig Tiptap-JSON.',
+            'Skicka en array av block-noder ([paragraph, heading, list, ...]) eller ett doc-node {type:"doc", content:[...]}.',
+            startTime
+          )
+        }
+        newSectionContentJson = normalized
+
+        // AC 4 NTH-2: no-op-edit guard. Deep-equal via canonical JSON so a
+        // cosmetic key-order shuffle doesn't sneak through. Surfaces a Swedish
+        // error and creates NO pending row.
+        if (
+          canonicalJson(newSectionContentJson) ===
+          canonicalJson(oldSectionContentJson)
+        ) {
+          return wrapToolError(
+            'update_document',
+            'Inga ändringar att föreslå.',
+            'Det nya innehållet är identiskt med den nuvarande sektionen. Skicka ändrad text om en ändring är avsedd.',
+            startTime
+          )
+        }
       }
 
-      // Capture old section body (AC 2/3) via the same locator the dispatch will
-      // use. extractSection cannot throw here — hasSection just confirmed it.
-      const oldSectionContentJson = extractSection(
-        currentContent,
-        section_heading
-      )
-
-      // Normalize the agent's `updated_content` into TiptapNode[] (handles
-      // bare array / doc-node / single-node shapes).
-      const newSectionContentJson = normalizeBodyNodes(updated_content)
-      if (newSectionContentJson === null) {
-        return wrapToolError(
-          'update_document',
-          'Det nya innehållet är inte giltig Tiptap-JSON.',
-          'Skicka en array av block-noder ([paragraph, heading, list, ...]) eller ett doc-node {type:"doc", content:[...]}.',
-          startTime
-        )
-      }
-
-      // AC 4 NTH-2: no-op-edit guard. Deep-equal via canonical JSON so a
-      // cosmetic key-order shuffle doesn't sneak through. Surfaces a Swedish
-      // error and creates NO pending row.
-      if (
-        canonicalJson(newSectionContentJson) ===
-        canonicalJson(oldSectionContentJson)
-      ) {
+      // A rename is only effective when the proposed title actually differs from
+      // the current one. A no-op rename with no section edit creates no proposal.
+      const renameEffective =
+        wantsRename && (new_title as string).trim() !== document.title
+      if (!hasSectionEdit && !renameEffective) {
         return wrapToolError(
           'update_document',
           'Inga ändringar att föreslå.',
-          'Det nya innehållet är identiskt med den nuvarande sektionen. Skicka ändrad text om en ändring är avsedd.',
+          'Det nya namnet är identiskt med dokumentets nuvarande namn. Skicka ett annat namn om ett byte är avsett.',
           startTime
         )
       }
 
-      const params = {
+      const params: Record<string, unknown> = {
         documentId: document.id,
         // CP-001 (AC 6): renderer copy uses the document title as natural Swedish
         // (NOT an internal id). Captured at propose time and carried unchanged.
         documentTitle: document.title,
-        sectionHeading: section_heading,
-        oldSectionContentJson,
-        newSectionContentJson,
         changeSummary: change_summary,
         // Story 14.31 staleness guard (Approved, blockers cleared) consumes this
         // ISO-8601 UTC snapshot at approve time — see lib/agent/tools/update-requirement.ts:188.
@@ -281,6 +328,14 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — ändri
         creates_draft: autoBranchEligible,
         newVersionNumber: document.current_version_number + 1,
       }
+      if (hasSectionEdit) {
+        params.sectionHeading = section_heading
+        params.oldSectionContentJson = oldSectionContentJson
+        params.newSectionContentJson = newSectionContentJson
+      }
+      if (renameEffective) {
+        params.newTitle = (new_title as string).trim()
+      }
 
       const pendingActionId = await createPendingActionRow(
         workspaceId,
@@ -289,13 +344,25 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — ändri
         params
       )
 
-      // Compact before→after preview line for the inline card / decision log.
-      // Truncate aggressively so a long body doesn't bloat the meta payload.
-      const oldPlain = tiptapToPlainText(oldSectionContentJson).slice(0, 80)
-      const newPlain = tiptapToPlainText(newSectionContentJson).slice(0, 80)
-      const preview =
-        `Uppdatera "${section_heading}" i "${document.title}": ` +
-        `${oldPlain || '(tom)'} → ${newPlain || '(tom)'}`
+      // Compact preview line for the inline card / decision log. Truncate
+      // aggressively so a long body doesn't bloat the meta payload.
+      let preview: string
+      if (hasSectionEdit) {
+        const oldPlain = tiptapToPlainText(
+          (oldSectionContentJson ?? []) as TiptapNode[]
+        ).slice(0, 80)
+        const newPlain = tiptapToPlainText(
+          (newSectionContentJson ?? []) as TiptapNode[]
+        ).slice(0, 80)
+        const section =
+          `Uppdatera "${section_heading}" i "${document.title}": ` +
+          `${oldPlain || '(tom)'} → ${newPlain || '(tom)'}`
+        preview = renameEffective
+          ? `${section} · Byt namn till "${(new_title as string).trim()}"`
+          : section
+      } else {
+        preview = `Byt namn på "${document.title}" till "${(new_title as string).trim()}"`
+      }
 
       const envelope = wrapWriteToolResponse(
         'update_document',

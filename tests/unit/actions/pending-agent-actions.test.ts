@@ -61,6 +61,10 @@ vi.mock('@/lib/prisma', () => ({
       findFirst: vi.fn(),
       update: vi.fn(),
     },
+    // Batch approve marks AgentDecisionLog rows accepted (best-effort).
+    agentDecisionLog: {
+      updateMany: vi.fn(),
+    },
   },
 }))
 
@@ -101,6 +105,7 @@ import {
   getPendingAgentAction,
   getPendingAgentActionsByMessage,
   approvePendingAction,
+  approvePendingActions,
   rejectPendingAction,
   updatePendingActionParams,
   expirePendingActions,
@@ -638,6 +643,188 @@ describe('approvePendingAction — extended types (14.23)', () => {
       lawListItemId: 'li_1',
       newStatus: 'UPPFYLLD',
     })
+  })
+})
+
+// Issue 3: approving several same-document edits at once consolidates them into
+// ONE new version (v+1) instead of one version per edit (the v13→v19 bug).
+describe('approvePendingActions — batch consolidation', () => {
+  const DOC_CONTENT = {
+    type: 'doc',
+    content: [
+      {
+        type: 'heading',
+        attrs: { level: 2 },
+        content: [{ type: 'text', text: 'Syfte' }],
+      },
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'Old purpose.' }],
+      },
+      {
+        type: 'heading',
+        attrs: { level: 2 },
+        content: [{ type: 'text', text: 'Ansvar' }],
+      },
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'Old responsibility.' }],
+      },
+    ],
+  }
+  const editRow = (
+    id: string,
+    heading: string,
+    text: string,
+    extra: Record<string, unknown> = {}
+  ) =>
+    row({
+      id,
+      chat_message_id: 'cm_batch',
+      action_type: 'UPDATE_DOCUMENT',
+      created_at: new Date(`2026-06-01T10:0${id.slice(-1)}:00.000Z`),
+      params: {
+        documentId: 'd_1',
+        sectionHeading: heading,
+        newSectionContentJson: [
+          { type: 'paragraph', content: [{ type: 'text', text }] },
+        ],
+        changeSummary: `Ändra ${heading}`,
+        entity_version: '2026-06-01T10:00:00.000Z',
+        ...extra,
+      },
+    })
+
+  beforeEach(() => {
+    ;(
+      prisma.pendingAgentAction.updateMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({})
+    ;(
+      prisma.agentDecisionLog.updateMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({})
+    ;(
+      prisma.activityLog.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(null)
+  })
+
+  it('consolidates same-document edits into ONE saveDocumentVersion call', async () => {
+    ;(
+      prisma.pendingAgentAction.findMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([
+      editRow('pa_1', 'Syfte', 'New purpose.'),
+      editRow('pa_2', 'Ansvar', 'New responsibility.'),
+    ])
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'DRAFT',
+      workspace_id: 'ws_123',
+      current_draft_version_id: 'v_d',
+      current_approved_version_id: null,
+      current_draft_version: { content_json: DOC_CONTENT },
+      current_approved_version: null,
+    })
+    mockSaveDocumentVersion.mockResolvedValue({
+      success: true,
+      data: { id: 'v_2', versionNumber: 2 },
+    })
+
+    const result = await approvePendingActions(['pa_1', 'pa_2'])
+
+    expect(result.success).toBe(true)
+    expect(result.data?.approved).toBe(2)
+    // ONE version write, not one per edit.
+    expect(mockSaveDocumentVersion).toHaveBeenCalledTimes(1)
+    expect(mockCreateDraftFromApprovedWithEdit).not.toHaveBeenCalled()
+    // Both edits landed in the single saved tree (HTML is arg index 4).
+    const html = mockSaveDocumentVersion.mock.calls[0]![4]
+    expect(html).toContain('New purpose.')
+    expect(html).toContain('New responsibility.')
+    // Both rows marked APPROVED sharing the one version.
+    const upd = (
+      prisma.pendingAgentAction.updateMany as ReturnType<typeof vi.fn>
+    ).mock.calls[0]![0]
+    expect([...upd.where.id.in].sort()).toEqual(['pa_1', 'pa_2'])
+    expect(upd.data.status).toBe('APPROVED')
+    expect(upd.data.result_ref).toEqual({
+      documentId: 'd_1',
+      versionId: 'v_2',
+      versionNumber: 2,
+    })
+  })
+
+  it('applies a rename (newTitle) within the consolidated write', async () => {
+    ;(
+      prisma.pendingAgentAction.findMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([
+      editRow('pa_1', 'Syfte', 'New purpose.', {
+        newTitle: 'Nordviken policy',
+      }),
+      editRow('pa_2', 'Ansvar', 'New responsibility.'),
+    ])
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'DRAFT',
+      workspace_id: 'ws_123',
+      current_draft_version_id: 'v_d',
+      current_approved_version_id: null,
+      current_draft_version: { content_json: DOC_CONTENT },
+      current_approved_version: null,
+    })
+    mockSaveDocumentVersion.mockResolvedValue({
+      success: true,
+      data: { id: 'v_2', versionNumber: 2 },
+    })
+
+    await approvePendingActions(['pa_1', 'pa_2'])
+
+    const title = mockSaveDocumentVersion.mock.calls[0]![3]
+    expect(title).toBe('Nordviken policy')
+  })
+
+  it('APPROVED-no-draft consolidates via ONE createDraftFromApprovedWithEdit', async () => {
+    ;(
+      prisma.pendingAgentAction.findMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([
+      editRow('pa_1', 'Syfte', 'A'),
+      editRow('pa_2', 'Ansvar', 'B'),
+    ])
+    ;(
+      prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      id: 'd_1',
+      status: 'APPROVED',
+      workspace_id: 'ws_123',
+      current_draft_version_id: null,
+      current_approved_version_id: 'v_a',
+      current_draft_version: null,
+      current_approved_version: { content_json: DOC_CONTENT },
+    })
+    mockCreateDraftFromApprovedWithEdit.mockResolvedValue({
+      success: true,
+      data: { id: 'v_2', versionNumber: 2 },
+    })
+
+    const result = await approvePendingActions(['pa_1', 'pa_2'])
+
+    expect(result.data?.approved).toBe(2)
+    expect(mockCreateDraftFromApprovedWithEdit).toHaveBeenCalledTimes(1)
+    expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
+  })
+
+  it('blocks the whole batch (no approvals) when the user lacks tasks:edit', async () => {
+    mockWithWorkspace.mockImplementationOnce(
+      (cb: (_c: typeof ctx) => unknown) =>
+        cb({ ...ctx, hasPermission: () => false })
+    )
+
+    const result = await approvePendingActions(['pa_1', 'pa_2'])
+
+    expect(result.success).toBe(false)
+    expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
   })
 })
 

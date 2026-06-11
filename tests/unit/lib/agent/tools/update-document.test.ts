@@ -184,6 +184,69 @@ describe('update_document — happy path', () => {
   })
 })
 
+describe('update_document — rename (new_title)', () => {
+  it('pure rename: creates a row with newTitle and no section fields', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(makeDoc())
+
+    const result = await execOf(createUpdateDocumentTool('ws_1', CTX))({
+      document_id: 'd_1',
+      new_title: 'Nordviken arbetsmiljöpolicy',
+      change_summary: 'Rätt företagsnamn i titeln',
+    })
+
+    expect(result.error).toBeUndefined()
+    expect(fn(prisma.pendingAgentAction.create)).toHaveBeenCalledTimes(1)
+    const params = fn(prisma.pendingAgentAction.create).mock.calls[0]![0].data
+      .params
+    expect(params.newTitle).toBe('Nordviken arbetsmiljöpolicy')
+    expect(params.sectionHeading).toBeUndefined()
+    expect(params.newSectionContentJson).toBeUndefined()
+  })
+
+  it('section edit + rename together carry both in one row', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(makeDoc())
+
+    await execOf(createUpdateDocumentTool('ws_1', CTX))({
+      document_id: 'd_1',
+      section_heading: 'Syfte',
+      updated_content: NEW_BODY,
+      new_title: 'Nytt namn',
+      change_summary: 'Skärpning + namnbyte',
+    })
+
+    const params = fn(prisma.pendingAgentAction.create).mock.calls[0]![0].data
+      .params
+    expect(params.newTitle).toBe('Nytt namn')
+    expect(params.sectionHeading).toBe('Syfte')
+    expect(params.newSectionContentJson).toEqual(NEW_BODY)
+  })
+
+  it('rejects a no-op rename to the current title (no row created)', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(makeDoc())
+
+    const result = await execOf(createUpdateDocumentTool('ws_1', CTX))({
+      document_id: 'd_1',
+      new_title: 'Arbetsmiljöpolicy', // identical to makeDoc().title
+      change_summary: 'X',
+    })
+
+    expect(result.error).toBe(true)
+    expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
+  })
+
+  it('rejects when neither a section edit nor a new_title is provided', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(makeDoc())
+
+    const result = await execOf(createUpdateDocumentTool('ws_1', CTX))({
+      document_id: 'd_1',
+      change_summary: 'X',
+    })
+
+    expect(result.error).toBe(true)
+    expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
+  })
+})
+
 describe('update_document — AC 4 guards (no pending row on failure)', () => {
   it('rejects when the document is not found in the workspace', async () => {
     fn(prisma.workspaceDocument.findFirst).mockResolvedValue(null)
