@@ -190,8 +190,13 @@ export async function getChatHistory(
           context_id: validated.contextId ?? null,
           // Story 14.22 / ADR-14.22-A: skip empty assistant stubs left behind by
           // aborted/errored streams (the stub is written before the tool loop and
-          // only filled in onFinish; an interrupted turn leaves content === '').
-          content: { not: '' },
+          // only filled in onFinish; an interrupted turn leaves content === ''
+          // AND metadata SQL NULL). A FINISHED turn that emitted only write-tool
+          // proposals (no prose) also has content === '' but carries real
+          // metadata (pendingActionIds) — those must survive reload so the inline
+          // approval card is rediscoverable. Keep a row when it has content OR
+          // any persisted metadata; drop only the true (content '' + NULL) stub.
+          OR: [{ content: { not: '' } }, { metadata: { not: Prisma.AnyNull } }],
           // Only fetch active (non-archived) messages for GLOBAL context
           ...(validated.contextType === 'GLOBAL'
             ? { conversation_id: null }

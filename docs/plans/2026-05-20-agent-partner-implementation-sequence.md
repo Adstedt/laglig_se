@@ -246,6 +246,29 @@ Per-type CRITERIA upgrade the tool's existing quality gate from generic (≥3 bl
 - **QA reviewer caveat (carry forward):** the same-session Dev + QA (Claude) pattern continues here for 17.11 / 17.11b. Compensated by the owner-driven live smoke (both stories smoke-PASS confirmed on Nordviken's Arbetsmiljöpolicy). Recommended (future, non-blocking): a separate-session reviewer pre-prod pass for the dual-version epic, given the compliance-sensitivity of the DEC-2 contract under the new dual-state routing.
 - Working-tree commit pending per the manual-commit workflow (this batch carries 17.11 implementation + 17.11b implementation + the new epic doc `epic-17-addendum-dual-version-visibility.md` + three story drafts 17.16/17.17/17.18 + this plan addendum + the Phase 5 sequencing edits below).
 
+### Completion notes — addendum 2026-06-10 (dual-version epic + authoring triad DONE → Phase 5 substrate complete; `feat/ai-agent` merged to main; 19.8 unblocked)
+
+**Six stories shipped since the 2026-06-03 addendum — Phase 5's entire authoring substrate is now built:**
+
+- **17.16 (dual-version data model + dispatch refactor) — DONE 2026-06-04** (gate PASS, q92; commit `88f99d69`, incl. autosave/restore alias-leak fixes). Dual pointers + draft sub-status live.
+- **17.17 (dual-version table + doc-page UX) — DONE 2026-06-04** (gate PASS, q96; commit `fab4b9c8` — composite badge, 8 smoke fixes, plus a Neka action added during the smoke).
+- **17.18 (agent reads + citation routing under dual state) — DONE 2026-06-04** (gate PASS, q95; commit `c6c45e31`). **The DEC-2 adversarial contract held under dual-state routing** — sub-epic closure confirmed in the gate.
+- **17.11 / 17.11b — Ready-for-Review → DONE 2026-06-06** (gates PASS q100 / q95) together with **17.11c (agent auto-branch on APPROVED) — DONE same commit** (`29b25e80`, "authoring triad closure"; gate PASS q95). 17.11c went spec→shipped inside the triad rather than waiting for a separate PO draft as planned.
+- **`feat/ai-agent` merged to main via PR #69** (~2026-06-08), followed by post-merge hardening on main (`415e92bc`/`c56f5747` nextVersionNumber MAX+1 fix + regression, citation-pill fixes, `cec47105` prose-leak guardrail). **UAT triage rolled up 2026-06-09** → `docs/stories/backlog/post-ai-agent-uat-followups.md` (8 ready-to-promote stubs: FU-003 mobile, FU-005 IN_REVIEW badge, FU-008/009 assets, FU-010 brand voice, FU-011 REL-001 atomicity, FU-012 prose-leak remainder, FU-013 reconciliation cron, + editor autosave race during discard).
+
+**Now 28 in `completed/`.** **Phase 5 — Authoring: only 19.8 (`draft_styrdokument`, type-aware) remains — and it is now fully unblocked on the dual-pointer model it was sequenced to wait for.** Phase 4's lone remainder is still retrofit **14.31** (Approved, not built).
+
+**Drafted-not-scheduled cluster (in `docs/stories/` root, surfaced from the UAT/canvas work):** 14.32 (rich task-proposal fields), 14.33 (agent document canvas Phase 1 — Draft), 14.34 (agent linking from global chat), 14.35 (assessment prefilled confirm card), 14.36 (agentic followup on action-required assessment), 19.13 (grounding eval — Draft, needs SM rigor pass), 19.1b (promote chat attachment → Filer).
+
+**⚠️ Numbering collision:** the SA-001 follow-up ("migrate `save_assessment` to the approval-card pattern") was pencilled as **candidate 14.32** in the 2026-05-26 notes, but **14.32 has since been taken** by `rich-task-proposal-fields`. SA-001's story needs a new number when drafted (next free: **14.37**). SA-001 itself remains open (deferred by owner 2026-05-26; secondary symptom neutralised by 19.7c's gate).
+
+**Adjacent work this week (not Track A, but touches agent surfaces):** law-list **generation** got prompt caching (`prepareStep` tail breakpoints — verified ~0 uncached tokens on a 1.67M-token live run) + a model A/B switch (`LAW_LIST_GENERATION_MODEL`; Opus 4.8 A/B on a cloned workspace materially outperformed Sonnet); `get_company_context` (shared chat+generation tool) gained `employeeCount` + `activityFlags`; **Epic 27 (Company Profile Interview)** drafted (`docs/prd/epic-27-company-profile-interview.md`) — its 27.1 adds `contextualAnswers`/`hasCollectiveAgreement` to the same tool. Known open bug from the A/B: `add_laws_to_list` within-batch duplicate crash (missing `skipDuplicates`) — one-liner, tracked in Epic 27.
+
+**➡️ Next in sequence — owner call between:**
+- **(a) 19.8 `draft_styrdokument`** (critical path; type-aware per the 2026-05-28 scoping note; all deps now ✅; needs SM `*create-story` — no story file exists yet). Closes Phase 5 and completes the three-skills DoD line.
+- **(b) 14.31** (proposal staleness — small, Approved since 2026-05-21, retrofits the now-13-type approval stack; the longer it waits the more types it retrofits).
+- **(c)** Promote selected UAT followups / the 14.33 canvas track if user-facing polish takes priority over capability.
+
 ---
 
 ## Phase 0 — Housekeeping (½ day, no code)
@@ -296,18 +319,18 @@ The numbering rename is **already done** in the checklist. Remaining:
 
 ✅ **Read-and-diagnose loop hits its smoke-test DoD here.**
 
-### Phase 5 — Authoring (~3–4 wk; expanded with the dual-version epic)
+### Phase 5 — Authoring (~3–4 wk; expanded with the dual-version epic) — 🟡 **NEAR-COMPLETE** (only 19.8 remains)
 
 18. **17.10** workspace doc tools (search / read / list) — ✅ **DONE 2026-06-01**
 19. **17.10b** DRAFT/IN_REVIEW indexing + status-aware citations — ✅ **DONE 2026-06-02** (`[Källa:]` / `[Utkast:]` split; cron-debounce reindex)
-20. **17.11** `update_document` — section-level agent edit on existing styrdokument — ✅ **shipped 2026-06-03**, status **Ready for Review** (gate PASS q97; pre-`completed/` move)
-21. **17.11b** `add_document_section` — agent-proposed insert of a NEW section into an existing styrdokument — ✅ **shipped 2026-06-03**, status **Ready for Review** (gate doc TBD; surfaced the dual-version-visibility gap via live smoke)
-22. **Dual-version document visibility epic** (`docs/prd/epic-17-addendum-dual-version-visibility.md`, drafted 2026-06-03) — three coordinated stories sequenced foundation → UI → agent. Encodes the currently-effective approved version AND the in-progress draft as concurrent first-class pointers on `WorkspaceDocument`. **Sequenced before 19.8** so 19.8 lands on the corrected model.
-    - **17.16** Dual-version data model + dispatch refactor (foundation) — schema delta + backfill migration + `createDraftFromApproved` refactor + new `promoteDraftToApproved` / `discardDraft` server actions + agent write-tool guard reframe in 17.11 / 17.11b (observationally equivalent for previously-covered cases).
-    - **17.17** Styrdokument table + doc page dual-version UX — composite single-row badge (`Godkänd v3 · Utkast v4 pågår`); doc page header preserving approved metadata throughout draft windows; editor banner; discard-draft button.
-    - **17.18** Agent reads + citation routing under the dual-version model — refactor `indexWorkspaceDocument` to per-tier chunks; `search_workspace_documents` / `get_workspace_document` / `list_workspace_documents` expose dual state; citation grammar extended; 17.10b DEC-2 contract preserved + adversarially tested under the new dual state.
-23. **17.11c** Agent auto-branch on APPROVED (follow-up; spec TBD by PO after 17.16+17.17+17.18 land) — when the agent calls `add_document_section` / `update_document` against an APPROVED doc with no draft pending, transparently create the draft AND write against it in a single approval card. ~50-line extension on top of 17.16's guard reframe.
-24. **19.8** `draft_styrdokument` skill (type-aware, one skill + `types/*.md` modules per `WorkspaceDocumentType`) + Swedish template seed (≥1 per type) — needs 17.11 + 14.24 + 19.6 + 19.7c + the dual-version epic (so type-aware drafting lands on the dual-pointer model). *Re-scoped 2026-05-28 from `draft_policy` → `draft_styrdokument`; see addendum below and PRD 19.8 entry.*
+20. **17.11** `update_document` — section-level agent edit on existing styrdokument — ✅ **DONE 2026-06-06** (`completed/`; gate PASS **q100**)
+21. **17.11b** `add_document_section` — agent-proposed insert of a NEW section into an existing styrdokument — ✅ **DONE 2026-06-06** (`completed/`; gate PASS q95; surfaced the dual-version-visibility gap via live smoke)
+22. **Dual-version document visibility epic** (`docs/prd/epic-17-addendum-dual-version-visibility.md`) — ✅ **ALL THREE DONE 2026-06-04.** Encodes the currently-effective approved version AND the in-progress draft as concurrent first-class pointers on `WorkspaceDocument`. Landed before 19.8 exactly as sequenced.
+    - **17.16** Dual-version data model + dispatch refactor (foundation) — ✅ **DONE** (gate PASS q92; commit `88f99d69`).
+    - **17.17** Styrdokument table + doc page dual-version UX — ✅ **DONE** (gate PASS q96; commit `fab4b9c8`; +Neka action from the smoke).
+    - **17.18** Agent reads + citation routing under the dual-version model — ✅ **DONE** (gate PASS q95; commit `c6c45e31`; **DEC-2 adversarial contract held under dual-state routing**).
+23. **17.11c** Agent auto-branch on APPROVED — ✅ **DONE 2026-06-06** (`completed/`; gate PASS q95; shipped inside the authoring-triad commit `29b25e80` rather than as a separate post-17.18 draft).
+24. **19.8** `draft_styrdokument` skill (type-aware, one skill + `types/*.md` modules per `WorkspaceDocumentType`) + Swedish template seed (≥1 per type) — **NEXT; all deps ✅** (17.11 + 14.24 + 19.6 + 19.7c + the dual-version epic). No story file yet — needs SM `*create-story`. *Re-scoped 2026-05-28 from `draft_policy` → `draft_styrdokument`; see addendum above and PRD 19.8 entry.*
 
 ### Phase 6 — Scale + governance (~2 wk; pick by ROI)
 
@@ -352,10 +375,10 @@ Run any time; nothing in Track A blocks on these.
 
 Mirrors `EPIC-19-AGENT-PARTNER-CHECKLIST.md`:
 
-- [ ] Prerequisites shipped: 17.8, 17.9, 17.10, 17.10b, 17.11, 17.11b, 14.22, 14.23, 14.24
-- [ ] Dual-version visibility shipped: 17.16, 17.17, 17.18 (the foundation for compliant agent grounding on revising policies; closes the 5-symptom Model-A gap surfaced during 17.11b's smoke)
-- [ ] Agent auto-branch follow-up shipped: 17.11c (transparent draft creation on `add_document_section` / `update_document` against APPROVED docs)
-- [ ] Siblings shipped: 14.28, 14.29, 14.30, 14.31
+- [x] Prerequisites shipped: 17.8, 17.9, 17.10, 17.10b, 17.11, 17.11b, 14.22, 14.23, 14.24 — **complete 2026-06-06**
+- [x] Dual-version visibility shipped: 17.16, 17.17, 17.18 (the foundation for compliant agent grounding on revising policies; closes the 5-symptom Model-A gap surfaced during 17.11b's smoke) — **complete 2026-06-04**
+- [x] Agent auto-branch follow-up shipped: 17.11c (transparent draft creation on `add_document_section` / `update_document` against APPROVED docs) — **complete 2026-06-06**
+- [ ] Siblings shipped: 14.28 ✅, 14.29 ✅, 14.30 ✅, 14.31 (Approved, not built — the lone remainder)
 - [ ] All 15 Epic 19 stories shipped (incl. 19.4a id-resolution, 19.4b cycle/finding readers)
 - [ ] `agent_partner_v2` enabled in ≥1 customer workspace ≥2 weeks, no regressions
 - [ ] AUDITOR role verified read-only end-to-end; `AgentDecisionLog` populated for every tool call

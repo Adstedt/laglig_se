@@ -148,9 +148,14 @@ interface TransitionDocumentStatusParams {
 // `newSectionContentJson`, and `changeSummary`.
 interface UpdateDocumentParams {
   documentId: string
-  sectionHeading: string
-  oldSectionContentJson: unknown
-  newSectionContentJson: unknown
+  // Section fields are optional: a proposal may be a pure rename (newTitle only),
+  // a section edit, or both. Dispatch applies updateSection only when present.
+  sectionHeading?: string
+  oldSectionContentJson?: unknown
+  newSectionContentJson?: unknown
+  // Optional rename — when set, the document's title is updated as part of the
+  // same version write (no separate version is created for the rename).
+  newTitle?: string
   changeSummary: string
   entity_version: string
   // Story 17.11c AC 6: forks the dispatch between plain saveDocumentVersion
@@ -579,24 +584,34 @@ export async function approvePendingAction(
               }
             }
 
-            // Apply the section replacement. Heading-not-found at dispatch
-            // (drift since propose) → keep the row PENDING with a clear error.
-            let fullContentJson: ReturnType<typeof updateSection>
-            try {
-              fullContentJson = updateSection(
-                currentContent as unknown as Parameters<
-                  typeof updateSection
-                >[0],
-                p.sectionHeading,
-                p.newSectionContentJson as Parameters<typeof updateSection>[2]
-              )
-            } catch (err) {
-              return {
-                success: false,
-                error:
-                  err instanceof Error
-                    ? err.message
-                    : 'Kunde inte hitta sektionen i dokumentet.',
+            // Apply the section replacement when this proposal carries one. A
+            // pure rename (newTitle only) leaves content untouched and just
+            // re-saves the current tree with the new title. Heading-not-found at
+            // dispatch (drift since propose) → keep the row PENDING with a clear
+            // error.
+            const hasSectionEdit =
+              typeof p.sectionHeading === 'string' &&
+              p.newSectionContentJson !== undefined
+            let fullContentJson = currentContent as unknown as ReturnType<
+              typeof updateSection
+            >
+            if (hasSectionEdit) {
+              try {
+                fullContentJson = updateSection(
+                  currentContent as unknown as Parameters<
+                    typeof updateSection
+                  >[0],
+                  p.sectionHeading as string,
+                  p.newSectionContentJson as Parameters<typeof updateSection>[2]
+                )
+              } catch (err) {
+                return {
+                  success: false,
+                  error:
+                    err instanceof Error
+                      ? err.message
+                      : 'Kunde inte hitta sektionen i dokumentet.',
+                }
               }
             }
 
@@ -606,18 +621,25 @@ export async function approvePendingAction(
             // and trigger the after() reindex; the difference is that the
             // auto-branch path ALSO writes a paired document_draft_created
             // ActivityLog row + populates current_draft_version_id atomically.
+            // Optional rename rides along in the same version write — no extra
+            // version row is created for the title change.
+            const newTitle =
+              typeof p.newTitle === 'string' && p.newTitle.trim().length > 0
+                ? p.newTitle.trim()
+                : undefined
             const saveResult = shouldAutoBranch
               ? await createDraftFromApprovedWithEdit(
                   p.documentId,
                   fullContentJson as object,
                   p.changeSummary,
-                  contentHtml
+                  contentHtml,
+                  newTitle
                 )
               : await saveDocumentVersion(
                   p.documentId,
                   fullContentJson as object,
                   p.changeSummary,
-                  undefined,
+                  newTitle,
                   contentHtml
                 )
             if (!saveResult.success || !saveResult.data) {
@@ -1040,6 +1062,368 @@ export async function approvePendingAction(
         }
 
         return { success: true, data: { resultRef } }
+      }
+    )
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Ett oväntat fel uppstod',
+    }
+  }
+}
+
+// ============================================================================
+// Batch approve — consolidate multiple document edits into ONE version
+// ============================================================================
+
+type PendingRow = Awaited<
+  ReturnType<typeof prisma.pendingAgentAction.findMany>
+>[number]
+
+/**
+ * Apply every UPDATE_DOCUMENT / ADD_DOCUMENT_SECTION edit in `group` (which all
+ * target the same document) to a single in-memory content tree and persist it
+ * as ONE new version — instead of one version per edit. Folds edits in
+ * created_at order; a per-edit failure (e.g. a heading that drifted since
+ * propose) is skipped and reported, the rest still apply. An optional rename
+ * (UPDATE_DOCUMENT.newTitle) rides along in the same write. Rows that applied
+ * are marked APPROVED with a shared result_ref pointing at the one new version.
+ */
+async function applyConsolidatedDocumentEdits(
+  documentId: string,
+  group: PendingRow[],
+  workspaceId: string,
+  userId: string
+): Promise<{
+  approved: number
+  failed: number
+  errors: string[]
+  revalidatePaths: string[]
+}> {
+  const document = await prisma.workspaceDocument.findFirst({
+    where: { id: documentId, workspace_id: workspaceId },
+    select: {
+      id: true,
+      status: true,
+      workspace_id: true,
+      current_draft_version_id: true,
+      current_approved_version_id: true,
+      current_draft_version: { select: { content_json: true } },
+      current_approved_version: { select: { content_json: true } },
+    },
+  })
+  if (!document) {
+    return {
+      approved: 0,
+      failed: group.length,
+      errors: ['Dokumentet hittades inte'],
+      revalidatePaths: [],
+    }
+  }
+
+  // Widened writeable predicate — mirrors the per-action dispatch (Story 17.11c
+  // AC 7). APPROVED-no-draft auto-branches once for the whole consolidated write.
+  const autoBranchEligible =
+    document.status === 'APPROVED' && document.current_draft_version_id == null
+  const writeable =
+    document.current_draft_version_id != null ||
+    (document.status === 'DRAFT' &&
+      document.current_approved_version_id == null) ||
+    autoBranchEligible
+  if (!writeable) {
+    return {
+      approved: 0,
+      failed: group.length,
+      errors: [`Dokumentet kan inte uppdateras i status "${document.status}".`],
+      revalidatePaths: [],
+    }
+  }
+
+  const currentContent =
+    document.current_draft_version?.content_json ??
+    document.current_approved_version?.content_json
+  if (
+    !currentContent ||
+    typeof currentContent !== 'object' ||
+    !Array.isArray((currentContent as { content?: unknown }).content)
+  ) {
+    return {
+      approved: 0,
+      failed: group.length,
+      errors: ['Dokumentet saknar en aktuell version att uppdatera.'],
+      revalidatePaths: [],
+    }
+  }
+
+  // Fold every edit onto one tree in created_at order.
+  let content = currentContent as unknown as ReturnType<typeof updateSection>
+  let titleChange: string | undefined
+  const summaries: string[] = []
+  const appliedIds: string[] = []
+  const errors: string[] = []
+  for (const row of group) {
+    try {
+      if (row.action_type === 'UPDATE_DOCUMENT') {
+        const p = row.params as unknown as UpdateDocumentParams
+        if (
+          typeof p.sectionHeading === 'string' &&
+          p.newSectionContentJson !== undefined
+        ) {
+          content = updateSection(
+            content as unknown as Parameters<typeof updateSection>[0],
+            p.sectionHeading,
+            p.newSectionContentJson as Parameters<typeof updateSection>[2]
+          )
+        }
+        if (typeof p.newTitle === 'string' && p.newTitle.trim().length > 0) {
+          titleChange = p.newTitle.trim()
+        }
+        summaries.push(p.changeSummary)
+      } else {
+        const p = row.params as unknown as AddDocumentSectionParams
+        content = addSection(
+          content as unknown as Parameters<typeof addSection>[0],
+          p.newSectionHeading,
+          p.newSectionLevel,
+          p.newSectionContentJson as TiptapNode[],
+          p.position
+        )
+        summaries.push(p.changeSummary)
+      }
+      appliedIds.push(row.id)
+    } catch (err) {
+      errors.push(
+        err instanceof Error
+          ? err.message
+          : 'Kunde inte tillämpa en av ändringarna.'
+      )
+    }
+  }
+
+  if (appliedIds.length === 0) {
+    return { approved: 0, failed: group.length, errors, revalidatePaths: [] }
+  }
+
+  const contentHtml = tiptapDocToHtml(content)
+  const combinedSummary = (
+    summaries.length === 1
+      ? (summaries[0] ?? 'Ändring')
+      : `${appliedIds.length} ändringar: ${summaries.join('; ')}`
+  ).slice(0, 500)
+
+  // One write for the whole batch — auto-branch once when APPROVED-no-draft.
+  const saveResult = autoBranchEligible
+    ? await createDraftFromApprovedWithEdit(
+        documentId,
+        content as object,
+        combinedSummary,
+        contentHtml,
+        titleChange
+      )
+    : await saveDocumentVersion(
+        documentId,
+        content as object,
+        combinedSummary,
+        titleChange,
+        contentHtml
+      )
+  if (!saveResult.success || !saveResult.data) {
+    // Nothing persisted — keep every row PENDING so the user can retry.
+    return {
+      approved: 0,
+      failed: group.length,
+      errors: [saveResult.error ?? 'Kunde inte spara dokumentversionen'],
+      revalidatePaths: [],
+    }
+  }
+
+  const resultRef = {
+    documentId,
+    versionId: saveResult.data.id,
+    versionNumber: saveResult.data.versionNumber,
+  }
+
+  // Mark every applied row APPROVED, sharing the single consolidated version.
+  await prisma.pendingAgentAction.updateMany({
+    where: { id: { in: appliedIds } },
+    data: {
+      status: 'APPROVED',
+      result_ref: resultRef,
+      decided_at: new Date(),
+    },
+  })
+
+  // Best-effort: accept the AgentDecisionLog rows for the applied proposals.
+  try {
+    await prisma.agentDecisionLog.updateMany({
+      where: {
+        pending_action_id: { in: appliedIds },
+        outcome: 'WRITE_PROPOSED',
+      },
+      data: {
+        outcome: 'WRITE_ACCEPTED',
+        accepted_at: new Date(),
+        accepted_by: userId,
+      },
+    })
+  } catch (err) {
+    console.error('[AGENT_DECISION_LOG_UPDATE_FAIL]', err)
+  }
+
+  // Best-effort: stamp the consolidated document_version_saved row as an
+  // agent-authored batch edit for audit consumers (mirrors the single path's
+  // author stamp; a missed stamp never rolls back the version).
+  try {
+    const logRow = await prisma.activityLog.findFirst({
+      where: {
+        entity_type: 'workspace_document',
+        entity_id: documentId,
+        action: 'document_version_saved',
+        new_value: {
+          path: ['version_number'],
+          equals: saveResult.data.versionNumber,
+        },
+      },
+      orderBy: { created_at: 'desc' },
+      select: { id: true, new_value: true },
+    })
+    if (logRow) {
+      const existing =
+        logRow.new_value && typeof logRow.new_value === 'object'
+          ? (logRow.new_value as Record<string, unknown>)
+          : {}
+      await prisma.activityLog.update({
+        where: { id: logRow.id },
+        data: {
+          new_value: {
+            ...existing,
+            by: 'agent',
+            operation: autoBranchEligible
+              ? 'auto_branch_then_batch_update'
+              : 'batch_update',
+            batch_size: appliedIds.length,
+          } as Prisma.InputJsonValue,
+        },
+      })
+    }
+  } catch (err) {
+    console.error(
+      `[approvePendingActions] activity-log stamp failed for ${documentId}:`,
+      err instanceof Error ? err.message : err
+    )
+  }
+
+  return {
+    approved: appliedIds.length,
+    failed: group.length - appliedIds.length,
+    errors,
+    revalidatePaths: [
+      '/workspace/styrdokument',
+      `/workspace/styrdokument/${documentId}/edit`,
+    ],
+  }
+}
+
+/**
+ * Approve several pending actions in one call. Multiple document edits that
+ * target the SAME document are consolidated into a SINGLE new version (v+1)
+ * rather than bumping the version once per edit. All other actions — and
+ * single-edit document groups — dispatch through the proven per-action
+ * approvePendingAction path, in created_at order so dependencies (e.g. link
+ * after create) are honoured. Partial success is allowed: failed rows stay
+ * PENDING with their error surfaced.
+ */
+export async function approvePendingActions(
+  ids: string[]
+): Promise<
+  ActionResult<{ approved: number; failed: number; errors: string[] }>
+> {
+  try {
+    return await withWorkspace(
+      async ({ workspaceId, userId, hasPermission }) => {
+        if (!hasPermission('tasks:edit')) {
+          return {
+            success: false,
+            error: 'Du har inte behörighet att genomföra den här åtgärden',
+          }
+        }
+        if (!Array.isArray(ids) || ids.length === 0) {
+          return { success: true, data: { approved: 0, failed: 0, errors: [] } }
+        }
+
+        const rows = await prisma.pendingAgentAction.findMany({
+          where: {
+            id: { in: ids },
+            workspace_id: workspaceId,
+            user_id: userId,
+          },
+        })
+        const pending = rows
+          .filter((r) => r.status === 'PENDING')
+          .sort((a, b) => a.created_at.getTime() - b.created_at.getTime())
+
+        // Partition: consolidatable document edits grouped by documentId; the
+        // rest fall back to the single-action path. Map insertion order follows
+        // created_at (pending is sorted), so each group stays in apply order.
+        const docGroups = new Map<string, PendingRow[]>()
+        const others: PendingRow[] = []
+        for (const r of pending) {
+          if (
+            r.action_type === 'UPDATE_DOCUMENT' ||
+            r.action_type === 'ADD_DOCUMENT_SECTION'
+          ) {
+            const docId = (r.params as { documentId?: string } | null)
+              ?.documentId
+            if (typeof docId === 'string') {
+              const arr = docGroups.get(docId) ?? []
+              arr.push(r)
+              docGroups.set(docId, arr)
+              continue
+            }
+          }
+          others.push(r)
+        }
+
+        let approved = 0
+        let failed = 0
+        const errors: string[] = []
+        const revalidate = new Set<string>()
+
+        // Non-document + singleton groups → proven per-action path, in order.
+        for (const r of others) {
+          const res = await approvePendingAction(r.id)
+          if (res.success) approved++
+          else {
+            failed++
+            if (res.error) errors.push(res.error)
+          }
+        }
+
+        for (const [documentId, group] of docGroups) {
+          if (group.length === 1) {
+            const res = await approvePendingAction(group[0]!.id)
+            if (res.success) approved++
+            else {
+              failed++
+              if (res.error) errors.push(res.error)
+            }
+            continue
+          }
+          const r = await applyConsolidatedDocumentEdits(
+            documentId,
+            group,
+            workspaceId,
+            userId
+          )
+          approved += r.approved
+          failed += r.failed
+          errors.push(...r.errors)
+          for (const p of r.revalidatePaths) revalidate.add(p)
+        }
+
+        for (const p of revalidate) revalidatePath(p)
+
+        return { success: true, data: { approved, failed, errors } }
       }
     )
   } catch (error) {
