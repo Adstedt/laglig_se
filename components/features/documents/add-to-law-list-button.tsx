@@ -28,7 +28,7 @@ export function AddToLawListButton({
         variant="outline"
         size="sm"
         onClick={() => setOpen(true)}
-        className="gap-1.5"
+        className="w-full justify-center gap-1.5 sm:w-auto"
       >
         <ListPlus className="h-4 w-4" />
         Lägg till i laglista
