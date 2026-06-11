@@ -216,7 +216,10 @@ export async function seedIndustryWorkspace(
           compliance_status: item.status,
           responsible_user_id: personaIds[respCounter % personaIds.length]!,
           priority: priorityFor(item.status, i),
-          ...(item.commentary ? { commentary: item.commentary } : {}),
+          // "Hur påverkar detta oss?" column reads business_context (the
+          // spec key stays `commentary` for brevity; mapping fixed 2026-06-11
+          // — the column showed "+ Lägg till" placeholders before)
+          ...(item.commentary ? { business_context: item.commentary } : {}),
         },
         select: { id: true },
       })
