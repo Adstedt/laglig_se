@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/collapsible'
 import { cn } from '@/lib/utils'
 import type { PendingAgentActionStatus } from '@prisma/client'
+import { useBatchSelection } from './batch-selection-context'
 
 export const LABEL_CLS =
   'text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground'
@@ -164,6 +165,10 @@ export function ActionRendererFrame({
 }: ActionRendererFrameProps) {
   const [open, setOpen] = useState(false)
   const Icon = TYPE_ICON[badge] ?? ListTodo
+  // Batch selection mode (set by AgentActionBatchCard): the row hides its inline
+  // Godkänn/Avvisa buttons — approval is driven by the card's selection
+  // checkbox + a single consolidating action. Single cards never set this.
+  const { selectionMode } = useBatchSelection()
 
   // ── COMPACT (batch row) ────────────────────────────────────────────────
   if (compact) {
@@ -217,32 +222,36 @@ export function ActionRendererFrame({
               {summary}
             </span>
           </CollapsibleTrigger>
-          <div className="flex shrink-0 items-center gap-0.5">
-            <button
-              type="button"
-              onClick={onApprove}
-              disabled={isSubmitting || !canApprove}
-              title="Godkänn"
-              aria-label="Godkänn"
-              className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-emerald-500/10 hover:text-emerald-600 disabled:pointer-events-none disabled:opacity-40"
-            >
-              {isSubmitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Check className="h-4 w-4" />
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={onReject}
-              disabled={isSubmitting}
-              title="Avvisa"
-              aria-label="Avvisa"
-              className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:pointer-events-none disabled:opacity-40"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+          {/* Selection mode: the batch card owns approve/reject via the
+              selection checkbox + footer, so the inline buttons are hidden. */}
+          {!selectionMode && (
+            <div className="flex shrink-0 items-center gap-0.5">
+              <button
+                type="button"
+                onClick={onApprove}
+                disabled={isSubmitting || !canApprove}
+                title="Godkänn"
+                aria-label="Godkänn"
+                className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-emerald-500/10 hover:text-emerald-600 disabled:pointer-events-none disabled:opacity-40"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Check className="h-4 w-4" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={onReject}
+                disabled={isSubmitting}
+                title="Avvisa"
+                aria-label="Avvisa"
+                className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:pointer-events-none disabled:opacity-40"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
         <CollapsibleContent>
           <div className="mb-1 ml-[26px] mr-2 space-y-3 border-l border-border/45 pl-3 pt-1">

@@ -90,7 +90,7 @@ describe('AgentActionBatchCard', () => {
     expect(screen.getByTestId('row-pa_3')).toBeInTheDocument()
   })
 
-  it('"Godkänn alla" approves all pending rows in one batch call and shows the summary', async () => {
+  it('rows are all preselected → "Godkänn markerade (3)" consolidates every id in ONE call', async () => {
     mockApproveAll.mockResolvedValue({
       success: true,
       data: { approved: 3, failed: 0, errors: [] },
@@ -98,14 +98,38 @@ describe('AgentActionBatchCard', () => {
     renderCard()
     await screen.findByText('Föreslagna åtgärder')
 
-    fireEvent.click(screen.getByRole('button', { name: /Godkänn alla/ }))
+    // Default: all preselected → one button reflecting the count.
+    fireEvent.click(
+      screen.getByRole('button', { name: /Godkänn markerade \(3\)/ })
+    )
 
-    // One consolidated call with every pending id (not one call per row — that
+    // One consolidated call with every selected id (not one call per row — that
     // was the v13→v19 version-explosion bug).
     await waitFor(() => expect(mockApproveAll).toHaveBeenCalledTimes(1))
     expect(mockApproveAll).toHaveBeenCalledWith(['pa_1', 'pa_2', 'pa_3'])
     expect(mockApprove).not.toHaveBeenCalled()
     expect(await screen.findByText('3 av 3 godkända')).toBeInTheDocument()
+  })
+
+  it('deselecting a row approves only the selected subset (one consolidated call)', async () => {
+    mockApproveAll.mockResolvedValue({
+      success: true,
+      data: { approved: 2, failed: 0, errors: [] },
+    })
+    renderCard()
+    await screen.findByText('Föreslagna åtgärder')
+
+    // Uncheck the first row's selection checkbox → count drops to 2.
+    const checkboxes = screen.getAllByRole('checkbox')
+    expect(checkboxes).toHaveLength(3)
+    fireEvent.click(checkboxes[0]!)
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /Godkänn markerade \(2\)/ })
+    )
+
+    await waitFor(() => expect(mockApproveAll).toHaveBeenCalledTimes(1))
+    expect(mockApproveAll).toHaveBeenCalledWith(['pa_2', 'pa_3'])
   })
 
   it('partial failure: summary reflects only the successes, failures stay', async () => {
@@ -120,18 +144,20 @@ describe('AgentActionBatchCard', () => {
     renderCard()
     await screen.findByText('Föreslagna åtgärder')
 
-    fireEvent.click(screen.getByRole('button', { name: /Godkänn alla/ }))
+    fireEvent.click(
+      screen.getByRole('button', { name: /Godkänn markerade \(3\)/ })
+    )
 
     await waitFor(() => expect(mockApproveAll).toHaveBeenCalledTimes(1))
     expect(await screen.findByText('2 av 3 godkända')).toBeInTheDocument()
   })
 
-  it('"Avvisa alla" rejects every PENDING row', async () => {
+  it('"Avvisa markerade" rejects every selected PENDING row', async () => {
     mockReject.mockResolvedValue({ success: true })
     renderCard()
     await screen.findByText('Föreslagna åtgärder')
 
-    fireEvent.click(screen.getByRole('button', { name: /Avvisa alla/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Avvisa markerade/ }))
 
     await waitFor(() => expect(mockReject).toHaveBeenCalledTimes(3))
   })

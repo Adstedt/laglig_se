@@ -208,14 +208,14 @@ export function VersionHistoryPanel({
             </Button>
           )}
         </SheetTrigger>
-        <SheetContent className="w-[400px] sm:max-w-[400px] p-0 flex flex-col">
-          <SheetHeader className="px-4 pt-4 pb-2">
+        <SheetContent className="flex w-full flex-col p-0 sm:w-[540px] sm:max-w-[540px]">
+          <SheetHeader className="border-b border-border/50 px-5 pb-3 pt-5">
             <SheetTitle>Versionshistorik</SheetTitle>
             <SheetDescription className="sr-only">
               Visa och hantera dokumentversioner
             </SheetDescription>
           </SheetHeader>
-          <ScrollArea className="flex-1 pl-4 pr-5">
+          <ScrollArea className="flex-1 px-5">
             {loading ? (
               <div className="py-8 text-center text-sm text-muted-foreground">
                 Laddar versioner...
@@ -225,7 +225,7 @@ export function VersionHistoryPanel({
                 Inga versioner hittades.
               </div>
             ) : (
-              <div className="space-y-1 pb-4">
+              <div className="space-y-2 py-4">
                 {versions.map((version) => {
                   const isCurrent =
                     version.version_number === currentVersionNumber
@@ -235,7 +235,7 @@ export function VersionHistoryPanel({
                     <div
                       key={version.id}
                       className={cn(
-                        'rounded-md border p-3 transition-colors',
+                        'rounded-lg border border-border/60 p-3.5 transition-colors',
                         isCurrent && 'border-primary/50 bg-primary/5',
                         isSelectedForCompare &&
                           'ring-2 ring-inset ring-blue-500'
@@ -288,7 +288,7 @@ export function VersionHistoryPanel({
                         </p>
                       )}
 
-                      <div className="mt-2 flex items-center gap-1">
+                      <div className="mt-2.5 flex items-center gap-1">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -299,37 +299,30 @@ export function VersionHistoryPanel({
                           {isSelectedForCompare ? 'Avmarkera' : 'Jämför'}
                         </Button>
                         {!isCurrent && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 px-2 text-xs"
-                              onClick={() => setRestoreTarget(version)}
-                              disabled={!restoreGuard.enabled}
-                              title={restoreGuard.hint ?? undefined}
-                            >
-                              <RotateCcw className="mr-1 h-3 w-3" />
-                              Återställ
-                            </Button>
-                            {restoreGuard.hint && (
-                              <span className="text-[10px] text-muted-foreground italic">
-                                {restoreGuard.hint}
-                              </span>
-                            )}
-                          </>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => setRestoreTarget(version)}
+                            disabled={!restoreGuard.enabled}
+                            title={restoreGuard.hint ?? undefined}
+                          >
+                            <RotateCcw className="mr-1 h-3 w-3" />
+                            Återställ
+                          </Button>
                         )}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-7 px-2 text-xs"
+                              className="ml-auto h-7 px-2 text-xs"
                             >
                               <Download className="mr-1 h-3 w-3" />
                               Exportera
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start">
+                          <DropdownMenuContent align="end">
                             <DropdownMenuItem
                               onClick={() => {
                                 window.open(
@@ -355,6 +348,12 @@ export function VersionHistoryPanel({
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
+
+                      {!isCurrent && restoreGuard.hint && (
+                        <p className="mt-1.5 text-[11px] text-muted-foreground">
+                          {restoreGuard.hint}
+                        </p>
+                      )}
                     </div>
                   )
                 })}

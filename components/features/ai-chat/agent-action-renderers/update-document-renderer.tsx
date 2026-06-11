@@ -17,9 +17,11 @@
  * as natural Swedish language.
  */
 
-import { Check, ArrowUpRight, Eye } from 'lucide-react'
+import { useMemo } from 'react'
+import { Check, ArrowUpRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { useChatDetailSafe } from '@/lib/ai/chat-detail-context'
+import { computeDiff } from '@/lib/utils/document-diff'
+import { cn } from '@/lib/utils'
 import type { AgentActionRendererProps } from './task-approval-renderer'
 import { ActionRendererFrame, LABEL_CLS } from './renderer-frame'
 
@@ -66,7 +68,6 @@ export function UpdateDocumentRenderer({
   compact = false,
 }: AgentActionRendererProps) {
   const params = (action.params ?? {}) as UpdateDocumentParams
-  const chatDetail = useChatDetailSafe()
 
   // CP-001 (AC 6): the document's natural-language title — never the id —
   // appears in the visible card copy. The tool stamps `documentTitle` into
@@ -90,8 +91,14 @@ export function UpdateDocumentRenderer({
   const newNodes = Array.isArray(params.newSectionContentJson)
     ? params.newSectionContentJson
     : []
-  const oldExcerpt = plainText(oldNodes).slice(0, 200)
-  const newExcerpt = plainText(newNodes).slice(0, 200)
+  // Word-level diff of the full section text (no truncation — long sections
+  // scroll inside the diff box). Removed words show red + struck, added green.
+  const oldText = plainText(oldNodes)
+  const newText = plainText(newNodes)
+  const diffSegments = useMemo(
+    () => computeDiff(oldText, newText),
+    [oldText, newText]
+  )
 
   const summary =
     hasSectionEdit && newTitle
@@ -99,20 +106,6 @@ export function UpdateDocumentRenderer({
       : newTitle
         ? `Byt namn på ${documentTitle} till "${newTitle}"`
         : `Uppdatera avsnittet "${sectionHeading}" i ${documentTitle}`
-
-  const openCanvas = () => {
-    chatDetail?.openDetail({
-      type: 'document-update',
-      id: action.id,
-      data: {
-        pendingActionId: action.id,
-        documentTitle,
-        sectionHeading,
-        oldSectionContentJson: oldNodes,
-        newSectionContentJson: newNodes,
-      },
-    })
-  }
 
   const resultRef = (action.result_ref ?? {}) as {
     documentId?: string
@@ -143,18 +136,6 @@ export function UpdateDocumentRenderer({
     </>
   )
 
-  const secondaryAction = chatDetail ? (
-    <button
-      type="button"
-      onClick={openCanvas}
-      disabled={isSubmitting}
-      className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
-    >
-      <Eye className="h-3 w-3" />
-      Visa mer
-    </button>
-  ) : undefined
-
   return (
     <ActionRendererFrame
       status={action.status}
@@ -165,7 +146,6 @@ export function UpdateDocumentRenderer({
       onApprove={onApprove}
       onReject={onReject}
       isSubmitting={isSubmitting}
-      {...(secondaryAction !== undefined && { secondaryAction })}
     >
       <div className="space-y-3">
         {/* Story 17.11c AC 9: auto-branch header. PENDING state only —
@@ -210,19 +190,27 @@ export function UpdateDocumentRenderer({
 
         {hasSectionEdit && (
           <div className="space-y-1">
-            <span className={`${LABEL_CLS} block`}>Nuvarande</span>
-            <p className="line-clamp-3 text-[13px] leading-snug text-muted-foreground line-through">
-              {oldExcerpt || '(tom)'}
-            </p>
-          </div>
-        )}
-
-        {hasSectionEdit && (
-          <div className="space-y-1">
-            <span className={`${LABEL_CLS} block`}>Föreslaget</span>
-            <p className="line-clamp-3 text-[13px] leading-snug text-foreground">
-              {newExcerpt || '(tom)'}
-            </p>
+            <span className={`${LABEL_CLS} block`}>Ändring</span>
+            <div className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-muted/30 p-2.5 text-[13px] leading-snug">
+              {diffSegments.length > 0 ? (
+                diffSegments.map((seg, i) => (
+                  <span
+                    key={i}
+                    className={cn(
+                      !seg.added && !seg.removed && 'text-foreground',
+                      seg.added &&
+                        'rounded-[3px] bg-emerald-100 text-emerald-900 dark:bg-emerald-900/30 dark:text-emerald-300',
+                      seg.removed &&
+                        'rounded-[3px] bg-rose-100 text-rose-900 line-through dark:bg-rose-900/30 dark:text-rose-300'
+                    )}
+                  >
+                    {seg.value}
+                  </span>
+                ))
+              ) : (
+                <span className="text-muted-foreground">(tom)</span>
+              )}
+            </div>
           </div>
         )}
       </div>
