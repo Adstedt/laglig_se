@@ -894,7 +894,7 @@ export async function saveDocumentVersion(
 export async function getDocumentVersionContent(
   documentId: string,
   versionId: string
-): Promise<ActionResult<{ extracted_text: string }>> {
+): Promise<ActionResult<{ extracted_text: string; content_json: unknown }>> {
   try {
     return await withWorkspace(async ({ workspaceId }) => {
       // Verify document belongs to workspace
@@ -909,7 +909,10 @@ export async function getDocumentVersionContent(
 
       const version = await prisma.workspaceDocumentVersion.findFirst({
         where: { id: versionId, document_id: documentId },
-        select: { extracted_text: true },
+        // content_json is the canonical structured source — the diff view derives
+        // block-structured plaintext from it (paragraphs/headings on their own
+        // lines, no leaked HTML entities), which extracted_text can't provide.
+        select: { extracted_text: true, content_json: true },
       })
 
       if (!version) {
@@ -918,7 +921,10 @@ export async function getDocumentVersionContent(
 
       return {
         success: true,
-        data: { extracted_text: version.extracted_text ?? '' },
+        data: {
+          extracted_text: version.extracted_text ?? '',
+          content_json: version.content_json ?? null,
+        },
       }
     })
   } catch (error) {

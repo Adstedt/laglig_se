@@ -63,6 +63,42 @@ describe('buildModelMessages', () => {
     expect(out[1]).toEqual({ role: 'assistant', content: 'sista är assistent' })
   })
 
+  it('drops empty-content assistant turns (tool-only proposals / legacy stubs) so no empty text block reaches the model', () => {
+    // Anthropic rejects empty text content blocks. A tool-only proposal turn
+    // persists with content '' and must not be forwarded as an empty block.
+    const out = buildModelMessages(
+      [
+        userMsg('föreslå ändringar'),
+        assistantMsg(''), // tool-only proposal turn, no prose
+        userMsg('gör alla ändringar'),
+      ],
+      []
+    )
+    expect(out).toEqual([
+      { role: 'user', content: 'föreslå ändringar' },
+      { role: 'user', content: 'gör alla ändringar' },
+    ])
+  })
+
+  it('drops a whitespace-only assistant turn', () => {
+    const out = buildModelMessages(
+      [userMsg('hej'), assistantMsg('   \n  '), userMsg('igen')],
+      []
+    )
+    expect(out).toEqual([
+      { role: 'user', content: 'hej' },
+      { role: 'user', content: 'igen' },
+    ])
+  })
+
+  it('last user message with attachments but no text → blocks only, no empty text block', () => {
+    const out = buildModelMessages(
+      [userMsg('tidigare'), { id: 'x', role: 'user', parts: [] } as UIMessage],
+      [pdfBlock]
+    )
+    expect(out[out.length - 1]).toEqual({ role: 'user', content: [pdfBlock] })
+  })
+
   it('joins multiple text parts with newlines', () => {
     const m = {
       id: 'm',

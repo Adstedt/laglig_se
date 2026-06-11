@@ -14,7 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   getDocumentVersions,
   getDocumentVersionContent,
@@ -22,6 +21,53 @@ import {
 } from '@/app/actions/documents'
 import { computeDiff, type DiffSegment } from '@/lib/utils/document-diff'
 import { cn } from '@/lib/utils'
+
+interface TiptapNodeLike {
+  type?: string
+  text?: string
+  content?: TiptapNodeLike[]
+}
+
+/** Concatenate a node's inline text (already entity-decoded in Tiptap JSON). */
+function inlineText(node: TiptapNodeLike): string {
+  if (typeof node.text === 'string') return node.text
+  if (Array.isArray(node.content)) return node.content.map(inlineText).join('')
+  return ''
+}
+
+/**
+ * Derive block-structured plaintext from a version's Tiptap `content_json`:
+ * each heading / paragraph / list item is its own block, blocks separated by a
+ * blank line. Diffing this (instead of the flattened, entity-encoded
+ * `extracted_text`) preserves document structure and avoids "&amp;" leaking.
+ */
+function tiptapToBlockText(json: unknown): string {
+  const doc = json as TiptapNodeLike | null
+  if (!doc || !Array.isArray(doc.content)) return ''
+  const blocks: string[] = []
+  const walk = (nodes: TiptapNodeLike[]) => {
+    for (const node of nodes) {
+      if (node.type === 'bulletList' || node.type === 'orderedList') {
+        for (const item of node.content ?? []) {
+          const t = inlineText(item).trim()
+          if (t) blocks.push(`• ${t}`)
+        }
+      } else if (
+        node.type === 'heading' ||
+        node.type === 'paragraph' ||
+        node.type === 'blockquote' ||
+        node.type === 'codeBlock'
+      ) {
+        const t = inlineText(node).trim()
+        if (t) blocks.push(t)
+      } else if (Array.isArray(node.content)) {
+        walk(node.content)
+      }
+    }
+  }
+  walk(doc.content)
+  return blocks.join('\n\n')
+}
 
 interface VersionDiffViewProps {
   documentId: string
@@ -89,10 +135,15 @@ export function VersionDiffView({
       toResult.success &&
       toResult.data
     ) {
-      const segments = computeDiff(
-        fromResult.data.extracted_text,
+      // Prefer the structured content_json projection; fall back to the
+      // flattened extracted_text for legacy versions that lack content_json.
+      const fromText =
+        tiptapToBlockText(fromResult.data.content_json) ||
+        fromResult.data.extracted_text
+      const toText =
+        tiptapToBlockText(toResult.data.content_json) ||
         toResult.data.extracted_text
-      )
+      const segments = computeDiff(fromText, toText)
       setDiffSegments(segments)
     }
     setLoading(false)
@@ -182,8 +233,9 @@ export function VersionDiffView({
           </div>
         )}
 
-        {/* Diff content */}
-        <ScrollArea className="flex-1 min-h-0 rounded-md border p-4">
+        {/* Diff content — native scroll container with a bounded height so a
+            long document scrolls reliably (flex-1 height didn't propagate). */}
+        <div className="min-h-0 flex-1 overflow-y-auto rounded-md border p-4">
           {loading ? (
             <div className="py-8 text-center text-sm text-muted-foreground">
               Beräknar skillnader...
@@ -201,15 +253,15 @@ export function VersionDiffView({
               Inga ändringar mellan versionerna.
             </div>
           ) : (
-            <div className="whitespace-pre-wrap text-sm leading-relaxed font-mono">
+            <div className="whitespace-pre-wrap text-sm leading-relaxed">
               {diffSegments.map((seg, i) => (
                 <span
                   key={i}
                   className={cn(
                     seg.added &&
-                      'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-300',
+                      'rounded-[3px] bg-emerald-100 text-emerald-900 dark:bg-emerald-900/30 dark:text-emerald-300',
                     seg.removed &&
-                      'bg-red-100 text-red-900 line-through dark:bg-red-900/30 dark:text-red-300'
+                      'rounded-[3px] bg-rose-100 text-rose-900 line-through dark:bg-rose-900/30 dark:text-rose-300'
                   )}
                 >
                   {seg.value}
@@ -217,7 +269,7 @@ export function VersionDiffView({
               ))}
             </div>
           )}
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   )

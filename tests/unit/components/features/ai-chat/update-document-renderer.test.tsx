@@ -98,11 +98,16 @@ describe('UpdateDocumentRenderer — PENDING', () => {
     expect(screen.getAllByText('Syfte').length).toBeGreaterThan(0)
   })
 
-  it('shows the before/after excerpts', () => {
+  it('shows a word-level diff with removed (struck) and added text', () => {
     render(<UpdateDocumentRenderer action={action()} {...handlers()} />)
     expandJustera()
-    expect(screen.getByText('Gammalt syfte.')).toBeInTheDocument()
-    expect(screen.getByText('Nytt skärpt syfte.')).toBeInTheDocument()
+    // The before/after blocks were replaced by a single inline word-diff under
+    // the "Ändring" label: removed words are struck, added words highlighted.
+    expect(screen.getByText('Ändring')).toBeInTheDocument()
+    const removed = document.querySelector('.line-through')
+    expect(removed?.textContent).toContain('Gammalt')
+    const added = document.querySelector('.bg-emerald-100')
+    expect(added?.textContent).toMatch(/Nytt|skärpt/)
   })
 
   it('shows the change summary when provided', () => {
@@ -111,22 +116,12 @@ describe('UpdateDocumentRenderer — PENDING', () => {
     expect(screen.getByText('Skärpt syftesformulering')).toBeInTheDocument()
   })
 
-  it('opens the chat detail panel via "Visa mer" with both snapshots', () => {
+  it('no longer renders a redundant "Visa mer" panel button (inline diff replaces it)', () => {
     render(<UpdateDocumentRenderer action={action()} {...handlers()} />)
-    // Frame opens the disclosure by default in PENDING (Justera) — but the
-    // secondary "Visa mer" button is rendered in the footer. Find it by text.
-    const visaMer = screen.getByRole('button', { name: /visa mer/i })
-    fireEvent.click(visaMer)
-    expect(mockOpenDetail).toHaveBeenCalledWith({
-      type: 'document-update',
-      id: RAW_PENDING_ID,
-      data: expect.objectContaining({
-        documentTitle: 'Arbetsmiljöpolicy',
-        sectionHeading: 'Syfte',
-        oldSectionContentJson: oldBody,
-        newSectionContentJson: newBody,
-      }),
-    })
+    expect(
+      screen.queryByRole('button', { name: /visa mer/i })
+    ).not.toBeInTheDocument()
+    expect(mockOpenDetail).not.toHaveBeenCalled()
   })
 
   it('CP-001: never renders raw documentId / pendingActionId / quoted identifier copy in PENDING', () => {
@@ -144,7 +139,7 @@ describe('UpdateDocumentRenderer — PENDING', () => {
     expect(container.querySelectorAll('code')).toHaveLength(0)
   })
 
-  it('handles missing snapshots without crashing — shows "(tom)" placeholders', () => {
+  it('handles missing snapshots without crashing — shows a "(tom)" placeholder', () => {
     const params = {
       ...baseParams,
       oldSectionContentJson: undefined,
@@ -157,7 +152,8 @@ describe('UpdateDocumentRenderer — PENDING', () => {
       />
     )
     expandJustera()
-    expect(screen.getAllByText('(tom)').length).toBeGreaterThanOrEqual(2)
+    // Both snapshots empty → empty diff → a single "(tom)" placeholder.
+    expect(screen.getByText('(tom)')).toBeInTheDocument()
   })
 })
 

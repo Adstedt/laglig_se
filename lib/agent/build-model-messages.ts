@@ -26,19 +26,34 @@ export function buildModelMessages(
 ): ModelMessage[] {
   const lastIndex = messages.length - 1
 
-  return messages.map((m, i): ModelMessage => {
+  const out: ModelMessage[] = []
+  messages.forEach((m, i) => {
     const text = textOf(m)
 
     // Last user message + attachments → array content (blocks before text).
+    // Omit the text block when there's no text so we never send an empty one.
     if (i === lastIndex && m.role === 'user' && attachmentBlocks.length > 0) {
-      return {
+      out.push({
         role: 'user',
-        content: [...attachmentBlocks, { type: 'text', text }],
-      }
+        content: text
+          ? [...attachmentBlocks, { type: 'text', text }]
+          : [...attachmentBlocks],
+      })
+      return
     }
 
-    if (m.role === 'assistant') return { role: 'assistant', content: text }
-    if (m.role === 'system') return { role: 'system', content: text }
-    return { role: 'user', content: text }
+    // Anthropic rejects empty text content blocks ("text content blocks must be
+    // non-empty"). An assistant turn that was ONLY a tool proposal (no prose)
+    // persists with empty content; once loaded into history it would otherwise
+    // be forwarded here as an empty block and fail the whole next turn. Its
+    // proposals are re-injected to the model via the <pending_agent_actions>
+    // block, so the empty turn carries nothing for the model — drop it. (Also
+    // covers legacy pre-fix turns whose prose wasn't captured.)
+    if (text.trim() === '') return
+
+    if (m.role === 'assistant') out.push({ role: 'assistant', content: text })
+    else if (m.role === 'system') out.push({ role: 'system', content: text })
+    else out.push({ role: 'user', content: text })
   })
+  return out
 }
