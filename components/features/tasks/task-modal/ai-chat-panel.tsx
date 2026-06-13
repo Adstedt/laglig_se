@@ -65,7 +65,7 @@ export function AiChatPanel({
       data-testid="ai-chat-panel"
     >
       <ChatPanelChrome
-        title="Fråga Lexa"
+        title="Fråga assistenten"
         subtitle="uppgiften"
         expanded={expanded}
         onNewChat={handleNewChat}
@@ -79,11 +79,11 @@ export function AiChatPanel({
         contextId={taskId}
         analyticsLocation="task_modal"
         onClose={onClose}
-        title="Lexa"
+        title="Assistent"
         subtitle="Fråga om uppgiften"
         showHeader={false}
-        emptyStateTitle="Fråga Lexa om uppgiften"
-        emptyStateDescription={`Lexa kan hjälpa dig med "${taskTitle.length > 30 ? taskTitle.substring(0, 30) + '...' : taskTitle}"`}
+        emptyStateTitle="Fråga assistenten om uppgiften"
+        emptyStateDescription={`Assistenten kan hjälpa dig med "${taskTitle.length > 30 ? taskTitle.substring(0, 30) + '...' : taskTitle}"`}
         suggestedQuestions={TASK_SUGGESTED_QUESTIONS}
         className="border-0 flex-1 min-h-0"
         chat={chat}

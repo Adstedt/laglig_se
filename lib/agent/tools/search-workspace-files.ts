@@ -59,7 +59,7 @@ Hittas inga träffar, omformulera frågan eller använd bredare söktermer.`,
           return wrapToolError(
             'search_workspace_files',
             'Inga resultat hittades bland era uppladdade filer.',
-            'Försök att omformulera sökningen eller använd bredare söktermer. Kontrollera även att relevanta filer har laddats upp och bearbetats.',
+            'Dokumentet kan vara ett författat styrdokument istället för en uppladdad fil — sök även med search_workspace_documents innan du säger att det inte finns. Försök annars att omformulera sökningen eller använd bredare söktermer.',
             startTime
           )
         }

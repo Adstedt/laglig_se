@@ -7,6 +7,8 @@ import {
   Table,
   TableRow,
   TableCell,
+  TableLayoutType,
+  WidthType,
   AlignmentType,
   BorderStyle,
   ExternalHyperlink,
@@ -182,8 +184,28 @@ function convertListItems(
   return paragraphs
 }
 
+// A4 portrait usable width in DXA (twips): 210mm − 2×25.4mm default margins
+// ≈ 9026 DXA. Splitting this equally across columns + a FIXED layout makes Word
+// constrain a wide table to the page and wrap cell text instead of running it
+// past the right margin (19.8 QA — agent tables can be 7+ columns).
+const A4_CONTENT_WIDTH_DXA = 9026
+
 function convertTable(node: TiptapExportNode): Table {
   const rows: TableRow[] = []
+
+  // Column count = widest row (accounting for colspans), min 1.
+  let maxCols = 1
+  for (const row of node.content ?? []) {
+    if (row.type !== 'tableRow') continue
+    let count = 0
+    for (const cell of row.content ?? []) {
+      if (cell.type !== 'tableCell' && cell.type !== 'tableHeader') continue
+      count += (cell.attrs?.colspan as number) ?? 1
+    }
+    maxCols = Math.max(maxCols, count)
+  }
+  const colDxa = Math.floor(A4_CONTENT_WIDTH_DXA / maxCols)
+  const columnWidths = Array.from({ length: maxCols }, () => colDxa)
 
   for (const row of node.content ?? []) {
     if (row.type !== 'tableRow') continue
@@ -207,6 +229,9 @@ function convertTable(node: TiptapExportNode): Table {
 
       const cellOpts: Record<string, unknown> = {
         children: cellChildren,
+        // Explicit cell width (with FIXED layout) keeps Word from auto-expanding
+        // the table past the page; text wraps within the fixed cell.
+        width: { size: colDxa * colspan, type: WidthType.DXA },
         borders: {
           top: { style: BorderStyle.SINGLE, size: 1 },
           bottom: { style: BorderStyle.SINGLE, size: 1 },
@@ -227,7 +252,12 @@ function convertTable(node: TiptapExportNode): Table {
     }
   }
 
-  return new Table({ rows })
+  return new Table({
+    rows,
+    columnWidths,
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    layout: TableLayoutType.FIXED,
+  })
 }
 
 function convertHorizontalRule(): Paragraph {

@@ -42,7 +42,7 @@ const schema = z.object({
   contentJson: z
     .any()
     .describe(
-      'Tiptap-/ProseMirror-JSON för dokumentet: { "type": "doc", "content": [ ... ] }. Använd heading-noder för rubriker och paragraph-noder för stycken. Ett bra utkast har minst en rubrik och flera strukturerade stycken (syfte, ansvar, krav, motivering) och refererar relevant lagstiftning.'
+      'Tiptap-/ProseMirror-JSON för dokumentet: { "type": "doc", "content": [ ... ] }. Använd heading-noder för rubriker och paragraph-noder för stycken. Ett bra utkast har minst en rubrik och flera strukturerade stycken (syfte, ansvar, krav, motivering) och refererar relevant lagstiftning. Typkrav: RISK_ASSESSMENT kräver en riskmatris som table-nod (riskkälla/sannolikhet/konsekvens), ACTION_PLAN en åtgärdstabell som table-nod (åtgärd/ansvarig/klart senast/status), CHECKLIST kontrollpunkter som table-nod eller bulletList/orderedList med minst tre punkter.'
     ),
   contextLinks: z
     .array(
@@ -128,10 +128,79 @@ function stripLeadingTitleHeading(doc: TiptapNode, title: string): TiptapNode {
   return doc
 }
 
+/** Recursively test whether any node in the tree matches `pred` (Story 19.8 —
+ * the type-aware gate needs table/list detection anywhere, not just top level). */
+function hasNode(node: TiptapNode, pred: (_n: TiptapNode) => boolean): boolean {
+  if (pred(node)) return true
+  return (node.content ?? []).some((c) => c && hasNode(c, pred))
+}
+
+/** Count direct children of the first matching list node (≥3-item check). */
+function maxListItemCount(node: TiptapNode): number {
+  let max = 0
+  const walk = (n: TiptapNode): void => {
+    if (
+      (n.type === 'bulletList' || n.type === 'orderedList') &&
+      Array.isArray(n.content)
+    ) {
+      max = Math.max(max, n.content.length)
+    }
+    for (const c of n.content ?? []) if (c) walk(c)
+  }
+  walk(node)
+  return max
+}
+
+/**
+ * Story 19.8 — type-aware quality gate, additive on top of the AC-3a baseline.
+ * Machine-checkable invariants per docType (node types per the editor schema in
+ * components/ui/rich-text-editor.tsx — StarterKit lists + extension-table; NO
+ * taskList). Returns a Swedish self-correct message, or null when the draft passes.
+ */
+function typeGateError(
+  docType: Input['docType'],
+  doc: TiptapNode
+): string | null {
+  const hasTable = hasNode(doc, (n) => n.type === 'table')
+  switch (docType) {
+    case 'RISK_ASSESSMENT':
+      return hasTable
+        ? null
+        : 'En riskbedömning måste innehålla en riskmatris (tabell) med riskkälla, sannolikhet och konsekvens. Lägg till en table-nod med en rad per riskkälla.'
+    case 'ACTION_PLAN':
+      return hasTable
+        ? null
+        : 'En handlingsplan måste innehålla en åtgärdstabell med kolumnerna åtgärd, ansvarig, klart senast och status. Lägg till en table-nod med en rad per åtgärd.'
+    case 'CHECKLIST':
+      return hasTable || maxListItemCount(doc) >= 3
+        ? null
+        : 'En checklista måste innehålla kontrollpunkterna som en tabell (punkt/utförd/kommentar) eller en punktlista med minst tre verifierbara punkter.'
+    default:
+      return null
+  }
+}
+
 // QA (14.24, security): the draft is agent-authored and later rendered as HTML
 // (DocumentDraftDetail preview + the created document). Strip link marks whose
 // href uses a dangerous protocol so a prompt-injected link can't carry an XSS
 // payload. Keeps the visible text, drops only the link mark.
+// Story 19.8 (QA): drop ProseMirror-invalid empty text nodes. Models emit
+// `{type:'text',text:''}` for blank table cells; ProseMirror forbids empty text
+// nodes → nodeFromJSON THROWS on editor mount and the WHOLE document renders
+// blank. Recursively remove them; an empty paragraph (childless) stays valid.
+function stripEmptyTextNodes(node: TiptapNode): TiptapNode {
+  if (!Array.isArray(node.content)) return node
+  return {
+    ...node,
+    content: node.content
+      .filter(
+        (c) =>
+          !(c?.type === 'text' && (typeof c.text !== 'string' || c.text === ''))
+      )
+      .map(stripEmptyTextNodes),
+  }
+}
+
 const DANGEROUS_HREF = /^\s*(javascript|data|vbscript):/i
 function sanitizeLinkHrefs(node: TiptapNode): TiptapNode {
   const out: TiptapNode = { ...node }
@@ -218,11 +287,31 @@ Anropa verktyget direkt — det skapar ett inline-förslagskort i chatten där a
         )
       }
 
+      // Story 19.8 — type-aware gate (additive, after the baseline): a
+      // riskbedömning/handlingsplan needs its table, a checklista a structured
+      // enumeration. Swedish message so the model can self-correct and retry.
+      const typeError = typeGateError(docType, doc!)
+      if (typeError) {
+        console.error('[draft_styrdokument] rejected by type-aware gate', {
+          docType,
+          blockCount: blocks.length,
+        })
+        return wrapToolError(
+          'draft_styrdokument',
+          'Utkastet saknar typens obligatoriska struktur.',
+          typeError,
+          startTime
+        )
+      }
+
       // Gate on the full doc above (title heading counts), but persist a version
       // with the redundant leading title-heading stripped (title is a separate
-      // field) and dangerous link hrefs sanitized (agent-authored → rendered as HTML).
-      const persistedDoc = sanitizeLinkHrefs(
-        stripLeadingTitleHeading(doc!, title)
+      // field), dangerous link hrefs sanitized (agent-authored → rendered as
+      // HTML), and ProseMirror-invalid empty text nodes removed (Story 19.8 QA —
+      // models emit `{type:'text',text:''}` for blank table cells, which makes
+      // nodeFromJSON throw on editor mount and blanks the WHOLE document).
+      const persistedDoc = stripEmptyTextNodes(
+        sanitizeLinkHrefs(stripLeadingTitleHeading(doc!, title))
       )
 
       // Build contextLinks from two sources, BOTH validated against the workspace

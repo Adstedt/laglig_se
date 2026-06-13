@@ -55,6 +55,9 @@ function buildHtmlDocument(
     table {
       border-collapse: collapse;
       width: 100%;
+      /* 19.8 QA: fixed layout makes a wide (agent-authored 7+ col) table fit the
+         page width and wrap cell text instead of overflowing past the margin. */
+      table-layout: fixed;
       margin: 8px 0;
     }
     th, td {
@@ -62,6 +65,8 @@ function buildHtmlDocument(
       padding: 6px 8px;
       text-align: left;
       font-size: 10pt;
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
     th { background: #f5f5f5; font-weight: 600; }
     img { max-width: 100%; height: auto; }

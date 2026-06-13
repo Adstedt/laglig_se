@@ -185,6 +185,9 @@ model Workspace {
   // Story 5.5c: AI token quota counter (one row per workspace)
   workspace_usage WorkspaceUsage?
 
+  // Story 5.10: monthly unit-economics rollup (cost + revenue + margin)
+  workspace_costs WorkspaceCost[]
+
   // Story 14.10: Change assessments
   change_assessments ChangeAssessment[]
 
@@ -2427,6 +2430,46 @@ model WorkspaceUsage {
   workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
 
   @@map("workspace_usage")
+}
+
+// ============================================================================
+// STORY 5.10: UNIT ECONOMICS — monthly per-workspace rollup
+// ============================================================================
+// One row per (workspace, month). The monthly aggregate-costs cron
+// (app/api/cron/aggregate-costs) upserts these from ChatUsageEvent +
+// WorkspaceUsage + tier revenue. All amounts are SEK (see lib/costs/constants).
+// gross_margin_pct is null when revenue is 0/absent (TRIAL or Enterprise without
+// manual revenue entry). month = first day of the reported month (UTC midnight).
+model WorkspaceCost {
+  id           String @id @default(uuid())
+  workspace_id String
+
+  /** First day of the reported month (UTC). */
+  month DateTime
+
+  /** AI/Claude cost for the month, SEK (sum of cost_usd_estimate × FX). */
+  ai_cost Decimal @default(0) @db.Decimal(12, 4)
+
+  /** Storage + flat infra allocation for the month, SEK. */
+  infra_cost Decimal @default(0) @db.Decimal(12, 4)
+
+  /** ai_cost + infra_cost, SEK. */
+  total_cost Decimal @default(0) @db.Decimal(12, 4)
+
+  /** Subscription revenue for the month, SEK. Null for Enterprise w/o manual entry. */
+  revenue Decimal? @db.Decimal(12, 4)
+
+  /** (revenue − total_cost) / revenue × 100. Null when revenue is 0/absent. */
+  gross_margin_pct Decimal? @db.Decimal(6, 2)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id], onDelete: Cascade)
+
+  @@unique([workspace_id, month])
+  @@index([month])
+  @@map("workspace_costs")
 }
 
 // ============================================================================

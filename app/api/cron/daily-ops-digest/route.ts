@@ -27,7 +27,10 @@ export const dynamic = 'force-dynamic'
 export const maxDuration = 120
 
 const CRON_SECRET = process.env.CRON_SECRET
-const ADMIN_EMAIL = process.env.CRON_NOTIFICATION_EMAIL || 'admin@laglig.se'
+// Ops alerts (incl. RAG coverage breakage) go to the dev inbox. Note: a
+// CRON_NOTIFICATION_EMAIL env var overrides this — check Vercel env if alerts
+// land elsewhere.
+const ADMIN_EMAIL = process.env.CRON_NOTIFICATION_EMAIL || 'dev@laglig.se'
 
 export async function GET(request: Request) {
   // Auth check

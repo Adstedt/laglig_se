@@ -1,0 +1,44 @@
+schema: 1
+story: '17.20'
+story_title: 'Inline-Edit a Pending Document Proposal'
+gate: PASS
+status_reason: 'All 6 ACs implemented, unit-tested, and confirmed by a full 7/7 live smoke. The critical empty-body-must-not-persist guard (AC 5b) verified live on the consolidated-batch approve path. Three cosmetic/copy issues found during smoke were all fixed; zero logic defects. Scope honoured — no dispatch/schema/server-action changes.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-13T21:05:00Z'
+
+top_issues: []
+waiver: { active: false }
+
+quality_score: 95
+expires: '2026-06-27T00:00:00Z'
+
+evidence:
+  tests_reviewed: 29
+  smoke: '7/7 PASS (live); 3 cosmetic/copy fixes applied during smoke, 0 logic defects'
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No new surface. updatePendingActionParams already guards workspace/user ownership + tasks:edit + PENDING status. Plaintext-only edit wrapped into text nodes — no injection vector.'
+  performance:
+    status: PASS
+    notes: '500ms debounce prevents write storms; diff memoized; live preview driven off local state (no per-keystroke round-trip).'
+  reliability:
+    status: PASS
+    notes: 'Empty-body non-persist guard protects the consolidated batch approve (where the per-row canApprove is moot in selection mode). Cleared title is a safe no-op — dispatch guards newTitle on trim().length > 0 (:626 single, :1178 consolidated). Seed-once local state avoids clobbering in-flight keystrokes on refetch.'
+  maintainability:
+    status: PASS
+    notes: 'Mirrors the canonical TaskApprovalRenderer pattern; client-safe util cleanly separated; removed the now-unused space-joining plainText flattener; well-commented with AC references; strict-mode + eslint clean.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add a render test exercising the compact (batch) variant with the inline textarea to tighten AC 1 "both hosts" traceability (currently verified by code inspection + host pass-through, not a dedicated test).'
+      refs:
+        ['tests/unit/components/features/ai-chat/update-document-renderer.test.tsx']
+    - action: 'Optional integration test asserting the edited newSectionContentJson survives the existing single + consolidated approve dispatch end-to-end (AC 4 currently relies on the inherited 17.11 dispatch tests).'
+      refs: ['app/actions/pending-agent-actions.ts']

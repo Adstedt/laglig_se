@@ -7,8 +7,8 @@
  * `documentId` / `pendingActionId` / un-natural identifier-style copy.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import type { PendingAgentAction } from '@prisma/client'
 
 const { mockOpenDetail } = vi.hoisted(() => ({
@@ -264,5 +264,133 @@ describe('UpdateDocumentRenderer — Story 17.11c auto-branch header', () => {
     )
 
     expect(screen.queryByText(/Skapar nytt utkast/)).not.toBeInTheDocument()
+  })
+})
+
+// ============================================================================
+// Story 17.20 — inline-edit a pending proposal
+// ============================================================================
+
+const listBody = [
+  {
+    type: 'bulletList',
+    content: [
+      {
+        type: 'listItem',
+        content: [
+          { type: 'paragraph', content: [{ type: 'text', text: 'Punkt' }] },
+        ],
+      },
+    ],
+  },
+]
+
+describe('Story 17.20 — inline body edit (paragraphs-only)', () => {
+  beforeEach(() => vi.useFakeTimers())
+  afterEach(() => vi.useRealTimers())
+
+  it('debounces a textarea edit into a FULL params object with re-wrapped paragraph nodes', () => {
+    const h = handlers()
+    render(<UpdateDocumentRenderer action={action()} {...h} />)
+    expandJustera()
+
+    const textarea = screen.getByLabelText('Föreslagen text')
+    // Seeded from the proposal's paragraph-preserving plain text.
+    expect(textarea).toHaveValue('Nytt skärpt syfte.')
+
+    fireEvent.change(textarea, { target: { value: '2 gånger per år.' } })
+    expect(h.onParamsChange).not.toHaveBeenCalled() // still within debounce
+
+    act(() => vi.advanceTimersByTime(500))
+
+    expect(h.onParamsChange).toHaveBeenCalledTimes(1)
+    // AC 2: wholesale replace — every snapshot field preserved, only the body
+    // overwritten and re-wrapped to paragraph nodes.
+    expect(h.onParamsChange).toHaveBeenCalledWith({
+      ...baseParams,
+      newSectionContentJson: [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: '2 gånger per år.' }],
+        },
+      ],
+    })
+  })
+
+  it('updates the diff preview live from local state (before the debounce fires)', () => {
+    render(<UpdateDocumentRenderer action={action()} {...handlers()} />)
+    expandJustera()
+
+    fireEvent.change(screen.getByLabelText('Föreslagen text'), {
+      target: { value: 'Helt nytt innehåll.' },
+    })
+    // No timer advance — the colored diff must already reflect the keystrokes.
+    const added = document.querySelector('.bg-emerald-100')
+    expect(added?.textContent).toMatch(/Helt|nytt|innehåll/)
+  })
+
+  it('empty body: disables Godkänn AND never persists an empty body (AC 5)', () => {
+    const h = handlers()
+    render(<UpdateDocumentRenderer action={action()} {...h} />)
+    expandJustera()
+
+    fireEvent.change(screen.getByLabelText('Föreslagen text'), {
+      target: { value: '   ' },
+    })
+    act(() => vi.advanceTimersByTime(500))
+
+    // (a) approve disabled
+    expect(screen.getByRole('button', { name: /Godkänn/ })).toBeDisabled()
+    // (b) the empty body is NOT persisted
+    expect(h.onParamsChange).not.toHaveBeenCalled()
+  })
+})
+
+describe('Story 17.20 — gating & non-regression', () => {
+  it('rich (list) body: shows the read-only hint, no textarea', () => {
+    render(
+      <UpdateDocumentRenderer
+        action={action({
+          params: { ...baseParams, newSectionContentJson: listBody } as never,
+        })}
+        {...handlers()}
+      />
+    )
+    expandJustera()
+
+    expect(screen.queryByLabelText('Föreslagen text')).not.toBeInTheDocument()
+    expect(
+      screen.getByText(/föreslagna ändringen innehåller listor eller tabeller/i)
+    ).toBeInTheDocument()
+    // The read-only diff still renders.
+    expect(screen.getByText('Ändring')).toBeInTheDocument()
+  })
+
+  it('rename-only proposal: exposes an editable title input, no body textarea', () => {
+    render(
+      <UpdateDocumentRenderer
+        action={action({
+          params: {
+            documentId: RAW_DOC_ID,
+            documentTitle: 'Arbetsmiljöpolicy',
+            newTitle: 'Ny arbetsmiljöpolicy',
+            entity_version: '2026-06-01T10:00:00.000Z',
+          } as never,
+        })}
+        {...handlers()}
+      />
+    )
+    expandJustera()
+
+    const titleInput = screen.getByLabelText('Nytt namn')
+    expect(titleInput).toHaveValue('Ny arbetsmiljöpolicy')
+    expect(screen.queryByLabelText('Föreslagen text')).not.toBeInTheDocument()
+  })
+
+  it('ADD_DOCUMENT_SECTION is handled by a different renderer (out of scope)', async () => {
+    const { AddDocumentSectionRenderer } = await import(
+      '@/components/features/ai-chat/agent-action-renderers/add-document-section-renderer'
+    )
+    expect(AddDocumentSectionRenderer).not.toBe(UpdateDocumentRenderer)
   })
 })

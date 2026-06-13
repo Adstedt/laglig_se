@@ -11,8 +11,15 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
-import { ArrowUpRight, ExternalLink, FileText, Globe } from 'lucide-react'
+import {
+  ArrowUpRight,
+  ExternalLink,
+  FileText,
+  Globe,
+  Paperclip,
+} from 'lucide-react'
 import { trackEvent } from '@/lib/track-event'
 import { useCitationSources } from '@/lib/ai/citation-context'
 import { useChatDetailSafe } from '@/lib/ai/chat-detail-context'
@@ -30,6 +37,12 @@ import {
   InlineCitationCardBody,
   InlineCitationSource,
 } from '@/components/ui/inline-citation'
+import { QuickPreview } from '@/components/features/files/quick-preview'
+import {
+  getFileById,
+  getFileDownloadUrl,
+  type WorkspaceFileWithLinks,
+} from '@/app/actions/files'
 
 const OPEN_DELAY = 200
 const CLOSE_DELAY = 150
@@ -100,6 +113,34 @@ export function CitationPillInline({
   const workspaceDocId = source?.workspaceDocumentId ?? null
   const isWorkspaceDocResolved = !!workspaceDocId
 
+  // Story 17.9d: uploaded-file sources carry a fileId. Presence of fileId is
+  // the file discriminator — mirrors isWorkspaceDocResolved. A file pill gets a
+  // Paperclip icon + snippet preview + "Öppna filen" (QuickPreview), and its
+  // click opens the file instead of the legal sidebar.
+  const fileId = source?.fileId ?? null
+  const isFileResolved = !!fileId
+  const [previewFile, setPreviewFile] = useState<WorkspaceFileWithLinks | null>(
+    null
+  )
+  const [previewOpen, setPreviewOpen] = useState(false)
+
+  // Resolve a 1h signed URL for QuickPreview (reuses the existing files action).
+  const resolveFileUrl = useCallback(async (f: WorkspaceFileWithLinks) => {
+    const r = await getFileDownloadUrl(f.id)
+    return r.success && r.data ? r.data.url : null
+  }, [])
+
+  // Fetch the file by id, then open the preview modal.
+  const handleOpenFile = useCallback(async () => {
+    if (!fileId) return
+    trackEvent('file_citation_clicked', { fileId })
+    const r = await getFileById(fileId)
+    if (r.success && r.data) {
+      setPreviewFile(r.data)
+      setPreviewOpen(true)
+    }
+  }, [fileId])
+
   const displayLabel = (() => {
     if (!label) return ''
     const raw = webPillDomain ?? label
@@ -133,6 +174,13 @@ export function CitationPillInline({
       return
     }
 
+    // File sources (Story 17.9d): open the file preview, never the legal
+    // sidebar. Mirrors the web-source early return above.
+    if (isFileResolved) {
+      void handleOpenFile()
+      return
+    }
+
     // DB sources: open sidebar detail
     if (!chatDetail) return
     chatDetail.openDetail(
@@ -161,6 +209,8 @@ export function CitationPillInline({
     isChunkResolved,
     resolvedAnchor,
     resolvedPath,
+    isFileResolved,
+    handleOpenFile,
   ])
 
   const triggerCallbackRef = useCallback((node: HTMLElement | null) => {
@@ -190,98 +240,138 @@ export function CitationPillInline({
   // Domain for web sources (reuse from pill label computation)
   const webDomain = webPillDomain
 
-  // Chunk-level source has path — show its snippet.
+  // Chunk-level legal source has path — show its snippet. Story 17.9d: file
+  // sources also preview their cited passage, gated on the SEPARATE
+  // isFileResolved condition so legal doc-level suppression stays unchanged.
   const isChunkLevel = !!source.path
-  const description = isChunkLevel ? source.snippet : null
+  const description = isChunkLevel || isFileResolved ? source.snippet : null
 
   return (
-    <InlineCitation>
-      <InlineCitationCard open={open}>
-        <InlineCitationCardTrigger
-          ref={triggerCallbackRef}
-          label={displayLabel}
-          onMouseEnter={handleEnter}
-          onMouseLeave={handleLeave}
-          onClick={handleClick}
-          className={isActive ? 'ring-2 ring-primary bg-primary/10' : undefined}
-          {...(isWebSource
-            ? { icon: <Globe className="h-3 w-3" /> }
-            : isWorkspaceDocResolved
-              ? { icon: <FileText className="h-3 w-3" /> }
-              : {})}
-        />
-        <InlineCitationCardBody
-          onMouseEnter={handleEnter}
-          onMouseLeave={handleLeave}
-        >
-          <InlineCitationSource
-            {...(source.title ? { title: source.title } : {})}
-            {...(description ? { description } : {})}
+    <>
+      <InlineCitation>
+        <InlineCitationCard open={open}>
+          <InlineCitationCardTrigger
+            ref={triggerCallbackRef}
+            label={displayLabel}
+            onMouseEnter={handleEnter}
+            onMouseLeave={handleLeave}
+            onClick={handleClick}
+            className={
+              isActive ? 'ring-2 ring-primary bg-primary/10' : undefined
+            }
+            {...(isWebSource
+              ? { icon: <Globe className="h-3 w-3" /> }
+              : isWorkspaceDocResolved
+                ? { icon: <FileText className="h-3 w-3" /> }
+                : isFileResolved
+                  ? { icon: <Paperclip className="h-3 w-3" /> }
+                  : {})}
           />
-          {isWebSource && webDomain && (
-            <p className="text-[11px] text-muted-foreground">{webDomain}</p>
-          )}
-          {!isWebSource && !isWorkspaceDocResolved && source.documentNumber && (
-            <p className="text-[11px] text-muted-foreground">
-              {source.documentNumber}
-            </p>
-          )}
-          {href && (
-            <Link
-              href={href}
-              target="_blank"
-              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline mt-2"
-              onClick={() => {
-                trackEvent('citation_clicked', {
-                  documentNumber: source.documentNumber,
-                  ...(source.anchorId ? { anchorId: source.anchorId } : {}),
-                })
-              }}
-            >
-              Visa i lagläsaren
-              <ExternalLink className="h-3 w-3" />
-            </Link>
-          )}
-          {isWorkspaceDocResolved && workspaceDocId && (
-            <Link
-              // Approved-tier pill → `?view=approved` opens the read-only
-              // approved version. Draft-tier pill (and unknown-tier legacy) →
-              // default editor view, which loads the draft.
-              href={`/workspace/styrdokument/${workspaceDocId}/edit${
-                source.tier === 'APPROVED' ? '?view=approved' : ''
-              }`}
-              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline mt-2"
-              onClick={() => {
-                trackEvent('workspace_citation_clicked', {
-                  workspaceDocumentId: workspaceDocId,
-                  ...(source.tier ? { tier: source.tier } : {}),
-                })
-              }}
-            >
-              Öppna styrdokument
-              <ArrowUpRight className="h-3 w-3" />
-            </Link>
-          )}
-          {isWebSource && source.url && (
-            <a
-              href={source.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline mt-2"
-              onClick={() => {
-                trackEvent('web_citation_clicked', {
-                  domain: webDomain ?? '',
-                  url: source.url ?? '',
-                })
-              }}
-            >
-              Besök källa
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          )}
-        </InlineCitationCardBody>
-      </InlineCitationCard>
-    </InlineCitation>
+          <InlineCitationCardBody
+            onMouseEnter={handleEnter}
+            onMouseLeave={handleLeave}
+          >
+            <InlineCitationSource
+              {...(source.title ? { title: source.title } : {})}
+              {...(description ? { description } : {})}
+            />
+            {isWebSource && webDomain && (
+              <p className="text-[11px] text-muted-foreground">{webDomain}</p>
+            )}
+            {!isWebSource &&
+              !isWorkspaceDocResolved &&
+              !isFileResolved &&
+              source.documentNumber && (
+                <p className="text-[11px] text-muted-foreground">
+                  {source.documentNumber}
+                </p>
+              )}
+            {href && (
+              <Link
+                href={href}
+                target="_blank"
+                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline mt-2"
+                onClick={() => {
+                  trackEvent('citation_clicked', {
+                    documentNumber: source.documentNumber,
+                    ...(source.anchorId ? { anchorId: source.anchorId } : {}),
+                  })
+                }}
+              >
+                Visa i lagläsaren
+                <ExternalLink className="h-3 w-3" />
+              </Link>
+            )}
+            {isWorkspaceDocResolved && workspaceDocId && (
+              <Link
+                // Approved-tier pill → `?view=approved` opens the read-only
+                // approved version. Draft-tier pill (and unknown-tier legacy) →
+                // default editor view, which loads the draft.
+                href={`/workspace/styrdokument/${workspaceDocId}/edit${
+                  source.tier === 'APPROVED' ? '?view=approved' : ''
+                }`}
+                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline mt-2"
+                onClick={() => {
+                  trackEvent('workspace_citation_clicked', {
+                    workspaceDocumentId: workspaceDocId,
+                    ...(source.tier ? { tier: source.tier } : {}),
+                  })
+                }}
+              >
+                Öppna styrdokument
+                <ArrowUpRight className="h-3 w-3" />
+              </Link>
+            )}
+            {isFileResolved && (
+              <button
+                type="button"
+                onClick={handleOpenFile}
+                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline mt-2"
+              >
+                Öppna filen
+                <ArrowUpRight className="h-3 w-3" />
+              </button>
+            )}
+            {isWebSource && source.url && (
+              <a
+                href={source.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline mt-2"
+                onClick={() => {
+                  trackEvent('web_citation_clicked', {
+                    domain: webDomain ?? '',
+                    url: source.url ?? '',
+                  })
+                }}
+              >
+                Besök källa
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
+          </InlineCitationCardBody>
+        </InlineCitationCard>
+      </InlineCitation>
+      {/* Portal to body: the pill renders inside a markdown <p>, and the
+          QuickPreview modal is block-level (<div>/<p>). Rendering it in place
+          would nest a <div> inside a <p> — invalid HTML + hydration errors.
+          The modal is position:fixed, so portaling to body is purely a DOM-
+          validity fix with no visual change. */}
+      {isFileResolved &&
+        previewOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <QuickPreview
+            file={previewFile}
+            files={previewFile ? [previewFile] : []}
+            open={previewOpen}
+            onClose={() => setPreviewOpen(false)}
+            onNavigate={() => {}}
+            getFileUrl={resolveFileUrl}
+          />,
+          document.body
+        )}
+    </>
   )
 }
 

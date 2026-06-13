@@ -53,6 +53,15 @@ export const PRICING: Record<string, ModelPricing> = {
     cacheRead: 0.5,
     cacheWrite: 6.25,
   },
+  // Story 5.10: added so Opus-4.8 paths (e.g. law-list generation) price
+  // correctly instead of falling through to 0 and undercounting unit-economics
+  // cost. Same rates as Opus 4.7 (verified current 2026-06-12).
+  'claude-opus-4-8': {
+    input: 5.0,
+    output: 25.0,
+    cacheRead: 0.5,
+    cacheWrite: 6.25,
+  },
   'claude-haiku-4-5': {
     input: 1.0,
     output: 5.0,

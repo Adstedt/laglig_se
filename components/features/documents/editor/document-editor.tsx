@@ -811,9 +811,14 @@ export function DocumentEditor({
               // Paragraphs
               '[&_.tiptap_p]:my-2 [&_.tiptap_p]:leading-relaxed',
               // Tables
-              '[&_.tiptap_table]:border-collapse [&_.tiptap_table]:w-full [&_.tiptap_table]:my-4 [&_.tiptap_table]:text-sm',
-              '[&_.tiptap_th]:border [&_.tiptap_th]:border-border [&_.tiptap_th]:bg-muted [&_.tiptap_th]:px-3 [&_.tiptap_th]:py-2 [&_.tiptap_th]:text-left [&_.tiptap_th]:font-semibold',
-              '[&_.tiptap_td]:border [&_.tiptap_td]:border-border [&_.tiptap_td]:px-3 [&_.tiptap_td]:py-2 [&_.tiptap_td]:align-top',
+              // 19.8 QA: agent-authored tables can have 7+ columns (templates max
+              // at 5). A styrdokument is printed/exported to A4 — horizontal
+              // scroll is not an option there. `table-fixed` + w-full forces the
+              // table to the page width and wraps cell text so it ALWAYS fits the
+              // sheet (matches the docx/pdf export fix).
+              '[&_.tiptap_table]:table-fixed [&_.tiptap_table]:border-collapse [&_.tiptap_table]:w-full [&_.tiptap_table]:my-4 [&_.tiptap_table]:text-sm',
+              '[&_.tiptap_th]:border [&_.tiptap_th]:border-border [&_.tiptap_th]:bg-muted [&_.tiptap_th]:px-3 [&_.tiptap_th]:py-2 [&_.tiptap_th]:text-left [&_.tiptap_th]:font-semibold [&_.tiptap_th]:break-words',
+              '[&_.tiptap_td]:border [&_.tiptap_td]:border-border [&_.tiptap_td]:px-3 [&_.tiptap_td]:py-2 [&_.tiptap_td]:align-top [&_.tiptap_td]:break-words',
               // Lists
               '[&_.tiptap_ul]:my-2 [&_.tiptap_ul]:pl-6 [&_.tiptap_ol]:my-2 [&_.tiptap_ol]:pl-6',
               // Horizontal rules

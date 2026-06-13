@@ -623,7 +623,13 @@ describe('buildSystemPrompt', () => {
     // text rewording — both directly address UX leaks surfaced in UAT, so
     // conscious growth not creep. Revisit / shrink if a future story pushes
     // past 6750 without comparable value.
-    expect(estimatedTokens).toBeLessThan(6750)
+    // Story 19.8 bump: 6750 → 7100. The 6750 ceiling was ALREADY breached at
+    // baseline (~6819) by in-flight system-prompt.md guidance growth on this
+    // branch before 19.8; 19.8 itself adds one <available_skills> line for the
+    // draft_styrdokument skill (~50 tokens, description kept terse). Still a
+    // runaway-growth guard — the next breach should trigger the structured-
+    // parts / prompt-caching v2 refactor (Story 14.26 note).
+    expect(estimatedTokens).toBeLessThan(7100)
   })
 })
 

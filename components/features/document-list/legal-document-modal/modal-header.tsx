@@ -101,7 +101,7 @@ export function ModalHeader({
               'h-8 px-2 hidden lg:flex',
               aiChatOpen && 'bg-muted/80'
             )}
-            title={aiChatOpen ? 'Stäng Lexa' : 'Öppna Lexa'}
+            title={aiChatOpen ? 'Stäng assistenten' : 'Öppna assistenten'}
           >
             <LexaIcon size={16} />
           </Button>

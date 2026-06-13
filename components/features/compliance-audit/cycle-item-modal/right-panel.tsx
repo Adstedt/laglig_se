@@ -290,7 +290,7 @@ export function CycleItemModalRightPanel({
                   data-testid="modal-open-chat"
                 >
                   <LexaIcon size={16} className="invert-0 dark:invert" />
-                  Fråga Lexa om denna lag
+                  Fråga assistenten om denna lag
                 </Button>
               ) : null}
               <Button

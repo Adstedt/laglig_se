@@ -167,6 +167,47 @@ describe('generateDocx', () => {
     expect(buffer.length).toBeGreaterThan(0)
   })
 
+  // 19.8 QA: a styrdokument is printed/exported — a wide (agent-authored) table
+  // must be constrained to the page width and wrap, not run past the margin.
+  // Assert the generated document.xml carries fixed layout + 100% table width.
+  it('constrains tables to the page width (fixed layout, 100%) so wide tables fit', async () => {
+    const wideRow = (cells: string[]) => ({
+      type: 'tableRow',
+      content: cells.map((t) => ({
+        type: 'tableCell',
+        content: [{ type: 'paragraph', content: [{ type: 'text', text: t }] }],
+      })),
+    })
+    const cols = [
+      'Nr',
+      'Riskkälla',
+      'Risknivå',
+      'Åtgärd',
+      'Lagstöd',
+      'Ansvarig',
+      'Klart senast',
+      'Status',
+    ]
+    const content: TiptapContentJSON = {
+      type: 'doc',
+      content: [
+        {
+          type: 'table',
+          content: [wideRow(cols), wideRow(cols.map((_, i) => `c${i}`))],
+        },
+      ],
+    }
+    const buffer = await generateDocx(content, BASE_META)
+
+    const JSZip = (await import('jszip')).default
+    const zip = await JSZip.loadAsync(buffer)
+    const xml = await zip.file('word/document.xml')!.async('string')
+
+    // Fixed layout + table width as a percentage of the page (pct).
+    expect(xml).toContain('w:type="fixed"')
+    expect(xml).toMatch(/<w:tblW[^>]*w:type="pct"/)
+  })
+
   it('handles horizontalRule', async () => {
     const content: TiptapContentJSON = {
       type: 'doc',

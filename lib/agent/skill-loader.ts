@@ -116,7 +116,11 @@ export function listSkills(baseDir?: string): readonly SkillMeta[] {
 
 /**
  * Assemble a skill's body: the SKILL.md body + each present companion
- * (PROCEDURE / STYLE / CRITERIA) under a `## ` header. `null` if unknown.
+ * (PROCEDURE / STYLE / CRITERIA) under a `## ` header, then — Story 19.8 —
+ * any `types/*.md` modules under `### Type: <stem>` sub-headers inside a
+ * `## Type modules` section (generic: any skill with a `types/` dir gets
+ * this; lookup convention is `<docType>.toLowerCase()` → `types/<stem>.md`).
+ * `null` if unknown.
  */
 export function loadSkill(name: string, baseDir?: string): string | null {
   const rec = loadRecords(baseDir).records.find((r) => r.meta.name === name)
@@ -133,6 +137,20 @@ export function loadSkill(name: string, baseDir?: string): string | null {
     if (!existsSync(p)) continue
     const content = readFileSync(p, 'utf-8').trim()
     if (content) parts.push(`## ${header}\n\n${content}`)
+  }
+
+  // Story 19.8: per-type modules, sorted for deterministic assembly.
+  const typesDir = join(rec.dir, 'types')
+  if (existsSync(typesDir)) {
+    const modules: string[] = []
+    for (const f of readdirSync(typesDir).sort()) {
+      if (!f.endsWith('.md')) continue
+      const content = readFileSync(join(typesDir, f), 'utf-8').trim()
+      if (content) modules.push(`### Type: ${f.slice(0, -3)}\n\n${content}`)
+    }
+    if (modules.length > 0) {
+      parts.push(`## Type modules\n\n${modules.join('\n\n')}`)
+    }
   }
 
   return parts.join('\n\n')

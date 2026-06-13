@@ -96,6 +96,14 @@
     {
       "path": "/api/cron/refresh-sitemap",
       "schedule": "30 16 * * *"
+    },
+    {
+      "path": "/api/cron/aggregate-costs",
+      "schedule": "0 3 1 * *"
+    },
+    {
+      "path": "/api/cron/unit-economics-report",
+      "schedule": "0 9 * * 1"
     }
   ]
 }

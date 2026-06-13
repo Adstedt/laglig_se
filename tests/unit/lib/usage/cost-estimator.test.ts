@@ -179,4 +179,20 @@ describe('estimateCostUsd', () => {
     })
     expect(cost).toBeGreaterThanOrEqual(0)
   })
+
+  // Story 5.10: claude-opus-4-8 was absent from PRICING → priced at 0 (silent
+  // unit-economics undercount on Opus-4.8 paths). Regression guard.
+  it('prices claude-opus-4-8 (not a fall-through to 0)', () => {
+    expect(PRICING['claude-opus-4-8']).toBeDefined()
+    const cost = estimateCostUsd({
+      model: 'claude-opus-4-8',
+      inputTokens: 1_000_000,
+      outputTokens: 1_000_000,
+      cacheReadInputTokens: 0,
+      cacheWriteInputTokens: 0,
+      reasoningTokens: 0,
+    })
+    // 1M input × $5 + 1M output × $25 = $30
+    expect(cost).toBeCloseTo(30, 6)
+  })
 })

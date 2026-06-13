@@ -113,6 +113,56 @@ export interface BatchEmbeddingResult {
 }
 
 /**
+ * OpenAI rejects inputs over 8,192 real tokens. The char-based truncation in
+ * buildEmbeddingInput assumes ~2 chars/token, but dense content (fee tables,
+ * substance lists — e.g. SFS 1992:1554's 31K-char narcotics fee table) runs
+ * ~1.5–1.8 chars/token, so a truncated input can still exceed the limit and a
+ * single such chunk fails its whole 100-item batch.
+ */
+function isInputTooLongError(err: unknown): boolean {
+  const message = err instanceof Error ? err.message : String(err)
+  // OpenAI phrases this differently for batch vs single inputs:
+  //   batch:  "Invalid 'input[12]': maximum input length is 8192 tokens."
+  //   single: "Invalid 'input': maximum context length is 8192 tokens."
+  return /maximum (input|context) length/.test(message)
+}
+
+/**
+ * Embed a single input, halving it on "input too long" until accepted.
+ * Losing tail content from a pathological table chunk is acceptable — an
+ * unembedded chunk is invisible to retrieval entirely.
+ */
+async function embedWithDegradation(
+  client: OpenAI,
+  input: string
+): Promise<{ embedding: number[]; tokensUsed: number }> {
+  let text = input
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try {
+      const response = await client.embeddings.create({
+        model: EMBEDDING_MODEL,
+        input: text,
+      })
+      const data = response.data[0]
+      if (!data) throw new Error('No embedding data in OpenAI response')
+      return {
+        embedding: data.embedding,
+        tokensUsed: response.usage?.total_tokens ?? 0,
+      }
+    } catch (err) {
+      if (!isInputTooLongError(err)) throw err
+      text = text.substring(0, Math.floor(text.length / 2))
+      console.warn(
+        `[embed-chunks] Input over 8192 tokens — retrying truncated to ${text.length} chars`
+      )
+    }
+  }
+  throw new Error(
+    `Failed to embed input within token limit after 4 truncation attempts (final length ${input.length} chars)`
+  )
+}
+
+/**
  * Generate embeddings for a batch of chunks (up to 100 per call).
  * Returns embeddings in the same order as input items.
  */
@@ -149,6 +199,22 @@ export async function generateEmbeddingsBatch(
       totalTokensUsed: response.usage?.total_tokens ?? 0,
     }
   } catch (err) {
+    // One over-limit item fails the whole batch — degrade to per-item calls so
+    // 99 valid chunks aren't lost to a single pathological one.
+    if (isInputTooLongError(err)) {
+      console.warn(
+        `[embed-chunks] Batch of ${items.length} rejected (input over token limit) — degrading to per-item embedding`
+      )
+      const embeddings: number[][] = []
+      let totalTokensUsed = 0
+      for (const input of inputs) {
+        const result = await embedWithDegradation(client, input)
+        embeddings.push(result.embedding)
+        totalTokensUsed += result.tokensUsed
+      }
+      return { embeddings, totalTokensUsed }
+    }
+
     const message = err instanceof Error ? err.message : String(err)
     throw new Error(
       `Failed to generate batch embeddings (${items.length} items): ${message}`

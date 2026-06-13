@@ -104,7 +104,7 @@ export function CycleItemModalHeader({
               'hidden h-8 px-2 lg:flex',
               aiChatOpen && 'bg-muted/80'
             )}
-            title={aiChatOpen ? 'Stäng Lexa' : 'Öppna Lexa'}
+            title={aiChatOpen ? 'Stäng assistenten' : 'Öppna assistenten'}
           >
             <LexaIcon size={16} />
           </Button>

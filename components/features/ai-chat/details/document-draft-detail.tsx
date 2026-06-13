@@ -73,9 +73,12 @@ export function DocumentDraftDetail({
       <Badge tone="neutral" variant="outline" className="text-[10px]">
         {DOCUMENT_TYPE_LABELS[data.docType] ?? data.docType}
       </Badge>
-      {/* Read-only preview generated from the draft's Tiptap JSON (no user HTML). */}
+      {/* Read-only preview generated from the draft's Tiptap JSON (no user HTML).
+          19.8 QA: agent tables can be 7+ columns — `table-fixed` + w-full makes
+          the table fit the panel and wrap cell text (mirrors the editor + the
+          docx/pdf export), rather than overflowing the narrow chat/detail panel. */}
       <div
-        className="prose prose-sm max-w-none dark:prose-invert"
+        className="prose prose-sm max-w-none dark:prose-invert [&_table]:table-fixed [&_table]:w-full [&_th]:break-words [&_td]:break-words"
         dangerouslySetInnerHTML={{ __html: html }}
       />
     </div>

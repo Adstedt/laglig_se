@@ -74,16 +74,22 @@ export function PdfPreview({
   useEffect(() => {
     if (!url) return
 
+    // Abort on cleanup so a stale fetch (StrictMode double-run, url change)
+    // can't set byte-identical data again — react-pdf reloads on reference
+    // change and warns when the new file prop is deep-equal to the old one.
+    const controller = new AbortController()
     const fetchPdf = async () => {
       try {
-        const response = await fetch(url)
+        const response = await fetch(url, { signal: controller.signal })
         if (!response.ok) {
           throw new Error('Failed to fetch PDF')
         }
         const buffer = await response.arrayBuffer()
+        if (controller.signal.aborted) return
         // Convert to Uint8Array to prevent detachment
         setPdfData(new Uint8Array(buffer))
       } catch (err) {
+        if (controller.signal.aborted) return
         console.error('Failed to fetch PDF:', err)
         setError('Kunde inte hämta PDF-filen')
         setIsLoading(false)
@@ -91,6 +97,7 @@ export function PdfPreview({
     }
 
     fetchPdf()
+    return () => controller.abort()
   }, [url])
 
   // Memoize file object to prevent unnecessary reloads
@@ -327,19 +334,24 @@ export function PdfThumbnail({
   useEffect(() => {
     if (!url) return
 
+    // Same stale-fetch guard as PdfPreview above
+    const controller = new AbortController()
     const fetchPdf = async () => {
       try {
-        const response = await fetch(url)
+        const response = await fetch(url, { signal: controller.signal })
         if (!response.ok) throw new Error('Failed to fetch')
         const buffer = await response.arrayBuffer()
+        if (controller.signal.aborted) return
         setPdfData(new Uint8Array(buffer))
       } catch {
+        if (controller.signal.aborted) return
         setError(true)
         setIsLoading(false)
       }
     }
 
     fetchPdf()
+    return () => controller.abort()
   }, [url])
 
   // Configure PDF.js worker on client-side only

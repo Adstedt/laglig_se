@@ -10,19 +10,71 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk'
-import { estimateTokenCount } from './token-count'
 
-// Haiku's context is 200K tokens. We set a safe limit that leaves room for output tokens.
-const MAX_PROMPT_TOKENS = 190_000
-// For markdown-only checks (before we know chunk count), use a conservative limit
-const MAX_CONTEXT_TOKENS = 180_000
-const MAX_CONTEXT_CHARS = MAX_CONTEXT_TOKENS * 3 // ~3 chars/token for Swedish text
+// Haiku's context is 200K tokens, and input + max_tokens output must fit inside it:
+// input ≤ 200K − HAIKU_MAX_TOKENS (16K) = 184K. Keep a margin below that.
+const MAX_PROMPT_TOKENS = 175_000
+// For markdown-only checks (before we know chunk count), use a conservative limit.
+// 150K markdown tokens + 100-chunk list (~20K) + overhead (~1.5K) + 16K output ≈ 187.5K.
+const MAX_CONTEXT_TOKENS = 150_000
+const SWEDISH_CHARS_PER_TOKEN = 3 // Swedish legal text tokenizes denser than English
+const MAX_CONTEXT_CHARS = MAX_CONTEXT_TOKENS * SWEDISH_CHARS_PER_TOKEN
+
+/**
+ * Conservative token estimate for Swedish legal markdown (~3 chars/token).
+ * The generic estimateTokenCount uses chars/4, which UNDERESTIMATES Swedish text
+ * by ~25% — docs in the 580–760KB range passed the /4 fit check but exceeded
+ * Haiku's real 200K context and were rejected by the API ("prompt is too long"),
+ * leaving every chunk in those laws without a prefix. Fit decisions in this file
+ * must use this estimator, not estimateTokenCount.
+ */
+function estimateSwedishTokens(text: string): number {
+  if (!text) return 0
+  return Math.ceil(text.length / SWEDISH_CHARS_PER_TOKEN)
+}
+
+/**
+ * Strip embedded binary payloads (base64 blobs from filbilaga/PDF attachments)
+ * from markdown before using it as prompt context. Some AGENCY_REGULATION docs
+ * (e.g. AFS 2023:5, AFS 2023:9) carry hundreds of KB of base64 inside
+ * markdown_content. Base64 tokenizes at ~1.2 chars/token vs ~3 for Swedish
+ * prose, so a context that "fits" by any char heuristic can exceed Haiku's real
+ * 200K window and get the whole request rejected — and the blob carries no
+ * semantic value for prefix generation anyway. Runs of ≥200 base64-charset
+ * chars (allowing line wraps) never occur in natural Swedish legal text.
+ */
+function stripBinaryPayloads(markdown: string): string {
+  return markdown.replace(/(?:[A-Za-z0-9+/=]{60,}\n?)+/g, (m) =>
+    m.length >= 200 ? '[binärdata borttagen]\n' : m
+  )
+}
 // Overhead per chunk in the prompt: <chunk id="path">\n{500 chars}\n</chunk> ≈ 200 tokens
 const TOKENS_PER_CHUNK = 200
 // Fixed overhead: system prompt template, instructions, example ≈ 1500 tokens
 const PROMPT_OVERHEAD_TOKENS = 1500
+// OUTPUT-budget cap. Haiku must emit ~1 JSON prefix per chunk; measured prefixes
+// run ~61 tokens avg / ~106 p99, so budget ~130 output tokens/chunk including the
+// path key, quoting and JSON syntax. Capping at 100 chunks/request ≈ 13K output
+// tokens, safely under HAIKU_MAX_TOKENS (16K). This is the fix that prevents the
+// silent response truncation that left large laws' later chunks without a prefix
+// (and therefore unembedded and invisible to retrieval). The input limits above
+// never bounded output, so a single call for a 449-chunk law would truncate at
+// ~90 prefixes. Keep this ≤ floor(HAIKU_MAX_TOKENS * 0.8 / 130).
+const MAX_CHUNKS_PER_REQUEST = 100
+
+/** Split an array into fixed-size groups. */
+function groupBySize<T>(arr: T[], size: number): T[][] {
+  const out: T[][] = []
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size))
+  return out
+}
 
 export const HAIKU_MODEL = 'claude-haiku-4-5-20251001'
+// Output ceiling for prefix calls. Haiku 4.5 supports up to 64K output; 16K is
+// ample for MAX_CHUNKS_PER_REQUEST prefixes and stays at the non-streaming
+// timeout boundary for the inline path. Shared with the batch script so both
+// paths size requests against the same ceiling.
+export const HAIKU_MAX_TOKENS = 16_000
 
 /**
  * Estimate total prompt tokens for a given markdown + chunk set.
@@ -30,9 +82,21 @@ export const HAIKU_MODEL = 'claude-haiku-4-5-20251001'
  */
 function estimatePromptTokens(markdown: string, chunkCount: number): number {
   return (
-    estimateTokenCount(markdown) +
+    estimateSwedishTokens(markdown) +
     chunkCount * TOKENS_PER_CHUNK +
     PROMPT_OVERHEAD_TOKENS
+  )
+}
+
+/**
+ * Can this markdown serve as shared context for a single output-capped group of
+ * chunks within the input budget? If true, we keep the full markdown and split
+ * the chunk list by MAX_CHUNKS_PER_REQUEST. If false, the markdown itself is too
+ * large and must be split at division/chapter level first.
+ */
+function markdownFitsWithCappedChunks(markdown: string): boolean {
+  return (
+    estimatePromptTokens(markdown, MAX_CHUNKS_PER_REQUEST) <= MAX_PROMPT_TOKENS
   )
 }
 
@@ -90,14 +154,35 @@ export async function generateContextPrefixes(
 ): Promise<Map<string, string>> {
   if (chunks.length === 0) return new Map()
 
-  const totalTokens = estimatePromptTokens(document.markdown, chunks.length)
+  // Sanitize once at entry — all downstream paths see binary-free markdown
+  const doc = { ...document, markdown: stripBinaryPayloads(document.markdown) }
 
-  if (totalTokens <= MAX_PROMPT_TOKENS) {
-    return callHaikuForPrefixes(document.markdown, document, chunks)
+  // If the whole-document markdown fits as shared context, keep it and split the
+  // chunk list by the output cap. Otherwise the markdown itself is too large and
+  // must be split at division/chapter level first.
+  if (markdownFitsWithCappedChunks(doc.markdown)) {
+    return callHaikuForChunkGroups(doc.markdown, doc, chunks)
   }
 
-  // Large document — need to split
-  return generatePrefixesForLargeDocument(document, chunks)
+  // Large document — need to split the markdown
+  return generatePrefixesForLargeDocument(doc, chunks)
+}
+
+/**
+ * Call Haiku for a set of chunks, splitting into output-capped groups so no single
+ * response can truncate. Each group reuses the same markdown context.
+ */
+async function callHaikuForChunkGroups(
+  markdown: string,
+  document: DocumentForContext,
+  chunks: ChunkForContext[]
+): Promise<Map<string, string>> {
+  const result = new Map<string, string>()
+  for (const group of groupBySize(chunks, MAX_CHUNKS_PER_REQUEST)) {
+    const prefixes = await callHaikuForPrefixes(markdown, document, group)
+    for (const [path, prefix] of prefixes) result.set(path, prefix)
+  }
+  return result
 }
 
 /**
@@ -154,20 +239,87 @@ export function buildBatchPrefixRequests(
 ): BatchPrefixRequest[] {
   if (chunks.length === 0) return []
 
-  const totalTokens = estimatePromptTokens(document.markdown, chunks.length)
+  // Sanitize once at entry — all downstream paths see binary-free markdown
+  const doc = { ...document, markdown: stripBinaryPayloads(document.markdown) }
 
-  if (totalTokens <= MAX_PROMPT_TOKENS) {
+  // If the whole-document markdown fits as shared context, keep it and split the
+  // chunk list by the output cap. Otherwise split the markdown first.
+  if (markdownFitsWithCappedChunks(doc.markdown)) {
+    return buildRequestsForChunks(docId, doc.markdown, doc, chunks, 0)
+  }
+
+  // Large document — split at division/chapter level
+  return buildBatchRequestsForLargeDoc(docId, doc, chunks)
+}
+
+/**
+ * Build batch requests for a set of chunks that share one markdown context,
+ * splitting the chunk list into output-capped groups. The markdown is assumed to
+ * already fit the input budget (see markdownFitsWithCappedChunks).
+ */
+function buildRequestsForChunks(
+  docId: string,
+  markdown: string,
+  document: DocumentForContext,
+  chunks: ChunkForContext[],
+  startIndex: number
+): BatchPrefixRequest[] {
+  const groups = groupBySize(chunks, MAX_CHUNKS_PER_REQUEST)
+
+  // Single-group, first-slice docs keep the bare docId customId (cosmetic — the
+  // collector maps results by customId either way).
+  if (groups.length === 1 && startIndex === 0) {
     return [
       {
         customId: docId,
-        prompt: buildPrefixPrompt(document.markdown, document, chunks),
+        prompt: buildPrefixPrompt(markdown, document, chunks),
         chunkPaths: chunks.map((c) => c.path),
       },
     ]
   }
 
-  // Large document — split at division/chapter level
-  return buildBatchRequestsForLargeDoc(docId, document, chunks)
+  return groups.map((group, i) => ({
+    customId: `${docId}__split_${startIndex + i}`,
+    prompt: buildPrefixPrompt(markdown, document, group),
+    chunkPaths: group.map((c) => c.path),
+  }))
+}
+
+/**
+ * Assign chunks to division sections by chapter number. Chunks whose chapter is
+ * claimed by NO division are routed to the first division instead of being
+ * silently dropped — Swedish docs number pre-chapter preamble content as chapter
+ * 0 (`kap0.*` paths), which no "Avdelning" heading ever lists, so the previous
+ * "non-chapter chunks → first division" fallback missed them (kap0 matches the
+ * chapter pattern) and those chunks were never included in any request.
+ */
+function assignChunksToDivisions(
+  divisionSections: DivisionInfo[],
+  chunks: ChunkForContext[]
+): Map<DivisionInfo, ChunkForContext[]> {
+  const claimed = new Set(divisionSections.flatMap((s) => s.chapterNumbers))
+  const result = new Map<DivisionInfo, ChunkForContext[]>()
+
+  for (const section of divisionSections) {
+    result.set(
+      section,
+      chunks.filter((c) => {
+        const chapMatch = c.path.match(/^kap(\d+)\./)
+        if (!chapMatch) return false
+        return section.chapterNumbers.includes(chapMatch[1]!)
+      })
+    )
+  }
+
+  // Orphans (non-chapter paths + chapters no division claims) → first division
+  const firstChunks = result.get(divisionSections[0]!)!
+  const orphans = chunks.filter((c) => {
+    const chapMatch = c.path.match(/^kap(\d+)\./)
+    return !chapMatch || !claimed.has(chapMatch[1]!)
+  })
+  firstChunks.push(...orphans.filter((o) => !firstChunks.includes(o)))
+
+  return result
 }
 
 /**
@@ -184,35 +336,23 @@ function buildBatchRequestsForLargeDoc(
   const divisionSections = splitMarkdownByDivisions(document.markdown)
 
   if (divisionSections.length > 1) {
+    const chunksByDivision = assignChunksToDivisions(divisionSections, chunks)
     for (const section of divisionSections) {
-      const sectionChunks = chunks.filter((c) => {
-        const chapMatch = c.path.match(/^kap(\d+)\./)
-        if (!chapMatch) return false
-        return section.chapterNumbers.includes(chapMatch[1]!)
-      })
-
-      if (section === divisionSections[0]) {
-        const nonChapterChunks = chunks.filter(
-          (c) => !c.path.match(/^kap\d+\./)
-        )
-        sectionChunks.push(
-          ...nonChapterChunks.filter((nc) => !sectionChunks.includes(nc))
-        )
-      }
+      const sectionChunks = chunksByDivision.get(section)!
 
       if (sectionChunks.length === 0) continue
 
-      const sectionPromptTokens = estimatePromptTokens(
-        section.markdown,
-        sectionChunks.length
-      )
-
-      if (sectionPromptTokens <= MAX_PROMPT_TOKENS) {
-        requests.push({
-          customId: `${docId}__split_${splitIndex++}`,
-          prompt: buildPrefixPrompt(section.markdown, document, sectionChunks),
-          chunkPaths: sectionChunks.map((c) => c.path),
-        })
+      if (markdownFitsWithCappedChunks(section.markdown)) {
+        // Division markdown fits — split its chunks by the output cap
+        const sliceRequests = buildRequestsForChunks(
+          docId,
+          section.markdown,
+          document,
+          sectionChunks,
+          splitIndex
+        )
+        splitIndex += sliceRequests.length
+        requests.push(...sliceRequests)
       } else {
         // Division too large — split by chapter
         const chapterRequests = buildChapterBatchRequests(
@@ -270,39 +410,18 @@ function buildChapterBatchRequests(
     const chapterMarkdown =
       chapterSections.get(chapKey) ?? markdown.substring(0, MAX_CONTEXT_CHARS)
     const truncatedMarkdown = chapterMarkdown.substring(0, MAX_CONTEXT_CHARS)
-    const markdownTokens = estimateTokenCount(truncatedMarkdown)
 
-    const totalPromptTokens =
-      markdownTokens +
-      chapChunks.length * TOKENS_PER_CHUNK +
-      PROMPT_OVERHEAD_TOKENS
-
-    if (totalPromptTokens <= MAX_PROMPT_TOKENS) {
-      // Fits in one request
-      requests.push({
-        customId: `${docId}__split_${splitIndex++}`,
-        prompt: buildPrefixPrompt(truncatedMarkdown, document, chapChunks),
-        chunkPaths: chapChunks.map((c) => c.path),
-      })
-    } else {
-      // Split chunks into sub-batches that fit within token limit
-      // Calculate how many chunks we can fit given the markdown size
-      const availableForChunks =
-        MAX_PROMPT_TOKENS - markdownTokens - PROMPT_OVERHEAD_TOKENS
-      const chunksPerBatch = Math.max(
-        1,
-        Math.floor(availableForChunks / TOKENS_PER_CHUNK)
-      )
-
-      for (let i = 0; i < chapChunks.length; i += chunksPerBatch) {
-        const subChunks = chapChunks.slice(i, i + chunksPerBatch)
-        requests.push({
-          customId: `${docId}__split_${splitIndex++}`,
-          prompt: buildPrefixPrompt(truncatedMarkdown, document, subChunks),
-          chunkPaths: subChunks.map((c) => c.path),
-        })
-      }
-    }
+    // Chapter markdown is bounded to MAX_CONTEXT_CHARS, so split the chapter's
+    // chunks by the output cap (input always fits).
+    const sliceRequests = buildRequestsForChunks(
+      docId,
+      truncatedMarkdown,
+      document,
+      chapChunks,
+      splitIndex
+    )
+    splitIndex += sliceRequests.length
+    requests.push(...sliceRequests)
   }
 
   return requests
@@ -336,33 +455,14 @@ async function generatePrefixesForLargeDocument(
   const divisionSections = splitMarkdownByDivisions(document.markdown)
 
   if (divisionSections.length > 1) {
+    const chunksByDivision = assignChunksToDivisions(divisionSections, chunks)
     for (const section of divisionSections) {
-      // Find chunks that belong to this division (by chapter number matching)
-      const sectionChunks = chunks.filter((c) => {
-        const chapMatch = c.path.match(/^kap(\d+)\./)
-        if (!chapMatch) return false
-        return section.chapterNumbers.includes(chapMatch[1]!)
-      })
-
-      // Also include non-chapter chunks in the first division
-      if (section === divisionSections[0]) {
-        const nonChapterChunks = chunks.filter(
-          (c) => !c.path.match(/^kap\d+\./)
-        )
-        sectionChunks.push(
-          ...nonChapterChunks.filter((nc) => !sectionChunks.includes(nc))
-        )
-      }
+      const sectionChunks = chunksByDivision.get(section)!
 
       if (sectionChunks.length === 0) continue
 
-      const sectionPromptTokens = estimatePromptTokens(
-        section.markdown,
-        sectionChunks.length
-      )
-
-      if (sectionPromptTokens <= MAX_PROMPT_TOKENS) {
-        const prefixes = await callHaikuForPrefixes(
+      if (markdownFitsWithCappedChunks(section.markdown)) {
+        const prefixes = await callHaikuForChunkGroups(
           section.markdown,
           document,
           sectionChunks
@@ -424,41 +524,16 @@ async function generatePrefixesByChapter(
     const chapterMarkdown =
       chapterSections.get(chapKey) ?? markdown.substring(0, MAX_CONTEXT_CHARS)
     const truncatedMarkdown = chapterMarkdown.substring(0, MAX_CONTEXT_CHARS)
-    const markdownTokens = estimateTokenCount(truncatedMarkdown)
-    const totalPromptTokens =
-      markdownTokens +
-      chapChunks.length * TOKENS_PER_CHUNK +
-      PROMPT_OVERHEAD_TOKENS
 
-    if (totalPromptTokens <= MAX_PROMPT_TOKENS) {
-      const prefixes = await callHaikuForPrefixes(
-        truncatedMarkdown,
-        document,
-        chapChunks
-      )
-      for (const [path, prefix] of prefixes) {
-        result.set(path, prefix)
-      }
-    } else {
-      // Chapter too large — split chunks into sub-batches
-      const availableForChunks =
-        MAX_PROMPT_TOKENS - markdownTokens - PROMPT_OVERHEAD_TOKENS
-      const chunksPerBatch = Math.max(
-        1,
-        Math.floor(availableForChunks / TOKENS_PER_CHUNK)
-      )
-
-      for (let i = 0; i < chapChunks.length; i += chunksPerBatch) {
-        const subChunks = chapChunks.slice(i, i + chunksPerBatch)
-        const prefixes = await callHaikuForPrefixes(
-          truncatedMarkdown,
-          document,
-          subChunks
-        )
-        for (const [path, prefix] of prefixes) {
-          result.set(path, prefix)
-        }
-      }
+    // Chapter markdown is bounded to MAX_CONTEXT_CHARS; split the chapter's chunks
+    // by the output cap (input always fits).
+    const prefixes = await callHaikuForChunkGroups(
+      truncatedMarkdown,
+      document,
+      chapChunks
+    )
+    for (const [path, prefix] of prefixes) {
+      result.set(path, prefix)
     }
   }
 
@@ -559,9 +634,18 @@ async function callWithRetry(
     try {
       const response = await client.messages.create({
         model: HAIKU_MODEL,
-        max_tokens: 8192,
+        max_tokens: HAIKU_MAX_TOKENS,
         messages: [{ role: 'user', content: prompt }],
       })
+
+      if (response.stop_reason === 'max_tokens') {
+        // Output truncated — the JSON prefix map is incomplete and downstream
+        // parsing will silently drop the tail chunks. With MAX_CHUNKS_PER_REQUEST
+        // this should never fire; if it does, the cap needs lowering.
+        console.warn(
+          `[context-prefix] Haiku hit max_tokens (${HAIKU_MAX_TOKENS}) for a ${prompt.length}-char prompt — response truncated; some chunks will lack prefixes`
+        )
+      }
 
       const textBlock = response.content.find((block) => block.type === 'text')
       if (!textBlock || textBlock.type !== 'text') {

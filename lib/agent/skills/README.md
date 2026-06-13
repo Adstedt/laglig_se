@@ -8,13 +8,14 @@ without a deploy.
 
 A **skill is a subdirectory** of `lib/agent/skills/` containing:
 
-| File            | Required | Purpose                                                                            |
-| --------------- | -------- | ---------------------------------------------------------------------------------- |
-| `SKILL.md`      | **yes**  | YAML frontmatter (identity + activation + tool whitelist) + a short overview body. |
-| `PROCEDURE.md`  | no       | The step-by-step playbook (English).                                               |
-| `STYLE.md`      | no       | Tone + Swedish exemplars (bilingual).                                              |
-| `CRITERIA.md`   | no       | Guardrails / currency + must-cite checks.                                          |
-| `examples/*.md` | no       | Worked examples.                                                                   |
+| File            | Required | Purpose                                                                                                                                                                       |
+| --------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SKILL.md`      | **yes**  | YAML frontmatter (identity + activation + tool whitelist) + a short overview body.                                                                                            |
+| `PROCEDURE.md`  | no       | The step-by-step playbook (English).                                                                                                                                          |
+| `STYLE.md`      | no       | Tone + Swedish exemplars (bilingual).                                                                                                                                         |
+| `CRITERIA.md`   | no       | Guardrails / currency + must-cite checks.                                                                                                                                     |
+| `types/*.md`    | no       | Per-type modules (Story 19.8) — appended under a `## Type modules` section as `### Type: <stem>`. Stem = lower-cased enum value (`risk_assessment.md` for `RISK_ASSESSMENT`). |
+| `examples/*.md` | no       | Worked examples.                                                                                                                                                              |
 
 See [`_template/`](./_template/) for the authoring reference (copy it, rename, fill in).
 

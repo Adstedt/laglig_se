@@ -13,9 +13,15 @@
 import { test, expect } from '@playwright/test'
 import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { BRANSCHER_NAV, OMRADEN_NAV } from '../../lib/marketing/nav-links'
+import {
+  BRANSCHER_NAV,
+  FUNKTIONER_NAV,
+  OMRADEN_NAV,
+} from '../../lib/marketing/nav-links'
 
-function publishedRoutes(kind: 'branscher' | 'omraden'): string[] {
+function publishedRoutes(
+  kind: 'branscher' | 'funktioner' | 'omraden'
+): string[] {
   const dir = join(process.cwd(), 'content', 'marketing', kind)
   return readdirSync(dir)
     .filter((f) => f.endsWith('.mdx') && !f.startsWith('_'))
@@ -23,7 +29,17 @@ function publishedRoutes(kind: 'branscher' | 'omraden'): string[] {
 }
 
 const publishedBranscher = publishedRoutes('branscher')
+const publishedFunktioner = publishedRoutes('funktioner')
 const publishedOmraden = publishedRoutes('omraden')
+
+const liveFunktioner = FUNKTIONER_NAV.filter((i) =>
+  publishedFunktioner.includes(i.route)
+)
+// Funktioner items differ from Branscher: unpublished items resolve to a
+// homepage-anchor fallback (resolveNavHref type 'anchor'), NOT "Kommer snart".
+const anchorFunktioner = FUNKTIONER_NAV.filter(
+  (i) => !publishedFunktioner.includes(i.route) && i.anchorFallback
+)
 
 const liveBranscher = BRANSCHER_NAV.filter((i) =>
   publishedBranscher.includes(i.route)
@@ -90,6 +106,49 @@ test.describe('Marketing megamenu — Branscher / Områden', () => {
 
     await page.getByRole('button', { name: 'Branscher' }).hover()
     await page.getByRole('link', { name: first.label }).click()
+
+    await expect(page).toHaveURL(new RegExp(`${first.route}$`))
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  })
+
+  test('Funktioner: published features are live links, rest are anchor fallbacks', async ({
+    page,
+  }) => {
+    test.skip(liveFunktioner.length === 0, 'no published feature pages yet')
+    await page.getByRole('button', { name: 'Funktioner' }).hover()
+
+    const nav = page.getByRole('navigation').first()
+    const first = liveFunktioner[0]!
+    await expect(nav.getByRole('link', { name: first.label })).toBeVisible({
+      timeout: 5000,
+    })
+
+    // Published feature pages: canonical route hrefs (the nav flip — AC 14).
+    for (const item of liveFunktioner) {
+      await expect(nav.getByRole('link', { name: item.label })).toHaveAttribute(
+        'href',
+        item.route
+      )
+    }
+    // Unpublished feature items stay links, but to their homepage anchors —
+    // never to the (unpublished) route and never "Kommer snart".
+    for (const item of anchorFunktioner) {
+      await expect(nav.getByRole('link', { name: item.label })).toHaveAttribute(
+        'href',
+        item.anchorFallback!
+      )
+    }
+  })
+
+  test('Funktioner: first published feature navigates to its live page', async ({
+    page,
+  }) => {
+    test.skip(liveFunktioner.length === 0, 'no published feature pages yet')
+    const first = liveFunktioner[0]!
+
+    await page.getByRole('button', { name: 'Funktioner' }).hover()
+    const nav = page.getByRole('navigation').first()
+    await nav.getByRole('link', { name: first.label }).click()
 
     await expect(page).toHaveURL(new RegExp(`${first.route}$`))
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

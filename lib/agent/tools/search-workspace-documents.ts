@@ -115,7 +115,7 @@ Hittas inga träffar, omformulera frågan eller använd bredare söktermer. Anv�
           return wrapToolError(
             'search_workspace_documents',
             'Inga resultat hittades bland era styrdokument.',
-            'Försök att omformulera sökningen eller använd bredare söktermer. Använd list_workspace_documents om du vill bläddra bland alla styrdokument istället.',
+            'Dokumentet kan vara en uppladdad fil istället för ett styrdokument — sök även med search_workspace_files innan du säger att det inte finns. Försök annars att omformulera sökningen eller använd bredare söktermer, eller bläddra med list_workspace_documents.',
             startTime
           )
         }

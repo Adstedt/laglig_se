@@ -1,0 +1,53 @@
+schema: 1
+story: '17.9d'
+story_title: 'File-aware Citation Pill — Passage Preview + Open Uploaded-File Sources'
+gate: PASS
+status_reason: 'All 7 ACs met. Owner manual smoke passed (paperclip pill, hover passage preview, click -> real PDF modal, no lagläsaren copy). The one DOM bug found in smoke (DOM-001, modal nested in <p>) was fixed during review via createPortal + a regression test, and re-smoke confirmed the console is now clean. Only a single low-severity, optional follow-up remains (REL-001).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-12T02:00:00Z'
+
+waiver: { active: false }
+
+quality_score: 95
+
+top_issues:
+  - id: 'DOM-001'
+    severity: medium
+    status: resolved
+    finding: 'QuickPreview (block-level <div>/<p> modal) rendered inside the markdown <p> wrapping the citation pill → "In HTML, <div> cannot be a descendant of <p>" + "<p> cannot be a descendant of <p>" — 4 hydration/validateDOMNesting console errors on modal open. Worked visually (fixed-position) but invalid HTML.'
+    suggested_action: 'RESOLVED in review: wrapped the QuickPreview mount in createPortal(..., document.body) so the modal escapes the <p>. No visual change (modal is position:fixed). Regression test added: pill rendered inside a <p>, modal asserted to have no <p> ancestor.'
+    refs: ['components/features/ai-chat/citation-pill.tsx', 'tests/unit/components/features/ai-chat/citation-pill.test.tsx']
+    ac_refs: [5]
+  - id: 'REL-001'
+    severity: low
+    finding: 'handleOpenFile silently does nothing when getFileById returns success:false (file deleted, moved, or cross-tenant). The user clicks a file pill and gets no modal and no feedback.'
+    suggested_action: 'Surface a Swedish error toast (or inline state) on the failure branch so a stale/inaccessible citation is not a silent dead-click.'
+    refs: ['components/features/ai-chat/citation-pill.tsx']
+    ac_refs: [4, 5]
+
+evidence:
+  tests_reviewed: 8
+  risks_identified: 2
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7] # AC 5 confirmed by owner manual smoke (modal opens the real PDF)
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'getFileById + getFileDownloadUrl both enforce workspace_id scoping (withWorkspace + findFirst where workspace_id). fileId originates server-side from the search_workspace_files tool result, not user input — no cross-tenant or injection vector. No schema/server-action changes.'
+  performance:
+    status: PASS
+    notes: 'No render-time fetches. One getFileById on click + one getFileDownloadUrl on preview open. QuickPreview self-returns null until opened, so closed file pills carry no DOM cost.'
+  reliability:
+    status: PASS
+    notes: 'Happy path solid and confirmed in-app. The DOM-001 nesting bug is resolved (portal + regression test, re-smoke clean). The only residual is REL-001: the getFileById error branch is a silent no-op — low impact (cited files almost always exist; no crash, workspace-scoped), tracked as an optional follow-up, not a reliability failure.'
+  maintainability:
+    status: PASS
+    notes: 'Mirrors the shipped styrdokument pill pattern; presence-of-fileId discriminator consistent with the workspaceDocumentId convention (no kind union). Snippet preview file-scoped via a separate condition with a clear comment. Tests mirror source structure.'
+
+recommendations:
+  immediate: [] # DOM-001 fix re-smoked clean by owner — no console errors.
+  future:
+    - action: 'Add user-facing error feedback (toast) on the getFileById failure branch (REL-001).'
+      refs: ['components/features/ai-chat/citation-pill.tsx']

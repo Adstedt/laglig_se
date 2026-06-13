@@ -55,7 +55,7 @@ export function ChatModal({ isOpen, onClose }: ChatModalProps) {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/5">
               <LexaIcon size={16} />
             </div>
-            <DialogTitle className="text-sm font-medium">Lexa</DialogTitle>
+            <DialogTitle className="text-sm font-medium">Assistent</DialogTitle>
           </div>
           <Button
             variant="ghost"

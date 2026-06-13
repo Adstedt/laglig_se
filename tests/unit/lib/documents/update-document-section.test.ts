@@ -432,3 +432,69 @@ describe('addSection', () => {
     expect(input).toEqual(snapshot)
   })
 })
+
+// ---------------------------------------------------------------------------
+// stripEmptyTextNodes (Story 19.8 QA) — empty text nodes blank the whole
+// document in ProseMirror (nodeFromJSON throws on editor mount).
+// ---------------------------------------------------------------------------
+
+describe('stripEmptyTextNodes', () => {
+  // Re-import lazily to keep the named export local to this block.
+  const cell = (text: string): TiptapNode => ({
+    type: 'tableCell',
+    content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
+  })
+  // A blank cell as a model emits it: a paragraph holding an EMPTY text node.
+  const blankCell = (): TiptapNode => ({
+    type: 'tableCell',
+    content: [{ type: 'paragraph', content: [{ type: 'text', text: '' }] }],
+  })
+
+  it('removes empty text nodes but keeps the (now childless) paragraph', async () => {
+    const { stripEmptyTextNodes } = await import(
+      '@/lib/documents/update-document-section'
+    )
+    const input = doc({
+      type: 'table',
+      content: [{ type: 'tableRow', content: [cell('Punkt'), blankCell()] }],
+    })
+    const out = stripEmptyTextNodes(input)
+    // The empty text node is gone…
+    const json = JSON.stringify(out)
+    expect(json).not.toContain('"text":""')
+    // …but the paragraph that held it survives (valid empty cell).
+    const tableRow = out.content[0]!.content![0]!
+    const blank = tableRow.content![1]!.content![0]!
+    expect(blank.type).toBe('paragraph')
+    expect(blank.content).toEqual([])
+    // The real text node is untouched.
+    expect(json).toContain('"text":"Punkt"')
+  })
+
+  it('keeps a non-string text node out of the tree (defensive)', async () => {
+    const { stripEmptyTextNodes } = await import(
+      '@/lib/documents/update-document-section'
+    )
+    const input = doc({
+      type: 'paragraph',
+      // @ts-expect-error — intentionally malformed text node
+      content: [{ type: 'text' }, { type: 'text', text: 'ok' }],
+    })
+    const out = stripEmptyTextNodes(input)
+    const para = out.content[0]!
+    expect(para.content).toEqual([{ type: 'text', text: 'ok' }])
+  })
+
+  it('does not mutate the input', async () => {
+    const { stripEmptyTextNodes } = await import(
+      '@/lib/documents/update-document-section'
+    )
+    const input = doc({
+      type: 'paragraph',
+      content: [{ type: 'text', text: '' }],
+    })
+    const snapshot = JSON.parse(JSON.stringify(input))
+    stripEmptyTextNodes(input)
+    expect(input).toEqual(snapshot)
+  })
+})
