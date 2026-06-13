@@ -50,18 +50,25 @@ export function QuickPreview({
   const hasPrev = currentIndex > 0
   const hasNext = currentIndex < files.length - 1
 
-  // Load file URL when file changes
+  // Load file URL when file changes. The cancelled flag stops a stale
+  // resolution (StrictMode double-run, fast prev/next navigation) from
+  // overwriting the current file's URL with another signed URL.
   useEffect(() => {
     if (!file || !open) {
       setFileUrl(null)
       return
     }
 
+    let cancelled = false
     setIsLoadingUrl(true)
     getFileUrl(file).then((url) => {
+      if (cancelled) return
       setFileUrl(url)
       setIsLoadingUrl(false)
     })
+    return () => {
+      cancelled = true
+    }
   }, [file, open, getFileUrl])
 
   // Navigate to previous file

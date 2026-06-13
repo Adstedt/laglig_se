@@ -35,6 +35,38 @@ export interface TiptapDocumentJSON {
   content: TiptapNode[]
 }
 
+/**
+ * Story 19.8 (QA): strip ProseMirror-invalid empty text nodes from agent-authored
+ * Tiptap JSON before it is persisted. Models routinely emit `{ type: 'text',
+ * text: '' }` for blank table cells / placeholder paragraphs, but ProseMirror's
+ * schema forbids empty text nodes — `nodeFromJSON` then THROWS on editor mount and
+ * the WHOLE document renders blank (not just the bad cell). One empty text node
+ * anywhere silently destroys the document's visibility.
+ *
+ * Recursively drops child nodes that are text nodes with an empty / non-string
+ * `text`, and recurses into the rest. Returns a new tree (no mutation). An empty
+ * paragraph (its `content` now an empty array) is VALID and kept — that is the
+ * correct representation of a blank table cell.
+ */
+export function stripEmptyTextNodes(node: TiptapNode): TiptapNode {
+  if (!Array.isArray(node.content)) return node
+  const cleaned = node.content
+    .filter(
+      (c) =>
+        !(
+          c.type === 'text' &&
+          (typeof c.text !== 'string' || c.text.length === 0)
+        )
+    )
+    .map(stripEmptyTextNodes)
+  return { ...node, content: cleaned }
+}
+
+/** Array form of {@link stripEmptyTextNodes} for body-node lists. */
+export function stripEmptyTextNodesFromList(nodes: TiptapNode[]): TiptapNode[] {
+  return nodes.map(stripEmptyTextNodes)
+}
+
 export class SectionNotFoundError extends Error {
   constructor(headingText: string) {
     super(

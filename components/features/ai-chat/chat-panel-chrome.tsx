@@ -39,7 +39,7 @@ import {
 import { cn } from '@/lib/utils'
 
 export interface ChatPanelChromeProps {
-  /** Header title. Defaults to "Fråga Lexa". */
+  /** Header title. Defaults to "Fråga assistenten". */
   title?: string
   /** Optional small muted chip (e.g. "Sonnet 4.6" or document number). */
   subtitle?: ReactNode
@@ -64,7 +64,7 @@ export interface ChatPanelChromeProps {
 }
 
 export function ChatPanelChrome({
-  title = 'Fråga Lexa',
+  title = 'Fråga assistenten',
   subtitle,
   expanded,
   onNewChat,

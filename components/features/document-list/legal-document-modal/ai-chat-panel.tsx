@@ -66,7 +66,7 @@ export function AiChatPanel({
   return (
     <div className="flex flex-col h-full w-full bg-background overflow-hidden">
       <ChatPanelChrome
-        title="Fråga Lexa"
+        title="Fråga assistenten"
         subtitle={documentNumber}
         expanded={expanded}
         onNewChat={handleNewChat}
@@ -80,11 +80,11 @@ export function AiChatPanel({
         contextId={listItemId}
         analyticsLocation="law_modal"
         onClose={onClose}
-        title="Lexa"
+        title="Assistent"
         subtitle={documentNumber}
         showHeader={false}
-        emptyStateTitle="Fråga Lexa om lagen"
-        emptyStateDescription={`Lexa kan hjälpa dig förstå ${documentTitle.length > 40 ? documentTitle.substring(0, 40) + '...' : documentTitle}`}
+        emptyStateTitle="Fråga assistenten om lagen"
+        emptyStateDescription={`Assistenten kan hjälpa dig förstå ${documentTitle.length > 40 ? documentTitle.substring(0, 40) + '...' : documentTitle}`}
         suggestedQuestions={LAW_SUGGESTED_QUESTIONS}
         className="border-0 flex-1 min-h-0"
         chat={chat}

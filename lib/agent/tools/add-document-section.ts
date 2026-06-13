@@ -34,6 +34,7 @@ import {
 } from './pending-action'
 import {
   hasSection,
+  stripEmptyTextNodesFromList,
   type InsertPosition,
   type TiptapDocumentJSON,
   type TiptapNode,
@@ -266,13 +267,20 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — tillä
         )
       }
 
+      // Story 19.8 (QA): strip ProseMirror-invalid empty text nodes the model
+      // emits for blank cells/paragraphs — otherwise the saved doc throws on
+      // editor mount and renders blank.
+      const cleanedSectionContentJson = stripEmptyTextNodesFromList(
+        newSectionContentJson
+      )
+
       const params = {
         documentId: document.id,
         // CP-001: renderer copy uses the document title as natural Swedish.
         documentTitle: document.title,
         newSectionHeading: new_section_heading,
         newSectionLevel: new_section_level,
-        newSectionContentJson,
+        newSectionContentJson: cleanedSectionContentJson,
         position,
         changeSummary: change_summary,
         // Story 14.31 staleness guard consumes this ISO-8601 UTC snapshot at

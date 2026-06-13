@@ -35,6 +35,7 @@ import {
 import {
   extractSection,
   hasSection,
+  stripEmptyTextNodesFromList,
   type TiptapDocumentJSON,
   type TiptapNode,
 } from '@/lib/documents/update-document-section'
@@ -281,7 +282,10 @@ Detta skapar alltid ett förslag som användaren godkänner i chatten — ändri
             startTime
           )
         }
-        newSectionContentJson = normalized
+        // Story 19.8 (QA): strip ProseMirror-invalid empty text nodes the model
+        // emits for blank cells/paragraphs — otherwise the saved doc throws on
+        // editor mount and renders blank.
+        newSectionContentJson = stripEmptyTextNodesFromList(normalized)
 
         // AC 4 NTH-2: no-op-edit guard. Deep-equal via canonical JSON so a
         // cosmetic key-order shuffle doesn't sneak through. Surfaces a Swedish

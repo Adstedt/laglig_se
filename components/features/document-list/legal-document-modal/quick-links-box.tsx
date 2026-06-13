@@ -74,7 +74,7 @@ export function QuickLinksBox({
             onClick={shell.openChat}
           >
             <LexaIcon size={16} className="mr-2 invert-0 dark:invert" />
-            Fråga Lexa om lagen
+            Fråga assistenten om lagen
           </Button>
         ) : (
           <Button
@@ -86,7 +86,7 @@ export function QuickLinksBox({
               href={`/ai-chat?context=${encodeURIComponent(documentNumber)}`}
             >
               <LexaIcon size={16} className="mr-2 invert-0 dark:invert" />
-              Fråga Lexa om lagen
+              Fråga assistenten om lagen
             </Link>
           </Button>
         )}

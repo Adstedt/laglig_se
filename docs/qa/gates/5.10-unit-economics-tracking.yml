@@ -1,0 +1,108 @@
+schema: 1
+story: '5.10'
+story_title: 'Unit Economics — Revenue, Margin & Weekly Founder Report (NFR18)'
+gate: PASS
+status_reason: >-
+  Re-review after apply-qa-fixes. All three findings resolved: QA-5.10-A storage
+  cost now reads the live WorkspaceFile.file_size aggregate (verified in code +
+  empirically — infra_cost 5.0022 on a file-bearing workspace vs flat 5.0000
+  before); QA-5.10-C per-workspace try/catch + failed counter added; QA-5.10-B
+  CRON_SECRET + FOUNDER_EMAIL documented in .env.example. All 10 ACs met. Only
+  residual is an owner/ops action (confirm CRON_SECRET set in Vercel prod) plus
+  the always-known provisional cost constants — no code defects remain.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-12T01:00:00+02:00'
+
+top_issues:
+  - id: QA-5.10-A
+    severity: low  # was medium — RESOLVED
+    suggested_owner: dev
+    finding: >-
+      RESOLVED (apply-qa-fixes 2026-06-12). aggregate-costs no longer reads the
+      dead workspace_usage.storage_bytes column; storage is now a live
+      WorkspaceFile.file_size groupBy aggregate (per-workspace map, mirrors 5.5b).
+      Verified in code (storage_bytes only survives as an explanatory comment) and
+      empirically: file-bearing workspace now stores infra_cost 5.0022 (flat 5 +
+      storage 0.0022) vs flat 5.0000 before. Pure-math coverage already exists
+      (aggregate.test.ts "adds storage cost from bytes").
+    suggested_action: 'None — fixed and verified.'
+  - id: QA-5.10-B
+    severity: low
+    suggested_owner: po
+    finding: >-
+      PARTIALLY RESOLVED. CRON_SECRET + FOUNDER_EMAIL now documented in
+      .env.example with the open-when-unset warning. Residual is an ops action,
+      not code: confirm CRON_SECRET is set in Vercel prod (these crons write data
+      + send email; the auth guard opens if it's unset). Should already be set
+      per 5.5z.
+    suggested_action: 'Owner: verify CRON_SECRET is present in Vercel production env.'
+  - id: QA-5.10-C
+    severity: low  # RESOLVED
+    suggested_owner: dev
+    finding: >-
+      RESOLVED (apply-qa-fixes 2026-06-12). Per-workspace upsert wrapped in
+      try/catch; failures counted + logged; route returns { upserted, failed } so
+      one bad row no longer aborts the month.
+    suggested_action: 'None — fixed.'
+
+waiver: { active: false }
+
+quality_score: 95
+expires: '2026-06-26T00:00:00+02:00'
+
+evidence:
+  tests_reviewed: 27
+  smoke_tested: true  # 18 rollup rows written, founder email delivered, edge cases verified on real data
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]  # AC 4 storage now live-aggregated
+    ac_gaps: []
+  out_of_scope_note: >-
+    Full suite shows 1 failure (agent/system-prompt.test.ts token budget 6878 >
+    6750) — NOT this story: caused by an uncommitted lib/agent/system-prompt.md
+    edit (concurrent agent WIP, not in 5.10 File List). Dev proved via stash
+    (committed prompt passes; WIP fails). Does not affect the 5.10 gate.
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      Cron bearer-auth mirrors the established pattern; workspace-scoped queries;
+      no PII in the report (workspace names + aggregates only). Caveat QA-5.10-B:
+      open-when-CRON_SECRET-unset — verify the secret is set in prod.
+  performance:
+    status: PASS
+    notes: >-
+      Aggregation ran 18 workspaces in 2.5s (maxDuration 300). Zero added work on
+      the hot chat path — cost was already logged at write time in 14.27.
+  reliability:
+    status: PASS
+    notes: >-
+      QA-5.10-C resolved: per-workspace try/catch + failed counter — one bad row
+      no longer aborts the month. Report cron no-ops cleanly when no rollup data /
+      no recipient. Crons idempotent (monthly upsert).
+  maintainability:
+    status: PASS
+    notes: >-
+      Pure functions (constants/aggregate/report) cleanly separated from route
+      glue and unit-tested (27). Built on existing telemetry + cost-estimator —
+      no duplication. opus-4-8 pricing gap fixed with a regression test. AC 9
+      dashboard estimate is honestly captioned.
+
+recommendations:
+  immediate:
+    - action: 'Owner: confirm CRON_SECRET is set in Vercel production env (QA-5.10-B residual)'
+      refs: ['.env.example']
+  future:
+    - action: 'Replace 3 provisional cost constants with real Supabase/Vercel invoice figures'
+      refs: ['lib/costs/constants.ts']
+    - action: 'Optional: fail-closed cron auth (require CRON_SECRET in prod) for the data-writing/email crons'
+      refs: ['app/api/cron/aggregate-costs/route.ts', 'app/api/cron/unit-economics-report/route.ts']
+
+history:
+  - date: '2026-06-12'
+    gate: CONCERNS
+    note: 'Initial review. AC-4 storage cost dead (reads unmaintained storage_bytes → always 0). QA-5.10-A medium + 2 low. Quality 82.'
+  - date: '2026-06-12'
+    gate: PASS
+    note: 'Re-review after apply-qa-fixes. QA-5.10-A + QA-5.10-C resolved (live storage aggregate proven 5.0022; per-row try/catch); QA-5.10-B documented (prod CRON_SECRET verify is owner ops). All 10 ACs met, reliability → PASS. Quality 95. Out-of-scope system-prompt WIP failure noted, not 5.10.'

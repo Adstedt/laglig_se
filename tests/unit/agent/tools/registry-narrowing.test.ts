@@ -18,7 +18,10 @@ vi.mock('@/lib/prisma', () => ({
 }))
 
 import { createAgentTools, TOOL_REGISTRY_POLICY } from '@/lib/agent/tools'
-import { getPrimarySkillForContext } from '@/lib/agent/skill-loader'
+import {
+  getPrimarySkillForContext,
+  getSkillToolWhitelist,
+} from '@/lib/agent/skill-loader'
 import type { WorkspaceRole } from '@prisma/client'
 
 type Ctx = 'global' | 'task' | 'law' | 'change'
@@ -119,5 +122,21 @@ describe('registry narrowing — no-regression harness (Story 19.7c)', () => {
     expect(k).not.toContain('save_assessment')
     // Story 17.11b: bumped 32 → 33 (added add_document_section to baseline).
     expect(k).toHaveLength(33)
+  })
+
+  // Story 19.8: draft_styrdokument is ACTIVATION-ONLY (contextTypes: []) — it is
+  // never a primary skill, and the route does not re-narrow the registry on
+  // mid-conversation activate_skill. The safety invariant that makes that sound:
+  // every tool the skill declares must already be in ALWAYS_AVAILABLE (i.e.
+  // present in the baseline registry built with activeSkills: []).
+  it('draft_styrdokument (activation-only): declared whitelist ⊆ ALWAYS_AVAILABLE baseline', () => {
+    const whitelist = getSkillToolWhitelist('draft_styrdokument')
+    expect(whitelist.length).toBeGreaterThan(0) // the skill exists and declares tools
+    const baseline = toolKeys('MEMBER', [])
+    for (const t of whitelist) expect(baseline).toContain(t)
+    // And it is genuinely never context-primary:
+    for (const ctx of ['global', 'task', 'law', 'change'] as const) {
+      expect(getPrimarySkillForContext(ctx)).not.toBe('draft_styrdokument')
+    }
   })
 })

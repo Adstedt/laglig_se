@@ -1,0 +1,159 @@
+schema: 1
+story: '19.8'
+story_title: '`draft_styrdokument` skill (type-aware) + Swedish template library seed'
+gate: PASS
+status_reason: >-
+  All 9 ACs implemented + unit-verified. Owner smoke complete: B1–B8 all PASS (content
+  excellent, company-tailored, DB-verified incl. B7's statistics matching the database
+  exactly), both ★ probes (export, section-edit/auto-branch) PASS, and C3 duplicate-guard
+  re-smoke now PASS after the PROCEDURE fix. Five latent defects (one HIGH) that 19.8's
+  agent documents were first to expose were all found AND fixed in-review with regression
+  coverage; full suite green (446 files / 5677 tests). Two non-blocking follow-ups remain:
+  file the draft-indexing infra story (17.10b/14.16 track) and land the prompt-budget v2
+  refactor before the next prompt-touching story (~117 tokens headroom).
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-13T22:30:00+02:00'
+
+top_issues:
+  - id: 'QA-19.8-3'
+    severity: high
+    finding: >-
+      Empty text nodes ({type:'text',text:''}) the model emits for blank table cells make
+      ProseMirror's nodeFromJSON throw on editor mount → the WHOLE document renders blank
+      (B3 checklista: 54 empty text nodes, 100% reproducible, survived reload). Content was
+      never lost (DB had all 18 blocks); the editor could not parse it. Latent across ALL
+      agent-authoring tools (draft_styrdokument, update_document, add_document_section).
+    suggested_action: >-
+      FIXED — added shared stripEmptyTextNodes/stripEmptyTextNodesFromList sanitizer
+      (update-document-section.ts) applied in all three tools; verified the real B3 content
+      now parses (0 empty nodes, 18 blocks). 4 new tests. Owner must Avvisa the pre-fix B3
+      doc and regenerate to confirm end-to-end.
+    suggested_owner: dev
+  - id: 'QA-19.8-4'
+    severity: medium
+    finding: >-
+      Wide agent tables (8-col handlingsplan vs templates' max 5) overflowed every render
+      path — editor bled past the 210mm sheet; PDF had no table-layout:fixed; DOCX set no
+      table width (ran past the Word margin). Horizontal scroll is not a valid fix for a
+      printed/exported document.
+    suggested_action: >-
+      FIXED — fit-to-page + wrap in all four paths (editor table-fixed, preview, PDF
+      table-layout:fixed+word-break, DOCX 100% width + FIXED layout + equal columnWidths)
+      plus agent guidance capping canonical columns. 2 new export regression tests.
+    suggested_owner: dev
+  - id: 'QA-19.8-5'
+    severity: low
+    finding: >-
+      All 11 templates opened with a body H1 duplicating the title (editor renders the
+      title field separately); CHECKLISTA stacked title + H1 + H2 "Checklista".
+    suggested_action: 'FIXED — stripped leading H1 from all 11 templates; re-seeded --force.'
+    suggested_owner: dev
+  - id: 'QA-19.8-1'
+    severity: low
+    finding: >-
+      CHECKLIST gate accepts a ≥3-item bulletList/orderedList ANYWHERE in the tree, so a
+      1-item top-level list nesting a 3-item sublist passes. Acceptable floor (gate is a
+      minimum-structure check, not a shape validator).
+    suggested_action: 'Tighten only if real drafts abuse it; revisit with field data.'
+    suggested_owner: dev
+  - id: 'QA-19.8-2'
+    severity: medium
+    finding: >-
+      System-prompt budget is near-critical. Ceiling re-baselined 6750→7100; after the
+      card-position prose rule (QA-19.8-6) the prompt is ~6984 est. tokens → headroom only
+      ~117. Root growth is in-flight branch WIP in system-prompt.md, not 19.8's content,
+      but 19.8 added a skill line + a guardrail rule and there is now little room left.
+    suggested_action: >-
+      Land the structured-parts / prompt-caching v2 refactor (Story 14.26 note) BEFORE the
+      next prompt-touching story — the next addition will breach 7100.
+    suggested_owner: po
+  - id: 'QA-19.8-6'
+    severity: low
+    finding: >-
+      Agent closed a draft message with "Godkänn utkastet ovan…" but the card renders
+      below the text (directional prose bug; also shouldn't narrate click-instructions).
+    suggested_action: >-
+      FIXED — system-prompt rule: never reference the card's position or write approve-
+      instructions; the card has its own buttons.
+    suggested_owner: dev
+  - id: 'QA-19.8-7'
+    severity: medium
+    finding: >-
+      Duplicate guard failed (probe C3): agent created a second "Riskbedömning –
+      Truckkörning" though a DRAFT already existed. Root cause: the existing draft has 0
+      chunks in content_chunks, and the PROCEDURE relied solely on search_workspace_documents
+      (semantic search over the index), which cannot see an unindexed draft.
+    suggested_action: >-
+      PARTIALLY FIXED (19.8): PROCEDURE now calls list_workspace_documents (direct DB,
+      returns drafts) FIRST for the existence check; search is secondary. Owner to re-run
+      C3 to confirm. SEPARATE INFRA FOLLOW-UP REQUIRED (not 19.8): agent-created drafts are
+      not indexed into content_chunks — file against the 17.10b draft-indexing / 14.16
+      incremental-chunk-sync track (also blocks [Utkast:] citation of such drafts).
+    suggested_owner: dev
+
+waiver: { active: false }
+
+# 19.8's own implementation was clean; the 5 defects were mostly LATENT (pre-existing,
+# exposed by 19.8's richer agent output) and all fixed + confirmed in-review. Score
+# docked modestly for the volume that reached smoke + one infra follow-up on another track.
+quality_score: 88
+expires: '2026-06-27T00:00:00+02:00'
+
+evidence:
+  tests_reviewed: 104
+  risks_identified: 2
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    ac_gaps: []
+  qa_independent_verification:
+    - 'Runtime smoke: activate_skill(draft_styrdokument) returns assembled body incl. all 8 Type modules'
+    - 'PROCEDURE tool-reference parse: all 8 referenced tools ∈ declared whitelist, 0 missing'
+    - 'Gate simulation over all 11 seeded templates against own documentType: 11/11 PASS'
+    - 'buildSystemPrompt() measured ≈6931 est. tokens vs 7100 ceiling; pre-existing ~6819 breach at HEAD confirmed via dev stash-bisect'
+    - 'Full suites re-run: 5 files / 104 tests green; dev-reported full regression 445 files / 5665 green'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      Gate runs before persistence (fail-closed). Existing XSS href sanitization +
+      workspace-scoped link resolution untouched and still test-covered. Recursive walkers
+      same exposure class as three pre-existing walkers. No new deps/env/secrets.
+  performance:
+    status: PASS
+    notes: 'Gate O(n) on doc tree; skill assembly stays read-once-per-process (cache-clear test).'
+  reliability:
+    status: PASS
+    notes: >-
+      Type-gate rejects persist nothing (verified no-row assertions per type); Swedish
+      self-correct messages enable model retry; one bad skill never breaks the loader.
+  maintainability:
+    status: PASS
+    notes: >-
+      types/ convention generic + documented in skills README; per-type playbooks editable
+      without deploy (Principle #2); harness invariant replaces an unfollowable flow-set add.
+
+recommendations:
+  immediate:
+    - action: >-
+        File an INFRA story on the 17.10b/14.16 track — agent-created drafts are not being
+        indexed into content_chunks (verified: 0 chunks for day-old drafts), which breaks
+        index-based duplicate detection AND [Utkast:] citation of those drafts. Non-blocking
+        for 19.8 (its duplicate guard now uses list_workspace_documents), but real.
+      refs: ['lib/agent/tools/search-workspace-documents.ts', 'docs/stories/14.16.incremental-chunk-sync.md']
+    - action: 'Owner: delete the duplicate test-artifact "Riskbedömning – Truckkörning" docs created during smoke.'
+      refs: []
+    - action: >-
+        Re-review the shared content-sanitizer + export-fit changes (they extend beyond
+        19.8's original surface into update_document / add_document_section / docx / pdf).
+      refs:
+        ['lib/documents/update-document-section.ts', 'lib/documents/tiptap-to-docx.ts', 'lib/documents/tiptap-to-pdf.ts']
+  future:
+    - action: >-
+        Run the prompt structured-parts / caching v2 refactor before the next skill lands
+        (budget headroom ~169 tokens).
+      refs: ['lib/agent/system-prompt.ts', 'tests/unit/agent/system-prompt.test.ts']
+    - action: 'Owner live smoke + manual template seed apply (npx tsx scripts/seed-document-templates.ts).'
+      refs: ['scripts/seed-document-templates.ts']
+    - action: 'AGENT-001 (empty-approved hallucination) remains an open standalone hardening candidate (out of 19.8 scope by PO ruling).'
+      refs: ['docs/stories/EPIC-19-AGENT-PARTNER-CHECKLIST.md']

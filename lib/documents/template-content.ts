@@ -73,6 +73,13 @@ export const TEMPLATE_IDS = {
   handlingsplan: 'a0000000-0000-4000-a000-000000000003',
   rutin: 'a0000000-0000-4000-a000-000000000004',
   checklista: 'a0000000-0000-4000-a000-000000000005',
+  // Story 19.8: ≥1 template per WorkspaceDocumentType + GDPR-track minimums.
+  dataskyddspolicy: 'a0000000-0000-4000-a000-000000000006',
+  incidenthanteringsrutin: 'a0000000-0000-4000-a000-000000000007',
+  bitradespolicy: 'a0000000-0000-4000-a000-000000000008',
+  arbetsinstruktion: 'a0000000-0000-4000-a000-000000000009',
+  rapport: 'a0000000-0000-4000-a000-00000000000a',
+  ovrigtDokument: 'a0000000-0000-4000-a000-00000000000b',
 } as const
 
 // ---------------------------------------------------------------------------
@@ -89,7 +96,6 @@ export const ARBETSMILJOPOLICY: TemplateDefinition = {
   content: {
     type: 'doc',
     content: [
-      heading(1, 'Arbetsmiljöpolicy'),
       heading(2, 'Syfte'),
       placeholder(
         'Beskriv syftet med denna policy och vilka områden den täcker.'
@@ -128,7 +134,6 @@ export const RISKBEDOMNING: TemplateDefinition = {
   content: {
     type: 'doc',
     content: [
-      heading(1, 'Riskbedömning'),
       heading(2, 'Bakgrund'),
       placeholder(
         'Beskriv bakgrunden till riskbedömningen — vilken verksamhet, avdelning eller process som bedöms.'
@@ -189,7 +194,6 @@ export const HANDLINGSPLAN: TemplateDefinition = {
   content: {
     type: 'doc',
     content: [
-      heading(1, 'Handlingsplan'),
       heading(2, 'Mål'),
       placeholder('Beskriv det övergripande målet med denna handlingsplan.'),
       heading(2, 'Åtgärder'),
@@ -239,7 +243,6 @@ export const RUTIN: TemplateDefinition = {
   content: {
     type: 'doc',
     content: [
-      heading(1, 'Rutin'),
       heading(2, 'Syfte'),
       placeholder('Beskriv syftet med denna rutin.'),
       heading(2, 'Omfattning'),
@@ -272,8 +275,7 @@ export const CHECKLISTA: TemplateDefinition = {
   content: {
     type: 'doc',
     content: [
-      heading(1, 'Checklista'),
-      heading(2, 'Checklista'),
+      heading(2, 'Kontrollpunkter'),
       table([
         tableRow([
           tableHeader('Punkt'),
@@ -305,6 +307,236 @@ export const CHECKLISTA: TemplateDefinition = {
 }
 
 // ---------------------------------------------------------------------------
+// 6. Dataskyddspolicy (POLICY / GDPR) — Story 19.8
+// ---------------------------------------------------------------------------
+
+export const DATASKYDDSPOLICY: TemplateDefinition = {
+  id: TEMPLATE_IDS.dataskyddspolicy,
+  name: 'Dataskyddspolicy',
+  description:
+    'Policy för behandling av personuppgifter enligt GDPR — principer, rättslig grund, registrerades rättigheter och ansvar.',
+  documentType: 'POLICY',
+  sortOrder: 6,
+  content: {
+    type: 'doc',
+    content: [
+      heading(2, 'Syfte'),
+      placeholder(
+        'Beskriv syftet: hur verksamheten skyddar personuppgifter och uppfyller dataskyddsförordningen (GDPR).'
+      ),
+      heading(2, 'Omfattning'),
+      placeholder(
+        'Beskriv vilka behandlingar, system och roller policyn omfattar (anställda, kunder, leverantörer).'
+      ),
+      heading(2, 'Principer för behandling'),
+      placeholder(
+        'Beskriv principerna: laglighet, ändamålsbegränsning, uppgiftsminimering, korrekthet, lagringsminimering, integritet och konfidentialitet.'
+      ),
+      heading(2, 'Rättslig grund'),
+      placeholder(
+        'Beskriv vilka rättsliga grunder verksamheten stödjer sina behandlingar på (avtal, rättslig förpliktelse, berättigat intresse, samtycke).'
+      ),
+      heading(2, 'Registrerades rättigheter'),
+      placeholder(
+        'Beskriv hur verksamheten hanterar begäran om registerutdrag, rättelse, radering och dataportabilitet — och inom vilken tid.'
+      ),
+      heading(2, 'Ansvar'),
+      placeholder(
+        'Beskriv ansvarsfördelningen: personuppgiftsansvarig, eventuellt dataskyddsombud, chefer och medarbetare.'
+      ),
+      heading(2, 'Uppföljning och revidering'),
+      placeholder(
+        'Beskriv hur efterlevnaden följs upp och hur ofta policyn revideras (minst årligen).'
+      ),
+    ],
+  },
+}
+
+// ---------------------------------------------------------------------------
+// 7. Incidenthanteringsrutin (PROCEDURE) — Story 19.8
+// ---------------------------------------------------------------------------
+
+export const INCIDENTHANTERINGSRUTIN: TemplateDefinition = {
+  id: TEMPLATE_IDS.incidenthanteringsrutin,
+  name: 'Incidenthanteringsrutin',
+  description:
+    'Rutin för att upptäcka, rapportera, hantera och följa upp incidenter — inklusive personuppgiftsincidenter med 72-timmarsfristen.',
+  documentType: 'PROCEDURE',
+  sortOrder: 7,
+  content: {
+    type: 'doc',
+    content: [
+      heading(2, 'Syfte och omfattning'),
+      placeholder(
+        'Beskriv vilka incidenter rutinen omfattar (driftstörningar, säkerhetsincidenter, personuppgiftsincidenter) och vem den gäller.'
+      ),
+      heading(2, 'Ansvar'),
+      placeholder(
+        'Beskriv roller: vem tar emot rapporter, vem leder hanteringen, vem beslutar om anmälan till myndighet.'
+      ),
+      heading(2, 'Rapportering'),
+      placeholder(
+        'Beskriv hur en incident rapporteras internt: kanal, vad rapporten ska innehålla, tidskrav (omedelbart/inom 24 timmar).'
+      ),
+      heading(2, 'Hantering och åtgärd'),
+      placeholder(
+        'Beskriv stegen: bekräfta och begränsa incidenten, bedöm allvarlighetsgrad, åtgärda, dokumentera beslut.'
+      ),
+      heading(2, 'Anmälan till myndighet'),
+      placeholder(
+        'Beskriv när och hur anmälan sker — en personuppgiftsincident anmäls till IMY inom 72 timmar om den medför risk för registrerades rättigheter.'
+      ),
+      heading(2, 'Uppföljning och lärdomar'),
+      placeholder(
+        'Beskriv hur incidenter följs upp, dokumenteras i incidentregistret och hur lärdomar återförs till verksamheten.'
+      ),
+    ],
+  },
+}
+
+// ---------------------------------------------------------------------------
+// 8. Personuppgiftsbiträdes- och leverantörspolicy (POLICY / GDPR) — Story 19.8
+// ---------------------------------------------------------------------------
+
+export const BITRADESPOLICY: TemplateDefinition = {
+  id: TEMPLATE_IDS.bitradespolicy,
+  name: 'Personuppgiftsbiträdes- och leverantörspolicy',
+  description:
+    'Policy för anlitande av personuppgiftsbiträden och leverantörer — krav på biträdesavtal, säkerhetskrav och uppföljning.',
+  documentType: 'POLICY',
+  sortOrder: 8,
+  content: {
+    type: 'doc',
+    content: [
+      heading(2, 'Syfte'),
+      placeholder(
+        'Beskriv syftet: säkerställa att personuppgifter som behandlas av biträden och leverantörer skyddas enligt GDPR.'
+      ),
+      heading(2, 'Omfattning'),
+      placeholder(
+        'Beskriv vilka leverantörsrelationer policyn omfattar (molntjänster, lönehantering, IT-drift m.m.).'
+      ),
+      heading(2, 'Krav på biträdesavtal'),
+      placeholder(
+        'Beskriv kravet: personuppgiftsbiträdesavtal (PUB-avtal) tecknas innan behandling påbörjas, med instruktioner, säkerhetskrav och underbiträdesregler.'
+      ),
+      heading(2, 'Säkerhets- och lokaliseringskrav'),
+      placeholder(
+        'Beskriv kraven på tekniska och organisatoriska skyddsåtgärder samt var uppgifter får behandlas (tredjelandsöverföring).'
+      ),
+      heading(2, 'Uppföljning av leverantörer'),
+      placeholder(
+        'Beskriv hur efterlevnaden hos biträden följs upp: granskningar, intyg, revisionsrätt och intervall.'
+      ),
+      heading(2, 'Ansvar'),
+      placeholder(
+        'Beskriv vem som godkänner nya biträden, vem som förvaltar avtalsregistret och vem som beslutar vid avvikelser.'
+      ),
+    ],
+  },
+}
+
+// ---------------------------------------------------------------------------
+// 9. Arbetsinstruktion (INSTRUCTION) — Story 19.8
+// ---------------------------------------------------------------------------
+
+export const ARBETSINSTRUKTION: TemplateDefinition = {
+  id: TEMPLATE_IDS.arbetsinstruktion,
+  name: 'Arbetsinstruktion',
+  description:
+    'Steg-för-steg-instruktion för en enskild arbetsuppgift: förberedelser, utförande, återställning och agerande vid fel.',
+  documentType: 'INSTRUCTION',
+  sortOrder: 9,
+  content: {
+    type: 'doc',
+    content: [
+      heading(2, 'Uppgift och giltighet'),
+      placeholder(
+        'Beskriv arbetsuppgiften, var/vilken utrustning instruktionen gäller och vem som får utföra den (behörighet/utbildning).'
+      ),
+      heading(2, 'Före arbetet'),
+      placeholder(
+        'Lista förberedelser och säkerhetskontroller: skyddsutrustning, avspärrning, frånkoppling.'
+      ),
+      heading(2, 'Utförande'),
+      placeholder(
+        'Lista stegen i strikt ordning, ett moment per steg. Lägg varningar före det steg de gäller.'
+      ),
+      heading(2, 'Efter arbetet'),
+      placeholder(
+        'Beskriv återställning, kontroll och eventuell rapportering.'
+      ),
+      heading(2, 'Vid fel eller tillbud'),
+      placeholder('Beskriv när arbetet ska avbrytas och vem som kontaktas.'),
+    ],
+  },
+}
+
+// ---------------------------------------------------------------------------
+// 10. Rapport (REPORT) — Story 19.8
+// ---------------------------------------------------------------------------
+
+export const RAPPORT: TemplateDefinition = {
+  id: TEMPLATE_IDS.rapport,
+  name: 'Rapport',
+  description:
+    'Mall för utrednings-, revisions- eller uppföljningsrapport: sammanfattning, underlag, iakttagelser och rekommendationer.',
+  documentType: 'REPORT',
+  sortOrder: 10,
+  content: {
+    type: 'doc',
+    content: [
+      heading(2, 'Sammanfattning'),
+      placeholder(
+        'Sammanfatta slutsatserna i 3–5 meningar så att de kan läsas fristående.'
+      ),
+      heading(2, 'Bakgrund och syfte'),
+      placeholder(
+        'Beskriv vad som föranlett rapporten, vilken fråga den besvarar och vilken period/omfattning den täcker.'
+      ),
+      heading(2, 'Underlag och metod'),
+      placeholder(
+        'Beskriv vad som granskats: dokument, intervjuer, mätningar, platsbesök.'
+      ),
+      heading(2, 'Iakttagelser och resultat'),
+      placeholder(
+        'Redovisa iakttagelserna grupperade per område. Skilj fakta från bedömningar.'
+      ),
+      heading(2, 'Slutsatser och rekommendationer'),
+      placeholder(
+        'Beskriv vad som följer av iakttagelserna. Varje rekommendation ska kunna härledas till en iakttagelse.'
+      ),
+    ],
+  },
+}
+
+// ---------------------------------------------------------------------------
+// 11. Övrigt dokument (OTHER) — Story 19.8
+// ---------------------------------------------------------------------------
+
+export const OVRIGT_DOKUMENT: TemplateDefinition = {
+  id: TEMPLATE_IDS.ovrigtDokument,
+  name: 'Övrigt dokument',
+  description:
+    'Friform-mall för dokument som inte passar någon specifik typ — med syfte, innehåll och ansvar.',
+  documentType: 'OTHER',
+  sortOrder: 11,
+  content: {
+    type: 'doc',
+    content: [
+      heading(2, 'Syfte'),
+      placeholder('Beskriv varför dokumentet finns och vad det reglerar.'),
+      heading(2, 'Innehåll'),
+      placeholder(
+        'Skriv dokumentets sakinnehåll med rubriker som passar materialet.'
+      ),
+      heading(2, 'Ansvar och uppdatering'),
+      placeholder('Beskriv vem som äger dokumentet och när det ses över.'),
+    ],
+  },
+}
+
+// ---------------------------------------------------------------------------
 // All templates
 // ---------------------------------------------------------------------------
 
@@ -314,4 +546,11 @@ export const TEMPLATES: TemplateDefinition[] = [
   HANDLINGSPLAN,
   RUTIN,
   CHECKLISTA,
+  // Story 19.8 — coverage for every WorkspaceDocumentType + GDPR-track minimums.
+  DATASKYDDSPOLICY,
+  INCIDENTHANTERINGSRUTIN,
+  BITRADESPOLICY,
+  ARBETSINSTRUKTION,
+  RAPPORT,
+  OVRIGT_DOKUMENT,
 ]

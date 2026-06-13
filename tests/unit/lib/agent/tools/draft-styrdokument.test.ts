@@ -268,6 +268,54 @@ describe('draft_styrdokument', () => {
     expect(persisted.content[0].content[0].text).toBe('1. Syfte')
   })
 
+  // Story 19.8 QA: models emit empty text nodes ({type:'text',text:''}) for
+  // blank table cells; ProseMirror forbids them → nodeFromJSON throws on editor
+  // mount → the WHOLE document renders blank. The tool must strip them before
+  // persisting so the draft opens correctly in the editor.
+  it('strips empty text nodes (blank table cells) before persisting', async () => {
+    const blankCell = () => ({
+      type: 'tableCell',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text: '' }] }],
+    })
+    const filledCell = (t: string) => ({
+      type: 'tableCell',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text: t }] }],
+    })
+    const docWithBlankCells = {
+      type: 'doc',
+      content: [
+        {
+          type: 'heading',
+          attrs: { level: 2 },
+          content: [{ type: 'text', text: 'Kontrollpunkter' }],
+        },
+        { type: 'paragraph', content: [{ type: 'text', text: 'Inledning.' }] },
+        {
+          type: 'table',
+          content: [
+            {
+              type: 'tableRow',
+              content: [filledCell('Punkt'), blankCell(), blankCell()],
+            },
+          ],
+        },
+      ],
+    }
+    await execOf(createDraftStyrdokumentTool('ws_1', CTX))({
+      title: 'Checklista',
+      docType: 'CHECKLIST',
+      contentJson: docWithBlankCells,
+    })
+    const persisted = fn(prisma.pendingAgentAction.create).mock.calls[0][0].data
+      .params.contentJson
+    // No empty text node survives anywhere in the persisted tree…
+    expect(JSON.stringify(persisted)).not.toContain('"text":""')
+    // …and the blank cells keep their (now childless) paragraph (valid empty cell).
+    const row = persisted.content[2].content[0]
+    expect(row.content[1].content[0].type).toBe('paragraph')
+    expect(row.content[1].content[0].content).toEqual([])
+  })
+
   it('AC 3a: rejects a draft with fewer than 3 top-level blocks (no row created)', async () => {
     const shortDoc = {
       type: 'doc',
@@ -306,5 +354,193 @@ describe('draft_styrdokument', () => {
     })
     expect(result.error).toBe(true)
     expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
+  })
+})
+
+/**
+ * Story 19.8 — type-aware quality gate (AC 5/6/9). RISK_ASSESSMENT/ACTION_PLAN
+ * require a `table` node; CHECKLIST a `table` OR a bulletList/orderedList with
+ * ≥3 items; all other types keep the AC-3a baseline only.
+ */
+describe('draft_styrdokument — type-aware gate (Story 19.8)', () => {
+  /** A nested-capable table node (matches the editor's extension-table schema). */
+  const tableNode = {
+    type: 'table',
+    content: [
+      {
+        type: 'tableRow',
+        content: [
+          {
+            type: 'tableHeader',
+            content: [
+              {
+                type: 'paragraph',
+                content: [{ type: 'text', text: 'Riskkälla' }],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  }
+  const listNode = (type: 'bulletList' | 'orderedList', items: number) => ({
+    type,
+    content: Array.from({ length: items }, (_, i) => ({
+      type: 'listItem',
+      content: [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: `Punkt ${i + 1} är genomförd` }],
+        },
+      ],
+    })),
+  })
+  const docWith = (...extra: unknown[]) => ({
+    type: 'doc',
+    content: [
+      {
+        type: 'heading',
+        attrs: { level: 1 },
+        content: [{ type: 'text', text: 'Rubrik' }],
+      },
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'Inledande stycke om omfattning.' }],
+      },
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'Metod och ansvar beskrivs här.' }],
+      },
+      ...extra,
+    ],
+  })
+
+  it('RISK_ASSESSMENT: accepts a draft containing a table (riskmatris)', async () => {
+    const result = await execOf(createDraftStyrdokumentTool('ws_1', CTX))({
+      title: 'Riskbedömning lager',
+      docType: 'RISK_ASSESSMENT',
+      contentJson: docWith(tableNode),
+    })
+    expect(result.error).toBeUndefined()
+    expect(fn(prisma.pendingAgentAction.create)).toHaveBeenCalled()
+  })
+
+  it('RISK_ASSESSMENT: rejects a table-less draft with a Swedish riskmatris message (no row)', async () => {
+    const result = await execOf(createDraftStyrdokumentTool('ws_1', CTX))({
+      title: 'Riskbedömning lager',
+      docType: 'RISK_ASSESSMENT',
+      contentJson: docWith(),
+    })
+    expect(result.error).toBe(true)
+    expect(result.guidance).toContain('riskmatris')
+    expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
+  })
+
+  it('ACTION_PLAN: accepts a draft containing a table (åtgärdstabell)', async () => {
+    const result = await execOf(createDraftStyrdokumentTool('ws_1', CTX))({
+      title: 'Handlingsplan arbetsmiljö',
+      docType: 'ACTION_PLAN',
+      contentJson: docWith(tableNode),
+    })
+    expect(result.error).toBeUndefined()
+    expect(fn(prisma.pendingAgentAction.create)).toHaveBeenCalled()
+  })
+
+  it('ACTION_PLAN: rejects a table-less draft with a Swedish åtgärdstabell message (no row)', async () => {
+    const result = await execOf(createDraftStyrdokumentTool('ws_1', CTX))({
+      title: 'Handlingsplan arbetsmiljö',
+      docType: 'ACTION_PLAN',
+      contentJson: docWith(),
+    })
+    expect(result.error).toBe(true)
+    expect(result.guidance).toContain('åtgärdstabell')
+    expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
+  })
+
+  it('CHECKLIST: accepts the canonical table shape (kontrollpunktstabell)', async () => {
+    const result = await execOf(createDraftStyrdokumentTool('ws_1', CTX))({
+      title: 'SBA-checklista',
+      docType: 'CHECKLIST',
+      contentJson: docWith(tableNode),
+    })
+    expect(result.error).toBeUndefined()
+    expect(fn(prisma.pendingAgentAction.create)).toHaveBeenCalled()
+  })
+
+  it('CHECKLIST: accepts a bulletList with ≥3 items', async () => {
+    const result = await execOf(createDraftStyrdokumentTool('ws_1', CTX))({
+      title: 'SBA-checklista',
+      docType: 'CHECKLIST',
+      contentJson: docWith(listNode('bulletList', 3)),
+    })
+    expect(result.error).toBeUndefined()
+    expect(fn(prisma.pendingAgentAction.create)).toHaveBeenCalled()
+  })
+
+  it('CHECKLIST: rejects a 2-item list (below the ≥3 threshold, no row)', async () => {
+    const result = await execOf(createDraftStyrdokumentTool('ws_1', CTX))({
+      title: 'SBA-checklista',
+      docType: 'CHECKLIST',
+      contentJson: docWith(listNode('orderedList', 2)),
+    })
+    expect(result.error).toBe(true)
+    expect(result.guidance).toContain('checklista')
+    expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
+  })
+
+  it('CHECKLIST: rejects prose-only drafts (no table, no list)', async () => {
+    const result = await execOf(createDraftStyrdokumentTool('ws_1', CTX))({
+      title: 'SBA-checklista',
+      docType: 'CHECKLIST',
+      contentJson: docWith(),
+    })
+    expect(result.error).toBe(true)
+    expect(fn(prisma.pendingAgentAction.create)).not.toHaveBeenCalled()
+  })
+
+  it('finds a table nested below the top level (recursive detection)', async () => {
+    const nested = {
+      type: 'blockquote',
+      content: [tableNode],
+    }
+    const result = await execOf(createDraftStyrdokumentTool('ws_1', CTX))({
+      title: 'Riskbedömning kontor',
+      docType: 'RISK_ASSESSMENT',
+      contentJson: docWith(nested),
+    })
+    expect(result.error).toBeUndefined()
+    expect(fn(prisma.pendingAgentAction.create)).toHaveBeenCalled()
+  })
+
+  it.each(['POLICY', 'PROCEDURE', 'INSTRUCTION', 'REPORT', 'OTHER'] as const)(
+    '%s: baseline-only — a table-less, list-less draft still passes (AC 9 no-regression)',
+    async (docType) => {
+      const result = await execOf(createDraftStyrdokumentTool('ws_1', CTX))({
+        title: 'Dokument',
+        docType,
+        contentJson: docWith(),
+      })
+      expect(result.error).toBeUndefined()
+      expect(fn(prisma.pendingAgentAction.create)).toHaveBeenCalled()
+    }
+  )
+
+  it('type gate runs AFTER the baseline gate (short riskbedömning gets the baseline message)', async () => {
+    const result = await execOf(createDraftStyrdokumentTool('ws_1', CTX))({
+      title: 'Riskbedömning',
+      docType: 'RISK_ASSESSMENT',
+      contentJson: {
+        type: 'doc',
+        content: [
+          {
+            type: 'heading',
+            attrs: { level: 1 },
+            content: [{ type: 'text', text: 'Kort' }],
+          },
+        ],
+      },
+    })
+    expect(result.error).toBe(true)
+    expect(result.guidance).toContain('minst en rubrik och tre stycken')
   })
 })

@@ -17,19 +17,24 @@
  * as natural Swedish language.
  */
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Check, ArrowUpRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { computeDiff } from '@/lib/utils/document-diff'
+import {
+  tiptapParagraphsToText,
+  textToTiptapParagraphs,
+  isParagraphsOnly,
+} from '@/lib/utils/tiptap-text'
 import { cn } from '@/lib/utils'
 import type { AgentActionRendererProps } from './task-approval-renderer'
-import { ActionRendererFrame, LABEL_CLS } from './renderer-frame'
-
-interface TiptapNode {
-  type?: string
-  text?: string
-  content?: TiptapNode[]
-}
+import {
+  ActionRendererFrame,
+  LABEL_CLS,
+  useDebouncedParamsChange,
+} from './renderer-frame'
 
 interface UpdateDocumentParams {
   documentId?: string
@@ -48,22 +53,11 @@ interface UpdateDocumentParams {
   newVersionNumber?: number
 }
 
-function plainText(nodes: unknown): string {
-  if (!Array.isArray(nodes)) return ''
-  const walk = (n: unknown): string => {
-    if (!n || typeof n !== 'object') return ''
-    const node = n as TiptapNode
-    if (typeof node.text === 'string') return node.text
-    if (Array.isArray(node.content)) return node.content.map(walk).join(' ')
-    return ''
-  }
-  return nodes.map(walk).join(' ').replace(/\s+/g, ' ').trim()
-}
-
 export function UpdateDocumentRenderer({
   action,
   onApprove,
   onReject,
+  onParamsChange,
   isSubmitting,
   compact = false,
 }: AgentActionRendererProps) {
@@ -91,10 +85,46 @@ export function UpdateDocumentRenderer({
   const newNodes = Array.isArray(params.newSectionContentJson)
     ? params.newSectionContentJson
     : []
+
+  // Story 17.20: inline plaintext editing of a *simple* (paragraphs-only)
+  // proposed body. Rich bodies (lists/tables/headings) stay read-only — never
+  // silently flatten them (AC 3).
+  const canEditBody = hasSectionEdit && isParagraphsOnly(newNodes)
+  const hasRename = newTitle !== undefined
+
+  // Seed local edit state ONCE from the proposal (mirrors TaskApprovalRenderer);
+  // later param refetches don't clobber in-flight keystrokes.
+  const [bodyDraft, setBodyDraft] = useState(() =>
+    tiptapParagraphsToText(newNodes)
+  )
+  const [titleDraft, setTitleDraft] = useState(newTitle ?? '')
+
+  const bodyEmpty = canEditBody && bodyDraft.trim().length === 0
+
+  // AC 2: `updatePendingActionParams` REPLACES params wholesale — send the
+  // complete snapshot, overwriting only the edited fields. AC 5b: never persist
+  // an empty body (the approve dispatch guards only on `!== undefined`, so a
+  // persisted `[]` would survive into single- or batch-approve).
+  const fullParams = {
+    ...params,
+    ...(canEditBody
+      ? { newSectionContentJson: textToTiptapParagraphs(bodyDraft) }
+      : {}),
+    ...(hasRename ? { newTitle: titleDraft.trim() } : {}),
+  }
+  useDebouncedParamsChange(
+    onParamsChange,
+    fullParams,
+    action.status === 'PENDING' && !bodyEmpty
+  )
+
   // Word-level diff of the full section text (no truncation — long sections
   // scroll inside the diff box). Removed words show red + struck, added green.
-  const oldText = plainText(oldNodes)
-  const newText = plainText(newNodes)
+  // Both sides use the paragraph-preserving flattener so whitespace matches; the
+  // new side is driven off LOCAL state so the preview tracks keystrokes (the
+  // persisted value lags by the 500ms debounce + refetch — AC 2 / Task 2.2).
+  const oldText = tiptapParagraphsToText(oldNodes)
+  const newText = canEditBody ? bodyDraft : tiptapParagraphsToText(newNodes)
   const diffSegments = useMemo(
     () => computeDiff(oldText, newText),
     [oldText, newText]
@@ -146,6 +176,7 @@ export function UpdateDocumentRenderer({
       onApprove={onApprove}
       onReject={onReject}
       isSubmitting={isSubmitting}
+      canApprove={!bodyEmpty}
     >
       <div className="space-y-3">
         {/* Story 17.11c AC 9: auto-branch header. PENDING state only —
@@ -158,15 +189,23 @@ export function UpdateDocumentRenderer({
             </p>
           )}
 
-        {newTitle && (
+        {/* Story 17.20: the rename target is now an editable input (a plain
+            string is always safe to edit). The struck old title gives context. */}
+        {hasRename && (
           <div className="space-y-1">
             <span className={`${LABEL_CLS} block`}>Nytt namn</span>
-            <p className="text-[13px] leading-snug text-foreground">
-              <span className="text-muted-foreground line-through">
-                {documentTitle}
-              </span>{' '}
-              → {newTitle}
+            <p className="text-[12px] leading-snug text-muted-foreground line-through">
+              {documentTitle}
             </p>
+            <Input
+              value={titleDraft}
+              onChange={(e) => setTitleDraft(e.target.value)}
+              disabled={isSubmitting}
+              aria-label="Nytt namn"
+              // See textarea note: keep the focus ring inset so the
+              // overflow-hidden Collapsible body doesn't clip it.
+              className="focus-visible:ring-inset focus-visible:ring-offset-0"
+            />
           </div>
         )}
 
@@ -189,8 +228,40 @@ export function UpdateDocumentRenderer({
         )}
 
         {hasSectionEdit && (
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <span className={`${LABEL_CLS} block`}>Ändring</span>
+
+            {/* Story 17.20: simple (paragraphs-only) bodies are editable inline;
+                rich bodies stay read-only with a hint (AC 3). */}
+            {canEditBody ? (
+              <>
+                <Textarea
+                  value={bodyDraft}
+                  onChange={(e) => setBodyDraft(e.target.value)}
+                  disabled={isSubmitting}
+                  aria-label="Föreslagen text"
+                  // ring-inset + offset-0: the focus ring draws INSIDE the box so
+                  // it isn't clipped by the "Justera" CollapsibleContent's
+                  // overflow-hidden (needed for its height animation).
+                  className="min-h-[88px] max-h-[260px] resize-y text-[13px] leading-relaxed focus-visible:ring-inset focus-visible:ring-offset-0"
+                  placeholder="Föreslagen text…"
+                />
+                {bodyEmpty && (
+                  <p className="text-[12px] text-amber-600 dark:text-amber-400">
+                    Texten kan inte vara tom — fyll i ett innehåll för att
+                    godkänna.
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-[12px] leading-snug text-muted-foreground">
+                Den föreslagna ändringen innehåller listor eller tabeller och
+                kan inte finjusteras här. Be agenten finjustera, eller öppna
+                dokumentet i editorn.
+              </p>
+            )}
+
+            <span className={`${LABEL_CLS} block pt-1`}>Förhandsvisning</span>
             <div className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-muted/30 p-2.5 text-[13px] leading-snug">
               {diffSegments.length > 0 ? (
                 diffSegments.map((seg, i) => (

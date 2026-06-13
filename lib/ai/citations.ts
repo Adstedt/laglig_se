@@ -39,6 +39,14 @@ export interface SourceInfo {
    * is being registered.
    */
   tier?: 'APPROVED' | 'DRAFT' | null
+  /**
+   * WorkspaceFile id for uploaded-file citations (set by the
+   * search_workspace_files extractor — Story 17.9d). Presence of `fileId` is
+   * the file discriminator: the citation pill renders a Paperclip icon +
+   * "Öppna filen" preview and routes clicks to the file (QuickPreview) rather
+   * than the legal sidebar. Mirrors the workspaceDocumentId convention.
+   */
+  fileId?: string | null
 }
 
 /** Metadata shape attached to assistant messages via messageMetadata callback */
@@ -220,6 +228,9 @@ export function extractSourcesFromToolResult(
             slug: null,
             path: null,
             anchorId: null,
+            // Story 17.9d: carry the WorkspaceFile id so the pill can preview +
+            // open the file. Presence of fileId is the file discriminator.
+            fileId: item.fileId ?? null,
           })
         }
       }

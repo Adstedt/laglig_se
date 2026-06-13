@@ -424,6 +424,20 @@
 
 ---
 
+## Backlog Candidate: EU Directive Ingestion (CELEX L-acts)
+
+**Status:** Backlog (not scoped — registered 2026-06-12)
+
+**Goal:** Extend EU-act ingestion to **directives** (CELEX `3xxxxLxxxx`). The 26.6 research workflow's catalog spot-check (2026-06-12) found the catalog contains EU regulations (R-acts: GDPR 32016R0679, REACH 32006R1907, CLP 32008R1272 all resolve) but **zero EU directives** — 32022L2464 (CSRD), 32023L0970 (lönetransparens) and 32022L2555 (NIS2) are missing under any format. Blocks linkable references on marketing/topic pages and in laglistor wherever the directive (not its Swedish transposition) is the natural citation.
+
+**Trigger/decision:** Alexander, 2026-06-12 — Story 26.6's lagandringar page ships these as prose-only with SFS 2025:1506 (Cybersäkerhetslagen) as the in-catalog NIS2 stand-in. Becomes higher priority at Story 26.7 (`/omraden/nis2` is a Tier-2 page and a 2026 newsjack window — a NIS2 topic page without a linkable NIS2 directive is weaker than it should be).
+
+**Dependencies:** Existing EU-regulation ingestion path (R-acts resolve via CELEX today — pattern to extend). Swedish transpositions (e.g. SFS 2025:1506) already in catalog via SFS sync.
+
+**Priority:** Medium — rises to High before Story 26.7 (omraden/nis2).
+
+---
+
 **Total Stories Tracked:** ~257+ across 25 epics (~166 completed, ~89+ backlog; Epic 18 stories TBD, Epic 19 14 stories scoped (incl. 19.4a id-resolution + 19.4b cycle/finding readers, added 2026-05-24), Epic 20 3 stories scoped + completed, Epic 21 14 stories scoped — **13 completed, 1 deferred (21.10)**, 1 in backlog (21.15), Epic 22 4 stories scoped, Epic 23 5 stories scoped, Epic 24 6 stories scoped, Epic 25 7 stories scoped — B.0 pre-MVP)
 
 **Epic Status:** 12 Done (incl. Epic 21 substantially-done as of 2026-04-27, UAT-ready with 1 deferred 21.10 + 1 backlogged 21.15), 4 Partial / Active, 9 Not Started / Planned (incl. Epic 23, Epic 24, Epic 25)

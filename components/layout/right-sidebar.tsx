@@ -130,7 +130,7 @@ export function RightSidebar({ isOpen, onToggle }: RightSidebarProps) {
                 <MessageSquare className="h-5 w-5" aria-hidden="true" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="left">Lexa</TooltipContent>
+            <TooltipContent side="left">Assistent</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       )}
@@ -149,7 +149,7 @@ export function RightSidebar({ isOpen, onToggle }: RightSidebarProps) {
         {isOpen && (
           <>
             <ChatPanelChrome
-              title="Lexa"
+              title="Assistent"
               subtitle="Fråga om regler och efterlevnad"
               expanded={isExpanded}
               onNewChat={handleNewChat}

@@ -10,17 +10,37 @@ import {
 } from '@/lib/documents/template-content'
 
 describe('template-content', () => {
-  it('exports exactly 5 templates', () => {
-    expect(TEMPLATES).toHaveLength(5)
+  // Story 19.8: 5 → 11 (≥1 template per WorkspaceDocumentType + GDPR minimums).
+  it('exports exactly 11 templates', () => {
+    expect(TEMPLATES).toHaveLength(11)
   })
 
   it('exports all template IDs', () => {
-    expect(Object.keys(TEMPLATE_IDS)).toHaveLength(5)
+    expect(Object.keys(TEMPLATE_IDS)).toHaveLength(11)
   })
 
   it('each template has a unique deterministic ID', () => {
     const ids = TEMPLATES.map((t) => t.id)
-    expect(new Set(ids).size).toBe(5)
+    expect(new Set(ids).size).toBe(11)
+  })
+
+  // Story 19.8 (AC 7): every WorkspaceDocumentType has at least one template.
+  it('covers every WorkspaceDocumentType with ≥1 template', () => {
+    const types = [
+      'POLICY',
+      'RISK_ASSESSMENT',
+      'ACTION_PLAN',
+      'PROCEDURE',
+      'INSTRUCTION',
+      'CHECKLIST',
+      'REPORT',
+      'OTHER',
+    ]
+    for (const t of types) {
+      expect(
+        TEMPLATES.filter((x) => x.documentType === t).length
+      ).toBeGreaterThanOrEqual(1)
+    }
   })
 
   it('each template has required fields', () => {
@@ -42,11 +62,25 @@ describe('template-content', () => {
     }
   })
 
-  it('each template starts with an H1 heading', () => {
+  // 19.8 QA fix: templates must NOT start with an H1 that duplicates the
+  // document title — the editor renders the title field as the page heading,
+  // so a body H1 repeating the type name showed the heading twice (worst case
+  // Checklista: title + H1 "Checklista" + H2 "Checklista"). Templates now open
+  // directly with their first H2 section heading.
+  it('each template starts with an H2 section heading (no title-duplicating H1)', () => {
     for (const template of TEMPLATES) {
       const firstNode = template.content.content[0] as Record<string, unknown>
       expect(firstNode.type).toBe('heading')
-      expect((firstNode.attrs as Record<string, unknown>).level).toBe(1)
+      expect((firstNode.attrs as Record<string, unknown>).level).toBe(2)
+      // No H1 anywhere in the body — the title field owns that level.
+      const h1s = (
+        template.content.content as Array<Record<string, unknown>>
+      ).filter(
+        (n) =>
+          n.type === 'heading' &&
+          (n.attrs as Record<string, unknown>).level === 1
+      )
+      expect(h1s).toHaveLength(0)
     }
   })
 
@@ -125,8 +159,8 @@ describe('template-content', () => {
     expect(headings).toContain('Dokumentation')
   })
 
-  it('templates have consecutive sort orders 1-5', () => {
-    const sortOrders = TEMPLATES.map((t) => t.sortOrder).sort()
-    expect(sortOrders).toEqual([1, 2, 3, 4, 5])
+  it('templates have consecutive sort orders 1-11', () => {
+    const sortOrders = TEMPLATES.map((t) => t.sortOrder).sort((a, b) => a - b)
+    expect(sortOrders).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
   })
 })

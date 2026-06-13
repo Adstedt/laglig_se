@@ -10,7 +10,7 @@ export function LexaIcon({ className, size = 16 }: LexaIconProps) {
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src="/images/lexa-icon.png"
-      alt="Lexa"
+      alt="Assistent"
       width={size}
       height={size}
       className={cn('shrink-0 object-contain dark:invert-0 invert', className)}

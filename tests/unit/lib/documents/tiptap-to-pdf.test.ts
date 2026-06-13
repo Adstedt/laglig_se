@@ -72,6 +72,24 @@ describe('generatePdf', () => {
     expect(htmlArg).toContain('Godkänd')
   })
 
+  // 19.8 QA: wide (agent-authored) tables must fit the page and wrap, not
+  // overflow past the margin — assert the print CSS forces fixed layout + wrap.
+  it('emits fixed-layout + wrapping table CSS so wide tables fit the page', async () => {
+    const { generatePdf } = await import('@/lib/documents/tiptap-to-pdf')
+
+    await generatePdf('<table><tr><td>x</td></tr></table>', {
+      title: 'T',
+      version: 1,
+      status: 'DRAFT',
+      approvedAt: null,
+      workspaceName: 'W',
+    })
+
+    const htmlArg = mockSetContent.mock.calls.at(-1)?.[0] as string
+    expect(htmlArg).toContain('table-layout: fixed')
+    expect(htmlArg).toContain('word-break: break-word')
+  })
+
   it('closes browser in finally block', async () => {
     const { generatePdf } = await import('@/lib/documents/tiptap-to-pdf')
 

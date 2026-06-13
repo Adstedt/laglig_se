@@ -34,6 +34,7 @@ import {
   buildBatchPrefixRequests,
   parsePrefixResponse,
   HAIKU_MODEL,
+  HAIKU_MAX_TOKENS,
   type ChunkForContext,
   type BatchPrefixRequest,
 } from '../lib/chunks/generate-context-prefixes'
@@ -68,7 +69,6 @@ const CONTEXT_DELAY_MS = 500 // delay between Haiku calls
 const MAX_CONSECUTIVE_FAILURES = 5
 const BATCH_CHUNK_SIZE = 500 // docs per Anthropic batch
 const BATCH_POLL_INTERVAL_MS = 30_000 // 30s between polls
-const HAIKU_MAX_TOKENS = 8192
 
 // Cost rates (standard)
 const HAIKU_INPUT_COST_PER_M = 0.8 // $/1M input tokens
@@ -454,11 +454,12 @@ async function runEmbeddingGeneration(
 ): Promise<void> {
   const startTime = Date.now()
 
-  // When --limit is set, scope to only docs that have context_prefix written
-  // (i.e. the ones we just processed) to avoid scanning all 580K chunks
-  const limitFilter = args.limit
-    ? Prisma.sql`AND cc.context_prefix IS NOT NULL`
-    : Prisma.sql``
+  // Enforce prefix-before-embedding: only embed chunks that already have a
+  // context_prefix. A chunk without a prefix is not ready — the context phase must
+  // produce one first (prefixes add significant retrieval power, so we never embed
+  // without them). This also keeps the scan off the chunks the context phase has
+  // yet to reach. (Previously this filter only applied when --limit was set.)
+  const prefixFilter = Prisma.sql`AND cc.context_prefix IS NOT NULL`
 
   const sourceFilter = args.sourceType
     ? Prisma.sql`AND ld.content_type = ${args.sourceType}`
@@ -474,7 +475,7 @@ async function runEmbeddingGeneration(
     FROM content_chunks cc
     JOIN legal_documents ld ON cc.source_id = ld.id
     WHERE cc.embedding IS NULL
-    ${limitFilter}
+    ${prefixFilter}
     ${sourceFilter}
     ${cursorFilter}
   `
@@ -504,7 +505,7 @@ async function runEmbeddingGeneration(
       FROM content_chunks cc
       JOIN legal_documents ld ON cc.source_id = ld.id
       WHERE cc.embedding IS NULL
-      ${limitFilter}
+      ${prefixFilter}
       ${sourceFilter}
       ${cursorCondition}
       ORDER BY cc.id ASC
@@ -1023,6 +1024,24 @@ async function runBatchCollect(): Promise<void> {
       }))
 
       const prefixes = parsePrefixResponse(textBlock.text, fakeChunks)
+
+      // Truncation guard: a request that returned fewer prefixes than chunks it
+      // was given (or stopped on max_tokens) leaves the missing chunks without a
+      // prefix — exactly the failure that left large laws unembedded. With the
+      // output cap this should not happen; surface it loudly if it does. Re-running
+      // --batch-full re-queues any chunk still lacking a prefix.
+      if (
+        item.result.message.stop_reason === 'max_tokens' ||
+        prefixes.size < mapping.chunkPaths.length
+      ) {
+        console.warn(
+          `[Collect] ${item.custom_id}: got ${prefixes.size}/${mapping.chunkPaths.length} prefixes` +
+            (item.result.message.stop_reason === 'max_tokens'
+              ? ' (TRUNCATED at max_tokens)'
+              : '') +
+            ' — missing chunks will be retried on the next --batch-full run'
+        )
+      }
 
       for (const [chunkPath, prefix] of prefixes) {
         prefixBuffer.push({

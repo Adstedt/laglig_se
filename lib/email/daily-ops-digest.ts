@@ -815,15 +815,36 @@ function buildChunkHealthSection(
 // Subject builder
 // ---------------------------------------------------------------------------
 
+// Chunks lacking a context_prefix or embedding are INVISIBLE to RAG/vector
+// search. A small transient count is normal while an ingest is in flight, but a
+// persistent gap means laws are silently unsearchable — at one point 44,733
+// chunks (112 entire laws, incl. Inkomstskattelagen and Miljöbalken) sat dark
+// for months because this number was reported in the digest body without ever
+// flagging the subject line. Threshold leaves headroom for in-flight syncs.
+const RAG_COVERAGE_ALERT_THRESHOLD = 50
+
 export function buildDigestSubject(data: DigestData): string {
   const dateStr = new Date().toLocaleDateString('sv-SE')
+
+  const ragGap = data.chunkHealth
+    ? Math.max(
+        data.chunkHealth.withoutPrefix,
+        data.chunkHealth.withoutEmbedding
+      )
+    : 0
+  const ragCoverageBroken = ragGap > RAG_COVERAGE_ALERT_THRESHOLD
 
   const hasIssues =
     (data.gaps && (data.gaps.missing.length > 0 || data.gaps.error)) ||
     (data.backlog && data.backlog.unnotifiedCount > 0) ||
     data.jobHealth.some((j) => j.status === 'FAILED' || j.isStale) ||
-    (data.chunkHealth && data.chunkHealth.stuckDocs.length > 0)
+    (data.chunkHealth && data.chunkHealth.stuckDocs.length > 0) ||
+    ragCoverageBroken
 
   const prefix = hasIssues ? '\u26A0\uFE0F' : '\u2705'
-  return `${prefix} Daglig driftöversikt — ${dateStr}`
+  // Surface the RAG gap in the subject itself — it's the most actionable signal
+  const ragNote = ragCoverageBroken
+    ? ` — ${ragGap.toLocaleString('sv-SE')} chunks osökbara i RAG`
+    : ''
+  return `${prefix} Daglig driftöversikt — ${dateStr}${ragNote}`
 }

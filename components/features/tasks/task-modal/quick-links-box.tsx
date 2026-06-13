@@ -29,7 +29,7 @@ export function QuickLinksBox() {
           onClick={shell.openChat}
         >
           <LexaIcon size={16} className="invert-0 dark:invert" />
-          Fråga Lexa om uppgiften
+          Fråga assistenten om uppgiften
         </Button>
       </CardContent>
     </Card>

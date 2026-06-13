@@ -80,9 +80,26 @@ describe('generateContextPrefixes', () => {
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 8192,
+        max_tokens: 16_000,
       })
     )
+  })
+
+  it('splits into multiple output-capped calls when a document has many chunks', async () => {
+    // 250 chunks must split into ceil(250/100) = 3 requests so no single Haiku
+    // response can truncate (the bug that left large laws' tail chunks unembedded).
+    const doc = makeDocument()
+    const chunks = makeChunks(250)
+    const allPrefixes: Record<string, string> = {}
+    for (const c of chunks) allPrefixes[c.path] = `Kontext för ${c.path}.`
+    mockHaikuResponse(allPrefixes)
+
+    const result = await generateContextPrefixes(doc, chunks)
+
+    expect(mockCreate).toHaveBeenCalledTimes(3)
+    expect(result.size).toBe(250)
+    // Tail chunk — the one that used to get truncated away — is present
+    expect(result.get('kap1.§250')).toBe('Kontext för kap1.§250.')
   })
 
   it('returns empty map for empty chunks array', async () => {
@@ -164,12 +181,16 @@ describe('generateContextPrefixes', () => {
   })
 
   it('splits large documents at division level (>200K tokens)', async () => {
-    // Create a markdown string > 200K tokens (>800K chars at 4 chars/token)
+    // Create a markdown string over the input budget so the division-split path
+    // triggers. Must be realistic prose — a single repeated-character run would
+    // (correctly) be stripped as a binary payload by the base64 sanitizer.
+    const filler =
+      'Detta är svensk lagtext om arbetsmiljö och säkerhet på arbetsplatsen. '
     const longMarkdown =
       '# Avdelning 1: Första\n\n## 1 kap.\n\n' +
-      'A'.repeat(500_000) +
+      filler.repeat(5700) + // ~400K chars ≈ 135K tokens — division alone fits
       '\n\n# Avdelning 2: Andra\n\n## 2 kap.\n\n' +
-      'B'.repeat(500_000)
+      filler.repeat(5700) // total ~810K chars ≈ 270K tokens — whole doc must split
 
     const doc = makeDocument({ markdown: longMarkdown })
     const chunks: ChunkForContext[] = [

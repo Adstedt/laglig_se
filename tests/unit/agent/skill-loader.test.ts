@@ -97,3 +97,52 @@ describe('loadSkill', () => {
     expect(loadSkill('_skip', FX)).toBeNull()
   })
 })
+
+describe('loadSkill — types/ modules (Story 19.8)', () => {
+  it('appends types/*.md (sorted, .md only) under "## Type modules" as "### Type: <stem>"', () => {
+    const body = loadSkill('valid-change', FX)!
+    expect(body).toContain('## Type modules')
+    expect(body).toContain('### Type: alpha')
+    expect(body).toContain('Alpha module body.')
+    expect(body).toContain('### Type: beta_type')
+    expect(body).toContain('Beta module STRUCTURE/STYLE/CRITERIA content.')
+    // Sorted: alpha before beta_type.
+    expect(body.indexOf('### Type: alpha')).toBeLessThan(
+      body.indexOf('### Type: beta_type')
+    )
+    // Non-md files in types/ are ignored.
+    expect(body).not.toContain('notes.txt')
+    expect(body).not.toContain('must be ignored')
+    // Type modules come AFTER the companions.
+    expect(body.indexOf('## Style')).toBeLessThan(
+      body.indexOf('## Type modules')
+    )
+  })
+
+  it('is a no-op for skills without a types/ dir', () => {
+    expect(loadSkill('no-context', FX)).toBe('No-context skill body.')
+  })
+
+  it('survives a cache clear (re-scan picks the modules up again)', () => {
+    const a = loadSkill('valid-change', FX)!
+    clearSkillCache()
+    const b = loadSkill('valid-change', FX)!
+    expect(b).toBe(a)
+  })
+
+  it('real skill: draft_styrdokument exposes all 8 WorkspaceDocumentType modules', () => {
+    const body = loadSkill('draft_styrdokument')!
+    for (const stem of [
+      'policy',
+      'risk_assessment',
+      'action_plan',
+      'procedure',
+      'instruction',
+      'checklist',
+      'report',
+      'other',
+    ]) {
+      expect(body).toContain(`### Type: ${stem}`)
+    }
+  })
+})

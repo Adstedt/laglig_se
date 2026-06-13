@@ -67,7 +67,11 @@ export default async function HistoryPage({ params }: PageProps) {
   // Transform timeline for the component
   const amendments = timeline.map((a) => ({
     sfsNumber: a.sfsNumber,
-    effectiveDate: a.effectiveDate?.toISOString().slice(0, 10) ?? null,
+    // effectiveDate deserializes as a string when the timeline is served from
+    // the Redis tier of getCachedAmendmentTimeline — normalize before use.
+    effectiveDate: a.effectiveDate
+      ? new Date(a.effectiveDate).toISOString().slice(0, 10)
+      : null,
     title: a.title ?? undefined,
     sectionsChanged: a.changeTypes?.amended || 0,
     sectionsAdded: a.changeTypes?.new || 0,
@@ -79,7 +83,7 @@ export default async function HistoryPage({ params }: PageProps) {
   // Derive available version dates from timeline (no separate query needed)
   const availableVersionDates = timeline
     .filter((a) => a.effectiveDate)
-    .map((a) => a.effectiveDate!.toISOString().slice(0, 10))
+    .map((a) => new Date(a.effectiveDate!).toISOString().slice(0, 10))
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-background to-muted/20">

@@ -167,6 +167,57 @@ describe('extractSourcesFromToolResult', () => {
     expect(resolved?.documentNumber).toBe('dataskyddspolicy.pdf')
   })
 
+  // Story 17.9d (AC 1/AC 7a): carry the WorkspaceFile id through so the pill
+  // can preview + open the file. Presence of fileId is the file discriminator.
+  it('sets fileId on search_workspace_files entries (Story 17.9d)', () => {
+    const result = {
+      data: [
+        {
+          fileId: 'file-42',
+          filename: 'anställningsavtal.pdf',
+          snippet: 'Uppsägningstiden är tre månader.',
+          citationKey: 'anställningsavtal.pdf',
+        },
+      ],
+      _meta: { tool: 'search_workspace_files', resultCount: 1 },
+    }
+
+    const sources = extractSourcesFromToolResult(
+      'search_workspace_files',
+      result
+    )
+    const src = sources['anställningsavtal.pdf']
+    expect(src).toBeDefined()
+    expect(src!.fileId).toBe('file-42')
+    // Snippet still carried (the pill surfaces it as the passage preview).
+    expect(src!.snippet).toBe('Uppsägningstiden är tre månader.')
+    // No path → not a legal chunk; the pill's file discriminator (fileId) is
+    // what unlocks the snippet preview, not isChunkLevel.
+    expect(src!.path).toBeNull()
+  })
+
+  // Story 17.9d (AC 6/AC 7a guard): legal (search_laws) mappings must NOT gain
+  // a fileId — the file discriminator stays exclusive to uploaded files so the
+  // pill never misroutes a legal source to the file branch.
+  it('leaves legal (search_laws) entries without a fileId (Story 17.9d guard)', () => {
+    const result = {
+      data: [
+        {
+          documentNumber: 'SFS 1977:1160',
+          snippet: 'Arbetsgivaren ska planera...',
+          slug: 'sfs-1977-1160',
+          path: 'kap3.§2a',
+        },
+      ],
+      _meta: { tool: 'search_laws', resultCount: 1 },
+    }
+
+    const sources = extractSourcesFromToolResult('search_laws', result)
+    for (const src of Object.values(sources)) {
+      expect(src.fileId ?? null).toBeNull()
+    }
+  })
+
   // Story 17.10 (AC 20 + 21): search_workspace_documents — title-keyed citations
   // with collision disambiguation.
   it('extracts title-keyed entries from search_workspace_documents (Story 17.10, AC 20)', () => {
