@@ -269,6 +269,30 @@ Per-type CRITERIA upgrade the tool's existing quality gate from generic (≥3 bl
 - **(b) 14.31** (proposal staleness — small, Approved since 2026-05-21, retrofits the now-13-type approval stack; the longer it waits the more types it retrofits).
 - **(c)** Promote selected UAT followups / the 14.33 canvas track if user-facing polish takes priority over capability.
 
+### Completion notes — addendum 2026-06-13 (19.8 DONE → Phase 5 COMPLETE; three-skills DoD line closed)
+
+**19.8 `draft_styrdokument` (type-aware) — DONE 2026-06-13** (gate `docs/qa/gates/19.8-draft-styrdokument-type-aware.yml` = **PASS, quality 88**; `docs/stories/completed/19.8.draft-styrdokument-type-aware.md`). Full same-session SM→PO→Dev→QA→owner-smoke cycle. **Built Option A** (recommended in the story): one `draft_styrdokument` skill + a per-`WorkspaceDocumentType` `types/*.md` module set, surfaced by extending `loadSkill()` to append `types/` under `## Type modules` (generic, no new tool — `FULL` stays 34, reachability invariant holds); a **type-aware quality gate** in `draft-styrdokument.ts` (RISK_ASSESSMENT/ACTION_PLAN require a `table`; CHECKLIST a `table` OR ≥3-item list; Swedish self-correct errors); and an **11-template seed** (≥1 per type incl. GDPR-track Dataskyddspolicy/Incidenthanteringsrutin/PUB-policy). CP-001 prose-hygiene folded into the skill's STYLE/CRITERIA.
+
+**Owner live smoke — B1–B8 (all 8 types) + C3 + D-export + E1 all PASS.** Content was consistently excellent, grounded, and genuinely company-tailored (B4 picked up `serveringstillstånd` + minderåriga from `activityFlags`). **B7 (årsrapport) statistics were independently cross-checked against the DB — exact match** (39/15/113/6 = 173, named overdue tasks, bevisluckor), zero hallucination — the agent ran the full diagnostic sweep before drafting.
+
+**Five latent defects surfaced by 19.8's richer agent output, all found AND fixed in-review with regression coverage** (19.8's own implementation was clean; these were mostly pre-existing issues 19.8 was simply the first to expose):
+1. **HIGH — empty text nodes blanked the whole document.** Models emit `{type:'text',text:''}` for blank table cells; ProseMirror's `nodeFromJSON` throws on editor mount → entire doc renders blank. Fixed with a shared `stripEmptyTextNodes`/`stripEmptyTextNodesFromList` sanitizer (`lib/documents/update-document-section.ts`) applied across `draft_styrdokument` + `update_document` + `add_document_section`.
+2. **Wide-table overflow** in all four render paths — fixed fit-to-page + wrap (editor `table-fixed`, chat preview, PDF `table-layout:fixed`, DOCX 100%-width + `FIXED` layout) + agent guidance capping canonical columns.
+3. Template leading-H1 duplication (17.7 templates) — stripped all 11.
+4. Card-position prose ("Godkänn utkastet ovan" while the card renders below) — system-prompt guardrail.
+5. Duplicate-guard miss (C3) — PROCEDURE now lists via `list_workspace_documents` (DB) before the index-based semantic search.
+
+**New follow-up filed — `docs/stories/17.10c.index-agent-created-drafts.md`** (Draft, PO-validated GO): `createDocument` is the only content-creating path missing the `after(indexWorkspaceDocument(...))` trigger, so **agent-created drafts are never indexed** (verified: day-old drafts had 0 `content_chunks`). This is the root cause behind C3 and also blocks `[Utkast:]` citation of agent drafts. Small, one-spot fix (copy `createDraftFromApprovedWithEdit`'s pattern). Belongs on the 17.10b/14.16 indexing track.
+
+**Prompt-budget watch:** the system-prompt ceiling was re-baselined 6750→7100 across this branch's WIP + 19.8's skill line + the card-position rule; current ~6984 est. tokens → **~117 headroom**. The structured-parts / prompt-caching v2 refactor (14.26 note) should land before the next prompt-touching story.
+
+**Now 29 in `completed/`.** **Phase 5 — Authoring is COMPLETE.** The three-skills DoD line is closed: `assess_change` ✅ + `gap_analysis` ✅ + `draft_styrdokument` (type-aware) ✅. The agent now has full read / write / branch / **author-from-scratch** authority over styrdokument across all dual-version states.
+
+**➡️ Next in sequence (subagents 19.9/19.10 remain DEFERRED until the single-agent loop is dogfooded):**
+- **(quick win) 17.10c** — index agent-created drafts. Validated, one-spot fix, closes the C3 / `[Utkast:]` gap. Ready for `/dev`.
+- **(highest strategic value) 19.13** — agent answer-grounding eval (GR-001, the product's top accuracy risk). Draft exists; needs an SM rigor pass. This session's manual B7 statistics-vs-DB check + citation spot-checks are exactly what 19.13 should automate.
+- **then 19.11 / 19.12** (continuous governance — reminders/cron + AgentFeedback) per "schedule after 19.8 lands"; **14.31** (staleness retrofit) batches in whenever.
+
 ---
 
 ## Phase 0 — Housekeeping (½ day, no code)
@@ -319,7 +343,7 @@ The numbering rename is **already done** in the checklist. Remaining:
 
 ✅ **Read-and-diagnose loop hits its smoke-test DoD here.**
 
-### Phase 5 — Authoring (~3–4 wk; expanded with the dual-version epic) — 🟡 **NEAR-COMPLETE** (only 19.8 remains)
+### Phase 5 — Authoring (~3–4 wk; expanded with the dual-version epic) — ✅ **COMPLETE** (2026-06-13)
 
 18. **17.10** workspace doc tools (search / read / list) — ✅ **DONE 2026-06-01**
 19. **17.10b** DRAFT/IN_REVIEW indexing + status-aware citations — ✅ **DONE 2026-06-02** (`[Källa:]` / `[Utkast:]` split; cron-debounce reindex)
@@ -330,7 +354,7 @@ The numbering rename is **already done** in the checklist. Remaining:
     - **17.17** Styrdokument table + doc page dual-version UX — ✅ **DONE** (gate PASS q96; commit `fab4b9c8`; +Neka action from the smoke).
     - **17.18** Agent reads + citation routing under the dual-version model — ✅ **DONE** (gate PASS q95; commit `c6c45e31`; **DEC-2 adversarial contract held under dual-state routing**).
 23. **17.11c** Agent auto-branch on APPROVED — ✅ **DONE 2026-06-06** (`completed/`; gate PASS q95; shipped inside the authoring-triad commit `29b25e80` rather than as a separate post-17.18 draft).
-24. **19.8** `draft_styrdokument` skill (type-aware, one skill + `types/*.md` modules per `WorkspaceDocumentType`) + Swedish template seed (≥1 per type) — **NEXT; all deps ✅** (17.11 + 14.24 + 19.6 + 19.7c + the dual-version epic). No story file yet — needs SM `*create-story`. *Re-scoped 2026-05-28 from `draft_policy` → `draft_styrdokument`; see addendum above and PRD 19.8 entry.*
+24. **19.8** `draft_styrdokument` skill (type-aware, one skill + `types/*.md` modules per `WorkspaceDocumentType`) + Swedish template seed (≥1 per type) — ✅ **DONE 2026-06-13** (`completed/`; gate PASS **q88**; Option A loader `types/` surfacing + type-aware gate + 11-template seed; owner smoke B1–B8/C3/D/E1 all PASS, B7 statistics DB-verified; 5 latent defects found & fixed in-review incl. 1 HIGH empty-text-node sanitizer. Spun off follow-up **17.10c** (index agent-created drafts). See the 2026-06-13 addendum above.). *Re-scoped 2026-05-28 from `draft_policy` → `draft_styrdokument`.*
 
 ### Phase 6 — Scale + governance (~2 wk; pick by ROI)
 

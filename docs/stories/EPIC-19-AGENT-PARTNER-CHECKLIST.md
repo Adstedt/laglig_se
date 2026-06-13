@@ -102,7 +102,7 @@
 
 ### Authoring track
 
-- [ ] **19.8** — `draft_styrdokument` skill (type-aware) + Swedish template library seed *(**now unblocked** — dual-version Model B foundation closed 2026-06-04; PO can scope against the corrected dual-pointer schema)*
+- [x] **19.8** — `draft_styrdokument` skill (type-aware) + Swedish template library seed — ✅ **DONE 2026-06-13** (`completed/`; gate PASS **q88**). Option A loader `types/` surfacing + type-aware gate + 11-template seed; owner smoke B1–B8/C3/D/E1 all PASS (B7 statistics DB-verified, zero hallucination); 5 latent defects found & fixed in-review (1 HIGH empty-text-node sanitizer, table-fit across editor/preview/PDF/DOCX, H1 de-dup, card-position rule, duplicate-guard via `list_workspace_documents`). Spun off **17.10c** (index agent-created drafts — drafts had 0 chunks; root cause behind C3). **Phase 5 — Authoring COMPLETE; three-skills DoD line closed.**
   *Re-scoped 2026-05-28 from `draft_policy` → `draft_styrdokument` (one skill, not per-type — see PRD 19.8 + plan addendum). `draft_styrdokument/` with PROCEDURE + cross-cutting STYLE (KP-001) + cross-cutting CRITERIA (GR-001) + `types/<docType>.md` modules (one per `WorkspaceDocumentType`: policy, risk_assessment, action_plan, procedure, instruction, checklist, report, other) holding the per-type STRUCTURE + STYLE + CRITERIA; type-aware quality gate in `lib/agent/tools/draft-styrdokument.ts`; seed ≥1 template per type — minimum: Dataskyddspolicy, Arbetsmiljöpolicy, Incidenthanteringsrutin, Riskbedömning arbetsmiljö, Handlingsplan arbetsmiljö, SBA-checklista, Leverantörspolicy*
 
 ### Subagent track
@@ -144,7 +144,7 @@
   - **Authoring triad: 17.11 · 17.11b · 17.11c** (full agent read/write/branch authority over styrdokument)
   - **Dual-version sub-epic: 17.16 · 17.17 · 17.18** (shipped 2026-06-03 → 2026-06-04)
 - 📝 **Drafted, not built (2):** 17.9d (file-aware citation pill) · 19.1b (promote chat attachment → Filer)
-- ⬜ **Remaining (6):** 14.31 (staleness retrofit, Approved-not-built) · 19.4b (cycle/finding readers, sequences with Epic 21) · 19.8 (`draft_styrdokument` type-aware) · 19.9 (subagent runner) · 19.10 (ParallelAssessor) · 19.11 (reminders + cron) · 19.12 (AgentFeedback) · 19.13 (legal-citation grounding eval)
+- ⬜ **Remaining (post-19.8):** 17.10c (index agent-created drafts — NEW, validated, quick win) · 14.31 (staleness retrofit, Approved-not-built) · 19.4b (cycle/finding readers, sequences with Epic 21) · 19.9 (subagent runner — DEFERRED until single-agent loop dogfooded) · 19.10 (ParallelAssessor — DEFERRED) · 19.11 (reminders + cron) · 19.12 (AgentFeedback) · 19.13 (legal-citation grounding eval — top accuracy risk, recommended next). **Next: 17.10c → 19.13.**
 - ⬜ **Next to build:**
   1. **PO scopes 19.8** (`draft_styrdokument` type-aware + Swedish template library seed) against the corrected dual-pointer schema — the next major authoring-track story. Larger scope (one skill + 8 type modules + ≥7 seed templates) so worth treating as a multi-cycle effort.
   2. **PO triages the 17.11c smoke follow-ups:** AGENT-001 (agent hallucinates content on empty-approved docs) + UX-prose-leak (agent leaks internal identifiers in capability explanations). Likely candidates to roll into 19.8's prompt sweep OR as a standalone agent-prose-hygiene hardening story.
