@@ -28,3 +28,8 @@ public/pdf.worker.min.mjs
 # misc
 *.lock
 pnpm-lock.yaml
+
+# MDX scaffolding (underscore-prefixed templates/placeholders): contain
+# {/* ... */} comment blocks that prettier's markdown parser corrupts into
+# {/_ ... _/}, which breaks the MDX build. Excluded from routing already.
+content/marketing/**/_*.mdx

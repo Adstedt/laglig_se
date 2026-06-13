@@ -507,6 +507,9 @@ importers:
       jsdom:
         specifier: ^27.2.0
         version: 27.2.0
+      jszip:
+        specifier: ^3.10.1
+        version: 3.10.1
       lint-staged:
         specifier: '15'
         version: 15.5.2
