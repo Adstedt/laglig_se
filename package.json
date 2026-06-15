@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.28.0",
   "scripts": {
     "dev": "next dev --turbopack",
+    "prebuild": "tsx scripts/generate-skills-manifest.ts",
     "build": "next build",
     "postbuild": "tsx scripts/generate-sitemaps.ts",
     "build:analyze": "ANALYZE=true next build",

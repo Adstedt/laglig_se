@@ -33,3 +33,6 @@ pnpm-lock.yaml
 # {/* ... */} comment blocks that prettier's markdown parser corrupts into
 # {/_ ... _/}, which breaks the MDX build. Excluded from routing already.
 content/marketing/**/_*.mdx
+
+# Build-time generated (scripts/generate-skills-manifest.ts)
+lib/agent/skills.generated.ts

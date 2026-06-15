@@ -1,168 +1,52 @@
 /**
- * Story 19.6: Skill loader library.
+ * Story 19.6: runtime skill loader (pure, manifest-based).
  *
- * Pure, registry-agnostic loader for the file-based agent-skills convention.
- * A skill is a subdirectory of `lib/agent/skills/` containing a `SKILL.md`
- * (YAML frontmatter + body) plus optional PROCEDURE.md / STYLE.md / CRITERIA.md.
+ * Reads skills from the build-time manifest (lib/agent/skills.generated.ts,
+ * produced by scripts/generate-skills-manifest.ts and wired into `prebuild`).
+ * NO filesystem access: the previous runtime fs scan of lib/agent/skills/ used
+ * dynamic `readdirSync`/`readFileSync` paths the Turbopack/nft bundlers could
+ * not statically trace, which emitted a build warning and widened the /api/chat
+ * trace to the whole repo (~16.5k files). The fs scan + body assembly now live
+ * in lib/agent/skill-fs.ts (build/test only); this module just reads the
+ * inlined result, so the runtime import graph is `fs`-free.
  *
- * This module does NOT touch the agent runtime (no prompt injection, no tool
- * registry, no route) — Story 19.7 consumes these functions to wire skills in.
- * Everything here is deploy-static and read-once per `baseDir`.
+ * Public API mirrors the former fs loader, minus the `baseDir` test hook
+ * (callers in app/ + lib/ never passed one). Tests exercise the fs scanner
+ * directly via skill-fs.ts.
  */
 
-import { existsSync, readdirSync, readFileSync } from 'fs'
-import { resolve, join } from 'path'
-import matter from 'gray-matter'
-import { z } from 'zod'
+import { SKILLS_MANIFEST } from './skills.generated'
+import type { SkillContextType, SkillMeta } from './skill-schema'
 
-const DEFAULT_BASE_DIR = 'lib/agent/skills'
+export { skillFrontmatterSchema } from './skill-schema'
+export type { SkillContextType, SkillMeta } from './skill-schema'
 
-/** SKILL.md frontmatter schema. Exported so Story 19.7 can reuse it. */
-export const skillFrontmatterSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().min(1),
-  contextTypes: z
-    .array(z.enum(['global', 'task', 'law', 'change']))
-    .default([]),
-  tools: z.array(z.string()).default([]),
-})
+// The manifest is generated sorted-by-name (drives the deterministic
+// getPrimarySkillForContext tie-break). Freeze defensively.
+const METAS: readonly SkillMeta[] = Object.freeze(
+  SKILLS_MANIFEST.map((s) => Object.freeze({ ...s.meta }))
+)
+const BODIES: ReadonlyMap<string, string> = new Map(
+  SKILLS_MANIFEST.map((s) => [s.meta.name, s.body])
+)
 
-export type SkillContextType = 'global' | 'task' | 'law' | 'change'
-export type SkillMeta = z.infer<typeof skillFrontmatterSchema>
+/** No-op kept for API compatibility — the manifest is static. */
+export function clearSkillCache(): void {}
 
-interface SkillRecord {
-  meta: SkillMeta
-  dir: string
+/** All skills' metadata (frozen, sorted by name). */
+export function listSkills(): readonly SkillMeta[] {
+  return METAS
 }
 
-interface CacheEntry {
-  records: SkillRecord[]
-  metas: readonly SkillMeta[]
-}
-
-// Skills are deploy-static — read + validate once per resolved baseDir (mirrors
-// the BASE_PROMPT readFileSync-once pattern in system-prompt.ts).
-const cache = new Map<string, CacheEntry>()
-
-/** Test hook: drop the per-baseDir cache so a fresh scan runs next call. */
-export function clearSkillCache(): void {
-  cache.clear()
-}
-
-/** Companion files appended (in order) to the assembled skill body. */
-const COMPANIONS: ReadonlyArray<readonly [file: string, header: string]> = [
-  ['PROCEDURE.md', 'Procedure'],
-  ['STYLE.md', 'Style'],
-  ['CRITERIA.md', 'Criteria'],
-]
-
-function loadRecords(baseDir?: string): CacheEntry {
-  const base = resolve(process.cwd(), baseDir ?? DEFAULT_BASE_DIR)
-  const cached = cache.get(base)
-  if (cached) return cached
-
-  const records: SkillRecord[] = []
-  if (existsSync(base)) {
-    for (const entry of readdirSync(base, { withFileTypes: true })) {
-      // Ignore loose files (e.g. generate-law-list.ts) — skills are directories.
-      if (!entry.isDirectory()) continue
-      // Skip authoring templates / examples.
-      if (entry.name.startsWith('_')) continue
-
-      const dir = join(base, entry.name)
-      const skillMd = join(dir, 'SKILL.md')
-      // A subdirectory without a SKILL.md is not a skill.
-      if (!existsSync(skillMd)) continue
-
-      let frontmatter: unknown
-      try {
-        frontmatter = matter(readFileSync(skillMd, 'utf-8')).data
-      } catch (err) {
-        console.warn(`[skill-loader] Could not parse ${skillMd}:`, err)
-        continue
-      }
-
-      const parsed = skillFrontmatterSchema.safeParse(frontmatter)
-      if (!parsed.success) {
-        console.warn(
-          `[skill-loader] Invalid frontmatter in ${skillMd}: ${parsed.error.issues[0]?.message ?? 'schema error'} — skipped`
-        )
-        continue
-      }
-      if (parsed.data.name !== entry.name) {
-        console.warn(
-          `[skill-loader] Skill name "${parsed.data.name}" does not match directory "${entry.name}" — skipped`
-        )
-        continue
-      }
-
-      records.push({ meta: parsed.data, dir })
-    }
-  }
-
-  // Deterministic order (drives getPrimarySkillForContext multi-match tie-break).
-  records.sort((a, b) => a.meta.name.localeCompare(b.meta.name))
-
-  const metas = Object.freeze(records.map((r) => Object.freeze({ ...r.meta })))
-  const entry: CacheEntry = { records, metas }
-  cache.set(base, entry)
-  return entry
-}
-
-/** All valid skills' metadata (frozen, cached, sorted by name). */
-export function listSkills(baseDir?: string): readonly SkillMeta[] {
-  return loadRecords(baseDir).metas
-}
-
-/**
- * Assemble a skill's body: the SKILL.md body + each present companion
- * (PROCEDURE / STYLE / CRITERIA) under a `## ` header, then — Story 19.8 —
- * any `types/*.md` modules under `### Type: <stem>` sub-headers inside a
- * `## Type modules` section (generic: any skill with a `types/` dir gets
- * this; lookup convention is `<docType>.toLowerCase()` → `types/<stem>.md`).
- * `null` if unknown.
- */
-export function loadSkill(name: string, baseDir?: string): string | null {
-  const rec = loadRecords(baseDir).records.find((r) => r.meta.name === name)
-  if (!rec) return null
-
-  const parts: string[] = []
-  const body = matter(
-    readFileSync(join(rec.dir, 'SKILL.md'), 'utf-8')
-  ).content.trim()
-  if (body) parts.push(body)
-
-  for (const [file, header] of COMPANIONS) {
-    const p = join(rec.dir, file)
-    if (!existsSync(p)) continue
-    const content = readFileSync(p, 'utf-8').trim()
-    if (content) parts.push(`## ${header}\n\n${content}`)
-  }
-
-  // Story 19.8: per-type modules, sorted for deterministic assembly.
-  const typesDir = join(rec.dir, 'types')
-  if (existsSync(typesDir)) {
-    const modules: string[] = []
-    for (const f of readdirSync(typesDir).sort()) {
-      if (!f.endsWith('.md')) continue
-      const content = readFileSync(join(typesDir, f), 'utf-8').trim()
-      if (content) modules.push(`### Type: ${f.slice(0, -3)}\n\n${content}`)
-    }
-    if (modules.length > 0) {
-      parts.push(`## Type modules\n\n${modules.join('\n\n')}`)
-    }
-  }
-
-  return parts.join('\n\n')
+/** A skill's fully-assembled body, or `null` for an unknown skill. */
+export function loadSkill(name: string): string | null {
+  return BODIES.get(name) ?? null
 }
 
 /** The skill's declared tool whitelist (`[]` for none / unknown skill). */
-export function getSkillToolWhitelist(
-  name: string,
-  baseDir?: string
-): string[] {
-  const rec = loadRecords(baseDir).records.find((r) => r.meta.name === name)
-  return rec ? [...rec.meta.tools] : []
+export function getSkillToolWhitelist(name: string): string[] {
+  const meta = METAS.find((s) => s.name === name)
+  return meta ? [...meta.tools] : []
 }
 
 /**
@@ -170,20 +54,17 @@ export function getSkillToolWhitelist(
  * or `null`. On multiple matches, the first by sorted name (deterministic) + warn.
  */
 export function getPrimarySkillForContext(
-  contextType: SkillContextType | undefined,
-  baseDir?: string
+  contextType: SkillContextType | undefined
 ): string | null {
   if (!contextType) return null
-  const matches = loadRecords(baseDir).records.filter((r) =>
-    r.meta.contextTypes.includes(contextType)
-  )
+  const matches = METAS.filter((s) => s.contextTypes.includes(contextType))
   if (matches.length === 0) return null
   if (matches.length > 1) {
     console.warn(
       `[skill-loader] Multiple skills claim contextType "${contextType}": ${matches
-        .map((m) => m.meta.name)
-        .join(', ')} — using "${matches[0]!.meta.name}"`
+        .map((m) => m.name)
+        .join(', ')} — using "${matches[0]!.name}"`
     )
   }
-  return matches[0]!.meta.name
+  return matches[0]!.name
 }
