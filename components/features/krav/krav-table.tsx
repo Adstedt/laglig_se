@@ -7,10 +7,15 @@
  * `manualSorting` mode and forwards column-header clicks back up via
  * `onSortingChange`.
  *
+ * Row click: the whole row opens the law item via onOpenLawItem(row).
+ * Cells in INTERACTIVE_COLUMNS (Status toggle, Ansvarig editor) stop
+ * propagation so their own controls win over row navigation.
+ *
  * Interactive cells:
- *   - Status (col 1)   — checkbox toggle → onToggleFulfilled(row)
- *   - Lag    (col 3)   — link → onOpenLawItem(row) opens the modal
- *   - Ansvarig (col 5) — <AssigneeEditor /> with inherited variant
+ *   - Status (col 1)     — checkbox toggle → onToggleFulfilled(row)
+ *   - Regelverk (col 3)  — focusable button → onOpenLawItem(row) (keyboard
+ *                          affordance; the row itself is also clickable)
+ *   - Ansvarig (col 5)   — <AssigneeEditor /> with inherited variant
  *
  * Non-interactive cells: Kravpunkt text (col 2), Laglista (col 4),
  * Bevis icon (col 6), Uppdaterad (col 7).
@@ -59,6 +64,10 @@ const VIRTUALIZATION_THRESHOLD = 100
 const ESTIMATED_ROW_HEIGHT = 52
 const OVERSCAN_COUNT = 5
 const VIRTUAL_TABLE_MAX_HEIGHT = '70vh'
+
+// Columns with their own interactive controls (toggle, assignee dropdown).
+// Clicks inside these must NOT bubble up to the row-level navigation.
+const INTERACTIVE_COLUMNS = new Set(['is_fulfilled', 'responsible'])
 
 export interface KravTableSort {
   field: WorkspaceRequirementsSortField
@@ -146,11 +155,19 @@ export function KravTable({
       },
       {
         id: 'law_name',
-        header: ({ column }) => <SortableHeader column={column} label="Lag" />,
+        header: ({ column }) => (
+          <SortableHeader column={column} label="Regelverk" />
+        ),
         cell: ({ row }) => (
+          // Row is fully clickable (opens the law item); keep a focusable
+          // button here so keyboard users retain a navigation affordance.
+          // stopPropagation avoids firing onOpenLawItem twice via the row.
           <button
             type="button"
-            onClick={() => onOpenLawItem(row.original)}
+            onClick={(e) => {
+              e.stopPropagation()
+              onOpenLawItem(row.original)
+            }}
             className="text-sm text-left underline-offset-2 hover:underline hover:text-primary focus:outline-none focus-visible:underline"
           >
             {row.original.lawName}
@@ -387,7 +404,8 @@ export function KravTable({
                       key={row.id}
                       data-index={virtualItem.index}
                       ref={(node) => rowVirtualizer.measureElement(node)}
-                      className="border-t hover:bg-muted/30 transition-colors"
+                      onClick={() => onOpenLawItem(row.original)}
+                      className="border-t hover:bg-muted/30 transition-colors cursor-pointer"
                       style={{
                         display: 'table',
                         tableLayout: 'fixed',
@@ -401,6 +419,11 @@ export function KravTable({
                       {row.getVisibleCells().map((cell) => (
                         <td
                           key={cell.id}
+                          onClick={
+                            INTERACTIVE_COLUMNS.has(cell.column.id)
+                              ? (e) => e.stopPropagation()
+                              : undefined
+                          }
                           className={cn(
                             'px-3 py-2 align-middle',
                             cell.column.id === 'is_fulfilled' && 'pl-6'
@@ -419,11 +442,17 @@ export function KravTable({
               : modelRows.map((row) => (
                   <tr
                     key={row.id}
-                    className="border-t hover:bg-muted/30 transition-colors"
+                    onClick={() => onOpenLawItem(row.original)}
+                    className="border-t hover:bg-muted/30 transition-colors cursor-pointer"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
+                        onClick={
+                          INTERACTIVE_COLUMNS.has(cell.column.id)
+                            ? (e) => e.stopPropagation()
+                            : undefined
+                        }
                         className={cn(
                           'px-3 py-2 align-middle',
                           cell.column.id === 'is_fulfilled' && 'pl-6'

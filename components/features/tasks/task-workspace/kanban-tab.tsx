@@ -511,7 +511,10 @@ function TaskCard({ task, isDragging, onClick, onTaskDelete }: TaskCardProps) {
           <div className="flex items-start justify-between gap-2">
             <p
               className={cn(
-                'text-sm font-medium flex-1',
+                // min-w-0 lets the title shrink/wrap below its longest word;
+                // without it a long word + wide badge overflows the row and
+                // shoves the "..." button past the card edge.
+                'text-sm font-medium flex-1 min-w-0 break-words',
                 isOverdue && 'text-destructive inline-flex items-center gap-1.5'
               )}
             >

@@ -79,6 +79,10 @@ export interface GetWorkspaceRequirementsInput {
   }
   cursor?: string
   limit?: number
+  /** Facet: restrict to kravpunkter in these law lists. */
+  laglistaIds?: string[]
+  /** Facet: restrict to kravpunkter whose effective assignee is in this set. */
+  responsibleUserIds?: string[]
 }
 
 export interface WorkspaceRequirementRow {
@@ -127,6 +131,11 @@ const GetWorkspaceRequirementsSchema = z.object({
     .optional(),
   cursor: z.string().uuid().optional(),
   limit: z.number().int().min(1).max(200).optional(),
+  // Lenient (min(1), not uuid) so a hand-edited/stale facet id matches nothing
+  // rather than failing the whole query — mirrors the page's graceful-fallback
+  // handling of malformed URL params. Prisma parameterises `in`, so safe.
+  laglistaIds: z.array(z.string().min(1)).max(100).optional(),
+  responsibleUserIds: z.array(z.string().min(1)).max(100).optional(),
 })
 
 type OrderByEntry = Prisma.LawListItemRequirementOrderByWithRelationInput
@@ -170,7 +179,11 @@ export async function getWorkspaceRequirements(
       const where = buildRequirementWhere(
         ctx,
         parsed.data.filter,
-        parsed.data.search
+        parsed.data.search,
+        {
+          laglistaIds: parsed.data.laglistaIds,
+          responsibleUserIds: parsed.data.responsibleUserIds,
+        }
       )
       const orderBy = buildOrderBy(parsed.data.sort)
 

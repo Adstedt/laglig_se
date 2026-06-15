@@ -13,6 +13,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   ArrowUpRight,
   ExternalLink,
@@ -91,6 +92,7 @@ export function CitationPillInline({
 
   // All hooks must be called before any early return (rules-of-hooks)
   const chatDetail = useChatDetailSafe()
+  const router = useRouter()
   const pillRef = useRef<HTMLElement | null>(null)
 
   // Resolve source: try chunk path match first, then document number
@@ -181,6 +183,25 @@ export function CitationPillInline({
       return
     }
 
+    // Workspace styrdokument sources: navigate straight to the document rather
+    // than opening the law-oriented citation sidebar. Until the canvas exists
+    // that sidebar only shows "Fullständig lagtext visas i lagläsaren", which
+    // is meaningless for a styrdokument. The hover card still previews the
+    // title; clicking through is the action. Matches the "Öppna styrdokument"
+    // CTA target (approved tier opens the read-only approved view).
+    if (isWorkspaceDocResolved && workspaceDocId) {
+      trackEvent('workspace_citation_clicked', {
+        workspaceDocumentId: workspaceDocId,
+        ...(source.tier ? { tier: source.tier } : {}),
+      })
+      router.push(
+        `/workspace/styrdokument/${workspaceDocId}/edit${
+          source.tier === 'APPROVED' ? '?view=approved' : ''
+        }`
+      )
+      return
+    }
+
     // DB sources: open sidebar detail
     if (!chatDetail) return
     chatDetail.openDetail(
@@ -211,6 +232,9 @@ export function CitationPillInline({
     resolvedPath,
     isFileResolved,
     handleOpenFile,
+    isWorkspaceDocResolved,
+    workspaceDocId,
+    router,
   ])
 
   const triggerCallbackRef = useCallback((node: HTMLElement | null) => {

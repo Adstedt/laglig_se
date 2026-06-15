@@ -47,8 +47,11 @@ export function FilterBar({
 }: FilterBarProps) {
   return (
     <Collapsible open={isOpen}>
-      <CollapsibleContent>
-        <div className="-mt-4 py-2">
+      {/* -mt-4 lives on CollapsibleContent (not the inner div) so the whole
+          overflow-hidden clip box shifts up with it; on the inner div it would
+          push chips past the clip edge and shear their rounded corners. */}
+      <CollapsibleContent className="-mt-4">
+        <div className="py-2">
           <div className="flex items-center gap-2 flex-wrap">
             <ContentTypeFilter
               activeFilter={contentTypeFilter}
