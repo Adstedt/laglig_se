@@ -157,6 +157,69 @@ describe('buildRequirementWhere', () => {
       evidence_links: { none: {} },
     })
   })
+
+  // ---- Facets (Story: krav faceted filters) ----
+  it('facets: empty/absent facets add NO keys (byte-identical to preset)', () => {
+    expect(buildRequirementWhere(ctx, 'all', undefined, {})).toEqual({
+      list_item: { law_list: { workspace_id: MOCK_WORKSPACE_ID } },
+    })
+    expect(
+      buildRequirementWhere(ctx, 'all', undefined, {
+        laglistaIds: [],
+        responsibleUserIds: [],
+      })
+    ).toEqual({
+      list_item: { law_list: { workspace_id: MOCK_WORKSPACE_ID } },
+    })
+  })
+
+  it('facet laglistaIds: scopes list_item.law_list.id with an `in` clause', () => {
+    const where = buildRequirementWhere(ctx, 'all', undefined, {
+      laglistaIds: ['list-1', 'list-2'],
+    })
+    expect(where.list_item).toEqual({
+      law_list: {
+        workspace_id: MOCK_WORKSPACE_ID,
+        id: { in: ['list-1', 'list-2'] },
+      },
+    })
+  })
+
+  it('facet responsibleUserIds: AND-composed effective-assignee OR clause', () => {
+    const where = buildRequirementWhere(ctx, 'all', undefined, {
+      responsibleUserIds: [OTHER_USER_ID],
+    })
+    expect(where.AND).toEqual([
+      {
+        OR: [
+          { responsible_user_id: { in: [OTHER_USER_ID] } },
+          {
+            responsible_user_id: null,
+            list_item: { responsible_user_id: { in: [OTHER_USER_ID] } },
+          },
+        ],
+      },
+    ])
+  })
+
+  it('facet + mine preset: facet OR lives under AND, preset OR stays top-level (no collision)', () => {
+    const where = buildRequirementWhere(ctx, 'mine', undefined, {
+      responsibleUserIds: [OTHER_USER_ID],
+    })
+    // The `mine` preset keeps its own top-level OR…
+    expect(where.OR).toEqual([
+      { responsible_user_id: MOCK_USER_ID },
+      {
+        responsible_user_id: null,
+        list_item: {
+          law_list: { workspace_id: MOCK_WORKSPACE_ID },
+          responsible_user_id: MOCK_USER_ID,
+        },
+      },
+    ])
+    // …while the facet rides on AND, so both predicates survive.
+    expect(where.AND).toHaveLength(1)
+  })
 })
 
 // ---------------------------------------------------------------------------

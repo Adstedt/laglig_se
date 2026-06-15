@@ -12,6 +12,7 @@ import { toast } from 'sonner'
 import {
   Plus,
   X,
+  Pencil,
   ChevronRight,
   Paperclip,
   FileText,
@@ -304,7 +305,7 @@ function KravpunktRow({
   // the row lay out before we scroll to it.
   const [isFocusHighlighted, setIsFocusHighlighted] = useState(false)
   const rowRef = useRef<HTMLLIElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     if (!focusThisRow) return
@@ -315,7 +316,7 @@ function KravpunktRow({
       })
       setIsFocusHighlighted(true)
     })
-    const timeout = setTimeout(() => setIsFocusHighlighted(false), 1500)
+    const timeout = setTimeout(() => setIsFocusHighlighted(false), 2800)
     return () => {
       cancelAnimationFrame(frame)
       clearTimeout(timeout)
@@ -326,10 +327,15 @@ function KravpunktRow({
   }, [focusThisRow])
 
   useEffect(() => {
-    if (isEditing) {
-      inputRef.current?.focus()
-      inputRef.current?.select()
-    }
+    if (!isEditing) return
+    const el = inputRef.current
+    if (!el) return
+    el.focus()
+    el.select()
+    // Auto-size to fit the full text on open so long krav aren't crammed
+    // into a one-line box (the field grows with the content).
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
   }, [isEditing])
 
   // Keep local edit buffer in sync if requirement.text changes externally.
@@ -493,9 +499,11 @@ function KravpunktRow({
       ref={rowRef}
       id={`krav-row-${requirement.id}`}
       className={cn(
-        'group rounded-md transition-colors',
+        // transition-all (not -colors) so the ring/box-shadow fades out too;
+        // the longer duration gives a gentle fade when the highlight clears.
+        'group rounded-md transition-all duration-700',
         isFocusHighlighted &&
-          'bg-accent/40 ring-1 ring-accent ring-offset-2 ring-offset-background'
+          'bg-primary/[0.07] ring-2 ring-primary/70 ring-offset-2 ring-offset-background'
       )}
     >
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
@@ -521,30 +529,39 @@ function KravpunktRow({
           {/* Text / inline edit */}
           <div className="flex-1 min-w-0">
             {isEditing ? (
-              <Input
+              <Textarea
                 ref={inputRef}
                 value={editText}
-                onChange={(e) => setEditText(e.target.value)}
+                onChange={(e) => {
+                  setEditText(e.target.value)
+                  // Grow/shrink with content as the user types.
+                  e.target.style.height = 'auto'
+                  e.target.style.height = `${e.target.scrollHeight}px`
+                }}
                 onBlur={handleSaveText}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  // Enter saves; Shift+Enter inserts a newline.
+                  if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault()
                     handleSaveText()
                   }
                   // Escape is handled by the window-capture listener in useEffect above.
                 }}
                 maxLength={500}
-                className="h-7 text-sm py-0"
+                rows={1}
+                className="text-sm leading-snug py-1.5 min-h-0 resize-none"
               />
             ) : (
+              // Primary click expands the row (reveals evidence + comment) —
+              // matches the chevron. Text editing is the pencil button below.
               <button
                 type="button"
-                onClick={() => !readOnly && setIsEditing(true)}
-                disabled={readOnly}
+                onClick={() => setIsExpanded((v) => !v)}
+                aria-expanded={isExpanded}
                 className={cn(
-                  'text-sm text-left w-full leading-snug',
+                  'text-sm text-left w-full leading-snug cursor-pointer',
                   requirement.isFulfilled && 'text-muted-foreground',
-                  !readOnly && 'cursor-text hover:text-foreground'
+                  'hover:text-foreground'
                 )}
               >
                 {requirement.text}
@@ -615,6 +632,22 @@ function KravpunktRow({
               />
             </button>
           </CollapsibleTrigger>
+
+          {/* Edit text — deliberate secondary action (hover-revealed, like delete) */}
+          {!readOnly && (
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className={cn(
+                'shrink-0 p-1 rounded hover:bg-muted transition-all',
+                'opacity-0 group-hover:opacity-60 hover:!opacity-100'
+              )}
+              title="Redigera text"
+              aria-label="Redigera kravpunktens text"
+            >
+              <Pencil className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+            </button>
+          )}
 
           {/* Delete (opens confirmation dialog) */}
           {!readOnly && (

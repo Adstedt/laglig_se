@@ -38,12 +38,16 @@ export function useWorkspaceRequirements(input: GetWorkspaceRequirementsInput) {
     string,
     string,
     string,
+    string,
   ] = [
     WORKSPACE_REQUIREMENTS_KEY,
     input.filter,
     input.search ?? '',
     `${input.sort?.field ?? 'updated_at'}:${input.sort?.direction ?? 'desc'}`,
     input.cursor ?? '',
+    // Facets folded into one stable string so distinct facet selections are
+    // distinct cache entries (SWR compares tuple elements by shallow ref).
+    `${(input.laglistaIds ?? []).join(',')}|${(input.responsibleUserIds ?? []).join(',')}`,
   ]
 
   return useSWR<UseWorkspaceRequirementsResult>(

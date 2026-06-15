@@ -301,6 +301,25 @@ const TOOL_CONFIG: Record<
   },
 }
 
+/**
+ * Tools whose result is allowed to open the detail sidebar when clicked.
+ *
+ * Single source of truth for tool-row clickability — consulted by BOTH the
+ * grouped summary (`isRunClickable`) and the standalone row (`isClickable`).
+ * Only tools with a purpose-built, user-facing detail view qualify:
+ *   - search_laws → SearchResultsDetail
+ *   - web_search  → WebSearchDetail
+ * Every other tool falls through to the generic JSON dump (ToolResultDetail),
+ * which exposes internal data (e.g. activate_skill's full skill instructions,
+ * raw list_workspace_documents metadata). Those render as non-clickable status
+ * lines instead — surface value, never internals.
+ */
+const EXPANDABLE_TOOLS = new Set<string>(['search_laws', 'web_search'])
+
+function isToolResultExpandable(toolName: string): boolean {
+  return EXPANDABLE_TOOLS.has(toolName)
+}
+
 // ---------------------------------------------------------------------------
 // Tool part info extraction helper
 // ---------------------------------------------------------------------------
@@ -1047,9 +1066,10 @@ function CollapsedToolGroup({
     if (!chatDetail) return false
     const firstOutput = run.outputs[0]
     if (!firstOutput || typeof firstOutput !== 'object') return false
-    const meta = (firstOutput as { _meta?: ToolMeta })._meta
-    const hint = meta?.sidebarHint
-    return hint === 'open' || hint === 'suggest'
+    // Clickability is allowlist-driven (only tools with a curated detail view).
+    // Keeps the grouped summary consistent with the standalone row and never
+    // exposes the generic JSON dump for internal tools.
+    return isToolResultExpandable(run.toolName)
   }
 
   const handleRunClick = (run: CoalescedRun) => {
@@ -1381,7 +1401,14 @@ function ToolCallRow({
   const isDone = state === 'output-available'
   const isError = state === 'output-error'
   const isRunning = !isDone && !isError
-  const isClickable = isDone && output !== undefined && chatDetail !== null
+  // Allowlist-driven: only tools with a curated detail view are clickable.
+  // Everything else renders as a non-clickable status line so the generic JSON
+  // dump (internal data / skill prompts) is never reachable.
+  const isClickable =
+    isDone &&
+    output !== undefined &&
+    chatDetail !== null &&
+    isToolResultExpandable(toolName)
 
   const meta = isDone
     ? (output as { _meta?: ToolMeta } | null)?._meta
@@ -1504,16 +1531,20 @@ function ToolCallRow({
       {/* "Visa detaljer" chip for sidebarHint === 'suggest' (standalone only —
           the parent summary row in a CollapsedToolGroup already exposes the
           sidebar affordance via the clickable label). */}
-      {isDone && sidebarHint === 'suggest' && chatDetail && !compact && (
-        <button
-          type="button"
-          onClick={handleSuggestClick}
-          className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors ml-2.5"
-        >
-          <Eye className="h-3 w-3" />
-          Visa detaljer
-        </button>
-      )}
+      {isDone &&
+        sidebarHint === 'suggest' &&
+        isToolResultExpandable(toolName) &&
+        chatDetail &&
+        !compact && (
+          <button
+            type="button"
+            onClick={handleSuggestClick}
+            className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors ml-2.5"
+          >
+            <Eye className="h-3 w-3" />
+            Visa detaljer
+          </button>
+        )}
     </div>
   )
 }

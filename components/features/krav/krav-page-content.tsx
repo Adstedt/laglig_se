@@ -39,6 +39,7 @@ import {
 } from '@/app/actions/workspace-requirements'
 import type { WorkspaceMemberOption } from '@/app/actions/document-list'
 import { KravFilterChips } from './krav-filter-chips'
+import { KravFacetFilters, type KravLawListOption } from './krav-facet-filters'
 import { KravTable, type KravTableSort } from './krav-table'
 import {
   useWorkspaceRequirements,
@@ -86,14 +87,29 @@ function buildUrlParams(state: {
   filter: WorkspaceRequirementsFilter
   search: string
   sort: KravTableSort
+  laglistaIds: string[]
+  responsibleUserIds: string[]
 }): string {
   const params = new URLSearchParams()
   if (state.filter !== 'gaps') params.set('filter', state.filter)
   if (state.search.trim().length > 0) params.set('search', state.search.trim())
   if (state.sort.field !== 'updated_at') params.set('sort', state.sort.field)
   if (state.sort.direction !== 'desc') params.set('dir', state.sort.direction)
+  if (state.laglistaIds.length > 0)
+    params.set('laglista', state.laglistaIds.join(','))
+  if (state.responsibleUserIds.length > 0)
+    params.set('ansvarig', state.responsibleUserIds.join(','))
   const s = params.toString()
   return s.length > 0 ? `/krav?${s}` : '/krav'
+}
+
+/** Parse a comma-separated id list from a URL param. */
+function parseIdList(raw: string | null | undefined): string[] {
+  if (!raw) return []
+  return raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
 }
 
 // ============================================================================
@@ -105,7 +121,10 @@ export interface KravPageContentProps {
   initialSearch?: string | undefined
   initialSortField?: string | undefined
   initialSortDirection?: string | undefined
+  initialLaglista?: string | undefined
+  initialResponsible?: string | undefined
   members: WorkspaceMemberOption[]
+  lawLists: KravLawListOption[]
 }
 
 export function KravPageContent({
@@ -113,7 +132,10 @@ export function KravPageContent({
   initialSearch,
   initialSortField,
   initialSortDirection,
+  initialLaglista,
+  initialResponsible,
   members,
+  lawLists,
 }: KravPageContentProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -140,6 +162,18 @@ export function KravPageContent({
     [urlSortField, urlSortDirection]
   )
 
+  // Facet selections live in the URL too (comma-separated). Serialise to a
+  // string key first so the memo identity only changes when the values do —
+  // splitting on every render would thrash the query memo + reset effect.
+  const laglistaKey = searchParams.get('laglista') ?? initialLaglista ?? ''
+  const responsibleKey =
+    searchParams.get('ansvarig') ?? initialResponsible ?? ''
+  const laglistaIds = useMemo(() => parseIdList(laglistaKey), [laglistaKey])
+  const responsibleUserIds = useMemo(
+    () => parseIdList(responsibleKey),
+    [responsibleKey]
+  )
+
   // Search → URL. SearchInput owns its own debounced buffer; we just push
   // the post-debounce value into the URL via this callback.
   const handleSearchChange = useCallback(
@@ -149,10 +183,12 @@ export function KravPageContent({
         filter: urlFilter,
         search: next,
         sort,
+        laglistaIds,
+        responsibleUserIds,
       })
       router.replace(url, { scroll: false })
     },
-    [router, urlSearch, urlFilter, sort]
+    [router, urlSearch, urlFilter, sort, laglistaIds, responsibleUserIds]
   )
 
   // Malformed URL params were coerced on read; on first render strip the
@@ -170,7 +206,13 @@ export function KravPageContent({
         !(VALID_DIRECTIONS as readonly string[]).includes(rawDir))
     if (needsCleaning) {
       router.replace(
-        buildUrlParams({ filter: urlFilter, search: urlSearch, sort }),
+        buildUrlParams({
+          filter: urlFilter,
+          search: urlSearch,
+          sort,
+          laglistaIds,
+          responsibleUserIds,
+        }),
         { scroll: false }
       )
     }
@@ -185,22 +227,76 @@ export function KravPageContent({
   const handleFilterChange = useCallback(
     (next: WorkspaceRequirementsFilter) => {
       router.replace(
-        buildUrlParams({ filter: next, search: urlSearch, sort }),
+        buildUrlParams({
+          filter: next,
+          search: urlSearch,
+          sort,
+          laglistaIds,
+          responsibleUserIds,
+        }),
         { scroll: false }
       )
     },
-    [router, urlSearch, sort]
+    [router, urlSearch, sort, laglistaIds, responsibleUserIds]
   )
 
   const handleSortChange = useCallback(
     (next: KravTableSort) => {
       router.replace(
-        buildUrlParams({ filter: urlFilter, search: urlSearch, sort: next }),
+        buildUrlParams({
+          filter: urlFilter,
+          search: urlSearch,
+          sort: next,
+          laglistaIds,
+          responsibleUserIds,
+        }),
         { scroll: false }
       )
     },
-    [router, urlFilter, urlSearch]
+    [router, urlFilter, urlSearch, laglistaIds, responsibleUserIds]
   )
+
+  // Facet writers — toggle a single id in/out of the relevant set, then push
+  // the new selection to the URL (which re-derives state + refetches).
+  const writeFacets = useCallback(
+    (nextLaglista: string[], nextResponsible: string[]) => {
+      router.replace(
+        buildUrlParams({
+          filter: urlFilter,
+          search: urlSearch,
+          sort,
+          laglistaIds: nextLaglista,
+          responsibleUserIds: nextResponsible,
+        }),
+        { scroll: false }
+      )
+    },
+    [router, urlFilter, urlSearch, sort]
+  )
+
+  const handleToggleLaglista = useCallback(
+    (id: string) => {
+      const next = laglistaIds.includes(id)
+        ? laglistaIds.filter((x) => x !== id)
+        : [...laglistaIds, id]
+      writeFacets(next, responsibleUserIds)
+    },
+    [laglistaIds, responsibleUserIds, writeFacets]
+  )
+
+  const handleToggleResponsible = useCallback(
+    (id: string) => {
+      const next = responsibleUserIds.includes(id)
+        ? responsibleUserIds.filter((x) => x !== id)
+        : [...responsibleUserIds, id]
+      writeFacets(laglistaIds, next)
+    },
+    [laglistaIds, responsibleUserIds, writeFacets]
+  )
+
+  const handleClearFacets = useCallback(() => {
+    writeFacets([], [])
+  }, [writeFacets])
 
   const handleClear = useCallback(() => {
     router.replace('/krav', { scroll: false })
@@ -222,21 +318,30 @@ export function KravPageContent({
   >([])
   const [loadingMore, setLoadingMore] = useState(false)
 
-  // Reset accumulated pages when filter/search/sort changes.
+  // Reset accumulated pages when filter/search/sort/facets change.
   useEffect(() => {
     setExtraPages([])
-  }, [urlFilter, urlSearch, urlSortField, urlSortDirection])
+  }, [
+    urlFilter,
+    urlSearch,
+    urlSortField,
+    urlSortDirection,
+    laglistaIds,
+    responsibleUserIds,
+  ])
 
   const primaryQuery: GetWorkspaceRequirementsInput = useMemo(
     () => ({
       filter: urlFilter,
       ...(urlSearch.trim() ? { search: urlSearch.trim() } : {}),
+      ...(laglistaIds.length > 0 ? { laglistaIds } : {}),
+      ...(responsibleUserIds.length > 0 ? { responsibleUserIds } : {}),
       sort,
       limit: 50,
     }),
-    // `sort` is now itself memoised on [urlSortField, urlSortDirection] above,
-    // so including it is both correct and minimal.
-    [urlFilter, urlSearch, sort]
+    // `sort` + facet arrays are all memoised above, so including them is both
+    // correct and minimal.
+    [urlFilter, urlSearch, sort, laglistaIds, responsibleUserIds]
   )
 
   const {
@@ -383,7 +488,7 @@ export function KravPageContent({
         subtitle="Alla kravpunkter i din arbetsyta — filtrera efter luckor, mina krav eller krav som saknar bevis."
       />
 
-      {/* Filter chips + search toolbar (single horizontal row, wraps on narrow) */}
+      {/* Preset chips + facet filters + search (single row, wraps on narrow) */}
       <div className="flex flex-wrap items-center gap-3">
         <KravFilterChips
           active={urlFilter}
@@ -392,6 +497,20 @@ export function KravPageContent({
           onChange={handleFilterChange}
           onClear={handleClear}
         />
+
+        {/* Subtle divider between presets and facets (mirrors laglistor) */}
+        <div className="h-5 w-px bg-border/60 hidden sm:block" />
+
+        <KravFacetFilters
+          lawLists={lawLists}
+          members={members}
+          laglistaIds={laglistaIds}
+          responsibleUserIds={responsibleUserIds}
+          onToggleLaglista={handleToggleLaglista}
+          onToggleResponsible={handleToggleResponsible}
+          onClearFacets={handleClearFacets}
+        />
+
         <div className="ml-auto w-full sm:w-72">
           <SearchInput
             initialValue={urlSearch}
@@ -411,7 +530,12 @@ export function KravPageContent({
         <EmptyWorkspaceState />
       ) : rows.length === 0 ? (
         <FilteredEmptyState
-          adjustments={(urlFilter !== 'gaps' ? 1 : 0) + (hasSearch ? 1 : 0)}
+          adjustments={
+            (urlFilter !== 'gaps' ? 1 : 0) +
+            (hasSearch ? 1 : 0) +
+            (laglistaIds.length > 0 ? 1 : 0) +
+            (responsibleUserIds.length > 0 ? 1 : 0)
+          }
           onClear={handleClear}
         />
       ) : (
