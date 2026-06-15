@@ -1,0 +1,60 @@
+schema: 1
+story: '26.6'
+story_title: 'Tier-1 Feature Pages — Remainder (Laglista, Kravpunkter, Lagändringar, Uppgifter, Styrdokument)'
+gate: PASS
+status_reason: 'All 26.6 deliverables verified strong: capability audit independently confirmed 6/6 SUPPORTED on main, all content/SEO gates pass, and build/link-warnings/sitemap re-verified green directly at review. Only the by-design deferrals remain (AC14 full e2e to CI, AC17 GSC post-deploy).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-14T13:00:00Z'
+
+waiver: { active: false }
+
+quality_score: 95
+
+top_issues: []
+
+evidence:
+  tests_reviewed: 0
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 16]
+    ac_gaps: []
+    ac_deferred_by_design: [14, 17]
+  notes: >
+    Directly verified at review: build green (exit 0); marketing-link-warnings.txt 0 bytes
+    ("0 unmatched catalog links"); sitemap carries all 5 funktioner URLs; lint 0 errors; typecheck clean.
+    5 MDX pages (titles 46–51 ≤60, descriptions 159–164 ≤170, showOrgCheck=true ×5);
+    relatedCatalogLaws 8/9/7/8/9 (5–10); relatedPages 4 each (≥4); FAQ 6/6/5/6/6,
+    81 published questions 0 duplicates; 4 screenshots/page (≥2 min) + 1 EXIF-stripped people photo;
+    AC7 retrofit additions-only (0 content lines removed). Capability audit (AC4) INDEPENDENTLY
+    re-verified via adversarial agent vs `git show main:` — 6/6 sampled claims SUPPORTED.
+    Relied on Dev Agent Record only for: full unit 5,670 pass, Lighthouse 0.92×5 (matches 26.4/26.5
+    baseline), OG ×5 200 image/png (local + preview confirmed Completion Notes 2026-06-13), JSON-LD,
+    UTM/trackEvent. NOTE: an earlier review pass reported a build failure (@tailwindcss/container-queries
+    module-not-found) — that was a SANDBOX ARTIFACT (node_modules masked); the package is installed and
+    declared in package.json:171, and the unsandboxed build is green.
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No auth/payment surface. Demo staging reused id-aligned anna.lindqvist@nordviken.example; no new auth logins (QA-26.4-M respected). 3rd-round Almåsa scrub verified 0/0; persona names only, no real PII in shots.'
+  performance:
+    status: PASS
+    notes: 'Lighthouse SEO 0.92 ×5 per dev (matches baseline). Committed PNGs transcoded by next/image; performance score out of scope per AC10. People photo EXIF-stripped, 130 KB.'
+  reliability:
+    status: PASS
+    notes: 'Out-of-scope historik Redis-date crash fixed defensively at all 4 call sites (also repairs the public /lagar/[id]/historik SEO surface 500). Root-cause cache-revival fix registered as follow-up.'
+  maintainability:
+    status: PASS
+    notes: 'Clean execution within established 26.x patterns; zero template/engine edits. Two minor catalog cleanup items remain (synthetic REPEAL event removable via cleanup script; "Teständring SFS 2099:901" catalog test-post).'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'On push, confirm the extended marketing-nav e2e (Funktioner block) passes green in CI (full local run was deferred — accepted 26.4 precedent).'
+      refs: ['tests/e2e/marketing-nav.spec.ts']
+    - action: 'After production deploy: submit the 5 funktioner URLs in GSC and record the Tier-1-complete baseline (AC17).'
+      refs: ['docs/stories/26.6.tier-1-feature-pages-remainder.md']
+    - action: 'Run cleanup-26-6-synthetic-events.ts when the demo no longer needs the staged REPEAL hero state; remove the "Teständring SFS 2099:901" catalog test-amendment.'
+      refs: ['scripts/cleanup-26-6-synthetic-events.ts']
+    - action: 'Track the EU-directive ingestion backlog ask (lönetransparens/maskinförordning auto-discovery) registered from the brief.'
+      refs: ['docs/stories/briefs/26.6-research-keywords-images.md']

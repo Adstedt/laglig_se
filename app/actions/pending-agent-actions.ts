@@ -23,9 +23,10 @@ import {
   linkDocumentToTask,
   linkDocumentToListItem,
   updateDocumentStatus,
-  saveDocumentVersion,
   // Story 17.11c AC 7: atomic branch + write for APPROVED-no-draft auto-branch.
   createDraftFromApprovedWithEdit,
+  // Story 17.22: in-place update of an already-open draft (no new version row).
+  updateDraftVersionInPlace,
 } from './documents'
 // Story 17.11 + 17.11b: UPDATE_DOCUMENT / ADD_DOCUMENT_SECTION dispatch —
 // section-replace + section-add + server-side HTML.
@@ -635,7 +636,10 @@ export async function approvePendingAction(
                   contentHtml,
                   newTitle
                 )
-              : await saveDocumentVersion(
+              : // Story 17.22: a draft already exists → update it IN PLACE
+                // (no new version row / no version bump) instead of minting a
+                // version. Same arg order as saveDocumentVersion.
+                await updateDraftVersionInPlace(
                   p.documentId,
                   fullContentJson as object,
                   p.changeSummary,
@@ -649,53 +653,82 @@ export async function approvePendingAction(
               }
             }
 
-            // AC 8 / AC 10 — stamp agent authorship + operation discriminator
-            // onto the auto-created `document_version_saved` row's new_value.
-            // Matched on (entity_id, action, new_value.version_number) — unique
-            // per (document, version). Fire-and-forget: a missed stamp doesn't
-            // roll back the version itself. Works identically for both the
-            // auto-branch path and the plain save path (both server actions
-            // write a document_version_saved row with the same shape).
-            try {
-              const logRow = await prisma.activityLog.findFirst({
-                where: {
-                  entity_type: 'workspace_document',
-                  entity_id: p.documentId,
-                  action: 'document_version_saved',
-                  new_value: {
-                    path: ['version_number'],
-                    equals: saveResult.data.versionNumber,
-                  },
-                },
-                orderBy: { created_at: 'desc' },
-                select: { id: true, new_value: true },
-              })
-              if (logRow) {
-                const existing =
-                  logRow.new_value && typeof logRow.new_value === 'object'
-                    ? (logRow.new_value as Record<string, unknown>)
-                    : {}
-                await prisma.activityLog.update({
-                  where: { id: logRow.id },
-                  data: {
+            // Story 17.11c AC 8 / Story 17.22 — stamp agent authorship onto the
+            // audit row. Branch path → `document_version_saved` (matched by
+            // version_number). In-place path → `document_draft_edited` (no
+            // version bump, so matched by the id returned from
+            // updateDraftVersionInPlace). Fire-and-forget: a missed stamp never
+            // rolls back the write.
+            if (shouldAutoBranch) {
+              try {
+                const logRow = await prisma.activityLog.findFirst({
+                  where: {
+                    entity_type: 'workspace_document',
+                    entity_id: p.documentId,
+                    action: 'document_version_saved',
                     new_value: {
-                      ...existing,
-                      by: 'agent',
-                      pendingActionId: action.id,
-                      // Story 17.11c AC 8: operation discriminator distinguishes
-                      // a plain edit from an auto-branched edit for audit consumers.
-                      operation: shouldAutoBranch
-                        ? 'auto_branch_then_update_section'
-                        : 'update_section',
-                    } as Prisma.InputJsonValue,
+                      path: ['version_number'],
+                      equals: saveResult.data.versionNumber,
+                    },
                   },
+                  orderBy: { created_at: 'desc' },
+                  select: { id: true, new_value: true },
                 })
+                if (logRow) {
+                  const existing =
+                    logRow.new_value && typeof logRow.new_value === 'object'
+                      ? (logRow.new_value as Record<string, unknown>)
+                      : {}
+                  await prisma.activityLog.update({
+                    where: { id: logRow.id },
+                    data: {
+                      new_value: {
+                        ...existing,
+                        by: 'agent',
+                        pendingActionId: action.id,
+                        operation: 'auto_branch_then_update_section',
+                      } as Prisma.InputJsonValue,
+                    },
+                  })
+                }
+              } catch (err) {
+                console.error(
+                  `[UPDATE_DOCUMENT] activity-log stamp failed for ${p.documentId}:`,
+                  err instanceof Error ? err.message : err
+                )
               }
-            } catch (err) {
-              console.error(
-                `[UPDATE_DOCUMENT] activity-log stamp failed for ${p.documentId}:`,
-                err instanceof Error ? err.message : err
-              )
+            } else {
+              // Story 17.22: in-place edit — stamp the `document_draft_edited`
+              // audit row by the id returned from updateDraftVersionInPlace.
+              try {
+                const data = saveResult.data as { activityLogId?: string }
+                if (data.activityLogId) {
+                  const logRow = await prisma.activityLog.findUnique({
+                    where: { id: data.activityLogId },
+                    select: { new_value: true },
+                  })
+                  const existing =
+                    logRow?.new_value && typeof logRow.new_value === 'object'
+                      ? (logRow.new_value as Record<string, unknown>)
+                      : {}
+                  await prisma.activityLog.update({
+                    where: { id: data.activityLogId },
+                    data: {
+                      new_value: {
+                        ...existing,
+                        by: 'agent',
+                        pendingActionId: action.id,
+                        operation: 'in_place_update_section',
+                      } as Prisma.InputJsonValue,
+                    },
+                  })
+                }
+              } catch (err) {
+                console.error(
+                  `[UPDATE_DOCUMENT] in-place activity-log stamp failed for ${p.documentId}:`,
+                  err instanceof Error ? err.message : err
+                )
+              }
             }
 
             // Story 17.11c AC 14: when the auto-branch path fires, also stamp
@@ -867,7 +900,9 @@ export async function approvePendingAction(
                   p.changeSummary,
                   contentHtml
                 )
-              : await saveDocumentVersion(
+              : // Story 17.23: a draft already exists → add the section IN PLACE
+                // (no new version / no bump), mirroring the UPDATE_DOCUMENT arm.
+                await updateDraftVersionInPlace(
                   p.documentId,
                   fullContentJson as object,
                   p.changeSummary,
@@ -881,49 +916,80 @@ export async function approvePendingAction(
               }
             }
 
-            // AC 10 — stamp agent authorship + operation discriminator onto
-            // the `document_version_saved` row. operation distinguishes ADD
-            // from UPDATE; Story 17.11c additionally distinguishes auto-
-            // branched ADDs from plain ADDs for audit consumers. Fire-and-
-            // forget: a missed stamp doesn't roll back the version.
-            try {
-              const logRow = await prisma.activityLog.findFirst({
-                where: {
-                  entity_type: 'workspace_document',
-                  entity_id: p.documentId,
-                  action: 'document_version_saved',
-                  new_value: {
-                    path: ['version_number'],
-                    equals: saveResult.data.versionNumber,
-                  },
-                },
-                orderBy: { created_at: 'desc' },
-                select: { id: true, new_value: true },
-              })
-              if (logRow) {
-                const existing =
-                  logRow.new_value && typeof logRow.new_value === 'object'
-                    ? (logRow.new_value as Record<string, unknown>)
-                    : {}
-                await prisma.activityLog.update({
-                  where: { id: logRow.id },
-                  data: {
+            // AC 10 / Story 17.23 — stamp agent authorship onto the audit row.
+            // Branch path → `document_version_saved` (matched by version_number);
+            // in-place path → `document_draft_edited` (no version bump, matched
+            // by the id returned from updateDraftVersionInPlace). Fire-and-forget.
+            if (shouldAutoBranch) {
+              try {
+                const logRow = await prisma.activityLog.findFirst({
+                  where: {
+                    entity_type: 'workspace_document',
+                    entity_id: p.documentId,
+                    action: 'document_version_saved',
                     new_value: {
-                      ...existing,
-                      by: 'agent',
-                      pendingActionId: action.id,
-                      operation: shouldAutoBranch
-                        ? 'auto_branch_then_add_section'
-                        : 'add_section',
-                    } as Prisma.InputJsonValue,
+                      path: ['version_number'],
+                      equals: saveResult.data.versionNumber,
+                    },
                   },
+                  orderBy: { created_at: 'desc' },
+                  select: { id: true, new_value: true },
                 })
+                if (logRow) {
+                  const existing =
+                    logRow.new_value && typeof logRow.new_value === 'object'
+                      ? (logRow.new_value as Record<string, unknown>)
+                      : {}
+                  await prisma.activityLog.update({
+                    where: { id: logRow.id },
+                    data: {
+                      new_value: {
+                        ...existing,
+                        by: 'agent',
+                        pendingActionId: action.id,
+                        operation: 'auto_branch_then_add_section',
+                      } as Prisma.InputJsonValue,
+                    },
+                  })
+                }
+              } catch (err) {
+                console.error(
+                  `[ADD_DOCUMENT_SECTION] activity-log stamp failed for ${p.documentId}:`,
+                  err instanceof Error ? err.message : err
+                )
               }
-            } catch (err) {
-              console.error(
-                `[ADD_DOCUMENT_SECTION] activity-log stamp failed for ${p.documentId}:`,
-                err instanceof Error ? err.message : err
-              )
+            } else {
+              // Story 17.23: in-place add — stamp the `document_draft_edited`
+              // audit row by the id returned from updateDraftVersionInPlace.
+              try {
+                const data = saveResult.data as { activityLogId?: string }
+                if (data.activityLogId) {
+                  const logRow = await prisma.activityLog.findUnique({
+                    where: { id: data.activityLogId },
+                    select: { new_value: true },
+                  })
+                  const existing =
+                    logRow?.new_value && typeof logRow.new_value === 'object'
+                      ? (logRow.new_value as Record<string, unknown>)
+                      : {}
+                  await prisma.activityLog.update({
+                    where: { id: data.activityLogId },
+                    data: {
+                      new_value: {
+                        ...existing,
+                        by: 'agent',
+                        pendingActionId: action.id,
+                        operation: 'in_place_add_section',
+                      } as Prisma.InputJsonValue,
+                    },
+                  })
+                }
+              } catch (err) {
+                console.error(
+                  `[ADD_DOCUMENT_SECTION] in-place activity-log stamp failed for ${p.documentId}:`,
+                  err instanceof Error ? err.message : err
+                )
+              }
             }
 
             // Story 17.11c AC 14: when the auto-branch path fires, also stamp
@@ -1220,7 +1286,9 @@ async function applyConsolidatedDocumentEdits(
         contentHtml,
         titleChange
       )
-    : await saveDocumentVersion(
+    : // Story 17.22: a draft already exists → the one batch write updates it
+      // IN PLACE (no new version / no bump) instead of minting a version.
+      await updateDraftVersionInPlace(
         documentId,
         content as object,
         combinedSummary,
@@ -1270,41 +1338,65 @@ async function applyConsolidatedDocumentEdits(
     console.error('[AGENT_DECISION_LOG_UPDATE_FAIL]', err)
   }
 
-  // Best-effort: stamp the consolidated document_version_saved row as an
-  // agent-authored batch edit for audit consumers (mirrors the single path's
-  // author stamp; a missed stamp never rolls back the version).
+  // Story 17.22: stamp agent authorship onto the batch audit row. Branch path →
+  // `document_version_saved` (by version_number); in-place path →
+  // `document_draft_edited` (by the id returned from updateDraftVersionInPlace).
+  // Mirrors the single path's fork; a missed stamp never rolls back the write.
   try {
-    const logRow = await prisma.activityLog.findFirst({
-      where: {
-        entity_type: 'workspace_document',
-        entity_id: documentId,
-        action: 'document_version_saved',
-        new_value: {
-          path: ['version_number'],
-          equals: saveResult.data.versionNumber,
-        },
-      },
-      orderBy: { created_at: 'desc' },
-      select: { id: true, new_value: true },
-    })
-    if (logRow) {
-      const existing =
-        logRow.new_value && typeof logRow.new_value === 'object'
-          ? (logRow.new_value as Record<string, unknown>)
-          : {}
-      await prisma.activityLog.update({
-        where: { id: logRow.id },
-        data: {
+    if (autoBranchEligible) {
+      const logRow = await prisma.activityLog.findFirst({
+        where: {
+          entity_type: 'workspace_document',
+          entity_id: documentId,
+          action: 'document_version_saved',
           new_value: {
-            ...existing,
-            by: 'agent',
-            operation: autoBranchEligible
-              ? 'auto_branch_then_batch_update'
-              : 'batch_update',
-            batch_size: appliedIds.length,
-          } as Prisma.InputJsonValue,
+            path: ['version_number'],
+            equals: saveResult.data.versionNumber,
+          },
         },
+        orderBy: { created_at: 'desc' },
+        select: { id: true, new_value: true },
       })
+      if (logRow) {
+        const existing =
+          logRow.new_value && typeof logRow.new_value === 'object'
+            ? (logRow.new_value as Record<string, unknown>)
+            : {}
+        await prisma.activityLog.update({
+          where: { id: logRow.id },
+          data: {
+            new_value: {
+              ...existing,
+              by: 'agent',
+              operation: 'auto_branch_then_batch_update',
+              batch_size: appliedIds.length,
+            } as Prisma.InputJsonValue,
+          },
+        })
+      }
+    } else {
+      const data = saveResult.data as { activityLogId?: string }
+      if (data.activityLogId) {
+        const logRow = await prisma.activityLog.findUnique({
+          where: { id: data.activityLogId },
+          select: { new_value: true },
+        })
+        const existing =
+          logRow?.new_value && typeof logRow.new_value === 'object'
+            ? (logRow.new_value as Record<string, unknown>)
+            : {}
+        await prisma.activityLog.update({
+          where: { id: data.activityLogId },
+          data: {
+            new_value: {
+              ...existing,
+              by: 'agent',
+              operation: 'in_place_batch_update',
+              batch_size: appliedIds.length,
+            } as Prisma.InputJsonValue,
+          },
+        })
+      }
     }
   } catch (err) {
     console.error(

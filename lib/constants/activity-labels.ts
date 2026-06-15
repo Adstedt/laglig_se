@@ -40,6 +40,7 @@ export const ACTION_LABELS: Record<string, string> = {
   // Document actions (Epic 17)
   document_created: 'skapade dokument',
   document_version_saved: 'sparade en ny version',
+  document_draft_edited: 'justerade utkastet',
   document_version_restored: 'återställde version',
   document_status_changed: 'ändrade dokumentstatus',
   document_imported: 'importerade dokument',

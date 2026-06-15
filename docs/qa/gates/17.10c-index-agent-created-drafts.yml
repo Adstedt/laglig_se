@@ -1,0 +1,76 @@
+schema: 1
+story: '17.10c'
+story_title: 'Index agent-created document drafts on creation — Brownfield Addition'
+gate: PASS
+status_reason: >-
+  Minimal, low-risk fix exactly as scoped — the missing after(indexWorkspaceDocument)
+  trigger added to createDocument, copied verbatim from createDraftFromApprovedWithEdit.
+  All ACs fully met. The initial review's one LOW advisory (QA-17.10c-1: template stubs
+  indexing placeholder boilerplate) was RESOLVED in-review at owner request by gating the
+  trigger on !templateId. Two unit tests (real-content indexes / template stub does not);
+  tsc/eslint 0; full regression 446 files / 5683 tests green. Blast radius mapped: 3
+  request-context callers, no script/bulk paths, index failure can't break create.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-14T10:40:00+02:00'
+
+top_issues:
+  - id: 'QA-17.10c-1'
+    severity: low
+    status: RESOLVED
+    finding: >-
+      createDocument initially indexed manual template-created docs immediately, including
+      placeholder boilerplate, because isEmptyTiptapDoc doesn't treat placeholder-text
+      templates as empty.
+    resolution: >-
+      FIXED in-review (owner-requested option 2): gated the index trigger on
+      `if (!validated.templateId)`. templateId present ⟺ raw unfilled template, so the stub
+      is no longer indexed at create — it indexes when filled (autosave → cron), as
+      pre-17.10c. Agent drafts (no templateId) still index immediately. Added a unit test
+      asserting the template path schedules no index.
+    suggested_owner: dev
+
+waiver: { active: false }
+
+quality_score: 95
+expires: '2026-06-28T00:00:00+02:00'
+
+evidence:
+  tests_reviewed: 2
+  risks_identified: 1
+  risks_resolved: 1
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    ac_gaps: []
+  blast_radius: >-
+    All createDocument callers enumerated — 3 production sites, all request-context: agent
+    approve dispatch + openDraftInEditor (index real content immediately) and the manual
+    "Nytt dokument" dialog (blank → skipped by isEmptyTiptapDoc; template → skipped by the
+    new templateId gate). No script/lib/bulk callers. Import uses its own path. Index runs
+    in after()+try/catch → cannot break document creation. All 3 caller-surface suites green
+    (116 tests), incl. the two that don't mock after().
+  scope_note: >-
+    Reviewed only 17.10c's two files. The working tree also contains the owner's separate
+    in-flight Story 17.22 work (~662 insertions / 12 files) interleaved in the same files —
+    NOT assessed here; commit 17.10c selectively if separating the two.
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: No new attack surface; workspace-scoped index call.
+  performance:
+    status: PASS
+    notes: Runs in after() (create response stays fast); one extra hash-gated index job per create.
+  reliability:
+    status: PASS
+    notes: try/catch + console.error in after(); never blocks document creation.
+  maintainability:
+    status: PASS
+    notes: Copied verbatim from createDraftFromApprovedWithEdit; consistent with the 4 sibling triggers.
+
+recommendations:
+  immediate: []
+  future:
+    - action: >-
+        Optional one-off backfill of the already-created unindexed agent drafts (the two
+        Truckkörning smoke artifacts) — separate tiny task, out of 17.10c scope.
+      refs: ['lib/chunks/workspace-document-reindex.ts']
