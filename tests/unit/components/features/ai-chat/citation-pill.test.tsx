@@ -20,6 +20,13 @@ import { CitationPillInline } from '@/components/features/ai-chat/citation-pill'
 
 vi.mock('@/lib/track-event', () => ({ trackEvent: vi.fn() }))
 
+// CitationPillInline calls useRouter (workspace styrdokument sources navigate
+// straight to the document). Provide a stub router so the component mounts.
+const mockRouterPush = vi.fn()
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mockRouterPush }),
+}))
+
 const mockGetFileById = vi.fn()
 const mockGetFileDownloadUrl = vi.fn()
 vi.mock('@/app/actions/files', () => ({

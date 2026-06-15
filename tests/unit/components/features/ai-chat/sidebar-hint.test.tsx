@@ -22,7 +22,11 @@ function TestWrapper({ children }: { children: React.ReactNode }) {
 }
 
 describe('sidebarHint behavior in ToolCallRow', () => {
-  it('renders "Visa detaljer" chip for sidebarHint=suggest tool results', () => {
+  // Post-redesign (b502d583): the "Visa detaljer" suggest-chip is gated behind
+  // the EXPANDABLE_TOOLS allowlist (only tools with a curated detail view —
+  // search_laws, web_search). A sidebarHint=suggest result on such a tool still
+  // renders the clickable "Visa detaljer" affordance that opens the sidebar.
+  it('renders clickable "Visa detaljer" affordance for sidebarHint=suggest on an expandable tool', () => {
     const message: UIMessage = {
       id: 'msg-1',
       role: 'assistant',
@@ -31,14 +35,14 @@ describe('sidebarHint behavior in ToolCallRow', () => {
         {
           type: 'tool-invocation' as const,
           toolInvocationId: 'tool-1',
-          toolName: 'get_document_details',
+          toolName: 'search_laws',
           state: 'output-available' as const,
           step: 0,
           args: {},
           output: {
-            data: { title: 'Test doc' },
+            data: [{ title: 'Test doc' }],
             _meta: {
-              tool: 'get_document_details',
+              tool: 'search_laws',
               executionTimeMs: 100,
               resultCount: 1,
               sidebarHint: 'suggest',
@@ -54,7 +58,10 @@ describe('sidebarHint behavior in ToolCallRow', () => {
       </TestWrapper>
     )
 
-    expect(screen.getByText('Visa detaljer')).toBeDefined()
+    // The affordance renders as a dedicated clickable button (Eye icon +
+    // "Visa detaljer"), distinct from the clickable row label itself.
+    const chip = screen.getByRole('button', { name: 'Visa detaljer' })
+    expect(chip).toBeDefined()
   })
 
   it('does not render "Visa detaljer" chip for sidebarHint=open', () => {
