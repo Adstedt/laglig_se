@@ -343,7 +343,11 @@ describe('CollapsedToolGroup (story 14.18)', () => {
   })
 
   // 5.8
-  it('opens the sidebar when a clickable label is clicked (sidebarHint=suggest)', () => {
+  it('opens the sidebar when a clickable label is clicked (allowlisted tool)', () => {
+    // Clickability is allowlist-driven (EXPANDABLE_TOOLS: search_laws,
+    // web_search) — tools with a purpose-built detail view. get_company_context
+    // is non-clickable and just forms the group; search_laws is the clickable
+    // label that opens the detail sidebar.
     const msg = assistantMessage('msg-5-8', [
       toolPart({
         toolName: 'get_company_context',
@@ -359,16 +363,16 @@ describe('CollapsedToolGroup (story 14.18)', () => {
         },
       }),
       toolPart({
-        toolName: 'get_change_details',
+        toolName: 'search_laws',
         toolCallId: 'tc-2',
         state: 'output-available',
+        input: { query: 'arbetsmiljö' },
         output: {
-          data: { amendment: 'SFS 2025:1' },
+          data: [{ id: 'SFS 2025:1' }],
           _meta: {
-            tool: 'get_change_details',
+            tool: 'search_laws',
             executionTimeMs: 10,
             resultCount: 1,
-            sidebarHint: 'suggest',
           },
         },
       }),
@@ -377,7 +381,7 @@ describe('CollapsedToolGroup (story 14.18)', () => {
     render(<ChatMessage message={msg} isStreaming={false} />)
 
     const btn = screen.getByRole('button', {
-      name: 'Visa resultat: Hämtade ändringsdetaljer',
+      name: 'Visa resultat: Sökte i lagdatabasen',
     })
     fireEvent.click(btn)
 
@@ -385,7 +389,7 @@ describe('CollapsedToolGroup (story 14.18)', () => {
     const callArg = mockOpenDetail.mock.calls[0]?.[0] as ChatDetailItem
     expect(callArg.type).toBe('tool-result')
     if (callArg.type === 'tool-result') {
-      expect(callArg.toolName).toBe('get_change_details')
+      expect(callArg.toolName).toBe('search_laws')
     }
   })
 

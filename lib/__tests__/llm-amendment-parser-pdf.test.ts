@@ -75,7 +75,7 @@ describe('parseAmendmentPdf', () => {
     const callArgs = mockCreate.mock.calls[0]?.[0] as any
 
     // Verify model and max_tokens
-    expect(callArgs.model).toBe('claude-sonnet-4-20250514')
+    expect(callArgs.model).toBe('claude-sonnet-4-6')
     expect(callArgs.max_tokens).toBe(16384)
 
     // Verify system prompt is set

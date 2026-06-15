@@ -127,11 +127,11 @@ describe('KravTable', () => {
         onSortChange={onSortChange}
       />
     )
-    // Clicking the "Lag" header (sortable col 3) should toggle to law_name asc
-    // because current direction is desc on a different column, TanStack flips
-    // to asc on first click on a new column. Regex uses a trailing whitespace
-    // or end-of-string anchor to avoid matching "Laglista" (col 4 header).
-    await user.click(screen.getByRole('button', { name: /^Lag(\s|$)/ }))
+    // Clicking the "Regelverk" header (sortable col 3) should toggle to
+    // law_name asc because current direction is desc on a different column,
+    // TanStack flips to asc on first click on a new column. Exact-match the
+    // label so it never collides with the "Laglista" (col 4) header.
+    await user.click(screen.getByRole('button', { name: 'Regelverk' }))
     expect(onSortChange).toHaveBeenCalledWith(
       expect.objectContaining({ field: 'law_name' })
     )

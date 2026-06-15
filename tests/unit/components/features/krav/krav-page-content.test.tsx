@@ -118,7 +118,7 @@ function renderFresh(searchString = '') {
   new URLSearchParams(searchString).forEach((value, key) => {
     mockSearchParams.set(key, value)
   })
-  return render(<KravPageContent members={[]} />, {
+  return render(<KravPageContent members={[]} lawLists={[]} />, {
     wrapper: wrapperFreshCache,
   })
 }
