@@ -1,8 +1,11 @@
 /**
- * Unit tests for the Story 19.6 skill loader library.
- * Pure functions over a fixtures dir (passed as baseDir) — covers the scan/skip/
- * warn rules, frontmatter parsing/validation, body assembly, whitelist, the
- * context→skill mapping, and the per-baseDir cache.
+ * Unit tests for the Story 19.6 skill loader.
+ *
+ * The scan/skip/warn rules, frontmatter parsing/validation, body assembly,
+ * whitelist, context→skill mapping and per-baseDir cache live in the
+ * filesystem scanner (skill-fs.ts) and are tested here over a fixtures dir
+ * (passed as baseDir). The final test exercises the runtime manifest loader
+ * (skill-loader.ts) to confirm the generated manifest assembles real skills.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
@@ -12,7 +15,8 @@ import {
   getSkillToolWhitelist,
   getPrimarySkillForContext,
   clearSkillCache,
-} from '@/lib/agent/skill-loader'
+} from '@/lib/agent/skill-fs'
+import { loadSkill as loadSkillFromManifest } from '@/lib/agent/skill-loader'
 
 const FX = 'tests/fixtures/skills'
 
@@ -130,8 +134,8 @@ describe('loadSkill — types/ modules (Story 19.8)', () => {
     expect(b).toBe(a)
   })
 
-  it('real skill: draft_styrdokument exposes all 8 WorkspaceDocumentType modules', () => {
-    const body = loadSkill('draft_styrdokument')!
+  it('real skill (manifest): draft_styrdokument exposes all 8 WorkspaceDocumentType modules', () => {
+    const body = loadSkillFromManifest('draft_styrdokument')!
     for (const stem of [
       'policy',
       'risk_assessment',

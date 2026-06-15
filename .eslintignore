@@ -7,3 +7,6 @@ docs/
 tmp_*.ts
 scripts/tmp-*.ts
 scripts/tmp-*.mjs
+
+# Build-time generated (scripts/generate-skills-manifest.ts)
+lib/agent/skills.generated.ts
