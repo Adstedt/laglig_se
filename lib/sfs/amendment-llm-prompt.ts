@@ -265,7 +265,7 @@ export function createBatchRequest(
   sfsNumber: string,
   baseLawSfs?: string,
   title?: string,
-  model = 'claude-sonnet-4-20250514'
+  model = 'claude-sonnet-4-6'
 ): BatchRequest {
   return {
     custom_id: customId,

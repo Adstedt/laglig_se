@@ -3,7 +3,7 @@
 ## Epic Overview
 
 **Epic ID:** Epic 9
-**Status:** Done
+**Status:** Done (original seed-template scope) · **Extended 2026-06-15** — Phase 5 adds Socialstyrelsen (SOSFS/HSLF-FS), see Story 9.5
 **Priority:** High — Beta blocker
 **Business Owner:** Product Team
 **Technical Lead:** Development Team
@@ -234,6 +234,10 @@ The epic's stories should be restructured to prioritize the seed template docume
 - Validate all ~188 unique template entries have content
 - Run Story 12.3 content generation pipeline on all new documents
 
+**Phase 5: Socialstyrelsen (SOSFS / HSLF-FS) — added 2026-06-15**
+
+- **Story 9.5** (Draft): Ingest Socialstyrelsen's consolidated föreskrifter (legacy SOSFS + shared HSLF-FS) as `AGENCY_REGULATION` rows via an **HTML-intake** front-end — the consolidated text lives only in HTML, not PDF, so this is distinct from the AFS/MSBFS PDF path, but reuses the same normalize → chunk → embed → linkify tail. Adds `regulatory_body`/`agency_prefix` columns + per-document publisher attribution (HSLF-FS is a shared multi-agency series). Amendment metadata captured; forward amendment monitoring is a separate follow-up; per-version historik deferred. Closes the vård-omsorg catalog gap (e.g. `SOSFS 2011:9`). Proven end-to-end on SOSFS 2011:9 (`scripts/test-ingest-sosfs.ts`). See `docs/stories/9.5.socialstyrelsen-hslf-fs-ingestion.md`.
+
 ### Future Scope (Post-Beta)
 
 The original epic vision of automated discovery for 60+ agencies, daily/weekly sync crons, and cross-reference detection remains valid but is deferred to post-beta. The immediate goal is manual/semi-automated ingestion of the specific 69 documents needed for the two seed templates.
@@ -263,5 +267,5 @@ Analysis files: `data/notisum-amnesfokus/analysis/01-arbetsmiljo.md`, `data/noti
 ---
 
 _Epic created: 2024-01-15_
-_Last updated: 2026-02-15_
-_Status: Done_
+_Last updated: 2026-06-15_
+_Status: Done (seed-template scope); extended with Phase 5 (Socialstyrelsen) — Story 9.5 in Draft_

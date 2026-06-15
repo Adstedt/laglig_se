@@ -538,6 +538,12 @@ model LegalDocument {
   sfs_instrument         SfsInstrument                @default(OTHER)
   source_url             String
   metadata               Json? // Type-specific metadata storage (includes filbilaga if present)
+  // Epic myndighetsföreskrifter: first-class issuing authority for agency regulations.
+  // Null for SFS/EU/court rows. regulatory_body is the publisher ("Socialstyrelsen",
+  // "Arbetsmiljöverket") — NOT derivable from document_number for the shared HSLF-FS series.
+  // agency_prefix is the författningssamling prefix ("AFS", "SOSFS", "HSLF-FS") for indexed faceting.
+  regulatory_body        String?
+  agency_prefix          String?
   search_vector          Unsupported("tsvector")? // Full-text search
   embedding              Unsupported("vector(1536)")? // Semantic search
   created_at             DateTime                     @default(now())
@@ -579,6 +585,7 @@ model LegalDocument {
   @@index([publication_date(sort: Desc)], name: "idx_publication_date")
   @@index([last_change_type], name: "idx_last_change_type") // Story 8.16: Filter/sort by change type
   @@index([sfs_instrument], name: "idx_sfs_instrument") // Story 2.32: Lag vs förordning filter
+  @@index([regulatory_body], name: "idx_regulatory_body") // Epic myndighetsföreskrifter: filter by issuing authority
   @@map("legal_documents")
 }
 

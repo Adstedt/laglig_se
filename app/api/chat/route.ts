@@ -5,7 +5,6 @@
 
 import {
   streamText,
-  smoothStream,
   stepCountIs,
   type UIMessage,
   type ToolSet,
@@ -23,6 +22,7 @@ import { createWebSearchTool } from '@/lib/agent/web-search-config'
 // Story 19.1: chat attachment → content blocks + last-message merge.
 import { attachmentsToContent } from '@/lib/agent/attachments-to-content'
 import { buildModelMessages } from '@/lib/agent/build-model-messages'
+import { withLastMessageCached } from '@/lib/agent/prompt-cache'
 // Story 19.5: role-based tool filter.
 import type { WorkspaceRole } from '@prisma/client'
 import {
@@ -260,13 +260,21 @@ export async function POST(req: Request) {
           })
         : null
 
+    // Story 14.37/14.38: provider gate. The prompt-caching changes (frozen
+    // system prefix + tool-loop caching + cross-turn history caching) are
+    // Anthropic-only; the OpenAI path is unchanged. On Anthropic we relocate
+    // pendingActionsBlock OUT of the cached system prompt into a separate block
+    // after the stable-history boundary (see buildModelMessages); on OpenAI it
+    // stays in the system prompt exactly as before.
+    const isAnthropic = (process.env.AI_CHAT_MODEL ?? 'openai') === 'anthropic'
+
     const systemPrompt = await buildSystemPrompt({
       companyContext,
       contextType,
       contextId,
       lawListItemId: resolvedLawListItemId,
       thinkingEnabled: thinkingBudget > 0,
-      ...(pendingActionsBlock ? { pendingActionsBlock } : {}),
+      ...(!isAnthropic && pendingActionsBlock ? { pendingActionsBlock } : {}),
       ...initialContext,
     })
 
@@ -373,18 +381,43 @@ export async function POST(req: Request) {
         ? await attachmentsToContent(attachmentIds, workspaceId)
         : []
 
-    // Stream the response with tool use support
-    // smoothStream buffers tokens and releases at word boundaries for smooth UI
+    // Stream the response with tool use support. Word-by-word pacing is owned
+    // entirely by the client (useSmoothStream in chat-message.tsx), which
+    // re-paces network bursts into a steady one-word-at-a-time reveal. Pacing on
+    // the server too would just add latency to text the client re-paces anyway,
+    // so we stream tokens as fast as the model produces them.
     const result = streamText({
       model,
       system: systemMessage,
-      messages: buildModelMessages(messages, attachmentBlocks),
+      messages: buildModelMessages(
+        messages,
+        attachmentBlocks,
+        // Anthropic: relocate pending-actions workflow state to a separate block
+        // after the stable-history boundary (keeps the cached system prefix AND
+        // the projected text history byte-stable). OpenAI: null (block stays in
+        // the system prompt, path unchanged).
+        isAnthropic ? pendingActionsBlock : null,
+        // Story 14.38 (bp2): mark the last stable-history message with an
+        // ephemeral cache breakpoint so warm follow-up turns read the
+        // accumulated conversation from cache (cross-turn reuse). With bp1
+        // (system) + bp3 (moving last message, below) that's 3 of 4 breakpoints.
+        // Anthropic only.
+        { cacheHistory: isAnthropic }
+      ),
       tools: allTools,
       stopWhen: stepCountIs(10),
-      experimental_transform: smoothStream({
-        chunking: /[\s\S]/,
-        delayInMs: 8,
-      }),
+      // Story 14.37: cache the growing tool-loop conversation by placing a moving
+      // ephemeral cacheControl breakpoint (bp3) on the last message each step
+      // (Anthropic only). With the system+tools breakpoint (bp1) and the 14.38
+      // history breakpoint (bp2, set in buildModelMessages above) that's 3
+      // breakpoints (≤ Anthropic's max of 4). No-op / omitted on the OpenAI path.
+      ...(isAnthropic
+        ? {
+            prepareStep: ({ messages: stepMessages }) => ({
+              messages: withLastMessageCached(stepMessages),
+            }),
+          }
+        : {}),
       // Surface SDK-level streaming errors (AI SDK rejections, Zod input
       // validation failures, transport errors) at the route boundary so they
       // appear in dev/prod logs instead of being swallowed by the stream.

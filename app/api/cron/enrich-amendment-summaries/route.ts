@@ -25,7 +25,7 @@ export const maxDuration = 300
 const CRON_SECRET = process.env.CRON_SECRET
 const TIMEOUT_BUFFER_MS = 30_000
 const BATCH_LIMIT = 30
-const SONNET_MODEL = 'claude-sonnet-4-20250514'
+const SONNET_MODEL = 'claude-sonnet-4-6'
 
 interface EnrichStats {
   enriched: number

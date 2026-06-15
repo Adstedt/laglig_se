@@ -1,0 +1,536 @@
+[
+  {
+    "documentNumber": "HSLF-FS 2015:15",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om vissa åtgärder i hälso- och sjukvården vid dödsfall",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201515-om-vissa-atgarder-i-halso--och-sjukvarden-vid-dodsfall/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2015:30",
+    "title": "Socialstyrelsens föreskrifter om socialnämndernas skyldighet att lämna statistiska uppgifter om ekonomiskt bistånd",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201530-om-socialnamndernas-skyldighet-att-lamna-statistiska-uppgifter-om-ekonomiskt-bistand/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2015:31",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om rättspsykiatrisk undersökning",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201531-om-rattspsykiatrisk-undersokning/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2016:1",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om läkemedelsassisterad behandling vid opioidberoende",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20161-om-lakemedelsassisterad-behandling-vid-opioidberoende/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2016:3",
+    "title": "Socialstyrelsens föreskrifter om socialnämndernas skyldighet att lämna statistiska uppgifter om insatser för barn och unga",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20163-om-socialnamndernas-skyldighet-att-lamna-statistiska-uppgifter-om-insatser-for-barn-och-unga/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2016:40",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om journalföring och behandling av personuppgifter i hälso- och sjukvården",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201640-om-journalforing-och-behandling-av-personuppgifter-i-halso--och-sjukvarden/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2016:55",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om hem för vård eller boende;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201655-om-hem-for-vard-eller-boende/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2016:56",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd  om stödboende;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201656-om-stodboende/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2016:64",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om erkännande av yrkeskvalifikationer",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201664-om-erkannande-av-yrkeskvalifikationer/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2016:7",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om uppgiftsskyldighet till Socialstyrelsens cancerregister;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20167-om-uppgiftsskyldighet-till-socialstyrelsens-cancerregister/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2016:86",
+    "title": "Socialstyrelsens föreskrifter om socialnämndernas skyldighet att lämna statistiska uppgifter om insatser till äldre och personer med funktionshinder",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201686-om-socialnamndernas-skyldighet-att-lamna-statistiska-uppgifter-om-insatser-till-aldre-och-personer-med-funktionsnedsattning/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2017:37",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om ordination och hantering av läkemedel i hälso- och sjukvården",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201737-om-ordination-och-hantering-av-lakemedel-i-halso--och-sjukvarden/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2017:52",
+    "title": "Socialstyrelsens föreskrifter om statsbidrag till utrustning för elektronisk kommunikation",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201752-om-statsbidrag-till-utrustning-for-elektronisk-kommunikation/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2017:79",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om behörighet att utföra vissa arbetsuppgifter i socialtjänstens barn- och ungdomsvård",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201779-om-behorighet-att-utfora-vissa-arbetsuppgifter-i-socialtjanstens-barn--och-ungdomsvard/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2017:80",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om legitimation och annat behörighetsbevis vid utbildning från tredjeland",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201780-om-legitimation-och-annat-behorighetsbevis-vid-utbildning-fran-tredjeland/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2018:2",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd   om konsulentverksamheter;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20182-om-konsulentverksamheter/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2018:43",
+    "title": "om behörighet för sjuksköterskor att förskriva och ordinera läkemedel;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201843-om-behorighet-for-sjukskoterskor-att-forskriva-och-ordinera-lakemedel/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2018:48",
+    "title": "Socialstyrelsens föreskrifter om nationell högspecialiserad vård",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201848-om-nationell-hogspecialiserad-vard/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2018:54",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om att utfärda intyg i hälso- och sjukvården",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201854-om-att-utfarda-intyg-i-halso--och-sjukvarden2/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2019:12",
+    "title": "Socialstyrelsens föreskrifter om undantag från kravet på tillstånd till genetisk undersökning vid allmän hälsoundersökning;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201912-om-undantag-fran-kravet-pa-tillstand-till-genetisk-undersokning-vid-allman-halsoundersokning/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2019:13",
+    "title": "Socialstyrelsens föreskrifter om vilka sjukdomar som får spåras och diagnostiseras genom vävnadsprover i PKU-biobanken;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201913-om-vilka-sjukdomar-som-far-sparas-och-diagnostiseras-genom-vavnadsprover-i-pku-biobanken/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2019:14",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om villkor för avgiftsfri screening",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201914-om-villkor-for-avgiftsfri-screening/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2019:30",
+    "title": "Socialstyrelsens allmänna råd  om handläggning av ärenden som gäller unga lagöverträdare;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201930-om-handlaggning-av-arenden-som-galler-unga-lagovertradare/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2021:52",
+    "title": "Socialstyrelsens föreskrifter om användning av medicintekniska produkter i hälso- och sjukvården",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/202152-om-anvandning-av-medicintekniska-produkter-i-halso--och-sjukvarden/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2021:8",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om läkarnas specialiseringstjänstgöring",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20218-om-lakarnas-specialiseringstjanstgoring/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2022:39",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om våld i nära relationer;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/202239-om-vald-i-nara-relationer/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2022:44",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om smittförebyggande åtgärder i vissa verksamheter enligt SoL och LSS;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/202244-om-smittforebyggande-atgarder-i-vissaverksamheter-enligt-sol-och-lss/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2022:49",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd  om förebyggande av och behandling vid undernäring;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/202249-om-forebyggande-av-och-behandling-vid-undernaring/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2022:62",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om psykiatrisk tvångsvård och rättspsykiatrisk vård;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/202262-om-psykiatrisk-tvangsvard-och-rattspsykiatrisk-vard/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2023:14",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd      om skyddad yrkestitel för undersköterskor;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/202314-om-skyddad-yrkestitel-for-underskoterskor/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2023:33",
+    "title": "Socialstyrelsens föreskrifter om uppgiftsskyldighet till Socialstyrelsens patientregister",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/202333-om-uppgiftsskyldighet-till-socialstyrelsens-patientregister2/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2024:5",
+    "title": "Socialstyrelsens föreskrifter om uppgiftsskyldighet till Socialstyrelsens medicinska födelseregister;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20245-om-uppgiftsskyldighet-till-socialstyrelsens-medicinska-fodelseregister/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "HSLF-FS 2025:3",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd  om skyddat boende;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20253-om-skyddat-boende/",
+    "agencyPrefix": "HSLF-FS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 1999:26",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om att förebygga och ha beredskap för att behandla vissa överkänslighetsreaktioner",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/199926-om-att-forebygga-och-ha-beredskap-for-att-behandla-vissa-overkanslighetsreaktioner/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 1999:5",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om allmäntjänstgöring för läkare",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/19995-om-allmantjanstgoring-for-lakare/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2001:8",
+    "title": "Socialstyrelsens allmänna råd om försiktighetsmått vid hantering och märkning av sådant biologiskt avfall som kan medföra olägenhet för människors hälsa enligt miljöbalken",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20018-om-forsiktighetsmatt-vid-hantering-och-markning-av-sadant-biologiskt-avfall-som-kan-medfora-olagenhet-for-manniskors-halsa-enligt-miljobalken/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2002:9",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om bostad med särskild service för vuxna enligt 9 § 9 lagen (1993:387) om stöd och service till vissa funktionshindrade, LSS",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20029-om-bostad-med-sarskild-service-for-vuxna-enligt-9--9-lagen-1993387-om-stod-och-service-till-vissa-funktionshindrade-lss/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2003:15",
+    "title": "Socialstyrelsens föreskrifter om socialnämndens skyldighet att föra förteckning över barn som vistas i familjehem eller annat enskilt hem",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200315-om-socialnamndens-skyldighet-att-fora-forteckning-over-barn-som-vistas-i-familjehem-eller-annat-enskilt-hem/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2004:11",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om ansvar för remisser för patienter inom hälso- och sjukvården, tandvården m.m.",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200411-om-ansvar-for-remisser-for-patienter-inom-halso--och-sjukvarden-tandvarden-m.m/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2005:10",
+    "title": "Socialstyrelsens föreskrifter om kriterier för bestämmande av människans död",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200510-om-kriterier-for-bestammande-av-manniskans-dod/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2005:21",
+    "title": "Socialstyrelsens föreskrifter om kommunens skyldighet att lämna uppgifter om statistik om stöd och service till vissa funktionshindrade",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200521-om-kommunens-skyldighet-att-lamna-uppgifter-om-statistik-om-stod-och-service-till-vissa-funktionshindrade/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2005:26",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om hantering av smittförande avfall från hälso- och sjukvården",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200526-om-hantering-av-smittforande-avfall-fran-halso--och-sjukvarden/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2006:4",
+    "title": "Socialstyrelsens allmänna råd om yrkesmässig hygienisk verksamhet",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20064-om-yrkesmassig-hygienisk-verksamhet/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2006:9",
+    "title": "Socialstyrelsens föreskrifter om säkerhet vid sjukvårdsinrättningar som ger psykiatrisk tvångsvård och rättspsykiatrisk vård samt vid enheter för rättspsykiatrisk undersökning",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20069-om-sakerhet-vid-sjukvardsinrattningar-som-ger-psykiatrisk-tvangsvard-och-rattspsykiatrisk-vard-samt-vid-enheter-for-rattspsykiatrisk-undersokning/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2007:17",
+    "title": "Socialstyrelsens allmänna råd  om personalens kompetens vid handläggning och uppföljning av ärenden som avser äldre personer;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200717-om-personalens-kompetens-vid-handlaggning-och-uppfoljning-av-arenden-som-avser-aldre-personer/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2007:2",
+    "title": "Socialstyrelsens föreskrifter om utbyte av sprutor och kanyler till personer som missbrukar narkotika",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20072-om-utbyte-av-sprutor-och-kanyler-till-personer-som-missbrukar-narkotika/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2008:13",
+    "title": "Socialstyrelsens föreskrifter om uppgiftsskyldighet till tandhälsoregistret",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200813-om-uppgiftsskyldighet-till-tandhalsoregistret/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2008:21",
+    "title": "Socialstyrelsens föreskrifter om anmälan av patienter som av medicinska skäl är olämpliga att inneha skjutvapen",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200821-om-anmalan-av-patienter-som-av-medicinska-skal-ar-olampliga-att-inneha-skjutvapen/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2008:32",
+    "title": "Socialstyrelsens allmänna råd  om personalens kompetens vid handläggning och uppföljning av ärenden som avser personer med funktionshinder;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200832-om-personalens-kompetens-vid-handlaggning-och-uppfoljning-av-arenden-som-avser-personer-med-funktionshinder/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2008:33",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om information som avser uppfödning genom amning eller med modersmjölksersättning",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200833-om-information-som-avser-uppfodning-genom-amning-eller-med-modersmjolksersattning/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2008:34",
+    "title": "Socialstyrelsens föreskrifter om praktisk tjänstgöring för psykologer",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200834-om-praktisk-tjanstgoring-for-psykologer/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2009:10",
+    "title": "Socialstyrelsens föreskrifter om ambulanssjukvård m.m.",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200910-om-ambulanssjukvard-m.m/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2009:12",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om läkarintyg enligt 7 § lagen (1991:2041) om särskild personutredning i brottmål m.m.",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200912-om-lakarintyg-enligt-7--lagen-19912041-om-sarskild-personutredning-i-brottmal-m.m/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2009:15",
+    "title": "Socialstyrelsens föreskrifter om abort",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200915-om-abort2/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2009:28",
+    "title": "Socialstyrelsens föreskrifter om blodverksamhet",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200928-om-blodverksamhet/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2009:29",
+    "title": "Socialstyrelsens föreskrifter om transfusion av blodkomponenter",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200929-om-transfusion-av-blodkomponenter/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2009:30",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om donation och tillvaratagande av vävnader och celler",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/senaste-version-av-socialstyrelsens-foreskrifter-sosfs-200930-om-donation-och-tillvaratagande-av-vavnader-och-celler/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2009:31",
+    "title": "Socialstyrelsens föreskrifter om vävnadsinrättningar i hälso- och sjukvården m.m.",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200931-om-vavnadsinrattningar-i-halso--och-sjukvarden-m.m/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2009:32",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om användning av vävnader och celler i hälso- och sjukvården och vid klinisk forskning m.m.",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/200932-om-anvandning-av-vavnader-och-celler-i-halso--och-sjukvarden-och-vid-klinisk-forskning/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2009:8",
+    "title": "Socialstyrelsens föreskrifter om ansökan om och beräkning av statsbidrag till funktionshindersorganisationer;",
+    "sourcePrefixTypo": "SOFSFS",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20098-om-ansokan-om-och-berakning-av-statsbidrag-till-handikapporganisationer/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2011:11",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om hälsoundersökning av asylsökande m.fl.",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201111-om-halsoundersokning-av-asylsokande-m.fl/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2011:12",
+    "title": "Socialstyrelsens allmänna råd om grundläggande kunskaper hos personal som arbetar i socialtjänstens omsorg om äldre;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201112-om-grundlaggande-kunskaper-hos-personal-som-arbetar-i-socialtjanstens-omsorg-om-aldre/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2011:5",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om lex Sarah",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20115-om-lex-sarah/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2011:7",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om livsuppehållande behandling",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20117-om-livsuppehallande-behandling/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2011:9",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om ledningssystem för systematiskt kvalitetsarbete",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20119-om-ledningssystem-for-systematiskt-kvalitetsarbete/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2012:11",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om socialnämndens ansvar för barn och unga i familjehem, jourhem, stödboende och hem för vård eller boende",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201211/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2012:14",
+    "title": "Socialstyrelsens föreskrifter om hantering av mänskliga organ avsedda för transplantation",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201214-om-hantering-av-manskliga-organ-avsedda-for-transplantation/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2012:17",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om tandvård vid långvarig sjukdom eller funktionsnedsättning",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201217-om-tandvard-vid-langvarig-sjukdom-eller-funktionsnedsattning/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2012:20",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om fosterdiagnostik och preimplantatorisk genetisk diagnostik",
+    "sourcePrefixTypo": "SOSF-FS",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201220-om-fosterdiagnostik-och-preimplantatorisk-genetisk-diagnostik/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2012:3",
+    "title": "Socialstyrelsens allmänna råd  om värdegrunden i socialtjänstens omsorg om äldre;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20123-om-vardegrunden-i-socialtjanstens-omsorg-om-aldre/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2013:1",
+    "title": "Socialstyrelsens allmänna råd om ekonomiskt bistånd",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20131-om-ekonomiskt-bistand/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2014:2",
+    "title": "Socialstyrelsens allmänna råd om kunskaper hos personal som ger stöd, service eller omsorg enligt SoL och LSS till personer med funktionsnedsättning;",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20142-om-kunskaper-hos-personal-som-ger-stod-service-eller-omsorg-enligt-sol-och-lss-till-personer-med-funktionsnedsattning/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2014:5",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om dokumentation i verksamhet som bedrivs med stöd av SoL, LVU, LVM och LSS",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20145-om-dokumentation-i-verksamhet-som-bedrivs-med-stod-av-sol-lvu-lvm-och-lss/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2014:6",
+    "title": "Socialstyrelsens allmänna råd om handläggning av ärenden som gäller barn och unga",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20146-om-handlaggning-av-arenden-som-galler-barn-och-unga/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2015:10",
+    "title": "Socialstyrelsens föreskrifter om basal hygien i vård och omsorg",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/201510-om-basal-hygien-i-vard-och-omsorg/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  },
+  {
+    "documentNumber": "SOSFS 2015:8",
+    "title": "Socialstyrelsens föreskrifter och allmänna råd om läkarnas specialiseringstjänstgöring",
+    "sourceUrl": "https://www.socialstyrelsen.se/kunskapsstod-och-regler/regler-och-riktlinjer/foreskrifter-och-allmanna-rad/konsoliderade-foreskrifter/20158-om-lakarnas-specialiseringstjanstgoring/",
+    "agencyPrefix": "SOSFS",
+    "regulatoryBody": "Socialstyrelsen"
+  }
+]

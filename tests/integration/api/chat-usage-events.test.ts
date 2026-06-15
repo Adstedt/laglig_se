@@ -13,6 +13,14 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { buildSystemPrompt } from '@/lib/agent/system-prompt'
+import { buildModelMessages } from '@/lib/agent/build-model-messages'
+
+// Story 14.37: shared stub for the <pending_agent_actions> block. Hoisted so the
+// vi.mock factory below can reference it (vi.mock is hoisted above module consts).
+const { STUB_PENDING } = vi.hoisted(() => ({
+  STUB_PENDING: '<pending_agent_actions>STUB</pending_agent_actions>',
+}))
 
 const TEST_USER_ID = '11111111-1111-4111-a111-111111111111'
 const TEST_WORKSPACE_ID = '22222222-2222-4222-a222-222222222222'
@@ -24,6 +32,10 @@ let capturedOnFinish:
       steps?: Array<unknown>
     }) => Promise<void> | void)
   | undefined
+
+// Story 14.37: capture the full streamText config to assert provider-gated
+// caching wiring (prepareStep present only on the Anthropic path).
+let capturedConfig: Record<string, unknown> | undefined
 
 // Mock prisma
 const mockChatUsageEventCreate = vi.fn().mockResolvedValue({ id: 'event-1' })
@@ -119,6 +131,17 @@ vi.mock('@/lib/agent/system-prompt', () => ({
   formatCompanyContext: vi.fn().mockReturnValue(undefined),
 }))
 
+// Story 14.37: non-null pending-actions block so the provider-gated routing is
+// observable (system prompt on OpenAI vs last user message on Anthropic).
+vi.mock('@/lib/agent/context-assembly', () => ({
+  buildPendingActionsContext: vi.fn().mockResolvedValue(STUB_PENDING),
+}))
+
+// Story 14.37: spy so we can assert the 3rd arg (pendingActionsBlock | null).
+vi.mock('@/lib/agent/build-model-messages', () => ({
+  buildModelMessages: vi.fn(() => []),
+}))
+
 vi.mock('@/lib/ai/citations', () => ({
   extractSourcesFromToolResult: vi.fn(() => ({})),
 }))
@@ -137,6 +160,7 @@ vi.mock('@ai-sdk/openai', () => ({
 vi.mock('ai', () => ({
   streamText: vi.fn((config: Record<string, unknown>) => {
     capturedOnFinish = config.onFinish as typeof capturedOnFinish
+    capturedConfig = config
     return {
       toUIMessageStreamResponse: vi.fn(
         () => new Response('stream', { status: 200 })
@@ -150,6 +174,7 @@ vi.mock('ai', () => ({
 beforeEach(() => {
   vi.clearAllMocks()
   capturedOnFinish = undefined
+  capturedConfig = undefined
 })
 
 function createRequest(body: Record<string, unknown>): Request {
@@ -370,5 +395,85 @@ describe('POST /api/chat — ChatUsageEvent telemetry (Story 14.27)', () => {
     )
 
     errorSpy.mockRestore()
+  })
+
+  // Story 14.37: provider-gated caching wiring.
+  it('OpenAI path keeps pendingActionsBlock in the system prompt, not the messages, and wires no prepareStep (AC3)', async () => {
+    const originalEnv = process.env.AI_CHAT_MODEL
+    delete process.env.AI_CHAT_MODEL
+
+    const { POST } = await import('@/app/api/chat/route')
+    await POST(
+      createRequest({
+        messages: [{ role: 'user', parts: [{ type: 'text', text: 'Hi' }] }],
+        contextType: 'global',
+      })
+    )
+
+    // pending-actions stays in the system prompt (unchanged OpenAI behaviour)
+    const sysArg = vi.mocked(buildSystemPrompt).mock.calls.at(-1)?.[0] as
+      | { pendingActionsBlock?: string }
+      | undefined
+    expect(sysArg?.pendingActionsBlock).toBe(STUB_PENDING)
+    // ...and is NOT relocated into the messages
+    const bmmArgs = vi.mocked(buildModelMessages).mock.calls.at(-1)
+    expect(bmmArgs?.[2] ?? null).toBeNull()
+    // Story 14.38: no cross-turn history caching on the OpenAI path
+    expect(bmmArgs?.[3]).toEqual({ cacheHistory: false })
+    // no prepareStep on the OpenAI path
+    expect(capturedConfig?.prepareStep).toBeUndefined()
+
+    if (originalEnv !== undefined) process.env.AI_CHAT_MODEL = originalEnv
+  })
+
+  it('Anthropic path relocates pendingActionsBlock to a separate block, enables cross-turn history caching, drops it from the system prompt, and wires a prepareStep that caches the last message (AC1, AC2)', async () => {
+    const originalEnv = process.env.AI_CHAT_MODEL
+    process.env.AI_CHAT_MODEL = 'anthropic'
+
+    const { POST } = await import('@/app/api/chat/route')
+    await POST(
+      createRequest({
+        messages: [{ role: 'user', parts: [{ type: 'text', text: 'Hej' }] }],
+        contextType: 'global',
+      })
+    )
+
+    // system prompt no longer carries pending-actions (frozen cached prefix)
+    const sysArg = vi.mocked(buildSystemPrompt).mock.calls.at(-1)?.[0] as
+      | { pendingActionsBlock?: string }
+      | undefined
+    expect(sysArg?.pendingActionsBlock).toBeUndefined()
+    // relocated into a separate block via buildModelMessages 3rd arg
+    const bmmArgs = vi.mocked(buildModelMessages).mock.calls.at(-1)
+    expect(bmmArgs?.[2]).toBe(STUB_PENDING)
+    // Story 14.38 (bp2): cross-turn history caching enabled on the Anthropic path
+    expect(bmmArgs?.[3]).toEqual({ cacheHistory: true })
+
+    // prepareStep is wired AND actually applies cacheControl to the last message
+    expect(typeof capturedConfig?.prepareStep).toBe('function')
+    const prepareStep = capturedConfig!.prepareStep as (_a: {
+      messages: Array<{
+        role: string
+        content: string
+        providerOptions?: unknown
+      }>
+    }) => {
+      messages: Array<{
+        providerOptions?: { anthropic?: { cacheControl?: unknown } }
+      }>
+    }
+    const out = prepareStep({
+      messages: [
+        { role: 'user', content: 'a' },
+        { role: 'user', content: 'b' },
+      ],
+    })
+    expect(out.messages[1]?.providerOptions?.anthropic?.cacheControl).toEqual({
+      type: 'ephemeral',
+    })
+    expect(out.messages[0]?.providerOptions).toBeUndefined()
+
+    if (originalEnv !== undefined) process.env.AI_CHAT_MODEL = originalEnv
+    else delete process.env.AI_CHAT_MODEL
   })
 })
