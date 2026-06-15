@@ -166,7 +166,16 @@ const nextConfig = {
 
   // Story 14.9: Include system prompt .md file in serverless function bundles
   outputFileTracingIncludes: {
-    '/api/chat': ['./lib/agent/system-prompt.md'],
+    // Story 19.6: skill-loader reads lib/agent/skills/**/SKILL.md (+ PROCEDURE/
+    // STYLE/CRITERIA and types/*.md) at runtime via dynamic paths the nft tracer
+    // can't follow (resolve(process.cwd(), ...) + join(base, entry.name)) — same
+    // situation as system-prompt.md. Without this glob the .md files are absent
+    // from the /api/chat function on Vercel, so listSkills() returns [] and the
+    // agent silently loses its skills. Verify on the first preview deploy.
+    '/api/chat': [
+      './lib/agent/system-prompt.md',
+      './lib/agent/skills/**/*.md',
+    ],
     // Story 26.1: OG generator reads the Safiro .woff + marketing MDX
     // frontmatter from the function filesystem. Keys are declared in BOTH
     // shapes — URL path AND route-group filesystem path — because the
