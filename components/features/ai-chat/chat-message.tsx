@@ -12,6 +12,8 @@ import type { ChatContextType } from '@/lib/hooks/use-chat-interface'
 import { isTextUIPart, isReasoningUIPart, isToolUIPart } from 'ai'
 import { AgentActionCard } from './agent-action-card'
 import { AgentActionBatchCard } from './agent-action-batch-card'
+import { AssistantAvatar } from './assistant-avatar'
+import { StreamingIndicator } from './streaming-indicator'
 import {
   ChevronRight,
   Search,
@@ -42,6 +44,7 @@ import { CitationPillInline } from './citation-pill'
 import { CitationSourceProvider } from '@/lib/ai/citation-context'
 import { rehypeCitationPills } from '@/lib/ai/rehype-citation-pills'
 import { useRotatingThinkingPhrase } from '@/lib/ai-chat/thinking-phrases'
+import { useSmoothStream } from '@/lib/ai-chat/use-smooth-stream'
 import {
   Collapsible,
   CollapsibleContent,
@@ -701,6 +704,13 @@ export function __resetAutoOpenedForTests(): void {
 
 const streamdownPlugins = { code }
 
+// Render a streaming message as ONE block so the fade is a single global,
+// monotonic pass (newest word fades, everything before it is already settled).
+// With per-block rendering Streamdown animates each block on its own clock, so a
+// burst makes two paragraphs fade in parallel. Stable reference — an inline
+// function would give Streamdown a new identity every render.
+const SINGLE_BLOCK = (markdown: string): string[] => [markdown]
+
 // Rehype plugins array — stable reference to avoid Streamdown re-renders
 const citationRehypePlugins = [rehypeCitationPills]
 
@@ -764,6 +774,18 @@ export function ChatMessage({
     if (Array.isArray(metaIds)) for (const id of metaIds) ids.add(id)
     return Array.from(ids)
   }, [parts, metadata])
+
+  // Rotating Swedish "thinking" phrase for the pre-content streaming window —
+  // an assistant turn that is active but has no text/tool parts yet. Hook must
+  // run before the isUser early return (rules-of-hooks); the value is only used
+  // in the assistant branch below.
+  const thinkingPhrase = useRotatingThinkingPhrase(isStreaming)
+
+  // True while the last text block is still fading its words in — including the
+  // brief drain after the stream ends (see useSmoothStream). Used to hold the
+  // message's done-UI until the text has fully appeared. Declared before the
+  // isUser early return to keep hook order stable.
+  const [lastTextRevealing, setLastTextRevealing] = useState(false)
 
   if (isUser) {
     const textParts = message.parts?.filter((p) => p.type === 'text') ?? []
@@ -842,85 +864,117 @@ export function ChatMessage({
   // Assistant message — render parts in order per SDK best practice
   const isActive = isStreaming
 
+  // The streaming text keeps fading in for a beat after the stream ends while
+  // the reveal buffer drains. Gate the done-UI (actions, sources, approval
+  // cards, web-source pills) on the text having fully appeared — not just on the
+  // stream status — so they don't pop in over still-typing text.
+  const lastTextIndex = parts.reduce(
+    (acc, p, i) => (isTextUIPart(p) ? i : acc),
+    -1
+  )
+  const turnSettled = !isActive && !lastTextRevealing
+
   // Collect all text for copy action
   const fullText = parts
     .filter(isTextUIPart)
     .map((p) => p.text)
     .join('\n')
 
+  // The pre-content window of an active turn: assistant message exists but has
+  // no text/tool/reasoning part yet. Show the rotating thinking line under the
+  // (persistent) avatar so the icon never sits alone and the wait reads as work.
+  const hasRenderableContent =
+    parts.some((p) => isTextUIPart(p) && p.text.trim().length > 0) ||
+    parts.some(isToolUIPart) ||
+    parts.some(isReasoningUIPart)
+  const showThinking = isActive && !hasRenderableContent
+
   return (
     <CitationSourceProvider sourceMap={sourceMap}>
-      <div className="group overflow-hidden text-left space-y-3 pt-0.5">
-        {renderItems.map((item) => {
-          if (item.kind === 'tool-group') {
-            return (
-              <CollapsedToolGroup
-                key={`tool-group-${item.items[0]!.index}`}
-                items={item.items}
-              />
-            )
-          }
-
-          const { part, index } = item
-          if (part.type === 'step-start') return null
-
-          if (isReasoningUIPart(part)) {
-            return (
-              <ReasoningBlock key={`reasoning-${index}`} state={part.state} />
-            )
-          }
-
-          if (isToolUIPart(part)) {
-            const { toolName, input, toolCallId, toolOutput } =
-              extractToolPartInfo(part, index)
-            const config = TOOL_CONFIG[toolName]
-            if (config?.hidden) return null
-            // Story 14.23: a proposal tool (pendingActionId in output) suppresses
-            // the sidebar auto-open — the inline AgentActionCard / batch card
-            // (rendered once at message level after streaming) is the approval
-            // surface.
-            const isProposal =
-              part.state === 'output-available' &&
-              extractPendingActionId(toolOutput) !== null
-            return (
-              <ToolCallRow
-                key={`tool-${index}`}
-                toolCallId={toolCallId}
-                toolName={toolName}
-                state={part.state}
-                detail={getToolDetail(toolName, input)}
-                output={toolOutput}
-                autoOpen={!isProposal}
-              />
-            )
-          }
-
-          if (isTextUIPart(part)) {
-            const webSources =
-              item.kind === 'part' ? item.webSources : undefined
-            return (
-              <div key={`text-${index}`}>
-                <TextBlock
-                  text={part.text}
-                  isStreaming={isActive && index === parts.length - 1}
+      <div className="group overflow-hidden text-left space-y-3">
+        {showThinking ? (
+          // Pre-content window: icon + "thinking" phrase share one row.
+          <div className="flex items-center gap-2.5">
+            <AssistantAvatar />
+            <StreamingIndicator label={thinkingPhrase} />
+          </div>
+        ) : (
+          <AssistantAvatar />
+        )}
+        <div className="min-w-0 overflow-hidden text-left space-y-3">
+          {renderItems.map((item) => {
+            if (item.kind === 'tool-group') {
+              return (
+                <CollapsedToolGroup
+                  key={`tool-group-${item.items[0]!.index}`}
+                  items={item.items}
                 />
-                {!isActive && webSources && webSources.length > 0 && (
-                  <span className="inline-flex flex-wrap gap-1 mt-1 animate-in fade-in duration-300">
-                    {deduplicateWebSources(webSources).map((src, i) => (
-                      <CitationPillInline key={`web-${index}-${i}`}>
-                        {src.title ?? src.domain}
-                      </CitationPillInline>
-                    ))}
-                  </span>
-                )}
-              </div>
-            )
-          }
+              )
+            }
 
-          return null
-        })}
+            const { part, index } = item
+            if (part.type === 'step-start') return null
 
-        {/* Story 14.22/14.23: inline approval card(s) — rendered once per message
+            if (isReasoningUIPart(part)) {
+              return (
+                <ReasoningBlock key={`reasoning-${index}`} state={part.state} />
+              )
+            }
+
+            if (isToolUIPart(part)) {
+              const { toolName, input, toolCallId, toolOutput } =
+                extractToolPartInfo(part, index)
+              const config = TOOL_CONFIG[toolName]
+              if (config?.hidden) return null
+              // Story 14.23: a proposal tool (pendingActionId in output) suppresses
+              // the sidebar auto-open — the inline AgentActionCard / batch card
+              // (rendered once at message level after streaming) is the approval
+              // surface.
+              const isProposal =
+                part.state === 'output-available' &&
+                extractPendingActionId(toolOutput) !== null
+              return (
+                <ToolCallRow
+                  key={`tool-${index}`}
+                  toolCallId={toolCallId}
+                  toolName={toolName}
+                  state={part.state}
+                  detail={getToolDetail(toolName, input)}
+                  output={toolOutput}
+                  autoOpen={!isProposal}
+                />
+              )
+            }
+
+            if (isTextUIPart(part)) {
+              const webSources =
+                item.kind === 'part' ? item.webSources : undefined
+              return (
+                <div key={`text-${index}`}>
+                  <TextBlock
+                    text={part.text}
+                    isStreaming={isActive && index === parts.length - 1}
+                    {...(index === lastTextIndex
+                      ? { onRevealingChange: setLastTextRevealing }
+                      : {})}
+                  />
+                  {turnSettled && webSources && webSources.length > 0 && (
+                    <span className="inline-flex flex-wrap gap-1 mt-1 animate-in fade-in duration-300">
+                      {deduplicateWebSources(webSources).map((src, i) => (
+                        <CitationPillInline key={`web-${index}-${i}`}>
+                          {src.title ?? src.domain}
+                        </CitationPillInline>
+                      ))}
+                    </span>
+                  )}
+                </div>
+              )
+            }
+
+            return null
+          })}
+
+          {/* Story 14.22/14.23: inline approval card(s) — rendered once per message
             and only after the turn finishes streaming (avoids the mid-stream
             mount + SWR-fetch re-render that made post-tool streaming choppy).
             Sourced from live tool parts ∪ persisted metadata so the card survives
@@ -928,34 +982,35 @@ export function ChatMessage({
             single-action card (AC 20); 2+ proposals from one message consolidate
             into a single batch card keyed by chat_message_id (=== message.id per
             ADR-14.22-A). */}
-        {!isActive && pendingApprovalIds.length === 1 && (
-          <AgentActionCard
-            key={`approval-${pendingApprovalIds[0]}`}
-            pendingActionId={pendingApprovalIds[0]!}
-          />
-        )}
-        {!isActive && pendingApprovalIds.length >= 2 && (
-          <AgentActionBatchCard
-            key={`batch-${message.id}`}
-            chatMessageId={message.id}
-          />
-        )}
-
-        {!isActive && sourceMap.size > 0 && (
-          <SourcesAccordion
-            sourceMap={sourceMap}
-            fullText={fullText}
-            parts={parts}
-          />
-        )}
-
-        <div className="flex items-center gap-1 mt-2">
-          {showActions && fullText.trim() && !isActive && (
-            <MessageActions messageId={message.id} content={fullText} />
+          {turnSettled && pendingApprovalIds.length === 1 && (
+            <AgentActionCard
+              key={`approval-${pendingApprovalIds[0]}`}
+              pendingActionId={pendingApprovalIds[0]!}
+            />
           )}
-          {onDelete && !isActive && (
-            <DeleteMessageButton onConfirm={() => onDelete(message.id)} />
+          {turnSettled && pendingApprovalIds.length >= 2 && (
+            <AgentActionBatchCard
+              key={`batch-${message.id}`}
+              chatMessageId={message.id}
+            />
           )}
+
+          {turnSettled && sourceMap.size > 0 && (
+            <SourcesAccordion
+              sourceMap={sourceMap}
+              fullText={fullText}
+              parts={parts}
+            />
+          )}
+
+          <div className="flex items-center gap-1 mt-2">
+            {showActions && fullText.trim() && turnSettled && (
+              <MessageActions messageId={message.id} content={fullText} />
+            )}
+            {onDelete && turnSettled && (
+              <DeleteMessageButton onConfirm={() => onDelete(message.id)} />
+            )}
+          </div>
         </div>
       </div>
     </CitationSourceProvider>
@@ -1589,10 +1644,29 @@ function DeleteMessageButton({ onConfirm }: { onConfirm: () => void }) {
 function TextBlock({
   text,
   isStreaming,
+  onRevealingChange,
 }: {
   text: string
   isStreaming: boolean
+  /** Reports whether the buffer is still revealing (streaming or draining). */
+  onRevealingChange?: (_revealing: boolean) => void
 }) {
+  // Re-pace the stream client-side so the renderer never receives many tokens
+  // per commit — that's what keeps the fade a single top-to-bottom front instead
+  // of mounting (and animating) two paragraphs at once. See useSmoothStream.
+  const displayed = useSmoothStream(text, isStreaming)
+
+  // "revealing" stays true after the stream ends until the buffer finishes
+  // draining its backlog. "animating" keeps the fade + single-block on for that
+  // whole window (not just while isStreaming) so the drained tail still fades in
+  // monotonically; once fully revealed we drop to plain static rendering.
+  const revealing = displayed.length < text.length
+  const animating = isStreaming || revealing
+
+  useEffect(() => {
+    onRevealingChange?.(revealing)
+  }, [revealing, onRevealingChange])
+
   // Always wire the citation plugin + components — the plugin early-bails on
   // citation-free text (see rehype-citation-pills.ts), so always-on is free.
   // Conditionally swapping the plugin/components array based on text content
@@ -1602,14 +1676,29 @@ function TextBlock({
   return (
     <div className={cn(PROSE_CLASSES, 'chat-markdown')}>
       <Streamdown
-        mode={isStreaming ? 'streaming' : 'static'}
-        isAnimating={isStreaming}
+        mode={animating ? 'streaming' : 'static'}
+        isAnimating={animating}
+        // Single block while animating → one global, monotonic fade pass (no two
+        // paragraphs animating on independent clocks). See SINGLE_BLOCK.
+        {...(animating ? { parseMarkdownIntoBlocksFn: SINGLE_BLOCK } : {})}
+        // stagger: 0 is essential here — useSmoothStream feeds one new word per
+        // step, so only that word should fade (delay 0). A non-zero stagger
+        // would queue delays and leave just-revealed words stuck at opacity 0.
+        // Short duration keeps the fading wave to a few words. Suppressed when
+        // mode="static".
+        animated={{
+          animation: 'fadeIn',
+          sep: 'word',
+          duration: 220,
+          easing: 'ease-out',
+          stagger: 0,
+        }}
         plugins={streamdownPlugins}
         rehypePlugins={citationRehypePlugins}
         components={citationComponents}
         className="streamdown"
       >
-        {text}
+        {displayed}
       </Streamdown>
     </div>
   )

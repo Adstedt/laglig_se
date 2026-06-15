@@ -9,16 +9,26 @@ import { cn } from '@/lib/utils'
 
 interface StreamingIndicatorProps {
   className?: string
+  /**
+   * Status text shown before the bouncing dots. Defaults to "AI skriver".
+   * The pending/pre-stream shell passes a rotating "Tänker…/Söker…" phrase so
+   * the wait reads as active work rather than (inaccurately) "skriver" before
+   * any text exists.
+   */
+  label?: string
 }
 
-export function StreamingIndicator({ className }: StreamingIndicatorProps) {
+export function StreamingIndicator({
+  className,
+  label = 'AI skriver',
+}: StreamingIndicatorProps) {
   return (
     <div
       className={cn('flex items-center gap-1 py-2', className)}
-      aria-label="AI skriver..."
+      aria-label={`${label}...`}
       role="status"
     >
-      <span className="text-xs text-muted-foreground mr-2">AI skriver</span>
+      <span className="text-xs text-muted-foreground mr-2">{label}</span>
       <span className="flex gap-1">
         <span
           className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-bounce"

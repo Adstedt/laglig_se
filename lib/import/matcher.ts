@@ -67,7 +67,7 @@ export interface MatchOptions {
   }
   /** Concurrency cap for `matchRowsBatch`. Default 10 (AC 11). */
   concurrency?: number
-  /** Override model id; default `claude-sonnet-4-20250514`. */
+  /** Override model id; default `claude-sonnet-4-6`. */
   modelId?: string
 }
 
@@ -75,7 +75,7 @@ export interface MatchOptions {
 // Constants
 // ============================================================================
 
-const DEFAULT_MODEL_ID = 'claude-sonnet-4-20250514'
+const DEFAULT_MODEL_ID = 'claude-sonnet-4-6'
 const TELEMETRY_MODEL_NAME = 'claude-sonnet-4-6' // matches PRICING table key
 const MAX_TOKENS = 512
 const SHORT_CIRCUIT_FUZZY_THRESHOLD = 0.95

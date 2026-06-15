@@ -1,0 +1,55 @@
+schema: 1
+story: '14.37'
+story_title: 'Anthropic Prompt Caching v2 — Tool-Loop Conversation Caching'
+gate: PASS
+status_reason: 'Within-turn caching implemented, tested, and empirically proven (multi-step cost −35–40%). All prior CONCERNS (OpenAI-unchanged AC3, prepareStep wiring AC1, approval-card AC7) closed with automated coverage. NFRs PASS; no blocking issues.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-15T20:55:00Z'
+
+waiver: { active: false }
+
+quality_score: 100
+
+expires: '2026-06-29T00:00:00Z'
+
+history:
+  - at: '2026-06-15T13:15:00Z'
+    gate: CONCERNS
+    note: 'Initial review — 3 automated-coverage gaps (COV-001/002/003); no functional defects.'
+  - at: '2026-06-15T20:55:00Z'
+    gate: PASS
+    note: 'Re-review after dev story v0.5 — COV-001/002/003 closed with +2 provider-gating integration tests; approval-card suites confirmed green.'
+
+evidence:
+  tests_reviewed: 62
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7] # AC6 is an empirical/measurement AC verified via smoke + chat_usage_events
+    ac_gaps: []
+
+top_issues: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'pendingActionsBlock is server-generated workflow state, not user input; relocating it to the user turn adds no injection/spoofing surface. No auth/data-protection paths touched.'
+  performance:
+    status: PASS
+    notes: 'Change reduces cost (multi-step turns −35–40%). prepareStep is a per-step in-memory map; negligible overhead.'
+  reliability:
+    status: PASS
+    notes: 'Empty-array guard in helper; provider-gated; existing error handling unchanged.'
+  maintainability:
+    status: PASS
+    notes: 'Pure, documented helper; small focused diff; tests mirror project structure; tsc + eslint clean.'
+
+recommendations:
+  immediate: []
+  future: []
+
+notes: |
+  AC6 was re-scoped (story v0.4) from "≥65% hit" to "within-turn: multi-step cost −35–40%, hit ~42%→~48%".
+  The ≥65% target + cross-turn history reuse are deliberately deferred to Story 14.38 (cross-turn caching),
+  drafted and awaiting an Architect spike. This gate evaluates 14.37 against the re-scoped AC6 — the deferral
+  is a planned split, not a defect. AC6 is verified empirically (per-step logging + chat_usage_events), which
+  is appropriate for a measurement-type criterion and not unit-automatable.

@@ -18,6 +18,7 @@
 import { PrismaClient, ContentType, DocumentStatus } from '@prisma/client'
 import * as fs from 'fs'
 import * as path from 'path'
+import { REGULATORY_BODY_MAP } from '../lib/agency/regulatory-bodies'
 
 const prisma = new PrismaClient()
 
@@ -40,40 +41,8 @@ const ANALYSIS_FILES = [
 
 const TARGET_LIST_NAMES = ANALYSIS_FILES.map((f) => f.listName)
 
-// ============================================================================
-// Agency Prefix -> Regulatory Body Mapping
-// ============================================================================
-
-const REGULATORY_BODY_MAP: Record<string, string> = {
-  AFS: 'Arbetsmiljöverket',
-  BFS: 'Boverket',
-  NFS: 'Naturvårdsverket',
-  KIFS: 'Kemikalieinspektionen',
-  MSBFS: 'MSB (Myndigheten för samhällsskydd och beredskap)',
-  'ELSÄK-FS': 'Elsäkerhetsverket',
-  'ELSAK-FS': 'Elsäkerhetsverket',
-  SRVFS: 'Räddningsverket (legacy)',
-  SKVFS: 'Skatteverket',
-  'HSLF-FS': 'Socialstyrelsen',
-  SOSFS: 'Socialstyrelsen',
-  TSFS: 'Transportstyrelsen',
-  SJVFS: 'Jordbruksverket',
-  LMFS: 'Lantmäteriet',
-  SSMFS: 'Strålsäkerhetsmyndigheten',
-  'SCB-FS': 'Statistiska centralbyrån',
-  STEMFS: 'Energimyndigheten',
-  SvKFS: 'Svenska kraftnät',
-  FFFS: 'Finansinspektionen',
-  FKFS: 'Försäkringskassan',
-  HVMFS: 'Havs- och vattenmyndigheten',
-  IMYFS: 'Integritetsskyddsmyndigheten',
-  MIGRFS: 'Migrationsverket',
-  PMFS: 'Polismyndigheten',
-  PTSFS: 'Post- och telestyrelsen',
-  SLVFS: 'Livsmedelsverket',
-  LIVSFS: 'Livsmedelsverket',
-  STAFS: 'Swedac',
-}
+// Agency prefix → regulatory body map now lives in lib/agency/regulatory-bodies.ts
+// (shared with the attribution backfill + Socialstyrelsen ingester — Story 9.5).
 
 // ============================================================================
 // Source Type Classification

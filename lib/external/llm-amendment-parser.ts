@@ -45,7 +45,7 @@ export async function parseAmendmentPdf(
   }
 
   const client = new Anthropic({ apiKey })
-  const model = options.model || 'claude-sonnet-4-20250514'
+  const model = options.model || 'claude-sonnet-4-6'
   const maxRetries = options.maxRetries || 3
 
   const pdfBase64 = pdfBuffer.toString('base64')

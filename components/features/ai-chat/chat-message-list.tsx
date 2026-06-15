@@ -2,28 +2,41 @@
 
 /**
  * Chat Message List Component
- * Scrollable container for chat messages with streaming state management,
- * infinite scroll pagination, and date group headers.
+ * Scrollable container for chat messages with date group headers and infinite
+ * scroll pagination.
+ *
+ * Scroll behaviour (Claude/ChatGPT-style "calm" pattern):
+ *  - No auto-follow. The viewport stays where the user puts it while text
+ *    streams in; the user scrolls at their own pace.
+ *  - Scroll-on-send: a newly sent message is scrolled to the top of the viewport
+ *    and the active turn reserves ~a screen of space below it (RESERVE_CLASS), so
+ *    the answer streams into stable, visible space instead of dragging the view.
+ *  - A small "generating" pill (instead of a scroll-to-bottom arrow) signals that
+ *    the assistant is still producing, independent of scroll position.
  */
 
-import { useRef, useEffect, useCallback } from 'react'
+import { useRef, useEffect, useLayoutEffect, useCallback } from 'react'
 import type { UIMessage } from 'ai'
 import type { ChatContextType } from '@/lib/hooks/use-chat-interface'
-import { StickToBottom, useStickToBottomContext } from 'use-stick-to-bottom'
 import { ChatMessage } from './chat-message'
 import { StreamingIndicator } from './streaming-indicator'
-import { LexaIcon } from '@/components/ui/lexa-icon'
-import { Loader2, ArrowDown } from 'lucide-react'
+import { AssistantAvatar } from './assistant-avatar'
+import { useRotatingThinkingPhrase } from '@/lib/ai-chat/thinking-phrases'
+import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   groupMessagesByDate,
   type DateGroup,
 } from '@/lib/utils/group-messages-by-date'
-import {
-  useChatDetailSafe,
-  type SystemMessageItem,
-} from '@/lib/ai/chat-detail-context'
+import { useChatDetailSafe } from '@/lib/ai/chat-detail-context'
 import { SystemMessage } from './system-message'
+
+// Reserved space below the active turn so a just-sent message can scroll to the
+// top with the answer streaming into view beneath it. Long answers exceed it
+// (so there's no void below them); short answers keep the reserved gap.
+const RESERVE_CLASS = 'min-h-[85vh]'
+// Breathing room above a message scrolled to the top.
+const SCROLL_TOP_GAP = 16
 
 interface ChatMessageListProps {
   messages: UIMessage[]
@@ -61,6 +74,13 @@ export function ChatMessageList({
   onDeleteMessage,
   contextType,
 }: ChatMessageListProps) {
+  const viewportRef = useRef<HTMLDivElement>(null)
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const prevScrollHeightRef = useRef<number>(0)
+  const isRestoringScrollRef = useRef(false)
+  const didInitialScrollRef = useRef(false)
+  const lastUserIdRef = useRef<string | null>(null)
+
   // Only mark the last assistant message as streaming, and only if it's
   // actually the newest message (not a previous response before a new user message)
   const lastAssistantIndex = messages.findLastIndex(
@@ -68,202 +88,203 @@ export function ChatMessageList({
   )
   const lastMessageIndex = messages.length - 1
   const isLastAssistantTheNewest =
-    lastAssistantIndex === lastMessageIndex ||
-    // The assistant message might not exist yet — don't mark old ones
-    lastAssistantIndex === -1
+    lastAssistantIndex === lastMessageIndex || lastAssistantIndex === -1
 
-  // Group messages by date for date separator headers
+  // The assistant turn for the latest user message hasn't materialised in the
+  // array yet (the last message is the user's) — show the pending "thinking"
+  // shell. TRUE on the very first message of a chat (lastAssistantIndex === -1).
+  const assistantTurnPending =
+    messages.length > 0 && lastAssistantIndex !== lastMessageIndex
+
   const dateGroups: DateGroup[] = groupMessagesByDate(messages)
 
-  // System messages from ChatDetailContext (ephemeral, not persisted)
   const chatDetail = useChatDetailSafe()
   const systemMessages = chatDetail?.systemMessages ?? []
 
-  return (
-    <StickToBottom
-      resize="instant"
-      initial="instant"
-      role="log"
-      className={cn('relative flex-1 overflow-y-hidden', className)}
-    >
-      <StickToBottomContent
-        messages={messages}
-        isStreaming={isStreaming}
-        isLoadingMore={isLoadingMore}
-        hasMore={hasMore}
-        onLoadMore={onLoadMore}
-        onDeleteMessage={onDeleteMessage}
-        footer={footer}
-        dateGroups={dateGroups}
-        lastAssistantIndex={lastAssistantIndex}
-        isLastAssistantTheNewest={isLastAssistantTheNewest}
-        systemMessages={systemMessages}
-        contentClassName={contentClassName}
-        contextType={contextType}
-      />
-    </StickToBottom>
+  const thinkingPhrase = useRotatingThinkingPhrase(
+    isStreaming && assistantTurnPending
   )
-}
 
-interface ContentProps {
-  messages: UIMessage[]
-  isStreaming: boolean
-  isLoadingMore: boolean
-  hasMore: boolean | null | undefined
-  onLoadMore: (() => Promise<unknown>) | undefined
-  onDeleteMessage: ((_messageId: string) => void) | undefined
-  footer: React.ReactNode | undefined
-  dateGroups: DateGroup[]
-  lastAssistantIndex: number
-  isLastAssistantTheNewest: boolean
-  systemMessages: SystemMessageItem[]
-  contentClassName: string | undefined
-  contextType: ChatContextType | undefined
-}
+  // On first load of an existing conversation, jump to the latest message.
+  // A fresh first send (single user message) is left to scroll-on-send below.
+  useLayoutEffect(() => {
+    if (didInitialScrollRef.current || messages.length === 0) return
+    didInitialScrollRef.current = true
+    const isLoadedThread =
+      messages.length > 1 || messages[0]?.role === 'assistant'
+    if (isLoadedThread) {
+      const vp = viewportRef.current
+      if (vp) vp.scrollTop = vp.scrollHeight
+    }
+  }, [messages])
 
-function StickToBottomContent({
-  messages,
-  isStreaming,
-  isLoadingMore,
-  hasMore,
-  onLoadMore,
-  onDeleteMessage,
-  footer,
-  dateGroups,
-  lastAssistantIndex,
-  isLastAssistantTheNewest,
-  systemMessages,
-  contentClassName,
-  contextType,
-}: ContentProps) {
-  const { scrollRef, isAtBottom, scrollToBottom } = useStickToBottomContext()
-
-  const sentinelRef = useRef<HTMLDivElement>(null)
-  const prevScrollHeightRef = useRef<number>(0)
-  const isRestoringScrollRef = useRef(false)
+  // Scroll-on-send: when a new user message is appended, glide it to the top.
+  // The reserved space below (RESERVE_CLASS on the active turn) gives the room.
+  useLayoutEffect(() => {
+    const last = messages[messages.length - 1]
+    if (!last || last.role !== 'user' || last.id === lastUserIdRef.current) {
+      return
+    }
+    lastUserIdRef.current = last.id
+    didInitialScrollRef.current = true
+    const vp = viewportRef.current
+    if (!vp) return
+    const node = vp.querySelector<HTMLElement>(
+      `[data-message-id="${CSS.escape(last.id)}"]`
+    )
+    if (!node) return
+    const delta =
+      node.getBoundingClientRect().top - vp.getBoundingClientRect().top
+    vp.scrollTo({
+      top: vp.scrollTop + delta - SCROLL_TOP_GAP,
+      behavior: 'smooth',
+    })
+  }, [messages])
 
   // Preserve scroll position when older messages are prepended via loadMore.
-  // The library's stick-to-bottom only auto-follows when the user is near the
-  // bottom; during pagination the user is at the top, so it leaves us alone.
   useEffect(() => {
     if (!isRestoringScrollRef.current) return
-    const viewport = scrollRef.current
-    if (!viewport) return
+    const vp = viewportRef.current
+    if (!vp) return
     requestAnimationFrame(() => {
-      viewport.scrollTop = viewport.scrollHeight - prevScrollHeightRef.current
+      vp.scrollTop = vp.scrollHeight - prevScrollHeightRef.current
       isRestoringScrollRef.current = false
     })
-  }, [messages, scrollRef])
+  }, [messages])
 
   const handleLoadMore = useCallback(async () => {
     if (!onLoadMore || isLoadingMore || hasMore === false) return
-    const viewport = scrollRef.current
-    if (viewport) {
-      prevScrollHeightRef.current = viewport.scrollHeight
+    const vp = viewportRef.current
+    if (vp) {
+      prevScrollHeightRef.current = vp.scrollHeight
       isRestoringScrollRef.current = true
     }
     await onLoadMore()
-  }, [onLoadMore, isLoadingMore, hasMore, scrollRef])
+  }, [onLoadMore, isLoadingMore, hasMore])
 
   useEffect(() => {
     const sentinel = sentinelRef.current
     if (!sentinel || !onLoadMore) return
-
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting && hasMore !== false && !isLoadingMore) {
           handleLoadMore()
         }
       },
-      { threshold: 0.1 }
+      { root: viewportRef.current, threshold: 0.1 }
     )
     observer.observe(sentinel)
     return () => observer.disconnect()
   }, [onLoadMore, hasMore, isLoadingMore, handleLoadMore])
 
   return (
-    <>
-      <StickToBottom.Content
-        className={cn('px-4 py-4 space-y-4', contentClassName)}
-      >
-        {/* Sentinel for infinite scroll — triggers loadMore when visible */}
-        <div ref={sentinelRef} className="h-1" aria-hidden="true" />
+    <div className={cn('relative flex-1 overflow-hidden', className)}>
+      <div ref={viewportRef} role="log" className="h-full overflow-y-auto">
+        <div className={cn('px-4 py-4 space-y-4', contentClassName)}>
+          {/* Sentinel for infinite scroll — triggers loadMore when visible */}
+          <div ref={sentinelRef} className="h-1" aria-hidden="true" />
 
-        {/* Loading more indicator */}
-        {isLoadingMore && (
-          <div className="flex items-center justify-center py-2">
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-          </div>
-        )}
-
-        {/* "No more messages" indicator */}
-        {hasMore === false && messages.length > 0 && (
-          <p className="text-center text-xs text-muted-foreground py-1">
-            Början av konversationen
-          </p>
-        )}
-
-        {dateGroups.map((group) => (
-          <div key={group.label} className="space-y-4">
-            {/* Date separator header */}
-            <div className="flex items-center gap-3 py-1">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-xs text-muted-foreground shrink-0">
-                {group.label}
-              </span>
-              <div className="h-px flex-1 bg-border" />
+          {isLoadingMore && (
+            <div className="flex items-center justify-center py-2">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             </div>
+          )}
 
-            {group.messages.map((message) => {
-              const index = messages.indexOf(message)
-              return (
-                <ChatMessage
-                  key={message.id}
-                  message={message}
-                  isStreaming={
-                    isStreaming &&
-                    index === lastAssistantIndex &&
-                    isLastAssistantTheNewest
-                  }
-                  onDelete={onDeleteMessage}
-                  contextType={contextType}
-                />
-              )
-            })}
-          </div>
-        ))}
+          {hasMore === false && messages.length > 0 && (
+            <p className="text-center text-xs text-muted-foreground py-1">
+              Början av konversationen
+            </p>
+          )}
 
-        {/* Show typing indicator when waiting for first token */}
-        {isStreaming && !isLastAssistantTheNewest && (
-          <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted border border-border">
-              <LexaIcon size={16} />
+          {dateGroups.map((group) => (
+            <div key={group.label} className="space-y-4">
+              <div className="flex items-center gap-3 py-1">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-xs text-muted-foreground shrink-0">
+                  {group.label}
+                </span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
+
+              {group.messages.map((message) => {
+                const index = messages.indexOf(message)
+                // Reserve a screen of space below the active turn's answer so the
+                // just-sent message can sit at the top while it streams.
+                const reserveSpace =
+                  isStreaming &&
+                  index === lastMessageIndex &&
+                  message.role === 'assistant'
+                return (
+                  <div
+                    key={message.id}
+                    data-message-id={message.id}
+                    className={reserveSpace ? RESERVE_CLASS : undefined}
+                  >
+                    <ChatMessage
+                      message={message}
+                      isStreaming={
+                        isStreaming &&
+                        index === lastAssistantIndex &&
+                        isLastAssistantTheNewest
+                      }
+                      onDelete={onDeleteMessage}
+                      contextType={contextType}
+                    />
+                  </div>
+                )
+              })}
             </div>
-            <div className="pt-1">
-              <StreamingIndicator />
+          ))}
+
+          {/* Pending "thinking" shell — shown from submit until the assistant
+              message materialises in the array. Carries the reserved space so the
+              just-sent user message can scroll to the top before any answer text
+              exists. */}
+          {isStreaming && assistantTurnPending && (
+            // Reserve space on the wrapper (not the avatar row) so the
+            // avatar + indicator sit at the TOP of the reserved area — exactly
+            // where the materialised ChatMessage renders them. Putting min-h on
+            // the flex row instead made `items-center` vertically center the
+            // avatar in the 85vh box, so it visibly jumped up when the real
+            // message mounted.
+            <div className={RESERVE_CLASS}>
+              <div className="flex items-center gap-2.5">
+                <AssistantAvatar />
+                <StreamingIndicator label={thinkingPhrase} />
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Ephemeral system messages */}
-        {systemMessages.map((sysMsg) => (
-          <SystemMessage key={sysMsg.id} message={sysMsg} />
-        ))}
+          {systemMessages.map((sysMsg) => (
+            <SystemMessage key={sysMsg.id} message={sysMsg} />
+          ))}
 
-        {/* Inline footer (e.g. assessment resolution) */}
-        {footer}
-      </StickToBottom.Content>
+          {footer}
+        </div>
+      </div>
 
-      {!isAtBottom && messages.length > 0 && (
-        <button
-          type="button"
-          onClick={() => scrollToBottom()}
-          aria-label="Gå till senaste meddelandet"
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 flex h-8 w-8 items-center justify-center rounded-full border border-border bg-background shadow-md hover:bg-muted transition-colors animate-in fade-in-0 zoom-in-95 duration-150"
+      {/* "Generating" pill — signals the assistant is still producing,
+          independent of scroll position (replaces the scroll-to-bottom arrow). */}
+      {isStreaming && messages.length > 0 && (
+        <div
+          role="status"
+          aria-label="Genererar svar"
+          className="pointer-events-none absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border border-border bg-background/90 px-3 py-1.5 shadow-md backdrop-blur animate-in fade-in-0 zoom-in-95 duration-150"
         >
-          <ArrowDown className="h-4 w-4" />
-        </button>
+          <span
+            className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-bounce"
+            style={{ animationDelay: '0ms' }}
+          />
+          <span
+            className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-bounce"
+            style={{ animationDelay: '150ms' }}
+          />
+          <span
+            className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-bounce"
+            style={{ animationDelay: '300ms' }}
+          />
+        </div>
       )}
-    </>
+    </div>
   )
 }

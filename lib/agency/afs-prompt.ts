@@ -515,4 +515,4 @@ export const AFS_MAX_TOKENS = {
  * Default model for AFS ingestion.
  * Using Sonnet for cost-effectiveness on large documents.
  */
-export const AFS_DEFAULT_MODEL = 'claude-sonnet-4-20250514'
+export const AFS_DEFAULT_MODEL = 'claude-sonnet-4-6'
