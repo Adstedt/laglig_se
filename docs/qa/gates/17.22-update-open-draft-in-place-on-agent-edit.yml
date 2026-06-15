@@ -1,0 +1,55 @@
+schema: 1
+story: '17.22'
+story_title: 'Update an Open Draft In Place on Agent Edit (Stop Version-Number Inflation)'
+gate: CONCERNS
+status_reason: 'All 8 ACs implemented, independently verified, and well-tested (154 story tests, 841 regression green). CONCERNS reflects a scope/goal gap — NOT a defect in delivered scope: the single ADD_DOCUMENT_SECTION dispatch still mints a version, so the story''s headline goal ("stop version-number inflation") is only partially met. The team should consciously accept or fast-follow before considering inflation resolved.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-14T21:55:00Z'
+
+top_issues:
+  - id: ADD-SINGLE-INFLATION
+    severity: medium
+    status: RESOLVED
+    resolved_by: '17.23 (Ready for Review, gate PASS, 2026-06-14)'
+    summary: 'Single ADD_DOCUMENT_SECTION dispatch (pending-agent-actions.ts:904) still calls saveDocumentVersion → a single section-add on an open draft still mints a version. Inconsistent with the now-fixed UPDATE single + consolidated paths (which handle adds in place). Out of this story''s UPDATE_DOCUMENT-scoped ACs; correctly flagged by dev, not silently widened.'
+    resolution: 'Story 17.23 routed the single ADD arm to updateDraftVersionInPlace (same fix). Inflation is now eliminated for ALL agent edits. The original CONCERNS gate is left as the historical record of the as-shipped 17.22 scope.'
+    suggested_owner: po
+    recommendation: 'Done — 17.23 closes this.'
+
+waiver: { active: false }
+
+quality_score: 90
+expires: '2026-06-28T00:00:00Z'
+
+evidence:
+  tests_reviewed: 18
+  tests_run: '154 story-area + 841 broad regression — all pass'
+  risks_identified: 1
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8]
+    ac_gaps: []
+    notes:
+      - 'AC 2 (branch-once-then-in-place) is covered as two routing assertions (APPROVED-no-draft→branch; draft-exists→in-place), not a single end-to-end sequence — adequate, since the routing predicate is the actual logic.'
+      - 'AC 6 (finalize) relies on the existing, untouched promoteDraftToApproved tests — correct, as promote is unaffected by in-place edits.'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No new surface. updateDraftVersionInPlace is workspace-scoped via withWorkspace; dispatch enforces tasks:edit. 17.16 Path C guard (refuse APPROVED-no-draft) preserved.'
+  performance:
+    status: PASS
+    notes: 'Immediate indexWorkspaceDocument per in-place edit — identical to the saveDocumentVersion call it replaces (no regression); hash-gated inside syncWorkspaceChunks so no-op content is free. One extra ActivityLog write per edit (negligible). In-place .update() is cheaper than minting a row.'
+  reliability:
+    status: PASS
+    notes: 'Version-row write + title + audit row in one $transaction (atomic). Authorship stamp is fire-and-forget (try/catch, never rolls back the write). Path C guard prevents editing an APPROVED-no-draft doc in place. Return contract {id, versionNumber, activityLogId} preserves result_ref on both dispatch paths.'
+  maintainability:
+    status: PASS
+    notes: 'Mirrors the existing autosaveDocument pattern; dispatch forks are symmetric (single + consolidated); activity action registered in all 4 maps (exhaustiveness test enforces it). Well-commented with AC references.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Fast-follow: apply in-place routing to the single ADD_DOCUMENT_SECTION dispatch arm (pending-agent-actions.ts:904) to fully close version-number inflation across all agent edits.'
+      refs: ['app/actions/pending-agent-actions.ts']
+    - action: 'Optional: add one end-to-end dispatch test that approves edit #1 (branch) then edit #2 (in-place) against the same evolving doc state, to assert the branch-once-then-in-place sequence directly (AC 2).'
+      refs: ['tests/unit/actions/pending-agent-actions.test.ts']

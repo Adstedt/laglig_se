@@ -35,7 +35,13 @@ import {
   Loader2,
   AlertTriangle,
   MessageSquare,
+  ChevronDown,
 } from 'lucide-react'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { VersionHistoryPanel } from './version-history-panel'
@@ -476,7 +482,7 @@ export function DocumentEditor({
   }[saveStatus]
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="@container/chrome flex flex-col h-full">
       {/* Read-only banner — Story 17.17 Task 5 v1.2 (PO ratified): pointer-
           aware gating. The dual-state-read-only branch (viewMode='approved'
           on a dual-state doc) uses the FROZEN Swedish copy locked in v1.3:
@@ -516,9 +522,9 @@ export function DocumentEditor({
           approved version (the dual-state edit case). Includes the
           "Förkasta utkast" action with required AlertDialog confirmation. */}
       {editable && isDualState && approvedMetadata && currentDraftId && (
-        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-sm text-amber-800">
-            <GitBranch className="h-4 w-4 shrink-0" />
+        <div className="bg-muted/40 border-b px-4 py-1.5 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <GitBranch className="h-3.5 w-3.5 shrink-0" />
             <span>
               {`Du redigerar Utkast v${currentVersionNumber} som ersätter Godkänd v${approvedMetadata.versionNumber} efter godkännande.`}
             </span>
@@ -526,7 +532,7 @@ export function DocumentEditor({
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 text-amber-800 hover:text-destructive"
+            className="h-7 text-muted-foreground hover:text-destructive"
             onClick={() => setShowDiscardDialog(true)}
             disabled={discarding}
           >
@@ -544,8 +550,10 @@ export function DocumentEditor({
             size="sm"
             onClick={() => router.push('/workspace/styrdokument')}
           >
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            Tillbaka
+            <ArrowLeft className="h-4 w-4" />
+            <span className="inline-block max-w-0 overflow-hidden whitespace-nowrap pl-1 opacity-0 transition-all duration-300 ease-in-out @xl/chrome:max-w-[12rem] @xl/chrome:opacity-100">
+              Tillbaka
+            </span>
           </Button>
           {/* Story 17.17 smoke-found polish: in dual-state contexts the
               metadata pill reflects the ACTIVE context (the draft being
@@ -564,48 +572,66 @@ export function DocumentEditor({
                 : currentStatus
             }
           />
-          <span className="text-xs text-muted-foreground/60">
-            v{currentVersionNumber} &middot; {authorName}
-          </span>
-          {/* Story 17.17 AC 6 — secondary "Godkänd v{N} av {name} den {date}"
-              indicator for the dual-state header. Reads `approvedMetadata`
-              (doc-level approved_by/approved_at + current_approved_version_id
-              joined approver name) so the approved metadata stays visible
-              throughout the revision window. */}
-          {isDualState && approvedMetadata && approvedDisplayDate && (
-            <span className="text-xs text-muted-foreground/60">
-              {`· Godkänd v${approvedMetadata.versionNumber}${
-                approvedMetadata.approverName
-                  ? ` av ${approvedMetadata.approverName}`
-                  : ''
-              } den ${approvedDisplayDate}`}
-            </span>
-          )}
+          {/* Story 17.17 polish: the version label stays glance-visible (which
+              draft you're editing) while the verbose provenance — author, the
+              AC 6 approved-baseline line, and word count — is demoted one click
+              into this popover so the bar no longer wraps on narrow screens.
+              The dual-state "ersätter Godkänd v{N}" relationship also persists
+              in the slim banner above when applicable. */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              >
+                v{currentVersionNumber}
+                <ChevronDown className="h-3 w-3 opacity-60" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-64 text-xs">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">Version</span>
+                  <span className="font-medium">v{currentVersionNumber}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">Skapad av</span>
+                  <span className="font-medium text-right">{authorName}</span>
+                </div>
+                {editor && (
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-muted-foreground">Längd</span>
+                    <span className="font-medium tabular-nums">
+                      {editor.storage.characterCount?.words() ?? 0} ord
+                    </span>
+                  </div>
+                )}
+                {isDualState && approvedMetadata && approvedDisplayDate && (
+                  <div className="border-t pt-2 text-muted-foreground">
+                    {`Godkänd v${approvedMetadata.versionNumber}${
+                      approvedMetadata.approverName
+                        ? ` av ${approvedMetadata.approverName}`
+                        : ''
+                    } den ${approvedDisplayDate}`}
+                  </div>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
         <div className="flex items-center gap-3">
-          {/* Story 17.17 smoke-found polish: word count + save status group
-              as ONE metadata cluster with tight internal spacing + matching
-              text size, separated from the action buttons by the parent's
-              gap-3. Middot mirrors the AC 6 secondary-indicator pattern on
-              the left so the two info clusters visually rhyme. */}
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground tabular-nums">
-            {editor && (
-              <span>{editor.storage.characterCount?.words() ?? 0} ord</span>
+          {/* Story 17.17 polish: word count moved into the version popover;
+              this cluster now carries only the save status so the right action
+              bar stays compact on narrow screens. */}
+          <span
+            className={cn(
+              'text-xs text-muted-foreground tabular-nums',
+              saveStatus === 'unsaved' && 'text-amber-600',
+              saveStatus === 'error' && 'text-destructive'
             )}
-            {editor && (
-              <span aria-hidden="true" className="text-muted-foreground/40">
-                ·
-              </span>
-            )}
-            <span
-              className={cn(
-                saveStatus === 'unsaved' && 'text-amber-600',
-                saveStatus === 'error' && 'text-destructive'
-              )}
-            >
-              {saveStatusText}
-            </span>
-          </div>
+          >
+            {saveStatusText}
+          </span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" disabled={exporting}>
@@ -613,8 +639,10 @@ export function DocumentEditor({
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <>
-                    <FileDown className="mr-1 h-4 w-4" />
-                    Exportera
+                    <FileDown className="h-4 w-4" />
+                    <span className="inline-block max-w-0 overflow-hidden whitespace-nowrap pl-1 opacity-0 transition-all duration-300 ease-in-out @4xl/chrome:max-w-[12rem] @4xl/chrome:opacity-100">
+                      Exportera
+                    </span>
                   </>
                 )}
               </Button>
@@ -657,9 +685,12 @@ export function DocumentEditor({
               size="sm"
               onClick={triggerSave}
               disabled={saveStatus === 'saving'}
+              title="Spara"
             >
-              <Save className="mr-1 h-4 w-4" />
-              Spara
+              <Save className="h-4 w-4" />
+              <span className="inline-block max-w-0 overflow-hidden whitespace-nowrap pl-1 opacity-0 transition-all duration-300 ease-in-out @2xl/chrome:max-w-[12rem] @2xl/chrome:opacity-100">
+                Spara
+              </span>
             </Button>
           )}
           {/* Story 17.17 AC 7 — dual-state primary forward actions ("Skicka
@@ -675,9 +706,12 @@ export function DocumentEditor({
                 size="sm"
                 onClick={handleSubmitForReview}
                 disabled={submitting}
+                title="Skicka för granskning"
               >
-                <Send className="mr-1 h-4 w-4" />
-                Skicka för granskning
+                <Send className="h-4 w-4" />
+                <span className="inline-block max-w-0 overflow-hidden whitespace-nowrap pl-1 opacity-0 transition-all duration-300 ease-in-out @4xl/chrome:max-w-[14rem] @4xl/chrome:opacity-100">
+                  Skicka för granskning
+                </span>
               </Button>
             )}
           {currentDraftId &&

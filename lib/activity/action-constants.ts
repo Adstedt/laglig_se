@@ -53,6 +53,8 @@ export const KNOWN_ACTIONS = [
   'document_created',
   'document_imported',
   'document_version_saved',
+  // Story 17.22 — agent edit applied in place to an open draft (no new version)
+  'document_draft_edited',
   'document_version_restored',
   'document_status_changed',
   'document_linked_to_task',

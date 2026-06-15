@@ -1,0 +1,53 @@
+schema: 1
+story: '17.23'
+story_title: 'Add a Section In Place on an Open Draft (Close the ADD-path Inflation Gap)'
+gate: PASS
+status_reason: 'All 4 ACs met and verified. The single ADD_DOCUMENT_SECTION dispatch now routes to updateDraftVersionInPlace exactly like the UPDATE path — saveDocumentVersion has zero live references in the dispatch (dead import removed). This closes the ADD-SINGLE-INFLATION concern from the 17.22 gate: version-number inflation is now gone for ALL agent edits (update + add, single + consolidated). Only finding is cosmetic stale comments.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-14T22:25:00Z'
+
+top_issues:
+  - id: STALE-FORK-COMMENTS
+    severity: low
+    summary: 'Three doc comments still describe the dispatch fork as "between plain saveDocumentVersion and createDraftFromApprovedWithEdit" (pending-agent-actions.ts:162, :186, :568). After 17.22+17.23 the non-branch arm is updateDraftVersionInPlace, not saveDocumentVersion. Cosmetic/maintainability — no functional impact.'
+    suggested_owner: dev
+    recommendation: 'Quick comment refresh next time the file is touched.'
+
+waiver: { active: false }
+
+quality_score: 95
+expires: '2026-06-28T00:00:00Z'
+
+evidence:
+  tests_reviewed: 5
+  tests_run: '67 dispatch + 769 actions/activity/agent regression — all pass (dev reported 1217 broad)'
+  risks_identified: 1
+  trace:
+    ac_covered: [1, 2, 3, 4]
+    ac_gaps: []
+    notes:
+      - 'AC 1 (no version bump for ADD) is transitively guaranteed: ADD routes to updateDraftVersionInPlace, whose .update()-not-.create() invariant is proven by the 17.22 documents-dual-version unit tests; the ADD happy test additionally asserts saveDocumentVersion is NOT called.'
+      - 'AC 3 (in_place_add_section stamp by id) asserted by the rewritten stamp test; it also asserts the old version_number query does NOT fire.'
+      - 'Integration gap (not a defect): all dispatch + action tests mock Prisma, so the end-to-end "version_number truly does not increment in the DB" is not covered by an automated integration test. A live smoke (or a future integration test) is the only thing that proves the count invariant against a real DB.'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No new surface; reuses updateDraftVersionInPlace (workspace-scoped) + dispatch tasks:edit gate + Path C guard.'
+  performance:
+    status: PASS
+    notes: 'In-place .update() cheaper than minting a row; same reindex semantics as the replaced call.'
+  reliability:
+    status: PASS
+    notes: 'Atomic write inside updateDraftVersionInPlace; fire-and-forget stamp; branch arm untouched. Dead saveDocumentVersion import removed (no noUnusedLocals risk).'
+  maintainability:
+    status: CONCERNS
+    notes: 'Implementation is clean and symmetric, BUT three stale fork comments now misdescribe the code (saveDocumentVersion). Low-severity doc debt; flagged as STALE-FORK-COMMENTS.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Refresh the 3 stale fork comments (saveDocumentVersion → updateDraftVersionInPlace) at pending-agent-actions.ts:162/:186/:568.'
+      refs: ['app/actions/pending-agent-actions.ts']
+    - action: 'Consider one DB-backed integration test asserting version_number does not increment across N agent edits on an open draft (closes the mock-only coverage gap for the count invariant). Or rely on the live smoke.'
+      refs: ['tests/']

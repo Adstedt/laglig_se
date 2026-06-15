@@ -388,6 +388,11 @@ export function formatActivity(input: FormatInput): SentencePart[] {
       ]
     }
 
+    // Story 17.22: an agent edit applied in place to the open draft. No new
+    // version exists, so this must NOT read as "sparade version N".
+    case 'document_draft_edited':
+      return [u, text(' justerade utkastet '), primary]
+
     case 'document_version_restored': {
       const version = newP?.restored_from_version
       return [

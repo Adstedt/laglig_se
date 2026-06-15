@@ -167,8 +167,11 @@ export function WorkspaceShell({
               </aside>
             )}
 
-            {/* Main content */}
-            <main className="flex-1 overflow-auto bg-background p-4 md:p-6">
+            {/* Main content. min-w-0 lets this flex child shrink below its
+                content's intrinsic width when the right sidebar opens —
+                without it the editor overflows and scrolls horizontally
+                instead of reflowing narrower. */}
+            <main className="flex-1 min-w-0 overflow-auto bg-background p-4 md:p-6">
               <Breadcrumbs />
               {children}
             </main>

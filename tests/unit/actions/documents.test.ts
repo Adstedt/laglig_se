@@ -282,6 +282,99 @@ describe('createDocument', () => {
     expect(result.data?.versionNumber).toBe(1)
   })
 
+  // Story 17.10c (AC 1/2/7): createDocument must enqueue indexWorkspaceDocument
+  // post-commit so agent-authored drafts (draft_styrdokument approval +
+  // openDraftInEditor both route here) are searchable immediately — previously
+  // this was the only content-creating path that never indexed.
+  it('Story 17.10c: enqueues indexWorkspaceDocument via after() for the new doc', async () => {
+    vi.mocked(after).mockClear()
+    vi.mocked(indexWorkspaceDocument).mockClear()
+
+    vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
+      const tx = {
+        workspaceDocument: {
+          create: vi.fn().mockResolvedValue({ id: 'doc_1' }),
+          update: vi.fn().mockResolvedValue({
+            id: 'doc_1',
+            title: 'Agent Draft',
+            current_version_number: 1,
+          }),
+        },
+        workspaceDocumentVersion: {
+          create: vi.fn().mockResolvedValue({ id: 'ver_1' }),
+        },
+        activityLog: { create: vi.fn().mockResolvedValue({}) },
+      }
+      return callback(tx)
+    })
+
+    const result = await createDocument({
+      title: 'Agent Draft',
+      documentType: WorkspaceDocumentType.RISK_ASSESSMENT,
+      contentJson: {
+        type: 'doc',
+        content: [
+          {
+            type: 'heading',
+            attrs: { level: 1 },
+            content: [{ type: 'text', text: 'Riskbedömning' }],
+          },
+        ],
+      },
+    })
+    expect(result.success).toBe(true)
+
+    // The index trigger was scheduled via after() (non-blocking)…
+    expect(after).toHaveBeenCalledTimes(1)
+    // …and its callback indexes the freshly-created doc, scoped to the workspace.
+    const indexCb = vi.mocked(after).mock.calls[0]![0] as () => Promise<void>
+    await indexCb()
+    expect(indexWorkspaceDocument).toHaveBeenCalledWith('doc_1', 'ws_123')
+  })
+
+  // Story 17.10c (QA-17.10c-1): a fresh template stub is placeholder boilerplate
+  // (headings + italic prompts), so it must NOT be indexed at create — it indexes
+  // when the user fills it in the editor (autosave → cron), as pre-17.10c. Agent
+  // drafts (no templateId, real content) still index immediately (test above).
+  it('Story 17.10c: does NOT enqueue indexing for a fresh template stub', async () => {
+    vi.mocked(after).mockClear()
+    vi.mocked(indexWorkspaceDocument).mockClear()
+    vi.mocked(prisma.workspaceDocumentTemplate.findUnique).mockResolvedValue({
+      id: 'tmpl_1',
+      content_json: {
+        type: 'doc',
+        content: [{ type: 'heading' }, { type: 'paragraph' }],
+      },
+      document_type: WorkspaceDocumentType.CHECKLIST,
+    } as never)
+    vi.mocked(prisma.$transaction).mockImplementation(async (callback) => {
+      const tx = {
+        workspaceDocument: {
+          create: vi.fn().mockResolvedValue({ id: 'doc_t' }),
+          update: vi.fn().mockResolvedValue({
+            id: 'doc_t',
+            title: 'Checklista',
+            current_version_number: 1,
+          }),
+        },
+        workspaceDocumentVersion: {
+          create: vi.fn().mockResolvedValue({ id: 'ver_t' }),
+        },
+        activityLog: { create: vi.fn().mockResolvedValue({}) },
+      }
+      return callback(tx)
+    })
+
+    const result = await createDocument({
+      title: 'Checklista',
+      templateId: '550e8400-e29b-41d4-a716-446655440000',
+    })
+    expect(result.success).toBe(true)
+    // No index trigger scheduled for the unfilled template stub.
+    expect(after).not.toHaveBeenCalled()
+    expect(indexWorkspaceDocument).not.toHaveBeenCalled()
+  })
+
   it('uses template content when templateId is provided', async () => {
     const mockTemplate = {
       id: 'tmpl_1',

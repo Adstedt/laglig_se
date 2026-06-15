@@ -19,6 +19,7 @@ const {
   mockUpdateDocumentStatus,
   mockSaveDocumentVersion,
   mockCreateDraftFromApprovedWithEdit,
+  mockUpdateDraftVersionInPlace,
 } = vi.hoisted(() => ({
   mockWithWorkspace: vi.fn(),
   mockCreateTask: vi.fn(),
@@ -36,6 +37,8 @@ const {
   mockSaveDocumentVersion: vi.fn(),
   // Story 17.11c: auto-branch dispatch target (APPROVED-no-draft path).
   mockCreateDraftFromApprovedWithEdit: vi.fn(),
+  // Story 17.22: in-place draft-update dispatch target (draft-exists path).
+  mockUpdateDraftVersionInPlace: vi.fn(),
 }))
 
 vi.mock('@/lib/prisma', () => ({
@@ -59,6 +62,7 @@ vi.mock('@/lib/prisma', () => ({
     // saveDocumentVersion writes (find by version_number, patch new_value).
     activityLog: {
       findFirst: vi.fn(),
+      findUnique: vi.fn(),
       update: vi.fn(),
     },
     // Batch approve marks AgentDecisionLog rows accepted (best-effort).
@@ -87,6 +91,8 @@ vi.mock('@/app/actions/documents', () => ({
   saveDocumentVersion: mockSaveDocumentVersion,
   // Story 17.11c: auto-branch dispatch target.
   createDraftFromApprovedWithEdit: mockCreateDraftFromApprovedWithEdit,
+  // Story 17.22: in-place draft-update dispatch target.
+  updateDraftVersionInPlace: mockUpdateDraftVersionInPlace,
 }))
 
 vi.mock('@/app/actions/law-list-item-requirements', () => ({
@@ -707,7 +713,7 @@ describe('approvePendingActions — batch consolidation', () => {
     ).mockResolvedValue(null)
   })
 
-  it('consolidates same-document edits into ONE saveDocumentVersion call', async () => {
+  it('consolidates same-document edits into ONE in-place draft update (draft exists)', async () => {
     ;(
       prisma.pendingAgentAction.findMany as ReturnType<typeof vi.fn>
     ).mockResolvedValue([
@@ -725,20 +731,23 @@ describe('approvePendingActions — batch consolidation', () => {
       current_draft_version: { content_json: DOC_CONTENT },
       current_approved_version: null,
     })
-    mockSaveDocumentVersion.mockResolvedValue({
+    // Story 17.22: a draft exists → the single batch write goes in place
+    // (no new version), returning the UNCHANGED version number + audit-row id.
+    mockUpdateDraftVersionInPlace.mockResolvedValue({
       success: true,
-      data: { id: 'v_2', versionNumber: 2 },
+      data: { id: 'v_2', versionNumber: 2, activityLogId: 'al_batch' },
     })
 
     const result = await approvePendingActions(['pa_1', 'pa_2'])
 
     expect(result.success).toBe(true)
     expect(result.data?.approved).toBe(2)
-    // ONE version write, not one per edit.
-    expect(mockSaveDocumentVersion).toHaveBeenCalledTimes(1)
+    // ONE in-place write, not one per edit; no version minted, no branch.
+    expect(mockUpdateDraftVersionInPlace).toHaveBeenCalledTimes(1)
+    expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
     expect(mockCreateDraftFromApprovedWithEdit).not.toHaveBeenCalled()
-    // Both edits landed in the single saved tree (HTML is arg index 4).
-    const html = mockSaveDocumentVersion.mock.calls[0]![4]
+    // Both edits landed in the single written tree (HTML is arg index 4).
+    const html = mockUpdateDraftVersionInPlace.mock.calls[0]![4]
     expect(html).toContain('New purpose.')
     expect(html).toContain('New responsibility.')
     // Both rows marked APPROVED sharing the one version.
@@ -774,14 +783,15 @@ describe('approvePendingActions — batch consolidation', () => {
       current_draft_version: { content_json: DOC_CONTENT },
       current_approved_version: null,
     })
-    mockSaveDocumentVersion.mockResolvedValue({
+    mockUpdateDraftVersionInPlace.mockResolvedValue({
       success: true,
-      data: { id: 'v_2', versionNumber: 2 },
+      data: { id: 'v_2', versionNumber: 2, activityLogId: 'al_batch' },
     })
 
     await approvePendingActions(['pa_1', 'pa_2'])
 
-    const title = mockSaveDocumentVersion.mock.calls[0]![3]
+    // Rename rides along in the in-place write (title is arg index 3).
+    const title = mockUpdateDraftVersionInPlace.mock.calls[0]![3]
     expect(title).toBe('Nordviken policy')
   })
 
@@ -1138,7 +1148,7 @@ describe('approvePendingAction → UPDATE_DOCUMENT', () => {
     ).mockResolvedValue({})
   )
 
-  it('happy path: re-reads doc, applies updateSection, calls saveDocumentVersion with full doc + HTML', async () => {
+  it('happy path: re-reads doc, applies updateSection, updates the open draft IN PLACE with full doc + HTML', async () => {
     ;(
       prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
     ).mockResolvedValue(
@@ -1155,19 +1165,14 @@ describe('approvePendingAction → UPDATE_DOCUMENT', () => {
       current_draft_version: { content_json: DRAFT_DOC_CONTENT },
       current_approved_version: null,
     })
-    mockSaveDocumentVersion.mockResolvedValue({
+    // Story 17.22: draft exists → in-place update (no new version row).
+    mockUpdateDraftVersionInPlace.mockResolvedValue({
       success: true,
-      data: { id: 'v_2', versionNumber: 2 },
+      data: { id: 'v_2', versionNumber: 2, activityLogId: 'al_ip' },
     })
     ;(
-      prisma.activityLog.findFirst as ReturnType<typeof vi.fn>
-    ).mockResolvedValue({
-      id: 'al_1',
-      new_value: {
-        version_number: 2,
-        change_summary: 'Skärpt syftesformulering',
-      },
-    })
+      prisma.activityLog.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({ id: 'al_ip', new_value: {} })
     ;(prisma.activityLog.update as ReturnType<typeof vi.fn>).mockResolvedValue(
       {}
     )
@@ -1181,11 +1186,12 @@ describe('approvePendingAction → UPDATE_DOCUMENT', () => {
       versionNumber: 2,
     })
 
-    // saveDocumentVersion was called with the FULL updated doc (Syfte body
-    // replaced, Ansvar section preserved), and an HTML string.
-    expect(mockSaveDocumentVersion).toHaveBeenCalledTimes(1)
+    // updateDraftVersionInPlace was called with the FULL updated doc (Syfte body
+    // replaced, Ansvar section preserved), and an HTML string. No version minted.
+    expect(mockUpdateDraftVersionInPlace).toHaveBeenCalledTimes(1)
+    expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
     const [docId, fullContent, changeSummary, title, html] =
-      mockSaveDocumentVersion.mock.calls[0]!
+      mockUpdateDraftVersionInPlace.mock.calls[0]!
     expect(docId).toBe('d_1')
     expect(changeSummary).toBe('Skärpt syftesformulering')
     expect(title).toBeUndefined()
@@ -1204,7 +1210,7 @@ describe('approvePendingAction → UPDATE_DOCUMENT', () => {
     })
   })
 
-  it("AC 10: stamps agent authorship onto saveDocumentVersion's activity log row", async () => {
+  it('Story 17.22: stamps agent authorship onto the in-place document_draft_edited audit row (by id, not version_number)', async () => {
     ;(
       prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
     ).mockResolvedValue(
@@ -1221,43 +1227,38 @@ describe('approvePendingAction → UPDATE_DOCUMENT', () => {
       current_draft_version: { content_json: DRAFT_DOC_CONTENT },
       current_approved_version: null,
     })
-    mockSaveDocumentVersion.mockResolvedValue({
+    // In-place update returns the audit-row id (no version bump → can't match
+    // on version_number, so the dispatch stamps by id).
+    mockUpdateDraftVersionInPlace.mockResolvedValue({
       success: true,
-      data: { id: 'v_2', versionNumber: 2 },
+      data: { id: 'v_2', versionNumber: 2, activityLogId: 'al_ip' },
     })
     ;(
-      prisma.activityLog.findFirst as ReturnType<typeof vi.fn>
+      prisma.activityLog.findUnique as ReturnType<typeof vi.fn>
     ).mockResolvedValue({
-      id: 'al_1',
-      new_value: {
-        version_number: 2,
-        change_summary: 'Skärpt syftesformulering',
-      },
+      new_value: { change_summary: 'Skärpt syftesformulering' },
     })
 
     await approvePendingAction('pa_1')
 
-    expect(prisma.activityLog.findFirst).toHaveBeenCalledWith({
-      where: expect.objectContaining({
-        entity_type: 'workspace_document',
-        entity_id: 'd_1',
-        action: 'document_version_saved',
-        new_value: { path: ['version_number'], equals: 2 },
-      }),
-      orderBy: { created_at: 'desc' },
-      select: { id: true, new_value: true },
+    // Stamp finds the audit row by id (not a version_number query).
+    expect(prisma.activityLog.findUnique).toHaveBeenCalledWith({
+      where: { id: 'al_ip' },
+      select: { new_value: true },
     })
     expect(prisma.activityLog.update).toHaveBeenCalledWith({
-      where: { id: 'al_1' },
+      where: { id: 'al_ip' },
       data: {
         new_value: expect.objectContaining({
-          version_number: 2,
           change_summary: 'Skärpt syftesformulering',
           by: 'agent',
           pendingActionId: 'pa_1',
+          operation: 'in_place_update_section',
         }),
       },
     })
+    // The old version_number-keyed query must NOT fire for in-place edits.
+    expect(prisma.activityLog.findFirst).not.toHaveBeenCalled()
   })
 
   // Story 17.11c: APPROVED moved out of the refuse-at-dispatch set into the
@@ -1344,7 +1345,7 @@ describe('approvePendingAction → UPDATE_DOCUMENT', () => {
     expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
   })
 
-  it('keeps the row PENDING when saveDocumentVersion fails', async () => {
+  it('keeps the row PENDING when the in-place draft update fails', async () => {
     ;(
       prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
     ).mockResolvedValue(
@@ -1361,7 +1362,7 @@ describe('approvePendingAction → UPDATE_DOCUMENT', () => {
       current_draft_version: { content_json: DRAFT_DOC_CONTENT },
       current_approved_version: null,
     })
-    mockSaveDocumentVersion.mockResolvedValue({
+    mockUpdateDraftVersionInPlace.mockResolvedValue({
       success: false,
       error: 'Database down',
     })
@@ -1444,7 +1445,7 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
     ).mockResolvedValue({})
   )
 
-  it('happy path: re-reads doc, applies addSection (end), calls saveDocumentVersion with full doc + HTML', async () => {
+  it('happy path: re-reads doc, applies addSection (end), updates the open draft IN PLACE with full doc + HTML', async () => {
     ;(
       prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
     ).mockResolvedValue(
@@ -1461,16 +1462,14 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
       current_draft_version: { content_json: DRAFT_DOC_CONTENT },
       current_approved_version: null,
     })
-    mockSaveDocumentVersion.mockResolvedValue({
+    // Story 17.23: draft exists → in-place add (no new version row).
+    mockUpdateDraftVersionInPlace.mockResolvedValue({
       success: true,
-      data: { id: 'v_2', versionNumber: 2 },
+      data: { id: 'v_2', versionNumber: 2, activityLogId: 'al_ip' },
     })
     ;(
-      prisma.activityLog.findFirst as ReturnType<typeof vi.fn>
-    ).mockResolvedValue({
-      id: 'al_1',
-      new_value: { version_number: 2, change_summary: 'Lägg till inledning' },
-    })
+      prisma.activityLog.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({ id: 'al_ip', new_value: {} })
     ;(prisma.activityLog.update as ReturnType<typeof vi.fn>).mockResolvedValue(
       {}
     )
@@ -1484,9 +1483,10 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
       versionNumber: 2,
     })
 
-    expect(mockSaveDocumentVersion).toHaveBeenCalledTimes(1)
+    expect(mockUpdateDraftVersionInPlace).toHaveBeenCalledTimes(1)
+    expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
     const [docId, fullContent, changeSummary, title, html] =
-      mockSaveDocumentVersion.mock.calls[0]!
+      mockUpdateDraftVersionInPlace.mock.calls[0]!
     expect(docId).toBe('d_1')
     expect(changeSummary).toBe('Lägg till inledning')
     expect(title).toBeUndefined()
@@ -1511,7 +1511,7 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
     })
   })
 
-  it('AC 10: stamps agent authorship + operation:add_section onto the activity log row', async () => {
+  it('Story 17.23: stamps agent authorship onto the in-place document_draft_edited audit row (operation: in_place_add_section)', async () => {
     ;(
       prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
     ).mockResolvedValue(
@@ -1528,41 +1528,35 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
       current_draft_version: { content_json: DRAFT_DOC_CONTENT },
       current_approved_version: null,
     })
-    mockSaveDocumentVersion.mockResolvedValue({
+    mockUpdateDraftVersionInPlace.mockResolvedValue({
       success: true,
-      data: { id: 'v_2', versionNumber: 2 },
+      data: { id: 'v_2', versionNumber: 2, activityLogId: 'al_ip' },
     })
     ;(
-      prisma.activityLog.findFirst as ReturnType<typeof vi.fn>
+      prisma.activityLog.findUnique as ReturnType<typeof vi.fn>
     ).mockResolvedValue({
-      id: 'al_1',
-      new_value: { version_number: 2, change_summary: 'Lägg till inledning' },
+      new_value: { change_summary: 'Lägg till inledning' },
     })
 
     await approvePendingAction('pa_1')
 
-    expect(prisma.activityLog.findFirst).toHaveBeenCalledWith({
-      where: expect.objectContaining({
-        entity_type: 'workspace_document',
-        entity_id: 'd_1',
-        action: 'document_version_saved',
-        new_value: { path: ['version_number'], equals: 2 },
-      }),
-      orderBy: { created_at: 'desc' },
-      select: { id: true, new_value: true },
+    expect(prisma.activityLog.findUnique).toHaveBeenCalledWith({
+      where: { id: 'al_ip' },
+      select: { new_value: true },
     })
     expect(prisma.activityLog.update).toHaveBeenCalledWith({
-      where: { id: 'al_1' },
+      where: { id: 'al_ip' },
       data: {
         new_value: expect.objectContaining({
-          version_number: 2,
           change_summary: 'Lägg till inledning',
           by: 'agent',
           pendingActionId: 'pa_1',
-          operation: 'add_section',
+          operation: 'in_place_add_section',
         }),
       },
     })
+    // The old version_number-keyed query must NOT fire for in-place adds.
+    expect(prisma.activityLog.findFirst).not.toHaveBeenCalled()
   })
 
   it('inserts at position { at: "after", heading } when target exists', async () => {
@@ -1588,18 +1582,18 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
       current_draft_version: { content_json: DRAFT_DOC_CONTENT },
       current_approved_version: null,
     })
-    mockSaveDocumentVersion.mockResolvedValue({
+    mockUpdateDraftVersionInPlace.mockResolvedValue({
       success: true,
-      data: { id: 'v_2', versionNumber: 2 },
+      data: { id: 'v_2', versionNumber: 2, activityLogId: 'al_ip' },
     })
     ;(
-      prisma.activityLog.findFirst as ReturnType<typeof vi.fn>
+      prisma.activityLog.findUnique as ReturnType<typeof vi.fn>
     ).mockResolvedValue(null)
 
     const result = await approvePendingAction('pa_1')
 
     expect(result.success).toBe(true)
-    const [, fullContent] = mockSaveDocumentVersion.mock.calls[0]!
+    const [, fullContent] = mockUpdateDraftVersionInPlace.mock.calls[0]!
     // Inserted between the Syfte section and the Ansvar section.
     expect(fullContent).toEqual({
       type: 'doc',
@@ -1747,7 +1741,7 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
     expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
   })
 
-  it('keeps the row PENDING when saveDocumentVersion fails', async () => {
+  it('keeps the row PENDING when the in-place draft update fails', async () => {
     ;(
       prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
     ).mockResolvedValue(
@@ -1764,7 +1758,7 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION', () => {
       current_draft_version: { content_json: DRAFT_DOC_CONTENT },
       current_approved_version: null,
     })
-    mockSaveDocumentVersion.mockResolvedValue({
+    mockUpdateDraftVersionInPlace.mockResolvedValue({
       success: false,
       error: 'Database down',
     })
@@ -1887,14 +1881,15 @@ describe('approvePendingAction → UPDATE_DOCUMENT (Story 17.11c auto-branch)', 
     })
   })
 
-  it('creates_draft=true + race (user manually branched): falls through to plain saveDocumentVersion', async () => {
+  it('creates_draft=true + race (user manually branched): falls through to the in-place draft update', async () => {
     ;(
       prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
     ).mockResolvedValue(
       row({ action_type: 'UPDATE_DOCUMENT', params: branchParams })
     )
     // Re-read state: doc now has a draft pointer (user raced + manually branched).
-    // autoBranchEligible is false → shouldAutoBranch is false → plain save fires.
+    // autoBranchEligible is false → shouldAutoBranch is false → Story 17.22 the
+    // non-branch arm is the IN-PLACE update (no new version), not a plain mint.
     ;(
       prisma.workspaceDocument.findFirst as ReturnType<typeof vi.fn>
     ).mockResolvedValue({
@@ -1906,13 +1901,17 @@ describe('approvePendingAction → UPDATE_DOCUMENT (Story 17.11c auto-branch)', 
       current_draft_version: { content_json: APPROVED_DOC_CONTENT },
       current_approved_version: { content_json: APPROVED_DOC_CONTENT },
     })
-    mockSaveDocumentVersion.mockResolvedValue({
+    mockUpdateDraftVersionInPlace.mockResolvedValue({
       success: true,
-      data: { id: 'v_5', versionNumber: 5 },
+      data: {
+        id: 'v_existing_draft',
+        versionNumber: 5,
+        activityLogId: 'al_ip',
+      },
     })
     ;(
-      prisma.activityLog.findFirst as ReturnType<typeof vi.fn>
-    ).mockResolvedValue({ id: 'al_save', new_value: { version_number: 5 } })
+      prisma.activityLog.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({ new_value: {} })
     ;(prisma.activityLog.update as ReturnType<typeof vi.fn>).mockResolvedValue(
       {}
     )
@@ -1921,7 +1920,8 @@ describe('approvePendingAction → UPDATE_DOCUMENT (Story 17.11c auto-branch)', 
 
     expect(result.success).toBe(true)
     expect(mockCreateDraftFromApprovedWithEdit).not.toHaveBeenCalled()
-    expect(mockSaveDocumentVersion).toHaveBeenCalledTimes(1)
+    expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
+    expect(mockUpdateDraftVersionInPlace).toHaveBeenCalledTimes(1)
   })
 
   it('creates_draft=true + stale to SUPERSEDED: refuses with stale-status error, row stays PENDING', async () => {
@@ -2152,7 +2152,7 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION (Story 17.11c auto-branc
     })
   })
 
-  it('creates_draft=true + race (user manually branched): falls through to plain saveDocumentVersion', async () => {
+  it('creates_draft=true + race (user manually branched): falls through to the in-place draft update', async () => {
     ;(
       prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
     ).mockResolvedValue(
@@ -2169,13 +2169,17 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION (Story 17.11c auto-branc
       current_draft_version: { content_json: APPROVED_DOC_CONTENT },
       current_approved_version: { content_json: APPROVED_DOC_CONTENT },
     })
-    mockSaveDocumentVersion.mockResolvedValue({
+    mockUpdateDraftVersionInPlace.mockResolvedValue({
       success: true,
-      data: { id: 'v_5', versionNumber: 5 },
+      data: {
+        id: 'v_existing_draft',
+        versionNumber: 5,
+        activityLogId: 'al_ip',
+      },
     })
     ;(
-      prisma.activityLog.findFirst as ReturnType<typeof vi.fn>
-    ).mockResolvedValue({ id: 'al_save', new_value: { version_number: 5 } })
+      prisma.activityLog.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({ new_value: {} })
     ;(prisma.activityLog.update as ReturnType<typeof vi.fn>).mockResolvedValue(
       {}
     )
@@ -2184,7 +2188,8 @@ describe('approvePendingAction → ADD_DOCUMENT_SECTION (Story 17.11c auto-branc
 
     expect(result.success).toBe(true)
     expect(mockCreateDraftFromApprovedWithEdit).not.toHaveBeenCalled()
-    expect(mockSaveDocumentVersion).toHaveBeenCalledTimes(1)
+    expect(mockSaveDocumentVersion).not.toHaveBeenCalled()
+    expect(mockUpdateDraftVersionInPlace).toHaveBeenCalledTimes(1)
   })
 
   it('creates_draft=true + stale to ARCHIVED: refuses, row stays PENDING', async () => {

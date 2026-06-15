@@ -96,6 +96,22 @@ describe('formatActivity', () => {
     )
   })
 
+  it('Story 17.22: renders document_draft_edited as "justerade utkastet" (not "sparade version")', () => {
+    const parts = formatActivity({
+      action: 'document_draft_edited',
+      entity_type: 'workspace_document',
+      user: USER,
+      old_value: null,
+      new_value: { draft_version_id: 'v_d', change_summary: 'x' },
+      primary: docRef,
+      secondary: null,
+    })
+    const text = sentencePartsToText(parts)
+    expect(text).toBe('Alexander justerade utkastet Rutin Arbetsmiljö')
+    // Must NOT fall through to the generic default arm or imply a new version.
+    expect(text).not.toMatch(/sparade version/i)
+  })
+
   it('renders requirement_created with text and parent list_item', () => {
     const parts = formatActivity({
       action: 'requirement_created',

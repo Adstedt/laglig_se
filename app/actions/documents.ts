@@ -171,6 +171,34 @@ export async function createDocument(
         return updated
       })
 
+      // Story 17.10c: index the freshly-created doc so it's searchable
+      // immediately. Agent-authored drafts (draft_styrdokument approval +
+      // openDraftInEditor both route through createDocument) carry real content
+      // at create time, but createDocument was the ONE content-creating path
+      // that never enqueued indexing — so such drafts stayed invisible to
+      // search_workspace_documents until a human re-saved them in the editor.
+      //
+      // QA-17.10c-1: SKIP a fresh template stub. When `templateId` is set the
+      // content is the raw, unfilled template (placeholder boilerplate —
+      // headings + italic "Beskriv…" prompts) which would pollute search; that
+      // doc is indexed when the user fills it in the editor (autosave →
+      // mark-dirty → cron), exactly as pre-17.10c. Blank docs are already
+      // skipped downstream by indexWorkspaceDocument's isEmptyTiptapDoc guard.
+      // Same after()/self-guarding pattern as createDraftFromApprovedWithEdit;
+      // syncWorkspaceChunks hash-gates re-embeds.
+      if (!validated.templateId) {
+        after(async () => {
+          try {
+            await indexWorkspaceDocument(document.id, workspaceId)
+          } catch (err) {
+            console.error(
+              `[createDocument] index failed for ${document.id} — retryable:`,
+              err instanceof Error ? err.message : err
+            )
+          }
+        })
+      }
+
       return {
         success: true,
         data: {
@@ -877,6 +905,151 @@ export async function saveDocumentVersion(
       return {
         success: true,
         data: { id: version.ver.id, versionNumber: version.newVersionNumber },
+      }
+    })
+  } catch (error) {
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    return { success: false, error: 'Ett oväntat fel uppstod' }
+  }
+}
+
+/**
+ * Story 17.22: update the document's OPEN draft version IN PLACE — no new
+ * version row, no version-number bump. Mirrors `autosaveDocument`'s pointer
+ * targeting, but as an explicit agent checkpoint it additionally
+ *   (a) writes a `document_draft_edited` ActivityLog audit row — the per-edit
+ *       audit trail that replaces the previously-minted version rows (AC 3), and
+ *   (b) reindexes immediately so `[Källa:]` grounding tracks the edited draft (AC 5).
+ *
+ * The agent dispatch calls this for the *draft-exists* arm; the branch arm
+ * (APPROVED-no-draft) still uses `createDraftFromApprovedWithEdit`. Returns
+ * `{ id, versionNumber, activityLogId }`:
+ *   - `id`            — the in-place-updated draft version id (same row),
+ *   - `versionNumber` — the UNCHANGED `current_version_number` (so `result_ref`
+ *                       and the APPROVED card keep showing the right number),
+ *   - `activityLogId` — the audit-row id, so the dispatch can stamp agent
+ *                       authorship by id (in-place edits don't bump
+ *                       `version_number`, so the old match key no longer works).
+ */
+export async function updateDraftVersionInPlace(
+  documentId: string,
+  contentJson: object,
+  changeSummary?: string,
+  title?: string,
+  contentHtml?: string
+): Promise<
+  ActionResult<{ id: string; versionNumber: number; activityLogId: string }>
+> {
+  try {
+    return await withWorkspace(async ({ workspaceId, userId }) => {
+      const document = await prisma.workspaceDocument.findFirst({
+        where: { id: documentId, workspace_id: workspaceId },
+        select: {
+          id: true,
+          status: true,
+          current_version_number: true,
+          current_version_id: true,
+          current_draft_version_id: true,
+          current_approved_version_id: true,
+          workspace_id: true,
+        },
+      })
+
+      if (!document) {
+        return { success: false, error: 'Dokument hittades inte' }
+      }
+
+      // Story 17.16 AC 5 Path C guard (mirrors autosave / saveDocumentVersion):
+      // an APPROVED-no-draft doc must branch a draft first — never edit in place.
+      if (
+        document.current_draft_version_id == null &&
+        document.status === WorkspaceDocumentStatus.APPROVED
+      ) {
+        return {
+          success: false,
+          error:
+            'Det godkända dokumentet kan inte ändras direkt. Skapa ett utkast först.',
+        }
+      }
+
+      // Target the open-draft pointer; fall back exactly as autosave does.
+      const targetVersionId =
+        document.current_draft_version_id ??
+        document.current_approved_version_id ??
+        document.current_version_id
+
+      if (!targetVersionId) {
+        return { success: false, error: 'Dokument hittades inte' }
+      }
+
+      const html = contentHtml ?? ''
+      const extractedText = extractPlaintext(html)
+
+      const activityLogId = await prisma.$transaction(async (tx) => {
+        await tx.workspaceDocumentVersion.update({
+          where: { id: targetVersionId },
+          data: {
+            content_json: contentJson as never,
+            content_html: html,
+            extracted_text: extractedText,
+            // Latest edit's summary wins on the draft row; per-edit summaries
+            // live on the ActivityLog rows below (Story 17.22 audit decision).
+            ...(changeSummary !== undefined
+              ? { change_summary: changeSummary }
+              : {}),
+          },
+        })
+
+        if (title !== undefined) {
+          await tx.workspaceDocument.update({
+            where: { id: document.id },
+            data: { title },
+          })
+        }
+
+        // AC 3: per-edit audit row (who / when / summary). Written with a base
+        // shape; the agent dispatch patches `by` / `operation` / `pendingActionId`
+        // onto it by id (Story 17.22 — no version_number to match on).
+        const log = await tx.activityLog.create({
+          data: {
+            workspace_id: document.workspace_id,
+            user_id: userId,
+            entity_type: 'workspace_document',
+            entity_id: document.id,
+            action: 'document_draft_edited',
+            new_value: {
+              draft_version_id: targetVersionId,
+              version_number: document.current_version_number,
+              change_summary: changeSummary ?? null,
+            },
+          },
+        })
+
+        return log.id
+      })
+
+      // AC 5: explicit checkpoint → reindex now (after() so the response isn't
+      // blocked; hash-gated inside syncWorkspaceChunks so a no-op is free).
+      after(async () => {
+        try {
+          await indexWorkspaceDocument(document.id, document.workspace_id)
+        } catch (err) {
+          console.error(
+            `[updateDraftVersionInPlace] reindex failed for ${document.id} — retryable:`,
+            err instanceof Error ? err.message : err
+          )
+        }
+      })
+
+      return {
+        success: true,
+        data: {
+          id: targetVersionId,
+          versionNumber: document.current_version_number,
+          activityLogId,
+        },
       }
     })
   } catch (error) {

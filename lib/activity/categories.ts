@@ -31,6 +31,7 @@ export const ACTION_TO_CATEGORY: Record<KnownAction, ActivityCategory> = {
   compliance_narrative_updated: 'andringar',
   document_status_changed: 'andringar',
   document_version_saved: 'andringar',
+  document_draft_edited: 'andringar',
   document_version_restored: 'andringar',
   requirement_text_updated: 'andringar',
   requirement_marked_fulfilled: 'andringar',

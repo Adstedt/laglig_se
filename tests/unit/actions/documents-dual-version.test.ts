@@ -93,6 +93,7 @@ import {
   autosaveDocument,
   submitDraftForReview,
   rejectDraftReview,
+  updateDraftVersionInPlace,
 } from '@/app/actions/documents'
 import { prisma } from '@/lib/prisma'
 
@@ -940,5 +941,104 @@ describe('createDraftFromApprovedWithEdit — Story 17.11c AC 1', () => {
       .calls[0]![0]
     expect(versionCreate.data.content_html).toBe('')
     expect(versionCreate.data.extracted_text).toBe('')
+  })
+})
+
+// ============================================================================
+// updateDraftVersionInPlace (Story 17.22) — in-place draft edit, no new version
+// ============================================================================
+
+describe('updateDraftVersionInPlace — Story 17.22', () => {
+  const DRAFT_DOC = {
+    id: 'd_1',
+    status: 'DRAFT' as const,
+    current_version_number: 5,
+    current_version_id: 'v_alias',
+    current_draft_version_id: 'v_draft',
+    current_approved_version_id: null,
+    workspace_id: 'ws_1',
+  }
+
+  it('AC 1 + 3 + 5: updates the open draft row IN PLACE — no new version, writes a document_draft_edited audit row, reindexes', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(DRAFT_DOC)
+    fn(prisma.activityLog.create).mockResolvedValue({ id: 'al_ip' })
+
+    const result = await updateDraftVersionInPlace(
+      'd_1',
+      { type: 'doc', content: [] },
+      'Justerade syftet',
+      undefined,
+      '<p>ny</p>'
+    )
+
+    expect(result.success).toBe(true)
+
+    // AC 1: the EXISTING draft version row is updated in place…
+    const verUpdate = fn(prisma.workspaceDocumentVersion.update).mock
+      .calls[0]![0]
+    expect(verUpdate.where).toEqual({ id: 'v_draft' })
+    expect(verUpdate.data).toMatchObject({
+      content_html: '<p>ny</p>',
+      change_summary: 'Justerade syftet',
+    })
+    // …and NO new version row is created, no version-number bump.
+    expect(prisma.workspaceDocumentVersion.create).not.toHaveBeenCalled()
+    expect(prisma.workspaceDocument.update).not.toHaveBeenCalled()
+
+    // AC 3: per-edit audit row.
+    const logCall = fn(prisma.activityLog.create).mock.calls[0]![0]
+    expect(logCall.data.action).toBe('document_draft_edited')
+    expect(logCall.data.new_value).toMatchObject({
+      draft_version_id: 'v_draft',
+      version_number: 5,
+      change_summary: 'Justerade syftet',
+    })
+
+    // Return contract: same row id + UNCHANGED version number + audit-row id.
+    expect(result.data).toEqual({
+      id: 'v_draft',
+      versionNumber: 5,
+      activityLogId: 'al_ip',
+    })
+
+    // AC 5: explicit checkpoint reindexes the draft.
+    expect(mockIndexWorkspaceDocument).toHaveBeenCalledWith('d_1', 'ws_1')
+  })
+
+  it('applies an optional rename to the document within the same in-place write', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue(DRAFT_DOC)
+    fn(prisma.activityLog.create).mockResolvedValue({ id: 'al_ip' })
+
+    await updateDraftVersionInPlace(
+      'd_1',
+      { type: 'doc', content: [] },
+      'sum',
+      'Nytt namn',
+      '<p>x</p>'
+    )
+
+    const docUpdate = fn(prisma.workspaceDocument.update).mock.calls[0]![0]
+    expect(docUpdate.data).toEqual({ title: 'Nytt namn' })
+    // Still no new version row.
+    expect(prisma.workspaceDocumentVersion.create).not.toHaveBeenCalled()
+  })
+
+  it('AC 7: refuses an APPROVED-no-draft doc (Path C) — must branch first, no write', async () => {
+    fn(prisma.workspaceDocument.findFirst).mockResolvedValue({
+      ...DRAFT_DOC,
+      status: 'APPROVED',
+      current_draft_version_id: null,
+      current_approved_version_id: 'v_approved',
+    })
+
+    const result = await updateDraftVersionInPlace('d_1', {
+      type: 'doc',
+      content: [],
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.error).toMatch(/Skapa ett utkast först/i)
+    expect(prisma.workspaceDocumentVersion.update).not.toHaveBeenCalled()
+    expect(prisma.workspaceDocumentVersion.create).not.toHaveBeenCalled()
   })
 })

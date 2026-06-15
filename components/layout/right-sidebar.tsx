@@ -141,7 +141,7 @@ export function RightSidebar({ isOpen, onToggle }: RightSidebarProps) {
           'hidden lg:flex flex-col border-l bg-card transition-all duration-300 ease-in-out',
           isOpen
             ? isExpanded
-              ? 'w-[960px]'
+              ? 'w-[min(768px,55vw)]'
               : 'w-[480px]'
             : 'w-0 overflow-hidden'
         )}

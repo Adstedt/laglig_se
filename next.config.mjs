@@ -63,6 +63,25 @@ const securityHeaders = [
   },
 ]
 
+// Headless-Chromium PDF routes (puppeteer-core + @sparticuz/chromium). These
+// packages are externalized (loaded from node_modules at runtime, not bundled),
+// but the Turbopack/nft tracer follows puppeteer-core's CJS entry and misses
+// @puppeteer/browsers' ESM files that the ESM import chain actually loads on
+// Vercel — ERR_MODULE_NOT_FOUND for
+// @puppeteer/browsers/lib/esm/browser-data/browser-data.js. Force-include the
+// full package trees for just the PDF-rendering routes. Both the hoisted
+// top-level path AND the pnpm `.pnpm` real path are globbed because transitive
+// deps (@puppeteer/browsers) may not be hoisted to top-level node_modules on
+// the Vercel build; redundant globs are harmless.
+const PDF_RUNTIME_INCLUDES = [
+  './node_modules/puppeteer-core/**/*',
+  './node_modules/@puppeteer/browsers/**/*',
+  './node_modules/@sparticuz/chromium/**/*',
+  './node_modules/.pnpm/puppeteer-core@*/node_modules/**/*',
+  './node_modules/.pnpm/@puppeteer+browsers@*/node_modules/**/*',
+  './node_modules/.pnpm/@sparticuz+chromium@*/node_modules/**/*',
+]
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Story 26.4: hide the dev-mode indicator badge so it never overlaps
@@ -170,6 +189,14 @@ const nextConfig = {
     '/(marketing)/funktioner/[slug]': ['./content/marketing/**/*.mdx'],
     '/(marketing)/branscher/[slug]': ['./content/marketing/**/*.mdx'],
     '/(marketing)/omraden/[slug]': ['./content/marketing/**/*.mdx'],
+    // PDF export + revisionsrapport routes need the full Chromium/puppeteer
+    // package trees traced into their serverless functions (see
+    // PDF_RUNTIME_INCLUDES above). Route-group keys declared in both shapes
+    // because the tracer's convention for (group) routes is version-ambiguous.
+    '/api/workspace/documents/[documentId]/export': PDF_RUNTIME_INCLUDES,
+    '/laglistor/kontroller/[cycleId]/rapport/pdf': PDF_RUNTIME_INCLUDES,
+    '/(workspace)/laglistor/kontroller/[cycleId]/rapport/pdf':
+      PDF_RUNTIME_INCLUDES,
   },
 
   // Serverless function size cap (250 MB unzipped). The Next.js file tracer
