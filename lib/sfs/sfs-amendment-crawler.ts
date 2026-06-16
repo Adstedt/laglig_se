@@ -50,6 +50,15 @@ export interface IndexPageRow {
 export interface DiscoverOptions {
   /** Only discover SFS numbers above this numeric part (e.g. 91 means start from 92+) */
   afterNumericPart?: number
+  /**
+   * Numbers already covered in our DB (amendments + laws). When provided this
+   * supersedes `afterNumericPart`: discovery returns every index row whose
+   * numeric part is NOT in this set — including gaps *below* the highest known
+   * number — and scans all index pages (no watermark-based early stop). This is
+   * what closes the "gap-below-watermark" hole where a single missed number was
+   * never revisited.
+   */
+  knownNumbers?: Set<number>
   /** Custom fetch function for testing */
   fetchFn?: typeof fetch
   /** Minimum delay between pagination requests in ms (default: 200) */
@@ -86,15 +95,30 @@ const USER_AGENT = 'Laglig.se/1.0 (Legal research; contact@laglig.se)'
 export function classifyDocument(title: string): DocumentType {
   const lowerTitle = title.toLowerCase()
 
-  if (
-    lowerTitle.includes('om ändring i') ||
-    lowerTitle.includes('om ändring av')
-  ) {
-    return 'amendment'
+  // Repeals first: a title can combine a repeal with other changes
+  // (e.g. "om dels upphävande av X, dels ändring i Y") and the register
+  // treats the repeal as primary.
+  if (lowerTitle.includes('upphävande av')) {
+    return 'repeal'
   }
 
-  if (lowerTitle.includes('om upphävande av')) {
-    return 'repeal'
+  // Amendments. Match "ändring i"/"ändring av" anywhere (not only after a
+  // leading "om "), so combined titles like
+  //   "Förordning om dels fortsatt giltighet av X (2011:840), dels ändring i
+  //    denna förordning"
+  // are caught. Pure "fortsatt giltighet" validity-extensions also modify the
+  // base law's expiry, so they classify as amendments too. Finally, some source
+  // titles drop the preposition entirely — e.g.
+  //   "Lag om ändring bostadsrättslagen (1991:614)" (note: no "i") —
+  // so any title mentioning "ändring" alongside a parenthesised base-SFS
+  // reference is treated as an amendment.
+  if (
+    lowerTitle.includes('ändring i') ||
+    lowerTitle.includes('ändring av') ||
+    lowerTitle.includes('fortsatt giltighet') ||
+    (lowerTitle.includes('ändring') && /\(\d{4}:\d+\)/.test(title))
+  ) {
+    return 'amendment'
   }
 
   return 'new_law'
@@ -564,7 +588,12 @@ export async function discoverFromIndex(
   year: number,
   options: DiscoverOptions = {}
 ): Promise<DiscoverResult> {
-  const { afterNumericPart, fetchFn = fetch, requestDelayMs = 200 } = options
+  const {
+    afterNumericPart,
+    knownNumbers,
+    fetchFn = fetch,
+    requestDelayMs = 200,
+  } = options
 
   const allRows: IndexPageRow[] = []
   let pagesScanned = 0
@@ -595,8 +624,10 @@ export async function discoverFromIndex(
 
     // If all rows on this page are at or below watermark, stop paginating
     // (index is in descending order — once we're past the watermark, all
-    // subsequent pages are also below it)
+    // subsequent pages are also below it). Skipped when knownNumbers is in use:
+    // gaps can live deep in the index, so we must scan every page.
     if (
+      knownNumbers === undefined &&
       afterNumericPart !== undefined &&
       rows.every((r) => r.numericPart <= afterNumericPart)
     ) {
@@ -626,11 +657,14 @@ export async function discoverFromIndex(
 
   const highestNumericPart = Math.max(...uniqueRows.map((r) => r.numericPart))
 
-  // Filter to rows above watermark
+  // Filter to rows we don't already have. knownNumbers (when provided) catches
+  // below-watermark gaps; afterNumericPart is the legacy high-water behavior.
   const filtered =
-    afterNumericPart !== undefined
-      ? uniqueRows.filter((r) => r.numericPart > afterNumericPart)
-      : uniqueRows
+    knownNumbers !== undefined
+      ? uniqueRows.filter((r) => !knownNumbers.has(r.numericPart))
+      : afterNumericPart !== undefined
+        ? uniqueRows.filter((r) => r.numericPart > afterNumericPart)
+        : uniqueRows
 
   // Enrich each row with classification and URLs
   const documents: DiscoveredDocument[] = filtered.map((row) => {

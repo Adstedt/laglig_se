@@ -51,6 +51,15 @@ const args = process.argv.slice(2)
 const DRY_RUN = args.includes('--dry-run')
 const limitIdx = args.indexOf('--limit')
 const LIMIT = limitIdx >= 0 ? parseInt(args[limitIdx + 1] ?? '0', 10) : 0
+// --only 477,863 → process only these numeric SFS parts (targeted backfill)
+const onlyIdx = args.indexOf('--only')
+const ONLY =
+  onlyIdx >= 0
+    ? (args[onlyIdx + 1] ?? '')
+        .split(',')
+        .map((s) => parseInt(s.trim(), 10))
+        .filter((n) => !isNaN(n))
+    : []
 
 // ---------------------------------------------------------------------------
 // Shared processing logic (same as discover-sfs-amendments route)
@@ -361,6 +370,14 @@ async function main() {
     if (a.type !== b.type) return a.type === 'retry' ? -1 : 1
     return a.sfsNum - b.sfsNum
   })
+
+  // Targeted backfill: keep only the requested SFS numbers.
+  if (ONLY.length > 0) {
+    const kept = queue.filter((q) => ONLY.includes(q.sfsNum))
+    queue.length = 0
+    queue.push(...kept)
+    console.log(`--only ${ONLY.join(', ')} → ${kept.length} item(s) in scope\n`)
+  }
 
   const total = LIMIT > 0 ? Math.min(queue.length, LIMIT) : queue.length
   console.log(
