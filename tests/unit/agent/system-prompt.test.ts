@@ -724,9 +724,8 @@ describe('formatCompanyContext', () => {
     })
 
     const result = formatCompanyContext(profile)!
-    expect(result).toContain(
-      'Verksamhet: Tillverkning av industriella komponenter'
-    )
+    expect(result).toContain('### Verksamhetsbeskrivning (från kunden)')
+    expect(result).toContain('Tillverkning av industriella komponenter')
     expect(result).toContain('Registrerad: 2015')
     expect(result).toContain('F-skatt: Ja')
     expect(result).toContain('Momsregistrerad: Ja')
@@ -771,7 +770,8 @@ describe('formatCompanyContext', () => {
     })
 
     const result = formatCompanyContext(profile)!
-    expect(result).toContain('Verksamhet: Konsultverksamhet inom IT')
+    expect(result).toContain('### Verksamhetsbeskrivning (från kunden)')
+    expect(result).toContain('Konsultverksamhet inom IT')
     expect(result).not.toContain('F-skatt')
     expect(result).not.toContain('Utlandsägt')
   })

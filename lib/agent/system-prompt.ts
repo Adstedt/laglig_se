@@ -111,9 +111,6 @@ export function formatCompanyContext(
   if (authoritativeName) {
     lines.push(`- Företag: ${authoritativeName}`)
   }
-  if (profile.business_description) {
-    lines.push(`- Verksamhet: ${profile.business_description}`)
-  }
   if (profile.org_number) {
     lines.push(`- Organisationsnummer: ${profile.org_number}`)
   }
@@ -215,9 +212,20 @@ export function formatCompanyContext(
     lines.push('- Status: Avregistrerad')
   }
 
-  if (lines.length === 0) return undefined
+  // Free-text description gets its own labeled sub-section so it reads as
+  // authored prose (the company's "CLAUDE.md") rather than a flat fact bullet.
+  // Placed last, after the scannable structured facts, with its own heading.
+  const description = profile.business_description?.trim()
 
-  return lines.join('\n')
+  if (lines.length === 0 && !description) return undefined
+
+  const blocks: string[] = []
+  if (lines.length > 0) blocks.push(lines.join('\n'))
+  if (description) {
+    blocks.push(`### Verksamhetsbeskrivning (från kunden)\n${description}`)
+  }
+
+  return blocks.join('\n\n')
 }
 
 // ---------------------------------------------------------------------------

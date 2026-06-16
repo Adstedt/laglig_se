@@ -109,7 +109,7 @@ const updateCompanyProfileSchema = z.object({
     ] as const satisfies readonly RevenueRange[])
     .optional()
     .nullable(),
-  business_description: z.string().max(1000).optional().nullable(),
+  business_description: z.string().max(4000).optional().nullable(),
 })
 
 export type UpdateCompanyProfileInput = z.infer<

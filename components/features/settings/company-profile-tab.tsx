@@ -132,7 +132,7 @@ const formSchema = z.object({
   workforce_composition: z.string().optional().or(z.literal('')),
   revenue_range: z.string().optional().or(z.literal('')),
   // Enrichment
-  business_description: z.string().max(1000).optional().or(z.literal('')),
+  business_description: z.string().max(4000).optional().or(z.literal('')),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -183,6 +183,8 @@ function getCompletionNudge(
   if (!values.employee_count_range)
     return 'Ange antal anställda — storleken påverkar vilka regler som gäller.'
   if (!values.municipality) return 'Ange kommun för lokala regelverk.'
+  if (!values.business_description)
+    return 'Skriv en verksamhetsbeskrivning — fritexten ger agenten mest kontext.'
   if (!values.sni_code)
     return 'Lägg till SNI-kod för mer exakt branschklassificering.'
   const anyFlag = ACTIVITY_FLAG_KEYS.some(
@@ -232,13 +234,9 @@ function formatEnrichmentDate(date: Date | string | null | undefined): string {
 
 interface BolagsverketDataCardProps {
   companyProfile: CompanyProfile
-  form: ReturnType<typeof useForm<FormData>>
 }
 
-function BolagsverketDataCard({
-  companyProfile,
-  form,
-}: BolagsverketDataCardProps) {
+function BolagsverketDataCard({ companyProfile }: BolagsverketDataCardProps) {
   const taxStatus = parseTaxStatus(companyProfile.tax_status)
   const procedures = parseOngoingProcedures(companyProfile.ongoing_procedures)
   const hasParent =
@@ -382,22 +380,6 @@ function BolagsverketDataCard({
               </p>
             )}
           </div>
-        </div>
-
-        {/* Editable business description */}
-        <div className="mt-6 space-y-2 border-t pt-4">
-          <Label htmlFor="business_description">Verksamhetsbeskrivning</Label>
-          <Textarea
-            id="business_description"
-            {...form.register('business_description')}
-            placeholder="Beskriv er verksamhet"
-            rows={3}
-            className="resize-none"
-          />
-          <p className="text-xs text-muted-foreground">
-            Redigera fritt — beskrivningen används för att ge bättre anpassade
-            rekommendationer.
-          </p>
         </div>
       </CardContent>
     </Card>
@@ -569,9 +551,40 @@ export function CompanyProfileTab({ companyProfile }: CompanyProfileTabProps) {
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Verksamhetsbeskrivning — fritext-kontexten som lyfter agenten mest.
+            Alltid synlig (oberoende av data_source). */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Verksamhetsbeskrivning</CardTitle>
+            <CardDescription>
+              Den enskilt viktigaste texten för agentens kontext — beskriv
+              verksamheten i fritext: vad ni gör, hur ni arbetar, processer,
+              risker, anläggningar och särskilda förhållanden.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Textarea
+              id="business_description"
+              {...form.register('business_description')}
+              placeholder="Beskriv er verksamhet så detaljerat som möjligt: vad ni gör, hur ni arbetar, vilka processer och risker som finns, anläggningar, kunder och särskilda förhållanden …"
+              rows={8}
+              className="resize-y"
+            />
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-xs text-muted-foreground">
+                Ju mer noggrann beskrivning, desto starkare blir agentens
+                rekommendationer.
+              </p>
+              <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                {(watchedValues.business_description ?? '').length}/4000
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Bolagsverket-data card — only shown when data_source is "bolagsapi" */}
         {companyProfile.data_source === 'bolagsapi' && (
-          <BolagsverketDataCard companyProfile={companyProfile} form={form} />
+          <BolagsverketDataCard companyProfile={companyProfile} />
         )}
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
