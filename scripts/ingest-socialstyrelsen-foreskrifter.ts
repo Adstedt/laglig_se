@@ -117,6 +117,98 @@ function extractContent(pageHtml: string): {
   return { contentHtml, amendments, consolidatedThrough, pdfs }
 }
 
+// Docs whose extracted HTML exceeds this are normalized chapter-by-chapter
+// (single-pass output would exceed the model's max_tokens / time out). Story 9.5
+// QA-fix: remediates SOSFS 2009:30 etc. into ONE document, not multiple.
+const LARGE_HTML_THRESHOLD = 55_000
+
+async function callClaude(
+  systemExtra: string,
+  userText: string,
+  anthropic: Anthropic
+) {
+  const stream = anthropic.messages.stream({
+    model: AGENCY_DEFAULT_MODEL,
+    max_tokens: AGENCY_MAX_TOKENS.standard,
+    system: AGENCY_REGULATION_SYSTEM_PROMPT + systemExtra,
+    messages: [{ role: 'user', content: [{ type: 'text', text: userText }] }],
+  })
+  const r = await stream.finalMessage()
+  if (r.stop_reason === 'max_tokens') throw new Error('max_tokens truncation')
+  return r.content
+    .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+    .map((b) => b.text)
+    .join('\n')
+    .replace(/^```html\n?|\n?```$/g, '')
+    .trim()
+}
+
+const isChapterH2 = (el: unknown, $: cheerio.CheerioAPI) =>
+  (el as { tagName?: string }).tagName === 'h2' &&
+  /^\s*\d+\s*kap\./i.test($(el as never).text())
+
+/** Split extracted content into a preamble segment + one per "N kap." chapter + trailing.
+ *  Chapter <h2>s are siblings under a content wrapper (e.g. div.main-body), NOT at <body>
+ *  top level — so we iterate the chapter headings' actual parent's children. */
+function chapterSegments(
+  contentHtml: string
+): { label: string; html: string }[] {
+  const $ = cheerio.load(contentHtml, { decodeEntities: false } as never)
+  const firstChap = $('h2')
+    .filter((_, el) => isChapterH2(el, $))
+    .first()
+  const container = firstChap.length
+    ? firstChap.parent()
+    : $('body').length
+      ? $('body')
+      : $.root()
+  const top = container.children().toArray()
+  const segs: { label: string; parts: string[] }[] = [
+    { label: 'preamble', parts: [] },
+  ]
+  for (const el of top) {
+    if (isChapterH2(el, $)) {
+      segs.push({ label: $(el).text().trim(), parts: [$.html($(el)) ?? ''] })
+    } else {
+      segs[segs.length - 1]!.parts.push($.html($(el)) ?? '')
+    }
+  }
+  return segs
+    .map((s) => ({ label: s.label, html: s.parts.join('').trim() }))
+    .filter((s) => s.html.length > 0)
+}
+
+/** Normalize a large doc chapter-by-chapter, then stitch into ONE <article>. */
+async function normalizeChunked(
+  contentHtml: string,
+  documentNumber: string,
+  title: string,
+  id: string,
+  anthropic: Anthropic
+): Promise<string> {
+  const segments = chapterSegments(contentHtml)
+  const bodyParts: string[] = []
+  for (const seg of segments) {
+    const chMatch = seg.label.match(/^(\d+)\s*kap\./)
+    const isChapter = Boolean(chMatch)
+    const instr = isChapter
+      ? `\n\nCHUNKED MODE: output ONLY a single <section class="kapitel" id="${id}_K${chMatch![1]}"> element for this one chapter (heading <h2 class="kapitel-rubrik">, paragraphs as <h3 class="paragraph"><a class="paragraf" id="${id}_K${chMatch![1]}_P{N}">N §</a></h3> + <p class="text">). NO <article>, <html>, lovhead, or other chapters. No markdown fences.`
+      : `\n\nCHUNKED MODE: output ONLY the body fragment for this preamble/appendix content as <p class="text">/<section> elements. NO <article>, <html>, lovhead, or <h1>. No markdown fences.`
+    const out = await callClaude(
+      instr,
+      `Regulation ${documentNumber} ("${title}"), segment "${seg.label}". Reconstruct faithfully — no summarizing/dropping.\n\n--- SOURCE ---\n${seg.html}`,
+      anthropic
+    )
+    bodyParts.push(out)
+  }
+  return `<article class="legal-document" id="${id}">
+  <div class="lovhead"><h1><p class="text">${documentNumber}</p><p class="text">${title}</p></h1></div>
+  <div class="body">
+${bodyParts.join('\n')}
+  </div>
+</article>`
+}
+
 async function ingestOne(
   entry: RegistryEntry,
   anthropic: Anthropic,
@@ -135,7 +227,7 @@ async function ingestOne(
   if (contentHtml.length < 500)
     return { ok: false, reason: 'extracted content too small' }
 
-  const userPrompt = `Convert this Swedish regulation (${documentNumber}) into semantic HTML.
+  const singlePassPrompt = `Convert this Swedish regulation (${documentNumber}) into semantic HTML.
 
 The source below is the CONSOLIDATED HTML extracted from the official Socialstyrelsen web page (Episerver CMS markup). Reconstruct the regulation faithfully — do NOT summarize, drop, or reword any normative text. Preserve chapter (kap.) and paragraph (§) structure, allmänna råd, and inline amendment attributions like "(HSLF-FS 2025:21)".
 
@@ -152,33 +244,40 @@ Output ONLY the HTML, no markdown fences or commentary.
 --- SOURCE HTML ---
 ${contentHtml}`
 
-  let response: Anthropic.Message
+  let rawOutput: string
   try {
-    const stream = anthropic.messages.stream({
-      model: AGENCY_DEFAULT_MODEL,
-      max_tokens: AGENCY_MAX_TOKENS.standard,
-      system: AGENCY_REGULATION_SYSTEM_PROMPT,
-      messages: [
-        { role: 'user', content: [{ type: 'text', text: userPrompt }] },
-      ],
-    })
-    response = await stream.finalMessage()
+    rawOutput =
+      contentHtml.length > LARGE_HTML_THRESHOLD
+        ? await normalizeChunked(
+            contentHtml,
+            documentNumber,
+            title,
+            id,
+            anthropic
+          )
+        : await callClaude('', singlePassPrompt, anthropic)
   } catch (e) {
-    return {
-      ok: false,
-      reason: `Claude error: ${e instanceof Error ? e.message : String(e)}`,
+    const msg = e instanceof Error ? e.message : String(e)
+    // Fallback: if a single-pass attempt truncated/terminated, retry chunked.
+    if (contentHtml.length <= LARGE_HTML_THRESHOLD) {
+      try {
+        rawOutput = await normalizeChunked(
+          contentHtml,
+          documentNumber,
+          title,
+          id,
+          anthropic
+        )
+      } catch (e2) {
+        return {
+          ok: false,
+          reason: `chunked fallback failed: ${e2 instanceof Error ? e2.message : String(e2)}`,
+        }
+      }
+    } else {
+      return { ok: false, reason: `Claude error: ${msg}` }
     }
   }
-  if (response.stop_reason === 'max_tokens') {
-    return {
-      ok: false,
-      reason: 'max_tokens truncation (large doc — defer to remediation)',
-    }
-  }
-  const rawOutput = response.content
-    .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-    .map((b) => b.text)
-    .join('\n')
 
   const v = validateLlmOutput(rawOutput, documentNumber)
   if (!v.valid || !v.cleanedHtml) {
@@ -209,10 +308,8 @@ ${contentHtml}`
       ? { source_prefix_typo: entry.sourcePrefixTypo }
       : {}),
     needs_review: needsManualReview(v) || undefined,
-    tokens: {
-      input: response.usage.input_tokens,
-      output: response.usage.output_tokens,
-    },
+    normalized_via:
+      contentHtml.length > LARGE_HTML_THRESHOLD ? 'chunked' : 'single-pass',
   }
 
   const slug = generateAgencySlug(documentNumber)

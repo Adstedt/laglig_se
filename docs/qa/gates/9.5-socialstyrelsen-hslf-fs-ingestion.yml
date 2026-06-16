@@ -1,0 +1,70 @@
+schema: 1
+story: '9.5'
+story_title: 'Socialstyrelsen Föreskrifter (SOSFS / HSLF-FS) Ingestion — Consolidated HTML + Forward Monitoring Hooks'
+gate: PASS
+status_reason: 'Re-gate after dev QA-fix pass: all CONCERNS resolved and independently re-verified. 76/76 ingested, attribution deterministic + corrected (1 co-signatory, not 2), 0 embedding gaps, oversized doc ingested as one complete document. Connection-pool hardening reclassified to Story 9.6 (operational, monitoring-phase only).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-16T20:00:00Z'
+
+waiver: { active: false }
+
+quality_score: 95
+
+# History: 2026-06-16 initial gate CONCERNS (85) → re-gate PASS (95) after dev fixes.
+top_issues: []
+
+resolved_issues:
+  - id: 'INCOMPLETE-1-OF-76'
+    resolution: 'Fixed — chunked-by-chapter normalization ingested SOSFS 2009:30 as ONE complete document (10 kapitel, 62 KB, 93 chunks). 76/76. Verified.'
+  - id: 'CONNECTION-POOL-EXHAUSTION'
+    resolution: 'Reclassified to Story 9.6. Root cause is NOT code concurrency (the chunk pipeline is sequential) — it is a pooler/long-run interaction that only recurs on monitoring re-ingests. Operational hardening (connection_limit / retry) tracked in 9.6. Did not manifest in the completed 76/76 run.'
+  - id: 'LLM-ATTRIBUTION-SPOT-CHECK'
+    resolution: 'Fixed — the spot-check found a real mis-attribution (HSLF-FS 2018:43 → Läkemedelsverket, from a cross-reference). Issuer resolution switched from LLM-over-body to deterministic publikation-page-H1 parse; 2018:43 corrected to Socialstyrelsen. True co-signatory count is 1 (Rättsmedicinalverket). Independently re-verified.'
+
+remaining_notes:
+  - id: 'SAME-SESSION-DEV-AND-REVIEW'
+    severity: low
+    summary: 'Implementation, fixes, and reviews were performed by the same agent across one session. Mitigated by deterministic fresh-DB re-verification at re-gate, but a human/independent pass is still advisable before epic close. Not gate-blocking.'
+    suggested_owner: po
+  - id: 'CHUNKED-PATH-NEW-CODE'
+    severity: low
+    summary: 'The chunked-by-chapter normalization is new code validated on a single doc (SOSFS 2009:30). It is gated behind a 55 KB threshold (+ fallback), so it only triggers for rare large docs; monitor on the next large föreskrift. Two impl bugs were already found+fixed during this pass (dangling var; segmenter nesting).'
+    suggested_owner: dev
+
+evidence:
+  tests_reviewed: 0
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    ac_gaps: []
+    notes: 'AC6 exceeded original scope (per-document co-signatory attribution). All ACs met; the AC4a deferral is now resolved (oversized doc ingested).'
+  re_verification: >
+      Re-gate ran fresh DB queries (Bash available): 76/76 ingested; attribution 75 Socialstyrelsen
+      + 1 Rättsmedicinalverket with 2018:43 corrected; 0 docs without chunks and 0 chunks without
+      embedding; SOSFS 2009:30 = 1 <article>, 10 kapitel sections, 10 json chapters, 62 KB full_text.
+      Build EXIT 0, marketing-link-warnings.txt 0 bytes, lint 0 errors, typecheck clean (dev pass).
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Public regulatory data; no auth/PII. robots respected.'
+  performance:
+    status: PASS
+    notes: 'SSG catalog; offline ingest; build green. Chunked normalization is slow (~9.5 min for the one 66 KB doc) but bounded to rare large docs.'
+  reliability:
+    status: PASS
+    notes: 'Fail-soft + retry + chunked remediation delivered 76/76, 0 embedding gaps. Pool hardening tracked in 9.6 (does not affect the completed bulk ingest).'
+  maintainability:
+    status: PASS
+    notes: 'Issuer resolution is now deterministic (publikation-H1), LLM-free and cross-ref-proof — a maintainability improvement over the prior LLM method. DRY shared lib + tests retained.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Harden connection-pool usage before Story 9.6 monitoring re-ingests (connection_limit / retry).'
+      refs: ['lib/chunks/sync-document-chunks.ts']
+    - action: 'Independent (non-same-session) verification pass before closing the epic phase.'
+    - action: 'Watch the chunked-normalization path on the next large föreskrift (new code, validated on 1 doc).'
+      refs: ['scripts/ingest-socialstyrelsen-foreskrifter.ts']
+    - action: 'Implement Story 9.6 (forward monitoring).'
+      refs: ['docs/stories/9.6.socialstyrelsen-amendment-monitoring.md']

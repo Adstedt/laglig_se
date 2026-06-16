@@ -45,6 +45,44 @@ describe('classifyDocument', () => {
     expect(classifyDocument('Förordning om statsbidrag')).toBe('new_law')
   })
 
+  it('classifies combined "dels ändring" titles as amendments (SFS 2026:863)', () => {
+    expect(
+      classifyDocument(
+        'Förordning om dels fortsatt giltighet av Laponiaförordningen (2011:840), dels ändring i denna förordning'
+      )
+    ).toBe('amendment')
+  })
+
+  it('classifies malformed amendment titles missing the preposition (SFS 2026:477)', () => {
+    // Source title literally omits the "i": "ändring bostadsrättslagen".
+    expect(
+      classifyDocument('Lag om ändring bostadsrättslagen (1991:614)')
+    ).toBe('amendment')
+  })
+
+  it('does not treat a plain new law as an amendment just for the word ändring', () => {
+    // No parenthesised base-SFS reference → still a new law.
+    expect(classifyDocument('Lag om ändrade förhållanden i samhället')).toBe(
+      'new_law'
+    )
+  })
+
+  it('classifies pure validity-extensions ("fortsatt giltighet") as amendments', () => {
+    expect(
+      classifyDocument(
+        'Förordning om fortsatt giltighet av förordningen (2020:750) om viss verksamhet'
+      )
+    ).toBe('amendment')
+  })
+
+  it('prioritises repeal when a title combines upphävande with ändring', () => {
+    expect(
+      classifyDocument(
+        'Lag om dels upphävande av lagen (2019:50), dels ändring i lagen (2020:60)'
+      )
+    ).toBe('repeal')
+  })
+
   it('is case-insensitive', () => {
     expect(
       classifyDocument('LAG OM ÄNDRING I ARBETSMILJÖLAGEN (1977:1160)')

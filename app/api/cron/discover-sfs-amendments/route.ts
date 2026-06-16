@@ -136,11 +136,17 @@ export async function GET(request: Request) {
     // ==========================================================================
 
     console.log(`[DISCOVER-SFS] Phase 1: Discovery for year ${year}`)
-    const watermark = await computeWatermark(year)
-    console.log(`[DISCOVER-SFS] Watermark: ${watermark ?? 'none (full crawl)'}`)
+    const knownNumbers = await getKnownNumbers(year)
+    console.log(
+      `[DISCOVER-SFS] Known ${year} numbers: ${knownNumbers.size}` +
+        (knownNumbers.size > 0 ? ` (max ${Math.max(...knownNumbers)})` : '')
+    )
 
+    // Scan the full index, filtering against everything we already have. Unlike
+    // a single high-water mark, this re-surfaces gaps below the highest number
+    // (a missed amendment is retried every run until it lands).
     const discoverResult = await discoverFromIndex(year, {
-      ...(watermark !== null && { afterNumericPart: watermark }),
+      knownNumbers,
       requestDelayMs: CONFIG.REQUEST_DELAY_MS,
     })
 
@@ -414,26 +420,39 @@ export async function GET(request: Request) {
 }
 
 // =============================================================================
-// Watermark
+// Coverage set
 // =============================================================================
 
-async function computeWatermark(year: number): Promise<number | null> {
-  const amendments = await prisma.amendmentDocument.findMany({
-    where: {
-      sfs_number: { startsWith: `SFS ${year}:` },
-    },
-    select: { sfs_number: true },
-  })
+/**
+ * Numbers we already have for the year — the union of discovered amendments
+ * (AmendmentDocument) and ingested laws (LegalDocument, which covers new laws
+ * arriving via the Riksdagen pipeline). Passed to discoverFromIndex so it
+ * returns only genuinely-missing index rows, including gaps below the highest
+ * known number. Replaces the old single high-water mark, which permanently
+ * skipped any number it had already advanced past.
+ */
+async function getKnownNumbers(year: number): Promise<Set<number>> {
+  const [amendments, laws] = await Promise.all([
+    prisma.amendmentDocument.findMany({
+      where: { sfs_number: { startsWith: `SFS ${year}:` } },
+      select: { sfs_number: true },
+    }),
+    prisma.legalDocument.findMany({
+      where: { document_number: { startsWith: `SFS ${year}:` } },
+      select: { document_number: true },
+    }),
+  ])
 
-  if (amendments.length === 0) return null
-
-  const nums = amendments
-    .map((a) => extractSfsNumericPart(a.sfs_number))
-    .filter((n) => !isNaN(n))
-
-  if (nums.length === 0) return null
-
-  return Math.max(...nums)
+  const known = new Set<number>()
+  for (const a of amendments) {
+    const n = extractSfsNumericPart(a.sfs_number)
+    if (!isNaN(n)) known.add(n)
+  }
+  for (const l of laws) {
+    const m = l.document_number.match(/SFS\s+\d{4}:(\d+)/)
+    if (m?.[1]) known.add(parseInt(m[1], 10))
+  }
+  return known
 }
 
 // =============================================================================

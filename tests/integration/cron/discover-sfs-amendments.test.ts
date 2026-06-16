@@ -191,6 +191,65 @@ describe('discover-sfs-amendments integration', () => {
   })
 
   // ---------------------------------------------------------------------------
+  // knownNumbers: resurface gaps below the high-water mark
+  // ---------------------------------------------------------------------------
+
+  describe('knownNumbers gap detection', () => {
+    it('returns a missing number that sits below the highest known number', async () => {
+      const year = 2026
+      const pages = new Map<string, string>()
+
+      // Page 1 (newest) — all already known.
+      pages.set(
+        `https://svenskforfattningssamling.se/regulations/${year}/index.html`,
+        makeIndexPageHtml(
+          year,
+          [
+            {
+              num: 30,
+              title: 'Lag om ändring i lagen (2020:30)',
+              date: '2026-02-15',
+            },
+            {
+              num: 29,
+              title: 'Lag om ändring i lagen (2020:29)',
+              date: '2026-02-14',
+            },
+          ],
+          2
+        )
+      )
+      // Page 2 (older) — contains the gap at 28 plus already-known 27.
+      pages.set(
+        `https://svenskforfattningssamling.se/regulations/${year}/index.html%3Fpage=2.html`,
+        makeIndexPageHtml(year, [
+          {
+            num: 28,
+            title: 'Lag om ändring i lagen (2020:28)',
+            date: '2026-02-13',
+          },
+          {
+            num: 27,
+            title: 'Lag om ändring i lagen (2020:27)',
+            date: '2026-02-12',
+          },
+        ])
+      )
+
+      // We already have everything except 28. A high-water mark of 30 would
+      // skip 28 forever; knownNumbers must still surface it.
+      const result = await discoverFromIndex(year, {
+        knownNumbers: new Set([27, 29, 30]),
+        requestDelayMs: 0,
+        fetchFn: createMockFetch(pages),
+      })
+
+      expect(result.pagesScanned).toBe(2) // full scan, no early stop
+      expect(result.documents.map((d) => d.numericPart)).toEqual([28])
+    })
+  })
+
+  // ---------------------------------------------------------------------------
   // Pagination
   // ---------------------------------------------------------------------------
 
