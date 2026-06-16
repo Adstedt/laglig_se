@@ -1352,3 +1352,42 @@ html {
 .streamdown table tr:last-child td {
   @apply border-b-0;
 }
+
+/* AI chat — flatten Streamdown's nested table frame.
+   Streamdown renders every table as an outer card (border + the
+   copy/download/fullscreen toolbar) wrapping an *inner* bordered <div>
+   wrapping the <table> — and our rules above add a third border to the
+   <table> itself. Three concentric rounded borders read as "a table inside
+   a table". Collapse them into one card: the outer wrapper is the only frame,
+   the toolbar sits in a header row, and the table fills the card edge-to-edge.
+   Targets Streamdown's structural data-attributes so it wins regardless of the
+   .chat-markdown / .streamdown cascade, and is placed after them in source. */
+[data-streamdown='table-wrapper'] {
+  @apply my-4 gap-0 overflow-hidden rounded-lg border border-border bg-card p-0;
+}
+
+/* toolbar row (copy / download / fullscreen) — a filled strip in the same
+   muted tone as the header, so the card's rounded top corners read as a clean
+   header band rather than an empty page-coloured notch */
+[data-streamdown='table-wrapper'] > div:first-child:not(:has(> table)) {
+  @apply bg-muted/40 px-1.5 py-0.5;
+}
+
+/* inner scroll container — drop its border / rounding / background so it is
+   invisible; the muted header below provides the separation from the toolbar */
+[data-streamdown='table-wrapper'] > div:has(> table) {
+  @apply overflow-x-auto rounded-none border-0 bg-transparent;
+}
+
+/* the table no longer needs its own frame, and must sit flush against the
+   card edges — drop the margin .chat-markdown adds to plain markdown tables */
+[data-streamdown='table-wrapper'] table {
+  @apply my-0 w-full rounded-none border-0;
+}
+
+/* headers are structural labels → Safiro (medium), normal case instead of the
+   all-caps tracking. Selector matches .streamdown table th specificity and is
+   later in source order, so it wins. */
+[data-streamdown='table-wrapper'] table th {
+  @apply font-safiro text-sm font-medium normal-case tracking-tight text-foreground/75;
+}
