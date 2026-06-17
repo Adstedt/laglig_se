@@ -4,14 +4,13 @@
  * Per-category consent dialog. Opens from the footer "Cookieinställningar"
  * link or the banner "Inställningar" button.
  *
- * Two categories surfaced today — Nödvändiga (locked on) and Analys.
- * Add Marknadsföring here when we ship ads; the gtag mapping in
- * `lib/consent/gtag.ts` already includes the four ad_* signals (currently
- * hardcoded to denied).
+ * Three categories surfaced — Nödvändiga (locked on), Analys, and
+ * Marknadsföring (Google Ads / conversion tracking). The Marknadsföring toggle
+ * maps to ad_storage + ad_user_data via `lib/consent/gtag.ts`.
  */
 
 import { useEffect, useState } from 'react'
-import { Lock, BarChart3 } from 'lucide-react'
+import { Lock, BarChart3, Megaphone } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -35,14 +34,18 @@ export function ConsentSettingsDialog() {
     update,
   } = useConsent()
   const [analytics, setAnalytics] = useState(categories.analytics)
+  const [marketing, setMarketing] = useState(categories.marketing)
 
   // Re-sync local toggle state whenever the dialog opens.
   useEffect(() => {
-    if (settingsOpen) setAnalytics(categories.analytics)
-  }, [settingsOpen, categories.analytics])
+    if (settingsOpen) {
+      setAnalytics(categories.analytics)
+      setMarketing(categories.marketing)
+    }
+  }, [settingsOpen, categories.analytics, categories.marketing])
 
   function handleSave() {
-    update({ analytics })
+    update({ analytics, marketing })
     setSettingsOpen(false)
   }
 
@@ -78,6 +81,17 @@ export function ConsentSettingsDialog() {
             checked={analytics}
             disabled={false}
             onCheckedChange={setAnalytics}
+          />
+
+          <Separator />
+
+          <CategoryRow
+            icon={<Megaphone className="h-4 w-4 text-muted-foreground" />}
+            title="Marknadsföring"
+            description="Mäter resultatet av våra annonser (Google Ads) så att vi kan visa relevant marknadsföring och se vilka kampanjer som leder till registreringar."
+            checked={marketing}
+            disabled={false}
+            onCheckedChange={setMarketing}
           />
         </div>
 

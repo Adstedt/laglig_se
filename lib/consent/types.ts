@@ -5,7 +5,9 @@
  * existing record (bump version → mismatched stored version → prompt again).
  */
 
-export const CONSENT_VERSION = 1
+// v2: added the `marketing` category (Google Ads / conversion tracking).
+// Bumping re-prompts existing users so they can consent to the new purpose.
+export const CONSENT_VERSION = 2
 export const CONSENT_STORAGE_KEY = 'laglig_consent_v1'
 /** Per IMY guidance — re-prompt after 12 months. */
 export const CONSENT_TTL_MS = 365 * 24 * 60 * 60 * 1000
@@ -16,6 +18,8 @@ export const CONSENT_TTL_MS = 365 * 24 * 60 * 60 * 1000
  */
 export interface ConsentCategories {
   analytics: boolean
+  /** Google Ads / conversion tracking (ad_storage + ad_user_data signals). */
+  marketing: boolean
 }
 
 export interface ConsentRecord {
@@ -27,8 +31,10 @@ export interface ConsentRecord {
 /** Default-denied state used before the user has chosen. */
 export const DEFAULT_CATEGORIES: ConsentCategories = {
   analytics: false,
+  marketing: false,
 }
 
 export const ACCEPT_ALL_CATEGORIES: ConsentCategories = {
   analytics: true,
+  marketing: true,
 }

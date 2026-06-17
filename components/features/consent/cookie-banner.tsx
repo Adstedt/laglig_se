@@ -47,7 +47,8 @@ export function CookieBanner() {
             <p className="text-sm leading-relaxed text-muted-foreground">
               Nödvändiga cookies krävs för att tjänsten ska fungera (t.ex.
               inloggning och val av arbetsyta). Med din tillåtelse använder vi
-              även cookies för anonym besöksstatistik. Läs mer i vår{' '}
+              även cookies för anonym besöksstatistik och för att mäta våra
+              annonser. Läs mer i vår{' '}
               <Link
                 href="/cookiepolicy"
                 className="underline underline-offset-4 hover:text-foreground"
