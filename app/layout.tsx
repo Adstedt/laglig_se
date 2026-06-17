@@ -10,6 +10,7 @@ import { ConsentModeBootstrap } from '@/components/features/consent/consent-mode
 import { CookieBanner } from '@/components/features/consent/cookie-banner'
 import { ConsentSettingsDialog } from '@/components/features/consent/consent-settings-dialog'
 import { GoogleAnalytics } from '@/components/features/consent/google-analytics'
+import { GoogleAds } from '@/components/features/consent/google-ads'
 
 // react-pdf styles for PDF preview component
 import 'react-pdf/dist/Page/AnnotationLayer.css'
@@ -53,6 +54,8 @@ export default function RootLayout({
           </ThemeProvider>
           {/* GA4 — mounts only when analytics consent is granted. */}
           <GoogleAnalytics />
+          {/* Google Ads — mounts only when marketing consent is granted. */}
+          <GoogleAds />
         </ConsentProvider>
         {/* Vercel Analytics - Cookieless, GDPR-compliant tracking */}
         <Analytics />

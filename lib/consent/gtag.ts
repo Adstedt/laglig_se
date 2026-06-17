@@ -8,7 +8,9 @@
  * Necessary-category signals (security_storage, functionality_storage,
  * personalization_storage) stay `granted` always — they map to cookies the
  * app cannot run without (auth session, workspace selection, theme prefs).
- * Ad signals stay `denied` until we actually ship ads.
+ * Ad signals (ad_storage, ad_user_data) follow the `marketing` category for
+ * Google Ads conversion tracking; ad_personalization stays denied until we run
+ * personalized/remarketing audiences.
  */
 
 import type { ConsentCategories } from './types'
@@ -43,9 +45,11 @@ export function categoriesToConsentParams(
   categories: ConsentCategories
 ): GtagConsentParams {
   return {
-    // Always denied until we run ads
-    ad_storage: 'denied',
-    ad_user_data: 'denied',
+    // Google Ads / conversion tracking — user-controllable via the
+    // `marketing` category. ad_personalization stays denied until we
+    // actually run personalized/remarketing audiences.
+    ad_storage: categories.marketing ? 'granted' : 'denied',
+    ad_user_data: categories.marketing ? 'granted' : 'denied',
     ad_personalization: 'denied',
     // User-controllable
     analytics_storage: categories.analytics ? 'granted' : 'denied',

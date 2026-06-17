@@ -8,6 +8,7 @@ import { CheckCircle, MailCheck } from 'lucide-react'
 import { SignupSchema } from '@/lib/validation/auth'
 import { signupAction } from '@/app/actions/auth'
 import { trackEvent } from '@/lib/track-event'
+import { trackAdsConversion } from '@/lib/marketing/google-ads'
 import { getInvitationPreview } from '@/app/actions/invitations'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -158,6 +159,9 @@ export function SignupForm() {
       }
 
       trackEvent('signup_completed', { invited: !!inviteToken })
+      // Google Ads conversion — account creation. No-ops without marketing
+      // consent or unset ads env vars. Skip invited signups (not ad-driven).
+      if (!inviteToken) trackAdsConversion('signup')
       setSuccess(true)
     } catch (err) {
       setError('Ett oväntat fel uppstod. Försök igen.')
