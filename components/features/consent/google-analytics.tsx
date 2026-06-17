@@ -1,27 +1,19 @@
-'use client'
-
 /**
- * Mounts the GA4 script tag once consent for analytics_storage is granted.
- * Consent Mode v2's default-denied bootstrap (set in `<head>` via
- * ConsentModeBootstrap) means GA4 will still queue + redact even if it
- * loaded with denied state — but we keep it gated here too as
- * belt-and-suspenders and to avoid the script weight when the user has
- * declined.
+ * Mounts the GA4 tag. Advanced Consent Mode: the tag loads on every page (not
+ * gated on consent), and the `consent default` denied state set in <head> by
+ * <ConsentModeBootstrap /> — which runs before this afterInteractive script —
+ * guarantees no cookies until the user grants `analytics_storage`. Denied
+ * (cookieless) pings still flow, feeding GA4's behavioral/conversion modeling.
  *
- * Renders nothing when `NEXT_PUBLIC_GA_ID` is unset (preview / dev) or
- * when consent hasn't been granted.
+ * Renders nothing when `NEXT_PUBLIC_GA_ID` is unset (preview / dev).
  */
 
 import Script from 'next/script'
-import { useConsent } from '@/components/providers/consent-provider'
 
 export function GoogleAnalytics() {
-  const { hydrated, categories } = useConsent()
   const gaId = process.env.NEXT_PUBLIC_GA_ID
 
   if (!gaId) return null
-  if (!hydrated) return null
-  if (!categories.analytics) return null
 
   return (
     <>
@@ -37,7 +29,7 @@ export function GoogleAnalytics() {
         dangerouslySetInnerHTML={{
           __html: `
             gtag('js', new Date());
-            gtag('config', '${gaId}', { anonymize_ip: true });
+            gtag('config', '${gaId}');
           `,
         }}
       />

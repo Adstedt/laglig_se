@@ -37,8 +37,11 @@ declare global {
 
 function gtag(...args: unknown[]): void {
   if (typeof window === 'undefined') return
-  window.dataLayer = window.dataLayer ?? []
-  window.dataLayer.push(args)
+  // Delegate to the global stub installed in <head> by <ConsentModeBootstrap />,
+  // which does `dataLayer.push(arguments)`. gtag.js only recognizes consent
+  // commands pushed as an `arguments` object; pushing a plain array (as this
+  // helper used to) is silently ignored, leaving consent stuck at default-denied.
+  window.gtag?.(...args)
 }
 
 export function categoriesToConsentParams(

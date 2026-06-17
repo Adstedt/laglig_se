@@ -1,26 +1,18 @@
-'use client'
-
 /**
- * Loads the Google Ads gtag.js tag (`AW-…`) once the visitor grants the
- * `marketing` consent category. Mirrors <GoogleAnalytics /> — the shared
- * `window.gtag` stub and Consent Mode v2 default-denied state are already set
- * in <head> by <ConsentModeBootstrap />, so loading here only adds the Ads
- * config; conversions are fired imperatively via `trackAdsConversion()`.
+ * Mounts the Google Ads gtag.js tag (`AW-…`). Advanced Consent Mode: the tag
+ * loads on every page (not gated on consent), with the `consent default` denied
+ * state set in <head> by <ConsentModeBootstrap /> ensuring no ad cookies until
+ * the user grants `ad_storage`. Conversions are fired imperatively via
+ * `trackAdsConversion()`.
  *
- * Renders nothing when `NEXT_PUBLIC_GOOGLE_ADS_ID` is unset (dev / preview) or
- * when marketing consent hasn't been granted.
+ * Renders nothing when `NEXT_PUBLIC_GOOGLE_ADS_ID` is unset (dev / preview).
  */
 
 import Script from 'next/script'
-import { useConsent } from '@/components/providers/consent-provider'
 import { GOOGLE_ADS_ID } from '@/lib/marketing/google-ads'
 
 export function GoogleAds() {
-  const { hydrated, categories } = useConsent()
-
   if (!GOOGLE_ADS_ID) return null
-  if (!hydrated) return null
-  if (!categories.marketing) return null
 
   return (
     <>
