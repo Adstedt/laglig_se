@@ -81,7 +81,7 @@ export function PricingSection() {
           </div>
           <div className="flex items-center gap-2">
             <Check className="h-4 w-4 text-emerald-500" />
-            <span>GDPR-compliant</span>
+            <span>Följer GDPR</span>
           </div>
           <div className="flex items-center gap-2">
             <Check className="h-4 w-4 text-emerald-500" />

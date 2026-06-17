@@ -89,7 +89,7 @@ export function WhySectionGraph() {
                 Ni har koll på bokföringen.
                 <br />
                 <span className="text-foreground/40">
-                  Vem har koll på er compliance?
+                  Vem har koll på era regler?
                 </span>
               </h2>
 
