@@ -23,6 +23,10 @@ const BOOTSTRAP_SCRIPT = `
     security_storage: 'granted',
     wait_for_update: 500
   });
+  // Advanced Consent Mode: redact ad identifiers while ad_storage is denied,
+  // and pass the ad click id (gclid) via URL when cookies are unavailable.
+  gtag('set', 'ads_data_redaction', true);
+  gtag('set', 'url_passthrough', true);
 `
 
 export function ConsentModeBootstrap() {

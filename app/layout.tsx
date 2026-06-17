@@ -52,9 +52,9 @@ export default function RootLayout({
             <CookieBanner />
             <ConsentSettingsDialog />
           </ThemeProvider>
-          {/* GA4 — mounts only when analytics consent is granted. */}
+          {/* GA4 + Google Ads — Advanced Consent Mode: load always with
+              consent default-denied (set in <head>); cookies gate on consent. */}
           <GoogleAnalytics />
-          {/* Google Ads — mounts only when marketing consent is granted. */}
           <GoogleAds />
         </ConsentProvider>
         {/* Vercel Analytics - Cookieless, GDPR-compliant tracking */}
