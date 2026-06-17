@@ -796,10 +796,9 @@ export function KnowledgeGraphSection() {
             <span className="text-foreground/45">er verksamhet utantill.</span>
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground md:text-lg">
-            Så hänger er efterlevnad ihop: regler, krav, styrdokument och
-            ansvariga — och hur allt påverkar varandra. Fråga vad som helst —
-            agenten följer kopplingarna, svarar grundat i exakt rätt regel och
-            förbereder nästa steg. Ni godkänner alltid först.
+            Regler, krav, styrdokument och ansvariga — allt hänger ihop. Fråga
+            vad som helst, så följer agenten trådarna, svarar med rätt lagrum
+            och förbereder nästa steg. Ni godkänner alltid först.
           </p>
         </div>
 

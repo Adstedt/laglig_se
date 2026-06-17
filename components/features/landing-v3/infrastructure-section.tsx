@@ -34,7 +34,7 @@ export function InfrastructureSection() {
             className="mb-4 text-3xl font-medium tracking-tight md:text-4xl lg:text-5xl"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
           >
-            Tryggt och säkert.
+            Er data stannar hos er.
           </h2>
           <p className="text-lg text-muted-foreground md:text-xl">
             Era uppgifter är trygga, och ni bestämmer vem som ser vad.

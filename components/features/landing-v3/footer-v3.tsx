@@ -131,7 +131,7 @@ export function FooterV3({
               />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
-              Operativsystemet för compliance — byggt för svenska företag, stora
+              Allt för er regelefterlevnad — byggt för svenska företag, stora
               som små.
             </p>
             <form onSubmit={handleNewsletter} className="mt-6 max-w-xs">
@@ -139,7 +139,7 @@ export function FooterV3({
                 htmlFor="footer-newsletter-email"
                 className="mb-2 block text-[13px] font-medium"
               >
-                Tips om compliance, direkt i inkorgen
+                Tips om regelefterlevnad, direkt i inkorgen
               </label>
               <div className="flex gap-2">
                 <Input

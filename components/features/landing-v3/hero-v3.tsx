@@ -39,8 +39,8 @@ export function HeroV3() {
 
           <div className="mb-10 flex animate-fade-up-delay-2 flex-col items-start gap-6 lg:flex-row lg:items-end lg:justify-between">
             <p className="max-w-xl text-lg text-muted-foreground md:text-xl">
-              Byggt för svenska företag, stora som små. Designat för AI-eran —
-              där efterlevnad arbetar för er, inte tvärtom.
+              För svenska företag, stora som små. Med AI som håller reda på
+              reglerna åt er — så ni slipper.
             </p>
             <OrgCheckForm
               eyebrow="Testa direkt · 30 sek"
