@@ -35,6 +35,7 @@ import { DocumentIntroAccordion } from '@/components/features/document-intro'
 import { getImplementedEuDirectives } from '@/app/actions/cross-references'
 import { cleanLawHtml } from '@/lib/sfs/clean-law-html'
 import { getLatestAmendmentSfs } from '@/lib/sfs/latest-amendment'
+import { getOfficialSfsSource } from '@/lib/sfs/official-source'
 import { buildSeoDescription, documentSeoTitle } from '@/lib/seo/meta'
 
 // ISR: Revalidate every hour
@@ -361,6 +362,16 @@ export default async function LawPage({ params }: PageProps) {
     lawMetadata.effectiveDateFormatted
   )
 
+  // Prefer the authentic published text (svenskforfattningssamling PDF page for
+  // 2018+, Regeringskansliet consolidated text for older laws) over the raw
+  // Riksdagen data-API URL stored in source_url. Falls back to source_url only
+  // for malformed/non-SFS numbers the resolver can't map.
+  const officialSource = getOfficialSfsSource(
+    law.document_number,
+    law.publication_date,
+    law.content_type
+  ) ?? { url: law.source_url, label: 'Riksdagen' }
+
   const breadcrumbs = (
     <Breadcrumb>
       <BreadcrumbList>
@@ -386,12 +397,12 @@ export default async function LawPage({ params }: PageProps) {
       <p>
         Källa:{' '}
         <a
-          href={law.source_url}
+          href={officialSource.url}
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary hover:underline"
         >
-          Riksdagen (Svensk författningssamling)
+          {officialSource.label}
         </a>
       </p>
     </footer>
@@ -439,11 +450,11 @@ export default async function LawPage({ params }: PageProps) {
               : []
           }
           actionLinks={
-            law.source_url
+            officialSource.url
               ? [
                   {
-                    href: law.source_url,
-                    label: 'Riksdagen',
+                    href: officialSource.url,
+                    label: officialSource.label,
                     icon: Building2,
                     external: true,
                   },
@@ -585,7 +596,8 @@ export default async function LawPage({ params }: PageProps) {
         <LawDocumentContent
           htmlContent={sanitizedHtml ?? ''}
           fallbackText={law.full_text}
-          sourceUrl={law.source_url}
+          sourceUrl={officialSource.url}
+          sourceLabel={officialSource.label}
           isLawNotYetInForce={lawMetadata.isNotYetInForce ?? false}
         />
 

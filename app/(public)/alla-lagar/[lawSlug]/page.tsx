@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { buildSeoDescription, documentSeoTitle } from '@/lib/seo/meta'
+import { getOfficialSfsSource } from '@/lib/sfs/official-source'
 import type { Metadata } from 'next'
 
 interface PageProps {
@@ -83,6 +84,13 @@ export default async function LawDetailPage({ params }: PageProps) {
       })
     : null
 
+  // Authentic published text instead of the raw Riksdagen data-API URL.
+  const officialSource = getOfficialSfsSource(
+    law.document_number,
+    law.publication_date,
+    law.content_type
+  ) ?? { url: law.source_url, label: 'Riksdagen' }
+
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
       {/* Breadcrumbs */}
@@ -128,12 +136,12 @@ export default async function LawDetailPage({ params }: PageProps) {
           <p className="text-gray-500 italic">
             Ingen lagtext tillgänglig. Besök{' '}
             <a
-              href={law.source_url}
+              href={officialSource.url}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 hover:underline"
             >
-              Riksdagen
+              {officialSource.label}
             </a>{' '}
             för att läsa originaldokumentet.
           </p>
@@ -145,12 +153,12 @@ export default async function LawDetailPage({ params }: PageProps) {
         <p className="text-sm text-gray-500">
           Källa:{' '}
           <a
-            href={law.source_url}
+            href={officialSource.url}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-600 hover:underline"
           >
-            Riksdagen
+            {officialSource.label}
           </a>
         </p>
       </footer>

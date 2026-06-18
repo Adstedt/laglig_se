@@ -10,6 +10,8 @@ interface LawDocumentContentProps {
   htmlContent: string
   fallbackText?: string | null
   sourceUrl?: string | null
+  /** Link text for the empty-state source link (defaults to "Riksdagen"). */
+  sourceLabel?: string
   isLawNotYetInForce?: boolean
   isWorkspace?: boolean
 }
@@ -26,6 +28,7 @@ export function LawDocumentContent({
   htmlContent,
   fallbackText,
   sourceUrl,
+  sourceLabel = 'Riksdagen',
   isLawNotYetInForce = false,
   isWorkspace = false,
 }: LawDocumentContentProps) {
@@ -73,7 +76,7 @@ export function LawDocumentContent({
               rel="noopener noreferrer"
               className="text-primary hover:underline"
             >
-              Läs på Riksdagen →
+              Läs på {sourceLabel} →
             </a>
           )}
         </p>

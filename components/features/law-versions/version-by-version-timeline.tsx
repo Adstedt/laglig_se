@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { parseSfsNumber } from '@/lib/sfs/pdf-urls'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -168,10 +169,14 @@ export function VersionByVersionTimeline({
     })
   }
 
-  // Build Riksdagen URL for an amendment
-  const getRiksdagenUrl = (sfsNumber: string) => {
-    const sfsClean = sfsNumber.replace(/^SFS\s*/i, '')
-    return `https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/_sfs-${sfsClean.replace(':', '-')}/`
+  // Fallback source link when an amendment has no self-hosted PDF (rare).
+  // Points at the svenskforfattningssamling authentic page rather than the old
+  // `riksdagen.se/.../_sfs-…/` URL, which 404'd for amendments.
+  const getSourceUrl = (sfsNumber: string) => {
+    const parsed = parseSfsNumber(sfsNumber)
+    return parsed
+      ? `https://svenskforfattningssamling.se/doc/${parsed.year}${parsed.number}.html`
+      : 'https://svenskforfattningssamling.se'
   }
 
   // Format SFS number (remove "SFS " prefix if present)
@@ -402,7 +407,7 @@ export function VersionByVersionTimeline({
                     {/* PDF/Source link */}
                     <a
                       href={
-                        amendment.pdfUrl || getRiksdagenUrl(amendment.sfsNumber)
+                        amendment.pdfUrl || getSourceUrl(amendment.sfsNumber)
                       }
                       target="_blank"
                       rel="noopener noreferrer"
@@ -421,7 +426,7 @@ export function VersionByVersionTimeline({
                         ) : (
                           <>
                             <ExternalLink className="h-3 w-3" />
-                            Riksdagen
+                            Källa
                           </>
                         )}
                       </Badge>

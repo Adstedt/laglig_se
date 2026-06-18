@@ -32,6 +32,7 @@ import { RelatedDocumentsSummary } from '@/components/features/cross-references'
 import { getImplementedEuDirectives } from '@/app/actions/cross-references'
 import { cleanLawHtml } from '@/lib/sfs/clean-law-html'
 import { getLatestAmendmentSfs } from '@/lib/sfs/latest-amendment'
+import { getOfficialSfsSource } from '@/lib/sfs/official-source'
 import { AddToLawListButton } from '@/components/features/documents/add-to-law-list-button'
 import { getListsContainingDocument } from '@/app/actions/document-list'
 import { getWorkspaceContext } from '@/lib/auth/workspace-context'
@@ -265,6 +266,15 @@ export default async function WorkspaceLawPage({ params }: PageProps) {
     lawMetadata.effectiveDateFormatted
   )
 
+  // Authentic published text (svenskforfattningssamling PDF page for 2018+,
+  // Regeringskansliet consolidated text for older laws) instead of the raw
+  // Riksdagen data-API URL; source_url is the last-resort fallback.
+  const officialSource = getOfficialSfsSource(
+    law.document_number,
+    law.publication_date,
+    law.content_type
+  ) ?? { url: law.source_url, label: 'Riksdagen' }
+
   const ctx = await getWorkspaceContext()
   const canAddToList = hasPermission(ctx.role, 'documents:add')
   const listIdsContaining = canAddToList
@@ -307,11 +317,11 @@ export default async function WorkspaceLawPage({ params }: PageProps) {
             : []
         }
         actionLinks={
-          law.source_url
+          officialSource.url
             ? [
                 {
-                  href: law.source_url,
-                  label: 'Riksdagen',
+                  href: officialSource.url,
+                  label: officialSource.label,
                   icon: Building2,
                   external: true,
                 },
@@ -506,7 +516,8 @@ export default async function WorkspaceLawPage({ params }: PageProps) {
       <LawDocumentContent
         htmlContent={sanitizedHtml ?? ''}
         fallbackText={law.full_text}
-        sourceUrl={law.source_url}
+        sourceUrl={officialSource.url}
+        sourceLabel={officialSource.label}
         isLawNotYetInForce={lawMetadata.isNotYetInForce ?? false}
         isWorkspace
       />
@@ -516,12 +527,12 @@ export default async function WorkspaceLawPage({ params }: PageProps) {
         <p>
           Källa:{' '}
           <a
-            href={law.source_url}
+            href={officialSource.url}
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary hover:underline"
           >
-            Riksdagen (Svensk författningssamling)
+            {officialSource.label}
           </a>
         </p>
       </footer>

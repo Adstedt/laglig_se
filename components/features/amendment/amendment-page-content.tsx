@@ -13,6 +13,7 @@ import {
   Info,
 } from 'lucide-react'
 import { getPublicPdfUrl } from '@/lib/supabase/storage'
+import { getOfficialSfsSource } from '@/lib/sfs/official-source'
 import {
   parseAmendmentStructure,
   formatAmendmentText,
@@ -230,9 +231,23 @@ export function AmendmentPageContent({
     ? getPublicPdfUrl(details.storage_path)
     : null
 
-  const riksdagenUrl = details
-    ? `https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/_sfs-${details.sfs_number.replace(':', '-')}/`
-    : amendment.source_url
+  // Authentic source link. The self-hosted PDF (pdfUrl) is the primary download;
+  // this is the secondary "official page" link. svenskforfattningssamling carries
+  // the authentic version for 2018+ amendments; pre-2018 amendments have no usable
+  // standalone page there (the resolver returns null), so we lean on the PDF.
+  // The old `riksdagen.se/.../_sfs-…/` URL 404'd for amendments — do not use it.
+  const officialSource = getOfficialSfsSource(
+    amendment.document_number,
+    amendment.publication_date,
+    'SFS_AMENDMENT'
+  )
+  const sourceLink =
+    officialSource ??
+    (pdfUrl
+      ? { url: pdfUrl, label: 'Författningstext (PDF)' }
+      : amendment.source_url
+        ? { url: amendment.source_url, label: 'Riksdagen' }
+        : null)
 
   // Check if we have LLM-generated HTML content (preferred)
   const hasHtmlContent = !!amendment.html_content
@@ -277,11 +292,11 @@ export function AmendmentPageContent({
           },
         ]
       : []),
-    ...(riksdagenUrl
+    ...(officialSource
       ? [
           {
-            href: riksdagenUrl,
-            label: 'Riksdagen',
+            href: officialSource.url,
+            label: officialSource.label,
             icon: Building2,
           },
         ]
@@ -542,19 +557,21 @@ export function AmendmentPageContent({
       )}
 
       {/* Footer */}
-      <footer className="text-center text-sm text-muted-foreground py-4 border-t">
-        <p>
-          Källa:{' '}
-          <a
-            href={riksdagenUrl ?? undefined}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline"
-          >
-            Riksdagen (Svensk författningssamling)
-          </a>
-        </p>
-      </footer>
+      {sourceLink && (
+        <footer className="text-center text-sm text-muted-foreground py-4 border-t">
+          <p>
+            Källa:{' '}
+            <a
+              href={sourceLink.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              {sourceLink.label}
+            </a>
+          </p>
+        </footer>
+      )}
     </>
   )
 }
