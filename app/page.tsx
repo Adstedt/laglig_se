@@ -30,9 +30,9 @@ export const metadata = {
   title: {
     absolute: 'Lagbevakning & lagefterlevnad med AI | Laglig.se',
   },
-  // ~150 chars — full message lands in Google SERPs (truncation cap ~155).
+  // ~145 chars — full message lands in Google SERPs (truncation cap ~155).
   description:
-    'Laglig bevakar lagändringar, håller er laglista uppdaterad och samlar bevis för revisionen. AI-grundad i svensk rätt, inga konsultarvoden.',
+    'Laglig skapar er laglista, bevakar lagändringarna och säger vad varje ändring betyder för just er. AI-grundad i svensk rätt — för svenska företag.',
 }
 
 export default function Home() {
