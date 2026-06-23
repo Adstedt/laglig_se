@@ -21,8 +21,18 @@
  * macOS default: `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`
  */
 
-import chromium from '@sparticuz/chromium'
-import puppeteer from 'puppeteer-core'
+// IMPORTANT: `@sparticuz/chromium` and `puppeteer-core` are imported
+// dynamically (inside the functions below), NOT at the top level. A static
+// import pulls puppeteer-core into the *static* module graph of every route or
+// server-action bundle that transitively reaches this file — e.g. the
+// /laglistor/kontroller/[cycleId] action bundle imports it via
+// compliance-audit-report. Only the dedicated PDF routes have the
+// puppeteer/@puppeteer/browsers files traced into their serverless function
+// (see PDF_RUNTIME_INCLUDES in next.config.mjs); on any other route the eager
+// import throws ERR_MODULE_NOT_FOUND at module-load time and 500s every request
+// (including unrelated server actions). Deferring to a runtime `await import()`
+// keeps puppeteer out of those static graphs entirely — it loads only when a
+// PDF is actually rendered, on a route where the files exist.
 
 export interface RenderOptions {
   format?: 'A4' | 'Letter'
@@ -58,6 +68,7 @@ async function resolveLaunchConfig(): Promise<{
     }
   }
 
+  const { default: chromium } = await import('@sparticuz/chromium')
   return {
     args: chromium.args,
     executablePath: await chromium.executablePath(),
@@ -76,6 +87,7 @@ export async function renderHtmlToPdf(
   options?: RenderOptions
 ): Promise<Buffer> {
   const launchConfig = await resolveLaunchConfig()
+  const { default: puppeteer } = await import('puppeteer-core')
   const browser = await puppeteer.launch(launchConfig)
 
   try {

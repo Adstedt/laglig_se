@@ -52,7 +52,7 @@ import {
 } from '@/lib/swr-keys/compliance-audit'
 import type { EfterlevnadsBedomning, WorkspaceRole } from '@prisma/client'
 
-const TABS = ['items', 'findings', 'rapport', 'aktivitet'] as const
+const TABS = ['items', 'findings', 'rapport'] as const
 type TabValue = (typeof TABS)[number]
 const DEFAULT_TAB: TabValue = 'items'
 const JUMP_HIGHLIGHT_MS = 1500
@@ -508,7 +508,6 @@ export function CycleDetailPage({
             <TabsTrigger value="items">Dokument</TabsTrigger>
             <TabsTrigger value="findings">Anmärkningar</TabsTrigger>
             <TabsTrigger value="rapport">Rapport</TabsTrigger>
-            <TabsTrigger value="aktivitet">Aktivitet</TabsTrigger>
           </TabsList>
 
           <TabsContent value="items">
@@ -544,11 +543,6 @@ export function CycleDetailPage({
               cycleStatus={localCycle.status}
               cycleName={localCycle.name}
             />
-          </TabsContent>
-          <TabsContent value="aktivitet">
-            <div className="p-6 text-sm italic text-muted-foreground">
-              Hanteras i Story 21.13
-            </div>
           </TabsContent>
         </Tabs>
 
