@@ -21,7 +21,7 @@
  * macOS default: `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`
  */
 
-// IMPORTANT: `@sparticuz/chromium` and `puppeteer-core` are imported
+// IMPORTANT: `@sparticuz/chromium-min` and `puppeteer-core` are imported
 // dynamically (inside the functions below), NOT at the top level. A static
 // import pulls puppeteer-core into the *static* module graph of every route or
 // server-action bundle that transitively reaches this file — e.g. the
@@ -33,6 +33,19 @@
 // (including unrelated server actions). Deferring to a runtime `await import()`
 // keeps puppeteer out of those static graphs entirely — it loads only when a
 // PDF is actually rendered, on a route where the files exist.
+//
+// We use `@sparticuz/chromium-min` (NOT the full `@sparticuz/chromium`): the
+// full package bundles a ~64 MB brotli Chromium binary into the function, and
+// pnpm's symlinked node_modules makes Vercel ship it twice (~127 MB), blowing
+// the 250 MB function-size cap. `-min` ships no binary; the brotli pack is
+// downloaded once per cold start (cached in /tmp) from `CHROMIUM_PACK_URL`.
+
+// The brotli Chromium pack location is read from CHROMIUM_PACK_URL at call time
+// (see resolveLaunchConfig). It is configurable via env so the pack can move to
+// our own storage (Supabase/Blob) WITHOUT a code change — only the env var
+// changes. IMPORTANT: it must point at a pack matching the installed
+// @sparticuz/chromium-min version (143.0.4); bumping the package means updating
+// the URL too.
 
 export interface RenderOptions {
   format?: 'A4' | 'Letter'
@@ -56,9 +69,9 @@ async function resolveLaunchConfig(): Promise<{
   headless: boolean
 }> {
   // If the dev has pointed us at a local browser via env, honour it. This is
-  // the escape hatch for Windows/macOS dev laptops where `@sparticuz/chromium`
-  // (a Linux-x64 serverless binary) will not execute. Production leaves the
-  // env var unset and falls through to the serverless path below.
+  // the escape hatch for Windows/macOS dev laptops where the serverless
+  // Chromium binary will not execute. Production leaves this env var unset and
+  // falls through to the chromium-min + remote-pack path below.
   const localPath = process.env.PUPPETEER_EXECUTABLE_PATH
   if (localPath && localPath.length > 0) {
     return {
@@ -68,10 +81,26 @@ async function resolveLaunchConfig(): Promise<{
     }
   }
 
-  const { default: chromium } = await import('@sparticuz/chromium')
+  // Production (serverless): chromium-min has no bundled binary, so it MUST be
+  // told where to fetch the brotli pack. Fail loudly + actionably if the env
+  // var is missing rather than letting @sparticuz throw a cryptic
+  // "input directory does not exist" deep in executablePath().
+  const packUrl = process.env.CHROMIUM_PACK_URL
+  if (!packUrl || packUrl.length === 0) {
+    throw new Error(
+      'CHROMIUM_PACK_URL is not set. PDF rendering uses @sparticuz/chromium-min, ' +
+        'which downloads the Chromium pack at runtime. Set CHROMIUM_PACK_URL to a ' +
+        'pack tarball matching @sparticuz/chromium-min@143.0.4 — e.g. the GitHub ' +
+        'release pack ' +
+        'https://github.com/Sparticuz/chromium/releases/download/v143.0.4/chromium-v143.0.4-pack.x64.tar ' +
+        '(or your own hosted copy). For local dev set PUPPETEER_EXECUTABLE_PATH to a system Chrome instead.'
+    )
+  }
+
+  const { default: chromium } = await import('@sparticuz/chromium-min')
   return {
     args: chromium.args,
-    executablePath: await chromium.executablePath(),
+    executablePath: await chromium.executablePath(packUrl),
     headless: true,
   }
 }

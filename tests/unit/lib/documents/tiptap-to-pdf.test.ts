@@ -17,15 +17,17 @@ vi.mock('puppeteer-core', () => ({
   },
 }))
 
-vi.mock('@sparticuz/chromium', () => ({
+vi.mock('@sparticuz/chromium-min', () => ({
   default: {
     args: ['--no-sandbox'],
     executablePath: vi.fn().mockResolvedValue('/usr/bin/chromium'),
   },
 }))
 
-// Story 21.12: force the @sparticuz path in tests regardless of host OS.
+// Story 21.12: force the chromium-min path in tests regardless of host OS.
+// That path needs CHROMIUM_PACK_URL set (the remote pack location).
 delete process.env.PUPPETEER_EXECUTABLE_PATH
+process.env.CHROMIUM_PACK_URL = 'https://example.test/chromium-pack.tar'
 
 describe('generatePdf', () => {
   it('renders HTML and returns a PDF buffer', async () => {
