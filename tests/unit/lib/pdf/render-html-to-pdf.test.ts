@@ -18,17 +18,20 @@ vi.mock('puppeteer-core', () => ({
   },
 }))
 
-vi.mock('@sparticuz/chromium', () => ({
+vi.mock('@sparticuz/chromium-min', () => ({
   default: {
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
     executablePath: vi.fn().mockResolvedValue('/usr/bin/chromium'),
   },
 }))
 
-// Ensure the tests always exercise the @sparticuz path regardless of dev env.
+// Ensure the tests always exercise the chromium-min path regardless of dev env.
 // The helper checks PUPPETEER_EXECUTABLE_PATH first and short-circuits when
-// present; clear it at module load so assertions remain predictable.
+// present; clear it at module load so assertions remain predictable. The
+// chromium-min path also requires CHROMIUM_PACK_URL (where it fetches the
+// browser pack) — set a dummy so resolveLaunchConfig doesn't bail.
 delete process.env.PUPPETEER_EXECUTABLE_PATH
+process.env.CHROMIUM_PACK_URL = 'https://example.test/chromium-pack.tar'
 
 describe('renderHtmlToPdf', () => {
   beforeEach(() => {
@@ -141,5 +144,30 @@ describe('renderHtmlToPdf', () => {
     )
 
     expect(mockClose).toHaveBeenCalled()
+  })
+
+  it('passes CHROMIUM_PACK_URL to chromium-min executablePath', async () => {
+    const chromiumMin = (await import('@sparticuz/chromium-min')).default
+    const { renderHtmlToPdf } = await import('@/lib/pdf/render-html-to-pdf')
+
+    await renderHtmlToPdf('<p>Pack</p>')
+
+    expect(chromiumMin.executablePath).toHaveBeenCalledWith(
+      'https://example.test/chromium-pack.tar'
+    )
+  })
+
+  it('throws a clear error when CHROMIUM_PACK_URL is missing (and no local browser)', async () => {
+    const original = process.env.CHROMIUM_PACK_URL
+    delete process.env.CHROMIUM_PACK_URL
+    try {
+      const { renderHtmlToPdf } = await import('@/lib/pdf/render-html-to-pdf')
+      await expect(renderHtmlToPdf('<p>No pack</p>')).rejects.toThrow(
+        /CHROMIUM_PACK_URL is not set/
+      )
+      expect(mockLaunch).not.toHaveBeenCalled()
+    } finally {
+      process.env.CHROMIUM_PACK_URL = original
+    }
   })
 })

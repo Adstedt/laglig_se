@@ -1,6 +1,23 @@
 import { withSentryConfig } from '@sentry/nextjs'
 import bundleAnalyzer from '@next/bundle-analyzer'
 import createMDX from '@next/mdx'
+import { fileURLToPath } from 'node:url'
+import { dirname } from 'node:path'
+
+// Pin the file-tracing root to THIS project dir — but ONLY for local builds.
+// Locally, a stray lockfile in a parent dir (e.g. ~/package-lock.json) makes
+// Next infer the wrong workspace root, so the `./node_modules/...`
+// outputFileTracingIncludes globs resolve against the wrong directory and ship
+// nothing. Pinning fixes that locally.
+//
+// On Vercel we must NOT pin: there is no stray lockfile (so auto-inference is
+// already correct), AND forcing outputFileTracingRoot there makes Vercel
+// package pnpm's symlinked node_modules in a way it rejects at deploy time
+// ("invalid deployment package … files in symlinked directories", hitting even
+// unrelated functions like /_middleware). `process.env.VERCEL` is "1" on
+// Vercel builds, so we leave the root unset (auto-inferred) there.
+const projectRoot = dirname(fileURLToPath(import.meta.url))
+const outputFileTracingRoot = process.env.VERCEL ? undefined : projectRoot
 
 // Story 26.1: MDX content surface for marketing pages. Content lives in
 // content/marketing/**/*.mdx and is loaded via dynamic import in the
@@ -63,23 +80,40 @@ const securityHeaders = [
   },
 ]
 
-// Headless-Chromium PDF routes (puppeteer-core + @sparticuz/chromium). These
-// packages are externalized (loaded from node_modules at runtime, not bundled),
-// but the Turbopack/nft tracer follows puppeteer-core's CJS entry and misses
-// @puppeteer/browsers' ESM files that the ESM import chain actually loads on
-// Vercel — ERR_MODULE_NOT_FOUND for
-// @puppeteer/browsers/lib/esm/browser-data/browser-data.js. Force-include the
-// full package trees for just the PDF-rendering routes. Both the hoisted
-// top-level path AND the pnpm `.pnpm` real path are globbed because transitive
-// deps (@puppeteer/browsers) may not be hoisted to top-level node_modules on
-// the Vercel build; redundant globs are harmless.
+// Headless-Chromium PDF routes (puppeteer-core + @sparticuz/chromium-min).
+// chromium-min ships NO browser binary (downloaded at runtime from
+// CHROMIUM_PACK_URL), so the 250 MB cap is not a concern.
+//
+// `.npmrc` pins node-linker=hoisted: node_modules is a flat tree of REAL
+// directories (no pnpm symlink store in the resolution path). That fixes the
+// whole class of problems we hit under the default pnpm layout: under
+// Turbopack, nft missed @puppeteer/browsers' ESM subtree AND its transitive
+// deps (semver, …), and those deps were only reachable through symlinks —
+// which can be neither force-included (Vercel "files in symlinked directories"
+// deploy error) nor resolved at runtime. With a flat real tree, @puppeteer/
+// browsers resolves its deps via normal top-level node_modules lookup, and we
+// can force-include the runtime packages' real top-level dirs cleanly.
+//
+// We force-include the three runtime packages' OWN files (nft still misses
+// @puppeteer/browsers' ESM browser-data.js); their transitive deps (semver,
+// chromium-bidi, …) resolve from the flat top-level node_modules — no manual
+// per-dependency includes.
+//
+// Keyed via `**/…` below — bracket route keys don't match under Turbopack.
+//
+// @puppeteer/browsers is included surgically (lib + package.json + its one
+// nested real dep, semver) rather than `**/*`: the latter would also sweep in
+// node_modules/.bin/semver — a CLI shim SYMLINK that is never needed at runtime
+// and would re-trip Vercel's "files in symlinked directories" deploy error.
+// semver is nested under @puppeteer/browsers (a version conflict with the app's
+// own semver) and is the only transitive dep nft misses; its 6 siblings
+// (debug, extract-zip, …) hoist to real top-level dirs and are already traced.
 const PDF_RUNTIME_INCLUDES = [
   './node_modules/puppeteer-core/**/*',
-  './node_modules/@puppeteer/browsers/**/*',
-  './node_modules/@sparticuz/chromium/**/*',
-  './node_modules/.pnpm/puppeteer-core@*/node_modules/**/*',
-  './node_modules/.pnpm/@puppeteer+browsers@*/node_modules/**/*',
-  './node_modules/.pnpm/@sparticuz+chromium@*/node_modules/**/*',
+  './node_modules/@puppeteer/browsers/lib/**/*',
+  './node_modules/@puppeteer/browsers/package.json',
+  './node_modules/@puppeteer/browsers/node_modules/semver/**/*',
+  './node_modules/@sparticuz/chromium-min/**/*',
 ]
 
 /** @type {import('next').NextConfig} */
@@ -89,6 +123,9 @@ const nextConfig = {
   // to production regardless).
   devIndicators: false,
   productionBrowserSourceMaps: false, // Disable source maps in production for security
+  // See note above: pinned locally (stray-lockfile workaround), left unset on
+  // Vercel (auto-inferred) to avoid the symlinked-node_modules deploy error.
+  outputFileTracingRoot,
   typescript: {
     ignoreBuildErrors: false,
   },
@@ -193,13 +230,24 @@ const nextConfig = {
     '/(marketing)/branscher/[slug]': ['./content/marketing/**/*.mdx'],
     '/(marketing)/omraden/[slug]': ['./content/marketing/**/*.mdx'],
     // PDF export + revisionsrapport routes need the full Chromium/puppeteer
-    // package trees traced into their serverless functions (see
-    // PDF_RUNTIME_INCLUDES above). Route-group keys declared in both shapes
-    // because the tracer's convention for (group) routes is version-ambiguous.
-    '/api/workspace/documents/[documentId]/export': PDF_RUNTIME_INCLUDES,
-    '/laglistor/kontroller/[cycleId]/rapport/pdf': PDF_RUNTIME_INCLUDES,
-    '/(workspace)/laglistor/kontroller/[cycleId]/rapport/pdf':
-      PDF_RUNTIME_INCLUDES,
+    // package trees (incl. @sparticuz/chromium's bin/*.br binary and
+    // @puppeteer/browsers' ESM files) traced into their serverless functions
+    // — see PDF_RUNTIME_INCLUDES above.
+    //
+    // KEY FORMAT MATTERS (verified against the built .nft.json traces under
+    // Turbopack, Next 16 default): the bracket-literal keys these routes used
+    // before — `/laglistor/kontroller/[cycleId]/rapport/pdf` and
+    // `/api/workspace/documents/[documentId]/export` — matched NOTHING, so the
+    // include silently shipped zero files and Chromium was absent at runtime
+    // ("input directory .../bin does not exist" / puppeteer-core
+    // ERR_MODULE_NOT_FOUND). Note this is NOT "brackets never match": the
+    // og-image/marketing keys above keep their `[slug]` form and trace fine —
+    // those have the dynamic segment TRAILING, whereas these have it mid-path
+    // (`[cycleId]/rapport/pdf`), which is what failed to match. A `**/…` suffix
+    // key matches reliably and scopes to only these two routes (verified:
+    // control routes like /api/chat stay Chromium-free). Keep the `**/…` form.
+    '**/rapport/pdf': PDF_RUNTIME_INCLUDES,
+    '**/documents/*/export': PDF_RUNTIME_INCLUDES,
   },
 
   // Serverless function size cap (250 MB unzipped). The Next.js file tracer
