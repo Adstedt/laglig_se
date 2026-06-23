@@ -431,7 +431,7 @@ export function FindingEditor({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col">
         <DialogHeader>
           {/* pr-8 reserves space for the shadcn Dialog's auto-rendered close
               X (absolute, right-4) so the stepper text doesn't overlap it. */}
@@ -458,492 +458,505 @@ export function FindingEditor({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {step === 1 ? (
-            <>
-              {/* Type */}
-              <div className="space-y-2">
-                <Label>Typ</Label>
-                <div
-                  role="radiogroup"
-                  aria-label="Typ av anmärkning"
-                  className="grid grid-cols-3 gap-2"
-                >
-                  {FINDING_TYPE_OPTIONS.map((opt) => {
-                    const active = state.type === opt.value
-                    return (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        role="radio"
-                        aria-checked={active}
-                        data-testid={`finding-type-${opt.value}`}
-                        onClick={() =>
-                          setState((s) => ({
-                            ...s,
-                            type: opt.value,
-                            // Clear severity when leaving AVVIKELSE.
-                            severity:
-                              opt.value === FindingType.AVVIKELSE
-                                ? s.severity
-                                : null,
-                            // Re-derive spawnTask default from the new type ONLY
-                            // if the user hasn't manually toggled the checkbox.
-                            // Preserves explicit user intent across type switches.
-                            spawnTask: spawnTaskTouched
-                              ? s.spawnTask
-                              : opt.value === FindingType.AVVIKELSE,
-                          }))
-                        }
-                        className={cn(
-                          'rounded-md border px-3 py-2 text-sm transition-colors',
-                          active
-                            ? 'border-primary bg-primary/10 text-primary'
-                            : 'border-input hover:bg-muted'
-                        )}
-                      >
-                        {opt.label}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* Severity (conditional) */}
-              {showSeverity ? (
+        {/* min-h-0 + flex-1 lets the field area scroll when the form is taller
+            than the viewport, keeping the header and footer pinned and visible
+            (otherwise both get clipped off-screen with no way to scroll). */}
+        <form
+          onSubmit={handleSubmit}
+          className="flex min-h-0 flex-1 flex-col gap-4"
+        >
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+            {step === 1 ? (
+              <>
+                {/* Type */}
                 <div className="space-y-2">
-                  <Label htmlFor="finding-severity">Allvarlighetsgrad</Label>
-                  <Select
-                    value={state.severity ?? ''}
-                    onValueChange={(v) =>
-                      setState((s) => ({
-                        ...s,
-                        severity:
-                          v === 'MAJOR' || v === 'MINOR'
-                            ? (v as FindingSeverity)
-                            : null,
-                      }))
-                    }
+                  <Label>Typ</Label>
+                  <div
+                    role="radiogroup"
+                    aria-label="Typ av anmärkning"
+                    className="grid grid-cols-3 gap-2"
                   >
-                    <SelectTrigger
-                      id="finding-severity"
-                      data-testid="finding-severity-trigger"
-                      aria-invalid={severityMissing}
-                    >
-                      <SelectValue placeholder="Välj allvarlighetsgrad" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {FINDING_SEVERITY_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
+                    {FINDING_TYPE_OPTIONS.map((opt) => {
+                      const active = state.type === opt.value
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          role="radio"
+                          aria-checked={active}
+                          data-testid={`finding-type-${opt.value}`}
+                          onClick={() =>
+                            setState((s) => ({
+                              ...s,
+                              type: opt.value,
+                              // Clear severity when leaving AVVIKELSE.
+                              severity:
+                                opt.value === FindingType.AVVIKELSE
+                                  ? s.severity
+                                  : null,
+                              // Re-derive spawnTask default from the new type ONLY
+                              // if the user hasn't manually toggled the checkbox.
+                              // Preserves explicit user intent across type switches.
+                              spawnTask: spawnTaskTouched
+                                ? s.spawnTask
+                                : opt.value === FindingType.AVVIKELSE,
+                            }))
+                          }
+                          className={cn(
+                            'rounded-md border px-3 py-2 text-sm transition-colors',
+                            active
+                              ? 'border-primary bg-primary/10 text-primary'
+                              : 'border-input hover:bg-muted'
+                          )}
+                        >
                           {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {severityMissing ? (
-                    <p className="text-xs text-destructive">
-                      Allvarlighetsgrad krävs för avvikelser
-                    </p>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Severity (conditional) */}
+                {showSeverity ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="finding-severity">Allvarlighetsgrad</Label>
+                    <Select
+                      value={state.severity ?? ''}
+                      onValueChange={(v) =>
+                        setState((s) => ({
+                          ...s,
+                          severity:
+                            v === 'MAJOR' || v === 'MINOR'
+                              ? (v as FindingSeverity)
+                              : null,
+                        }))
+                      }
+                    >
+                      <SelectTrigger
+                        id="finding-severity"
+                        data-testid="finding-severity-trigger"
+                        aria-invalid={severityMissing}
+                      >
+                        <SelectValue placeholder="Välj allvarlighetsgrad" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {FINDING_SEVERITY_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {severityMissing ? (
+                      <p className="text-xs text-destructive">
+                        Allvarlighetsgrad krävs för avvikelser
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                {/* Title */}
+                <div className="space-y-2">
+                  <Label htmlFor="finding-title">Titel</Label>
+                  <Input
+                    id="finding-title"
+                    data-testid="finding-title"
+                    value={state.title}
+                    onChange={(e) =>
+                      setState((s) => ({ ...s, title: e.target.value }))
+                    }
+                    placeholder={typeCopy.titlePlaceholder}
+                    maxLength={200}
+                    aria-invalid={titleTooLong}
+                    required
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>{titleTooLong ? 'Max 200 tecken' : ''}</span>
+                    <span>{state.title.length}/200</span>
+                  </div>
+                </div>
+
+                {/* Description — the "what happened?" field. Helper text
+                  differentiates it from Grundorsak below. */}
+                <div className="space-y-2">
+                  <Label htmlFor="finding-description">Beskrivning</Label>
+                  <Textarea
+                    id="finding-description"
+                    data-testid="finding-description"
+                    value={state.description}
+                    onChange={(e) =>
+                      setState((s) => ({ ...s, description: e.target.value }))
+                    }
+                    rows={4}
+                    maxLength={5000}
+                    aria-invalid={descriptionTooLong}
+                    required
+                  />
+                  <div className="flex justify-between gap-3 text-xs text-muted-foreground">
+                    <span>{typeCopy.descriptionHelper}</span>
+                    <span className="shrink-0">
+                      {state.description.length}/5000
+                    </span>
+                  </div>
+                  {descriptionTooLong ? (
+                    <p className="text-xs text-destructive">Max 5000 tecken</p>
                   ) : null}
                 </div>
-              ) : null}
 
-              {/* Title */}
-              <div className="space-y-2">
-                <Label htmlFor="finding-title">Titel</Label>
-                <Input
-                  id="finding-title"
-                  data-testid="finding-title"
-                  value={state.title}
-                  onChange={(e) =>
-                    setState((s) => ({ ...s, title: e.target.value }))
-                  }
-                  placeholder={typeCopy.titlePlaceholder}
-                  maxLength={200}
-                  aria-invalid={titleTooLong}
-                  required
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>{titleTooLong ? 'Max 200 tecken' : ''}</span>
-                  <span>{state.title.length}/200</span>
-                </div>
-              </div>
-
-              {/* Description — the "what happened?" field. Helper text
-                  differentiates it from Grundorsak below. */}
-              <div className="space-y-2">
-                <Label htmlFor="finding-description">Beskrivning</Label>
-                <Textarea
-                  id="finding-description"
-                  data-testid="finding-description"
-                  value={state.description}
-                  onChange={(e) =>
-                    setState((s) => ({ ...s, description: e.target.value }))
-                  }
-                  rows={4}
-                  maxLength={5000}
-                  aria-invalid={descriptionTooLong}
-                  required
-                />
-                <div className="flex justify-between gap-3 text-xs text-muted-foreground">
-                  <span>{typeCopy.descriptionHelper}</span>
-                  <span className="shrink-0">
-                    {state.description.length}/5000
-                  </span>
-                </div>
-                {descriptionTooLong ? (
-                  <p className="text-xs text-destructive">Max 5000 tecken</p>
-                ) : null}
-              </div>
-
-              {/* Root cause — renamed "Motivering" for FÖRBÄTTRING per
+                {/* Root cause — renamed "Motivering" for FÖRBÄTTRING per
                   type-specific copy (improvement suggestions have
                   rationales, not root causes). Always optional. */}
-              <div className="space-y-2">
-                <Label htmlFor="finding-root-cause">
-                  {typeCopy.rootCauseLabel}
-                </Label>
-                <Textarea
-                  id="finding-root-cause"
-                  data-testid="finding-root-cause"
-                  value={state.rootCause}
-                  onChange={(e) =>
-                    setState((s) => ({ ...s, rootCause: e.target.value }))
-                  }
-                  rows={3}
-                  maxLength={5000}
-                  aria-invalid={rootCauseTooLong}
-                />
-                <div className="flex justify-between gap-3 text-xs text-muted-foreground">
-                  <span>{typeCopy.rootCauseHelper}</span>
-                  <span className="shrink-0">
-                    {state.rootCause.length}/5000
-                  </span>
+                <div className="space-y-2">
+                  <Label htmlFor="finding-root-cause">
+                    {typeCopy.rootCauseLabel}
+                  </Label>
+                  <Textarea
+                    id="finding-root-cause"
+                    data-testid="finding-root-cause"
+                    value={state.rootCause}
+                    onChange={(e) =>
+                      setState((s) => ({ ...s, rootCause: e.target.value }))
+                    }
+                    rows={3}
+                    maxLength={5000}
+                    aria-invalid={rootCauseTooLong}
+                  />
+                  <div className="flex justify-between gap-3 text-xs text-muted-foreground">
+                    <span>{typeCopy.rootCauseHelper}</span>
+                    <span className="shrink-0">
+                      {state.rootCause.length}/5000
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Förfallodatum on the finding is REMOVED from the UI —
+                {/* Förfallodatum on the finding is REMOVED from the UI —
                   task-level due date lives on step 2 when a task is spawned
                   (see Epic 21 follow-up plan, §Option 3). state.dueDate
                   stays in FormState so edit-mode of existing findings that
                   have a dueDate row in the DB doesn't silently drop the
                   value on save. */}
 
-              {/* Item link — generic "Dokument" framing so the copy works
+                {/* Item link — generic "Dokument" framing so the copy works
                   for laws, föreskrifter, EU regulations alike. */}
-              <div className="space-y-2">
-                <Label htmlFor="finding-item">
-                  Koppla till dokument (frivilligt)
-                </Label>
-                <Select
-                  value={state.lawListItemId ?? '__none__'}
-                  onValueChange={(v) =>
-                    setState((s) => ({
-                      ...s,
-                      lawListItemId: v === '__none__' ? null : v,
-                      // Clear requirement whenever the item changes.
-                      requirementId: null,
-                    }))
-                  }
-                >
-                  <SelectTrigger
-                    id="finding-item"
-                    data-testid="finding-item-trigger"
-                  >
-                    <SelectValue placeholder="Välj dokument" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">Ingen koppling</SelectItem>
-                    {items.map((it) => (
-                      <SelectItem
-                        key={it.lawListItemId}
-                        value={it.lawListItemId}
-                      >
-                        {it.lawTitle} ({it.lawDocumentNumber})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Requirement link (dependent on item) */}
-              {state.lawListItemId && requirementOptions.length > 0 ? (
                 <div className="space-y-2">
-                  <Label htmlFor="finding-requirement">
-                    Kravpunkt (från kontrollens snapshot)
+                  <Label htmlFor="finding-item">
+                    Koppla till dokument (frivilligt)
                   </Label>
                   <Select
-                    value={state.requirementId ?? '__none__'}
+                    value={state.lawListItemId ?? '__none__'}
                     onValueChange={(v) =>
                       setState((s) => ({
                         ...s,
-                        requirementId: v === '__none__' ? null : v,
+                        lawListItemId: v === '__none__' ? null : v,
+                        // Clear requirement whenever the item changes.
+                        requirementId: null,
                       }))
                     }
                   >
                     <SelectTrigger
-                      id="finding-requirement"
-                      data-testid="finding-requirement-trigger"
+                      id="finding-item"
+                      data-testid="finding-item-trigger"
                     >
-                      <SelectValue placeholder="Välj kravpunkt" />
+                      <SelectValue placeholder="Välj dokument" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__none__">Ingen kravpunkt</SelectItem>
-                      {requirementOptions.map((r) => (
-                        <SelectItem key={r.id} value={r.id}>
-                          {r.text.length > 80
-                            ? r.text.slice(0, 80) + '…'
-                            : r.text}
+                      <SelectItem value="__none__">Ingen koppling</SelectItem>
+                      {items.map((it) => (
+                        <SelectItem
+                          key={it.lawListItemId}
+                          value={it.lawListItemId}
+                        >
+                          {it.lawTitle} ({it.lawDocumentNumber})
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-              ) : null}
 
-              {/* Spawn-task opt-in/out (Epic 21 follow-up — create mode only).
-              Checkbox only — task-override fields live on step 2. */}
-              {mode === 'create' ? (
-                <div
-                  className="rounded-md border border-emerald-200 bg-emerald-50/60 p-3 dark:border-emerald-900 dark:bg-emerald-950/30"
-                  data-testid="finding-spawn-task-box"
-                >
-                  <label
-                    htmlFor="finding-spawn-task-checkbox"
-                    className="flex cursor-pointer items-start gap-3"
-                  >
-                    <Checkbox
-                      id="finding-spawn-task-checkbox"
-                      checked={state.spawnTask}
-                      onCheckedChange={(checked) => {
-                        setSpawnTaskTouched(true)
+                {/* Requirement link (dependent on item) */}
+                {state.lawListItemId && requirementOptions.length > 0 ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="finding-requirement">
+                      Kravpunkt (från kontrollens snapshot)
+                    </Label>
+                    <Select
+                      value={state.requirementId ?? '__none__'}
+                      onValueChange={(v) =>
                         setState((s) => ({
                           ...s,
-                          spawnTask: checked === true,
-                          // Phase 3: clear task title/description customisation
-                          // when user opts out. Re-checking re-prefills from
-                          // current finding values — clean mental model.
-                          ...(checked !== true
-                            ? { taskTitle: null, taskDescription: null }
-                            : {}),
+                          requirementId: v === '__none__' ? null : v,
                         }))
-                      }}
-                      className="mt-0.5"
-                      aria-label="Skapa åtgärdsuppgift"
-                      data-testid="finding-spawn-task-checkbox"
-                    />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">
-                        Skapa åtgärdsuppgift
-                      </p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        En uppgift i arbetsytans uppgiftssystem som spårar den
-                        korrigerande åtgärden. Du konfigurerar uppgiften i nästa
-                        steg.
-                      </p>
-                    </div>
-                  </label>
-                </div>
-              ) : null}
-            </>
-          ) : null}
+                      }
+                    >
+                      <SelectTrigger
+                        id="finding-requirement"
+                        data-testid="finding-requirement-trigger"
+                      >
+                        <SelectValue placeholder="Välj kravpunkt" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">
+                          Ingen kravpunkt
+                        </SelectItem>
+                        {requirementOptions.map((r) => (
+                          <SelectItem key={r.id} value={r.id}>
+                            {r.text.length > 80
+                              ? r.text.slice(0, 80) + '…'
+                              : r.text}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : null}
 
-          {step === 2 ? (
-            <>
-              {/* Phase 3: editable task title + description fields.
+                {/* Spawn-task opt-in/out (Epic 21 follow-up — create mode only).
+              Checkbox only — task-override fields live on step 2. */}
+                {mode === 'create' ? (
+                  <div
+                    className="rounded-md border border-emerald-200 bg-emerald-50/60 p-3 dark:border-emerald-900 dark:bg-emerald-950/30"
+                    data-testid="finding-spawn-task-box"
+                  >
+                    <label
+                      htmlFor="finding-spawn-task-checkbox"
+                      className="flex cursor-pointer items-start gap-3"
+                    >
+                      <Checkbox
+                        id="finding-spawn-task-checkbox"
+                        checked={state.spawnTask}
+                        onCheckedChange={(checked) => {
+                          setSpawnTaskTouched(true)
+                          setState((s) => ({
+                            ...s,
+                            spawnTask: checked === true,
+                            // Phase 3: clear task title/description customisation
+                            // when user opts out. Re-checking re-prefills from
+                            // current finding values — clean mental model.
+                            ...(checked !== true
+                              ? { taskTitle: null, taskDescription: null }
+                              : {}),
+                          }))
+                        }}
+                        className="mt-0.5"
+                        aria-label="Skapa åtgärdsuppgift"
+                        data-testid="finding-spawn-task-checkbox"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">
+                          Skapa åtgärdsuppgift
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          En uppgift i arbetsytans uppgiftssystem som spårar den
+                          korrigerande åtgärden. Du konfigurerar uppgiften i
+                          nästa steg.
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                ) : null}
+              </>
+            ) : null}
+
+            {step === 2 ? (
+              <>
+                {/* Phase 3: editable task title + description fields.
                   Prefilled from finding defaults on step-2 entry; user can
                   override to decouple task phrasing from finding phrasing. */}
-              <div className="space-y-3" data-testid="finding-task-preview">
-                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                  Uppgift
-                </p>
+                <div className="space-y-3" data-testid="finding-task-preview">
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    Uppgift
+                  </p>
 
-                {/* Task title */}
-                <div className="space-y-1">
-                  <Label htmlFor="finding-task-title" className="text-xs">
-                    Uppgiftens titel
-                  </Label>
-                  <Input
-                    id="finding-task-title"
-                    data-testid="finding-task-title"
-                    value={state.taskTitle ?? ''}
-                    onChange={(e) =>
-                      setState((s) => ({
-                        ...s,
-                        taskTitle: e.target.value,
-                      }))
-                    }
-                    maxLength={200}
-                    aria-invalid={taskTitleTooLong || taskTitleEmpty}
-                  />
-                  <div className="flex justify-between text-[10px] text-muted-foreground">
-                    <span>Förvalt från anmärkningens titel</span>
-                    <span>{(state.taskTitle ?? '').length}/200</span>
+                  {/* Task title */}
+                  <div className="space-y-1">
+                    <Label htmlFor="finding-task-title" className="text-xs">
+                      Uppgiftens titel
+                    </Label>
+                    <Input
+                      id="finding-task-title"
+                      data-testid="finding-task-title"
+                      value={state.taskTitle ?? ''}
+                      onChange={(e) =>
+                        setState((s) => ({
+                          ...s,
+                          taskTitle: e.target.value,
+                        }))
+                      }
+                      maxLength={200}
+                      aria-invalid={taskTitleTooLong || taskTitleEmpty}
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground">
+                      <span>Förvalt från anmärkningens titel</span>
+                      <span>{(state.taskTitle ?? '').length}/200</span>
+                    </div>
+                  </div>
+
+                  {/* Task description */}
+                  <div className="space-y-1">
+                    <Label
+                      htmlFor="finding-task-description"
+                      className="text-xs"
+                    >
+                      Uppgiftens beskrivning
+                    </Label>
+                    <Textarea
+                      id="finding-task-description"
+                      data-testid="finding-task-description"
+                      value={state.taskDescription ?? ''}
+                      onChange={(e) =>
+                        setState((s) => ({
+                          ...s,
+                          taskDescription: e.target.value,
+                        }))
+                      }
+                      rows={4}
+                      maxLength={5000}
+                      aria-invalid={
+                        taskDescriptionTooLong || taskDescriptionEmpty
+                      }
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground">
+                      <span>
+                        Förvalt från anmärkningens beskrivning med åtgärdsprefix
+                      </span>
+                      <span>{(state.taskDescription ?? '').length}/5000</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Task description */}
-                <div className="space-y-1">
-                  <Label htmlFor="finding-task-description" className="text-xs">
-                    Uppgiftens beskrivning
-                  </Label>
-                  <Textarea
-                    id="finding-task-description"
-                    data-testid="finding-task-description"
-                    value={state.taskDescription ?? ''}
-                    onChange={(e) =>
-                      setState((s) => ({
-                        ...s,
-                        taskDescription: e.target.value,
-                      }))
-                    }
-                    rows={4}
-                    maxLength={5000}
-                    aria-invalid={
-                      taskDescriptionTooLong || taskDescriptionEmpty
-                    }
-                  />
-                  <div className="flex justify-between text-[10px] text-muted-foreground">
-                    <span>
-                      Förvalt från anmärkningens beskrivning med åtgärdsprefix
-                    </span>
-                    <span>{(state.taskDescription ?? '').length}/5000</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Task override fields (assignee / due / priority) */}
-              <div className="space-y-3">
-                {/* Assignee */}
-                <div className="space-y-1">
-                  <Label htmlFor="finding-task-assignee" className="text-xs">
-                    Ansvarig
-                  </Label>
-                  <Select
-                    value={state.taskAssigneeUserId ?? '__default__'}
-                    onValueChange={(v) =>
-                      setState((s) => ({
-                        ...s,
-                        taskAssigneeUserId: v === '__default__' ? null : v,
-                      }))
-                    }
-                  >
-                    <SelectTrigger
-                      id="finding-task-assignee"
-                      data-testid="finding-task-assignee-trigger"
+                {/* Task override fields (assignee / due / priority) */}
+                <div className="space-y-3">
+                  {/* Assignee */}
+                  <div className="space-y-1">
+                    <Label htmlFor="finding-task-assignee" className="text-xs">
+                      Ansvarig
+                    </Label>
+                    <Select
+                      value={state.taskAssigneeUserId ?? '__default__'}
+                      onValueChange={(v) =>
+                        setState((s) => ({
+                          ...s,
+                          taskAssigneeUserId: v === '__default__' ? null : v,
+                        }))
+                      }
                     >
-                      <SelectValue placeholder="Välj ansvarig" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__default__">
-                        Förvalt (dokumentets ansvarige / ledrevisor)
-                      </SelectItem>
-                      {members.map((m) => (
-                        <SelectItem key={m.id} value={m.id}>
-                          {m.name ?? m.email}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {membersLoading ? (
-                    <p className="text-[10px] text-muted-foreground">
-                      Laddar medlemmar…
-                    </p>
-                  ) : null}
-                </div>
-
-                {/* Due date */}
-                <div className="space-y-1">
-                  <Label className="text-xs">Förfallodatum</Label>
-                  <div className="flex items-center gap-2">
-                    <Popover
-                      open={taskDueDatePickerOpen}
-                      onOpenChange={setTaskDueDatePickerOpen}
-                    >
-                      <PopoverTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          data-testid="finding-task-due-date-trigger"
-                          className={cn(
-                            'justify-start text-left font-normal',
-                            !state.taskDueDate && 'text-muted-foreground'
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-3.5 w-3.5" />
-                          {state.taskDueDate
-                            ? format(state.taskDueDate, 'PPP', { locale: sv })
-                            : state.dueDate
-                              ? `Förvalt: ${format(state.dueDate, 'PPP', { locale: sv })}`
-                              : 'Välj datum'}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={state.taskDueDate ?? undefined}
-                          onSelect={(d) => {
-                            setState((s) => ({
-                              ...s,
-                              taskDueDate: d ?? null,
-                            }))
-                            setTaskDueDatePickerOpen(false)
-                          }}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    {state.taskDueDate ? (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() =>
-                          setState((s) => ({ ...s, taskDueDate: null }))
-                        }
-                        aria-label="Rensa uppgiftens datum"
+                      <SelectTrigger
+                        id="finding-task-assignee"
+                        data-testid="finding-task-assignee-trigger"
                       >
-                        <XIcon className="h-4 w-4" />
-                      </Button>
+                        <SelectValue placeholder="Välj ansvarig" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__default__">
+                          Förvalt (dokumentets ansvarige / ledrevisor)
+                        </SelectItem>
+                        {members.map((m) => (
+                          <SelectItem key={m.id} value={m.id}>
+                            {m.name ?? m.email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {membersLoading ? (
+                      <p className="text-[10px] text-muted-foreground">
+                        Laddar medlemmar…
+                      </p>
                     ) : null}
                   </div>
-                </div>
 
-                {/* Priority */}
-                <div className="space-y-1">
-                  <Label htmlFor="finding-task-priority" className="text-xs">
-                    Prioritet
-                  </Label>
-                  <Select
-                    value={state.taskPriority}
-                    onValueChange={(v) =>
-                      setState((s) => ({
-                        ...s,
-                        taskPriority: v as TaskPriority,
-                      }))
-                    }
-                  >
-                    <SelectTrigger
-                      id="finding-task-priority"
-                      data-testid="finding-task-priority-trigger"
+                  {/* Due date */}
+                  <div className="space-y-1">
+                    <Label className="text-xs">Förfallodatum</Label>
+                    <div className="flex items-center gap-2">
+                      <Popover
+                        open={taskDueDatePickerOpen}
+                        onOpenChange={setTaskDueDatePickerOpen}
+                      >
+                        <PopoverTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            data-testid="finding-task-due-date-trigger"
+                            className={cn(
+                              'justify-start text-left font-normal',
+                              !state.taskDueDate && 'text-muted-foreground'
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+                            {state.taskDueDate
+                              ? format(state.taskDueDate, 'PPP', { locale: sv })
+                              : state.dueDate
+                                ? `Förvalt: ${format(state.dueDate, 'PPP', { locale: sv })}`
+                                : 'Välj datum'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={state.taskDueDate ?? undefined}
+                            onSelect={(d) => {
+                              setState((s) => ({
+                                ...s,
+                                taskDueDate: d ?? null,
+                              }))
+                              setTaskDueDatePickerOpen(false)
+                            }}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      {state.taskDueDate ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            setState((s) => ({ ...s, taskDueDate: null }))
+                          }
+                          aria-label="Rensa uppgiftens datum"
+                        >
+                          <XIcon className="h-4 w-4" />
+                        </Button>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  {/* Priority */}
+                  <div className="space-y-1">
+                    <Label htmlFor="finding-task-priority" className="text-xs">
+                      Prioritet
+                    </Label>
+                    <Select
+                      value={state.taskPriority}
+                      onValueChange={(v) =>
+                        setState((s) => ({
+                          ...s,
+                          taskPriority: v as TaskPriority,
+                        }))
+                      }
                     >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PRIORITY_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                      <SelectTrigger
+                        id="finding-task-priority"
+                        data-testid="finding-task-priority-trigger"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PRIORITY_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </div>
-            </>
-          ) : null}
+              </>
+            ) : null}
+          </div>
 
-          <DialogFooter>
+          <DialogFooter className="shrink-0">
             {mode === 'create' && state.spawnTask && step === 2 ? (
               <>
                 <Button

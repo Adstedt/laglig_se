@@ -33,7 +33,11 @@ import { prisma } from '@/lib/prisma'
 import { withWorkspace } from '@/lib/auth/workspace-context'
 import { logActivity } from '@/lib/services/activity-logger'
 import { canCompleteOrRevertCycle } from '@/lib/compliance-audit/authorization'
-import { generateCycleReport } from '@/app/actions/compliance-audit-report'
+// NOTE: `generateCycleReport` is imported dynamically inside completeCycle()'s
+// after() block. A static import here pulls the PDF render chain
+// (puppeteer-core + @sparticuz/chromium) into every module that imports this
+// file — including the /laglistor/kontroller page — which crashes at runtime in
+// serverless because puppeteer-core can't be loaded there.
 import {
   AuditType,
   ComplianceCycleStatus,
@@ -977,6 +981,9 @@ export async function completeCycle(
       // Failures are logged but don't fail the user-visible response.
       after(async () => {
         try {
+          const { generateCycleReport } = await import(
+            '@/app/actions/compliance-audit-report'
+          )
           await generateCycleReport({
             cycleId: parsed.data.cycleId,
             kind: 'COMPLETE',

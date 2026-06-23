@@ -29,18 +29,17 @@ export function HeroV3() {
             className="mb-5 max-w-5xl text-[2.5rem] font-medium leading-[1.05] tracking-tight sm:text-5xl md:text-6xl lg:text-[4.75rem]"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
           >
-            <span className="block animate-fade-up">
-              Det nya operativsystemet
-            </span>
+            <span className="block animate-fade-up">Håll koll på lagarna.</span>
             <span className="block animate-fade-up-delay-1 text-foreground/45">
-              för compliance.
+              Automatiskt.
             </span>
           </h1>
 
           <div className="mb-10 flex animate-fade-up-delay-2 flex-col items-start gap-6 lg:flex-row lg:items-end lg:justify-between">
             <p className="max-w-xl text-lg text-muted-foreground md:text-xl">
-              För svenska företag, stora som små. Med AI som håller reda på
-              reglerna åt er — så ni slipper.
+              Oavsett var ni står idag — Laglig skapar er laglista, bevakar
+              ändringarna och säger vad de betyder för just er. AI-grundad i
+              svensk rätt.
             </p>
             <OrgCheckForm
               eyebrow="Testa direkt · 30 sek"

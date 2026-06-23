@@ -1,4 +1,4 @@
-/** Story 21.5 — /laglistor/kontroller/[cycleId] detail page (items + findings + rapport + aktivitet tabs). */
+/** Story 21.5 — /laglistor/kontroller/[cycleId] detail page (items + findings + rapport tabs). */
 
 // Story 21.12: extended function ceiling so the eager-sealed-PDF `after()`
 // continuation fired from `sealCycle` (Server Action invoked from this
