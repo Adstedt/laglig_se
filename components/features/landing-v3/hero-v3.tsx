@@ -37,9 +37,9 @@ export function HeroV3() {
 
           <div className="mb-10 flex animate-fade-up-delay-2 flex-col items-start gap-6 lg:flex-row lg:items-end lg:justify-between">
             <p className="max-w-xl text-lg text-muted-foreground md:text-xl">
-              För svenska företag, stora som små. Laglig bevakar lagändringar,
-              bygger er laglista och samlar bevisen för revisionen — AI-grundad
-              i svensk rätt, inga konsultarvoden.
+              Oavsett var ni står idag — Laglig skapar er laglista, bevakar
+              ändringarna och säger vad de betyder för just er. AI-grundad i
+              svensk rätt.
             </p>
             <OrgCheckForm
               eyebrow="Testa direkt · 30 sek"
