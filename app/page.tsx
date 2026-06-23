@@ -28,11 +28,11 @@ export const metadata = {
   // `absolute` bypasses the root layout's `'%s | Laglig.se'` title template
   // so we don't get the duplicated "Laglig.se ... | Laglig.se" suffix in SERPs.
   title: {
-    absolute: 'Laglig.se – Operativsystemet för compliance',
+    absolute: 'Lagbevakning & lagefterlevnad med AI | Laglig.se',
   },
-  // ~138 chars — full message lands in Google SERPs (truncation cap ~155).
+  // ~150 chars — full message lands in Google SERPs (truncation cap ~155).
   description:
-    'Compliance-plattformen för svenska företag — bevaka lagändringar, samla bevis och visa er efterlevnad. Byggt för AI-eran.',
+    'Laglig bevakar lagändringar, håller er laglista uppdaterad och samlar bevis för revisionen. AI-grundad i svensk rätt, inga konsultarvoden.',
 }
 
 export default function Home() {
