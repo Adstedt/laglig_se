@@ -66,3 +66,30 @@ export function trackAdsConversion(
     ...(params?.transactionId ? { transaction_id: params.transactionId } : {}),
   })
 }
+
+/**
+ * Remarketing audience events. Unlike conversions, these don't need a per-event
+ * label — they fire a named gtag event to the Ads account, and an audience is
+ * then defined in Google Ads → Audience Manager from the event (+ its params).
+ * Use for high-intent moments worth retargeting (e.g. completing the org-number
+ * preview) — a tighter list than the default all-visitors remarketing audience.
+ *
+ * Requires the visitor to have granted `marketing` consent (which now also
+ * grants ad_personalization); no-ops safely otherwise, so it's always safe to
+ * call on the success path.
+ */
+export type AdsRemarketingEvent = 'org_preview_completed'
+
+export function trackAdsRemarketingEvent(
+  event: AdsRemarketingEvent,
+  params?: Record<string, string | number>
+): void {
+  if (typeof window === 'undefined') return
+  if (typeof window.gtag !== 'function') return
+  if (!GOOGLE_ADS_ID) return
+
+  window.gtag('event', event, {
+    send_to: GOOGLE_ADS_ID,
+    ...params,
+  })
+}

@@ -27,6 +27,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { trackAdsRemarketingEvent } from '@/lib/marketing/google-ads'
 import { cn } from '@/lib/utils'
 
 /**
@@ -157,6 +158,13 @@ export function OrgCheckForm({
           Array.isArray(data.areas)
         ) {
           setPreview(data as PreviewResponse)
+          // High-intent remarketing signal — fired directly (not via the
+          // optional onPreviewSuccess prop) so it works on every embed,
+          // including the homepage. No-ops safely without marketing consent.
+          trackAdsRemarketingEvent('org_preview_completed', {
+            industry: (data as PreviewResponse).company.industry ?? 'unknown',
+            areaCount: (data as PreviewResponse).areaCount,
+          })
           onPreviewSuccess?.(data as PreviewResponse)
         }
       } catch {

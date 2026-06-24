@@ -1,0 +1,89 @@
+schema: 1
+story: '19.14'
+story_title: 'Adaptive Thinking + Reasoning for Global Chat'
+gate: CONCERNS
+status_reason: 'AC8 confirmed and AC9 functionally demonstrated (heavy CHANGE turn completed end-to-end with correct, company-aware output). Held at CONCERNS only for rigor + ops: exact AC9 wall-clock vs the 90s budget unmeasured, AI-SDK family bump unverified on a preview deploy. New low-severity UX-001 (interleaved-thinking breadcrumb ladder) logged as a follow-up, not a 19.14 blocker.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-24T09:00:00Z'
+
+history:
+  - at: '2026-06-23T21:30:00Z'
+    gate: CONCERNS
+    note: 'Initial review. AC8/AC9 live checks pending; stale comments fixed.'
+  - at: '2026-06-23T22:10:00Z'
+    gate: CONCERNS
+    note: 'AC8 confirmed via real /api/chat SSE stream (GLOBAL turn: reasoning-start/delta/end + interleaved thinking across 2 steps + signature). VER-001 resolved. AC9 (latency) + DEP-001 (preview smoke) still open.'
+  - at: '2026-06-24T09:00:00Z'
+    gate: CONCERNS
+    note: 'AC9 functionally demonstrated (heavy CHANGE turn completed, full assessment + routine draft, no timeout). OPS-001 downgraded to low (exact wall-clock still wanted). New UX-001 (low): interleaved thinking -> repeated "Tänkte klart" breadcrumb ladder; logged as a follow-up story, out of 19.14 scope.'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'OPS-001'
+    severity: low
+    finding: 'AC9 functionally demonstrated: a very heavy CHANGE turn (skill activation + ~4 tool groups + interleaved reasoning + full assessment, then a follow-up routine draft) COMPLETED and rendered fully — no hang/timeout/truncation. Remaining gap is rigor only: localhost has no 90s cutoff, so the exact wall-clock vs the prod 90s maxDuration is still unmeasured, and this was an unusually heavy turn.'
+    suggested_action: 'Capture the chat request wall-clock once (DevTools Network) OR add an onFinish duration log for ongoing prod observability. If a heavy CHANGE turn nears 90s in prod, dial change->medium (do NOT raise maxDuration).'
+    suggested_owner: dev
+  - id: 'UX-001'
+    severity: low
+    finding: 'NEW consequence of 19.14 (not a defect in this story): adaptive mode auto-enables interleaved thinking, so a heavy multi-step turn now emits one reasoning block per tool step -> a ladder of repeated "Tänkte klart" breadcrumbs (7+ observed). chat-message.tsx renders each reasoning part as its own breadcrumb; 19.14 only exposed the existing design to far more reasoning events.'
+    suggested_action: 'Out of scope for 19.14. Follow-up story drafted: docs/stories/19.15.agent-progress-timeline-and-working-indicator.md (Draft, SM to refine/size) — beside-avatar live status + elapsed timer, collapsing to one beneath-avatar "Tänkte och sökte i N steg" summary.'
+    suggested_owner: sm
+  - id: 'VER-001'
+    severity: low
+    finding: 'RESOLVED for the core case. AC8 confirmed via a real /api/chat SSE stream on a tool-heavy GLOBAL turn: reasoning-start/delta/end parts + signature + interleaved thinking across two tool steps → drives the ReasoningBlock breadcrumb; English reasoning correctly masked. Remaining (optional): eyeball the CHANGE-context breadcrumb and the trivial-GLOBAL clean-degrade case.'
+    suggested_action: 'Optional: confirm CHANGE-context breadcrumb + trivial-GLOBAL no-empty-block degrade. Core reasoning-stream behaviour already proven.'
+    suggested_owner: dev
+  - id: 'DEP-001'
+    severity: medium
+    finding: 'AI-SDK family bumped wide alongside a small feature: ai 6.0.50->6.0.209, @ai-sdk/anthropic 3.0.23->3.0.85, @ai-sdk/openai 3.0.19->3.0.74, @ai-sdk/react 3.0.52->3.0.211. Necessary (provider version-skew Tool-type clash) and full unit suite is green, but it is a broad surface touching prompt caching + streaming + OpenAI path.'
+    suggested_action: 'Smoke the chat (both providers) + prompt-caching + citations on a Vercel preview deploy before prod merge.'
+    suggested_owner: dev
+  - id: 'TEL-001'
+    severity: low
+    finding: 'AC7: reasoning-token capture now reads outputTokenDetails.reasoningTokens (field moved in ai@6.0.209), but the Anthropic provider populates neither field — counter stays 0. No regression (always 0 in prod data), but reasoning volume is unobservable via telemetry.'
+    suggested_action: 'Accept as a known provider limitation; rely on the streamed reasoning block as the "did it think" signal. Revisit if a future SDK surfaces thinking_tokens.'
+    suggested_owner: dev
+  - id: 'TEST-001'
+    severity: low
+    finding: 'AC6: REASONING_GUIDANCE now-on-for-global is satisfied by re-deriving thinkingEnabled=isAnthropic, but there is no test asserting the global system prompt actually contains the guidance block.'
+    suggested_action: 'Optional: add a buildSystemPrompt unit test asserting REASONING_GUIDANCE present when thinkingEnabled=true (and absent when false).'
+    suggested_owner: dev
+
+quality_score: 80
+
+expires: '2026-07-07T00:00:00Z'
+
+evidence:
+  tests_reviewed: 9
+  risks_identified: 5
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 8, 10, 11, 12]
+    ac_gaps: [6, 7, 9]
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No auth/authz/data-path change. Provider gating (Anthropic vs OpenAI) and AUDITOR web_search restriction preserved. Provider options validated at runtime by the SDK zod schema.'
+  performance:
+    status: CONCERNS
+    notes: 'AC9 latency unmeasured. effort=high on tool-heavy CHANGE turns is the locked value and the most likely 90s-budget risk; needs one real measurement.'
+  reliability:
+    status: CONCERNS
+    notes: 'Wide AI-SDK family bump (ai 6.0.50->6.0.209 etc.). OpenAI fallback preserved and full unit suite green, but breadth warrants a preview-deploy smoke before prod.'
+  maintainability:
+    status: PASS
+    notes: 'Single seam (thinking-effort.ts) + thin route wiring; exhaustive Record typing; strong unit tests + 3 committed smoke scripts. Stale header/test comments fixed during review.'
+
+recommendations:
+  immediate:
+    - action: 'Measure a tool-heavy CHANGE turn (effort=high) vs the 90s maxDuration (AC9).'
+      refs: ['lib/agent/thinking-effort.ts', 'app/api/chat/route.ts']
+    - action: 'Eyeball in-app reasoning render for CHANGE + hard GLOBAL turns after dev-server restart (AC8).'
+      refs: ['components/features/ai-chat/chat-message.tsx']
+  future:
+    - action: 'Smoke chat (both providers) + prompt caching + citations on a Vercel preview deploy to validate the AI-SDK family bump.'
+      refs: ['package.json', 'app/api/chat/route.ts']
+    - action: 'Optionally narrow the ai bump to the smallest version matching @ai-sdk/anthropic@3.0.85 provider pins, if minimizing blast radius is preferred.'
+      refs: ['package.json']

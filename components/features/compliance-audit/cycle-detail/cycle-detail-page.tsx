@@ -498,8 +498,8 @@ export function CycleDetailPage({
             data-testid="cycle-avslutad-advisory"
             className="rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900"
           >
-            Kontrollen är slutförd. Öppna anmärkningar fortsätter att följas upp
-            — bedömningarna bygger på dagens snapshot.
+            Kontrollen är slutförd. Öppna anmärkningar fortsätter att följas
+            upp.
           </div>
         ) : null}
 

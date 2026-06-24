@@ -32,6 +32,12 @@ import {
 // Story 19.7c: derive the context's primary skill to narrow the tool registry.
 import { getPrimarySkillForContext } from '@/lib/agent/skill-loader'
 import { buildPendingActionsContext } from '@/lib/agent/context-assembly'
+// Story 19.14: adaptive thinking config (per-context effort) — single home for
+// the effort map + provider-options builder, wired into this route below.
+import {
+  buildChatThinkingProviderOptions,
+  type ChatContextType,
+} from '@/lib/agent/thinking-effort'
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 import { randomUUID } from 'node:crypto'
@@ -66,15 +72,12 @@ const workspaceRatelimit = isRedisConfigured()
     })
   : null
 
-// Maximum duration for streaming responses (90s to accommodate thinking tokens on tool-heavy assessments)
+// Maximum duration for streaming responses (90s). Story 19.14: adaptive thinking
+// (per-context `effort`, capped at `high`) lets the model self-regulate think time
+// within the effort ceiling, so `max` is avoided to keep tool-heavy CHANGE turns
+// under this 90s budget without raising it. Effort values + the provider-options
+// builder live in lib/agent/thinking-effort.ts, wired in below.
 export const maxDuration = 90
-
-// Per-context thinking budget map (tokens). Absent key = thinking disabled.
-const THINKING_BUDGET: Record<string, number> = {
-  change: 8_000,
-  task: 3_000,
-  law: 2_000,
-}
 
 export async function POST(req: Request) {
   try {
@@ -187,7 +190,7 @@ export async function POST(req: Request) {
       ...initialContext
     } = body as {
       messages: UIMessage[]
-      contextType?: 'global' | 'task' | 'law' | 'change'
+      contextType?: ChatContextType
       contextId?: string
       // Story 19.4a: active LawListItem id (CHANGE sends it explicitly; LAW falls
       // back to contextId, which that mount sets to the listItemId).
@@ -209,9 +212,6 @@ export async function POST(req: Request) {
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       )
     }
-
-    // Resolve thinking budget for this context
-    const thinkingBudget = contextType ? (THINKING_BUDGET[contextType] ?? 0) : 0
 
     const contextTypeUpper = (contextType ?? 'global').toUpperCase() as
       | 'GLOBAL'
@@ -273,7 +273,12 @@ export async function POST(req: Request) {
       contextType,
       contextId,
       lawListItemId: resolvedLawListItemId,
-      thinkingEnabled: thinkingBudget > 0,
+      // Story 19.14: reasoning is on for every context on the Anthropic path
+      // (adaptive effort, incl. the newly-enabled `global` chat); the OpenAI
+      // fallback emits no thinking. Re-derived from the provider signal, replacing
+      // the removed `thinkingBudget > 0`. Drives both telemetry (thinkingEnabled)
+      // and REASONING_GUIDANCE injection (system-prompt gates on this field).
+      thinkingEnabled: isAnthropic,
       ...(!isAnthropic && pendingActionsBlock ? { pendingActionsBlock } : {}),
       ...initialContext,
     })
@@ -339,18 +344,19 @@ export async function POST(req: Request) {
         ? anthropic('claude-sonnet-4-6')
         : openai('gpt-4-turbo')
 
-    // Build providerOptions for extended thinking (Anthropic only, omit entirely when disabled)
-    const providerOptions =
-      thinkingBudget > 0 && modelProvider === 'anthropic'
-        ? {
-            anthropic: {
-              thinking: {
-                type: 'enabled' as const,
-                budgetTokens: thinkingBudget,
-              },
-            },
-          }
-        : undefined
+    // Story 19.14: adaptive thinking via per-context effort (Anthropic path only).
+    // Emits `{ thinking: { type:'adaptive', display:'summarized' }, effort }` —
+    // the model self-regulates whether/how much to think per turn within the
+    // effort ceiling (trivial turns skip thinking, hard ones think more), guided
+    // by the per-context effort. Replaces the deprecated fixed
+    // `{ thinking: { type:'enabled', budgetTokens } }`. Requires
+    // @ai-sdk/anthropic >= 3.0.85 (3.0.23 rejected `type:'adaptive'`, and an
+    // effort-only payload silently DISABLES thinking on Sonnet 4.6 — verified
+    // live). The OpenAI path returns undefined (stays thinking-less — AC 4).
+    const providerOptions = buildChatThinkingProviderOptions(
+      modelProvider,
+      contextType
+    )
 
     // Story 14.26: Anthropic prompt caching v1.
     // On the Anthropic path, wrap the system prompt in a SystemModelMessage so we can
@@ -452,13 +458,27 @@ export async function POST(req: Request) {
           const usageAsRecord = totalUsage as unknown as {
             cacheCreationInputTokens?: number
             inputTokenDetails?: { cacheWriteTokens?: number }
+            outputTokenDetails?: { reasoningTokens?: number }
           }
           const cacheWriteInputTokens =
             usageAsRecord.cacheCreationInputTokens ??
             usageAsRecord.inputTokenDetails?.cacheWriteTokens ??
             0
 
-          const reasoningTokens = totalUsage.reasoningTokens ?? 0
+          // Story 19.14: ai@6.0.209 moved reasoning tokens to
+          // outputTokenDetails.reasoningTokens and deprecated the top-level
+          // totalUsage.reasoningTokens. Read the new field first, fall back to the
+          // deprecated one (AC 7 — reasoning-token capture continuity; keeps the
+          // field reading the supported location once the deprecated one is removed).
+          // NB: the Anthropic provider currently populates NEITHER (verified live —
+          // both undefined even when summarized thinking is emitted), so this stays
+          // 0 on the Anthropic path exactly as it did pre-bump — no regression, just
+          // future-proofed. The trustworthy "did it think" signal is the streamed
+          // reasoning block in the UI, not this counter.
+          const reasoningTokens =
+            usageAsRecord.outputTokenDetails?.reasoningTokens ??
+            totalUsage.reasoningTokens ??
+            0
 
           // Story 19.5: `modelName` is now resolved once at the top of the handler
           // (reused here + for AgentDecisionLog.model_version).

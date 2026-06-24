@@ -130,8 +130,7 @@ export function FindingCard({
     'before:absolute before:left-0 before:top-2.5 before:bottom-2.5 before:w-[2px] before:rounded-full',
     rail,
     interactive && 'cursor-pointer hover:bg-muted/50',
-    focused &&
-      'ring-2 ring-primary ring-offset-2 ring-offset-background animate-in fade-in duration-300',
+    focused && 'ring-2 ring-inset ring-primary animate-in fade-in duration-300',
     isClosed && 'opacity-70'
   )
 

@@ -1,0 +1,66 @@
+schema: 1
+story: '19.15'
+story_title: 'Agent Progress Timeline + "Working" Indicator (coalesce interleaved reasoning)'
+gate: PASS
+status_reason: 'UI-only fix for UX-001, now real-app verified (owner smoke on a heavy CHANGE turn: 16-event ladder gone, calm live row + frozen summary, no regression). One smoke-found defect (QA-001, duplicate turn-duration across split progress groups) fixed during review. All non-deferred ACs implemented + unit-covered (168/168 ai-chat green). No security/perf/reliability risk.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-24T14:05:00Z'
+
+waiver: { active: false }
+
+history:
+  - at: '2026-06-24T13:45:00Z'
+    gate: PASS
+    note: 'Initial review. 166/166 green. Advisory low items: VER-001 (in-app smoke), TEST-001 (answering-frame test), UX-002 (no same-tool coalesce in expanded timeline).'
+  - at: '2026-06-24T14:05:00Z'
+    gate: PASS
+    note: 'Owner smoke verified core ACs in-app (VER-001 resolved). Found + fixed QA-001 (duration repeated on every split progress group → now shown once on the last group). Added 2 tests (QA-001 + answering-frame), resolving TEST-001. 168/168 green.'
+
+top_issues:
+  - id: 'UX-002'
+    severity: low
+    finding: 'AgentProgressGroup expanded timeline lists every tool call as its own row (no "(N)" same-tool coalescing like CollapsedToolGroup). Faithful as a timeline, but a very heavy turn yields a long expanded list.'
+    suggested_action: 'Accept as-is (timeline fidelity). Revisit only if heavy turns make the expanded list unwieldy.'
+    suggested_owner: dev
+
+resolved_issues:
+  - id: 'VER-001'
+    resolution: 'Owner ran the in-app smoke on a heavy CHANGE turn; ladder gone, live row + frozen summary + assessment all correct (screenshots).'
+  - id: 'TEST-001'
+    resolution: 'Added the answering-frame test (isStreaming=true + reasoning/tool done + text → no live row, summary present).'
+  - id: 'QA-001'
+    resolution: 'Fixed: duration shown once on the last progress group (chat-message.tsx lastProgressGroupIndex); test added.'
+
+quality_score: 95
+
+expires: '2026-07-08T00:00:00Z'
+
+evidence:
+  tests_reviewed: 10
+  risks_identified: 4
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 8, 9, 10, 11]
+    ac_gaps: []
+  ac_deferred: [7]  # AC7 reassurance line + AC6 telemetry sub-clause — PO-deferred, not required for Done
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'UI-only. No auth/authz/data-path/quota change. No new inputs, no secrets, no network calls.'
+  performance:
+    status: PASS
+    notes: 'Adds a 1 Hz re-render only while a turn is active (negligible); full suppression of the streaming ladder net-reduces DOM churn during heavy turns. Interval cleaned up on unmount/active-flip.'
+  reliability:
+    status: PASS
+    notes: 'Degrade cases (no-think, single reasoning step, tool-only, history reload with no duration) are explicitly handled and unit-tested. Timer freezes via ref; returns null on reload so no "· undefined".'
+  maintainability:
+    status: PASS
+    notes: 'Grouping change is additive and leaves tool-only behaviour byte-identical (existing tests pass verbatim). New pieces compose CollapsedToolGroup visual language; clear comments on the grouping rule, suppression rationale, and the aria-live trap.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Optional: trivial-GLOBAL clean-degrade eyeball (no empty row/summary) — heavy CHANGE path already smoke-verified.'
+      refs: ['components/features/ai-chat/chat-message.tsx']
+    - action: 'Optional (UX-002): coalesce same-tool runs in the expanded timeline if heavy turns make it unwieldy.'
+      refs: ['components/features/ai-chat/chat-message.tsx']

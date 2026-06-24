@@ -10,7 +10,7 @@
  * UX redesign (replaced by the modal).
  */
 
-import { useRef, type RefObject } from 'react'
+import { useMemo, useRef, useState, type RefObject } from 'react'
 import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
 import { useVirtualizer, type Virtualizer } from '@tanstack/react-virtual'
@@ -21,6 +21,8 @@ import {
   ItemSignOffButton,
 } from '@/components/features/compliance-audit/item-bedomning-editor'
 import { COMPLIANCE_STATUS_OPTIONS } from '@/components/features/document-list/table-cell-editors/compliance-status-editor'
+import { CellErrorBoundary } from '@/components/features/document-list/table-cells/cell-error-boundary'
+import { SortableHeader } from '@/components/ui/sortable-header'
 import { Badge } from '@/components/ui/badge'
 import { getStatusBadgeProps } from '@/lib/ui/badge-tones'
 import type { CycleItemRow } from '@/app/actions/compliance-audit-item'
@@ -103,6 +105,22 @@ export function CycleItemsTab({
     measureElement: (el) => el.getBoundingClientRect().height,
   })
 
+  // Local sort over the value columns (see compareItems). Default (null) keeps
+  // the incoming law-list order.
+  const [sort, setSort] = useState<{ key: ItemSortKey; desc: boolean } | null>(
+    null
+  )
+  const sortCol = (key: ItemSortKey): SortColumn => ({
+    getIsSorted: () =>
+      sort?.key === key ? (sort.desc ? 'desc' : 'asc') : false,
+    toggleSorting: (desc?: boolean) => setSort({ key, desc: desc ?? false }),
+  })
+  const sortedItems = useMemo(() => {
+    if (!sort) return items
+    const dir = sort.desc ? -1 : 1
+    return [...items].sort((a, b) => compareItems(a, b, sort.key) * dir)
+  }, [items, sort])
+
   if (items.length === 0) {
     return (
       <div className="rounded-md border p-8 text-center text-sm italic text-muted-foreground">
@@ -113,10 +131,10 @@ export function CycleItemsTab({
 
   return (
     <div className="rounded-md border overflow-x-auto">
-      <TableHeader />
+      <TableHeader sortCol={sortCol} />
       {shouldVirtualise ? (
         <VirtualisedBody
-          items={items}
+          items={sortedItems}
           virtualizer={virtualizer}
           scrollRef={scrollRef}
           highlightedRowId={highlightedRowId}
@@ -135,7 +153,7 @@ export function CycleItemsTab({
         />
       ) : (
         <PlainBody
-          items={items}
+          items={sortedItems}
           highlightedRowId={highlightedRowId}
           selectedItemId={selectedItemId}
           onSelectItem={onSelectItem}
@@ -163,25 +181,86 @@ export function CycleItemsTab({
 // anywhere outside the inline controls opens the modal.
 const COLUMN_CLASS = {
   lag: 'min-w-[240px] flex-[2_0_0%] px-4',
-  nuvarande: 'w-36 px-4',
+  nuvarande: 'w-44 px-4',
   bedomning: 'w-40 px-4',
   motivering: 'min-w-[200px] flex-[3_0_0%] px-4',
   ansvarig: 'w-40 px-4',
   signerad: 'w-48 px-4',
 } as const
 
-function TableHeader() {
+// ---------------------------------------------------------------------------
+// Sorting — local, value-column-only (the inline-editor columns stay in the
+// underlying law-list order). Drives the shared <SortableHeader> primitive via
+// a tiny adapter, same as the cycle-list table.
+// ---------------------------------------------------------------------------
+type ItemSortKey = 'dokument' | 'nuvarande' | 'ansvarig' | 'signerad'
+
+const statusOrder = (
+  status: CycleItemRow['sourceComplianceStatus']
+): number => {
+  const i = COMPLIANCE_STATUS_OPTIONS.findIndex((o) => o.value === status)
+  return i === -1 ? COMPLIANCE_STATUS_OPTIONS.length : i
+}
+
+function compareItems(
+  a: CycleItemRow,
+  b: CycleItemRow,
+  key: ItemSortKey
+): number {
+  switch (key) {
+    case 'dokument':
+      return a.lawTitle.localeCompare(b.lawTitle, 'sv')
+    case 'nuvarande':
+      return (
+        statusOrder(a.sourceComplianceStatus) -
+        statusOrder(b.sourceComplianceStatus)
+      )
+    case 'ansvarig':
+      return (a.sourceResponsibleUser?.name ?? '').localeCompare(
+        b.sourceResponsibleUser?.name ?? '',
+        'sv'
+      )
+    case 'signerad': {
+      // Unsigned rows (null) sort to the bottom on ascending.
+      const ta = a.signedOffAt ? new Date(a.signedOffAt).getTime() : Infinity
+      const tb = b.signedOffAt ? new Date(b.signedOffAt).getTime() : Infinity
+      return ta - tb
+    }
+  }
+}
+
+interface SortColumn {
+  getIsSorted: () => 'asc' | 'desc' | false
+  toggleSorting: (_desc?: boolean) => void
+}
+
+function TableHeader({
+  sortCol,
+}: {
+  sortCol: (_key: ItemSortKey) => SortColumn
+}) {
   return (
     <div
       role="rowheader"
       className="flex h-12 items-center border-b text-sm font-medium text-muted-foreground"
     >
-      <div className={COLUMN_CLASS.lag}>Dokument</div>
-      <div className={COLUMN_CLASS.nuvarande}>Nuvarande status</div>
+      <div className={COLUMN_CLASS.lag}>
+        <SortableHeader column={sortCol('dokument')} label="Dokument" />
+      </div>
+      <div className={cn(COLUMN_CLASS.nuvarande, 'whitespace-nowrap')}>
+        <SortableHeader
+          column={sortCol('nuvarande')}
+          label="Nuvarande status"
+        />
+      </div>
       <div className={COLUMN_CLASS.bedomning}>Bedömning</div>
       <div className={COLUMN_CLASS.motivering}>Motivering</div>
-      <div className={COLUMN_CLASS.ansvarig}>Ansvarig</div>
-      <div className={COLUMN_CLASS.signerad}>Signerad</div>
+      <div className={COLUMN_CLASS.ansvarig}>
+        <SortableHeader column={sortCol('ansvarig')} label="Ansvarig" />
+      </div>
+      <div className={COLUMN_CLASS.signerad}>
+        <SortableHeader column={sortCol('signerad')} label="Signerad" />
+      </div>
     </div>
   )
 }
@@ -282,7 +361,10 @@ function RowContent({
           <div className="flex items-start gap-1">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1 min-w-0">
-                <span className="font-medium truncate" title={row.lawTitle}>
+                <span
+                  className="text-sm font-medium truncate"
+                  title={row.lawTitle}
+                >
                   {row.lawTitle}
                 </span>
                 <Link
@@ -333,11 +415,13 @@ function RowContent({
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => e.stopPropagation()}
         >
-          <ItemBedomningSelect
-            value={row.efterlevnadsbedomning}
-            onChange={onBedomningChange}
-            readOnly={itemReadOnly}
-          />
+          <CellErrorBoundary>
+            <ItemBedomningSelect
+              value={row.efterlevnadsbedomning}
+              onChange={onBedomningChange}
+              readOnly={itemReadOnly}
+            />
+          </CellErrorBoundary>
         </div>
 
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
@@ -347,11 +431,13 @@ function RowContent({
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => e.stopPropagation()}
         >
-          <ItemMotiveringEditor
-            value={row.motivering}
-            onChange={onMotiveringChange}
-            readOnly={itemReadOnly}
-          />
+          <CellErrorBoundary>
+            <ItemMotiveringEditor
+              value={row.motivering}
+              onChange={onMotiveringChange}
+              readOnly={itemReadOnly}
+            />
+          </CellErrorBoundary>
         </div>
 
         <div className={COLUMN_CLASS.ansvarig}>
@@ -370,15 +456,17 @@ function RowContent({
           {readOnly && row.signedOffAt === null ? (
             <span className="text-xs text-muted-foreground">—</span>
           ) : (
-            <ItemSignOffButton
-              signedOffAt={row.signedOffAt}
-              signedOffBy={row.signedOffBy}
-              canSign={canSign}
-              canUnsign={canUnsign}
-              onSign={onSign}
-              onUnsign={onUnsign}
-              disabledReason={signDisabledReason}
-            />
+            <CellErrorBoundary>
+              <ItemSignOffButton
+                signedOffAt={row.signedOffAt}
+                signedOffBy={row.signedOffBy}
+                canSign={canSign}
+                canUnsign={canUnsign}
+                onSign={onSign}
+                onUnsign={onUnsign}
+                disabledReason={signDisabledReason}
+              />
+            </CellErrorBoundary>
           )}
         </div>
       </div>
