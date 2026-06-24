@@ -353,8 +353,8 @@ describe('CycleDetailPage — lifecycle integration', () => {
 // ============================================================================
 // Reframing pass — AVSLUTAD post-audit advisory banner
 // ============================================================================
-// The banner reframes "audit complete" as "snapshot taken; findings continue
-// to be followed up" — appears between the header and the tab strip when
+// The banner reframes "audit complete" as "findings continue to be followed
+// up" — appears between the header and the tab strip when
 // `localCycle.status === 'AVSLUTAD'`. Hidden in PAGAENDE.
 
 describe('CycleDetailPage — AVSLUTAD reassurance banner', () => {
@@ -364,7 +364,6 @@ describe('CycleDetailPage — AVSLUTAD reassurance banner', () => {
     expect(banner).toBeInTheDocument()
     expect(banner.textContent).toContain('Kontrollen är slutförd')
     expect(banner.textContent).toContain('följas upp')
-    expect(banner.textContent).toContain('snapshot')
   })
 
   it('does NOT render banner in PAGAENDE', () => {
