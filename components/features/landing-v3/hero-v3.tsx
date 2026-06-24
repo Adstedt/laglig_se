@@ -37,10 +37,9 @@ export function HeroV3() {
 
           <div className="mb-10 flex animate-fade-up-delay-2 flex-col items-start gap-6 lg:flex-row lg:items-end lg:justify-between">
             <p className="max-w-xl text-lg text-muted-foreground md:text-xl">
-              Laglig är hela ert system för lagefterlevnad — laglistan som
-              håller sig aktuell av sig själv, AI:n som tolkar varje
-              regeländring åt er, och kontrollerna och dokumenten som gör er
-              revisionsklara när som helst.
+              Laglig samlar alla regler som gäller just er verksamhet, håller
+              dem aktuella när lagarna ändras, och hjälper er bevisa att ni
+              följer dem — utan att ni behöver vara experter.
             </p>
             <OrgCheckForm
               eyebrow="Testa direkt · 30 sek"
