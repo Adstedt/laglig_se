@@ -85,3 +85,53 @@ describe('trackAdsConversion', () => {
     expect(() => trackAdsConversion('signup')).not.toThrow()
   })
 })
+
+describe('trackAdsRemarketingEvent', () => {
+  const gtag = vi.fn()
+
+  beforeEach(() => {
+    gtag.mockReset()
+    vi.unstubAllEnvs()
+    ;(window as unknown as { gtag?: typeof gtag }).gtag = gtag
+  })
+
+  afterEach(() => {
+    delete (window as unknown as { gtag?: typeof gtag }).gtag
+    vi.unstubAllEnvs()
+  })
+
+  it('fires the named event with send_to and params when the id is set', async () => {
+    vi.stubEnv('NEXT_PUBLIC_GOOGLE_ADS_ID', 'AW-123456789')
+    const { trackAdsRemarketingEvent } = await loadModule()
+
+    trackAdsRemarketingEvent('org_preview_completed', {
+      industry: 'Bygg',
+      areaCount: 7,
+    })
+
+    expect(gtag).toHaveBeenCalledWith('event', 'org_preview_completed', {
+      send_to: 'AW-123456789',
+      industry: 'Bygg',
+      areaCount: 7,
+    })
+  })
+
+  it('no-ops when the ads account id is unset', async () => {
+    vi.stubEnv('NEXT_PUBLIC_GOOGLE_ADS_ID', '')
+    const { trackAdsRemarketingEvent } = await loadModule()
+
+    trackAdsRemarketingEvent('org_preview_completed')
+
+    expect(gtag).not.toHaveBeenCalled()
+  })
+
+  it('no-ops when gtag has not loaded (no marketing consent)', async () => {
+    vi.stubEnv('NEXT_PUBLIC_GOOGLE_ADS_ID', 'AW-123456789')
+    delete (window as unknown as { gtag?: typeof gtag }).gtag
+    const { trackAdsRemarketingEvent } = await loadModule()
+
+    expect(() =>
+      trackAdsRemarketingEvent('org_preview_completed')
+    ).not.toThrow()
+  })
+})

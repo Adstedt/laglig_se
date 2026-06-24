@@ -32,6 +32,7 @@ import { EmptyState as SharedEmptyState } from '@/components/ui/empty-state'
 import { CycleStatusBadge } from '@/components/features/compliance-audit/cycle-detail/cycle-status-badge'
 import { FilterChip, FilterChipGroup } from '@/components/ui/filter-chip'
 import { PageHeader } from '@/components/ui/page-header'
+import { SortableHeader } from '@/components/ui/sortable-header'
 import { TableToolbar } from '@/components/ui/table-toolbar'
 import type { CycleSummary } from '@/app/actions/compliance-audit-cycle'
 import { ComplianceCycleStatus, AuditType } from '@prisma/client'
@@ -59,6 +60,25 @@ const FILTERS: FilterDef[] = [
   },
   { key: 'alla', label: 'Alla', statuses: 'all' },
 ]
+
+type SortKey =
+  | 'name'
+  | 'status'
+  | 'lawList'
+  | 'period'
+  | 'auditor'
+  | 'itemCount'
+  | 'created'
+
+// Status sort follows the lifecycle order (planerad → pågående → avslutad)
+// rather than alphabetical. Partial map + fallback keeps it resilient to any
+// other enum values.
+const STATUS_RANK: Partial<Record<ComplianceCycleStatus, number>> = {
+  [ComplianceCycleStatus.PLANERAD]: 0,
+  [ComplianceCycleStatus.PAGAENDE]: 1,
+  [ComplianceCycleStatus.AVSLUTAD]: 2,
+}
+const statusRank = (s: ComplianceCycleStatus): number => STATUS_RANK[s] ?? 99
 
 function initials(name: string | null | undefined): string {
   if (!name) return '?'
@@ -98,6 +118,46 @@ export function CycleListTable({ cycles, canCreate }: CycleListTableProps) {
     const set = new Set(activeFilter.statuses)
     return cycles.filter((c) => set.has(c.status))
   }, [cycles, activeFilter])
+
+  // Lightweight client-side sort. Drives the shared <SortableHeader> primitive
+  // (same affordance as Laglistor) via a tiny adapter — no TanStack needed for
+  // this read-only navigation list.
+  const [sort, setSort] = useState<{ key: SortKey; desc: boolean }>({
+    key: 'created',
+    desc: true,
+  })
+
+  const sortCol = (key: SortKey) => ({
+    getIsSorted: (): 'asc' | 'desc' | false =>
+      sort.key === key ? (sort.desc ? 'desc' : 'asc') : false,
+    toggleSorting: (desc?: boolean) => setSort({ key, desc: desc ?? false }),
+  })
+
+  const sorted = useMemo(() => {
+    const dir = sort.desc ? -1 : 1
+    const cmp = (a: CycleSummary, b: CycleSummary): number => {
+      switch (sort.key) {
+        case 'name':
+          return a.name.localeCompare(b.name, 'sv')
+        case 'status':
+          return statusRank(a.status) - statusRank(b.status)
+        case 'lawList':
+          return a.lawList.name.localeCompare(b.lawList.name, 'sv')
+        case 'period':
+          return a.scheduledStart.getTime() - b.scheduledStart.getTime()
+        case 'auditor':
+          return (a.leadAuditor.name ?? '').localeCompare(
+            b.leadAuditor.name ?? '',
+            'sv'
+          )
+        case 'itemCount':
+          return a.itemCount - b.itemCount
+        case 'created':
+          return a.createdAt.getTime() - b.createdAt.getTime()
+      }
+    }
+    return [...filtered].sort((a, b) => cmp(a, b) * dir)
+  }, [filtered, sort])
 
   return (
     <div className="space-y-6">
@@ -149,17 +209,40 @@ export function CycleListTable({ cycles, canCreate }: CycleListTableProps) {
           <Table className="table-fixed">
             <TableHeader>
               <TableRow>
-                <TableHead>Namn</TableHead>
-                <TableHead className="w-36">Status</TableHead>
-                <TableHead>Laglista</TableHead>
-                <TableHead className="w-48">Period</TableHead>
-                <TableHead>Ansvarig revisor</TableHead>
-                <TableHead className="w-20 text-right">Dokument</TableHead>
-                <TableHead className="w-32">Skapad</TableHead>
+                <TableHead>
+                  <SortableHeader column={sortCol('name')} label="Namn" />
+                </TableHead>
+                <TableHead className="w-36">
+                  <SortableHeader column={sortCol('status')} label="Status" />
+                </TableHead>
+                <TableHead>
+                  <SortableHeader
+                    column={sortCol('lawList')}
+                    label="Laglista"
+                  />
+                </TableHead>
+                <TableHead className="w-36">
+                  <SortableHeader
+                    column={sortCol('itemCount')}
+                    label="Dokument"
+                  />
+                </TableHead>
+                <TableHead className="w-48">
+                  <SortableHeader column={sortCol('period')} label="Period" />
+                </TableHead>
+                <TableHead>
+                  <SortableHeader
+                    column={sortCol('auditor')}
+                    label="Ansvarig revisor"
+                  />
+                </TableHead>
+                <TableHead className="w-36">
+                  <SortableHeader column={sortCol('created')} label="Skapad" />
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((cycle) => (
+              {sorted.map((cycle) => (
                 <CycleRow
                   key={cycle.id}
                   cycle={cycle}
@@ -186,9 +269,15 @@ interface CycleRowProps {
 }
 
 function CycleRow({ cycle, onNavigate }: CycleRowProps) {
+  // Drop the (repeated) start year when the range stays in one year, so the
+  // common case reads "22 juni – 24 juni 2026" and fits the column on one line.
+  const sameYear =
+    cycle.scheduledStart.getFullYear() === cycle.scheduledEnd.getFullYear()
   const period =
-    format(cycle.scheduledStart, 'd MMM yyyy', { locale: sv }) +
-    '–' +
+    format(cycle.scheduledStart, sameYear ? 'd MMM' : 'd MMM yyyy', {
+      locale: sv,
+    }) +
+    ' – ' +
     format(cycle.scheduledEnd, 'd MMM yyyy', { locale: sv })
   const auditLabel = cycle.auditType === AuditType.INTERN ? 'Intern' : 'Extern'
   const href = `/laglistor/kontroller/${cycle.id}`
@@ -220,6 +309,7 @@ function CycleRow({ cycle, onNavigate }: CycleRowProps) {
       <TableCell>
         <span className="truncate">{cycle.lawList.name}</span>
       </TableCell>
+      <TableCell className="tabular-nums">{cycle.itemCount}</TableCell>
       <TableCell>
         <span className="text-muted-foreground">{period}</span>
       </TableCell>
@@ -232,9 +322,6 @@ function CycleRow({ cycle, onNavigate }: CycleRowProps) {
           </Avatar>
           <span className="truncate">{cycle.leadAuditor.name ?? 'Okänd'}</span>
         </span>
-      </TableCell>
-      <TableCell className="text-right tabular-nums">
-        {cycle.itemCount}
       </TableCell>
       <TableCell>
         <span className="text-muted-foreground">

@@ -10,8 +10,8 @@ describe('categoriesToConsentParams', () => {
     expect(params.analytics_storage).toBe('granted')
     expect(params.ad_storage).toBe('granted')
     expect(params.ad_user_data).toBe('granted')
-    // ad_personalization stays denied until we run remarketing audiences.
-    expect(params.ad_personalization).toBe('denied')
+    // ad_personalization follows marketing — grants remarketing audiences.
+    expect(params.ad_personalization).toBe('granted')
   })
 
   it('denies ad + analytics storage when categories are off', () => {
@@ -22,6 +22,7 @@ describe('categoriesToConsentParams', () => {
     expect(params.analytics_storage).toBe('denied')
     expect(params.ad_storage).toBe('denied')
     expect(params.ad_user_data).toBe('denied')
+    expect(params.ad_personalization).toBe('denied')
   })
 })
 

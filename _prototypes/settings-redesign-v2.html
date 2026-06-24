@@ -1,0 +1,761 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Inställningar — Redesign v2 · Laglig</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+      @font-face {
+        font-family: 'Safiro';
+        src: url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'),
+             url('../public/fonts/safiro-medium-webfont.woff') format('woff');
+        font-weight: 500; font-style: normal; font-display: swap;
+      }
+      @font-face {
+        font-family: 'Google Sans Flex';
+        src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype');
+        font-weight: 100 900; font-style: normal; font-display: swap;
+      }
+
+      :root {
+        --background: 40 20% 98%;
+        --foreground: 30 10% 10%;
+        --card: 40 15% 99%;
+        --card-foreground: 30 10% 10%;
+        --primary: 30 15% 12%;
+        --primary-foreground: 40 20% 98%;
+        --secondary: 40 15% 95%;
+        --muted: 40 12% 94%;
+        --muted-foreground: 30 8% 45%;
+        --accent: 40 15% 93%;
+        --border: 35 10% 88%;
+        --destructive: 0 84.2% 60.2%;
+        --ring: 30 15% 12%;
+        --section-warm: 45 30% 96%;
+        --section-sage: 140 25% 95%;
+        --section-cream: 35 40% 97%;
+        --chart-1: 45 70% 55%;
+        --chart-2: 140 35% 45%;
+        --chart-3: 30 50% 45%;
+        --chart-4: 85 40% 50%;
+        --chart-5: 25 75% 55%;
+      }
+
+      .dark {
+        --background: 0 0% 10%;
+        --foreground: 0 0% 93%;
+        --card: 0 0% 13%;
+        --card-foreground: 0 0% 93%;
+        --primary: 0 0% 93%;
+        --primary-foreground: 0 0% 10%;
+        --secondary: 0 0% 17%;
+        --muted: 0 0% 17%;
+        --muted-foreground: 0 0% 60%;
+        --accent: 0 0% 19%;
+        --border: 0 0% 22%;
+        --ring: 0 0% 80%;
+        --section-warm: 36 14% 14%;
+        --section-sage: 140 12% 14%;
+        --section-cream: 36 14% 13%;
+      }
+
+      html { scroll-behavior: smooth; }
+      body {
+        font-family: 'Google Sans Flex', system-ui, -apple-system, sans-serif;
+        background: hsl(var(--background));
+        color: hsl(var(--foreground));
+        font-feature-settings: 'ss01', 'cv01';
+      }
+      .font-safiro { font-family: 'Safiro', 'Google Sans Flex', serif; letter-spacing: -0.01em; }
+
+      .bg-section-warm { background-color: hsl(var(--section-warm)); }
+      .bg-section-sage { background-color: hsl(var(--section-sage)); }
+      .bg-section-cream { background-color: hsl(var(--section-cream)); }
+
+      @keyframes fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes slide-in-bottom { from { transform: translate(-50%, 120%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+      .animate-panel { animation: fade-up 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+      .glow-sm { box-shadow: 0 0 20px -5px hsl(var(--primary) / 0.18); }
+      .glow-sage { box-shadow: 0 0 0 1px hsl(140 30% 80% / 0.6), 0 12px 32px -16px hsl(140 35% 45% / 0.45); }
+
+      *:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; border-radius: 6px; }
+      [data-lucide] { stroke-width: 1.75; }
+
+      /* ───────── Settings rail nav ───────── */
+      .nav-item {
+        position: relative; display: flex; align-items: flex-start; gap: 10px;
+        padding: 8px 10px; border-radius: 8px; cursor: pointer;
+        color: hsl(var(--muted-foreground)); transition: 140ms ease;
+      }
+      .nav-item:hover { background: hsl(var(--accent)); color: hsl(var(--foreground)); }
+      .nav-item.active { background: hsl(var(--accent)); color: hsl(var(--foreground)); }
+      .nav-item.active::before {
+        content: ''; position: absolute; left: -8px; top: 9px; bottom: 9px; width: 3px;
+        background: hsl(var(--primary)); border-radius: 0 3px 3px 0;
+      }
+      .nav-item .nav-ico { width: 16px; height: 16px; margin-top: 1px; flex-shrink: 0; }
+      .nav-group-label {
+        font-size: 10px; font-weight: 600; text-transform: uppercase;
+        letter-spacing: 0.14em; color: hsl(var(--muted-foreground));
+        padding: 0 10px; margin-bottom: 6px;
+      }
+
+      /* ───────── The core reusable pattern: a settings group ───────── */
+      .group {
+        border: 1px solid hsl(var(--border)); border-radius: 12px; /* rounded-xl, matches real settings cards */
+        background: hsl(var(--card)); overflow: hidden;
+      }
+      .group-head { padding: 14px 18px; border-bottom: 1px solid hsl(var(--border)); }
+
+      /* A field row: label/hint on the left, control on the right */
+      .field {
+        display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 24px;
+        align-items: center; padding: 16px 18px;
+      }
+      .field + .field { border-top: 1px solid hsl(var(--border)); }
+      .field-label { font-size: 14px; font-weight: 500; }
+      .field-hint { font-size: 12px; color: hsl(var(--muted-foreground)); margin-top: 2px; line-height: 1.45; }
+      .field-control { justify-self: end; min-width: 0; }
+      @media (max-width: 640px) {
+        .field { grid-template-columns: 1fr; gap: 10px; }
+        .field-control { justify-self: stretch; }
+      }
+
+      .inp {
+        height: 40px; border: 1px solid hsl(var(--border)); border-radius: 8px; /* h-10 rounded-md, matches real Input */
+        background: hsl(var(--background)); padding: 0 12px; font-size: 14px;
+        color: hsl(var(--foreground)); transition: 140ms ease; width: 260px; max-width: 100%;
+      }
+      .inp:focus { border-color: hsl(var(--ring)); }
+      .inp:hover { border-color: hsl(var(--muted-foreground) / 0.5); }
+      .inp.readonly { background: hsl(var(--muted)); color: hsl(var(--muted-foreground)); }
+      .inp-sm { height: 32px; padding: 0 9px; font-size: 12.5px; } /* compact inline variant */
+      select.inp { appearance: none; padding-right: 30px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 9px center; cursor: pointer; }
+      textarea.inp { width: 100%; height: auto; padding: 10px 11px; resize: vertical; line-height: 1.5; }
+
+      .btn { height: 40px; padding: 0 16px; border-radius: 8px; font-size: 14px; font-weight: 500; /* h-10 px-4 rounded-md, matches real Button */
+        display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: 140ms ease; white-space: nowrap; }
+      .btn-sm { height: 32px; padding: 0 11px; font-size: 12.5px; } /* compact, near shadcn size="sm" */
+      .btn-primary { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border: 1px solid hsl(var(--primary)); }
+      .btn-primary:hover { opacity: 0.9; }
+      .btn-ghost { background: transparent; color: hsl(var(--foreground)); border: 1px solid hsl(var(--border)); }
+      .btn-ghost:hover { background: hsl(var(--accent)); }
+
+      /* Switch — matches real shadcn Switch: h-6 w-11 track, h-5 w-5 thumb, translate-x-5 */
+      .switch { width: 44px; height: 24px; border-radius: 999px; background: hsl(var(--muted));
+        position: relative; transition: background 200ms ease; flex-shrink: 0; cursor: pointer; border: 2px solid transparent; }
+      .switch::after { content: ''; position: absolute; top: 0; left: 0; width: 20px; height: 20px;
+        border-radius: 50%; background: hsl(var(--background)); box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 200ms ease; transform: translateX(0); }
+      .switch.on { background: hsl(var(--primary)); }
+      .switch.on::after { transform: translateX(20px); background: hsl(var(--primary-foreground)); }
+      .switch.dim { opacity: 0.4; pointer-events: none; }
+
+      /* Activity tile */
+      .tile { position: relative; cursor: pointer; transition: 160ms ease; border: 1px solid hsl(var(--border));
+        border-radius: 11px; padding: 12px; text-align: left; background: hsl(var(--card)); }
+      .tile:hover { transform: translateY(-1px); border-color: hsl(var(--muted-foreground) / 0.4); }
+      .tile.on { border-color: hsl(140 35% 50%); background: hsl(140 25% 95% / 0.5); }
+      .dark .tile.on { background: hsl(140 18% 16%); }
+      .tile.on .tile-ico { background: hsl(140 35% 45%); color: white; }
+      .tile-ico { width: 30px; height: 30px; border-radius: 8px; background: hsl(var(--muted));
+        display: flex; align-items: center; justify-content: center; margin-bottom: 9px; transition: 160ms ease; }
+
+      .pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 999px;
+        font-size: 11px; font-weight: 600; border: 1px solid hsl(var(--border)); }
+      .pill-sage { background: hsl(140 25% 95%); color: hsl(140 35% 28%); border-color: hsl(140 25% 82%); }
+      .dark .pill-sage { background: hsl(140 18% 16%); color: hsl(140 35% 70%); border-color: hsl(140 18% 26%); }
+      .pill-amber { background: hsl(45 70% 92%); color: hsl(38 60% 30%); border-color: hsl(45 60% 80%); }
+      .dark .pill-amber { background: hsl(40 25% 16%); color: hsl(45 70% 70%); border-color: hsl(40 25% 28%); }
+
+      .eyebrow { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; color: hsl(var(--muted-foreground)); }
+
+      .save-bar { animation: slide-in-bottom 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+      .panel { display: none; }
+      .panel.active { display: block; }
+
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 8px; }
+    </style>
+  </head>
+
+  <body class="overflow-hidden">
+    <div class="flex h-screen overflow-hidden">
+
+      <!-- ════════ Compact app sidebar stub (context only) ════════ -->
+      <aside class="w-[56px] hidden lg:flex flex-col items-center border-r py-3 gap-1 shrink-0" style="border-color: hsl(var(--border))">
+        <div class="w-9 h-9 rounded-lg bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex items-center justify-center font-safiro text-base mb-2">L</div>
+        <button class="w-9 h-9 rounded-lg flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))]"><i data-lucide="home" class="w-[18px] h-[18px]"></i></button>
+        <button class="w-9 h-9 rounded-lg flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))]"><i data-lucide="message-square" class="w-[18px] h-[18px]"></i></button>
+        <button class="w-9 h-9 rounded-lg flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))]"><i data-lucide="scale" class="w-[18px] h-[18px]"></i></button>
+        <button class="w-9 h-9 rounded-lg flex items-center justify-center text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))]"><i data-lucide="check-square" class="w-[18px] h-[18px]"></i></button>
+        <div class="flex-1"></div>
+        <button class="w-9 h-9 rounded-lg flex items-center justify-center bg-[hsl(var(--accent))] text-[hsl(var(--foreground))]"><i data-lucide="settings" class="w-[18px] h-[18px]"></i></button>
+      </aside>
+
+      <!-- ════════ SETTINGS RAIL (dedicated, master pane) ════════ -->
+      <aside class="w-[252px] hidden md:flex flex-col border-r shrink-0 bg-[hsl(var(--background))]" style="border-color: hsl(var(--border))">
+        <div class="px-5 pt-5 pb-4">
+          <a href="#" class="text-[12px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] flex items-center gap-1.5 mb-4">
+            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>Tillbaka till appen
+          </a>
+          <div class="flex items-center gap-2">
+            <h1 class="font-safiro text-[19px] font-medium">Inställningar</h1>
+            <span class="pill pill-sage">Solo</span>
+          </div>
+          <p class="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">Kontor AB · arbetsyta</p>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto px-4 pb-4 space-y-5">
+          <div>
+            <div class="nav-group-label">Arbetsyta</div>
+            <div class="space-y-0.5">
+              <a class="nav-item active" data-target="general">
+                <i data-lucide="settings-2" class="nav-ico"></i>
+                <span class="min-w-0">
+                  <span class="block text-[13.5px] font-medium leading-tight">Allmänt</span>
+                  <span class="block text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5 truncate">Namn, logotyp, region</span>
+                </span>
+              </a>
+              <a class="nav-item" data-target="company">
+                <i data-lucide="building-2" class="nav-ico"></i>
+                <span class="min-w-0 flex-1">
+                  <span class="flex items-center justify-between gap-2">
+                    <span class="text-[13.5px] font-medium leading-tight">Företagsprofil</span>
+                    <span class="text-[10px] font-semibold text-[hsl(38_60%_42%)]">72%</span>
+                  </span>
+                  <span class="block text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5 truncate">AI-kontext &amp; regelverk</span>
+                </span>
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <div class="nav-group-label">Team &amp; åtkomst</div>
+            <div class="space-y-0.5">
+              <a class="nav-item" data-target="team">
+                <i data-lucide="users" class="nav-ico"></i>
+                <span class="min-w-0">
+                  <span class="block text-[13.5px] font-medium leading-tight">Team</span>
+                  <span class="block text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5 truncate">3 av 5 platser · 1 inbjuden</span>
+                </span>
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <div class="nav-group-label">Arbetsmiljö</div>
+            <div class="space-y-0.5">
+              <a class="nav-item" data-target="notifications">
+                <i data-lucide="bell" class="nav-ico"></i>
+                <span class="min-w-0">
+                  <span class="block text-[13.5px] font-medium leading-tight">Aviseringar</span>
+                  <span class="block text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5 truncate">9 av 11 aktiva</span>
+                </span>
+              </a>
+              <a class="nav-item" data-target="workflow">
+                <i data-lucide="kanban" class="nav-ico"></i>
+                <span class="min-w-0">
+                  <span class="block text-[13.5px] font-medium leading-tight">Arbetsflöde</span>
+                  <span class="block text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5 truncate">5 kolumner</span>
+                </span>
+              </a>
+              <a class="nav-item" data-target="integrations">
+                <i data-lucide="plug" class="nav-ico"></i>
+                <span class="min-w-0">
+                  <span class="block text-[13.5px] font-medium leading-tight">Integrationer</span>
+                  <span class="block text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5 truncate">0 anslutna</span>
+                </span>
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <div class="nav-group-label">Plan &amp; faktura</div>
+            <div class="space-y-0.5">
+              <a class="nav-item" data-target="billing">
+                <i data-lucide="credit-card" class="nav-ico"></i>
+                <span class="min-w-0">
+                  <span class="block text-[13.5px] font-medium leading-tight">Fakturering</span>
+                  <span class="block text-[11px] text-[hsl(var(--muted-foreground))] mt-0.5 truncate">Förnyas 12 maj</span>
+                </span>
+              </a>
+            </div>
+          </div>
+        </nav>
+
+        <div class="border-t p-4" style="border-color: hsl(var(--border))">
+          <button id="theme-toggle" class="btn btn-ghost w-full justify-center text-[12px]">
+            <i data-lucide="moon" class="w-4 h-4"></i><span id="theme-label">Mörkt läge</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- ════════ DETAIL PANE ════════ -->
+      <main class="flex-1 overflow-y-auto bg-[hsl(var(--muted))]/30">
+        <div class="max-w-3xl mx-auto px-5 md:px-8 py-8 pb-32">
+
+          <!-- ▒▒▒ GENERAL ▒▒▒ -->
+          <section class="panel active" data-panel="general">
+            <header class="mb-6">
+              <div class="eyebrow mb-1.5">Identitet</div>
+              <h2 class="font-safiro text-[28px] font-medium tracking-tight leading-tight">Allmänt</h2>
+              <p class="text-[13.5px] text-[hsl(var(--muted-foreground))] mt-1">Identiteten som syns i sidopanel, dokument och e-postinbjudningar.</p>
+            </header>
+
+            <!-- Logo + name, side by side, but unified in one group -->
+            <div class="group mb-5">
+              <div class="field">
+                <div>
+                  <div class="field-label">Logotyp</div>
+                  <div class="field-hint">PNG eller JPG, kvadratisk. Max 2 MB.</div>
+                </div>
+                <div class="field-control flex items-center gap-3">
+                  <div class="w-12 h-12 rounded-xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] flex items-center justify-center font-safiro text-lg">K</div>
+                  <div class="flex flex-col gap-1.5">
+                    <button class="btn btn-sm btn-ghost"><i data-lucide="upload" class="w-3.5 h-3.5"></i>Byt</button>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <div>
+                  <div class="field-label">Arbetsplatsnamn</div>
+                  <div class="field-hint">Används överallt i appen och i inbjudningar.</div>
+                </div>
+                <div class="field-control"><input class="inp" value="Kontor AB" /></div>
+              </div>
+            </div>
+
+            <!-- Verified data — clearly read-only, grouped apart -->
+            <div class="group">
+              <div class="group-head flex items-center gap-2.5">
+                <span class="w-7 h-7 rounded-md bg-section-sage flex items-center justify-center"><i data-lucide="badge-check" class="w-4 h-4 text-[hsl(140_35%_38%)]"></i></span>
+                <div class="flex-1">
+                  <div class="text-[13px] font-semibold">Verifierad företagsdata</div>
+                  <div class="text-[11px] text-[hsl(var(--muted-foreground))]">Från Bolagsverket · ändras via deras tjänst</div>
+                </div>
+                <button class="text-[11px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] flex items-center gap-1"><i data-lucide="refresh-cw" class="w-3 h-3"></i>Synka</button>
+              </div>
+              <div class="field">
+                <div class="field-label">Org.nummer</div>
+                <div class="field-control flex items-center gap-2">
+                  <span class="font-mono text-[13.5px]">559123-4567</span>
+                  <span class="pill pill-sage"><i data-lucide="check" class="w-3 h-3"></i>Verifierad</span>
+                </div>
+              </div>
+              <div class="field">
+                <div class="field-label">Bransch (SNI)</div>
+                <div class="field-control flex items-center gap-2 text-[13.5px]">
+                  <span class="font-mono">62010</span>
+                  <span class="text-[hsl(var(--muted-foreground))]">Datakonsulter</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ▒▒▒ COMPANY PROFILE ▒▒▒ -->
+          <section class="panel" data-panel="company">
+            <header class="mb-6">
+              <div class="eyebrow mb-1.5">AI-kontext</div>
+              <h2 class="font-safiro text-[28px] font-medium tracking-tight leading-tight">Företagsprofil</h2>
+              <p class="text-[13.5px] text-[hsl(var(--muted-foreground))] mt-1">Hjälper Laglig identifiera vilka regelverk som faktiskt gäller just er.</p>
+            </header>
+
+            <!-- Completeness hero -->
+            <div class="rounded-2xl bg-section-sage border p-5 mb-5 flex items-center gap-5 glow-sage" style="border-color: hsl(140 25% 80%)">
+              <div class="relative w-[96px] h-[96px] shrink-0">
+                <svg viewBox="0 0 120 120" class="w-full h-full -rotate-90">
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="hsl(var(--muted))" stroke-width="9"></circle>
+                  <circle cx="60" cy="60" r="52" fill="none" stroke="hsl(var(--chart-2))" stroke-width="9" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="91.5"></circle>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <span class="font-safiro text-2xl font-medium">72%</span>
+                  <span class="text-[9px] uppercase tracking-wider text-[hsl(var(--muted-foreground))]">Komplett</span>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="eyebrow text-[hsl(140_35%_32%)] mb-1">Nästa steg</div>
+                <h3 class="font-safiro text-[17px] leading-snug font-medium">Markera verksamhetstyper för att aktivera rätt regelverk</h3>
+                <p class="text-[12px] text-[hsl(var(--muted-foreground))] mt-1">Tar ca 30 sekunder. Varje flagga kopplas till ett specifikt regelverk.</p>
+              </div>
+            </div>
+
+            <div class="group mb-5">
+              <div class="field" style="grid-template-columns: 1fr; gap: 8px;">
+                <div>
+                  <div class="field-label">Verksamhetsbeskrivning</div>
+                  <div class="field-hint">Beskriv kort vad företaget gör — driver AI-förslagen.</div>
+                </div>
+                <textarea class="inp" rows="3" placeholder="T.ex. Vi utvecklar och driftar molnbaserade affärssystem för svenska tillverkningsföretag…">Vi utvecklar och driftar molnbaserade affärssystem för svenska tillverkande SME-bolag, med fokus på produktionsplanering.</textarea>
+              </div>
+            </div>
+
+            <!-- Activity tiles -->
+            <div class="group">
+              <div class="group-head flex items-center justify-between">
+                <div>
+                  <div class="text-[13px] font-semibold">Verksamhetstyper</div>
+                  <div class="text-[11px] text-[hsl(var(--muted-foreground))]">Klicka för att aktivera ett regelverk · 3 av 8 valda</div>
+                </div>
+                <button class="text-[11px] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] flex items-center gap-1"><i data-lucide="info" class="w-3 h-3"></i>Vad styr flaggorna?</button>
+              </div>
+              <div class="p-4 grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                <button class="tile on"><div class="tile-ico"><i data-lucide="flask-conical" class="w-4 h-4"></i></div><div class="text-[12px] font-medium">Kemikalier</div><div class="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">AFS 2014:43, REACH</div></button>
+                <button class="tile"><div class="tile-ico"><i data-lucide="hard-hat" class="w-4 h-4"></i></div><div class="text-[12px] font-medium">Bygg</div><div class="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">AFS 1999:3</div></button>
+                <button class="tile"><div class="tile-ico"><i data-lucide="apple" class="w-4 h-4"></i></div><div class="text-[12px] font-medium">Livsmedel</div><div class="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">LIVSFS</div></button>
+                <button class="tile on"><div class="tile-ico"><i data-lucide="shield-check" class="w-4 h-4"></i></div><div class="text-[12px] font-medium">Personuppgifter</div><div class="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">GDPR</div></button>
+                <button class="tile"><div class="tile-ico"><i data-lucide="landmark" class="w-4 h-4"></i></div><div class="text-[12px] font-medium">Offentlig sektor</div><div class="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">LOU, OSL</div></button>
+                <button class="tile on"><div class="tile-ico"><i data-lucide="user-round" class="w-4 h-4"></i></div><div class="text-[12px] font-medium">Minderåriga</div><div class="text-[10px] text-[hsl(var(--muted-foreground))] mt-0.5">AFS 2012:3</div></button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ▒▒▒ TEAM ▒▒▒ -->
+          <section class="panel" data-panel="team">
+            <header class="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <div class="eyebrow mb-1.5">Åtkomst</div>
+                <h2 class="font-safiro text-[28px] font-medium tracking-tight leading-tight">Team</h2>
+                <p class="text-[13.5px] text-[hsl(var(--muted-foreground))] mt-1">Vem som har åtkomst, och vad de får göra.</p>
+              </div>
+              <button class="btn btn-primary glow-sm"><i data-lucide="user-plus" class="w-4 h-4"></i>Bjud in</button>
+            </header>
+
+            <!-- Seat usage -->
+            <div class="group mb-5">
+              <div class="p-4">
+                <div class="flex items-baseline justify-between mb-2">
+                  <div class="flex items-baseline gap-2">
+                    <span class="font-safiro text-2xl font-medium">3</span>
+                    <span class="text-[12px] text-[hsl(var(--muted-foreground))]">av 5 platser använda · 1 inbjuden</span>
+                  </div>
+                  <span class="text-[11px] text-[hsl(var(--muted-foreground))]">Solo · 5 platser ingår</span>
+                </div>
+                <div class="h-2 rounded-full bg-[hsl(var(--muted))] overflow-hidden flex">
+                  <div class="bg-[hsl(var(--primary))]" style="width: 60%"></div>
+                  <div class="bg-[hsl(var(--primary))] opacity-40" style="width: 20%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Members -->
+            <div class="group">
+              <div class="group-head flex items-center justify-between">
+                <div class="text-[13px] font-semibold">Medlemmar</div>
+                <div class="relative">
+                  <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))]"></i>
+                  <input placeholder="Sök…" class="inp inp-sm" style="width: 150px; padding-left: 28px;" />
+                </div>
+              </div>
+              <div>
+                <div class="field" style="grid-template-columns: 1fr auto;">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-[hsl(var(--chart-3))] text-white flex items-center justify-center text-[12px] font-medium">AA</div>
+                    <div><div class="text-[13.5px] font-medium">Alexander Adstedt</div><div class="text-[11px] text-[hsl(var(--muted-foreground))]">alexander.adstedt@kontorab.se</div></div>
+                  </div>
+                  <div class="field-control flex items-center gap-3">
+                    <span class="pill pill-amber"><i data-lucide="crown" class="w-3 h-3"></i>Ägare</span>
+                    <button class="text-[hsl(var(--muted-foreground))] opacity-40 cursor-not-allowed"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+                  </div>
+                </div>
+                <div class="field" style="grid-template-columns: 1fr auto;">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-[hsl(var(--chart-1))] text-white flex items-center justify-center text-[12px] font-medium">EH</div>
+                    <div><div class="text-[13.5px] font-medium">Emma Holm</div><div class="text-[11px] text-[hsl(var(--muted-foreground))]">emma@kontorab.se</div></div>
+                  </div>
+                  <div class="field-control flex items-center gap-3">
+                    <select class="inp inp-sm" style="width: auto;"><option selected>Admin</option><option>Medlem</option><option>Revisor</option></select>
+                    <button class="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+                  </div>
+                </div>
+                <div class="field" style="grid-template-columns: 1fr auto;">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-[hsl(var(--chart-2))] text-white flex items-center justify-center text-[12px] font-medium">JS</div>
+                    <div><div class="text-[13.5px] font-medium">Jakob Svensson</div><div class="text-[11px] text-[hsl(var(--muted-foreground))]">jakob@kontorab.se</div></div>
+                  </div>
+                  <div class="field-control flex items-center gap-3">
+                    <select class="inp inp-sm" style="width: auto;"><option>Admin</option><option selected>Medlem</option><option>Revisor</option></select>
+                    <button class="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+                  </div>
+                </div>
+                <!-- Pending invite -->
+                <div class="field bg-section-warm" style="grid-template-columns: 1fr auto;">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full border-2 border-dashed flex items-center justify-center" style="border-color: hsl(45 25% 65%)"><i data-lucide="mail" class="w-3.5 h-3.5 text-[hsl(30_50%_45%)]"></i></div>
+                    <div><div class="text-[13.5px] font-medium">linda@kontorab.se</div><div class="text-[11px] text-[hsl(var(--muted-foreground))]">Inbjuden 4 maj · upphör om 22 h</div></div>
+                  </div>
+                  <div class="field-control flex items-center gap-3 text-[12px]">
+                    <button class="text-[hsl(var(--primary))] font-medium hover:underline">Skicka igen</button>
+                    <button class="text-[hsl(var(--destructive))] font-medium hover:underline">Återkalla</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ▒▒▒ NOTIFICATIONS ▒▒▒ -->
+          <section class="panel" data-panel="notifications">
+            <header class="mb-6">
+              <div class="eyebrow mb-1.5">Inkorg</div>
+              <h2 class="font-safiro text-[28px] font-medium tracking-tight leading-tight">Aviseringar</h2>
+              <p class="text-[13.5px] text-[hsl(var(--muted-foreground))] mt-1">När och hur Laglig hör av sig till dig.</p>
+            </header>
+
+            <!-- Master -->
+            <div class="group mb-5">
+              <div class="field" style="grid-template-columns: 1fr auto;">
+                <div class="flex items-center gap-3">
+                  <span class="w-9 h-9 rounded-full bg-section-warm flex items-center justify-center"><i data-lucide="mail" class="w-4 h-4"></i></span>
+                  <div>
+                    <div class="field-label">E-postaviseringar</div>
+                    <div class="field-hint">Till alexander.adstedt@kontorab.se · 9 av 11 typer aktiva</div>
+                  </div>
+                </div>
+                <div class="field-control"><div class="switch on"></div></div>
+              </div>
+            </div>
+
+            <div class="group mb-5">
+              <div class="group-head flex items-center gap-2.5">
+                <span class="w-7 h-7 rounded-md bg-section-cream flex items-center justify-center"><i data-lucide="check-square" class="w-4 h-4"></i></span>
+                <div class="flex-1 text-[13px] font-semibold">Uppgifter</div>
+                <button class="text-[10px] uppercase tracking-wider text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">Aktivera alla</button>
+              </div>
+              <div class="field"><div><div class="field-label">Tilldelning</div><div class="field-hint">När en uppgift tilldelas dig</div></div><div class="field-control"><div class="switch on"></div></div></div>
+              <div class="field"><div><div class="field-label">Förfaller snart</div><div class="field-hint">Påminnelse 3 dagar innan</div></div><div class="field-control"><div class="switch on"></div></div></div>
+              <div class="field"><div><div class="field-label">@-omnämnanden</div><div class="field-hint">När någon @nämner dig</div></div><div class="field-control"><div class="switch on"></div></div></div>
+              <div class="field"><div><div class="field-label">Statusändringar</div><div class="field-hint">När status på dina uppgifter ändras</div></div><div class="field-control"><div class="switch"></div></div></div>
+              <div class="field"><div><div class="field-label flex items-center gap-2">Veckosammanfattning <span class="pill pill-amber">Söndagar</span></div><div class="field-hint">Veckans uppgifter sammanfattade</div></div><div class="field-control"><div class="switch on"></div></div></div>
+            </div>
+
+            <div class="group">
+              <div class="group-head flex items-center gap-2.5">
+                <span class="w-7 h-7 rounded-md bg-section-sage flex items-center justify-center"><i data-lucide="scroll-text" class="w-4 h-4 text-[hsl(140_35%_38%)]"></i></span>
+                <div class="flex-1 text-[13px] font-semibold">Lagändringar</div>
+                <button class="text-[10px] uppercase tracking-wider text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">Aktivera alla</button>
+              </div>
+              <div class="field"><div><div class="field-label">Lagändring upptäckt</div><div class="field-hint">När en lag du bevakar ändras</div></div><div class="field-control"><div class="switch on"></div></div></div>
+              <div class="field"><div><div class="field-label">Lag upphävd</div><div class="field-hint">När en bevakad lag upphävs</div></div><div class="field-control"><div class="switch on"></div></div></div>
+              <div class="field"><div><div class="field-label">Nytt avgörande</div><div class="field-hint">Rättsfall som berör dina lagar</div></div><div class="field-control"><div class="switch"></div></div></div>
+            </div>
+          </section>
+
+          <!-- ▒▒▒ WORKFLOW ▒▒▒ -->
+          <section class="panel" data-panel="workflow">
+            <header class="mb-6">
+              <div class="eyebrow mb-1.5">Kanban</div>
+              <h2 class="font-safiro text-[28px] font-medium tracking-tight leading-tight">Arbetsflöde</h2>
+              <p class="text-[13.5px] text-[hsl(var(--muted-foreground))] mt-1">Kolumnerna som styr er uppgiftstavla.</p>
+            </header>
+
+            <div class="group">
+              <div class="group-head flex items-center justify-between">
+                <div class="text-[13px] font-semibold">Kolumner</div>
+                <span class="text-[11px] text-[hsl(var(--muted-foreground))]">5 av 8 · dra för att ändra ordning</span>
+              </div>
+              <div class="p-3 space-y-2">
+                <div class="flex items-center gap-3 rounded-lg border bg-[hsl(var(--background))] p-2.5 group" style="border-color: hsl(var(--border))">
+                  <i data-lucide="grip-vertical" class="w-4 h-4 text-[hsl(var(--muted-foreground))] cursor-grab"></i>
+                  <span class="w-2.5 h-2.5 rounded-full bg-[hsl(var(--chart-3))]"></span>
+                  <span class="text-[13.5px] font-medium flex-1">Att göra</span>
+                  <span class="text-[11px] text-[hsl(var(--muted-foreground))]">12</span>
+                  <button class="text-[hsl(var(--muted-foreground))] opacity-0 group-hover:opacity-100"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                </div>
+                <div class="flex items-center gap-3 rounded-lg border bg-[hsl(var(--background))] p-2.5 group" style="border-color: hsl(var(--border))">
+                  <i data-lucide="grip-vertical" class="w-4 h-4 text-[hsl(var(--muted-foreground))] cursor-grab"></i>
+                  <span class="w-2.5 h-2.5 rounded-full bg-[hsl(var(--chart-1))]"></span>
+                  <span class="text-[13.5px] font-medium flex-1">Pågår</span>
+                  <span class="text-[11px] text-[hsl(var(--muted-foreground))]">5</span>
+                  <button class="text-[hsl(var(--muted-foreground))] opacity-0 group-hover:opacity-100"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                </div>
+                <div class="flex items-center gap-3 rounded-lg border bg-[hsl(var(--background))] p-2.5 group" style="border-color: hsl(var(--border))">
+                  <i data-lucide="grip-vertical" class="w-4 h-4 text-[hsl(var(--muted-foreground))] cursor-grab"></i>
+                  <span class="w-2.5 h-2.5 rounded-full bg-[hsl(var(--chart-4))]"></span>
+                  <span class="text-[13.5px] font-medium flex-1">På granskning</span>
+                  <span class="text-[11px] text-[hsl(var(--muted-foreground))]">3</span>
+                  <button class="text-[hsl(var(--muted-foreground))] opacity-0 group-hover:opacity-100"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                </div>
+                <div class="flex items-center gap-3 rounded-lg border bg-section-sage p-2.5 group" style="border-color: hsl(140 25% 80%)">
+                  <i data-lucide="grip-vertical" class="w-4 h-4 text-[hsl(var(--muted-foreground))] cursor-grab"></i>
+                  <span class="w-2.5 h-2.5 rounded-full bg-[hsl(var(--chart-2))]"></span>
+                  <span class="text-[13.5px] font-medium flex-1 flex items-center gap-2">Klar <span class="pill pill-sage"><i data-lucide="check" class="w-2.5 h-2.5"></i>Avslutar uppgifter</span></span>
+                  <span class="text-[11px] text-[hsl(var(--muted-foreground))]">28</span>
+                </div>
+                <button class="flex items-center gap-2 rounded-lg border-2 border-dashed px-4 py-2.5 w-full justify-center text-[13px] font-medium text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))] transition-colors" style="border-color: hsl(var(--border))">
+                  <i data-lucide="plus" class="w-4 h-4"></i>Lägg till kolumn
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ▒▒▒ INTEGRATIONS ▒▒▒ -->
+          <section class="panel" data-panel="integrations">
+            <header class="mb-6">
+              <div class="eyebrow mb-1.5">Connectors</div>
+              <h2 class="font-safiro text-[28px] font-medium tracking-tight leading-tight">Integrationer</h2>
+              <p class="text-[13.5px] text-[hsl(var(--muted-foreground))] mt-1">Koppla in verktygen ni redan jobbar i.</p>
+            </header>
+
+            <div class="grid sm:grid-cols-2 gap-3">
+              <div class="group p-4">
+                <div class="flex items-start justify-between mb-2.5">
+                  <div class="w-10 h-10 rounded-lg bg-[hsl(var(--background))] border flex items-center justify-center shadow-sm font-bold text-[hsl(30_50%_45%)]" style="border-color: hsl(var(--border))">Fx</div>
+                  <span class="pill pill-amber">Förhandsvisning</span>
+                </div>
+                <div class="text-[13.5px] font-semibold">Fortnox</div>
+                <p class="text-[11.5px] text-[hsl(var(--muted-foreground))] mt-0.5 leading-relaxed">Synka anställda, SNI-kod och företagsdata automatiskt.</p>
+                <button class="btn btn-sm btn-ghost w-full justify-center mt-3">Anmäl intresse</button>
+              </div>
+              <div class="group p-4 opacity-70">
+                <div class="flex items-start justify-between mb-2.5">
+                  <div class="w-10 h-10 rounded-lg bg-[#4A154B] flex items-center justify-center text-white font-bold">#</div>
+                  <span class="pill">Snart</span>
+                </div>
+                <div class="text-[13.5px] font-semibold">Slack</div>
+                <p class="text-[11.5px] text-[hsl(var(--muted-foreground))] mt-0.5 leading-relaxed">Aviseringar i kanal när lagar ändras eller uppgifter förfaller.</p>
+                <button disabled class="btn btn-sm btn-ghost w-full justify-center mt-3 text-[hsl(var(--muted-foreground))] cursor-not-allowed">Kommer snart</button>
+              </div>
+              <div class="group p-4 opacity-70">
+                <div class="flex items-start justify-between mb-2.5">
+                  <div class="w-10 h-10 rounded-lg bg-[#5059C9] flex items-center justify-center text-white font-bold">T</div>
+                  <span class="pill">Snart</span>
+                </div>
+                <div class="text-[13.5px] font-semibold">Microsoft Teams</div>
+                <p class="text-[11.5px] text-[hsl(var(--muted-foreground))] mt-0.5 leading-relaxed">Aviseringar och uppgiftsdelning till Teams-kanaler.</p>
+                <button disabled class="btn btn-sm btn-ghost w-full justify-center mt-3 text-[hsl(var(--muted-foreground))] cursor-not-allowed">Kommer snart</button>
+              </div>
+              <div class="rounded-2xl border-2 border-dashed flex flex-col items-center justify-center text-center p-4" style="border-color: hsl(var(--border))">
+                <span class="w-10 h-10 rounded-lg bg-[hsl(var(--muted))] flex items-center justify-center mb-2"><i data-lucide="lightbulb" class="w-4 h-4 text-[hsl(var(--muted-foreground))]"></i></span>
+                <div class="text-[13px] font-semibold">Saknar du något?</div>
+                <p class="text-[11.5px] text-[hsl(var(--muted-foreground))] mt-0.5">Berätta vad som hjälper er mest.</p>
+                <button class="text-[12px] font-medium text-[hsl(var(--primary))] hover:underline mt-2">Föreslå integration →</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ▒▒▒ BILLING ▒▒▒ -->
+          <section class="panel" data-panel="billing">
+            <header class="mb-6">
+              <div class="eyebrow mb-1.5">Stripe</div>
+              <h2 class="font-safiro text-[28px] font-medium tracking-tight leading-tight">Plan &amp; faktura</h2>
+              <p class="text-[13.5px] text-[hsl(var(--muted-foreground))] mt-1">Vad ni betalar för, hur det används, och vart pengarna går.</p>
+            </header>
+
+            <!-- Current plan -->
+            <div class="rounded-2xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] p-5 mb-5">
+              <div class="grid sm:grid-cols-3 gap-5">
+                <div>
+                  <div class="eyebrow opacity-60 !text-[hsl(var(--primary-foreground))]">Nuvarande plan</div>
+                  <div class="font-safiro text-2xl font-medium mt-1">Solo</div>
+                  <div class="text-[12px] opacity-70 mt-0.5">499 kr/mån · 5 platser</div>
+                </div>
+                <div>
+                  <div class="eyebrow opacity-60 !text-[hsl(var(--primary-foreground))]">Förnyas</div>
+                  <div class="font-safiro text-lg mt-1">12 maj 2026</div>
+                  <div class="text-[12px] opacity-70 mt-0.5">automatiskt · 7 dagar kvar</div>
+                </div>
+                <div>
+                  <div class="eyebrow opacity-60 !text-[hsl(var(--primary-foreground))]">Betalsätt</div>
+                  <div class="flex items-center gap-2 mt-1.5 text-[13.5px]"><i data-lucide="credit-card" class="w-4 h-4"></i>Visa •••• 4242</div>
+                  <button class="text-[11px] opacity-80 hover:opacity-100 underline mt-1.5 flex items-center gap-1">Stripe-portalen<i data-lucide="external-link" class="w-3 h-3"></i></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Usage -->
+            <div class="grid grid-cols-3 gap-3 mb-5">
+              <div class="group p-4">
+                <div class="flex items-center justify-between mb-1.5"><span class="eyebrow flex items-center gap-1"><i data-lucide="sparkles" class="w-3 h-3 text-[hsl(var(--chart-3))]"></i>AI</span><span class="text-[10px] font-medium text-[hsl(var(--chart-2))]">42%</span></div>
+                <div class="font-safiro text-xl font-medium">211k</div>
+                <div class="text-[10px] text-[hsl(var(--muted-foreground))]">av 500k tokens</div>
+                <div class="h-1.5 rounded-full bg-[hsl(var(--muted))] overflow-hidden mt-2"><div class="h-full bg-[hsl(var(--chart-2))]" style="width: 42%"></div></div>
+              </div>
+              <div class="group p-4">
+                <div class="flex items-center justify-between mb-1.5"><span class="eyebrow flex items-center gap-1"><i data-lucide="hard-drive" class="w-3 h-3 text-[hsl(var(--chart-1))]"></i>Lagring</span><span class="text-[10px] font-medium text-[hsl(38_60%_42%)]">81%</span></div>
+                <div class="font-safiro text-xl font-medium">8,1 GB</div>
+                <div class="text-[10px] text-[hsl(var(--muted-foreground))]">av 10 GB</div>
+                <div class="h-1.5 rounded-full bg-[hsl(var(--muted))] overflow-hidden mt-2"><div class="h-full bg-[hsl(var(--chart-1))]" style="width: 81%"></div></div>
+              </div>
+              <div class="group p-4">
+                <div class="flex items-center justify-between mb-1.5"><span class="eyebrow flex items-center gap-1"><i data-lucide="users" class="w-3 h-3 text-[hsl(var(--chart-2))]"></i>Platser</span><span class="text-[10px] font-medium text-[hsl(var(--chart-2))]">60%</span></div>
+                <div class="font-safiro text-xl font-medium">3 / 5</div>
+                <div class="text-[10px] text-[hsl(var(--muted-foreground))]">+ 1 inbjuden</div>
+                <div class="h-1.5 rounded-full bg-[hsl(var(--muted))] overflow-hidden mt-2 flex"><div class="h-full bg-[hsl(var(--chart-2))]" style="width: 60%"></div><div class="h-full bg-[hsl(var(--chart-2))] opacity-40" style="width: 20%"></div></div>
+              </div>
+            </div>
+
+            <!-- Upgrade CTA -->
+            <div class="group flex items-center gap-4 p-4 bg-section-sage" style="border-color: hsl(140 25% 80%)">
+              <span class="w-10 h-10 rounded-xl bg-[hsl(140_35%_45%)] text-white flex items-center justify-center shrink-0"><i data-lucide="arrow-up" class="w-5 h-5"></i></span>
+              <div class="flex-1">
+                <div class="text-[13.5px] font-semibold">Väx till <span class="font-safiro">Team</span></div>
+                <div class="text-[12px] text-[hsl(var(--muted-foreground))]">10 platser, 2M tokens, lagefterlevnadskontroller · 1 299 kr/mån</div>
+              </div>
+              <button class="btn btn-primary glow-sm">Uppgradera</button>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+
+    <!-- Sticky save bar -->
+    <div id="save-bar" class="hidden fixed bottom-6 left-1/2 z-40" style="transform: translateX(-50%);">
+      <div class="save-bar rounded-full bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-2xl flex items-center gap-3 pl-5 pr-2 py-2">
+        <span class="flex items-center gap-2 text-[13px]"><span class="w-2 h-2 rounded-full bg-[hsl(var(--chart-1))] animate-pulse"></span>Osparade ändringar</span>
+        <button id="undo-btn" class="text-[12px] opacity-80 hover:opacity-100 px-3 py-1.5 rounded-full">Ångra</button>
+        <button id="save-btn" class="bg-[hsl(var(--primary-foreground))] text-[hsl(var(--primary))] px-4 py-1.5 rounded-full text-[13px] font-medium hover:opacity-90">Spara</button>
+      </div>
+    </div>
+
+    <script>
+      lucide.createIcons();
+
+      // ── Panel switching (master/detail) ──
+      const navItems = document.querySelectorAll('.nav-item');
+      const panels = document.querySelectorAll('.panel');
+      const main = document.querySelector('main');
+      navItems.forEach((item) => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          const target = item.dataset.target;
+          navItems.forEach((n) => n.classList.remove('active'));
+          item.classList.add('active');
+          panels.forEach((p) => {
+            const on = p.dataset.panel === target;
+            p.classList.toggle('active', on);
+            if (on) { p.classList.remove('animate-panel'); void p.offsetWidth; p.classList.add('animate-panel'); }
+          });
+          main.scrollTo({ top: 0 });
+        });
+      });
+
+      // ── Save bar ──
+      const saveBar = document.getElementById('save-bar');
+      function showSave() { saveBar.classList.remove('hidden'); }
+      function hideSave() { saveBar.classList.add('hidden'); }
+      document.getElementById('save-btn').addEventListener('click', hideSave);
+      document.getElementById('undo-btn').addEventListener('click', hideSave);
+
+      document.querySelectorAll('.switch').forEach((sw) => sw.addEventListener('click', () => { sw.classList.toggle('on'); showSave(); }));
+      document.querySelectorAll('.tile').forEach((t) => t.addEventListener('click', () => { t.classList.toggle('on'); showSave(); }));
+      document.querySelectorAll('input, select, textarea').forEach((el) => {
+        el.addEventListener('input', showSave); el.addEventListener('change', showSave);
+      });
+
+      // ── Dark mode ──
+      const themeToggle = document.getElementById('theme-toggle');
+      const themeLabel = document.getElementById('theme-label');
+      themeToggle.addEventListener('click', () => {
+        const dark = document.documentElement.classList.toggle('dark');
+        themeLabel.textContent = dark ? 'Ljust läge' : 'Mörkt läge';
+        themeToggle.querySelector('[data-lucide]').setAttribute('data-lucide', dark ? 'sun' : 'moon');
+        lucide.createIcons();
+      });
+    </script>
+  </body>
+</html>

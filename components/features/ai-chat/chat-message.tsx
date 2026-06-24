@@ -13,7 +13,6 @@ import { isTextUIPart, isReasoningUIPart, isToolUIPart } from 'ai'
 import { AgentActionCard } from './agent-action-card'
 import { AgentActionBatchCard } from './agent-action-batch-card'
 import { AssistantAvatar } from './assistant-avatar'
-import { StreamingIndicator } from './streaming-indicator'
 import {
   ChevronRight,
   Search,
@@ -45,6 +44,10 @@ import { CitationSourceProvider } from '@/lib/ai/citation-context'
 import { rehypeCitationPills } from '@/lib/ai/rehype-citation-pills'
 import { useRotatingThinkingPhrase } from '@/lib/ai-chat/thinking-phrases'
 import { useSmoothStream } from '@/lib/ai-chat/use-smooth-stream'
+import {
+  useElapsedSeconds,
+  formatDuration,
+} from '@/lib/ai-chat/use-elapsed-seconds'
 import {
   Collapsible,
   CollapsibleContent,
@@ -364,6 +367,10 @@ type RenderItem =
   | { kind: 'part'; part: any; index: number; webSources?: WebSourceRef[] }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | { kind: 'tool-group'; items: Array<{ part: any; index: number }> }
+  // Story 19.15: a contiguous run that contains at least one reasoning step
+  // (interleaved thinking) collapses into one "Arbetsförlopp" summary.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | { kind: 'progress-group'; items: Array<{ part: any; index: number }> }
 
 // Story 14.23: inline agent approval cards are the only approval path. The
 // inline-approvals feature flag and the legacy sidebar preview fallback were
@@ -391,9 +398,21 @@ function groupCompletedToolParts(parts: any[]): RenderItem[] {
   let hasSeenPostToolText = false
 
   const flushGroup = () => {
-    if (currentGroup.length >= 2) {
+    if (currentGroup.length === 0) {
+      currentGroup = []
+      return
+    }
+    // Story 19.15: a group containing at least one reasoning step (interleaved
+    // thinking) collapses into one "Arbetsförlopp" progress summary when there
+    // are 2+ steps; a lone reasoning step degrades to the plain "Tänkte klart"
+    // breadcrumb (AC 9). Tool-only groups keep the existing CollapsedToolGroup
+    // behaviour untouched.
+    const hasReasoning = currentGroup.some((it) => isReasoningUIPart(it.part))
+    if (hasReasoning && currentGroup.length >= 2) {
+      result.push({ kind: 'progress-group', items: [...currentGroup] })
+    } else if (!hasReasoning && currentGroup.length >= 2) {
       result.push({ kind: 'tool-group', items: [...currentGroup] })
-    } else if (currentGroup.length === 1) {
+    } else {
       result.push({
         kind: 'part',
         part: currentGroup[0]!.part,
@@ -422,6 +441,17 @@ function groupCompletedToolParts(parts: any[]): RenderItem[] {
           url: part.url as string,
           title: part.title as string | undefined,
         })
+      }
+      continue
+    }
+
+    // Story 19.15: completed reasoning parts (interleaved thinking) join the
+    // current progress group instead of flushing it; a still-streaming
+    // reasoning part is skipped here (it is represented by the live working
+    // row and folded once done) and must NOT break a contiguous run.
+    if (isReasoningUIPart(part)) {
+      if (part.state === 'done') {
+        currentGroup.push({ part, index: i })
       }
       continue
     }
@@ -775,11 +805,14 @@ export function ChatMessage({
     return Array.from(ids)
   }, [parts, metadata])
 
-  // Rotating Swedish "thinking" phrase for the pre-content streaming window —
-  // an assistant turn that is active but has no text/tool parts yet. Hook must
-  // run before the isUser early return (rules-of-hooks); the value is only used
-  // in the assistant branch below.
-  const thinkingPhrase = useRotatingThinkingPhrase(isStreaming)
+  // Story 19.15: elapsed-time counter for the live "working" indicator. Hook
+  // must run before the isUser early return (rules-of-hooks); only used in the
+  // assistant branch below. Runs only for the active (newest streaming)
+  // assistant turn and freezes on finish; returns null on history reload (the
+  // clock never started → the duration is omitted from the summary).
+  const elapsedSeconds = useElapsedSeconds(
+    isStreaming && message.role === 'assistant'
+  )
 
   // True while the last text block is still fading its words in — including the
   // brief drain after the stream ends (see useSmoothStream). Used to hold the
@@ -880,99 +913,137 @@ export function ChatMessage({
     .map((p) => p.text)
     .join('\n')
 
-  // The pre-content window of an active turn: assistant message exists but has
-  // no text/tool/reasoning part yet. Show the rotating thinking line under the
-  // (persistent) avatar so the icon never sits alone and the wait reads as work.
-  const hasRenderableContent =
-    parts.some((p) => isTextUIPart(p) && p.text.trim().length > 0) ||
-    parts.some(isToolUIPart) ||
-    parts.some(isReasoningUIPart)
-  const showThinking = isActive && !hasRenderableContent
+  // Story 19.15: the "working" phase of an active turn — the agent is reasoning
+  // and/or calling tools but has not begun the answer yet. During this phase a
+  // single live status row renders beside the avatar (AC 1) and the per-step
+  // reasoning/tool rows are suppressed (folded into the collapsed summary once
+  // the turn settles). The phase ends as soon as answer text starts streaming.
+  const hasAnswerText = parts.some(
+    (p) => isTextUIPart(p) && p.text.trim().length > 0
+  )
+  const isWorking = isActive && !hasAnswerText
+
+  // Story 19.15 (QA-001): the elapsed duration is a turn-level total. When
+  // intermediate answer text splits a turn into several progress groups, show
+  // the frozen duration once — on the LAST progress group — rather than
+  // repeating the same total on every group (which made a 2-step group read as
+  // "· 2m 27s").
+  const lastProgressGroupIndex = renderItems.reduce(
+    (acc, item, idx) => (item.kind === 'progress-group' ? idx : acc),
+    -1
+  )
 
   return (
     <CitationSourceProvider sourceMap={sourceMap}>
       <div className="group overflow-hidden text-left space-y-3">
-        {showThinking ? (
-          // Pre-content window: icon + "thinking" phrase share one row.
+        {isWorking ? (
+          // Story 19.15: the live "working" phase — a single status row sits
+          // beside the (stable) avatar and updates in place; the per-step
+          // reasoning/tool rows are suppressed so there is no ladder.
           <div className="flex items-center gap-2.5">
             <AssistantAvatar />
-            <StreamingIndicator label={thinkingPhrase} />
+            <LiveWorkingStatus parts={parts} elapsedSeconds={elapsedSeconds} />
           </div>
         ) : (
           <AssistantAvatar />
         )}
         <div className="min-w-0 overflow-hidden text-left space-y-3">
-          {renderItems.map((item) => {
-            if (item.kind === 'tool-group') {
-              return (
-                <CollapsedToolGroup
-                  key={`tool-group-${item.items[0]!.index}`}
-                  items={item.items}
-                />
-              )
-            }
-
-            const { part, index } = item
-            if (part.type === 'step-start') return null
-
-            if (isReasoningUIPart(part)) {
-              return (
-                <ReasoningBlock key={`reasoning-${index}`} state={part.state} />
-              )
-            }
-
-            if (isToolUIPart(part)) {
-              const { toolName, input, toolCallId, toolOutput } =
-                extractToolPartInfo(part, index)
-              const config = TOOL_CONFIG[toolName]
-              if (config?.hidden) return null
-              // Story 14.23: a proposal tool (pendingActionId in output) suppresses
-              // the sidebar auto-open — the inline AgentActionCard / batch card
-              // (rendered once at message level after streaming) is the approval
-              // surface.
-              const isProposal =
-                part.state === 'output-available' &&
-                extractPendingActionId(toolOutput) !== null
-              return (
-                <ToolCallRow
-                  key={`tool-${index}`}
-                  toolCallId={toolCallId}
-                  toolName={toolName}
-                  state={part.state}
-                  detail={getToolDetail(toolName, input)}
-                  output={toolOutput}
-                  autoOpen={!isProposal}
-                />
-              )
-            }
-
-            if (isTextUIPart(part)) {
-              const webSources =
-                item.kind === 'part' ? item.webSources : undefined
-              return (
-                <div key={`text-${index}`}>
-                  <TextBlock
-                    text={part.text}
-                    isStreaming={isActive && index === parts.length - 1}
-                    {...(index === lastTextIndex
-                      ? { onRevealingChange: setLastTextRevealing }
-                      : {})}
+          {/* Story 19.15: during the live working phase the per-step rows are
+              suppressed (the live row beside the avatar represents them). The
+              headless auto-openers still fire so write-preview tools open the
+              sidebar even while their chips are hidden. */}
+          {isWorking && <WorkingAutoOpeners parts={parts} />}
+          {!isWorking &&
+            renderItems.map((item, itemIdx) => {
+              if (item.kind === 'tool-group') {
+                return (
+                  <CollapsedToolGroup
+                    key={`tool-group-${item.items[0]!.index}`}
+                    items={item.items}
                   />
-                  {turnSettled && webSources && webSources.length > 0 && (
-                    <span className="inline-flex flex-wrap gap-1 mt-1 animate-in fade-in duration-300">
-                      {deduplicateWebSources(webSources).map((src, i) => (
-                        <CitationPillInline key={`web-${index}-${i}`}>
-                          {src.title ?? src.domain}
-                        </CitationPillInline>
-                      ))}
-                    </span>
-                  )}
-                </div>
-              )
-            }
+                )
+              }
 
-            return null
-          })}
+              if (item.kind === 'progress-group') {
+                return (
+                  <AgentProgressGroup
+                    key={`progress-group-${item.items[0]!.index}`}
+                    items={item.items}
+                    durationLabel={
+                      !isActive &&
+                      elapsedSeconds !== null &&
+                      itemIdx === lastProgressGroupIndex
+                        ? formatDuration(elapsedSeconds)
+                        : undefined
+                    }
+                  />
+                )
+              }
+
+              const { part, index } = item
+              if (part.type === 'step-start') return null
+
+              if (isReasoningUIPart(part)) {
+                return (
+                  <ReasoningBlock
+                    key={`reasoning-${index}`}
+                    state={part.state}
+                  />
+                )
+              }
+
+              if (isToolUIPart(part)) {
+                const { toolName, input, toolCallId, toolOutput } =
+                  extractToolPartInfo(part, index)
+                const config = TOOL_CONFIG[toolName]
+                if (config?.hidden) return null
+                // Story 14.23: a proposal tool (pendingActionId in output) suppresses
+                // the sidebar auto-open — the inline AgentActionCard / batch card
+                // (rendered once at message level after streaming) is the approval
+                // surface.
+                const isProposal =
+                  part.state === 'output-available' &&
+                  extractPendingActionId(toolOutput) !== null
+                return (
+                  <ToolCallRow
+                    key={`tool-${index}`}
+                    toolCallId={toolCallId}
+                    toolName={toolName}
+                    state={part.state}
+                    detail={getToolDetail(toolName, input)}
+                    output={toolOutput}
+                    autoOpen={!isProposal}
+                  />
+                )
+              }
+
+              if (isTextUIPart(part)) {
+                const webSources =
+                  item.kind === 'part' ? item.webSources : undefined
+                return (
+                  <div key={`text-${index}`}>
+                    <TextBlock
+                      text={part.text}
+                      isStreaming={isActive && index === parts.length - 1}
+                      {...(index === lastTextIndex
+                        ? { onRevealingChange: setLastTextRevealing }
+                        : {})}
+                    />
+                    {turnSettled && webSources && webSources.length > 0 && (
+                      <span className="inline-flex flex-wrap gap-1 mt-1 animate-in fade-in duration-300">
+                        {deduplicateWebSources(webSources).map((src, i) => (
+                          <CitationPillInline key={`web-${index}-${i}`}>
+                            {src.title ?? src.domain}
+                          </CitationPillInline>
+                        ))}
+                      </span>
+                    )}
+                  </div>
+                )
+              }
+
+              return null
+            })}
 
           {/* Story 14.22/14.23: inline approval card(s) — rendered once per message
             and only after the turn finishes streaming (avoids the mid-stream
@@ -1053,6 +1124,223 @@ function ReasoningBlock({
     <div className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-muted-foreground">
       <Brain className="h-3.5 w-3.5 shrink-0" />
       <span className="font-medium">Tänkte klart</span>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// LiveWorkingStatus — Story 19.15. The single, fixed "working" row that sits
+// beside the avatar during an active turn's reasoning/tool phase. It updates in
+// place (no ladder): the activity label reflects the most recent in-progress
+// step, and a threshold-in elapsed timer proves liveness.
+// ---------------------------------------------------------------------------
+
+/** Seconds before the elapsed timer appears (fast turns don't flash a timer). */
+const WORKING_TIMER_THRESHOLD_S = 2
+
+function LiveWorkingStatus({
+  parts,
+  elapsedSeconds,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  parts: any[]
+  elapsedSeconds: number | null
+}) {
+  const phrase = useRotatingThinkingPhrase(true)
+
+  // Current activity = the most recent in-progress step. A streaming reasoning
+  // part reads as "thinking" (rotating Swedish phrase, masking the English
+  // trace); a running tool reads with that tool's Swedish label.
+  let activity: string | null = null
+  for (let i = parts.length - 1; i >= 0; i--) {
+    const part = parts[i]
+    if (isReasoningUIPart(part) && part.state !== 'done') {
+      activity = phrase
+      break
+    }
+    if (
+      isToolUIPart(part) &&
+      part.state !== 'output-available' &&
+      part.state !== 'output-error'
+    ) {
+      const toolName =
+        'toolName' in part ? part.toolName : part.type.replace('tool-', '')
+      if (!TOOL_CONFIG[toolName]?.hidden) {
+        activity = TOOL_CONFIG[toolName]?.label ?? toolName
+        break
+      }
+    }
+  }
+  const label = activity ?? phrase
+
+  const timerLabel =
+    elapsedSeconds !== null && elapsedSeconds >= WORKING_TIMER_THRESHOLD_S
+      ? formatDuration(elapsedSeconds)
+      : null
+
+  return (
+    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-amber-500" />
+      {/* aria-live ONLY on the activity label — the ticking seconds must NOT be
+          in a live region (a screen reader must not announce every second). */}
+      <span className="font-medium" aria-live="polite">
+        {label}…
+      </span>
+      {timerLabel && (
+        <span className="tabular-nums text-muted-foreground/60">
+          · {timerLabel}
+        </span>
+      )}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// WorkingAutoOpeners — Story 19.15. Headless: during the live working phase the
+// per-step tool chips are suppressed, but write-preview tools (sidebarHint
+// 'open') must still auto-open the sidebar. This mounts the same debounced,
+// deduped ToolAutoOpener the visible rows would have used.
+// ---------------------------------------------------------------------------
+
+function WorkingAutoOpeners({
+  parts,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  parts: any[]
+}) {
+  const infos = parts
+    .filter(isToolUIPart)
+    .map((part, i) => extractToolPartInfo(part, i))
+
+  return (
+    <>
+      {infos.map((info) => {
+        if (info.state !== 'output-available') return null
+        const output = info.toolOutput
+        const meta =
+          output && typeof output === 'object'
+            ? (output as { _meta?: ToolMeta })._meta
+            : undefined
+        if (meta?.sidebarHint !== 'open') return null
+        return (
+          <ToolAutoOpener
+            key={`working-auto-${info.toolCallId}`}
+            toolCallId={info.toolCallId}
+            toolName={info.toolName}
+            output={output}
+          />
+        )
+      })}
+    </>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// AgentProgressGroup — Story 19.15. One collapsed "Arbetsförlopp" summary for a
+// contiguous run of interleaved reasoning + tool steps. Mirrors the
+// CollapsedToolGroup visual language (bg-muted/40 row, chevron, indented
+// expanded list) but counts reasoning steps and freezes the turn duration.
+// ---------------------------------------------------------------------------
+
+function AgentProgressGroup({
+  items,
+  durationLabel,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  items: Array<{ part: any; index: number }>
+  durationLabel?: string | undefined
+}) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const contentId = useId()
+
+  const stepCount = items.length
+  const hasTools = items.some((it) => isToolUIPart(it.part))
+  // "Tänkte och sökte" when the agent both reasoned and used tools; a
+  // reasoning-only multi-step run reads "Tänkte i N steg".
+  const summary = hasTools
+    ? `Tänkte och sökte i ${stepCount} steg`
+    : `Tänkte i ${stepCount} steg`
+  const label = durationLabel ? `${summary} · ${durationLabel}` : summary
+
+  return (
+    <div className="space-y-0">
+      {/* Preserve write-preview sidebar auto-open for any grouped tool. */}
+      {items.map((it) => {
+        if (!isToolUIPart(it.part)) return null
+        const info = extractToolPartInfo(it.part, it.index)
+        const output = info.toolOutput
+        const meta =
+          output && typeof output === 'object'
+            ? (output as { _meta?: ToolMeta })._meta
+            : undefined
+        if (meta?.sidebarHint !== 'open') return null
+        return (
+          <ToolAutoOpener
+            key={`progress-auto-${info.toolCallId}`}
+            toolCallId={info.toolCallId}
+            toolName={info.toolName}
+            output={output}
+          />
+        )
+      })}
+
+      {/* Single cohesive summary row: brain · "Tänkte och sökte i N steg" · chevron */}
+      <div className="flex items-center gap-2 py-1.5 px-2.5 rounded-md bg-muted/40 hover:bg-muted/60 transition-colors min-w-0">
+        <Brain className="h-3 w-3 text-muted-foreground shrink-0" />
+        <span className="text-xs font-medium text-muted-foreground flex-1 min-w-0 truncate text-left">
+          {label}
+        </span>
+        <button
+          type="button"
+          onClick={() => setIsExpanded(!isExpanded)}
+          aria-expanded={isExpanded}
+          aria-controls={contentId}
+          aria-label={isExpanded ? 'Dölj detaljer' : 'Visa detaljer'}
+          className="shrink-0 p-1 -mr-1 rounded text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/70 transition-colors"
+        >
+          <ChevronRight
+            className={cn(
+              'h-3 w-3 transition-transform duration-200 ease-out',
+              isExpanded && 'rotate-90'
+            )}
+          />
+        </button>
+      </div>
+
+      {/* Expanded per-step timeline — reasoning steps + tool rows in order. */}
+      {isExpanded && (
+        <div
+          id={contentId}
+          className="ml-4 pl-3 border-l border-border/50 space-y-0 mt-0.5 py-1 animate-in fade-in-0 slide-in-from-top-1 duration-150"
+        >
+          {items.map((it) => {
+            if (isReasoningUIPart(it.part)) {
+              return (
+                <div
+                  key={`step-reasoning-${it.index}`}
+                  className="flex items-center gap-1.5 py-0.5 px-1.5 text-xs text-muted-foreground"
+                >
+                  <Brain className="h-3 w-3 shrink-0" />
+                  <span className="font-medium">Tänkte</span>
+                </div>
+              )
+            }
+            const info = extractToolPartInfo(it.part, it.index)
+            return (
+              <ToolCallRow
+                key={`step-tool-${info.toolCallId}`}
+                toolCallId={info.toolCallId}
+                toolName={info.toolName}
+                state={info.state}
+                detail={getToolDetail(info.toolName, info.input)}
+                output={info.toolOutput}
+                autoOpen={false}
+                compact={true}
+              />
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { MarketingShell } from './marketing-shell'
 import { MarketingHero } from '@/components/marketing/sections/marketing-hero'
 import { CtaBlock } from '@/components/marketing/sections/cta-block'
 import { OrgCheckCta } from '@/components/marketing/sections/org-check-cta'
+import { HeroOrgCheck } from '@/components/marketing/sections/hero-org-check'
 import { CatalogLawList } from '@/components/marketing/sections/catalog-law-list'
 import { ChangeFeedEmbed } from '@/components/marketing/sections/change-feed-embed'
 import { FaqAccordion } from '@/components/marketing/sections/faq-accordion'
@@ -92,14 +93,23 @@ export function BasePageTemplate({
         subtitle={fm.heroSubtitle}
         media={fm.heroMedia}
         cta={
-          <CtaBlock
-            kind={kind}
-            slug={slug}
-            placement="hero"
-            label={fm.primaryCta.label}
-            href={fm.primaryCta.href}
-            secondaryNote="Gratis i 15 dagar · inget betalkort krävs"
-          />
+          fm.heroOrgCheck ? (
+            <HeroOrgCheck
+              kind={kind}
+              slug={slug}
+              ctaLabel={fm.primaryCta.label}
+              ctaHref={fm.primaryCta.href}
+            />
+          ) : (
+            <CtaBlock
+              kind={kind}
+              slug={slug}
+              placement="hero"
+              label={fm.primaryCta.label}
+              href={fm.primaryCta.href}
+              secondaryNote="Gratis i 15 dagar · inget betalkort krävs"
+            />
+          )
         }
       />
 

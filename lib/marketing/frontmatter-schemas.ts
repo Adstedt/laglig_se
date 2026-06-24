@@ -53,6 +53,11 @@ const baseFrontmatter = z.object({
   heroSubtitle: z.string().min(1),
   primaryCta: ctaSchema,
   showOrgCheck: z.boolean(),
+  /** Lead the hero with the org-number tester instead of the plain CTA button
+   *  (trial signup demoted to a secondary link). Opt-in per page so the
+   *  treatment can roll out gradually; the mid-page tester is independent and
+   *  still governed by `showOrgCheck`. */
+  heroOrgCheck: z.boolean().optional(),
   relatedCatalogLaws: z.array(catalogLawEntrySchema),
   relatedPages: z.array(z.string().trim().startsWith('/')),
   faq: z.array(faqItemSchema).min(3),
