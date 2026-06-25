@@ -39,21 +39,21 @@ export function HeroOrgCheck({
   return (
     <div className="w-full max-w-md">
       <OrgCheckForm
-        eyebrow="Testa direkt · 30 sek"
+        eyebrow="Se vilka regler som gäller er · 30 sek"
         resultMode="modal"
         onPreviewSuccess={onPreviewSuccess}
       />
       <p className="mt-3 pl-1 text-xs text-muted-foreground">
-        Eller{' '}
+        Vill du hellre starta direkt?{' '}
         <Link
           href={secondaryUrl}
           onClick={onSecondaryClick}
           className="inline-flex items-center gap-0.5 font-medium text-foreground underline-offset-2 hover:underline"
         >
-          {ctaLabel.toLowerCase()} direkt
+          {ctaLabel.toLowerCase()} i 15 dagar
           <ArrowRight className="h-3 w-3" />
         </Link>{' '}
-        · 15 dagar, inget betalkort krävs.
+        · inget betalkort krävs.
       </p>
     </div>
   )

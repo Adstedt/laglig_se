@@ -4,8 +4,8 @@ import { ForceLightTheme } from '@/components/features/landing-v2/force-light-th
  * Route-group layout for /funktioner, /branscher, /omraden (Story 26.1).
  *
  * Forces light theme to match the homepage (the landing-v3 chrome is
- * light-only). The MarketingShell itself (NavbarV3 + breadcrumbs + FooterV3)
- * is rendered by the page templates, which own the per-page breadcrumb data.
+ * light-only). The MarketingShell itself (NavbarV3 + FooterV3) is rendered by
+ * the page templates that wrap each marketing page's content.
  */
 export default function MarketingLayout({
   children,

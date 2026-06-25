@@ -73,10 +73,20 @@ heroMedia:
 # ogVariant: reserved for future OG-image art direction. Omit.
 ---
 
-Skriv brödtexten här i vanlig markdown. `##`-rubriker blir Safiro-rubriker,
-länkar och listor får sidans typografi automatiskt (se mdx-components.tsx).
+<Lead>
+Inled med EN kort, slagkraftig mening som ramar in problemet.
+</Lead>
+
+Wrappa ingressens första mening i `<Lead>` — den sätts större och i bläckfärg
+som standfirst direkt under hjältesektionen, så att brödtexten inte läses som
+föräldralös under skärmbilden. Bara första meningen; resten av stycket fortsätter
+som vanlig brödtext här. `##`-rubriker blir Safiro-rubriker, länkar och listor
+får sidans typografi automatiskt (se mdx-components.tsx).
 
 Sektionskomponenter droppas in direkt i texten där de behövs:
 
-{/* <SplitFeature> för produktdjup, <CatalogLawList> för laglistan,
+{/* <Lead> omsluter ENBART första meningen (en mening, inte hela stycket).
+    Prettier reflowar den till blockform — det är meningen; se
+    components/marketing/mdx/lead.tsx.
+    <SplitFeature> för produktdjup, <CatalogLawList> för laglistan,
     <FaqAccordion> renderas alltid av mallen — skriv inte ut den här. */}
