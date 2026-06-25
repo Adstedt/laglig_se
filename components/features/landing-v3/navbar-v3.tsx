@@ -17,6 +17,7 @@ import {
   BookOpen,
   Globe,
   Search,
+  Library,
   UtensilsCrossed,
   HardHat,
   HeartPulse,
@@ -112,6 +113,12 @@ const PRODUKT_MORE: MenuLink[] = [
 
 const REGELVERK: MenuLink[] = [
   {
+    href: '/rattskallor',
+    title: 'Bläddra alla',
+    desc: 'Alla rättskällor på ett ställe — lagar, EU och föreskrifter',
+    icon: Library,
+  },
+  {
     href: '/lagar',
     title: 'Svenska lagar',
     desc: 'Alla lagar och förordningar — fria att läsa',
@@ -162,7 +169,7 @@ function FeatureLinkBody({
         </span>
       )}
       <span className="min-w-0">
-        <span className="block text-sm font-medium leading-none">
+        <span className="block font-safiro text-sm font-medium leading-none tracking-tight">
           {item.title}
           {comingSoon && (
             <span className="ml-2 rounded-full bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
@@ -341,10 +348,12 @@ export function NavbarV3({
   return (
     <header
       className={cn(
-        'sticky top-0 z-50 w-full transition-all duration-300',
+        'sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl transition-all duration-300',
+        // Always frosted — only the bottom hairline fades in on scroll, so the
+        // hero never bleeds up through the trigger row.
         hasScrolled
-          ? 'border-b border-border/40 bg-background/80 backdrop-blur-xl'
-          : 'bg-transparent'
+          ? 'border-b border-border/40'
+          : 'border-b border-transparent'
       )}
     >
       <nav className="container mx-auto flex h-16 items-center justify-between px-4 md:h-[72px]">
@@ -360,7 +369,17 @@ export function NavbarV3({
         </Link>
 
         {mounted ? (
-          <NavigationMenu className="hidden md:flex">
+          <NavigationMenu
+            className="hidden md:flex"
+            viewportClassName={cn(
+              // Solid surface — fully opaque so menu text is always legible
+              // (no hero bleed-through behind the card).
+              'rounded-2xl border-border/50 bg-background',
+              // Layered depth shadow (Linear/HubSpot float) + top-edge light catch.
+              'shadow-[0_2px_4px_-1px_rgb(0_0_0/0.04),0_12px_28px_-8px_rgb(0_0_0/0.12),0_40px_80px_-24px_rgb(0_0_0/0.18)]',
+              'before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:z-10 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/70 before:to-transparent'
+            )}
+          >
             <NavigationMenuList>
               {/* Produkt — mega menu */}
               <NavigationMenuItem>
@@ -370,7 +389,7 @@ export function NavbarV3({
                 <NavigationMenuContent>
                   <div className="grid w-[800px] grid-cols-[1.7fr_1fr]">
                     <div className="p-3">
-                      <p className="px-2.5 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-700">
+                      <p className="px-2.5 pb-2.5 pt-1 font-safiro text-[13px] font-medium tracking-tight text-amber-700">
                         Funktioner
                       </p>
                       <ul className="grid grid-cols-2 gap-0.5">
@@ -385,7 +404,7 @@ export function NavbarV3({
                       </ul>
                     </div>
                     <div className="border-l border-border/60 bg-muted/30 p-3">
-                      <p className="px-2.5 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-700">
+                      <p className="px-2.5 pb-2.5 pt-1 font-safiro text-[13px] font-medium tracking-tight text-amber-700">
                         Mer
                       </p>
                       <ul className="space-y-0.5">
@@ -394,7 +413,7 @@ export function NavbarV3({
                             <NavigationMenuLink asChild>
                               <a
                                 href={item.href}
-                                className="block rounded-lg px-2.5 py-2 text-sm text-foreground/80 transition-colors hover:bg-accent hover:text-foreground"
+                                className="block rounded-lg px-2.5 py-2 font-safiro text-sm font-medium tracking-tight text-foreground/80 transition-colors hover:bg-foreground/[0.04] hover:text-foreground"
                               >
                                 {item.title}
                               </a>
@@ -414,7 +433,7 @@ export function NavbarV3({
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <div className="w-[720px] p-3">
-                    <p className="px-2.5 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-700">
+                    <p className="px-2.5 pb-2.5 pt-1 font-safiro text-[13px] font-medium tracking-tight text-amber-700">
                       Hitta reglerna för din bransch
                     </p>
                     <ul className="grid grid-cols-2 gap-1">
@@ -438,7 +457,7 @@ export function NavbarV3({
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <div className="w-[720px] p-3">
-                    <p className="px-2.5 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-700">
+                    <p className="px-2.5 pb-2.5 pt-1 font-safiro text-[13px] font-medium tracking-tight text-amber-700">
                       Regelområden att ha koll på
                     </p>
                     <ul className="grid grid-cols-2 gap-1">
