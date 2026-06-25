@@ -33,7 +33,9 @@ if (!prompt || !out) {
 }
 const key = process.env.GEMINI_API_KEY
 if (!key) {
-  console.error('GEMINI_API_KEY not set (run with: node --env-file=.env.local ...)')
+  console.error(
+    'GEMINI_API_KEY not set (run with: node --env-file=.env.local ...)'
+  )
   process.exit(1)
 }
 
@@ -53,14 +55,21 @@ const res = await fetch(url, {
 
 const json = await res.json()
 if (!res.ok || json.error) {
-  console.error('API error:', res.status, JSON.stringify(json.error || json, null, 2))
+  console.error(
+    'API error:',
+    res.status,
+    JSON.stringify(json.error || json, null, 2)
+  )
   process.exit(1)
 }
 
 const parts = json.candidates?.[0]?.content?.parts || []
 const img = parts.find((p) => p.inlineData?.data)
 if (!img) {
-  console.error('no image in response. parts:', JSON.stringify(parts).slice(0, 400))
+  console.error(
+    'no image in response. parts:',
+    JSON.stringify(parts).slice(0, 400)
+  )
   process.exit(1)
 }
 
@@ -71,5 +80,7 @@ await sharp(raw).webp({ quality: 90 }).toFile(out)
 const review = out.replace(/\.webp$/, '.review.png')
 await sharp(raw).png().toFile(review)
 const meta = await sharp(raw).metadata()
-console.log(`✓ ${out}  (${meta.width}x${meta.height}, ${img.inlineData.mimeType})`)
+console.log(
+  `✓ ${out}  (${meta.width}x${meta.height}, ${img.inlineData.mimeType})`
+)
 console.log(`  review: ${review}`)
