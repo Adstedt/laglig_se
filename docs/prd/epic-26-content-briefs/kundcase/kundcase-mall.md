@@ -67,7 +67,7 @@ Varje case-instans kräver följande verifierade fält innan publicering. Saknas
 7. **Citatblock (i ProofBlock-varianten)** — ordagrant kundcitat med namn + roll + foto/avatar (med samtycke)
 8. **OrgCheckCta** — mid-page: "Vill ni komma igång som {Kund}? Testa med ert organisationsnummer"
 9. **CatalogLawList — Lagkrav som är centrala för {Kund}s bransch** (länkar in i katalogen, hämtas från branschsidan)
-10. **ChangeFeedEmbed** (valfritt) — fardesh i kundens område för att visa varför bevakning behövs
+10. **ChangeFeedEmbed** (valfritt) — färskhet i kundens område för att visa varför bevakning behövs
 11. **FaqAccordion**
 12. **CtaBlock + RelatedPagesGrid**
 
