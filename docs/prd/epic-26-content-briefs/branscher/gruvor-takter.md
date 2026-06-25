@@ -1,108 +1,108 @@
-# Innehallsbrief — Gruvor & takter
+# Innehållsbrief — Gruvor & täkter
 
 - **Route:** /branscher/gruvor-takter
 - **Cluster / template:** branscher / IndustryPageTemplate
-- **Sokintention:** commercial
-- **Ordmal:** ~1100
+- **Sökintention:** commercial
+- **Ordmål:** ~1100
 
 ## Nyckelord
 
-- **Primart:** laglista gruvor och takter
-- **Sekundart:** lagefterlevnad takt, regelefterlevnad gruvindustri, lagbevakning bergtakt
+- **Primärt:** laglista gruvor och täkter
+- **Sekundärt:** lagefterlevnad täkt, regelefterlevnad gruvindustri, lagbevakning bergtäkt
 - **Long-tail:**
-  - vilka lagar galler for takter
-  - krav pa takttillstand miljobalken
+  - vilka lagar gäller för täkter
+  - krav på täkttillstånd miljöbalken
   - bearbetningskoncession minerallagen
   - hantering av utvinningsavfall regler
-  - sprangamnen tillstand takt
-  - kvartsdamm AFS granitvarde
-  - laglista bergtakt mall
-  - egenkontroll miljo takt
-  - buller och vibrationer sprangning
-  - tillsyn lansstyrelsen takt
+  - sprängämnen tillstånd täkt
+  - kvartsdamm AFS gränsvärde
+  - laglista bergtäkt mall
+  - egenkontroll miljö täkt
+  - buller och vibrationer sprängning
+  - tillsyn länsstyrelsen täkt
 
 ## SEO-meta
 
-- **Meta-titel (<=60 tecken):** Laglista for gruvor & takter | Laglig.se
-- **Meta-beskrivning (~155 tecken):** Samla alla lagkrav for gruvor och takter — minerallagen, takttillstand, utvinningsavfall, sprangamnen och damm. Testa med ditt organisationsnummer.
-- **H1:** Lagefterlevnad och laglista for gruvor & takter
+- **Meta-titel (<=60 tecken):** Laglista för gruvor & täkter | Laglig.se
+- **Meta-beskrivning (~155 tecken):** Samla alla lagkrav för gruvor och täkter — minerallagen, täkttillstånd, utvinningsavfall, sprängämnen och damm. Testa med ditt organisationsnummer.
+- **H1:** Lagefterlevnad och laglista för gruvor & täkter
 
 ## Produktvinkel (hook)
 
-Gruv- och taktverksamhet styrs av minerallagen, omfattande miljotillstand och stranga arbetsmiljokrav kring sprangning, damm och buller. Laglig.se samlar alla krav i en levande laglista, bevakar andringar i lagstiftning och tillstandsvillkor och later dig dokumentera efterlevnaden i en revisionsrapport som ansvarig signerar.
+Gruv- och täktverksamhet styrs av minerallagen, omfattande miljötillstånd och stränga arbetsmiljökrav kring sprängning, damm och buller. Laglig.se samlar alla krav i en levande laglista, bevakar ändringar i lagstiftning och tillståndsvillkor och låter dig dokumentera efterlevnaden i en revisionsrapport som ansvarig signerar.
 
 ## Sidstruktur (H2/H3)
 
-1. **Lagkrav for gruvor & takter — overblick** (MarketingHero + DefinitionBox)
-   - DefinitionBox: "Vad innebar lagefterlevnad i gruv- och taktverksamhet?"
-   - Vem som granskar (Bergsstaten/SGU, lansstyrelsen, Arbetsmiljoverket, MSB)
-2. **De viktigaste regelomradena** (FeatureGrid)
-   - Mineral- och koncessionsratt
-   - Miljotillstand och takttillstand
+1. **Lagkrav för gruvor & täkter — överblick** (MarketingHero + DefinitionBox)
+   - DefinitionBox: "Vad innebär lagefterlevnad i gruv- och täktverksamhet?"
+   - Vem som granskar (Bergsstaten/SGU, länsstyrelsen, Arbetsmiljöverket, MSB)
+2. **De viktigaste regelområdena** (FeatureGrid)
+   - Mineral- och koncessionsrätt
+   - Miljötillstånd och täkttillstånd
    - Utvinningsavfall
-   - Sprangamnen, damm och buller (arbetsmiljo)
-3. **Sa bygger du laglistan steg for steg** (ProcessSteps)
-   - Kartlagg verksamhet, tillstand och villkor
-   - Koppla tillampliga lagar fran katalogen
-   - Tilldela ansvar och intervall for kontroll
+   - Sprängämnen, damm och buller (arbetsmiljö)
+3. **Så bygger du laglistan steg för steg** (ProcessSteps)
+   - Kartlägg verksamhet, tillstånd och villkor
+   - Koppla tillämpliga lagar från katalogen
+   - Tilldela ansvar och intervall för kontroll
 4. **Bevaka regeländringar automatiskt** (ChangeFeedEmbed + SplitFeature)
-   - Skarmdump av lagbevakning
-   - Exempel: andrad avfallsforordning landar som uppgift
-5. **Tillampliga lagar for gruvor & takter** (CatalogLawList)
-6. **Testa pa din verksamhet** (OrgCheckCta)
+   - Skärmdump av lagbevakning
+   - Exempel: ändrad avfallsförordning landar som uppgift
+5. **Tillämpliga lagar för gruvor & täkter** (CatalogLawList)
+6. **Testa på din verksamhet** (OrgCheckCta)
    - "Testa med ditt organisationsnummer"
-7. **Fran egenkontroll till revisionsrapport** (ProofBlock + SplitFeature)
-   - Skarmdump av kontroll-cykel och signerad revisionsrapport
-8. **Vanliga fragor** (FaqAccordion)
+7. **Från egenkontroll till revisionsrapport** (ProofBlock + SplitFeature)
+   - Skärmdump av kontroll-cykel och signerad revisionsrapport
+8. **Vanliga frågor** (FaqAccordion)
 9. **Relaterade sidor** (RelatedPagesGrid)
 
-## Kataloglankar (CatalogLawList)
+## Kataloglänkar (CatalogLawList)
 
-- Minerallagen (SFS 1991:45) — undersokningstillstand och bearbetningskoncession
-- Mineralforordningen ([bekrafta nummer i katalogen]) — kompletterande regler om koncession
-- Miljobalken (SFS 1998:808) — miljotillstand, takttillstand och egenkontroll
-- Forordning om utvinningsavfall (SFS 2013:319) — hantering av avfall fran utvinning
-- Avfallsforordningen (SFS 2020:614) — farligt avfall i verksamheten
-- Lag om brandfarliga och explosiva varor (SFS 2010:1011) — hantering av sprangamnen
-- MSB:s foreskrifter om explosiva varor ([bekrafta nummer i katalogen]) — forvaring och anvandning
-- Arbetsmiljolagen (SFS 1977:1160) — systematiskt arbetsmiljoarbete
-- AFS om bergarbete / gruvarbete ([bekrafta nummer i katalogen]) — sarskilda risker vid bergarbete
-- AFS om kvarts / kemiska arbetsmiljorisker ([bekrafta nummer i katalogen]) — respirabelt kvartsdamm
-- AFS om buller ([bekrafta nummer i katalogen]) — buller fran sprangning och krossning
-- AFS om vibrationer ([bekrafta nummer i katalogen]) — helkroppsvibrationer i fordon
-- Stralskyddslagen (SFS 2018:396) — radon och naturligt forekommande radioaktiva amnen
-- Lag om kontinentalsockeln ([bekrafta nummer i katalogen]) — utvinning utanfor mark (vid behov)
+- Minerallagen (SFS 1991:45) — undersökningstillstånd och bearbetningskoncession
+- Mineralförordningen ([bekräfta nummer i katalogen]) — kompletterande regler om koncession
+- Miljöbalken (SFS 1998:808) — miljötillstånd, täkttillstånd och egenkontroll
+- Förordning om utvinningsavfall (SFS 2013:319) — hantering av avfall från utvinning
+- Avfallsförordningen (SFS 2020:614) — farligt avfall i verksamheten
+- Lag om brandfarliga och explosiva varor (SFS 2010:1011) — hantering av sprängämnen
+- MSB:s föreskrifter om explosiva varor ([bekräfta nummer i katalogen]) — förvaring och användning
+- Arbetsmiljölagen (SFS 1977:1160) — systematiskt arbetsmiljöarbete
+- AFS om bergarbete / gruvarbete ([bekräfta nummer i katalogen]) — särskilda risker vid bergarbete
+- AFS om kvarts / kemiska arbetsmiljörisker ([bekräfta nummer i katalogen]) — respirabelt kvartsdamm
+- AFS om buller ([bekräfta nummer i katalogen]) — buller från sprängning och krossning
+- AFS om vibrationer ([bekräfta nummer i katalogen]) — helkroppsvibrationer i fordon
+- Strålskyddslagen (SFS 2018:396) — radon och naturligt förekommande radioaktiva ämnen
+- Lag om kontinentalsockeln ([bekräfta nummer i katalogen]) — utvinning utanför mark (vid behov)
 
-## FAQ (3-5, formulerade som riktiga sokfragor)
+## FAQ (3-5, formulerade som riktiga sökfrågor)
 
-- **Vilka tillstand kravs for att driva en takt?** — Forklara samspelet mellan minerallagen och miljobalkens takt-/miljotillstand samt lansstyrelsens tillsyn; hanvisa till katalogen.
-- **Hur ska utvinningsavfall hanteras?** — Forklara forordningen om utvinningsavfall och avfallsforordningen samt att Laglig bevakar andringar.
-- **Vad galler for kvartsdamm i en bergtakt?** — Forklara AFS om kvarts/kemiska arbetsmiljorisker och granitvarden; hanvisa till katalogen.
-- **Hur visar vi tillsynsmyndigheten att vi foljer kraven?** — Forklara revisionsrapporten: avslutad kontroll-cykel, signerad av ansvarig, exporteras som PDF.
+- **Vilka tillstånd krävs för att driva en täkt?** — Förklara samspelet mellan minerallagen och miljöbalkens täkt-/miljötillstånd samt länsstyrelsens tillsyn; hänvisa till katalogen.
+- **Hur ska utvinningsavfall hanteras?** — Förklara förordningen om utvinningsavfall och avfallsförordningen samt att Laglig bevakar ändringar.
+- **Vad gäller för kvartsdamm i en bergtäkt?** — Förklara AFS om kvarts/kemiska arbetsmiljörisker och gränsvärden; hänvisa till katalogen.
+- **Hur visar vi tillsynsmyndigheten att vi följer kraven?** — Förklara revisionsrapporten: avslutad kontroll-cykel, signerad av ansvarig, exporteras som PDF.
 
-## Interna lankar (relatedPages)
+## Interna länkar (relatedPages)
 
-- /omraden/miljo (om sidan finns, annars [bekrafta route])
+- /omraden/miljo (om sidan finns, annars [bekräfta route])
 - /omraden/arbetsmiljo
 - /funktioner/lagbevakning
 - /funktioner/revisionsrapport
-- /branscher/bygg (om grannbransch finns, [bekrafta route])
+- /branscher/bygg (om grannbransch finns, [bekräfta route])
 
 ## Bildmaterial
 
-- **Skarmdumpar:** laglista filtrerad pa miljotillstand/takt, lagbevaknings-/andringsflodet, en signerad revisionsrapport — alla i ScreenshotFrame
+- **Skärmdumpar:** laglista filtrerad på miljötillstånd/täkt, lagbevaknings-/ändringsflödet, en signerad revisionsrapport — alla i ScreenshotFrame
 - **Personbild (prompt):** "Photorealistic editorial photograph. A quarry site manager in hi-vis vest and hard hat checking a compliance checklist on a tablet at the edge of a Swedish rock quarry with crushing equipment in the background. Authentic Scandinavian workplace, natural daylight, warm neutral colour grading that sits on a cream/off-white palette, candid and unposed, soft shallow depth of field, documentary feel. Not glossy stock photography. No text, no logos, no watermarks. Realistic skin and hands."
 
-## Kallor (grundning)
+## Källor (grundning)
 
 - Bergsstaten / SGU (minerallagen, koncession)
-- riksdagen.se / SFS (minerallagen, miljobalken, forordning om utvinningsavfall)
-- Lansstyrelsen (takttillstand, miljotillsyn)
-- Arbetsmiljoverket (AFS om bergarbete, kvarts, buller, vibrationer)
+- riksdagen.se / SFS (minerallagen, miljöbalken, förordning om utvinningsavfall)
+- Länsstyrelsen (täkttillstånd, miljötillsyn)
+- Arbetsmiljöverket (AFS om bergarbete, kvarts, buller, vibrationer)
 - MSB (brandfarliga och explosiva varor)
-- Stralsakerhetsmyndigheten (radon, NORM)
+- Strålsäkerhetsmyndigheten (radon, NORM)
 - Laglig.se egen katalog
 
-## Anmarkningar
+## Anmärkningar
 
-Branschsida — lank till lagforklaringar och katalogens /lagar-sidor i stallet for att duplicera paragraftext. Bekrafta alla AFS- och MSBFS-nummer samt mineralforordningens nummer i katalogen fore publicering.
+Branschsida — länk till lagförklaringar och katalogens /lagar-sidor i stället för att duplicera paragraftext. Bekräfta alla AFS- och MSBFS-nummer samt mineralförordningens nummer i katalogen före publicering.

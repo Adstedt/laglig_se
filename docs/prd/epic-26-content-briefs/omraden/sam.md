@@ -1,104 +1,104 @@
-# Innehallsbrief — Systematiskt arbetsmiljoarbete (SAM)
+# Innehållsbrief — Systematiskt arbetsmiljöarbete (SAM)
 
 - **Route:** /omraden/sam
 - **Cluster / template:** omraden (regulatoriskt tema) / TopicPageTemplate
-- **Sokintention:** informational + commercial
-- **Ordmal:** ~950
+- **Sökintention:** informational + commercial
+- **Ordmål:** ~950
 
 ## Nyckelord
 
-- **Primart:** systematiskt arbetsmiljoarbete
-- **Sekundart:** SAM, arbetsmiljoarbete, riskbedomning arbetsmiljo
+- **Primärt:** systematiskt arbetsmiljöarbete
+- **Sekundärt:** SAM, arbetsmiljöarbete, riskbedömning arbetsmiljö
 - **Long-tail:**
-  - vad ar systematiskt arbetsmiljoarbete
-  - SAM arbetsmiljo krav
-  - systematiskt arbetsmiljoarbete steg for steg
-  - riskbedomning arbetsmiljo mall
-  - arbetsmiljopolicy krav
-  - SAM arslig uppfoljning
-  - undersoka riskbedoma atgarda kontrollera
-  - foreskrifter systematiskt arbetsmiljoarbete
-  - SAM for sma foretag
+  - vad är systematiskt arbetsmiljöarbete
+  - SAM arbetsmiljö krav
+  - systematiskt arbetsmiljöarbete steg för steg
+  - riskbedömning arbetsmiljö mall
+  - arbetsmiljöpolicy krav
+  - SAM årlig uppföljning
+  - undersöka riskbedöma åtgärda kontrollera
+  - föreskrifter systematiskt arbetsmiljöarbete
+  - SAM för små företag
   - skyddsrond checklista
 
 ## SEO-meta
 
-- **Meta-titel (<=60 tecken):** Systematiskt arbetsmiljoarbete (SAM) – krav och steg
+- **Meta-titel (<=60 tecken):** Systematiskt arbetsmiljöarbete (SAM) – krav och steg
 
-- **Meta-beskrivning (~155 tecken):** Vad ar systematiskt arbetsmiljoarbete och vad kravs? Forstaa SAM-hjulet, riskbedomning och uppfoljning – och testa kraven med ditt organisationsnummer.
-- **H1:** Systematiskt arbetsmiljoarbete (SAM) – sa uppfyller ni kraven
+- **Meta-beskrivning (~155 tecken):** Vad är systematiskt arbetsmiljöarbete och vad krävs? Förstå SAM-hjulet, riskbedömning och uppföljning – och testa kraven med ditt organisationsnummer.
+- **H1:** Systematiskt arbetsmiljöarbete (SAM) – så uppfyller ni kraven
 
 ## Produktvinkel (hook)
 
-Laglig.se samlar arbetsmiljolagen och Arbetsmiljoverkets foreskrifter om systematiskt arbetsmiljoarbete i en bevakad laglista, sa att ni ser vilka krav som galler er och far notis nar foreskrifterna andras. Org-nummerkollen ger en forsta indikation pa vilka arbetsmiljokrav som traffar just er bransch.
+Laglig.se samlar arbetsmiljölagen och Arbetsmiljöverkets föreskrifter om systematiskt arbetsmiljöarbete i en bevakad laglista, så att ni ser vilka krav som gäller er och får notis när föreskrifterna ändras. Org-nummerkollen ger en första indikation på vilka arbetsmiljökrav som träffar just er bransch.
 
 ## Sidstruktur (H2/H3)
 
-1. **Vad ar systematiskt arbetsmiljoarbete (SAM)?** — *DefinitionBox*
-   - Kort definition: arbetsgivarens fortlopande arbete att undersoka, riskbedoma, atgarda och folja upp arbetsmiljon
-   - Reglerat i arbetsmiljolagen och Arbetsmiljoverkets foreskrifter
-   - Galler alla arbetsgivare, oavsett storlek
+1. **Vad är systematiskt arbetsmiljöarbete (SAM)?** — *DefinitionBox*
+   - Kort definition: arbetsgivarens fortlöpande arbete att undersöka, riskbedöma, åtgärda och följa upp arbetsmiljön
+   - Reglerat i arbetsmiljölagen och Arbetsmiljöverkets föreskrifter
+   - Gäller alla arbetsgivare, oavsett storlek
 2. **Vem ansvarar och vad omfattas?** — *ProcessSteps* (Vem/Vad)
    - Arbetsgivarens ansvar, chefers och arbetstagares medverkan, skyddsombud
-   - Bade fysisk och organisatorisk/social arbetsmiljo (OSA)
-   - Krav pa arbetsmiljopolicy, rutiner, kunskaper och uppgiftsfordelning
-3. **SAM-hjulet steg for steg** — *ProcessSteps* (Hur)
-   - Undersoka arbetsmiljon (skyddsrond, medarbetarsamtal, mätningar)
-   - Riskbedoma och prioritera
-   - Atgarda och upprätta handlingsplan
-   - Kontrollera och folja upp (arlig uppfoljning av SAM)
+   - Både fysisk och organisatorisk/social arbetsmiljö (OSA)
+   - Krav på arbetsmiljöpolicy, rutiner, kunskaper och uppgiftsfördelning
+3. **SAM-hjulet steg för steg** — *ProcessSteps* (Hur)
+   - Undersöka arbetsmiljön (skyddsrond, medarbetarsamtal, mätningar)
+   - Riskbedöma och prioritera
+   - Åtgärda och upprätta handlingsplan
+   - Kontrollera och följa upp (årlig uppföljning av SAM)
 4. **Dokumentation och vanliga brister** — *FeatureGrid*
-   - Vilken dokumentation som kravs (policy, rutiner, riskbedomningar, handlingsplan)
-   - Krav pa skriftlighet vid minst tio anstallda
-   - Vanliga brister vid Arbetsmiljoverkets inspektioner
-5. **Sa hjalper Laglig.se med SAM** — *SplitFeature* (skarmdump laglista + bevakning)
-   - Bevakad laglista, andringsnotiser, ansvarsfordelning och dokumentation
-6. **Bevaka andringar i arbetsmiljoreglerna** — *ChangeFeedEmbed*
-7. **Testa era arbetsmiljokrav** — *OrgCheckCta*
-8. **Relevanta lagar och foreskrifter** — *CatalogLawList*
-9. **Vanliga fragor om SAM** — *FaqAccordion*
-10. **Relaterade omraden** — *RelatedPagesGrid* + *CtaBlock*
+   - Vilken dokumentation som krävs (policy, rutiner, riskbedömningar, handlingsplan)
+   - Krav på skriftlighet vid minst tio anställda
+   - Vanliga brister vid Arbetsmiljöverkets inspektioner
+5. **Så hjälper Laglig.se med SAM** — *SplitFeature* (skärmdump laglista + bevakning)
+   - Bevakad laglista, ändringsnotiser, ansvarsfördelning och dokumentation
+6. **Bevaka ändringar i arbetsmiljöreglerna** — *ChangeFeedEmbed*
+7. **Testa era arbetsmiljökrav** — *OrgCheckCta*
+8. **Relevanta lagar och föreskrifter** — *CatalogLawList*
+9. **Vanliga frågor om SAM** — *FaqAccordion*
+10. **Relaterade områden** — *RelatedPagesGrid* + *CtaBlock*
 
-## Kataloglankar (CatalogLawList)
+## Kataloglänkar (CatalogLawList)
 
-- Arbetsmiljolagen (1977:1160) — ramlagen for arbetsmiljoansvaret
-- Arbetsmiljoforordningen (1977:1166) — kompletterar arbetsmiljolagen [bekrafta nummer i katalogen]
-- Foreskrifter om systematiskt arbetsmiljoarbete (AFS 2001:1) — karnforeskriften for SAM [notera: AFS-strukturen omarbetad fr.o.m. 2025, bekrafta aktuell beteckning i katalogen]
-- Foreskrifter om organisatorisk och social arbetsmiljo (AFS 2015:4) — OSA, ingar i SAM [bekrafta aktuell beteckning i katalogen]
-- Arbetsmiljoverkets foreskrifter om arbetsplatsens utformning — [bekrafta AFS-nummer i katalogen]
-- Foreskrifter om forsta hjalpen och krisstod — [bekrafta AFS-nummer i katalogen]
-- Foreskrifter om belastningsergonomi — [bekrafta AFS-nummer i katalogen]
-- Foreskrifter om medicinska kontroller i arbetslivet — [bekrafta AFS-nummer i katalogen]
-- Foreskrifter om kemiska arbetsmiljorisker — [bekrafta AFS-nummer i katalogen]
-- Lag (1976:580) om medbestammande i arbetslivet (MBL) — samverkan i arbetsmiljofragor [bekrafta relevans i katalogen]
+- Arbetsmiljölagen (1977:1160) — ramlagen för arbetsmiljöansvaret
+- Arbetsmiljöförordningen (1977:1166) — kompletterar arbetsmiljölagen [bekräfta nummer i katalogen]
+- Föreskrifter om systematiskt arbetsmiljöarbete (AFS 2001:1) — kärnföreskriften för SAM [notera: AFS-strukturen omarbetad fr.o.m. 2025, bekräfta aktuell beteckning i katalogen]
+- Föreskrifter om organisatorisk och social arbetsmiljö (AFS 2015:4) — OSA, ingår i SAM [bekräfta aktuell beteckning i katalogen]
+- Arbetsmiljöverkets föreskrifter om arbetsplatsens utformning — [bekräfta AFS-nummer i katalogen]
+- Föreskrifter om första hjälpen och krisstöd — [bekräfta AFS-nummer i katalogen]
+- Föreskrifter om belastningsergonomi — [bekräfta AFS-nummer i katalogen]
+- Föreskrifter om medicinska kontroller i arbetslivet — [bekräfta AFS-nummer i katalogen]
+- Föreskrifter om kemiska arbetsmiljörisker — [bekräfta AFS-nummer i katalogen]
+- Lag (1976:580) om medbestämmande i arbetslivet (MBL) — samverkan i arbetsmiljöfrågor [bekräfta relevans i katalogen]
 
-## FAQ (3-5, formulerade som riktiga sokfragor)
+## FAQ (3-5, formulerade som riktiga sökfrågor)
 
-- **Vad ar systematiskt arbetsmiljoarbete?** — Arbetsgivarens fortlopande arbete med att undersoka, riskbedoma, atgarda och folja upp arbetsmiljon, sa att ohalsa och olycksfall forebyggs.
-- **Vilka foretag maste bedriva SAM?** — Alla arbetsgivare med minst en anstalld, oavsett storlek eller bransch.
-- **Hur gor man en riskbedomning av arbetsmiljon?** — Undersok forhallandena, bedom riskerna, atgarda eller for in i handlingsplan, och folj upp att atgarderna fungerar.
-- **Maste arbetsmiljoarbetet dokumenteras?** — Riskbedomningar och handlingsplaner ska dokumenteras; vid minst tio anstallda ska aven arbetsmiljopolicy och rutiner vara skriftliga.
-- **Hur ofta ska SAM foljas upp?** — Minst en gang per ar genom en arlig uppfoljning av det systematiska arbetsmiljoarbetet.
+- **Vad är systematiskt arbetsmiljöarbete?** — Arbetsgivarens fortlöpande arbete med att undersöka, riskbedöma, åtgärda och följa upp arbetsmiljön, så att ohälsa och olycksfall förebyggs.
+- **Vilka företag måste bedriva SAM?** — Alla arbetsgivare med minst en anställd, oavsett storlek eller bransch.
+- **Hur gör man en riskbedömning av arbetsmiljön?** — Undersök förhållandena, bedöm riskerna, åtgärda eller för in i handlingsplan, och följ upp att åtgärderna fungerar.
+- **Måste arbetsmiljöarbetet dokumenteras?** — Riskbedömningar och handlingsplaner ska dokumenteras; vid minst tio anställda ska även arbetsmiljöpolicy och rutiner vara skriftliga.
+- **Hur ofta ska SAM följas upp?** — Minst en gång per år genom en årlig uppföljning av det systematiska arbetsmiljöarbetet.
 
-## Interna lankar (relatedPages)
+## Interna länkar (relatedPages)
 
 - /omraden/arbetsmiljo
 - /omraden/iso-45001
 - /omraden/brandskydd
-- /funktioner/lagbevakning [bekrafta route]
+- /funktioner/lagbevakning [bekräfta route]
 - /funktioner/revisionsrapport
 
 ## Bildmaterial
 
-- **Skarmdumpar:** Laglistan filtrerad pa arbetsmiljo/SAM (ScreenshotFrame); riskbedomning eller handlingsplan i appen (ScreenshotFrame).
+- **Skärmdumpar:** Laglistan filtrerad på arbetsmiljö/SAM (ScreenshotFrame); riskbedömning eller handlingsplan i appen (ScreenshotFrame).
 - **Personbild (prompt):** "Photorealistic editorial photograph. A safety representative and a manager conducting a workplace safety walkthrough, noting observations on a clipboard in a Swedish manufacturing facility. Authentic Scandinavian workplace, natural daylight, warm neutral colour grading that sits on a cream/off-white palette, candid and unposed, soft shallow depth of field, documentary feel. Not glossy stock photography. No text, no logos, no watermarks. Realistic skin and hands."
 
-## Kallor (grundning)
+## Källor (grundning)
 
-- riksdagen.se / SFS: arbetsmiljolagen (1977:1160) och arbetsmiljoforordningen (1977:1166)
-- av.se: Arbetsmiljoverkets foreskrifter om systematiskt arbetsmiljoarbete och OSA samt vagledningar (notera regelstrukturreformen 2025 — bekrafta aktuella AFS-beteckningar)
-- Laglig.se egen katalog (arbetsmiljoomradet)
+- riksdagen.se / SFS: arbetsmiljölagen (1977:1160) och arbetsmiljöförordningen (1977:1166)
+- av.se: Arbetsmiljöverkets föreskrifter om systematiskt arbetsmiljöarbete och OSA samt vägledningar (notera regelstrukturreformen 2025 — bekräfta aktuella AFS-beteckningar)
+- Laglig.se egen katalog (arbetsmiljöområdet)
 
-## Anmarkningar
+## Anmärkningar
 
-Arbetsmiljoverkets foreskrifter omstrukturerades i en ny regelmodell som borjade galla 2025 — flera klassiska AFS-nummer (t.ex. AFS 2001:1, AFS 2015:4) kan ha bytt beteckning. Markera tydligt med "[bekrafta aktuell beteckning i katalogen]" och behall de gamla numren endast som igenkanning. Halls pa omradesniva; lanka till /omraden/arbetsmiljo for det breda omradet och till /omraden/iso-45001 for ledningssystemsvinkeln for att undvika overlapp. Inga SHA-256/krypto-pasteenden i revisionsrapport-omtal.
+Arbetsmiljöverkets föreskrifter omstrukturerades i en ny regelmodell som började gälla 2025 — flera klassiska AFS-nummer (t.ex. AFS 2001:1, AFS 2015:4) kan ha bytt beteckning. Markera tydligt med "[bekräfta aktuell beteckning i katalogen]" och behåll de gamla numren endast som igenkänning. Hålls på områdesnivå; länka till /omraden/arbetsmiljo för det breda området och till /omraden/iso-45001 för ledningssystemsvinkeln för att undvika överlapp. Inga SHA-256/krypto-påståenden i revisionsrapport-omtal.

@@ -1,100 +1,100 @@
-# Innehallsbrief — GDPR
+# Innehållsbrief — GDPR
 
 - **Route:** /omraden/gdpr
-- **Cluster / template:** omraden (karnomrade) / TopicPageTemplate
-- **Sokintention:** informational + commercial
-- **Ordmal:** ~1000
+- **Cluster / template:** omraden (kärnområde) / TopicPageTemplate
+- **Sökintention:** informational + commercial
+- **Ordmål:** ~1000
 
 ## Nyckelord
 
-- **Primart:** GDPR
-- **Sekundart:** dataskyddsforordningen, personuppgifter, dataskydd
+- **Primärt:** GDPR
+- **Sekundärt:** dataskyddsförordningen, personuppgifter, dataskydd
 - **Long-tail:**
-  - vad ar GDPR och vad innebar det
-  - GDPR krav for foretag
+  - vad är GDPR och vad innebär det
+  - GDPR krav för företag
   - GDPR checklista 2026
   - behandla personuppgifter lagligt
-  - personuppgiftsbitradesavtal mall
-  - rattslig grund personuppgifter
-  - registerforteckning artikel 30
-  - GDPR boter och sanktionsavgift
-  - dataskyddsombud nar kravs det
+  - personuppgiftsbiträdesavtal mall
+  - rättslig grund personuppgifter
+  - registerförteckning artikel 30
+  - GDPR böter och sanktionsavgift
+  - dataskyddsombud när krävs det
   - efterleva GDPR i praktiken
 
 ## SEO-meta
 
-- **Meta-titel (<=60 tecken):** GDPR – krav, regler och efterlevnad for foretag
-- **Meta-beskrivning (~155 tecken):** Vad ar GDPR och vilka krav galler for ditt foretag? Forstaa dataskyddsforordningen, registerforteckning och rattslig grund – och testa efterlevnaden med ditt organisationsnummer.
-- **H1:** GDPR – sa uppfyller ditt foretag dataskyddsforordningen
+- **Meta-titel (<=60 tecken):** GDPR – krav, regler och efterlevnad för företag
+- **Meta-beskrivning (~155 tecken):** Vad är GDPR och vilka krav gäller för ditt företag? Förstå dataskyddsförordningen, registerförteckning och rättslig grund – och testa efterlevnaden med ditt organisationsnummer.
+- **H1:** GDPR – så uppfyller ditt företag dataskyddsförordningen
 
 ## Produktvinkel (hook)
 
-Laglig.se samlar dataskyddsforordningen och svensk kompletterande dataskyddsreglering i en bevakad laglista, sa att ni ser vilka krav som galler er och far en notis nar regler eller praxis andras. Org-nummerkollen visar direkt vilka GDPR-narliggande krav som traffar just er verksamhet.
+Laglig.se samlar dataskyddsförordningen och svensk kompletterande dataskyddsreglering i en bevakad laglista, så att ni ser vilka krav som gäller er och får en notis när regler eller praxis ändras. Org-nummerkollen visar direkt vilka GDPR-närliggande krav som träffar just er verksamhet.
 
 ## Sidstruktur (H2/H3)
 
-1. **Vad ar GDPR?** — *DefinitionBox*
-   - Kort definition: EU:s dataskyddsforordning (2016/679), galler sedan 25 maj 2018
-   - Vad raknas som personuppgift och behandling
-   - Forhallande till svensk dataskyddslag (2018:218)
-2. **Vem omfattas och nar galler GDPR?** — *ProcessSteps* (Vad/Vem/Nar)
-   - Personuppgiftsansvarig vs personuppgiftsbitrade
-   - Territoriellt tillampningsomrade
-   - Nar kravs dataskyddsombud
+1. **Vad är GDPR?** — *DefinitionBox*
+   - Kort definition: EU:s dataskyddsförordning (2016/679), gäller sedan 25 maj 2018
+   - Vad räknas som personuppgift och behandling
+   - Förhållande till svensk dataskyddslag (2018:218)
+2. **Vem omfattas och när gäller GDPR?** — *ProcessSteps* (Vad/Vem/När)
+   - Personuppgiftsansvarig vs personuppgiftsbiträde
+   - Territoriellt tillämpningsområde
+   - När krävs dataskyddsombud
 3. **GDPR:s grundkrav i praktiken** — *FeatureGrid*
-   - Rattslig grund (artikel 6), de registrerades rattigheter
-   - Registerforteckning (artikel 30), inbyggt dataskydd
-   - Personuppgiftsincidenter och anmalan till IMY
-4. **Steg-for-steg: kom igang med GDPR-efterlevnad** — *ProcessSteps*
-   - Kartlagg behandlingar, fastställ rattslig grund, upprätta avtal och rutiner
-5. **Sa hjalper Laglig.se med GDPR** — *SplitFeature* (skarmdump laglista + bevakning)
-   - Bevakad laglista, andringsnotiser, ansvarsfordelning
-6. **Bevaka andringar i dataskyddsregler** — *ChangeFeedEmbed*
-   - Senaste andringar och vagledningar
+   - Rättslig grund (artikel 6), de registrerades rättigheter
+   - Registerförteckning (artikel 30), inbyggt dataskydd
+   - Personuppgiftsincidenter och anmälan till IMY
+4. **Steg-för-steg: kom igång med GDPR-efterlevnad** — *ProcessSteps*
+   - Kartlägg behandlingar, fastställ rättslig grund, upprätta avtal och rutiner
+5. **Så hjälper Laglig.se med GDPR** — *SplitFeature* (skärmdump laglista + bevakning)
+   - Bevakad laglista, ändringsnotiser, ansvarsfördelning
+6. **Bevaka ändringar i dataskyddsregler** — *ChangeFeedEmbed*
+   - Senaste ändringar och vägledningar
 7. **Testa er efterlevnad** — *OrgCheckCta*
-8. **Relevanta lagar och foreskrifter** — *CatalogLawList*
-9. **Vanliga fragor om GDPR** — *FaqAccordion*
-10. **Relaterade omraden** — *RelatedPagesGrid* + *CtaBlock*
+8. **Relevanta lagar och föreskrifter** — *CatalogLawList*
+9. **Vanliga frågor om GDPR** — *FaqAccordion*
+10. **Relaterade områden** — *RelatedPagesGrid* + *CtaBlock*
 
-## Kataloglankar (CatalogLawList)
+## Kataloglänkar (CatalogLawList)
 
-- Dataskyddsforordningen, GDPR (EU 2016/679) — sjalva forordningen som styr all personuppgiftsbehandling
-- Lag (2018:218) med kompletterande bestammelser till EU:s dataskyddsforordning (dataskyddslagen) — svensk komplettering till GDPR
-- Forordning (2018:219) med kompletterande bestammelser till EU:s dataskyddsforordning — preciserar bl.a. IMY:s roll
-- Brottsdatalagen (2018:1177) — dataskydd vid brottsbekampande myndigheters behandling [bekrafta relevans i katalogen]
-- Lag (2003:389) om elektronisk kommunikation — cookies och elektronisk kommunikation [bekrafta nummer i katalogen]
-- Kamerabevakningslagen (2018:1200) — nar kamerabevakning innefattar personuppgifter
-- Offentlighets- och sekretesslagen (2009:400) — for offentlig sektor som behandlar personuppgifter
-- Patientdatalagen (2008:355) — personuppgifter inom vard [bekrafta relevans i katalogen]
+- Dataskyddsförordningen, GDPR (EU 2016/679) — själva förordningen som styr all personuppgiftsbehandling
+- Lag (2018:218) med kompletterande bestämmelser till EU:s dataskyddsförordning (dataskyddslagen) — svensk komplettering till GDPR
+- Förordning (2018:219) med kompletterande bestämmelser till EU:s dataskyddsförordning — preciserar bl.a. IMY:s roll
+- Brottsdatalagen (2018:1177) — dataskydd vid brottsbekämpande myndigheters behandling [bekräfta relevans i katalogen]
+- Lag (2003:389) om elektronisk kommunikation — cookies och elektronisk kommunikation [bekräfta nummer i katalogen]
+- Kamerabevakningslagen (2018:1200) — när kamerabevakning innefattar personuppgifter
+- Offentlighets- och sekretesslagen (2009:400) — för offentlig sektor som behandlar personuppgifter
+- Patientdatalagen (2008:355) — personuppgifter inom vård [bekräfta relevans i katalogen]
 
-## FAQ (3-5, formulerade som riktiga sokfragor)
+## FAQ (3-5, formulerade som riktiga sökfrågor)
 
-- **Vad ar GDPR enkelt forklarat?** — EU-gemensam dataskyddsforordning, skyddar fysiska personers personuppgifter, galler alla som behandlar sadana uppgifter, ersatte PUL 2018.
-- **Vilka krav stalls pa foretag enligt GDPR?** — Rattslig grund, information till registrerade, registerforteckning, sakerhetsatgarder, incidenthantering, bitradesavtal.
-- **Nar maste man ha ett dataskyddsombud?** — Vid myndighet, omfattande kankanslig behandling eller systematisk overvakning i stor skala; annars frivilligt.
-- **Hur stora kan GDPR-boterna bli?** — Upp till 20 miljoner euro eller 4 % av global arsomsattning; IMY ar tillsynsmyndighet i Sverige.
-- **Vad ar skillnaden mellan personuppgiftsansvarig och bitrade?** — Ansvarig bestammer andamal och medel; bitrade behandlar pa ansvarigs uppdrag och kraver bitradesavtal.
+- **Vad är GDPR enkelt förklarat?** — EU-gemensam dataskyddsförordning, skyddar fysiska personers personuppgifter, gäller alla som behandlar sådana uppgifter, ersatte PUL 2018.
+- **Vilka krav ställs på företag enligt GDPR?** — Rättslig grund, information till registrerade, registerförteckning, säkerhetsåtgärder, incidenthantering, biträdesavtal.
+- **När måste man ha ett dataskyddsombud?** — Vid myndighet, omfattande känslig behandling eller systematisk övervakning i stor skala; annars frivilligt.
+- **Hur stora kan GDPR-böterna bli?** — Upp till 20 miljoner euro eller 4 % av global årsomsättning; IMY är tillsynsmyndighet i Sverige.
+- **Vad är skillnaden mellan personuppgiftsansvarig och biträde?** — Ansvarig bestämmer ändamål och medel; biträde behandlar på ansvarigs uppdrag och kräver biträdesavtal.
 
-## Interna lankar (relatedPages)
+## Interna länkar (relatedPages)
 
 - /omraden/nis2
-- /omraden/informationssakerhet [bekrafta route]
-- /lagar/dataskyddsforordningen [bekrafta route i katalogen]
-- /funktioner/lagbevakning [bekrafta route]
-- /branscher/it [bekrafta route]
+- /omraden/informationssakerhet [bekräfta route]
+- /lagar/dataskyddsforordningen [bekräfta route i katalogen]
+- /funktioner/lagbevakning [bekräfta route]
+- /branscher/it [bekräfta route]
 
 ## Bildmaterial
 
-- **Skarmdumpar:** Laglistan filtrerad pa dataskydd/GDPR (ScreenshotFrame); andringsnotis/lagbevakningsvy for en GDPR-relaterad andring (ScreenshotFrame).
+- **Skärmdumpar:** Laglistan filtrerad på dataskydd/GDPR (ScreenshotFrame); ändringsnotis/lagbevakningsvy för en GDPR-relaterad ändring (ScreenshotFrame).
 - **Personbild (prompt):** "Photorealistic editorial photograph. A data protection officer reviewing a records-of-processing document at a laptop in a modern Swedish office. Authentic Scandinavian workplace, natural daylight, warm neutral colour grading that sits on a cream/off-white palette, candid and unposed, soft shallow depth of field, documentary feel. Not glossy stock photography. No text, no logos, no watermarks. Realistic skin and hands."
 
-## Kallor (grundning)
+## Källor (grundning)
 
-- EUR-Lex: Forordning (EU) 2016/679 (GDPR)
-- riksdagen.se / SFS: lag (2018:218) och forordning (2018:219)
-- imy.se: Integritetsskyddsmyndighetens vagledningar om registerforteckning, rattslig grund, dataskyddsombud, sanktionsavgifter
-- Laglig.se egen katalog (dataskyddsomradet)
+- EUR-Lex: Förordning (EU) 2016/679 (GDPR)
+- riksdagen.se / SFS: lag (2018:218) och förordning (2018:219)
+- imy.se: Integritetsskyddsmyndighetens vägledningar om registerförteckning, rättslig grund, dataskyddsombud, sanktionsavgifter
+- Laglig.se egen katalog (dataskyddsområdet)
 
-## Anmarkningar
+## Anmärkningar
 
-Halls pa omrades-/forklaringsniva; undvik kannibalisering mot katalogsidan /lagar/dataskyddsforordningen genom att lanka dit som auktoritativ kalla och kanonisera ordforklaringar till ev. /ordbok-poster. Inga SHA-256/krypto-pasteenden i revisionsrapport-omtal.
+Hålls på områdes-/förklaringsnivå; undvik kannibalisering mot katalogsidan /lagar/dataskyddsforordningen genom att länka dit som auktoritativ källa och kanonisera ordförklaringar till ev. /ordbok-poster. Inga SHA-256/krypto-påståenden i revisionsrapport-omtal.

@@ -1,16 +1,16 @@
 AI-sammanfattning av lagtext
-lagtext pa klarsprak
-forsta lagtext
+lagtext på klarspråk
+förstå lagtext
 vad betyder lagen
-forklara lagtext pa enkel svenska
+förklara lagtext på enkel svenska
 vad betyder paragrafen i klartext
-sammanfatta foreskrift AFS
-hur paverkar lagen mitt foretag
-lagtext for icke-jurister
-forsta miljobalken enkelt
-AI som forklarar lagar
+sammanfatta föreskrift AFS
+hur påverkar lagen mitt företag
+lagtext för icke-jurister
+förstå miljöbalken enkelt
+AI som förklarar lagar
 tolka lagkrav i verksamheten
-snabb oversikt over ny lagstiftning
+snabb översikt över ny lagstiftning
 lagtext sammanfattning exempel
 aktivitetslogg lagefterlevnad
 spårbarhet compliance
@@ -65,19 +65,19 @@ migrera laglista mall
 laglista excel exempel
 hur skapar man en laglista snabbt
 lagkatalog
-rattskallor
-svenska lagar och forfattningar
-sok i lagtext
-var hittar jag gallande lagtext
-databas over svenska lagar och forordningar
-skillnad mellan lag forordning och foreskrift
-vad ar rattskallor
-sok foreskrifter AFS
-EU-forordningar pa svenska
-halla koll pa gallande lagar
+rättskällor
+svenska lagar och författningar
+sök i lagtext
+var hittar jag gällande lagtext
+databas över svenska lagar och förordningar
+skillnad mellan lag förordning och föreskrift
+vad är rättskällor
+sök föreskrifter AFS
+EU-förordningar på svenska
+hålla koll på gällande lagar
 konsoliderad lagtext SFS
-lista over myndighetsforeskrifter
-lankar till riksdagen lagtext
+lista över myndighetsföreskrifter
+länkar till riksdagen lagtext
 mallar styrdokument
 policymall
 rutinmall
@@ -106,20 +106,20 @@ lagefterlevnadskontroll mall
 rapport till ledningens genomgång
 visa efterlevnad vid extern revision
 sammanställning lagkrav status
-laglista akeri
+laglista åkeri
 lagefterlevnad transport
 lagbevakning logistik
-regelefterlevnad akeri
-vilka lagar galler for akeri
-kor- och vilotider regler 2026
-krav pa fardskrivare lastbil
-laglista transportforetag mall
+regelefterlevnad åkeri
+vilka lagar gäller för åkeri
+kör- och vilotider regler 2026
+krav på färdskrivare lastbil
+laglista transportföretag mall
 ADR transport av farligt gods regler
 YKB yrkeskompetensbevis krav
 checklista lagefterlevnad logistik
-arbetstidslagen for chaufforer
+arbetstidslagen för chaufförer
 kabotage regler Sverige
-systematiskt arbetsmiljoarbete akeri
+systematiskt arbetsmiljöarbete åkeri
 laglista avfall och återvinning
 miljölagstiftning avfallsbransch
 lagefterlevnad återvinning
@@ -162,20 +162,20 @@ lagkrav för solcellsanläggning
 miljökrav energiproduktion
 elcertifikat regler
 strålsäkerhet kärnkraft krav
-laglista gruvor och takter
-lagefterlevnad takt
+laglista gruvor och täkter
+lagefterlevnad täkt
 regelefterlevnad gruvindustri
-lagbevakning bergtakt
-vilka lagar galler for takter
-krav pa takttillstand miljobalken
+lagbevakning bergtäkt
+vilka lagar gäller för täkter
+krav på täkttillstånd miljöbalken
 bearbetningskoncession minerallagen
 hantering av utvinningsavfall regler
-sprangamnen tillstand takt
-kvartsdamm AFS granitvarde
-laglista bergtakt mall
-egenkontroll miljo takt
-buller och vibrationer sprangning
-tillsyn lansstyrelsen takt
+sprängämnen tillstånd täkt
+kvartsdamm AFS granitvärde
+laglista bergtäkt mall
+egenkontroll miljö täkt
+buller och vibrationer sprängning
+tillsyn länsstyrelsen täkt
 lagefterlevnad detaljhandel
 laglista handelsföretag
 konsumenträtt regler handel
@@ -260,33 +260,33 @@ brandskydd krav skola
 lagbevakning för utbildningssektorn
 diskrimineringslagen aktiva åtgärder skola
 egenkontroll skolmiljö
-laglista tandvard
-lagefterlevnad tandvardsklinik
-regelefterlevnad tandlakare
-lagbevakning tandvard
-vilka lagar galler for tandvardsklinik
-krav pa amalgamavskiljare tandvard
-patientsakerhet tandvard regler
-stralskydd tandrontgen krav
-hantering av farligt avfall tandvard
-smittrisker tandvard AFS
-laglista tandlakarmottagning mall
-GDPR patientuppgifter tandvard
-egenkontroll miljo tandvardsklinik
-IVO tillsyn tandvard checklista
+laglista tandvård
+lagefterlevnad tandvårdsklinik
+regelefterlevnad tandläkare
+lagbevakning tandvård
+vilka lagar gäller för tandvårdsklinik
+krav på amalgamavskiljare tandvård
+patientsäkerhet tandvård regler
+strålskydd tandröntgen krav
+hantering av farligt avfall tandvård
+smittrisker tandvård AFS
+laglista tandläkarmottagning mall
+GDPR patientuppgifter tandvård
+egenkontroll miljö tandvårdsklinik
+IVO tillsyn tandvård checklista
 laglista verkstadsindustri
 lagefterlevnad tillverkningsindustri
 regelefterlevnad verkstad
 lagbevakning industri
-vilka lagar galler for verkstadsindustri
-krav pa maskiner arbetsmiljo
-kemiska arbetsmiljorisker AFS
+vilka lagar gäller för verkstadsindustri
+krav på maskiner arbetsmiljö
+kemiska arbetsmiljörisker AFS
 buller och vibrationer industri regler
-laglista tillverkande foretag mall
+laglista tillverkande företag mall
 hantering av farligt avfall verkstad
-CE-markning maskiner krav
+CE-märkning maskiner krav
 heta arbeten regler svetsning
-systematiskt arbetsmiljoarbete industri
+systematiskt arbetsmiljöarbete industri
 REACH kemikalier i tillverkning
 AFS
 arbetsmiljöverkets föreskrifter
@@ -425,20 +425,20 @@ brandskyddskontroll egenkontroll
 brandskyddsansvarig uppgifter
 brandskydd på arbetsplatsen krav
 boverkets byggregler brandskydd
-CE-markning
-CE-marka produkt
-CE-markning krav
-forsakran om overensstammelse
-vad ar CE-markning
-hur CE-markar man en produkt
-CE-markning krav EU
-vilka produkter maste CE-markas
-CE-markning forsakran om overensstammelse
+CE-märkning
+CE-märka produkt
+CE-märkning krav
+försäkran om överensstämmelse
+vad är CE-märkning
+hur CE-märkar man en produkt
+CE-märkning krav EU
+vilka produkter måste CE-märkas
+CE-märkning försäkran om överensstämmelse
 teknisk dokumentation CE
-CE-markning tillverkare importor ansvar
-skillnad CE-markning och certifiering
-CE-markning maskiner
-CE-markning byggprodukter
+CE-märkning tillverkare importör ansvar
+skillnad CE-märkning och certifiering
+CE-märkning maskiner
+CE-märkning byggprodukter
 CSRD
 hållbarhetsrapportering
 hållbarhetsdirektivet
@@ -549,18 +549,18 @@ EU-taxonomin koppling till CSRD
 taxonomiförordningen 2020 852
 taxonomi checklista hållbarhetsrapport
 GDPR
-dataskyddsforordningen
+dataskyddsförordningen
 personuppgifter
 dataskydd
-vad ar GDPR och vad innebar det
-GDPR krav for foretag
+vad är GDPR och vad innebär det
+GDPR krav för företag
 GDPR checklista 2026
 behandla personuppgifter lagligt
-personuppgiftsbitradesavtal mall
-rattslig grund personuppgifter
-registerforteckning artikel 30
-GDPR boter och sanktionsavgift
-dataskyddsombud nar kravs det
+personuppgiftsbiträdesavtal mall
+rättslig grund personuppgifter
+registerförteckning artikel 30
+GDPR böter och sanktionsavgift
+dataskyddsombud när krävs det
 efterleva GDPR i praktiken
 internrevision
 intern revision ledningssystem
@@ -698,17 +698,17 @@ LSO och MSB föreskrifter
 brandskydd lagkrav företag
 lagefterlevnad
 efterlevnad av lagkrav
-compliance foretag
+compliance företag
 lagefterlevnadskontroll
-vad ar lagefterlevnad
-hur sakerstaller man lagefterlevnad
+vad är lagefterlevnad
+hur säkerställer man lagefterlevnad
 lagefterlevnad checklista
 lagefterlevnad ISO 14001
-utvardering av efterlevnad ledningssystem
-krav pa lagefterlevnad foretag
+utvärdering av efterlevnad ledningssystem
+krav på lagefterlevnad företag
 lagefterlevnad och egenkontroll
-vem ansvarar for lagefterlevnad
-sa haller man koll pa lagkrav
+vem ansvarar för lagefterlevnad
+så håller man koll på lagkrav
 lagrevision
 lagefterlevnadsrevision
 revision av laglista
@@ -741,16 +741,16 @@ ledningssystem
 certifierbart ledningssystem
 integrerat ledningssystem
 ISO ledningssystem
-vad ar ett ledningssystem
+vad är ett ledningssystem
 integrerat ledningssystem ISO
 ledningssystem ISO 9001 14001 45001
 hur bygger man ett ledningssystem
-krav pa ledningssystem
+krav på ledningssystem
 ledningssystem mall
 High Level Structure ledningssystem
 lagefterlevnad i ledningssystem
 skillnad ledningssystem och kvalitetssystem
-ledningssystem for sma foretag
+ledningssystem för små företag
 livsmedelslagen
 livsmedelsföretag
 livsmedelskontroll
@@ -764,17 +764,17 @@ livsmedelslagen straff och sanktionsavgift
 vem ansvarar för livsmedelskontroll
 livsmedelslagen för restaurang
 maskindirektivet
-maskinforordningen
+maskinförordningen
 AFS 2008:3 maskiner
-vad ar maskindirektivet
+vad är maskindirektivet
 maskindirektivet 2006/42/EG
-maskinforordningen 2023/1230
-vasentliga halso- och sakerhetskrav maskiner
+maskinförordningen 2023/1230
+väsentliga hälso- och säkerhetskrav maskiner
 teknisk tillverkningsdokumentation maskin
-forsakran om overensstammelse maskin
-sammansatt maskinlinje CE-markning
-vasentliga andringar pa maskin krav
-maskindirektivet svensk foreskrift
+försäkran om överensstämmelse maskin
+sammansatt maskinlinje CE-märkning
+väsentliga ändringar på maskin krav
+maskindirektivet svensk föreskrift
 miljölagstiftning
 miljöbalken
 miljökrav företag
@@ -839,20 +839,20 @@ OVK protokoll giltighetstid
 obligatorisk ventilationskontroll lag
 OVK undantag småhus
 godkänd OVK intyg
-penningtvattslagen
-atgarder mot penningtvatt
-kundkannedom
-verksamhetsutovare penningtvatt
-vad ar penningtvattslagen
-krav pa kundkannedom enligt penningtvattslagen
-vilka omfattas av penningtvattslagen
-allmän riskbedomning penningtvatt mall
-rapportering misstankt penningtvatt finanspolisen
-penningtvattslagen for fastighetsmaklare
-kannedom om verklig huvudman
-penningtvattslagen sanktioner och tillsyn
-rutiner mot penningtvatt foretag
-skillnad penningtvatt och finansiering av terrorism
+penningtvättslagen
+åtgärder mot penningtvätt
+kundkännedom
+verksamhetsutövare penningtvätt
+vad är penningtvättslagen
+krav på kundkännedom enligt penningtvättslagen
+vilka omfattas av penningtvättslagen
+allmän riskbedömning penningtvätt mall
+rapportering misstänkt penningtvätt finanspolisen
+penningtvättslagen för fastighetsmäklare
+kännedom om verklig huvudman
+penningtvättslagen sanktioner och tillsyn
+rutiner mot penningtvätt företag
+skillnad penningtvätt och finansiering av terrorism
 plan- och bygglagen
 PBL
 bygglov
@@ -894,19 +894,19 @@ riskbedömning vid förändring i verksamheten
 skillnad riskbedömning och konsekvensbedömning
 riskbedömning exempel
 vem ansvarar för riskbedömning på arbetsplatsen
-systematiskt arbetsmiljoarbete
+systematiskt arbetsmiljöarbete
 SAM
-arbetsmiljoarbete
-riskbedomning arbetsmiljo
-vad ar systematiskt arbetsmiljoarbete
-SAM arbetsmiljo krav
-systematiskt arbetsmiljoarbete steg for steg
-riskbedomning arbetsmiljo mall
-arbetsmiljopolicy krav
-SAM arslig uppfoljning
-undersoka riskbedoma atgarda kontrollera
-foreskrifter systematiskt arbetsmiljoarbete
-SAM for sma foretag
+arbetsmiljöarbete
+riskbedömning arbetsmiljö
+vad är systematiskt arbetsmiljöarbete
+SAM arbetsmiljö krav
+systematiskt arbetsmiljöarbete steg för steg
+riskbedömning arbetsmiljö mall
+arbetsmiljöpolicy krav
+SAM årlig uppföljning
+undersöka riskbedöma åtgärda kontrollera
+föreskrifter systematiskt arbetsmiljöarbete
+SAM för små företag
 skyddsrond checklista
 SBA
 brandskyddsarbete
@@ -950,25 +950,25 @@ gdpr och visselblåsarrapporter
 JP Infonet alternativ
 Laglig vs JP Infonet
 JP Infonet lagbevakning
-jamfor rattsdatabaser
+jämför rättsdatabaser
 alternativ till JP Infonet
 JP Infonet vs Laglig
 JP Infonet lagbevakning pris
 JP Infonet offentlig sektor
-lagbevakning for kommun
+lagbevakning för kommun
 JP Infonet laglista
 skillnad JP Infonet och Laglig
-lagefterlevnad verktyg jamforelse
-rattsdatabas for foretag
+lagefterlevnad verktyg jämförelse
+rättsdatabas för företag
 lagbevakningstjanst med revision
 Karnov alternativ
 Laglig vs Karnov
 Karnov lagbevakning
-jamfor juridiska databaser
+jämför juridiska databaser
 alternativ till Karnov
 Karnov vs Laglig
 Karnov lagbevakning pris
-Karnov for ledningssystem
+Karnov för ledningssystem
 Karnov laglista
 billigare alternativ till Karnov
 skillnad Karnov och Laglig
@@ -978,64 +978,64 @@ laglista mall
 laglista i Excel vs verktyg
 sluta med laglista i Excel
 laglista mall Excel
-gora laglista i Excel
+göra laglista i Excel
 laglista exempel Excel
 problem med laglista i Excel
 ersatta Excel-laglista
 laglista mall gratis
-halla laglistan uppdaterad i Excel
+hålla laglistan uppdaterad i Excel
 laglista ISO 14001 Excel
-fran Excel till lagbevakningstjanst
-automatisk laglista istallet for Excel
+från Excel till lagbevakningstjanst
+automatisk laglista istället för Excel
 ledningssystem verktyg
-verktyg for ledningssystem
+verktyg för ledningssystem
 lagbevakning i ledningssystem
-modul for laglista
-verktyg for ledningssystem ISO
-ledningssystem programvara jamforelse
+modul för laglista
+verktyg för ledningssystem ISO
+ledningssystem programvara jämförelse
 laglista modul i ledningssystem
 saknar lagbevakning i ledningssystemet
 integrera lagbevakning med ledningssystem
 ledningssystem ISO 14001 verktyg
 QHSE-verktyg lagbevakning
 komplettera ledningssystem med laglista
-verktyg for systematiskt arbetsmiljoarbete
+verktyg för systematiskt arbetsmiljöarbete
 manuell lagbevakning
-lagbevakning sjalv
-bevaka lagandringar
+lagbevakning själv
+bevaka lagändringar
 automatisk lagbevakning
-hur bevakar jag lagandringar sjalv
+hur bevakar jag lagändringar själv
 manuell lagbevakning vs automatisk
-bevaka nya lagar och foreskrifter
-halla koll pa lagandringar
-prenumerera pa lagandringar
+bevaka nya lagar och föreskrifter
+hålla koll på lagändringar
+prenumerera på lagändringar
 lagbevakning utan verktyg
-vem bevakar lagandringar i foretaget
+vem bevakar lagändringar i företaget
 lagbevakning checklista
 automatisera lagbevakning
-lagbevakning for ISO 14001
+lagbevakning för ISO 14001
 Notisum alternativ
 Laglig vs Notisum
 Notisum lagbevakning
-jamfor lagbevakningstjanster
+jämför lagbevakningstjänster
 alternativ till Notisum
 Notisum vs Laglig
 Notisum lagbevakning pris
-byta fran Notisum
+byta från Notisum
 Notisum laglista
-basta lagbevakningstjanst i Sverige
+bästa lagbevakningstjanst i Sverige
 Notisum recension
 skillnad Notisum och Laglig
-lagbevakning for ledningssystem
+lagbevakning för ledningssystem
 lagbevakningstjanst med revisionsrapport
 kundcase lagefterlevnad
 referenscase laglista
 kundexempel lagbevakning
-sa anvander {bransch} Laglig
-exempel pa lagefterlevnadsarbete i praktiken
-hur foretag haller koll pa lagandringar
+så använder {bransch} Laglig
+exempel på lagefterlevnadsarbete i praktiken
+hur företag håller koll på lagändringar
 kundcase laglista verktyg
-sa sparar man tid pa lagbevakning
+så sparar man tid på lagbevakning
 referens lagefterlevnadskontroll
 case study compliance Sverige
 erfarenheter av laglista-system
@@ -1166,12 +1166,12 @@ personuppgifter GDPR
 GDPR personuppgiftsansvarig
 GDPR böter
 vem ansvarar för GDPR i företaget
-genomfora internrevision
-vad ar internrevision
-internrevision steg for steg
-hur ofta ska man gora internrevision
-internrevision arbetsmiljo
-vem far gora internrevision
+genomföra internrevision
+vad är internrevision
+internrevision steg för steg
+hur ofta ska man göra internrevision
+internrevision arbetsmiljö
+vem får göra internrevision
 ISO 14001 sammanfattning
 ISO 14001 krav
 ISO 14001 laglista
@@ -1239,18 +1239,18 @@ ledningssystem arbetsmiljö
 bygga upp ett ledningssystem
 ledningssystem exempel
 certifiera ledningssystem
-miljobalken
-miljobalken SFS 1998:808
-miljobalken sammanfattning
-hansynsreglerna
-vad ar miljobalken
-miljobalken hansynsreglerna
-miljobalken kapitel
-miljobalken egenkontroll
-vad reglerar miljobalken
-miljobalken for foretag
-miljobalken tillstand
-allmanna hansynsreglerna miljobalken
+miljöbalken
+miljöbalken SFS 1998:808
+miljöbalken sammanfattning
+hänsynsreglerna
+vad är miljöbalken
+miljöbalken hänsynsreglerna
+miljöbalken kapitel
+miljöbalken egenkontroll
+vad reglerar miljöbalken
+miljöbalken för företag
+miljöbalken tillstånd
+allmänna hänsynsreglerna miljöbalken
 vad är NIS2
 NIS2 krav
 vad betyder NIS2
@@ -1262,14 +1262,14 @@ NIS2 rapportering incidenter
 NIS2 Sverige genomförande
 OVK besiktning
 OVK intervall
-vad ar OVK
+vad är OVK
 vad betyder OVK
 OVK obligatorisk ventilationskontroll
 vilka byggnader omfattas av OVK
 OVK besiktning krav
-vem far utfora OVK
+vem får utföra OVK
 OVK protokoll
-OVK fastighetsagare ansvar
+OVK fastighetsägare ansvar
 penningtvätt
 vad är penningtvätt
 penningtvättslagen
@@ -1338,14 +1338,14 @@ styrdokument
 policy och rutiner
 styrande dokument
 dokumentstyrning
-vad ar ett styrdokument
-exempel pa styrdokument
+vad är ett styrdokument
+exempel på styrdokument
 skillnad policy och rutin
 styrdokument i ledningssystem
 styrande och redovisande dokument
 styrdokument mall
-vilka styrdokument behover ett foretag
-styrdokument arbetsmiljo
+vilka styrdokument behöver ett företag
+styrdokument arbetsmiljö
 dokumentstyrning ISO 9001
 visselblåsning
 rapporteringskanal krav
@@ -1366,28 +1366,28 @@ nya föreskrifter för företag
 guider och tips lagbevakning
 ändringar i miljöbalken nyheter
 laglista per bransch
-lagkrav for foretag
+lagkrav för företag
 branschspecifika lagkrav
 lagefterlevnad bransch
-laglista for olika branscher
-vilka lagar galler for min bransch
+laglista för olika branscher
+vilka lagar gäller för min bransch
 branschspecifik laglista
-lagkrav for tillverkande foretag
-lagkrav inom miljo och arbetsmiljo per bransch
+lagkrav för tillverkande företag
+lagkrav inom miljö och arbetsmiljö per bransch
 laglista bygg och industri
-lagbevakning for kommun och offentlig sektor
-lagkrav livsmedelsforetag
-laglista akeri och transport
-exempel pa laglista for foretag
+lagbevakning för kommun och offentlig sektor
+lagkrav livsmedelsföretag
+laglista åkeri och transport
+exempel på laglista för företag
 boka demo laglista
 demo lagbevakning
 visa lagefterlevnad
 produktdemo compliance
 boka demo av lagefterlevnadsverktyg
 se laglista i praktiken
-demo lagbevakning for foretag
-personlig genomgang laglista
-boka mote om lagefterlevnad
+demo lagbevakning för företag
+personlig genomgång laglista
+boka möte om lagefterlevnad
 visa hur revisionsrapport fungerar
 laglista program
 system för lagefterlevnad
@@ -1410,28 +1410,28 @@ laglista i excel eller verktyg
 manuell lagbevakning vs verktyg
 jämför lagefterlevnadssystem
 vilket lagbevakningsverktyg ska jag välja
-kom igang med laglista
+kom igång med laglista
 skapa laglista
 testa lagbevakning
 prova lagefterlevnad
-skapa laglista pa egen hand
-kom igang med lagefterlevnad snabbt
+skapa laglista på egen hand
+kom igång med lagefterlevnad snabbt
 testa laglista med organisationsnummer
-borja med lagbevakning for foretag
+börja med lagbevakning för företag
 starta gratis test lagefterlevnad
-satta upp laglista steg for steg
+sätta upp laglista steg för steg
 kunskapsbank lagefterlevnad
 guider lagbevakning
-lar dig laglista
+lär dig laglista
 compliance kunskap
 hur fungerar en laglista
-kom igang med lagefterlevnad
-guide lagbevakning for foretag
-vad ar lagefterlevnadskontroll
-checklista systematiskt arbetsmiljoarbete
-lar dig om miljobalken enkelt
-lagar och foreskrifter forklarade
-kunskapsbank arbetsmiljo och miljo
+kom igång med lagefterlevnad
+guide lagbevakning för företag
+vad är lagefterlevnadskontroll
+checklista systematiskt arbetsmiljöarbete
+lär dig om miljöbalken enkelt
+lagar och föreskrifter förklarade
+kunskapsbank arbetsmiljö och miljö
 lagkrav områden
 miljö arbetsmiljö lagkrav
 lagar och föreskrifter områden

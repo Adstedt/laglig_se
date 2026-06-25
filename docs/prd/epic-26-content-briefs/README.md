@@ -23,18 +23,18 @@ Parent plan: [`../epic-26-page-inventory.md`](../epic-26-page-inventory.md)
 
 | Page | Route | Primary keyword | # long-tail | Brief |
 |---|---|---|---|---|
-| akeri-logistik | `/branscher/akeri-logistik` | laglista akeri | 10 | [akeri-logistik.md](./branscher/akeri-logistik.md) |
+| akeri-logistik | `/branscher/akeri-logistik` | laglista åkeri | 10 | [akeri-logistik.md](./branscher/akeri-logistik.md) |
 | avfall-atervinning | `/branscher/avfall-atervinning` | laglista avfall och återvinning | 10 | [avfall-atervinning.md](./branscher/avfall-atervinning.md) |
 | brf | `/branscher/brf` | laglista brf | 10 | [brf.md](./branscher/brf.md) |
 | energi | `/branscher/energi` | lagefterlevnad energibranschen | 10 | [energi.md](./branscher/energi.md) |
-| gruvor-takter | `/branscher/gruvor-takter` | laglista gruvor och takter | 10 | [gruvor-takter.md](./branscher/gruvor-takter.md) |
+| gruvor-takter | `/branscher/gruvor-takter` | laglista gruvor och täkter | 10 | [gruvor-takter.md](./branscher/gruvor-takter.md) |
 | handel | `/branscher/handel` | lagefterlevnad detaljhandel | 10 | [handel.md](./branscher/handel.md) |
 | kemi | `/branscher/kemi` | lagefterlevnad kemikalieindustri | 10 | [kemi.md](./branscher/kemi.md) |
 | lantbruk | `/branscher/lantbruk` | lagefterlevnad lantbruk | 10 | [lantbruk.md](./branscher/lantbruk.md) |
 | livsmedel | `/branscher/livsmedel` | lagefterlevnad livsmedelsbransch | 10 | [livsmedel.md](./branscher/livsmedel.md) |
 | offentlig-sektor | `/branscher/offentlig-sektor` | laglista offentlig sektor | 10 | [offentlig-sektor.md](./branscher/offentlig-sektor.md) |
 | skola-utbildning | `/branscher/skola-utbildning` | laglista skola och utbildning | 10 | [skola-utbildning.md](./branscher/skola-utbildning.md) |
-| tandvard | `/branscher/tandvard` | laglista tandvard | 10 | [tandvard.md](./branscher/tandvard.md) |
+| tandvard | `/branscher/tandvard` | laglista tandvård | 10 | [tandvard.md](./branscher/tandvard.md) |
 | verkstadsindustri | `/branscher/verkstadsindustri` | laglista verkstadsindustri | 10 | [verkstadsindustri.md](./branscher/verkstadsindustri.md) |
 
 ## omraden (49)
@@ -51,7 +51,7 @@ Parent plan: [`../epic-26-page-inventory.md`](../epic-26-page-inventory.md)
 | avfallstrappan | `/omraden/avfallstrappan` | avfallstrappan | 10 | [avfallstrappan.md](./omraden/avfallstrappan.md) |
 | boverkets-byggregler | `/omraden/boverkets-byggregler` | boverkets byggregler | 10 | [boverkets-byggregler.md](./omraden/boverkets-byggregler.md) |
 | brandskydd | `/omraden/brandskydd` | brandskydd | 10 | [brandskydd.md](./omraden/brandskydd.md) |
-| ce-markning | `/omraden/ce-markning` | CE-markning | 10 | [ce-markning.md](./omraden/ce-markning.md) |
+| ce-markning | `/omraden/ce-markning` | CE-märkning | 10 | [ce-markning.md](./omraden/ce-markning.md) |
 | csrd | `/omraden/csrd` | CSRD | 10 | [csrd.md](./omraden/csrd.md) |
 | diskrimineringslagen | `/omraden/diskrimineringslagen` | diskrimineringslagen | 10 | [diskrimineringslagen.md](./omraden/diskrimineringslagen.md) |
 | dora | `/omraden/dora` | DORA | 10 | [dora.md](./omraden/dora.md) |
@@ -82,11 +82,11 @@ Parent plan: [`../epic-26-page-inventory.md`](../epic-26-page-inventory.md)
 | miljoledningssystem | `/omraden/miljoledningssystem` | miljöledningssystem | 10 | [miljoledningssystem.md](./omraden/miljoledningssystem.md) |
 | nis2 | `/omraden/nis2` | NIS2 | 10 | [nis2.md](./omraden/nis2.md) |
 | ovk | `/omraden/ovk` | OVK | 10 | [ovk.md](./omraden/ovk.md) |
-| penningtvatt | `/omraden/penningtvatt` | penningtvattslagen | 10 | [penningtvatt.md](./omraden/penningtvatt.md) |
+| penningtvatt | `/omraden/penningtvatt` | penningtvättslagen | 10 | [penningtvatt.md](./omraden/penningtvatt.md) |
 | plan-och-bygglagen | `/omraden/plan-och-bygglagen` | plan- och bygglagen | 10 | [plan-och-bygglagen.md](./omraden/plan-och-bygglagen.md) |
 | reach | `/omraden/reach` | reach | 10 | [reach.md](./omraden/reach.md) |
 | riskbedomning | `/omraden/riskbedomning` | riskbedömning | 10 | [riskbedomning.md](./omraden/riskbedomning.md) |
-| sam | `/omraden/sam` | systematiskt arbetsmiljoarbete | 10 | [sam.md](./omraden/sam.md) |
+| sam | `/omraden/sam` | systematiskt arbetsmiljöarbete | 10 | [sam.md](./omraden/sam.md) |
 | sba | `/omraden/sba` | systematiskt brandskyddsarbete | 10 | [sba.md](./omraden/sba.md) |
 | stralskyddslagen | `/omraden/stralskyddslagen` | strålskyddslagen | 10 | [stralskyddslagen.md](./omraden/stralskyddslagen.md) |
 | visselblasarlagen | `/omraden/visselblasarlagen` | visselblåsarlagen | 10 | [visselblasarlagen.md](./omraden/visselblasarlagen.md) |
@@ -135,7 +135,7 @@ Parent plan: [`../epic-26-page-inventory.md`](../epic-26-page-inventory.md)
 | laglista | `/ordbok/laglista` | laglista | 8 | [laglista.md](./ordbok/laglista.md) |
 | lagrevision | `/ordbok/lagrevision` | lagrevision | 9 | [lagrevision.md](./ordbok/lagrevision.md) |
 | ledningssystem | `/ordbok/ledningssystem` | ledningssystem | 9 | [ledningssystem.md](./ordbok/ledningssystem.md) |
-| miljobalken | `/ordbok/miljobalken` | miljobalken | 9 | [miljobalken.md](./ordbok/miljobalken.md) |
+| miljobalken | `/ordbok/miljobalken` | miljöbalken | 9 | [miljobalken.md](./ordbok/miljobalken.md) |
 | nis2 | `/ordbok/nis2` | NIS2 | 8 | [nis2.md](./ordbok/nis2.md) |
 | ovk | `/ordbok/ovk` | OVK | 9 | [ovk.md](./ordbok/ovk.md) |
 | penningtvatt | `/ordbok/penningtvatt` | penningtvätt | 8 | [penningtvatt.md](./ordbok/penningtvatt.md) |
@@ -157,7 +157,7 @@ Parent plan: [`../epic-26-page-inventory.md`](../epic-26-page-inventory.md)
 | demo | `/demo` | boka demo laglista | 6 | [demo.md](./sidor/demo.md) |
 | funktioner-index | `/funktioner` | laglista program | 10 | [funktioner-index.md](./sidor/funktioner-index.md) |
 | jamfor-index | `/jamfor` | jämför lagbevakningstjänster | 8 | [jamfor-index.md](./sidor/jamfor-index.md) |
-| kom-igang | `/kom-igang` | kom igang med laglista | 6 | [kom-igang.md](./sidor/kom-igang.md) |
+| kom-igang | `/kom-igang` | kom igång med laglista | 6 | [kom-igang.md](./sidor/kom-igang.md) |
 | kunskapsbank | `/kunskapsbank` | kunskapsbank lagefterlevnad | 8 | [kunskapsbank.md](./sidor/kunskapsbank.md) |
 | omraden-index | `/omraden` | lagkrav områden | 10 | [omraden-index.md](./sidor/omraden-index.md) |
 | ordbok-index | `/ordbok` | ordbok lagefterlevnad | 8 | [ordbok-index.md](./sidor/ordbok-index.md) |
