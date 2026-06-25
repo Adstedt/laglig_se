@@ -1,106 +1,106 @@
-# Innehallsbrief — Maskindirektivet
+# Innehållsbrief — Maskindirektivet
 
 - **Route:** /omraden/maskindirektivet
 - **Cluster / template:** omraden (regulatoriskt tema) / TopicPageTemplate
-- **Sokintention:** informational + commercial
-- **Ordmal:** ~950
+- **Sökintention:** informational + commercial
+- **Ordmål:** ~950
 
 ## Nyckelord
 
-- **Primart:** maskindirektivet
-- **Sekundart:** maskinforordningen, CE-markning maskiner, AFS 2008:3 maskiner
+- **Primärt:** maskindirektivet
+- **Sekundärt:** maskinförordningen, CE-märkning maskiner, AFS 2008:3 maskiner
 - **Long-tail:**
-  - vad ar maskindirektivet
+  - vad är maskindirektivet
   - maskindirektivet 2006/42/EG
-  - maskinforordningen 2023/1230
-  - CE-markning maskiner krav
-  - vasentliga halso- och sakerhetskrav maskiner
+  - maskinförordningen 2023/1230
+  - CE-märkning maskiner krav
+  - väsentliga hälso- och säkerhetskrav maskiner
   - teknisk tillverkningsdokumentation maskin
-  - forsakran om overensstammelse maskin
-  - sammansatt maskinlinje CE-markning
-  - vasentliga andringar pa maskin krav
-  - maskindirektivet svensk foreskrift
+  - försäkran om överensstämmelse maskin
+  - sammansatt maskinlinje CE-märkning
+  - väsentliga ändringar på maskin krav
+  - maskindirektivet svensk föreskrift
 
 ## SEO-meta
 
-- **Meta-titel (<=60 tecken):** Maskindirektivet – krav, CE-markning och ny forordning
-- **Meta-beskrivning (~155 tecken):** Vad innebar maskindirektivet och nya maskinforordningen? Forstaa krav, CE-markning och teknisk dokumentation – testa vilka regler som galler er med organisationsnummer.
-- **H1:** Maskindirektivet – krav, CE-markning och vagen till maskinforordningen
+- **Meta-titel (<=60 tecken):** Maskindirektivet – krav, CE-märkning och ny förordning
+- **Meta-beskrivning (~155 tecken):** Vad innebär maskindirektivet och nya maskinförordningen? Förstå krav, CE-märkning och teknisk dokumentation – testa vilka regler som gäller er med organisationsnummer.
+- **H1:** Maskindirektivet – krav, CE-märkning och vägen till maskinförordningen
 
 ## Produktvinkel (hook)
 
-Laglig.se samlar maskindirektivet, den svenska maskinforeskriften och kommande maskinforordningen i en bevakad laglista, sa att ni vet vilka krav som galler era maskiner och far notis nar reglerna andras. Org-nummerkollen visar vilka regelverk som traffar er som tillverkare, importor eller anvandare av maskiner.
+Laglig.se samlar maskindirektivet, den svenska maskinföreskriften och kommande maskinförordningen i en bevakad laglista, så att ni vet vilka krav som gäller era maskiner och får notis när reglerna ändras. Org-nummerkollen visar vilka regelverk som träffar er som tillverkare, importör eller användare av maskiner.
 
 ## Sidstruktur (H2/H3)
 
-1. **Vad ar maskindirektivet?** — *DefinitionBox*
-   - Definition: EU:s regler for sakerhetskrav pa maskiner som slapps ut pa marknaden
-   - Maskindirektivet 2006/42/EG, i Sverige genomfort via Arbetsmiljoverkets foreskrifter
-   - Overgang till maskinforordningen (EU) 2023/1230
+1. **Vad är maskindirektivet?** — *DefinitionBox*
+   - Definition: EU:s regler för säkerhetskrav på maskiner som släpps ut på marknaden
+   - Maskindirektivet 2006/42/EG, i Sverige genomfört via Arbetsmiljöverkets föreskrifter
+   - Övergång till maskinförordningen (EU) 2023/1230
 2. **Vilka maskiner omfattas?** — *FeatureGrid*
-   - Maskiner, utbytbar utrustning, sakerhetskomponenter, lyftredskap m.m.
+   - Maskiner, utbytbar utrustning, säkerhetskomponenter, lyftredskap m.m.
    - Sammansatta maskiner och maskinlinjer
-   - Vasentliga andringar som likställs med ny maskin [bekrafta omfattning]
-3. **Vasentliga halso- och sakerhetskrav** — *ProcessSteps* (Vad/Hur)
-   - Riskbedomning enligt direktivets bilaga
-   - Konstruktion och tillverkning enligt vasentliga krav
-   - Bruksanvisning pa svenska
-4. **Steg-for-steg: CE-marka en maskin** — *ProcessSteps*
-   - Genomfor riskbedomning och tillampa harmoniserade standarder
-   - Sammanstall teknisk tillverkningsdokumentation
-   - Upprätta EU-forsakran om overensstammelse och anbringa CE-markning
-5. **Maskindirektivet blir maskinforordningen** — *FeatureGrid*
-   - Forordning (EU) 2023/1230 ersatter 2006/42/EG
-   - Nyheter bl.a. om digital dokumentation och hogriskmaskiner
-   - Tillampningsdatum och overgang [bekrafta datum i katalogen]
-6. **Sa hjalper Laglig.se med maskinreglerna** — *SplitFeature* (skarmdump laglista + bevakning)
-   - Bevakad laglista, andringsnotiser, kontroller och signerade bedomningar
-7. **Bevaka andringar i maskinreglerna** — *ChangeFeedEmbed*
-8. **Testa vilka maskinregler som galler er** — *OrgCheckCta*
-9. **Relevanta lagar och foreskrifter** — *CatalogLawList*
-10. **Vanliga fragor om maskindirektivet** — *FaqAccordion*
-11. **Relaterade omraden** — *RelatedPagesGrid* + *CtaBlock*
+   - Väsentliga ändringar som likställs med ny maskin [bekräfta omfattning]
+3. **Väsentliga hälso- och säkerhetskrav** — *ProcessSteps* (Vad/Hur)
+   - Riskbedömning enligt direktivets bilaga
+   - Konstruktion och tillverkning enligt väsentliga krav
+   - Bruksanvisning på svenska
+4. **Steg-för-steg: CE-märka en maskin** — *ProcessSteps*
+   - Genomför riskbedömning och tillämpa harmoniserade standarder
+   - Sammanställ teknisk tillverkningsdokumentation
+   - Upprätta EU-försäkran om överensstämmelse och anbringa CE-märkning
+5. **Maskindirektivet blir maskinförordningen** — *FeatureGrid*
+   - Förordning (EU) 2023/1230 ersätter 2006/42/EG
+   - Nyheter bl.a. om digital dokumentation och högriskmaskiner
+   - Tillämpningsdatum och övergång [bekräfta datum i katalogen]
+6. **Så hjälper Laglig.se med maskinreglerna** — *SplitFeature* (skärmdump laglista + bevakning)
+   - Bevakad laglista, ändringsnotiser, kontroller och signerade bedömningar
+7. **Bevaka ändringar i maskinreglerna** — *ChangeFeedEmbed*
+8. **Testa vilka maskinregler som gäller er** — *OrgCheckCta*
+9. **Relevanta lagar och föreskrifter** — *CatalogLawList*
+10. **Vanliga frågor om maskindirektivet** — *FaqAccordion*
+11. **Relaterade områden** — *RelatedPagesGrid* + *CtaBlock*
 
-## Kataloglankar (CatalogLawList)
+## Kataloglänkar (CatalogLawList)
 
-- Maskindirektivet 2006/42/EG — vasentliga halso- och sakerhetskrav samt CE-markning av maskiner
-- Maskinforordningen (EU) 2023/1230 — ersatter maskindirektivet [bekrafta tillampningsdatum i katalogen]
-- Arbetsmiljoverkets foreskrifter om maskiner (AFS 2008:3) — svenskt genomforande av maskindirektivet [bekrafta aktuell beteckning i katalogen]
-- Arbetsmiljolagen (1977:1160) — krav pa saker anvandning av maskiner i arbetet
-- Arbetsmiljoverkets foreskrifter om anvandning av arbetsutrustning — for anvandare av maskiner [bekrafta nummer i katalogen]
-- EU-forordning (EG) nr 765/2008 — ram for CE-markning och marknadskontroll
-- EU-forordning (EU) 2019/1020 — marknadskontroll och overensstammelse for produkter
-- Lagspanningsdirektivet 2014/35/EU — kan galla parallellt for elektriska delar
-- EMC-direktivet 2014/30/EU — elektromagnetisk kompatibilitet for maskiner med el
+- Maskindirektivet 2006/42/EG — väsentliga hälso- och säkerhetskrav samt CE-märkning av maskiner
+- Maskinförordningen (EU) 2023/1230 — ersätter maskindirektivet [bekräfta tillämpningsdatum i katalogen]
+- Arbetsmiljöverkets föreskrifter om maskiner (AFS 2008:3) — svenskt genomförande av maskindirektivet [bekräfta aktuell beteckning i katalogen]
+- Arbetsmiljölagen (1977:1160) — krav på säker användning av maskiner i arbetet
+- Arbetsmiljöverkets föreskrifter om användning av arbetsutrustning — för användare av maskiner [bekräfta nummer i katalogen]
+- EU-förordning (EG) nr 765/2008 — ram för CE-märkning och marknadskontroll
+- EU-förordning (EU) 2019/1020 — marknadskontroll och överensstämmelse för produkter
+- Lågspänningsdirektivet 2014/35/EU — kan gälla parallellt för elektriska delar
+- EMC-direktivet 2014/30/EU — elektromagnetisk kompatibilitet för maskiner med el
 
-## FAQ (3-5, formulerade som riktiga sokfragor)
+## FAQ (3-5, formulerade som riktiga sökfrågor)
 
-- **Vad ar maskindirektivet?** — EU:s regelverk (2006/42/EG) med vasentliga halso- och sakerhetskrav for maskiner som slapps ut pa marknaden, i Sverige genomfort via Arbetsmiljoverkets foreskrifter om maskiner.
-- **Vad ersatter maskindirektivet?** — Maskinforordningen (EU) 2023/1230 ersatter maskindirektivet och borjar tillampas efter en overgangsperiod [bekrafta datum i katalogen].
-- **Vad kravs for att CE-marka en maskin?** — Riskbedomning, uppfyllda vasentliga krav, teknisk tillverkningsdokumentation, bruksanvisning pa svenska och en EU-forsakran om overensstammelse.
-- **Nar raknas en andring av en maskin som en ny maskin?** — Vid sa kallade vasentliga andringar kan maskinen behova en ny overensstammelsebedomning och CE-markning [bekrafta omfattning].
-- **Vem ansvarar for att en maskin uppfyller kraven?** — Tillverkaren ansvarar for overensstammelse och CE-markning; importorer och anvandare har egna skyldigheter enligt produkt- och arbetsmiljoreglerna.
+- **Vad är maskindirektivet?** — EU:s regelverk (2006/42/EG) med väsentliga hälso- och säkerhetskrav för maskiner som släpps ut på marknaden, i Sverige genomfört via Arbetsmiljöverkets föreskrifter om maskiner.
+- **Vad ersätter maskindirektivet?** — Maskinförordningen (EU) 2023/1230 ersätter maskindirektivet och börjar tillämpas efter en övergångsperiod [bekräfta datum i katalogen].
+- **Vad krävs för att CE-märka en maskin?** — Riskbedömning, uppfyllda väsentliga krav, teknisk tillverkningsdokumentation, bruksanvisning på svenska och en EU-försäkran om överensstämmelse.
+- **När räknas en ändring av en maskin som en ny maskin?** — Vid så kallade väsentliga ändringar kan maskinen behöva en ny överensstämmelsebedömning och CE-märkning [bekräfta omfattning].
+- **Vem ansvarar för att en maskin uppfyller kraven?** — Tillverkaren ansvarar för överensstämmelse och CE-märkning; importörer och användare har egna skyldigheter enligt produkt- och arbetsmiljöreglerna.
 
-## Interna lankar (relatedPages)
+## Interna länkar (relatedPages)
 
 - /omraden/ce-markning
 - /omraden/arbetsmiljo
 - /omraden/iso-45001
-- /branscher/industri [bekrafta route]
-- /funktioner/lagbevakning [bekrafta route]
+- /branscher/industri [bekräfta route]
+- /funktioner/lagbevakning [bekräfta route]
 
 ## Bildmaterial
 
-- **Skarmdumpar:** Laglistan filtrerad pa maskiner/produktdirektiv (ScreenshotFrame); kontrollvy med bevakade foreskrifter och signerade bedomningar (ScreenshotFrame).
+- **Skärmdumpar:** Laglistan filtrerad på maskiner/produktdirektiv (ScreenshotFrame); kontrollvy med bevakade föreskrifter och signerade bedömningar (ScreenshotFrame).
 - **Personbild (prompt):** "Photorealistic editorial photograph. A machine safety engineer carrying out a risk assessment beside a guarded industrial machine while taking notes on a tablet in a Swedish factory. Authentic Scandinavian workplace, natural daylight, warm neutral colour grading that sits on a cream/off-white palette, candid and unposed, soft shallow depth of field, documentary feel. Not glossy stock photography. No text, no logos, no watermarks. Realistic skin and hands."
 
-## Kallor (grundning)
+## Källor (grundning)
 
-- eur-lex.europa.eu: maskindirektivet 2006/42/EG och maskinforordningen (EU) 2023/1230
-- av.se: Arbetsmiljoverkets foreskrifter om maskiner (AFS 2008:3) och vagledning om CE-markning av maskiner
-- swedac.se: ackreditering och anmalda organ for maskiner
-- Laglig.se egen katalog (maskin- och produktomradet)
+- eur-lex.europa.eu: maskindirektivet 2006/42/EG och maskinförordningen (EU) 2023/1230
+- av.se: Arbetsmiljöverkets föreskrifter om maskiner (AFS 2008:3) och vägledning om CE-märkning av maskiner
+- swedac.se: ackreditering och anmälda organ för maskiner
+- Laglig.se egen katalog (maskin- och produktområdet)
 
-## Anmarkningar
+## Anmärkningar
 
-Maskindirektivet (2006/42/EG) ersatts av maskinforordningen (EU) 2023/1230 — eftersom tillampningen sker stegvis, anvand "[bekrafta tillampningsdatum i katalogen]" och paasta inte exakt datum. AFS 2008:3 kan ha andrad beteckning i den nya AFS-strukturen fran Arbetsmiljoverket — verifiera i katalogen. Lanka till /omraden/ce-markning som overordnad CE-sida och undvik kannibalisering genom att halla denna sida maskinspecifik.
+Maskindirektivet (2006/42/EG) ersätts av maskinförordningen (EU) 2023/1230 — eftersom tillämpningen sker stegvis, använd "[bekräfta tillämpningsdatum i katalogen]" och påstå inte exakt datum. AFS 2008:3 kan ha ändrad beteckning i den nya AFS-strukturen från Arbetsmiljöverket — verifiera i katalogen. Länka till /omraden/ce-markning som överordnad CE-sida och undvik kannibalisering genom att hålla denna sida maskinspecifik.

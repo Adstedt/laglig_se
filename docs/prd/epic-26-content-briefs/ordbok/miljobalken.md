@@ -1,63 +1,63 @@
-# Innehallsbrief — Miljobalken (begrepp)
+# Innehållsbrief — Miljöbalken (begrepp)
 - **Route:** /ordbok/miljobalken
 - **Cluster / template:** ordbok / glossary term
-- **Sokintention:** informational
-- **Ordmal:** ~350
+- **Sökintention:** informational
+- **Ordmål:** ~350
 
 ## Nyckelord
-- **Primart:** miljobalken
-- **Sekundart:** miljobalken SFS 1998:808, miljobalken sammanfattning, hansynsreglerna
+- **Primärt:** miljöbalken
+- **Sekundärt:** miljöbalken SFS 1998:808, miljöbalken sammanfattning, hänsynsreglerna
 - **Long-tail:**
-  - vad ar miljobalken
-  - miljobalken sammanfattning
-  - miljobalken hansynsreglerna
-  - miljobalken kapitel
-  - miljobalken egenkontroll
-  - vad reglerar miljobalken
-  - miljobalken for foretag
-  - miljobalken tillstand
-  - allmanna hansynsreglerna miljobalken
+  - vad är miljöbalken
+  - miljöbalken sammanfattning
+  - miljöbalken hänsynsreglerna
+  - miljöbalken kapitel
+  - miljöbalken egenkontroll
+  - vad reglerar miljöbalken
+  - miljöbalken för företag
+  - miljöbalken tillstånd
+  - allmänna hänsynsreglerna miljöbalken
 
 ## SEO-meta
-- **Meta-titel (<=60 tecken):** Miljobalken (SFS 1998:808) – det har galler
-- **Meta-beskrivning (~155 tecken):** Miljobalken samlar Sveriges miljolagstiftning. Las en kort forklaring av balken och hur Laglig.se haller dina miljokrav aktuella.
-- **H1:** Miljobalken – sa fungerar Sveriges miljolagstiftning
+- **Meta-titel (<=60 tecken):** Miljöbalken (SFS 1998:808) – det här gäller
+- **Meta-beskrivning (~155 tecken):** Miljöbalken samlar Sveriges miljölagstiftning. Läs en kort förklaring av balken och hur Laglig.se håller dina miljökrav aktuella.
+- **H1:** Miljöbalken – så fungerar Sveriges miljölagstiftning
 
 ## Produktvinkel (hook)
-Miljobalken ar omfattande och hanvisar till manga forordningar och foreskrifter. Laglig.se filtrerar fram de delar som faktiskt galler din verksamhet och bevakar andringar.
+Miljöbalken är omfattande och hänvisar till många förordningar och föreskrifter. Laglig.se filtrerar fram de delar som faktiskt gäller din verksamhet och bevakar ändringar.
 
 ## Sidstruktur (H2/H3)
-1. **Vad ar miljobalken?** — definition, syfte, ikrafttradande (DefinitionBox)
-2. **De allmanna hansynsreglerna** — 2 kap, bevisbörda, kunskapskrav (FeatureGrid)
-3. **Centrala omraden** — egenkontroll, tillstand, kemikalier, avfall (ProcessSteps)
-4. **Forordningar och foreskrifter under balken** (CatalogLawList)
+1. **Vad är miljöbalken?** — definition, syfte, ikraftträdande (DefinitionBox)
+2. **De allmänna hänsynsreglerna** — 2 kap, bevisbörda, kunskapskrav (FeatureGrid)
+3. **Centrala områden** — egenkontroll, tillstånd, kemikalier, avfall (ProcessSteps)
+4. **Förordningar och föreskrifter under balken** (CatalogLawList)
 5. **Testa med ditt organisationsnummer** (OrgCheckCta)
-6. **Vanliga fragor** (FaqAccordion)
+6. **Vanliga frågor** (FaqAccordion)
 7. **Relaterade begrepp** (RelatedPagesGrid)
 
-## Kataloglankar (CatalogLawList)
-- Miljobalken (SFS 1998:808) — sjalva balken.
-- Forordning om verksamhetsutovares egenkontroll (SFS 1998:901) — preciserar egenkontroll enligt 26 kap.
-- Miljoprovningsforordningen [bekrafta nummer i katalogen] — tillstands- och anmalningsplikt.
-- Avfallsforordningen [bekrafta nummer i katalogen] — avfallshantering.
+## Kataloglänkar (CatalogLawList)
+- Miljöbalken (SFS 1998:808) — själva balken.
+- Förordning om verksamhetsutövares egenkontroll (SFS 1998:901) — preciserar egenkontroll enligt 26 kap.
+- Miljöprövningsförordningen [bekräfta nummer i katalogen] — tillstånds- och anmälningsplikt.
+- Avfallsförordningen [bekräfta nummer i katalogen] — avfallshantering.
 
-## FAQ (3-5, formulerade som riktiga sokfragor)
-- **Vad ar miljobalken?** — Sveriges samlade miljolagstiftning, SFS 1998:808, som tradde i kraft 1999.
-- **Vad ar de allmanna hansynsreglerna?** — Grundkrav i 2 kap. om bl.a. kunskap, forsiktighet och bevisbörda for verksamhetsutovaren.
-- **Vad innebar miljobalken for foretag?** — Krav pa egenkontroll och i vissa fall tillstand eller anmalan, beroende pa verksamhet.
+## FAQ (3-5, formulerade som riktiga sökfrågor)
+- **Vad är miljöbalken?** — Sveriges samlade miljölagstiftning, SFS 1998:808, som trädde i kraft 1999.
+- **Vad är de allmänna hänsynsreglerna?** — Grundkrav i 2 kap. om bl.a. kunskap, försiktighet och bevisbörda för verksamhetsutövaren.
+- **Vad innebär miljöbalken för företag?** — Krav på egenkontroll och i vissa fall tillstånd eller anmälan, beroende på verksamhet.
 
-## Interna lankar (relatedPages)
+## Interna länkar (relatedPages)
 - /ordbok/egenkontroll
 - /ordbok/riskbedomning
 - /ordbok/ledningssystem
 - /ordbok/styrdokument
 
 ## Bildmaterial
-- **Skarmdumpar:** Miljobalken och dess foreskrifter i katalogen, wrapped i ScreenshotFrame.
+- **Skärmdumpar:** Miljöbalken och dess föreskrifter i katalogen, wrapped i ScreenshotFrame.
 - **Personbild (prompt):** "Photorealistic editorial photograph. An environmental manager reviewing permit requirements on a laptop near a recycling area in a Swedish facility. Authentic Scandinavian workplace, natural daylight, warm neutral colour grading that sits on a cream/off-white palette, candid and unposed, soft shallow depth of field, documentary feel. Not glossy stock photography. No text, no logos, no watermarks. Realistic skin and hands."
 
-## Kallor (grundning)
-Miljobalken (SFS 1998:808) pa riksdagen.se, Naturvardsverket, Laglig-katalogen.
+## Källor (grundning)
+Miljöbalken (SFS 1998:808) på riksdagen.se, Naturvårdsverket, Laglig-katalogen.
 
-## Anmarkningar
-Begreppssida; ska lanka till katalogens /lagar-sida for miljobalken snarare an att aterge balktexten. Bekrafta nummer pa underliggande forordningar i katalogen.
+## Anmärkningar
+Begreppssida; ska länka till katalogens /lagar-sida för miljöbalken snarare än att återge balktexten. Bekräfta nummer på underliggande förordningar i katalogen.

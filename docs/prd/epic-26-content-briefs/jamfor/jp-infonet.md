@@ -1,81 +1,81 @@
-# Innehallsbrief — Laglig vs JP Infonet
+# Innehållsbrief — Laglig vs JP Infonet
 
 - **Route:** /jamfor/jp-infonet
 - **Cluster / template:** jamfor / TopicPageTemplate + ComparisonTable
-- **Sokintention:** commercial (high)
-- **Ordmal:** ~1000
+- **Sökintention:** commercial (high)
+- **Ordmål:** ~1000
 
 ## Nyckelord
 
-- **Primart:** JP Infonet alternativ
-- **Sekundart:** Laglig vs JP Infonet, JP Infonet lagbevakning, jamfor rattsdatabaser
+- **Primärt:** JP Infonet alternativ
+- **Sekundärt:** Laglig vs JP Infonet, JP Infonet lagbevakning, jämför rättsdatabaser
 - **Long-tail:**
   - "alternativ till JP Infonet"
   - "JP Infonet vs Laglig"
   - "JP Infonet lagbevakning pris"
   - "JP Infonet offentlig sektor"
-  - "lagbevakning for kommun"
+  - "lagbevakning för kommun"
   - "JP Infonet laglista"
   - "skillnad JP Infonet och Laglig"
-  - "lagefterlevnad verktyg jamforelse"
-  - "rattsdatabas for foretag"
-  - "lagbevakningstjanst med revision"
+  - "lagefterlevnad verktyg jämförelse"
+  - "rättsdatabas för företag"
+  - "lagbevakningstjänst med revision"
 
 ## SEO-meta
 
 - **Meta-titel (<=60 tecken):** JP Infonet alternativ — Laglig vs JP Infonet
-- **Meta-beskrivning (~155 tecken):** Jamfor Laglig och JP Infonet for lagbevakning och laglista, och se nar respektive passar bast. Testa med ert organisationsnummer.
+- **Meta-beskrivning (~155 tecken):** Jämför Laglig och JP Infonet för lagbevakning och laglista, och se när respektive passar bäst. Testa med ert organisationsnummer.
 - **H1:** Laglig vs JP Infonet — vilken passar er verksamhet?
 
 ## Produktvinkel (hook)
 
-JP Infonet ar valkant for rattsdatabaser, kurser och juridisk radgivning, med stark narvaro i offentlig sektor. Laglig ar specialiserat pa operativ lagefterlevnad: laglistan blir bedomda kravpunkter som signeras av ansvarig och samlas i en revisionsrapport — sa att ni kan visa att kraven foljs, inte bara lasa om dem.
+JP Infonet är välkänt för rättsdatabaser, kurser och juridisk rådgivning, med stark närvaro i offentlig sektor. Laglig är specialiserat på operativ lagefterlevnad: laglistan blir bedömda kravpunkter som signeras av ansvarig och samlas i en revisionsrapport — så att ni kan visa att kraven följs, inte bara läsa om dem.
 
 ## Sidstruktur (H2/H3)
 
 1. **MarketingHero** — H1 + hook + OrgCheck i hero
-   - Eyebrow: "Jamforelse · Laglig vs JP Infonet"
-   - Subtitle: en arlig jamforelse av rattsdatabas/radgivning mot operativt lagefterlevnadsverktyg
-2. **Kort sammanfattning — nar passar vad?** (brodtext)
-   - H3: Valj Laglig for laglista, bevakning och dokumenterad efterlevnad med revision
-   - H3: Valj JP Infonet for breda rattsdatabaser, kurser och juridisk radgivning
-3. **Funktionsjamforelse** (ComparisonTable)
-   - H3: Rader: laglista kopplad till org.nr, lagbevakning/notiser, AI-sammanfattning, kravpunkter & bedomning, revisionsrapport, kurser & radgivning, branschmoduler, malgrupp
-   - H3: Markera [bekrafta hos JP Infonet] dar detaljer inte kan styrkas
-4. **Fran juridisk information till bevisad efterlevnad** (SplitFeature — skarmdump kontroller + revisionsrapport)
-   - H3: JP Infonet ger kunskap och radgivning; Laglig ger struktur for uppfoljning och bevis
+   - Eyebrow: "Jämförelse · Laglig vs JP Infonet"
+   - Subtitle: en ärlig jämförelse av rättsdatabas/rådgivning mot operativt lagefterlevnadsverktyg
+2. **Kort sammanfattning — när passar vad?** (brödtext)
+   - H3: Välj Laglig för laglista, bevakning och dokumenterad efterlevnad med revision
+   - H3: Välj JP Infonet för breda rättsdatabaser, kurser och juridisk rådgivning
+3. **Funktionsjämförelse** (ComparisonTable)
+   - H3: Rader: laglista kopplad till org.nr, lagbevakning/notiser, AI-sammanfattning, kravpunkter & bedömning, revisionsrapport, kurser & rådgivning, branschmoduler, målgrupp
+   - H3: Markera [bekräfta hos JP Infonet] där detaljer inte kan styrkas
+4. **Från juridisk information till bevisad efterlevnad** (SplitFeature — skärmdump kontroller + revisionsrapport)
+   - H3: JP Infonet ger kunskap och rådgivning; Laglig ger struktur för uppföljning och bevis
    - OrgCheckCta (mid-page): "Se er laglista byggd ur organisationsnumret"
-5. **Nar JP Infonet passar battre** (brodtext — arlig sektion)
-   - H3: Om ni behover branschspecifik juridisk radgivning, kurser och fordjupningar
-   - H3: Offentlig sektor med behov av breda juridiska informationstjanster
-6. **Lagar och rattskallor ni far i Laglig** (CatalogLawList)
-7. **Sa kommer ni igang med Laglig** (ProcessSteps + CtaBlock)
-   - H3: Org.nr-koll, branschprofil, ansvariga, forsta kontroll-cykel
-8. **Vanliga fragor** (FaqAccordion)
+5. **När JP Infonet passar bättre** (brödtext — ärlig sektion)
+   - H3: Om ni behöver branschspecifik juridisk rådgivning, kurser och fördjupningar
+   - H3: Offentlig sektor med behov av breda juridiska informationstjänster
+6. **Lagar och rättskällor ni får i Laglig** (CatalogLawList)
+7. **Så kommer ni igång med Laglig** (ProcessSteps + CtaBlock)
+   - H3: Org.nr-koll, branschprofil, ansvariga, första kontroll-cykel
+8. **Vanliga frågor** (FaqAccordion)
 9. **Relaterade sidor** (RelatedPagesGrid)
 
-## Kataloglankar (CatalogLawList)
+## Kataloglänkar (CatalogLawList)
 
-- Arbetsmiljolagen (SFS 1977:1160) — central reglering for arbetsgivare.
-- Systematiskt arbetsmiljoarbete (AFS 2023:1) — foreskrift som ofta foljs upp.
-- Miljobalken (SFS 1998:808) — ramlag for verksamheter med miljopaverkan.
-- Forordning om verksamhetsutovares egenkontroll (SFS 1998:901) — dokumenterad uppfoljning.
-- Offentlighets- och sekretesslagen (SFS 2009:400) — relevant for offentlig sektor [bekrafta i katalogen].
-- Forvaltningslagen (SFS 2017:900) — handlaggning i offentlig verksamhet [bekrafta i katalogen].
-- Dataskyddsforordningen GDPR (EU 2016/679) — personuppgiftsbehandling.
+- Arbetsmiljölagen (SFS 1977:1160) — central reglering för arbetsgivare.
+- Systematiskt arbetsmiljöarbete (AFS 2023:1) — föreskrift som ofta följs upp.
+- Miljöbalken (SFS 1998:808) — ramlag för verksamheter med miljöpåverkan.
+- Förordning om verksamhetsutövares egenkontroll (SFS 1998:901) — dokumenterad uppföljning.
+- Offentlighets- och sekretesslagen (SFS 2009:400) — relevant för offentlig sektor [bekräfta i katalogen].
+- Förvaltningslagen (SFS 2017:900) — handläggning i offentlig verksamhet [bekräfta i katalogen].
+- Dataskyddsförordningen GDPR (EU 2016/679) — personuppgiftsbehandling.
 - Lag om skydd mot olyckor (SFS 2003:778) — systematiskt brandskyddsarbete.
 - Diskrimineringslagen (SFS 2008:567) — gäller alla arbetsgivare.
-- Avfallsforordningen (SFS 2020:614) — avfallshantering.
+- Avfallsförordningen (SFS 2020:614) — avfallshantering.
 
-## FAQ (3-5, formulerade som riktiga sokfragor)
+## FAQ (3-5, formulerade som riktiga sökfrågor)
 
-- **Vad ar skillnaden mellan Laglig och JP Infonet?** — JP Infonet erbjuder rattsdatabaser, kurser och radgivning; Laglig ar ett operativt verktyg for laglista, bevakning och dokumenterad efterlevnad med revisionsrapport.
-- **Finns ett alternativ till JP Infonet for lagbevakning?** — Ja, Laglig fokuserar pa lagefterlevnad; testa med organisationsnumret for att se er laglista.
-- **Passar Laglig for offentlig sektor?** — Ja, katalogen omfattar regler som ror offentlig verksamhet; lank till /branscher/offentlig-sektor.
-- **Vad kostar Laglig jamfort med JP Infonet?** — JP Infonets prismodell varierar [bekrafta]; Laglig erbjuder provperiod for utvardering.
-- **Far jag med EU-ratt och foreskrifter i Laglig?** — Ja, katalogen omfattar SFS, myndighetsforeskrifter och EU-ratt.
+- **Vad är skillnaden mellan Laglig och JP Infonet?** — JP Infonet erbjuder rättsdatabaser, kurser och rådgivning; Laglig är ett operativt verktyg för laglista, bevakning och dokumenterad efterlevnad med revisionsrapport.
+- **Finns ett alternativ till JP Infonet för lagbevakning?** — Ja, Laglig fokuserar på lagefterlevnad; testa med organisationsnumret för att se er laglista.
+- **Passar Laglig för offentlig sektor?** — Ja, katalogen omfattar regler som rör offentlig verksamhet; länk till /branscher/offentlig-sektor.
+- **Vad kostar Laglig jämfört med JP Infonet?** — JP Infonets prismodell varierar [bekräfta]; Laglig erbjuder provperiod för utvärdering.
+- **Får jag med EU-rätt och föreskrifter i Laglig?** — Ja, katalogen omfattar SFS, myndighetsföreskrifter och EU-rätt.
 
-## Interna lankar (relatedPages)
+## Interna länkar (relatedPages)
 
 - /funktioner/lagbevakning
 - /funktioner/laglista
@@ -85,15 +85,15 @@ JP Infonet ar valkant for rattsdatabaser, kurser och juridisk radgivning, med st
 
 ## Bildmaterial
 
-- **Skarmdumpar:** kontroller/bedomning av kravpunkt i ScreenshotFrame; revisionsrapport med signerade bedomningar i ScreenshotFrame.
+- **Skärmdumpar:** kontroller/bedömning av kravpunkt i ScreenshotFrame; revisionsrapport med signerade bedömningar i ScreenshotFrame.
 - **Personbild (prompt):** "Photorealistic editorial photograph. A municipal compliance officer reviewing legal requirements on a laptop in a Swedish public-sector office. Authentic Scandinavian workplace, natural daylight, warm neutral colour grading that sits on a cream/off-white palette, candid and unposed, soft shallow depth of field, documentary feel. Not glossy stock photography. No text, no logos, no watermarks. Realistic skin and hands."
 
-## Kallor (grundning)
+## Källor (grundning)
 
-- JP Infonet (jpinfonet.se) — bekrafta aktuellt tjansteutbud (rattsdatabaser, kurser, radgivning, branschnat) fore publicering.
-- riksdagen.se / SFS, Arbetsmiljoverket (AFS), EUR-Lex for de lagar som namns.
+- JP Infonet (jpinfonet.se) — bekräfta aktuellt tjänsteutbud (rättsdatabaser, kurser, rådgivning, branschnät) före publicering.
+- riksdagen.se / SFS, Arbetsmiljöverket (AFS), EUR-Lex för de lagar som nämns.
 - Laglig.se egen katalog och funktionssidor.
 
-## Anmarkningar
+## Anmärkningar
 
-Arlig ton: JP Infonet ar bredare an ren bevakning (kurser, radgivning, branschnat) och starkt i offentlig sektor — framstall det korrekt och markera [bekrafta] dar vi inte kan styrka detaljer. Avgransa mot /jamfor/karnov och /jamfor/notisum sa att jamforelsesidorna har distinkt vinkel. Inga SHA-256-/krypteringspaastaenden om revisionsrapporten.
+Ärlig ton: JP Infonet är bredare än ren bevakning (kurser, rådgivning, branschnät) och starkt i offentlig sektor — framställ det korrekt och markera [bekräfta] där vi inte kan styrka detaljer. Avgränsa mot /jamfor/karnov och /jamfor/notisum så att jämförelsesidorna har distinkt vinkel. Inga SHA-256-/krypteringspåståenden om revisionsrapporten.

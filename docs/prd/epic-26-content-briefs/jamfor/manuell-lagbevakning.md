@@ -1,83 +1,83 @@
-# Innehallsbrief — Manuell lagbevakning vs Laglig
+# Innehållsbrief — Manuell lagbevakning vs Laglig
 
 - **Route:** /jamfor/manuell-lagbevakning
 - **Cluster / template:** jamfor / TopicPageTemplate + ComparisonTable
-- **Sokintention:** commercial (high)
-- **Ordmal:** ~1000
+- **Sökintention:** commercial (high)
+- **Ordmål:** ~1000
 
 ## Nyckelord
 
-- **Primart:** manuell lagbevakning
-- **Sekundart:** lagbevakning sjalv, bevaka lagandringar, automatisk lagbevakning
+- **Primärt:** manuell lagbevakning
+- **Sekundärt:** lagbevakning själv, bevaka lagändringar, automatisk lagbevakning
 - **Long-tail:**
-  - "hur bevakar jag lagandringar sjalv"
+  - "hur bevakar jag lagändringar själv"
   - "manuell lagbevakning vs automatisk"
-  - "bevaka nya lagar och foreskrifter"
-  - "halla koll pa lagandringar"
-  - "prenumerera pa lagandringar"
+  - "bevaka nya lagar och föreskrifter"
+  - "hålla koll på lagändringar"
+  - "prenumerera på lagändringar"
   - "lagbevakning utan verktyg"
-  - "vem bevakar lagandringar i foretaget"
+  - "vem bevakar lagändringar i företaget"
   - "lagbevakning checklista"
   - "automatisera lagbevakning"
-  - "lagbevakning for ISO 14001"
+  - "lagbevakning för ISO 14001"
 
 ## SEO-meta
 
-- **Meta-titel (<=60 tecken):** Manuell lagbevakning vs Laglig — lont att automatisera?
-- **Meta-beskrivning (~155 tecken):** Bevakar ni lagandringar manuellt? Jamfor manuell lagbevakning med Laglig pa tidsatgang, traffsakerhet och revision. Testa med ert organisationsnummer.
-- **H1:** Manuell lagbevakning vs Laglig — ar det vart att automatisera?
+- **Meta-titel (<=60 tecken):** Manuell lagbevakning vs Laglig — lönt att automatisera?
+- **Meta-beskrivning (~155 tecken):** Bevakar ni lagändringar manuellt? Jämför manuell lagbevakning med Laglig på tidsåtgång, träffsäkerhet och revision. Testa med ert organisationsnummer.
+- **H1:** Manuell lagbevakning vs Laglig — är det värt att automatisera?
 
 ## Produktvinkel (hook)
 
-Manuell lagbevakning betyder att nagon sjalv ska halla koll pa SFS, myndighetsforeskrifter och EU-ratt — och komma ihag att koppla varje andring till ratt krav. Det ar tidskravande och latt att missa. Laglig bevakar katalogen at er, sammanfattar vad andringen innebar och kopplar den till kravpunkterna i er laglista, sa att inget faller mellan stolarna.
+Manuell lagbevakning betyder att någon själv ska hålla koll på SFS, myndighetsföreskrifter och EU-rätt — och komma ihåg att koppla varje ändring till rätt krav. Det är tidskrävande och lätt att missa. Laglig bevakar katalogen åt er, sammanfattar vad ändringen innebär och kopplar den till kravpunkterna i er laglista, så att inget faller mellan stolarna.
 
 ## Sidstruktur (H2/H3)
 
 1. **MarketingHero** — H1 + hook + OrgCheck i hero
-   - Eyebrow: "Jamforelse · Manuell vs automatisk lagbevakning"
-   - Subtitle: en arlig jamforelse av eget bevakningsarbete mot automatiserad bevakning
-2. **Vad innebar manuell lagbevakning?** (brodtext)
-   - H3: Bevaka riksdagen, myndigheters forfattningssamlingar och EUR-Lex sjalv
-   - H3: Tolka andringen och koppla den till ratt krav i laglistan
+   - Eyebrow: "Jämförelse · Manuell vs automatisk lagbevakning"
+   - Subtitle: en ärlig jämförelse av eget bevakningsarbete mot automatiserad bevakning
+2. **Vad innebär manuell lagbevakning?** (brödtext)
+   - H3: Bevaka riksdagen, myndigheters författningssamlingar och EUR-Lex själv
+   - H3: Tolka ändringen och koppla den till rätt krav i laglistan
 3. **Risker och kostnader med manuell bevakning** (FeatureGrid)
-   - H3: Tidsatgang och personberoende — kunskapen sitter hos en person
-   - H3: Risk att missa andringar eller upptacka dem for sent
-   - H3: Svart att visa for revisor att bevakningen verkligen sker
-4. **Funktionsjamforelse** (ComparisonTable)
-   - H3: Rader: tackning (SFS/foreskrifter/EU), notis vid andring, AI-sammanfattning av andringen, koppling till kravpunkt, tidsatgang, sparbarhet, personberoende
-5. **Sa fungerar bevakningen i Laglig** (SplitFeature — skarmdump lagandringar/notiser)
-   - H3: Notis nar en relevant forfattning andras, med sammanfattning och paverkan
-   - OrgCheckCta (mid-page): "Se vilka andringar som traffar er bransch"
-6. **Nar manuell bevakning kan racka** (brodtext — arlig sektion)
-   - H3: Fa, stabila krav och en organisation med tydlig juridisk kompetens
+   - H3: Tidsåtgång och personberoende — kunskapen sitter hos en person
+   - H3: Risk att missa ändringar eller upptäcka dem för sent
+   - H3: Svårt att visa för revisor att bevakningen verkligen sker
+4. **Funktionsjämförelse** (ComparisonTable)
+   - H3: Rader: täckning (SFS/föreskrifter/EU), notis vid ändring, AI-sammanfattning av ändringen, koppling till kravpunkt, tidsåtgång, sparbarhet, personberoende
+5. **Så fungerar bevakningen i Laglig** (SplitFeature — skärmdump lagändringar/notiser)
+   - H3: Notis när en relevant författning ändras, med sammanfattning och påverkan
+   - OrgCheckCta (mid-page): "Se vilka ändringar som träffar er bransch"
+6. **När manuell bevakning kan räcka** (brödtext — ärlig sektion)
+   - H3: Få, stabila krav och en organisation med tydlig juridisk kompetens
    - H3: Mycket liten verksamhet utan revisionskrav
-7. **Lagar och rattskallor som bevakas** (CatalogLawList)
-8. **Sa kommer ni igang med automatisk bevakning** (ProcessSteps + CtaBlock)
-9. **Vanliga fragor** (FaqAccordion)
+7. **Lagar och rättskällor som bevakas** (CatalogLawList)
+8. **Så kommer ni igång med automatisk bevakning** (ProcessSteps + CtaBlock)
+9. **Vanliga frågor** (FaqAccordion)
 10. **Relaterade sidor** (RelatedPagesGrid)
 
-## Kataloglankar (CatalogLawList)
+## Kataloglänkar (CatalogLawList)
 
-- Arbetsmiljolagen (SFS 1977:1160) — andras loptande via foreskrifter som ska foljas.
-- Systematiskt arbetsmiljoarbete (AFS 2023:1) — exempel pa foreskrift som uppdateras.
-- Miljobalken (SFS 1998:808) — ramlag med aterkommande andringar.
-- Avfallsforordningen (SFS 2020:614) — avfallsregler som andras relativt ofta.
-- Forordning om verksamhetsutovares egenkontroll (SFS 1998:901) — kopplar bevakning till efterlevnad.
+- Arbetsmiljölagen (SFS 1977:1160) — ändras löpande via föreskrifter som ska följas.
+- Systematiskt arbetsmiljöarbete (AFS 2023:1) — exempel på föreskrift som uppdateras.
+- Miljöbalken (SFS 1998:808) — ramlag med återkommande ändringar.
+- Avfallsförordningen (SFS 2020:614) — avfallsregler som ändras relativt ofta.
+- Förordning om verksamhetsutövares egenkontroll (SFS 1998:901) — kopplar bevakning till efterlevnad.
 - Lag om skydd mot olyckor (SFS 2003:778) — brandskydd.
-- Dataskyddsforordningen GDPR (EU 2016/679) — EU-ratt med vagledning som uppdateras.
-- REACH-forordningen (EG 1907/2006) — kemikalier, andras via EU.
+- Dataskyddsförordningen GDPR (EU 2016/679) — EU-rätt med vägledning som uppdateras.
+- REACH-förordningen (EG 1907/2006) — kemikalier, ändras via EU.
 - Diskrimineringslagen (SFS 2008:567) — gäller alla arbetsgivare.
 - Arbetstidslagen (SFS 1982:673) — arbetstid och vila.
 
-## FAQ (3-5, formulerade som riktiga sokfragor)
+## FAQ (3-5, formulerade som riktiga sökfrågor)
 
-- **Hur bevakar jag lagandringar sjalv?** — Genom att lopande folja riksdagen/SFS, myndigheters forfattningssamlingar och EUR-Lex och koppla andringar till era krav. Vi forklarar hur Laglig automatiserar detta.
-- **Vad ar skillnaden mellan manuell och automatisk lagbevakning?** — Manuell bevakning ar personberoende och tidskravande; automatisk bevakning ger notiser, sammanfattning och koppling till era kravpunkter.
-- **Hur ofta andras lagar och foreskrifter?** — Loptande under aret; takten varierar per omrade. Just darfor ar kontinuerlig bevakning viktig.
-- **Kan jag visa for revisorn att vi bevakar lagandringar?** — Med Laglig blir bevakning och bedomning sparbar och kan ingar i revisionsrapporten; manuellt ar det svarare att styrka.
-- **Racker en nyhetsprenumeration som lagbevakning?** — Den fangar inte allt och kopplar inte andringen till era krav; en strukturerad bevakning gor det.
+- **Hur bevakar jag lagändringar själv?** — Genom att löpande följa riksdagen/SFS, myndigheters författningssamlingar och EUR-Lex och koppla ändringar till era krav. Vi förklarar hur Laglig automatiserar detta.
+- **Vad är skillnaden mellan manuell och automatisk lagbevakning?** — Manuell bevakning är personberoende och tidskrävande; automatisk bevakning ger notiser, sammanfattning och koppling till era kravpunkter.
+- **Hur ofta ändras lagar och föreskrifter?** — Löpande under året; takten varierar per område. Just därför är kontinuerlig bevakning viktig.
+- **Kan jag visa för revisorn att vi bevakar lagändringar?** — Med Laglig blir bevakning och bedömning sparbar och kan ingår i revisionsrapporten; manuellt är det svårare att styrka.
+- **Räcker en nyhetsprenumeration som lagbevakning?** — Den fångar inte allt och kopplar inte ändringen till era krav; en strukturerad bevakning gör det.
 
-## Interna lankar (relatedPages)
+## Interna länkar (relatedPages)
 
 - /funktioner/lagbevakning
 - /funktioner/ai-sammanfattningar
@@ -87,15 +87,15 @@ Manuell lagbevakning betyder att nagon sjalv ska halla koll pa SFS, myndighetsfo
 
 ## Bildmaterial
 
-- **Skarmdumpar:** lagandringar/notisvyn i ScreenshotFrame; AI-sammanfattning av en andring i ScreenshotFrame.
+- **Skärmdumpar:** lagändringar/notisvyn i ScreenshotFrame; AI-sammanfattning av en ändring i ScreenshotFrame.
 - **Personbild (prompt):** "Photorealistic editorial photograph. A compliance officer scanning regulatory updates on a laptop late in the day in a calm Swedish office. Authentic Scandinavian workplace, natural daylight, warm neutral colour grading that sits on a cream/off-white palette, candid and unposed, soft shallow depth of field, documentary feel. Not glossy stock photography. No text, no logos, no watermarks. Realistic skin and hands."
 
-## Kallor (grundning)
+## Källor (grundning)
 
-- riksdagen.se / SFS, regeringen.se, Arbetsmiljoverket (AFS), Naturvardsverket (NFS), MSB (MSBFS), EUR-Lex — kanaler som manuell bevakning maste tacka.
-- ISO 14001 / 45001 (krav pa uppdaterad laglista och bevakning), SIS.
+- riksdagen.se / SFS, regeringen.se, Arbetsmiljöverket (AFS), Naturvårdsverket (NFS), MSB (MSBFS), EUR-Lex — kanaler som manuell bevakning måste täcka.
+- ISO 14001 / 45001 (krav på uppdaterad laglista och bevakning), SIS.
 - Laglig.se egen katalog och funktionssidor (lagbevakning, AI-sammanfattningar).
 
-## Anmarkningar
+## Anmärkningar
 
-Arlig ton: erkann att manuell bevakning kan fungera for sma, stabila verksamheter med juridisk kompetens. Avgransa mot /jamfor/laglista-excel (denna = bevakningsarbetet, den andra = laglistans format). Overlapp med /funktioner/lagbevakning — denna ar jamforelsevinkeln; lank till funktionssidan. Inga overdrivna pastaenden om realtid pa sekunden — beskriv kontinuerlig bevakning. Inga SHA-256-/krypteringspaastaenden.
+Ärlig ton: erkänn att manuell bevakning kan fungera för små, stabila verksamheter med juridisk kompetens. Avgränsa mot /jamfor/laglista-excel (denna = bevakningsarbetet, den andra = laglistans format). Överlapp med /funktioner/lagbevakning — denna är jämförelsevinkeln; länk till funktionssidan. Inga överdrivna påståenden om realtid på sekunden — beskriv kontinuerlig bevakning. Inga SHA-256-/krypteringspåståenden.
