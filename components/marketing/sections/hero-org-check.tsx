@@ -44,7 +44,7 @@ export function HeroOrgCheck({
         onPreviewSuccess={onPreviewSuccess}
       />
       <p className="mt-3 pl-1 text-xs text-muted-foreground">
-        Vill du hellre starta direkt?{' '}
+        Vill ni hellre börja direkt?{' '}
         <Link
           href={secondaryUrl}
           onClick={onSecondaryClick}
