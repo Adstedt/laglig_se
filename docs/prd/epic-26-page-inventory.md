@@ -1,6 +1,7 @@
 # Epic 26 — Marketing Page Inventory & Content Expansion Plan
 
 **Status:** Draft / planning artifact (2026-06-25)
+**Version:** 0.5 (PO validation pass + imagery build spec)
 **Parent:** [`epic-26-marketing-pages-seo-content-engine.md`](./epic-26-marketing-pages-seo-content-engine.md)
 **Purpose:** Enumerate the full set of marketing/content pages to build on the existing Epic 26 substrate — each one targeting a Swedish search cluster **and** tied to a concrete laglig.se product angle, so every page works as both an SEO surface and a paid-ad landing page that converts into trial signup.
 
@@ -17,7 +18,7 @@ The Epic 26 **substrate is built and working**:
 
 **Live today: 14 pages** — 7 `funktioner` + 7 `branscher`. `/omraden` is routed but empty (0/8). `jamfor`, `kundcase`, `ordbok`, `blogg` not built.
 
-This document is the content build-out plan on top of that substrate. **Adding a page is editorial work (MDX file + ~30-min review), not engineering** — except for the small additions in §4 and the one programmatic route in §8.
+This document is the content build-out plan on top of that substrate. **Adding a page is editorial work (MDX file + ~30-min review), not engineering** — except for the small additions in §4 and the programmatic route engine in §7.
 
 ---
 
@@ -81,7 +82,7 @@ Same conversion machine on all pages (org-check + UTM trial CTA), but the **hook
    - `<DefinitionBox>` — featured-snippet "Vad är X?" answer box (notisum's strongest SEO device; feeds AI answer engines). Optional `definition` frontmatter field.
    - `<ProcessSteps>` — numbered steps for "certifiering steg-för-steg" and the `Vad?/Hur?/Vem?/När?` framework.
    - (`<ComparisonTable>` for `/jamfor` already scoped in Story 26.9.)
-3. **`/kunskapsbank` hub** — a discovery surface (we only have the megamenu today) aggregating `omraden` + concept pages + `ordbok`, grouped by the 4 archetypes. Strong internal-linking nexus. No new page *kind* — just an index.
+3. **`/kunskapsbank` hub** — a discovery surface (we only have the megamenu today) aggregating `omraden` + concept pages + `ordbok`, grouped by the §5.3 A–E groups. Strong internal-linking nexus. No new page *kind* — just an index. **Overlaps the `/omraden` category page (§5.8); pick one as canonical — open item §11.**
 4. **Cannibalization guard** — do NOT build concept `laglista` / `lagefterlevnadskontroll` pages that compete with `/funktioner/laglista` and `/funktioner/kontroller`. Instead enrich those feature pages with a "Vad är …?" `<DefinitionBox>` so they own concept-intent too. One URL per keyword.
 5. **Funktioner megamenu → grouped** (Fieldly-style). At 15 pages the flat list in `nav-links.ts` becomes 5 category groups (see §5.1). Do this before adding the new feature pages.
 6. **Megamenu overflow → category/index pages + "Visa alla".** The megamenu can't surface 15 funktioner / 20 branscher / 49 områden without becoming a wall. So each column shows a curated top set, then a **"Visa alla →"** link to a category/index page (`/funktioner`, `/branscher`, `/omraden`) that showcases the full set as a card grid grouped by category (see §5.8). The footer mirrors the same "Visa alla" links. Design reference already exists: `_prototypes/marketing-site/branscher.html` (3-col industry card grid hub).
@@ -152,7 +153,7 @@ The "Visa alla" destinations from the megamenu + footer (§4.6). Each showcases 
 
 - `/funktioner` — all features, grouped by the 5 funktioner categories (§5.1)
 - `/branscher` — all industries, card grid (head term "laglista per bransch"; design ref `_prototypes/marketing-site/branscher.html`)
-- `/omraden` — all topics, grouped by the 4 archetypes; may serve as / merge with `/kunskapsbank` (decide at build to avoid duplication)
+- `/omraden` — all topics, grouped by the §5.3 A–E groups. **Overlaps `/kunskapsbank` (§4.3/§5.7); pick one as canonical to avoid duplication — open item §11.**
 
 ---
 
@@ -186,7 +187,7 @@ Catalog-backed, ideal paid-ad landing pages, **not thin** because each ships a *
 - **Bransch × Område** — e.g. "GDPR för byggföretag", "SBA i hotell". 20 industries × ~15 topics = up to 300; launch high-intent ~60–100 first.
 - **Funktion × Bransch** — e.g. "Laglista för åkeri". Launch ~40.
 
-All three programmatic families (lagguide + the two intersections) ride **one new catalog-backed route** — the single highest-leverage build for the ads goal. Log any coverage caps; never silently truncate.
+All three programmatic families are separate routes (`/lagguide/[slug]`, the bransch×område route, the funktion×bransch route) but share **one catalog-backed resolution engine** (the same `<CatalogLawList>` + frontmatter-driven law lookup) — building that engine once is the single highest-leverage move for the ads goal. Log any coverage caps; never silently truncate.
 
 ---
 
@@ -208,16 +209,65 @@ All three programmatic families (lagguide + the two intersections) ride **one ne
 
 From 14 live → **~138 curated**, comfortably past Notisum's ~25, with the programmatic layer as the ad-scaling reserve.
 
+> Note: `/kunskapsbank` (Hub & supports) and `/omraden` (Category/index) overlap — if merged into one canonical hub, the curated total is one lower (~137). Resolve via open item §11.
+
 ---
 
-## 9. Imagery / hero mockups (open)
+## 9. Imagery — build spec
 
-Hero shots use real in-app screenshots (committed under `public/images/marketing/`). Direction for premium device mockups is **still being decided** (this session):
-- Rejected: home-rolled CSS laptop; procedural Three.js 3D render (not photoreal enough).
-- Current lead: **LS Graphics "MacBook Neo" (6K, isolated/transparent, photoreal)** — either (1) hand-made via their "Edit Online" editor for the ~15–20 hero pages (max quality, no pipeline), or (2) automated via the Neo PSD + Dynamic Mockups API for all pages.
-- People photography (industry pages) via Nano Banana 2 — offline editorial, committed as WebP. AI image gen is NOT used for screenshots (distorts UI).
+Three image types across the pages. All served via `next/image` with meaningful Swedish `alt`, committed as optimized **WebP** under `public/images/marketing/`. `heroMedia` frontmatter type is currently `'screenshot' | 'photo'`; add **`'mockup'`** (renders a transparent image bare, no frame) when §9.3 is chosen.
 
-A `mockup` heroMedia type (renders the transparent image bare, no frame) will be added once the route is chosen.
+### 9.1 In-app screenshots
+
+- **What:** real product surfaces relevant to the page. Feature pages ≥ 2 screenshots; industry/topic pages where the product genuinely surfaces the topic.
+- **Frame:** wrap in `<ScreenshotFrame>` (browser chrome) in hero/`<SplitFeature>`/MDX.
+- **Source:** capture from the demo workspace at high DPI; **no real customer PII** (Almåsa excluded everywhere). Crop to the relevant view.
+- **Path:** `public/images/marketing/{kind}/{slug}/{surface}.png` (e.g. `funktioner/laglista/hero.png`).
+- **Constraint:** never AI-generate screenshots — AI distorts UI text/pixels.
+
+### 9.2 Generated people photography — automated pipeline (RESOLVED)
+
+Fully proven and automatable end-to-end this session.
+
+- **Model:** Nano Banana Pro = **`gemini-3-pro-image`** via the Gemini `generateContent` API. (Cheaper/faster alt: `gemini-3.1-flash-image`.)
+- **Script:** `scripts/marketing-images/generate.mjs`. Run:
+  ```bash
+  node --env-file=.env.local scripts/marketing-images/generate.mjs \
+    --prompt "<prompt>" --out public/images/marketing/people/<name>.webp --ar 4:3 --size 2K
+  ```
+  Reads `GEMINI_API_KEY` from `.env.local` (gitignored, never logged/committed); POSTs the prompt; decodes the returned image → `sharp` → WebP (q90) + a `.review.png` for QC.
+- **Request shape (reference):**
+  ```
+  POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image:generateContent
+  header: x-goog-api-key: $GEMINI_API_KEY
+  body: { "contents":[{"parts":[{"text":"<prompt>"}]}],
+          "generationConfig":{"responseModalities":["IMAGE"],
+                              "imageConfig":{"aspectRatio":"4:3","imageSize":"2K"}} }
+  ```
+  Image returns at `candidates[0].content.parts[].inlineData.data` (base64) + `.mimeType`.
+- **Locked prompt scaffold** (only `<ROLE>` / `<ACTIVITY>` / `<SETTING>` change per page):
+  > *"Photorealistic editorial photograph. `<ROLE>` `<COMPLIANCE ACTIVITY>` in `<SWEDISH INDUSTRY SETTING>`. Authentic Scandinavian workplace, natural daylight, warm neutral colour grading that sits on a cream/off-white palette, candid and unposed, soft shallow depth of field, documentary feel. Not glossy stock photography. No text, no logos, no watermarks. Realistic skin and hands."*
+- **Batch manifest** (one row per image) — `content/marketing/_imagery/people.manifest.json`:
+  ```json
+  { "slug": "livsmedel", "prompt": "<full prompt>", "aspectRatio": "4:3",
+    "out": "public/images/marketing/people/livsmedel-kvalitetsansvarig.webp", "alt": "<svensk alt>" }
+  ```
+  The current script is single-prompt; **batch mode = a small loop over the manifest** (trivial extension — flag for the build).
+- **QC workflow:** generate **2–3 variants** per prompt → Read-based self-review (reject bad hands/faces/off-brand, regenerate) → **human glance on faces before publish** → keep best, commit WebP, delete `.review.png`.
+- **Conventions:** aspect `4:3` (hero) / `3:2` (inline); `2K` size; path `public/images/marketing/people/<descriptive-slug>.webp`; descriptive Swedish `alt`.
+- **Cost:** a few cents/image; ~15–20 bransch photos ≈ trivial.
+- **Constraints:** offline-editorial only (never at build/runtime); key never in repo; Gemini images carry an invisible SynthID watermark (fine for marketing).
+
+### 9.3 Hero device mockups — OPEN (decision pending)
+
+For premium laptop hero shots wrapping a screenshot:
+- **Rejected:** home-rolled CSS laptop; procedural Three.js 3D render (not photoreal enough).
+- **Current lead:** **LS Graphics "MacBook Neo"** (6K, isolated/transparent, photoreal) — either (1) hand-made via their "Edit Online" editor for the ~15–20 hero pages (max quality, no pipeline), or (2) automated via the Neo PSD + **Dynamic Mockups API** for all pages.
+- Resolve via open item §11, then add the `'mockup'` `heroMedia` type.
+
+### 9.4 Per-page imagery in content briefs
+
+Every page brief carries both halves of the imagery spec: the **screenshot list** (which in-app surfaces to capture) + the **people-photo prompt(s)** (where human warmth helps — mainly bransch pages). The prompts double as rows in the §9.2 manifest, so writing the brief = filling the generator input.
 
 ---
 
@@ -238,7 +288,8 @@ A `mockup` heroMedia type (renders the transparent image bare, no frame) will be
 ## 11. Open items
 
 - [ ] Run the `LawListTemplate`/`business_context` ranking query → concrete top-100 B2B law list (§6).
-- [ ] Decide hero-mockup route (§9).
+- [ ] **Decide `/kunskapsbank` vs `/omraden` canonical** — they overlap as the topics hub (§4.3 / §5.7 / §5.8); pick one, redirect the other. Affects the §8 total by 1.
+- [ ] Decide the **device-mockup** route for hero laptops (§9) — the people-photo pipeline is resolved.
 - [ ] Confirm in-product naming ("revisionsrapport"?) before publishing feature copy.
 - [ ] Additional competitor/inspiration URLs (only the Notisum kunskapsbank link was provided this session).
 
@@ -251,3 +302,5 @@ A `mockup` heroMedia type (renders the transparent image bare, no frame) will be
 | 2026-06-25 | 0.1 | Initial page-inventory plan: full new-page enumeration (~121 curated + 50–100 lagguide + 100–300 programmatic), notisum/Fieldly analysis, extend-`omraden` decision, cannibalization guard, Lagguide-bibliotek data-driven method, programmatic route, mockup direction status. Captured from planning session with Alexander. | Claude + Alexander |
 | 2026-06-25 | 0.2 | Added §3.1 content-quality & SEO standards (grounded/non-hallucinated content from corpus + official sources, Swedish grammar/readability, per-page meta title/description + long-tail + per-page Definition of Done); added megamenu-overflow decision (§4.6) + §5.8 category/index pages (`/funktioner`, `/branscher`, `/omraden` "Visa alla" hubs). Curated total ~121 → ~124. | Claude + Alexander |
 | 2026-06-25 | 0.3 | §6: framed the top 50–100 B2B laws/föreskrifter as the biggest SEO lever and added the structured-data spec (BreadcrumbList + Article + FAQPage + DefinitionBox/ProcessSteps for featured-snippet & AI-answer capture). §3.1: expanded internal-linking rule (cross-link bransch↔område↔funktion↔lagguide↔ordbok↔catalog where relevant; don't overdo it). | Claude + Alexander |
+| 2026-06-25 | 0.4 | PO validation pass (Sarah): fixed broken cross-ref (§1 §8→§7); reconciled "4 archetypes" → §5.3 A–E groups in §4.3/§5.8; surfaced the `/kunskapsbank`↔`/omraden` overlap as an explicit decision (§4.3/§5.8/§8 note/open item); clarified §7 (three routes sharing one resolution engine, not one route); updated §9 to reflect proven autonomous people-photo generation (`gemini-3-pro-image`); added header version line. | Sarah (PO) |
+| 2026-06-25 | 0.5 | Expanded §9 into a full imagery build spec: §9.1 screenshots (frame/source/path/constraints), §9.2 people-photo generation pipeline (model, script, request shape, locked prompt scaffold, batch manifest format, QC workflow, conventions, cost, constraints), §9.3 device mockups (open), §9.4 per-page brief imagery. Build-ready in one pass. | Sarah (PO) |
