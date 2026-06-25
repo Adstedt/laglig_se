@@ -66,7 +66,7 @@ Same conversion machine on all pages (org-check + UTM trial CTA), but the **hook
 - **One H1** (keyword-bearing); H2/H3 structured around sub-intents and natural long-tail phrasings (real search questions).
 - **Long-tail coverage** — weave a fair set of variants ("vad kostar", "krav", "checklista", "för [bransch]", "mall", "exempel") into headings, body, and FAQ — without keyword stuffing.
 - **FAQ** (already required) — questions phrased as real search queries; powers FAQPage JSON-LD + AI-answer citability.
-- **Internal links** — `<CatalogLawList>` to the catalog + `relatedPages` to siblings; descriptive anchor text.
+- **Internal links** — cross-link across the whole set **where it genuinely helps the reader**: bransch ↔ område ↔ funktion ↔ lagguide ↔ ordbok ↔ catalog (`<CatalogLawList>` to laws, `relatedPages` for the sibling-grid, a few natural in-body links). A handful of contextual, relevant links per page — **don't overdo it / no link farms**. Descriptive anchor text, never "läs mer".
 - **Canonical + OG** — via `generateMarketingMetadata()`; ensure canonical is unique per page (esp. the lagguide-vs-catalog split, §6).
 - **Image SEO** — meaningful `alt` on every screenshot/photo.
 
@@ -158,7 +158,7 @@ The "Visa alla" destinations from the megamenu + footer (§4.6). Each showcases 
 
 ## 6. Lagguide-bibliotek — top 50–100 B2B laws (the biggest catalog lever)
 
-Expand §5.3-D from 15 hand-written explainers into a **50–100 page library** of the most B2B-relevant laws/föreskrifter.
+Build content pages for the **top 50–100 laws/föreskrifter that apply to companies** — expand §5.3-D from 15 hand-written explainers into a full **50–100 page library** of the most B2B-relevant legislation. This is the single biggest SEO opportunity in the epic: high-intent legal terms that competitors cover only with thin, static prose, while ours are backed by live catalog data + structured markup. Real chance to outrank them at scale.
 
 **Data-driven ranking (no guessing):**
 - Rank by frequency in `LawListTemplate` / `TemplateItem` (schema ~line 1817) — laws appearing across the most standard industry lists = the top B2B laws by definition.
@@ -172,6 +172,8 @@ Expand §5.3-D from 15 hand-written explainers into a **50–100 page library** 
 |---|---|---|
 | Catalog `/lagar/[id]` (exists) | "läs lagtexten" — research | the law-text query |
 | Lagguide `/lagguide/[slug]` (new) | "vad innebär den + hur efterlever jag" — commercial | "[lag] krav / sammanfattning / checklista" |
+
+**Structured data (featured-snippet + AI-answer capture).** Every lagguide page emits JSON-LD — `BreadcrumbList` + `Article` + `FAQPage` (from the visible `<FaqAccordion>`) — and leads with a `<DefinitionBox>` ("Vad är [lag]?") + `<ProcessSteps>` where relevant, all structured for featured-snippet and AI-answer-engine capture. Markup/visible-content parity is required (Google rule). This is where the SEO gain compounds: ~50–100 pages × structured Q&A + definition boxes on terms the competition leaves as plain text.
 
 **TODO:** run the ranking query over `LawListTemplate`/`TemplateItem` joined to `business_context` to produce the concrete prioritized top-100 list.
 
@@ -248,3 +250,4 @@ A `mockup` heroMedia type (renders the transparent image bare, no frame) will be
 |------|---------|-------------|--------|
 | 2026-06-25 | 0.1 | Initial page-inventory plan: full new-page enumeration (~121 curated + 50–100 lagguide + 100–300 programmatic), notisum/Fieldly analysis, extend-`omraden` decision, cannibalization guard, Lagguide-bibliotek data-driven method, programmatic route, mockup direction status. Captured from planning session with Alexander. | Claude + Alexander |
 | 2026-06-25 | 0.2 | Added §3.1 content-quality & SEO standards (grounded/non-hallucinated content from corpus + official sources, Swedish grammar/readability, per-page meta title/description + long-tail + per-page Definition of Done); added megamenu-overflow decision (§4.6) + §5.8 category/index pages (`/funktioner`, `/branscher`, `/omraden` "Visa alla" hubs). Curated total ~121 → ~124. | Claude + Alexander |
+| 2026-06-25 | 0.3 | §6: framed the top 50–100 B2B laws/föreskrifter as the biggest SEO lever and added the structured-data spec (BreadcrumbList + Article + FAQPage + DefinitionBox/ProcessSteps for featured-snippet & AI-answer capture). §3.1: expanded internal-linking rule (cross-link bransch↔område↔funktion↔lagguide↔ordbok↔catalog where relevant; don't overdo it). | Claude + Alexander |
