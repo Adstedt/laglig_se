@@ -11,7 +11,6 @@ import {
   type RelatedPage,
 } from '@/components/marketing/sections/related-pages-grid'
 import {
-  MARKETING_KIND_LABELS,
   type MarketingFrontmatter,
   type MarketingKind,
 } from '@/lib/marketing/frontmatter-schemas'
@@ -81,12 +80,7 @@ export function BasePageTemplate({
   const related = resolveRelatedPages(fm.relatedPages)
 
   return (
-    <MarketingShell
-      breadcrumbs={[
-        { label: MARKETING_KIND_LABELS[kind] },
-        { label: fm.title, current: true },
-      ]}
-    >
+    <MarketingShell>
       <MarketingHero
         eyebrow={fm.heroEyebrow}
         title={fm.heroTitle}

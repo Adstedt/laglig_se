@@ -4,6 +4,7 @@ import { SplitFeature } from '@/components/marketing/sections/split-feature'
 import { ScreenshotFrame } from '@/components/marketing/media/screenshot-frame'
 import { FeatureGrid } from '@/components/marketing/sections/feature-grid'
 import { ProofBlock } from '@/components/marketing/sections/proof-block'
+import { Lead } from '@/components/marketing/mdx/lead'
 
 /**
  * Global MDX component map — required by @next/mdx with the App Router.
@@ -128,6 +129,8 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         {children}
       </code>
     ),
+    // Standfirst/deck for the article lede (see components/marketing/mdx/lead).
+    Lead,
     // Marketing section components usable inline in any MDX body (Story 26.4
     // bridge rows). These render full-width — they are not PROSE-wrapped.
     SplitFeature,
