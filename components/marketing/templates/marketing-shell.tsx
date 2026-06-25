@@ -3,7 +3,8 @@ import { FooterV3 } from '@/components/features/landing-v3/footer-v3'
 import { getPublishedMarketingRoutes } from '@/lib/marketing/content'
 
 /**
- * Shared chrome for all marketing pages (Story 26.1 AC 8).
+ * Shared chrome for the marketing pages (Story 26.1 AC 8) and the public
+ * content pages (/lagar, /eu, /sok, /rattskallor, …) via app/(public)/layout.
  *
  * Composes the LANDING-V3 chrome — not components/shared/navigation — so the
  * conversion funnel is visually continuous from `/` (decision recorded in

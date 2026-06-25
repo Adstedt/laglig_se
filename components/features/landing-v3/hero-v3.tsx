@@ -42,7 +42,7 @@ export function HeroV3() {
               följer dem — utan att ni behöver vara experter.
             </p>
             <OrgCheckForm
-              eyebrow="Testa direkt · 30 sek"
+              eyebrow="Vilka regler gäller er? · 30 sek"
               resultMode="modal"
               className="w-full shrink-0 lg:w-[400px]"
             />
