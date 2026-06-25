@@ -26,9 +26,11 @@ const outputFileTracingRoot = process.env.VERCEL ? undefined : projectRoot
 // Plugins are passed as strings (Turbopack requirement: no JS functions
 // cross the Rust boundary). remark-frontmatter keeps the YAML block out of
 // the rendered output; parsing/validation happens in lib/marketing/content.ts.
+// remark-gfm enables GitHub-flavored markdown (tables, strikethrough, task
+// lists, autolinks) — without it, table syntax renders as raw pipe text.
 const withMDX = createMDX({
   options: {
-    remarkPlugins: ['remark-frontmatter'],
+    remarkPlugins: ['remark-frontmatter', 'remark-gfm'],
   },
 })
 
