@@ -774,11 +774,174 @@ async function runBatchMode(
     console.log(`    - ${f.documentNumber}: ${f.reason}`)
 }
 
+/**
+ * RESUME mode (--resume): drain ALREADY-SUBMITTED batches recorded in
+ * data/skolverket-batch-state.json through the finalize tail, WITHOUT
+ * re-submitting (and re-paying for) generation. Used when a prior --batch run's
+ * Claude side completed but the local poll→finalize loop was interrupted before
+ * all results were written to the DB. Results expire 24h after batch creation —
+ * run before then. Idempotent: skips docs already in the DB (html_content set).
+ * The custom_id is the deterministic agency slug, so the entry map rebuilds from
+ * the registry with no PDF re-encode. [Story 9.7 Task 5 recovery]
+ */
+async function runResumeMode(
+  anthropic: Anthropic,
+  slugMap: SlugMap
+): Promise<void> {
+  if (!existsSync(BATCH_STATE))
+    throw new Error(`no batch state at ${BATCH_STATE} — nothing to resume`)
+  const state = JSON.parse(readFileSync(BATCH_STATE, 'utf8')) as {
+    batchIds: string[]
+    createdAt: string
+  }
+  console.log(
+    `Resuming ${state.batchIds.length} batch(es) submitted ${state.createdAt}`
+  )
+
+  const registry: RegistryEntry[] = JSON.parse(readFileSync(REGISTRY, 'utf8'))
+  const byId = new Map(
+    registry.map((e) => [generateAgencySlug(e.documentNumber), e])
+  )
+  // Idempotency: skip what's already ingested (the partial run's output).
+  const alreadyDone = new Set(
+    (
+      await prisma.legalDocument.findMany({
+        where: {
+          document_number: { in: registry.map((e) => e.documentNumber) },
+          html_content: { not: null },
+        },
+        select: { document_number: true },
+      })
+    ).map((d) => d.document_number)
+  )
+  console.log(`  ${alreadyDone.size} already in DB — will skip`)
+
+  const failures: Failure[] = []
+  const oversized: RegistryEntry[] = []
+  let ok = 0
+  let skipped = 0
+  let totalChunks = 0
+
+  for (const id of state.batchIds) {
+    const b = await anthropic.messages.batches.retrieve(id)
+    if (b.processing_status !== 'ended') {
+      console.log(`  ${id}: ${b.processing_status} — not ended yet, polling…`)
+      for (;;) {
+        const cur = await anthropic.messages.batches.retrieve(id)
+        if (cur.processing_status === 'ended') break
+        await sleep(POLL_INTERVAL_MS)
+      }
+    }
+    console.log(`  draining ${id}…`)
+    for await (const r of await anthropic.messages.batches.results(id)) {
+      const entry = byId.get(r.custom_id)
+      if (!entry) continue
+      if (alreadyDone.has(entry.documentNumber)) {
+        skipped++
+        continue
+      }
+      if (r.result.type !== 'succeeded') {
+        failures.push({
+          documentNumber: entry.documentNumber,
+          reason: `batch ${r.result.type}`,
+        })
+        continue
+      }
+      if (r.result.message.stop_reason === 'max_tokens') {
+        oversized.push(entry)
+        continue
+      }
+      // format (pdf|doc) drives the metadata labels; read it from the cached
+      // source file (no network) — same detection prepareBatchRequest used.
+      let format: DocFormat = 'pdf'
+      try {
+        format = (await fetchContent(entry)).format
+      } catch {
+        /* fall back to pdf label; finalize still works off the generated HTML */
+      }
+      const res = await finalizeDoc(
+        entry,
+        stripFences(r.result.message),
+        format === 'pdf' ? 'pdf-document' : 'doc-text-extract',
+        format,
+        slugMap
+      )
+      if (res.ok) {
+        ok++
+        totalChunks += res.chunks
+        alreadyDone.add(entry.documentNumber) // guard dup custom_ids across batches
+        console.log(`  ✓ ${entry.documentNumber} — ${res.chunks} chunks`)
+      } else {
+        failures.push({
+          documentNumber: entry.documentNumber,
+          reason: res.reason,
+        })
+        console.log(`  ✗ ${entry.documentNumber} — ${res.reason}`)
+      }
+    }
+  }
+
+  // Oversized (max_tokens) → split-and-stitch synchronously (same as batch tail).
+  if (oversized.length) {
+    console.log(`\nSplit-and-stitch for ${oversized.length} oversized docs…`)
+    for (const entry of oversized) {
+      try {
+        const content = await fetchContent(entry)
+        const text = await extractDocText(content)
+        const html = await normalizeChunked(text, entry, anthropic)
+        const res = await finalizeDoc(
+          entry,
+          html,
+          'chunked',
+          content.format,
+          slugMap
+        )
+        if (res.ok) {
+          ok++
+          totalChunks += res.chunks
+          console.log(
+            `  ✓ ${entry.documentNumber} (chunked) — ${res.chunks} chunks`
+          )
+        } else
+          failures.push({
+            documentNumber: entry.documentNumber,
+            reason: res.reason,
+          })
+      } catch (e) {
+        failures.push({
+          documentNumber: entry.documentNumber,
+          reason: `chunked: ${e instanceof Error ? e.message : String(e)}`,
+        })
+      }
+    }
+  }
+
+  writeFileSync(FAILURES, JSON.stringify(failures, null, 2) + '\n')
+  console.log(`\n=== RESUME SUMMARY ===`)
+  console.log(`  newly ingested: ${ok}`)
+  console.log(`  skipped (already in DB): ${skipped}`)
+  console.log(`  total new chunks: ${totalChunks}`)
+  console.log(`  failed: ${failures.length} → ${FAILURES}`)
+  for (const f of failures)
+    console.log(`    - ${f.documentNumber}: ${f.reason}`)
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2)
   const dryRun = args.includes('--dry-run')
   const batch = args.includes('--batch')
+  const resume = args.includes('--resume')
   const skipExisting = args.includes('--skip-existing')
+
+  // Resume drains already-submitted batches (its own registry/state) — no
+  // registry filtering or re-submit. Handle before the normal filter pipeline.
+  if (resume) {
+    console.log('Building slug map…')
+    const slugMap = await buildSlugMap()
+    const anthropic = new Anthropic({ timeout: 15 * 60 * 1000, maxRetries: 2 })
+    await runResumeMode(anthropic, slugMap)
+    return
+  }
   const limitIdx = args.indexOf('--limit')
   const limit = limitIdx !== -1 ? Number(args[limitIdx + 1]) : Infinity
   const filterIdx = args.indexOf('--filter')

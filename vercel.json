@@ -50,6 +50,10 @@
       "schedule": "0 13 * * *"
     },
     {
+      "path": "/api/cron/discover-skolfs-changes",
+      "schedule": "0 6 * * *"
+    },
+    {
       "path": "/api/cron/process-chunks",
       "schedule": "0 * * * *"
     },
