@@ -29,12 +29,14 @@ export function createSearchLawsTool(workspaceId: string) {
   return tool({
     description: `Search Swedish legal documents by semantic similarity.
 Use this tool when the user asks about a legal topic, regulation, or compliance requirement.
-Returns the most relevant passages from laws (SFS), agency regulations (AFS, BFS, etc.), and EU legislation.
+Returns the most relevant passages from laws (SFS), agency regulations / myndighetsföreskrifter (AFS, SKOLFS, LIVSFS, HSLF-FS, BFS, MSBFS, etc.), and EU legislation.
 The search understands Swedish legal terminology and natural language queries.
+To target agency regulations specifically (so they are not crowded out by SFS hits), pass contentType: "AGENCY_REGULATION".
 
 Example queries:
 - "arbetsgivarens skyldigheter för skyddsutrustning"
 - "regler för kemikaliehantering"
+- "systematiskt kvalitetsarbete i skolan"
 - "GDPR-krav för personuppgifter"
 
 Returns up to {limit} results ranked by relevance. Each result includes a \`documentId\` (UUID), passage text, document number, and a relevance score (0-1). Use \`documentId\` when adding laws to lists. Each result includes a \`citationKey\` — use this exact string in [Källa: ...] citations.

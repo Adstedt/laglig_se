@@ -725,7 +725,7 @@ export function FirstRunModal({
 
           {/* Footer (path-choice only) — separator + reassurance + skip */}
           {step === 'path-choice' && (
-            <div className="mt-6 px-8 pb-7">
+            <div className="mt-6 px-8 pb-8">
               <Separator className="mb-5" />
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -743,7 +743,7 @@ export function FirstRunModal({
             </div>
           )}
           {/* Sub-steps get bottom padding to match */}
-          {step !== 'path-choice' && <div className="pb-7" />}
+          {step !== 'path-choice' && <div className="pb-8" />}
         </DialogPrimitive.Content>
       </DialogPortal>
     </Dialog>
