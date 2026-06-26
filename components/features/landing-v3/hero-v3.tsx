@@ -29,7 +29,7 @@ export function HeroV3() {
             className="mb-5 max-w-5xl text-[2.5rem] font-medium leading-[1.05] tracking-tight sm:text-5xl md:text-6xl lg:text-[4.75rem]"
             style={{ fontFamily: "'Safiro', system-ui, sans-serif" }}
           >
-            <span className="block animate-fade-up">Håll koll på lagarna.</span>
+            <span className="block animate-fade-up">Håll koll på reglerna.</span>
             <span className="block animate-fade-up-delay-1 text-foreground/45">
               Automatiskt.
             </span>
