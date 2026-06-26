@@ -7,6 +7,7 @@ import {
   anchorIdFromPath,
   chunkCitationKey,
   parseCitationLabel,
+  getDocBrowsePath,
   type SourceInfo,
 } from '@/lib/ai/citations'
 
@@ -887,5 +888,25 @@ describe('sourcesToMap', () => {
 
   it('returns empty map for undefined', () => {
     expect(sourcesToMap(undefined).size).toBe(0)
+  })
+})
+
+describe('getDocBrowsePath [Story 9.7]', () => {
+  it('routes agency författningssamlingar to /browse/foreskrifter', () => {
+    // SKOLFS (joint samling) was the production bug — mis-routed to /browse/lagar
+    expect(getDocBrowsePath('SKOLFS 2010:37')).toBe('/browse/foreskrifter')
+    expect(getDocBrowsePath('AFS 2023:1')).toBe('/browse/foreskrifter')
+    expect(getDocBrowsePath('SOSFS 2011:9')).toBe('/browse/foreskrifter')
+    expect(getDocBrowsePath('HSLF-FS 2022:30')).toBe('/browse/foreskrifter')
+    // previously-missing map prefixes (latent bug)
+    expect(getDocBrowsePath('LMFS 2020:1')).toBe('/browse/foreskrifter')
+    expect(getDocBrowsePath('SSMFS 2018:1')).toBe('/browse/foreskrifter')
+    // supplementary prefixes not in the canonical map
+    expect(getDocBrowsePath('LVFS 2009:20')).toBe('/browse/foreskrifter')
+  })
+
+  it('routes SFS to /browse/lagar and EU to /browse/eu', () => {
+    expect(getDocBrowsePath('SFS 1977:1160')).toBe('/browse/lagar')
+    expect(getDocBrowsePath('EU 2016/679')).toBe('/browse/eu')
   })
 })

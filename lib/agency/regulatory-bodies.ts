@@ -9,6 +9,10 @@
  * `regulatory_body` is NOT derivable from the prefix for the shared HSLF-FS
  * series (it spans ~8 agencies); within Laglig's scope HSLF-FS rows are
  * Socialstyrelsen-issued, so the map resolves them accordingly. [Story 9.5]
+ *
+ * Some prefixes are *joint* författningssamlingar whose issuer genuinely
+ * cannot be inferred from the prefix at all — see JOINT_FORFATTNINGSSAMLINGAR
+ * and resolveRegulatoryBody() below. [Story 9.7 — SKOLFS]
  */
 export const REGULATORY_BODY_MAP: Record<string, string> = {
   AFS: 'Arbetsmiljöverket',
@@ -39,6 +43,47 @@ export const REGULATORY_BODY_MAP: Record<string, string> = {
   SLVFS: 'Livsmedelsverket',
   LIVSFS: 'Livsmedelsverket',
   STAFS: 'Swedac',
+}
+
+/**
+ * Joint författningssamlingar: prefixes whose issuer is NOT determined by the
+ * prefix because the collection is shared across multiple issuing bodies. For
+ * these, the issuer MUST be resolved per-document (e.g. from the source API's
+ * `issuedBy`), NOT via REGULATORY_BODY_MAP.
+ *
+ * ⚠️ DO NOT add SKOLFS to REGULATORY_BODY_MAP. SKOLFS (Skolverkets
+ * författningssamling) carries documents from Skolverket, Regeringen
+ * (läroplaner/förordningar), Skolinspektionen and Specialpedagogiska
+ * skolmyndigheten — the prefix alone cannot tell them apart. Mapping it to a
+ * single body would mis-attribute the Government's curricula. [Story 9.7]
+ */
+export const JOINT_FORFATTNINGSSAMLINGAR = new Set<string>(['SKOLFS'])
+
+/** True if the prefix is a joint samling requiring per-document issuer resolution. */
+export function isJointForfattningssamling(prefix: string | null): boolean {
+  if (!prefix) return false
+  return (
+    JOINT_FORFATTNINGSSAMLINGAR.has(prefix) ||
+    JOINT_FORFATTNINGSSAMLINGAR.has(prefix.toUpperCase())
+  )
+}
+
+/**
+ * Resolve `regulatory_body` for an AGENCY_REGULATION document, honoring the
+ * joint-samling rule: for a joint prefix (e.g. SKOLFS) the per-document
+ * `issuedBy` (from the source API) wins and the prefix map is NOT consulted;
+ * for single-publisher prefixes, fall back to REGULATORY_BODY_MAP. Returns null
+ * when a joint doc has no issuedBy, or a single-publisher prefix is unknown.
+ */
+export function resolveRegulatoryBody(
+  documentNumber: string,
+  issuedBy?: string | null
+): string | null {
+  const prefix = parseAgencyPrefix(documentNumber)
+  if (isJointForfattningssamling(prefix)) {
+    return issuedBy?.trim() || null
+  }
+  return prefix ? regulatoryBodyForPrefix(prefix) : null
 }
 
 /**
