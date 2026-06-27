@@ -157,8 +157,8 @@ describe('ingest-agency-pdfs pipeline logic', () => {
   })
 
   describe('cost estimation', () => {
-    it('model uses Sonnet 4.5', () => {
-      expect(AGENCY_DEFAULT_MODEL).toBe('claude-sonnet-4-5-20250929')
+    it('model uses Sonnet 4.6', () => {
+      expect(AGENCY_DEFAULT_MODEL).toBe('claude-sonnet-4-6')
     })
 
     it('standard max tokens is 64000', () => {

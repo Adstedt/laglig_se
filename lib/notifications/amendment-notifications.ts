@@ -24,6 +24,8 @@ export function changeTypeToNotificationType(
       return NotificationType.LAW_REPEALED
     case ChangeType.NEW_RULING:
       return NotificationType.RULING_CITED
+    case ChangeType.UPCOMING_AMENDMENT:
+      return NotificationType.AMENDMENT_REMINDER
     case ChangeType.NEW_LAW:
       return null
     case ChangeType.METADATA_UPDATE:
@@ -53,6 +55,10 @@ export function notificationBodyForChangeType(
         : `Upphävd genom ${refStr}`
     case ChangeType.NEW_RULING:
       return snippet || 'Nytt avgörande'
+    case ChangeType.UPCOMING_AMENDMENT:
+      return snippet
+        ? `Kommande ändring genom ${refStr}. ${snippet}`
+        : `Kommande ändring genom ${refStr}`
     default:
       return snippet || 'Uppdaterad'
   }

@@ -39,9 +39,8 @@ export function HeroV3() {
 
           <div className="mb-10 flex animate-fade-up-delay-2 flex-col items-start gap-6 lg:flex-row lg:items-end lg:justify-between">
             <p className="max-w-xl text-lg text-muted-foreground md:text-xl">
-              Laglig samlar alla regler som gäller just er verksamhet, håller
-              dem aktuella när lagarna ändras, och hjälper er bevisa att ni
-              följer dem — utan att ni behöver vara experter.
+              Laglig hjälper svenska företag, myndigheter och organisationer att
+              hålla koll på reglerna — så att ni kan fokusera på affärerna.
             </p>
             <OrgCheckForm
               eyebrow="Vilka regler gäller er? · 30 sek"

@@ -3,7 +3,7 @@
 ## Epic Overview
 
 **Epic ID:** Epic 9
-**Status:** Done (original seed-template scope) · **Extended 2026-06-15** — Phase 5 adds Socialstyrelsen (SOSFS/HSLF-FS), see Story 9.5
+**Status:** Done (original seed-template scope) · **Extended 2026-06-15** — Phase 5 adds Socialstyrelsen (SOSFS/HSLF-FS, Stories 9.5/9.6) · **Extended 2026-06-25** — Phase 6 adds Skolverket (SKOLFS, Stories 9.7/9.8)
 **Priority:** High — Beta blocker
 **Business Owner:** Product Team
 **Technical Lead:** Development Team
@@ -236,7 +236,13 @@ The epic's stories should be restructured to prioritize the seed template docume
 
 **Phase 5: Socialstyrelsen (SOSFS / HSLF-FS) — added 2026-06-15**
 
-- **Story 9.5** (Draft): Ingest Socialstyrelsen's consolidated föreskrifter (legacy SOSFS + shared HSLF-FS) as `AGENCY_REGULATION` rows via an **HTML-intake** front-end — the consolidated text lives only in HTML, not PDF, so this is distinct from the AFS/MSBFS PDF path, but reuses the same normalize → chunk → embed → linkify tail. Adds `regulatory_body`/`agency_prefix` columns + per-document publisher attribution (HSLF-FS is a shared multi-agency series). Amendment metadata captured; forward amendment monitoring is a separate follow-up; per-version historik deferred. Closes the vård-omsorg catalog gap (e.g. `SOSFS 2011:9`). Proven end-to-end on SOSFS 2011:9 (`scripts/test-ingest-sosfs.ts`). See `docs/stories/9.5.socialstyrelsen-hslf-fs-ingestion.md`.
+- **Story 9.5** (Done — 2026-06-16, QA gate PASS, 76/76 ingested): Ingest Socialstyrelsen's consolidated föreskrifter (legacy SOSFS + shared HSLF-FS) as `AGENCY_REGULATION` rows via an **HTML-intake** front-end — the consolidated text lives only in HTML, not PDF, so this is distinct from the AFS/MSBFS PDF path, but reuses the same normalize → chunk → embed → linkify tail. Adds `regulatory_body`/`agency_prefix` columns + per-document publisher attribution (HSLF-FS is a shared multi-agency series). Amendment metadata captured; forward amendment monitoring is a separate follow-up; per-version historik deferred. Closes the vård-omsorg catalog gap (e.g. `SOSFS 2011:9`). See `docs/stories/completed/9.5.socialstyrelsen-hslf-fs-ingestion.md`.
+- **Story 9.6** (Draft): Forward amendment monitoring for the Socialstyrelsen föreskrifter (Phase 2 of 9.5) — a Socialstyrelsen-specific change detector that emits source-agnostic `ChangeEvent`s into the existing notify/assess pipeline. See `docs/stories/9.6.socialstyrelsen-amendment-monitoring.md`.
+
+**Phase 6: Skolverket (SKOLFS) — added 2026-06-25**
+
+- **Story 9.7** (Draft): Ingest Skolverket's **gällande** SKOLFS författningar (~1,400 in-force grundförfattningar + their published consolidated versions) as `AGENCY_REGULATION` rows. Discovery uses the **public SKOLFS JSON API** (`skolfs.skolverket.se/api` — no headless scrape needed, unlike SFS/Socialstyrelsen); content is **PDF-only**, so it reuses the AFS/MSBFS **PDF intake** front-half + the 9.5 chunk/embed/FTS tail. Corpus rule: `validity == VALID` AND `documentType ∈ {GRUNDFORFATTNING, ALLMANNA_RAD_OVRIGT}`, prefer-consolidated-else-base (excludes EXPIRED/superseded, amendment acts, and not-yet-in-force docs). SKOLFS is a **joint författningssamling** → per-document issuer attribution from the API `issuedBy` (Skolverket / Regeringen / Skolinspektionen / SPSM). Includes a mandatory 5-doc e2e test checkpoint before the full run. Closes the largest catalog gap for the **kommun** segment (läroplaner, kurs-/ämnesplaner, betygskriterier, statsbidrag, behörighet). See `docs/stories/9.7.skolverket-skolfs-ingestion.md`.
+- **Story 9.8** (Draft): Forward amendment monitoring for SKOLFS (Phase 2 of 9.7) — a daily detector cron that state-diffs the SKOLFS API to emit `ChangeEvent`s for four signals (NEW_LAW / AMENDMENT / REPEAL / **UPCOMING** kommande-ändring), reusing the source-agnostic notify/assess stack. Easier than SFS/Socialstyrelsen because the API exposes the amendment graph + `validity` flips directly. See `docs/stories/9.8.skolverket-skolfs-amendment-monitoring.md`.
 
 ### Future Scope (Post-Beta)
 
@@ -267,5 +273,5 @@ Analysis files: `data/notisum-amnesfokus/analysis/01-arbetsmiljo.md`, `data/noti
 ---
 
 _Epic created: 2024-01-15_
-_Last updated: 2026-06-15_
-_Status: Done (seed-template scope); extended with Phase 5 (Socialstyrelsen) — Story 9.5 in Draft_
+_Last updated: 2026-06-25_
+_Status: Done (seed-template scope); Phase 5 (Socialstyrelsen) — Story 9.5 Done, 9.6 Draft; Phase 6 (Skolverket SKOLFS) — Stories 9.7/9.8 Draft_

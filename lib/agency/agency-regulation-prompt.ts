@@ -288,7 +288,10 @@ export const AGENCY_MAX_TOKENS = {
 } as const
 
 /**
- * Default model for agency PDF ingestion.
- * Sonnet 4.5 is cost-effective for bulk processing.
+ * Default model for agency PDF/HTML ingestion (shared by all agency ingesters:
+ * AFS, MSBFS/NFS, Socialstyrelsen, Skolverket). Sonnet 4.6 is the current
+ * cost-effective model with strong Swedish legal terminology; the ingestion
+ * call passes only model/max_tokens/system/messages, so this is a clean drop-in
+ * from 4.5 (no budget_tokens / sampling params to migrate). [Story 9.7]
  */
-export const AGENCY_DEFAULT_MODEL = 'claude-sonnet-4-5-20250929'
+export const AGENCY_DEFAULT_MODEL = 'claude-sonnet-4-6'

@@ -62,6 +62,17 @@ const MIN_CHUNK_CHARS = 20
 const NON_PARA_MERGE_TARGET_TOKENS = 800
 const NON_PARA_CAP_TOKENS = 1000
 
+// Story 9.7 — prose fallback tuning.
+// Coverage guard: if the structured (§) chunks capture less than this fraction
+// of the document's tokens, the canonical parser under-structured a prose doc
+// (e.g. SKOLFS curricula/ämnesplaner parsed as 1–2 trivial §) and the body
+// would never be embedded — fall back to full-text prose chunking.
+const COVERAGE_MIN_RATIO = 0.6
+// Light overlap between adjacent prose chunks for cross-referential continuity
+// (curricula reference text a paragraph up). Applied ONLY on the markdown/prose
+// path — §-chunks stay overlap-free (self-contained, precise anchors).
+const PROSE_OVERLAP_TOKENS = 60
+
 // SFS transition provision boundary pattern: "YYYY:NNN" at start of line
 const SFS_TRANSITION_BOUNDARY = /^(\d{4}:\d{1,4})\b/m
 
@@ -356,6 +367,34 @@ export function chunkDocument(input: ChunkDocumentInput): ChunkInput[] {
     }
   }
 
+  // Coverage guard (Story 9.7): if the structured chunks capture only a sliver
+  // of the document — prose docs (curricula/ämnesplaner) the canonical parser
+  // under-structured as 1–2 trivial § — the body never gets embedded. Fall back
+  // to full-text prose chunking, which guarantees ~100% coverage.
+  const coverageText =
+    markdownContent?.trim() ||
+    (htmlContent ? htmlToPlainText(htmlContent).trim() : '')
+  const docTokens = coverageText ? estimateTokenCount(coverageText) : 0
+  const chunkedTokens = chunks.reduce((s, c) => s + c.token_count, 0)
+  if (docTokens > 0 && chunkedTokens / docTokens < COVERAGE_MIN_RATIO) {
+    const fallback = chunkFromMarkdown(
+      documentId,
+      title,
+      documentNumber,
+      contentType,
+      slug,
+      markdownContent,
+      htmlContent
+    )
+    const fbTokens = fallback.reduce((s, c) => s + c.token_count, 0)
+    // Only switch if the prose path genuinely covers more (never regress a
+    // legitimately short doc whose single § already is the whole text).
+    if (fbTokens > chunkedTokens) {
+      deduplicatePaths(fallback)
+      return fallback
+    }
+  }
+
   // Fix 2: Deduplicate paths — append .v2, .v3 for duplicates
   deduplicatePaths(chunks)
 
@@ -603,52 +642,69 @@ function chunkFromMarkdown(
   const rawParagraphs = text.split(/\n\n+/)
   const merged = mergeParagraphs(rawParagraphs)
 
-  const chunks: ChunkInput[] = []
-  let chunkIndex = 1
-
+  // Flatten to the final ordered block list (splitting oversized blocks at
+  // sentence boundaries) before applying overlap.
+  const blocks: string[] = []
   for (const block of merged) {
     const trimmed = block.trim()
     if (trimmed.length < MIN_CHUNK_CHARS) continue
-
-    const tokens = estimateTokenCount(trimmed)
-    const chunkMeta =
-      Object.keys(mdBaseMeta).length > 0 ? { ...mdBaseMeta } : null
-    if (tokens > CAP_THRESHOLD_TOKENS) {
-      // Split oversized block
-      const subBlocks = splitOversized(trimmed)
-      for (const sub of subBlocks) {
-        const subTrimmed = sub.trim()
-        if (subTrimmed.length < MIN_CHUNK_CHARS) continue
-        chunks.push({
-          source_type: 'LEGAL_DOCUMENT',
-          source_id: documentId,
-          workspace_id: null,
-          path: `md.chunk${chunkIndex}`,
-          contextual_header: header,
-          content: subTrimmed,
-          content_role: 'MARKDOWN_CHUNK',
-          token_count: estimateTokenCount(subTrimmed),
-          metadata: chunkMeta,
-        })
-        chunkIndex++
+    if (estimateTokenCount(trimmed) > CAP_THRESHOLD_TOKENS) {
+      for (const sub of splitOversized(trimmed)) {
+        const s = sub.trim()
+        if (s.length >= MIN_CHUNK_CHARS) blocks.push(s)
       }
     } else {
-      chunks.push({
-        source_type: 'LEGAL_DOCUMENT',
-        source_id: documentId,
-        workspace_id: null,
-        path: `md.chunk${chunkIndex}`,
-        contextual_header: header,
-        content: trimmed,
-        content_role: 'MARKDOWN_CHUNK',
-        token_count: estimateTokenCount(trimmed),
-        metadata: chunkMeta,
-      })
-      chunkIndex++
+      blocks.push(trimmed)
     }
   }
 
-  return chunks
+  // Light overlap for cross-referential continuity (prose path only).
+  const withOverlap = applyProseOverlap(blocks, PROSE_OVERLAP_TOKENS)
+  const chunkMeta = Object.keys(mdBaseMeta).length > 0 ? mdBaseMeta : null
+
+  return withOverlap.map((content, i) => ({
+    source_type: 'LEGAL_DOCUMENT' as const,
+    source_id: documentId,
+    workspace_id: null,
+    path: `md.chunk${i + 1}`,
+    contextual_header: header,
+    content,
+    content_role: 'MARKDOWN_CHUNK' as const,
+    token_count: estimateTokenCount(content),
+    metadata: chunkMeta ? { ...chunkMeta } : null,
+  }))
+}
+
+/** Prepend a short tail of the previous block to each block (prose path only). */
+function applyProseOverlap(blocks: string[], overlapTokens: number): string[] {
+  if (blocks.length <= 1 || overlapTokens <= 0) return blocks
+  const out: string[] = [blocks[0]!]
+  for (let i = 1; i < blocks.length; i++) {
+    const cur = blocks[i]!
+    // Headings mark a section boundary — start fresh, no carried-over overlap.
+    if (/^#{1,6}\s/.test(cur)) {
+      out.push(cur)
+      continue
+    }
+    const tail = takeTailSentences(blocks[i - 1]!, overlapTokens)
+    out.push(tail ? `${tail}\n\n${cur}` : cur)
+  }
+  return out
+}
+
+/** Take the trailing sentence(s) of `text`, accumulating up to ~overlapTokens. */
+function takeTailSentences(text: string, overlapTokens: number): string {
+  const sentences = text.split(/(?<=\.\s)(?=[A-ZÅÄÖ])/)
+  const acc: string[] = []
+  let toks = 0
+  for (let i = sentences.length - 1; i >= 0; i--) {
+    const s = sentences[i]!.trim()
+    if (!s) continue
+    acc.unshift(s)
+    toks += estimateTokenCount(s)
+    if (toks >= overlapTokens) break
+  }
+  return acc.join(' ').trim()
 }
 
 /** Merge small adjacent paragraphs until reaching the target token count */

@@ -53,6 +53,7 @@ const CHANGE_TYPE_LABELS: Record<ChangeType, string> = {
   NEW_LAW: 'Ny lag',
   METADATA_UPDATE: 'Metadata',
   NEW_RULING: 'Nytt avgörande',
+  UPCOMING_AMENDMENT: 'Kommande ändring',
 }
 
 // Inlined from lib/utils/effective-date.ts to avoid Prisma client import in browser

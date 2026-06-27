@@ -3,6 +3,10 @@ import {
   parseAgencyPrefix,
   regulatoryBodyForPrefix,
   deriveAgencyAttribution,
+  isJointForfattningssamling,
+  resolveRegulatoryBody,
+  REGULATORY_BODY_MAP,
+  JOINT_FORFATTNINGSSAMLINGAR,
 } from '@/lib/agency/regulatory-bodies'
 
 describe('parseAgencyPrefix', () => {
@@ -69,5 +73,59 @@ describe('deriveAgencyAttribution', () => {
       agencyPrefix: null,
       regulatoryBody: null,
     })
+  })
+})
+
+describe('SKOLFS joint-samling guard [Story 9.7]', () => {
+  it('SKOLFS is registered as a joint författningssamling', () => {
+    expect(JOINT_FORFATTNINGSSAMLINGAR.has('SKOLFS')).toBe(true)
+    expect(isJointForfattningssamling('SKOLFS')).toBe(true)
+    expect(isJointForfattningssamling('skolfs')).toBe(true)
+  })
+
+  it('SKOLFS is NOT mapped to a single body in REGULATORY_BODY_MAP', () => {
+    // Guard against a future contributor "fixing" SKOLFS into a single mapping.
+    expect(REGULATORY_BODY_MAP['SKOLFS']).toBeUndefined()
+  })
+
+  it('single-publisher prefixes are not joint', () => {
+    expect(isJointForfattningssamling('AFS')).toBe(false)
+    expect(isJointForfattningssamling('SOSFS')).toBe(false)
+    expect(isJointForfattningssamling(null)).toBe(false)
+  })
+})
+
+describe('resolveRegulatoryBody', () => {
+  it('uses per-document issuedBy for joint SKOLFS docs (prefix map NOT consulted)', () => {
+    expect(resolveRegulatoryBody('SKOLFS 2011:144', 'Regeringen')).toBe(
+      'Regeringen'
+    )
+    expect(resolveRegulatoryBody('SKOLFS 2012:101', 'Skolverket')).toBe(
+      'Skolverket'
+    )
+    expect(
+      resolveRegulatoryBody(
+        'SKOLFS 2015:1',
+        'Specialpedagogiska skolmyndigheten'
+      )
+    ).toBe('Specialpedagogiska skolmyndigheten')
+  })
+
+  it('returns null for a joint doc with no issuedBy (never guesses)', () => {
+    expect(resolveRegulatoryBody('SKOLFS 2011:144', null)).toBeNull()
+    expect(resolveRegulatoryBody('SKOLFS 2011:144', '  ')).toBeNull()
+    expect(resolveRegulatoryBody('SKOLFS 2011:144')).toBeNull()
+  })
+
+  it('falls back to the prefix map for single-publisher prefixes', () => {
+    // issuedBy is ignored for non-joint prefixes — the prefix is authoritative.
+    expect(resolveRegulatoryBody('SOSFS 2011:9', 'someone else')).toBe(
+      'Socialstyrelsen'
+    )
+    expect(resolveRegulatoryBody('AFS 2023:1')).toBe('Arbetsmiljöverket')
+  })
+
+  it('returns null for unknown single-publisher prefixes', () => {
+    expect(resolveRegulatoryBody('XYZ 2020:1')).toBeNull()
   })
 })

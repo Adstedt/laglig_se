@@ -698,6 +698,7 @@ enum ChangeType {
   REPEAL
   METADATA_UPDATE
   NEW_RULING
+  UPCOMING_AMENDMENT // Story 9.8 — kommande SKOLFS-ändring (announced, not yet effective)
 }
 
 // ============================================================================

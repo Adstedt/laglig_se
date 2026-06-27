@@ -120,6 +120,7 @@ const CHANGE_TYPE_LABELS: Record<ChangeType, string> = {
   REPEAL: 'Upphävande',
   METADATA_UPDATE: 'Metadata',
   NEW_RULING: 'Nytt avgörande',
+  UPCOMING_AMENDMENT: 'Kommande ändring',
 }
 
 export function changeTypeLabel(

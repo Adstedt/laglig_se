@@ -106,3 +106,7 @@ package-lock.json
 public/sitemap-index.xml
 public/sitemaps/
 .shots/
+
+# SKOLFS ingestion (Story 9.7) — binary PDF cache + transient batch state
+data/skolfs-pdfs/
+data/skolverket-batch-state.json

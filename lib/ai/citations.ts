@@ -8,6 +8,12 @@
  *      entry using chapter/section path parsing.
  */
 
+import {
+  parseAgencyPrefix,
+  regulatoryBodyForPrefix,
+  isJointForfattningssamling,
+} from '@/lib/agency/regulatory-bodies'
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -646,32 +652,33 @@ function parseTitle(contextualHeader: string): string {
 // Document browse path — infer route from document number
 // ---------------------------------------------------------------------------
 
-/** Agency regulation prefixes that use /browse/foreskrifter/ */
-const AGENCY_PREFIXES = [
-  'AFS',
-  'BFS',
-  'NFS',
-  'HSLF-FS',
-  'KIFS',
-  'LVFS',
-  'MSBFS',
-  'SJVFS',
-  'SKVFS',
-  'SOSFS',
-  'TSFS',
-  'FFS',
-  'ELSÄK-FS',
-]
+/**
+ * Supplementary agency prefixes NOT in the canonical REGULATORY_BODY_MAP
+ * (e.g. LVFS/FFS). The map + JOINT_FORFATTNINGSSAMLINGAR (which includes
+ * SKOLFS) is the primary source — see getDocBrowsePath. Keep this list minimal.
+ */
+const EXTRA_AGENCY_PREFIXES = ['LVFS', 'FFS']
 
 /**
  * Returns the browse base path for a document based on its document number.
- * - Agency regulations (AFS, BFS, etc.) → /browse/foreskrifter
+ * - Agency regulations (any författningssamling prefix, incl. joint samlingar
+ *   like SKOLFS) → /browse/foreskrifter
  * - EU documents → /browse/eu
  * - Everything else (SFS) → /browse/lagar
+ *
+ * Routes from the canonical regulatory-bodies prefix map so it can't drift out
+ * of sync with the catalog (the previous hardcoded list silently mis-routed
+ * SKOLFS and other agencies to /browse/lagar). [Story 9.7]
  */
 export function getDocBrowsePath(documentNumber: string): string {
   const upper = documentNumber.toUpperCase()
-  if (AGENCY_PREFIXES.some((p) => upper.startsWith(p))) {
+  const prefix = parseAgencyPrefix(documentNumber)
+  const isAgency =
+    (prefix != null &&
+      (regulatoryBodyForPrefix(prefix) != null ||
+        isJointForfattningssamling(prefix))) ||
+    EXTRA_AGENCY_PREFIXES.some((p) => upper.startsWith(p))
+  if (isAgency) {
     return '/browse/foreskrifter'
   }
   if (upper.startsWith('EU ') || upper.startsWith('CELEX')) {

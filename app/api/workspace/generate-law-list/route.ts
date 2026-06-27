@@ -13,10 +13,10 @@
  * and prevented the tutorial-while-waiting UX from ever rendering.
  *
  * Background-job lifetime: `after()` keeps the serverless function alive
- * until the callback completes or maxDuration (300s) hits, regardless of
- * whether the client disconnects. Same risk profile as the previous
- * synchronous version (LLM > 5 min still leaves status stuck on
- * 'in_progress'); no infra change.
+ * until the callback completes or maxDuration (600s, see below) hits,
+ * regardless of whether the client disconnects. If the LLM job still overruns
+ * the cap, status stays stuck on 'in_progress' until the `generation-status`
+ * route's stale-recovery flips it to 'failed'.
  */
 
 import { NextResponse, after } from 'next/server'
@@ -26,7 +26,11 @@ import { getWorkspaceContext } from '@/lib/auth/workspace-context'
 import { prisma } from '@/lib/prisma'
 import { generateLawList } from '@/lib/agent/skills/generate-law-list'
 
-export const maxDuration = 300
+// Fluid Compute (Pro) allows up to 800s. The generation job runs in `after()`
+// using Opus 4.8 + high adaptive thinking, which has been observed at ~354s and
+// will grow as the corpus and list lengths grow — 600s gives real headroom over
+// the previous 300s cap (which silently killed runs mid-flight in prod).
+export const maxDuration = 600
 
 export async function POST() {
   try {
@@ -105,6 +109,9 @@ export async function POST() {
             outputTokens: result.tokensUsed.output,
             cacheReadInputTokens: result.tokensUsed.cacheRead,
             cacheWriteInputTokens: result.tokensUsed.cacheWrite,
+            generationSteps: result.steps.generation,
+            auditSteps: result.steps.audit,
+            auditPasses: result.steps.auditPasses,
             durationMs: result.durationMs,
           })
           Sentry.captureMessage('Law list generation completed', 'info')

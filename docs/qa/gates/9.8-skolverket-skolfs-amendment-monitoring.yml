@@ -1,0 +1,117 @@
+schema: 1
+story: '9.8'
+story_title: 'Skolverket (SKOLFS) Amendment Monitoring (Phase 2)'
+gate: PASS
+status_reason: 'All findings resolved. Both mediums (TEST-001 chain-consistency, TEST-002 end-to-end notify) + TEST-003 closed with substantive, independently-verified tests (76/76 across 5 suites, typecheck + lint clean). BUILD-001 closed — owner confirmed pnpm build is green, satisfying AC10. Core implementation is well-architected and live-verified (45 UPCOMING events, idempotent, notify-query pickup + enriched ai_summary). Remaining notes are accepted-low (ARCH-001 AC4 deviation, OPS-001) or monitoring (MON-001 first real-world amendment).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-27T23:20:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'ARCH-001'
+    severity: low
+    finding: 'AC-4 deviation (documented + accepted): the in-cron AMENDMENT emit is NOT hash-gated. computeContentHash hashes post-Claude HTML so it cannot gate Claude pre-normalize; the guard was moved to the out-of-band re-ingest (Option 2). A spurious API ANDRINGSFORFATTNING signal would therefore emit a ChangeEvent + notification before any text-change confirmation.'
+    suggested_action: 'Accept — Skolverket only publishes an ANDRINGSFORFATTNING for a real change, and the re-ingest hash guard suppresses redundant writes. Revisit only if false amendment notifications are observed.'
+    suggested_owner: dev
+
+  - id: 'OPS-001'
+    severity: low
+    finding: 'The live first-run was committed via the runner script (run-skolfs-detector-once.ts --commit), which does NOT log a SUCCESS CronJobRun. The real Vercel cron will therefore recompute firstRun=true on its first execution and re-process the 45 UPCOMING amendments (all deduped → 0 created, 45 dup). Harmless but a wasteful first cron run (45 enrichment fetches for already-existing events).'
+    suggested_action: 'Optional: have the runner script log a CronJobRun, or accept the one-time wasted first cron run. Also confirm CRON_SECRET is set in prod (the auth guard is bypassed when the env var is unset — same pattern as discover-sfs-amendments).'
+    suggested_owner: dev
+
+resolved_issues:
+  - id: 'TEST-001'
+    resolution: 'RESOLVED (re-review). Added 3 cross-module chain-consistency tests (skolfs-change-detection.test.ts:375-408) that drive the REAL buildCurrentSnapshots projection against a 9.7-style baseline: (a) matching chains → zero signals (no false AMENDMENT), (b) a genuinely new VALID amendment in the statute → AMENDMENT(2026:99) [positive control], (c) VALID→EXPIRED → REPEAL. The AMENDMENT positive path is now automated. Residual (low, MON-001): a real-world Skolverket amendment still hasn’t been observed in production — monitoring item, not a code gap.'
+  - id: 'TEST-002'
+    resolution: 'RESOLVED (re-review). Added 5 tests (amendment-notifications.test.ts) incl. an end-to-end assertion that an AGENCY_REGULATION/UPCOMING_AMENDMENT ChangeEvent flows through createChangeNotifications → AMENDMENT_REMINDER notification per recipient (3 recipients/2 workspaces), plus the amendment_reminder_enabled preference-gate path. Confirmed AMENDMENT_REMINDER is mapped in NOTIFICATION_TYPE_TO_PREFERENCE (user opt-out wired). Residual (low): a real-DB seed integration test remains nice-to-have; the mocked end-to-end + the live notify-query match cover the behavior.'
+  - id: 'TEST-003'
+    resolution: 'RESOLVED. Added skolfs-detector.test.ts (3 tests, mocked prisma + injected fetch): dry-run (commit=false) writes nothing (changeEvent.create + legalDocument.update not called), commit emits one enriched AMENDMENT, and idempotency yields a duplicate with no create.'
+  - id: 'BUILD-001'
+    resolution: 'RESOLVED. Owner confirmed pnpm build is green (AC10 satisfied). Combined with clean typecheck + lint + 76/76 unit tests, the no-regression bar is met.'
+  - id: 'VER-001'
+    resolution: 'Live first-run (owner-approved) against the real DB: dry-run preview matched 9.7 exactly (45 UPCOMING, 0 AMENDMENT/REPEAL, 2 silent NEW_LAW); commit wrote 45 events, 0 failed; re-run proved dedup (0 created / 45 dup). DB query confirmed all 45 are AGENCY_REGULATION/notification_sent=false and matched by the notify query, with enriched Swedish ai_summary.'
+  - id: 'MIG-001'
+    resolution: 'ChangeType.UPCOMING_AMENDMENT migration authored as hand-off and applied by the owner; enum fan-out across notify (NOTIFIABLE_CHANGE_TYPES + AMENDMENT_REMINDER) + 6 UI Record<ChangeType> maps + reader-utils, typecheck clean. Runtime consumers verified safe (generate-summaries excludes our events via ai_summary:null).'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Cron auth mirrors the SFS guard (CRON_SECRET + Bearer). Prisma parameterized queries, no injection surface. Caveat (OPS-001): guard is bypassed if CRON_SECRET is unset — ensure it is configured in prod.'
+  performance:
+    status: PASS
+    notes: 'One statute poll + per-candidate enrichment fetches bounded to signalled docs + timeout-buffer drain (idempotent across runs). Well within 300s.'
+  reliability:
+    status: PASS
+    notes: 'Per-signal fail-soft, idempotent dedup (AC 5, proven live), CronJobRun start/complete/fail logging, drain-over-runs. Strong.'
+  maintainability:
+    status: PASS
+    notes: 'Clean separation — pure classifier / projection / emitter / orchestration core; shared by route + runner; reuses the existing SFS crawler→enrich + notify/assess pipeline rather than forking it.'
+
+requirements_traceability:
+  - ac: 'AC1 (scheduled detector cron + auth + single poll)'
+    coverage: full
+    notes: 'Route + vercel.json 0 6 * * *; auth guard mirrors SFS; live poll verified (2557 bases).'
+  - ac: 'AC2 (four detection signals)'
+    coverage: full
+    notes: 'NEW_LAW/REPEAL/UPCOMING live-verified; AMENDMENT now automated via the cross-module positive-control test (TEST-001 resolved). Real-world AMENDMENT observation pending (MON-001, monitoring).'
+  - ac: 'AC2a (UPCOMING_AMENDMENT migration + notify)'
+    coverage: full
+    notes: 'Migration applied; added to NOTIFIABLE_CHANGE_TYPES; effective date carried in ai_summary.'
+  - ac: 'AC3 (pending via chain, not latestChangeBySkolfsNo)'
+    coverage: full
+    notes: 'upcomingOf() reads chain UPCOMING entries; 45 UPCOMING matched 9.7 baseline.'
+  - ac: 'AC4 (content-hash guard before re-ingest)'
+    coverage: partial
+    notes: 'Documented deviation (ARCH-001): guard at out-of-band re-ingest, not pre-emit.'
+  - ac: 'AC5 (dedup / idempotency)'
+    coverage: full
+    notes: 'Unit-tested + live-proven (0 created / 45 dup on re-run).'
+  - ac: 'AC6 (notify + assess reuse)'
+    coverage: full
+    notes: 'End-to-end notification creation now asserted (TEST-002 resolved): SKOLFS UPCOMING event → AMENDMENT_REMINDER per recipient + preference gate. Plus live notify-query pickup + enriched ai_summary. ChangeAssessment hangs off the same (unchanged, source-agnostic) path.'
+  - ac: 'AC7 (enrich decoupling — ai_summary in-detector)'
+    coverage: full
+    notes: 'emitSkolfsChangeEvent sets ai_summary; verified in DB sample.'
+  - ac: 'AC8 (re-ingest preserves attribution)'
+    coverage: full
+    notes: 'Ingester re-derives regulatory_body via resolveRegulatoryBody on --force upsert (out-of-band path).'
+  - ac: 'AC9 (Vercel runtime resilience)'
+    coverage: full
+    notes: 'maxDuration 300, timeout buffer, fail-soft, CronJobRun logging.'
+  - ac: 'AC10 (no regression)'
+    coverage: full
+    notes: 'lint clean (0 errors) + typecheck clean + SKOLFS/notify suites 76/76 + pnpm build green (owner-confirmed). 18 pre-existing unrelated failures (9.7 model-version + env integration) — not introduced by 9.8.'
+
+quality_score: 95
+
+expires: '2026-07-11T00:00:00Z'
+
+history:
+  - at: '2026-06-27T22:30:00Z'
+    gate: CONCERNS
+    note: 'Initial review. 32/32 SKOLFS unit tests + live first-run (45 UPCOMING). Mediums TEST-001 (AMENDMENT fixture-only), TEST-002 (notify record creation not asserted); lows TEST-003, BUILD-001, ARCH-001, OPS-001.'
+  - at: '2026-06-27T23:05:00Z'
+    gate: CONCERNS
+    note: 'Re-review after dev fixes. TEST-001/002/003 RESOLVED with substantive tests (76/76 across 5 suites, typecheck+lint clean). Independently verified the assertions are real (not hollow). Only BUILD-001 (low) remains — dev server still holds .next, pnpm build un-run. Gate → PASS on a green build. Score 80 → 88.'
+  - at: '2026-06-27T23:20:00Z'
+    gate: PASS
+    note: 'Owner confirmed pnpm build is green → BUILD-001 resolved, AC10 full. All findings closed; remaining items are accepted-low/monitoring. Score 88 → 95.'
+
+evidence:
+  tests_reviewed: 41
+  tests_added: 41
+  risks_identified: 6
+  risks_resolved: 3
+  live_verification: 'Guarded first-run committed 45 UPCOMING events; dedup + notify-query pickup + ai_summary enrichment confirmed via DB query.'
+
+recommendations:
+  immediate: []
+  future:
+    - 'MON-001: watch the first real-world Skolverket AMENDMENT land (CronJobRun + ChangeEvent) to confirm the positive path against live data.'
+    - 'TEST-002 (optional): add a real-DB seed integration test for notify+assess (mocked end-to-end already covers the behavior).'
+    - 'Backfill the 2 un-ingested corpus docs (SKOLFS 2004:1, 2005:1) via --force --filter.'
+    - 'TEST-003: mocked unit test for runSkolfsDetector (dry-run + commit/REPEAL paths).'
+    - 'BUILD-001: run pnpm build before merge.'
+    - 'Backfill the 2 un-ingested corpus docs (SKOLFS 2004:1, 2005:1) via --force --filter.'

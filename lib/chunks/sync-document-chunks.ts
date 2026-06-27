@@ -176,15 +176,20 @@ async function generateEmbeddingsForDocument(
     }
   }
 
-  // Phase 2: Generate embeddings in batches of 100
-  // Only embed chunks that received a context prefix — embedding without prefix
-  // produces a different vector than with prefix, so skip until prefix is available.
-  const chunksWithPrefix = chunks.filter((c) => prefixes.has(c.path))
+  // Phase 2: Generate embeddings in batches of 100.
+  // Embed EVERY chunk — a context prefix improves the vector, but a missing
+  // prefix must NOT leave the chunk unembedded and invisible to retrieval.
+  // Prefix generation can yield nothing on very large docs (e.g. the SKOLFS
+  // curricula: ~88K-token markdown context → empty Haiku prefix response);
+  // gating embeddings on prefixes there silently dropped the whole document
+  // from search. Prefixes remain best-effort; embeddings are guaranteed.
+  // [Story 9.7] Re-sync once prefix-gen is improved to upgrade the vectors.
   const BATCH_SIZE = 100
   let embedded = 0
+  const prefixed = chunks.filter((c) => prefixes.has(c.path)).length
 
-  for (let i = 0; i < chunksWithPrefix.length; i += BATCH_SIZE) {
-    const batch = chunksWithPrefix.slice(i, i + BATCH_SIZE)
+  for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
+    const batch = chunks.slice(i, i + BATCH_SIZE)
     const inputs = batch.map((c) => ({
       text: c.content,
       contextPrefix: prefixes.get(c.path) ?? '',
@@ -204,6 +209,12 @@ async function generateEmbeddingsForDocument(
     }
 
     embedded += batch.length
+  }
+
+  if (prefixed < chunks.length) {
+    console.warn(
+      `[sync-chunks] ${documentNumber}: ${prefixed}/${chunks.length} chunks got a context prefix; ${chunks.length - prefixed} embedded without one (prefix-gen shortfall — re-sync after prefix fix to upgrade)`
+    )
   }
 
   return embedded

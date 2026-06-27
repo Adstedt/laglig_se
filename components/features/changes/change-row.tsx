@@ -31,6 +31,7 @@ const CHANGE_TYPE_LABELS: Record<ChangeType, string> = {
   NEW_LAW: 'Ny lag',
   METADATA_UPDATE: 'Metadata',
   NEW_RULING: 'Nytt avgörande',
+  UPCOMING_AMENDMENT: 'Kommande ändring',
 }
 
 // ============================================================================
@@ -46,6 +47,7 @@ const CHANGE_TYPE_BADGE_VARIANT: Record<
   NEW_LAW: 'default',
   NEW_RULING: 'secondary',
   METADATA_UPDATE: 'secondary',
+  UPCOMING_AMENDMENT: 'outline',
 }
 
 const PRIORITY_LABELS: Record<ChangePriority, string> = {
