@@ -41,6 +41,9 @@ export interface SkolfsSnapshot {
   latestChangeBySkolfsNo: string | null
   /** the in-force effective date of the base/consolidation (for NEW_LAW dating) */
   effectiveDate?: string | null
+  /** base document type (GRUNDFORFATTNING | ALLMANNA_RAD_OVRIGT) — the per-doc
+   * metadata endpoint; classifier ignores it, the enrichment fetch needs it */
+  documentType?: string
   amendmentChain: SkolfsAmendmentRef[]
   /** UPCOMING subset of the chain; derived from `amendmentChain` when absent */
   upcoming?: SkolfsAmendmentRef[]
@@ -235,6 +238,32 @@ export function classifySkolfsDiff(
   }
 
   return signals
+}
+
+/**
+ * Fold per-candidate enrichment (the `change` string + effective date the cheap
+ * statute poll omits) into an AMENDMENT / UPCOMING_AMENDMENT signal, rebuilding
+ * the Swedish `ai_summary` text. No-op for NEW_LAW / REPEAL. Pure.
+ */
+export function enrichSignal(
+  signal: SkolfsSignal,
+  detail: { effectiveDate: string | null; change: string | null }
+): SkolfsSignal {
+  if (signal.kind !== 'AMENDMENT' && signal.kind !== 'UPCOMING_AMENDMENT') {
+    return signal
+  }
+  const effectiveDate = signal.effectiveDate ?? detail.effectiveDate
+  const changedSections = signal.changedSections ?? detail.change
+  const amend = signal.amendmentSkolfsNo
+  const reason =
+    signal.kind === 'AMENDMENT'
+      ? `${signal.documentNumber} ändrad genom ${amend}${
+          changedSections ? ` (${changedSections})` : ''
+        }${effectiveDate ? `, i kraft ${effectiveDate}` : ''}.`
+      : `Kommande ändring av ${signal.documentNumber} genom ${amend}${
+          effectiveDate ? ` träder i kraft ${effectiveDate}` : ''
+        }${changedSections ? ` (${changedSections})` : ''}.`
+  return { ...signal, effectiveDate, changedSections, reason }
 }
 
 /**

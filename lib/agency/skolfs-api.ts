@@ -102,9 +102,64 @@ export function buildCurrentSnapshots(
       isConsolidated: consolidatedBases.has(h.skolfsNumber),
       latestChangeBySkolfsNo: null, // not in the statute list; enriched if needed
       effectiveDate: null,
+      documentType: h.documentType,
       amendmentChain: chain,
       upcoming: chain.filter((a) => a.validity === 'UPCOMING'),
     })
   }
   return snapshots
+}
+
+// ---------------------------------------------------------------------------
+// Per-candidate enrichment (Task 2)
+// ---------------------------------------------------------------------------
+
+interface SkolfsDocMetaResponse {
+  issuedBy?: string | null
+  effectiveDate?: string | null
+  latestChangeBySkolfsNo?: string | null
+  relatedDocumentMetadata?: {
+    skolfsNumber: string
+    documentType: SkolfsDocumentType
+    validity: SkolfsValidity
+    effectiveDate?: string | null
+    change?: string | null
+  }[]
+}
+
+export interface SkolfsAmendmentDetail {
+  effectiveDate: string | null
+  change: string | null
+}
+
+/**
+ * Fetch a single base's metadata (`GET /api/document/{TYPE}/{nr}`) and index its
+ * amendment chain by SKOLFS number → `{ effectiveDate, change }`. Used to enrich
+ * the (few) signalled candidates with the `change` string + effective date the
+ * cheap statute poll omits. Returns an empty map on any fetch error (the signal
+ * still emits, just without the enriched section text).
+ */
+export async function fetchAmendmentDetails(
+  documentType: string,
+  baseSkolfsNumber: string,
+  fetchImpl: typeof fetch = fetch
+): Promise<Map<string, SkolfsAmendmentDetail>> {
+  const details = new Map<string, SkolfsAmendmentDetail>()
+  try {
+    const res = await fetchImpl(
+      `${SKOLFS_API}/document/${documentType}/${baseSkolfsNumber}`,
+      { headers: { 'User-Agent': USER_AGENT } }
+    )
+    if (!res.ok) return details
+    const json = (await res.json()) as SkolfsDocMetaResponse
+    for (const r of json.relatedDocumentMetadata ?? []) {
+      details.set(r.skolfsNumber, {
+        effectiveDate: r.effectiveDate ?? null,
+        change: r.change ?? null,
+      })
+    }
+  } catch {
+    // best-effort enrichment — leave details empty
+  }
+  return details
 }

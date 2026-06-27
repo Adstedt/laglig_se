@@ -113,6 +113,12 @@ describe('changeTypeToNotificationType', () => {
   it('returns null for METADATA_UPDATE', () => {
     expect(changeTypeToNotificationType(ChangeType.METADATA_UPDATE)).toBeNull()
   })
+
+  it('maps UPCOMING_AMENDMENT to AMENDMENT_REMINDER (Story 9.8)', () => {
+    expect(changeTypeToNotificationType(ChangeType.UPCOMING_AMENDMENT)).toBe(
+      NotificationType.AMENDMENT_REMINDER
+    )
+  })
 })
 
 describe('notificationBodyForChangeType', () => {
@@ -178,6 +184,28 @@ describe('notificationBodyForChangeType', () => {
       longSummary
     )
     expect(body).toBe(`Ändrad genom SFS 2026:1. ${'A'.repeat(150)}`)
+  })
+
+  it('builds UPCOMING_AMENDMENT body with ref and summary (Story 9.8)', () => {
+    expect(
+      notificationBodyForChangeType(
+        ChangeType.UPCOMING_AMENDMENT,
+        'SKOLFS 2024:617',
+        'Träder i kraft 2027-07-01 (upph. 8 §)'
+      )
+    ).toBe(
+      'Kommande ändring genom SKOLFS 2024:617. Träder i kraft 2027-07-01 (upph. 8 §)'
+    )
+  })
+
+  it('builds UPCOMING_AMENDMENT body with ref only when no summary', () => {
+    expect(
+      notificationBodyForChangeType(
+        ChangeType.UPCOMING_AMENDMENT,
+        'SKOLFS 2024:617',
+        null
+      )
+    ).toBe('Kommande ändring genom SKOLFS 2024:617')
   })
 })
 
@@ -250,6 +278,61 @@ describe('createChangeNotifications', () => {
     for (const call of createCalls) {
       expect(call[0].data.title).toBe('Arbetsmiljölagen (1977:1160)')
     }
+  })
+
+  it('creates AMENDMENT_REMINDER notifications for a SKOLFS UPCOMING_AMENDMENT event (Story 9.8 — notify reuse)', async () => {
+    // Proves an AGENCY_REGULATION / UPCOMING_AMENDMENT ChangeEvent flows through
+    // the source-agnostic notification pipeline end-to-end (AC6).
+    vi.mocked(prisma.changeEvent.findUnique).mockResolvedValue({
+      id: CHANGE_EVENT_ID,
+      document_id: DOCUMENT_ID,
+      content_type: 'AGENCY_REGULATION',
+      change_type: 'UPCOMING_AMENDMENT',
+      amendment_sfs: 'SKOLFS 2024:617',
+      ai_summary:
+        'Kommande ändring av SKOLFS 2024:616 genom 2024:617 träder i kraft 2027-07-01 (upph. 8 §).',
+      notification_sent: false,
+      detected_at: new Date(),
+      document: {
+        id: DOCUMENT_ID,
+        title: 'Skolverkets föreskrifter om digitala nationella prov',
+      },
+    } as never)
+
+    const stats = await createChangeNotifications(CHANGE_EVENT_ID)
+
+    expect(stats.notificationsCreated).toBe(3)
+    expect(stats.workspacesAffected).toBe(2)
+    expect(prisma.notification.create).toHaveBeenCalledTimes(3)
+    expect(prisma.notification.create).toHaveBeenCalledWith({
+      data: {
+        user_id: 'user-1',
+        workspace_id: 'ws-1',
+        type: NotificationType.AMENDMENT_REMINDER,
+        title: 'Skolverkets föreskrifter om digitala nationella prov',
+        body: expect.stringContaining('Kommande ändring genom SKOLFS 2024:617'),
+        entity_type: 'change_event',
+        entity_id: CHANGE_EVENT_ID,
+      },
+    })
+  })
+
+  it('respects amendment_reminder_enabled = false for UPCOMING_AMENDMENT (Story 9.8)', async () => {
+    vi.mocked(prisma.changeEvent.findUnique).mockResolvedValue({
+      ...mockChangeEvent,
+      content_type: 'AGENCY_REGULATION',
+      change_type: 'UPCOMING_AMENDMENT',
+      amendment_sfs: 'SKOLFS 2024:617',
+    } as never)
+    vi.mocked(prisma.notificationPreference.findUnique)
+      .mockResolvedValueOnce({ amendment_reminder_enabled: false } as never)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null)
+
+    const stats = await createChangeNotifications(CHANGE_EVENT_ID)
+
+    expect(stats.skippedByPreference).toBe(1)
+    expect(stats.notificationsCreated).toBe(2)
   })
 
   it('includes amendment_sfs and ai_summary snippet in body', async () => {

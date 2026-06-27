@@ -217,6 +217,7 @@ export async function GET(request: Request) {
       ChangeType.AMENDMENT,
       ChangeType.REPEAL,
       ChangeType.NEW_RULING,
+      ChangeType.UPCOMING_AMENDMENT, // Story 9.8 — kommande SKOLFS-ändring notifies
     ]
 
     const changeEvents = await prisma.changeEvent.findMany({

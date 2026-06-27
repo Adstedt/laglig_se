@@ -2,9 +2,15 @@ import { describe, it, expect } from 'vitest'
 import {
   classifySkolfsDiff,
   snapshotFromBaselineMetadata,
+  enrichSignal,
   type SkolfsSnapshot,
   type SkolfsAmendmentRef,
+  type SkolfsSignal,
 } from '@/lib/agency/skolfs-change-detection'
+import {
+  buildCurrentSnapshots,
+  type SkolfsStatuteHit,
+} from '@/lib/agency/skolfs-api'
 
 // --- fixture helpers ---------------------------------------------------------
 
@@ -247,6 +253,183 @@ describe('classifySkolfsDiff — stable across repeated runs', () => {
     expect(run1).toEqual(run2)
     expect(run1).toHaveLength(1)
     expect(run1[0]!.amendmentSkolfsNo).toBe('2025:449')
+  })
+})
+
+// --- enrichSignal ------------------------------------------------------------
+
+describe('enrichSignal', () => {
+  const amendmentSignal: SkolfsSignal = {
+    kind: 'AMENDMENT',
+    documentNumber: 'SKOLFS 2024:616',
+    amendmentSkolfsNo: '2025:449',
+    effectiveDate: null,
+    changedSections: null,
+    reason: 'SKOLFS 2024:616 ändrad genom 2025:449.',
+  }
+
+  it('folds in change + effectiveDate and rebuilds the Swedish ai_summary', () => {
+    const out = enrichSignal(amendmentSignal, {
+      effectiveDate: '2025-11-10',
+      change: 'ändr. 14 §',
+    })
+    expect(out.effectiveDate).toBe('2025-11-10')
+    expect(out.changedSections).toBe('ändr. 14 §')
+    expect(out.reason).toBe(
+      'SKOLFS 2024:616 ändrad genom 2025:449 (ändr. 14 §), i kraft 2025-11-10.'
+    )
+  })
+
+  it('rebuilds the kommande-ändring summary for UPCOMING_AMENDMENT', () => {
+    const out = enrichSignal(
+      { ...amendmentSignal, kind: 'UPCOMING_AMENDMENT' },
+      { effectiveDate: '2026-07-01', change: 'upph. 8 §' }
+    )
+    expect(out.reason).toBe(
+      'Kommande ändring av SKOLFS 2024:616 genom 2025:449 träder i kraft 2026-07-01 (upph. 8 §).'
+    )
+  })
+
+  it('is a no-op for NEW_LAW / REPEAL', () => {
+    const repeal: SkolfsSignal = {
+      kind: 'REPEAL',
+      documentNumber: 'SKOLFS 1999:1',
+      amendmentSkolfsNo: null,
+      effectiveDate: null,
+      changedSections: null,
+      reason: 'SKOLFS 1999:1 har upphävts.',
+    }
+    expect(
+      enrichSignal(repeal, { effectiveDate: '2026-01-01', change: 'x' })
+    ).toBe(repeal)
+  })
+
+  it('does not overwrite a value the signal already carries', () => {
+    const out = enrichSignal(
+      { ...amendmentSignal, changedSections: 'ändr. 2 §' },
+      { effectiveDate: '2025-11-10', change: 'WRONG' }
+    )
+    expect(out.changedSections).toBe('ändr. 2 §')
+  })
+})
+
+// --- baseline ↔ statute-projection chain consistency (QA TEST-001) -----------
+//
+// The AMENDMENT detector assumes the 9.7 baseline `amendmentChain` (from
+// `metadata.skolfs`) and the live statute-poll projection use a CONSISTENT set
+// of SKOLFS numbers. A drift would miss a real amendment or fire a false one.
+// These tests pin that contract across the two real modules (no false positive
+// on an unchanged base; correct positive when a genuinely new amendment lands).
+
+describe('baseline ↔ statute-projection chain consistency', () => {
+  // Modelled on the real registry entry SKOLFS 2010:32 (consolidated, 2 valid
+  // amendments) — see data/skolverket-foreskrifter-registry.json.
+  const baseNr = '2010:32'
+  const statuteHits = (
+    extraAmendments: SkolfsStatuteHit[] = []
+  ): SkolfsStatuteHit[] => [
+    {
+      skolfsNumber: baseNr,
+      baseSkolfsNumber: baseNr,
+      statuteTitle: 'Riksidrottsgymnasium',
+      documentType: 'GRUNDFORFATTNING',
+      validity: 'VALID',
+    },
+    {
+      skolfsNumber: baseNr,
+      baseSkolfsNumber: baseNr,
+      statuteTitle: 'Riksidrottsgymnasium (konsoliderad)',
+      documentType: 'SENASTE_LYDELSE',
+      validity: 'VALID',
+    },
+    {
+      skolfsNumber: '2019:21',
+      baseSkolfsNumber: baseNr,
+      statuteTitle: 'ändr.',
+      documentType: 'ANDRINGSFORFATTNING',
+      validity: 'VALID',
+    },
+    {
+      skolfsNumber: '2011:194',
+      baseSkolfsNumber: baseNr,
+      statuteTitle: 'ändr.',
+      documentType: 'ANDRINGSFORFATTNING',
+      validity: 'VALID',
+    },
+    ...extraAmendments,
+  ]
+
+  // The 9.7 baseline metadata for the same base (captured at ingest).
+  const baselineMeta = {
+    effectiveDate: '2010-06-24',
+    skolfs: {
+      validity: 'VALID',
+      isConsolidated: true,
+      latestChangeBySkolfsNo: '2019:21',
+      amendmentChain: [
+        {
+          skolfsNumber: '2019:21',
+          validity: 'VALID',
+          effectiveDate: '2019-08-01',
+          change: 'ändr. 3, 4 §§',
+        },
+        {
+          skolfsNumber: '2011:194',
+          validity: 'VALID',
+          effectiveDate: '2012-01-30',
+          change: 'upph. 4, 5 §§',
+        },
+      ],
+      upcoming: [],
+    },
+  }
+
+  it('no false AMENDMENT when the projected chain matches the baseline chain', () => {
+    const baseline = snapshotFromBaselineMetadata(
+      `SKOLFS ${baseNr}`,
+      baselineMeta
+    )
+    const current = buildCurrentSnapshots(statuteHits()).get(`SKOLFS ${baseNr}`)
+    expect(current).toBeDefined()
+    // Same VALID amendment number-set in both representations → zero signals.
+    expect(classifySkolfsDiff(baseline, current!)).toEqual([])
+  })
+
+  it('positive control — a genuinely new VALID amendment in the statute fires AMENDMENT', () => {
+    const baseline = snapshotFromBaselineMetadata(
+      `SKOLFS ${baseNr}`,
+      baselineMeta
+    )
+    const current = buildCurrentSnapshots(
+      statuteHits([
+        {
+          skolfsNumber: '2026:99',
+          baseSkolfsNumber: baseNr,
+          statuteTitle: 'ändr.',
+          documentType: 'ANDRINGSFORFATTNING',
+          validity: 'VALID',
+        },
+      ])
+    ).get(`SKOLFS ${baseNr}`)
+    const signals = classifySkolfsDiff(baseline, current!)
+    expect(signals.map((s) => s.kind)).toEqual(['AMENDMENT'])
+    expect(signals[0]!.amendmentSkolfsNo).toBe('2026:99')
+  })
+
+  it('REPEAL fires when the base flips VALID → EXPIRED in the statute poll', () => {
+    const baseline = snapshotFromBaselineMetadata(
+      `SKOLFS ${baseNr}`,
+      baselineMeta
+    )
+    const expired = statuteHits().map((h) =>
+      h.documentType === 'GRUNDFORFATTNING'
+        ? { ...h, validity: 'EXPIRED' as const }
+        : h
+    )
+    const current = buildCurrentSnapshots(expired).get(`SKOLFS ${baseNr}`)
+    expect(classifySkolfsDiff(baseline, current!).map((s) => s.kind)).toEqual([
+      'REPEAL',
+    ])
   })
 })
 
