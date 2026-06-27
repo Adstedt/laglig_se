@@ -1,0 +1,59 @@
+schema: 1
+story: '9.7'
+story_title: 'Skolverket (SKOLFS) Föreskrifter Ingestion — Valid + Consolidated via the SKOLFS API + Monitoring Hooks'
+gate: PASS
+status_reason: 'Pipeline functionally complete and end-to-end verified (1,398/1,400 ingested, chunks==embeddings, attribution + baseline 100%); all 14 ACs now met after owner confirmed `pnpm build` passes. Sole remaining item is non-blocking test debt (no automated regression test for the corpus-wide coverage-guard).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-27T20:55:00Z'
+
+waiver: { active: false }
+
+quality_score: 90
+expires: '2026-07-11T20:55:00Z'
+
+evidence:
+  tests_reviewed: 81 # 50 (agency-prompt + ingest-agency-pdfs) + 31 chunk-document; regulatory-bodies guard covered
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    ac_gaps: [] # AC14 closed (owner confirms build passes); AC11 capability proven by 1,398/1,398 slug coverage (no SKOLFS marketing refs exist yet to resolve)
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No auth/authz/payment surface touched. Ingestion of public regulations via no-auth API; descriptive User-Agent, throttled. No secrets in scripts. Data is public-domain SKOLFS text.'
+  performance:
+    status: PASS
+    notes: 'Batch API (50% cost), size-skip routing for >500KB giants (avoids doomed single-pass), embed batching of 100. Coverage-guard increases chunk counts on prose docs (curricula → 100s of chunks) — expected, bounded; embedding cost acknowledged in story.'
+  reliability:
+    status: PASS
+    notes: 'Exemplary: fail-soft failures manifest, idempotent upsert, --resume recovery of interrupted batch (free, pre-expiry), stream-retry hardening on ECONNRESET, and the embedding-decouple fix (embeddings guaranteed even when Haiku prefix-gen fails — a corpus-wide robustness floor).'
+  maintainability:
+    status: PASS
+    notes: 'Code is well-commented and the joint-samling guard is unit-tested (17/17); chunker suite 31/31. The coverage-guard + prose-overlap change is verified-by-data (live re-chunk of 153 docs; 1,398/1,398 chunks==embeddings) — one residual item is a dedicated regression test for it (future, non-blocking). The large multi-mode ingester has no automated coverage by design (scripts tsc-excluded; tsx run is the documented gate). The AGENCY_DEFAULT_MODEL 4.5→4.6 bump (cross-cutting across agency ingesters) had test fallout that was fixed during review.'
+
+recommendations:
+  immediate: [] # AC-14 build confirmed passing by owner 2026-06-27
+  future:
+    - action: 'Add a unit regression test for the coverage-guard: an under-structured prose doc (1–2 trivial §) must fall back to prose chunking with >=COVERAGE_MIN_RATIO coverage, and a legitimately short single-§ doc must NOT regress.'
+      refs: ['lib/chunks/chunk-document.ts', 'tests/unit/chunks/chunk-document.test.ts']
+    - action: 'Spot-check a live render at /foreskrifter/<slug> for a Regeringen-issued consolidated läroplan and a small Skolverket base (visual confirm of AC-11 surfacing).'
+      refs: ['app/(workspace)/browse/foreskrifter/[slug]/page.tsx']
+    - action: 'Close the 2 legacy Word 6.0/95 (a5dc) holdouts (SKOLFS 2004:1, 2005:1) via LibreOffice convert or stub — currently in the failures manifest (owner deprioritised).'
+      refs: ['data/skolverket-ingest-failures.json']
+    - action: 'Re-sync the 1 chunk missing a best-effort context_prefix once prefix-gen is confirmed stable.'
+      refs: ['lib/chunks/sync-document-chunks.ts']
+
+top_issues:
+  - id: 'COVERAGE-GUARD-NO-TEST'
+    severity: low
+    finding: 'The chunk-document coverage-guard + prose-overlap change has corpus-wide blast radius (re-chunked 153 docs) but no automated regression test; correctness is verified-by-data (1,398/1,398 chunks==embeddings, prose docs now fully covered) — what is missing is a guard against future regression. Test debt, not an unverified-correctness risk.'
+    suggested_owner: dev
+  - id: 'AC11-SURFACING-VACUOUS'
+    severity: low
+    finding: 'Marketing-link resolution (AC 11) had no inputs — no SKOLFS references exist in content/marketing and no kommun page is authored, so marketing-link-warnings cannot contain SKOLFS entries. Resolution capability is guaranteed by 1,398/1,398 slug coverage but the live /foreskrifter render was not spot-checked this pass.'
+    suggested_owner: dev
+  - id: 'CORPUS-99.86pct'
+    severity: low
+    finding: '2 of 1,400 docs (SKOLFS 2004:1, 2005:1) are legacy Word 6.0/95 (a5dc, pre-OLE2) the extractor cannot read. Documented in failures manifest; owner explicitly deprioritised. Acceptable for the in-force kommun corpus (pre-2011 superseded-curriculum era).'
+    suggested_owner: po

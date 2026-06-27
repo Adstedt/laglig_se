@@ -833,50 +833,72 @@ async function runResumeMode(
       }
     }
     console.log(`  draining ${id}…`)
-    for await (const r of await anthropic.messages.batches.results(id)) {
-      const entry = byId.get(r.custom_id)
-      if (!entry) continue
-      if (alreadyDone.has(entry.documentNumber)) {
-        skipped++
-        continue
-      }
-      if (r.result.type !== 'succeeded') {
-        failures.push({
-          documentNumber: entry.documentNumber,
-          reason: `batch ${r.result.type}`,
-        })
-        continue
-      }
-      if (r.result.message.stop_reason === 'max_tokens') {
-        oversized.push(entry)
-        continue
-      }
-      // format (pdf|doc) drives the metadata labels; read it from the cached
-      // source file (no network) — same detection prepareBatchRequest used.
-      let format: DocFormat = 'pdf'
+    // The results() stream is a long-lived HTTP body; it can drop mid-drain
+    // (ECONNRESET). Retry the whole stream on failure — idempotency (alreadyDone)
+    // makes re-streaming cheap: finished docs are skipped, only the tail re-runs.
+    const STREAM_RETRIES = 5
+    for (let attempt = 1; ; attempt++) {
       try {
-        format = (await fetchContent(entry)).format
-      } catch {
-        /* fall back to pdf label; finalize still works off the generated HTML */
-      }
-      const res = await finalizeDoc(
-        entry,
-        stripFences(r.result.message),
-        format === 'pdf' ? 'pdf-document' : 'doc-text-extract',
-        format,
-        slugMap
-      )
-      if (res.ok) {
-        ok++
-        totalChunks += res.chunks
-        alreadyDone.add(entry.documentNumber) // guard dup custom_ids across batches
-        console.log(`  ✓ ${entry.documentNumber} — ${res.chunks} chunks`)
-      } else {
-        failures.push({
-          documentNumber: entry.documentNumber,
-          reason: res.reason,
-        })
-        console.log(`  ✗ ${entry.documentNumber} — ${res.reason}`)
+        for await (const r of await anthropic.messages.batches.results(id)) {
+          const entry = byId.get(r.custom_id)
+          if (!entry) continue
+          if (alreadyDone.has(entry.documentNumber)) {
+            skipped++
+            continue
+          }
+          if (r.result.type !== 'succeeded') {
+            failures.push({
+              documentNumber: entry.documentNumber,
+              reason: `batch ${r.result.type}`,
+            })
+            continue
+          }
+          if (r.result.message.stop_reason === 'max_tokens') {
+            oversized.push(entry)
+            continue
+          }
+          // format (pdf|doc) drives the metadata labels; read it from the cached
+          // source file (no network) — same detection prepareBatchRequest used.
+          let format: DocFormat = 'pdf'
+          try {
+            format = (await fetchContent(entry)).format
+          } catch {
+            /* fall back to pdf label; finalize still works off the generated HTML */
+          }
+          const res = await finalizeDoc(
+            entry,
+            stripFences(r.result.message),
+            format === 'pdf' ? 'pdf-document' : 'doc-text-extract',
+            format,
+            slugMap
+          )
+          if (res.ok) {
+            ok++
+            totalChunks += res.chunks
+            alreadyDone.add(entry.documentNumber) // guard dup custom_ids across batches
+            console.log(`  ✓ ${entry.documentNumber} — ${res.chunks} chunks`)
+          } else {
+            failures.push({
+              documentNumber: entry.documentNumber,
+              reason: res.reason,
+            })
+            console.log(`  ✗ ${entry.documentNumber} — ${res.reason}`)
+          }
+        }
+        break // stream drained cleanly
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e)
+        if (attempt >= STREAM_RETRIES) {
+          console.log(
+            `  ⚠ ${id}: stream failed after ${attempt} attempts (${msg}) — re-run --resume to finish`
+          )
+          break
+        }
+        skipped = 0 // re-streaming from the top recounts skips
+        console.log(
+          `  ⚠ ${id}: stream dropped (${msg}); retry ${attempt}/${STREAM_RETRIES - 1} after backoff…`
+        )
+        await sleep(5_000 * attempt)
       }
     }
   }

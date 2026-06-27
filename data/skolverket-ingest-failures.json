@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "documentNumber": "SKOLFS 2004:1",
+    "reason": "Claude error: This does not seem to be a Word document: Invalid magic number: a5dc"
+  },
+  {
+    "documentNumber": "SKOLFS 2005:1",
+    "reason": "Claude error: This does not seem to be a Word document: Invalid magic number: a5dc"
+  }
+]

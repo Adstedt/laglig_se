@@ -169,8 +169,8 @@ describe('agency-regulation-prompt', () => {
   })
 
   describe('AGENCY_DEFAULT_MODEL', () => {
-    it('uses Sonnet 4.5', () => {
-      expect(AGENCY_DEFAULT_MODEL).toBe('claude-sonnet-4-5-20250929')
+    it('uses Sonnet 4.6', () => {
+      expect(AGENCY_DEFAULT_MODEL).toBe('claude-sonnet-4-6')
     })
   })
 })
