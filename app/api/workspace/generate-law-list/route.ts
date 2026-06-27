@@ -109,6 +109,9 @@ export async function POST() {
             outputTokens: result.tokensUsed.output,
             cacheReadInputTokens: result.tokensUsed.cacheRead,
             cacheWriteInputTokens: result.tokensUsed.cacheWrite,
+            generationSteps: result.steps.generation,
+            auditSteps: result.steps.audit,
+            auditPasses: result.steps.auditPasses,
             durationMs: result.durationMs,
           })
           Sentry.captureMessage('Law list generation completed', 'info')

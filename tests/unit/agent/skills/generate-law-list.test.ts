@@ -10,6 +10,9 @@ vi.mock('@/lib/prisma', () => ({
     lawList: {
       findFirst: vi.fn(),
     },
+    lawListItem: {
+      findMany: vi.fn(),
+    },
   },
 }))
 
@@ -54,6 +57,7 @@ const mockGenerateText = vi.mocked(generateText)
 const mockWorkspaceUpdate = vi.mocked(prisma.workspace.update)
 const mockWorkspaceFindUnique = vi.mocked(prisma.workspace.findUnique)
 const mockLawListFindFirst = vi.mocked(prisma.lawList.findFirst)
+const mockLawListItemFindMany = vi.mocked(prisma.lawListItem.findMany)
 
 const WORKSPACE_ID = 'ws-test-123'
 const USER_ID = 'user-test-456'
@@ -67,6 +71,11 @@ describe('generateLawList skill', () => {
     } as never)
 
     mockWorkspaceUpdate.mockResolvedValue({} as never)
+
+    // Phase B (gap audit) reads the freshly-built list back. Default to an
+    // empty list so the audit short-circuits (count 0 → no audit pass runs),
+    // keeping these Phase A assertions isolated from the audit pipeline.
+    mockLawListItemFindMany.mockResolvedValue([] as never)
   })
 
   it('composes correct tools from factory + skill-specific tools', async () => {
@@ -165,7 +174,7 @@ describe('generateLawList skill', () => {
     expect(result.groups).toEqual([])
   })
 
-  it('uses anthropic claude-sonnet-4-6 model', async () => {
+  it('uses anthropic claude-opus-4-8 model', async () => {
     const { anthropic } = await import('@ai-sdk/anthropic')
 
     mockGenerateText.mockResolvedValue({
@@ -178,7 +187,7 @@ describe('generateLawList skill', () => {
 
     await generateLawList(WORKSPACE_ID, USER_ID)
 
-    expect(anthropic).toHaveBeenCalledWith('claude-sonnet-4-6')
+    expect(anthropic).toHaveBeenCalledWith('claude-opus-4-8')
   })
 
   it('passes onStepFinish callback to generateText for live progress', async () => {
