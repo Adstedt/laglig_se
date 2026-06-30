@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Laglig.se — B2B-CTA på lagsida (prototyp)</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+    <!-- Brand fonts — same convention as landing-v4.html / design-language.html -->
+    <style>
+      @font-face {
+        font-family: 'Safiro';
+        src:
+          url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'),
+          url('../public/fonts/safiro-medium-webfont.woff') format('woff');
+        font-weight: 500; font-style: normal; font-display: swap;
+      }
+      @font-face {
+        font-family: 'Google Sans Flex';
+        src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype');
+        font-weight: 100 900; font-style: normal; font-display: swap;
+      }
+      /* HSL channels mirrored from app/globals.css :root */
+      :root {
+        --background: 40 20% 98%;
+        --foreground: 30 10% 10%;
+        --card: 40 15% 99%;
+        --primary: 30 15% 12%;
+        --primary-foreground: 40 20% 98%;
+        --secondary: 40 15% 95%;
+        --muted: 40 12% 94%;
+        --muted-foreground: 30 8% 45%;
+        --accent: 40 15% 93%;
+        --border: 35 10% 88%;
+        --section-sage: 140 25% 95%;
+      }
+    </style>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Google Sans Flex', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+              safiro: ['Safiro', 'Georgia', 'serif'],
+            },
+            colors: {
+              background: 'hsl(var(--background) / <alpha-value>)',
+              foreground: 'hsl(var(--foreground) / <alpha-value>)',
+              card: 'hsl(var(--card) / <alpha-value>)',
+              primary: 'hsl(var(--primary) / <alpha-value>)',
+              'primary-foreground': 'hsl(var(--primary-foreground) / <alpha-value>)',
+              secondary: 'hsl(var(--secondary) / <alpha-value>)',
+              muted: 'hsl(var(--muted) / <alpha-value>)',
+              'muted-foreground': 'hsl(var(--muted-foreground) / <alpha-value>)',
+              accent: 'hsl(var(--accent) / <alpha-value>)',
+              border: 'hsl(var(--border) / <alpha-value>)',
+              'section-sage': 'hsl(var(--section-sage) / <alpha-value>)',
+            },
+            borderRadius: { lg: '0.5rem', md: 'calc(0.5rem - 2px)', sm: 'calc(0.5rem - 4px)' },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        font-family: 'Google Sans Flex', system-ui, -apple-system, sans-serif;
+        background: hsl(40 20% 98%);
+        color: hsl(30 10% 10%);
+        -webkit-font-smoothing: antialiased;
+      }
+      .font-safiro { font-family: 'Safiro', Georgia, serif; font-weight: 500; }
+      /* statute prose */
+      .prose-law p { margin: 0 0 1.1rem; line-height: 1.75; color: hsl(30 10% 18%); }
+      .prose-law h2 { font-family: 'Safiro', Georgia, serif; font-weight: 500; font-size: 1.5rem; margin: 2.5rem 0 1rem; letter-spacing: -0.01em; }
+      /* shimmer for loading */
+      .shimmer { position: relative; overflow: hidden; background: hsl(40 12% 94%); }
+      .shimmer::after { content: ''; position: absolute; inset: 0; transform: translateX(-100%);
+        background: linear-gradient(90deg, transparent, hsl(40 20% 99% / .9), transparent); animation: sh 1.3s infinite; }
+      @keyframes sh { 100% { transform: translateX(100%); } }
+      /* hide native scrollbar visual noise inside the TOC zone but keep scroll */
+      .toc-scroll { scrollbar-width: thin; scrollbar-color: hsl(35 10% 80%) transparent; }
+      .toc-scroll::-webkit-scrollbar { width: 6px; }
+      .toc-scroll::-webkit-scrollbar-thumb { background: hsl(35 10% 82%); border-radius: 99px; }
+    </style>
+  </head>
+
+  <body>
+    <!-- ───────────────────── PUBLIC NAV (marketing) ───────────────────── -->
+    <header class="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
+      <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
+        <a href="#" class="flex items-center gap-2 font-safiro text-lg">laglig<span class="text-amber-600">.se</span></a>
+        <nav class="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
+          <a href="#" class="transition hover:text-foreground">Produkt</a>
+          <a href="#" class="transition hover:text-foreground">Lagbiblioteket</a>
+          <a href="#" class="transition hover:text-foreground">Priser</a>
+        </nav>
+        <div class="flex items-center gap-2">
+          <a href="#" class="hidden text-sm text-muted-foreground transition hover:text-foreground sm:inline">Logga in</a>
+          <a href="#" class="inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90">Testa gratis</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- breadcrumb + law title -->
+    <div class="border-b border-border/60 bg-card/40">
+      <div class="mx-auto max-w-7xl px-6 py-7">
+        <p class="mb-2 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+          <a href="#" class="hover:text-foreground">Lagbiblioteket</a><span>/</span>
+          <a href="#" class="hover:text-foreground">Skolväsendet</a><span>/</span>
+          <span class="text-foreground/70">SKOLFS 2010:37</span>
+        </p>
+        <h1 class="max-w-3xl font-safiro text-3xl leading-tight tracking-tight md:text-[2.1rem]">
+          Läroplan för grundskolan — kursplan i matematik
+        </h1>
+        <div class="mt-3 flex flex-wrap items-center gap-2 text-xs">
+          <span class="inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-2.5 py-1 font-medium text-foreground/70">
+            <i data-lucide="landmark" class="h-3 w-3"></i> Skolverket
+          </span>
+          <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-300/60 bg-emerald-50 px-2.5 py-1 font-medium text-emerald-800">
+            <i data-lucide="check-circle-2" class="h-3 w-3"></i> Gällande
+          </span>
+          <span class="text-muted-foreground">Senast ändrad 2022-07-01</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ───────────────────── BODY: content + right rail ───────────────────── -->
+    <main class="mx-auto max-w-7xl px-6 py-10">
+      <div class="grid gap-12 lg:grid-cols-[1fr_320px]">
+
+        <!-- DOCUMENT -->
+        <article class="prose-law min-w-0 max-w-2xl text-[15px]">
+          <p>
+            Matematiken har en flertusenårig historia med bidrag från många kulturer. Den
+            utvecklas såväl ur praktiska behov som ur människans nyfikenhet och lust att
+            utforska matematiken som sådan. Matematisk verksamhet är till sin art en kreativ,
+            reflekterande och problemlösande aktivitet som är nära kopplad till den
+            samhälleliga, sociala, naturvetenskapliga, tekniska och digitala utvecklingen.
+          </p>
+          <p>
+            Kunskaper i matematik ger människor förutsättningar att fatta välgrundade beslut i
+            vardagslivets många valsituationer och ökar möjligheterna att delta i samhällets
+            beslutsprocesser.
+          </p>
+
+          <h2>Syfte</h2>
+          <p>
+            Undervisningen i ämnet matematik ska syfta till att eleverna utvecklar kunskaper om
+            matematik och matematikens användning i vardagen och inom olika ämnesområden.
+            Undervisningen ska bidra till att eleverna utvecklar intresse för matematik och
+            tilltro till sin förmåga att använda matematik i olika sammanhang.
+          </p>
+
+          <!-- ░░ MOBILE inline CTA — appears in content flow only on small screens ░░ -->
+          <aside class="my-8 lg:hidden">
+            <div class="rounded-2xl border border-border bg-card p-5 shadow-sm" data-cta-card></div>
+          </aside>
+
+          <p>
+            Genom undervisningen ska eleverna ges förutsättningar att utveckla förtrogenhet med
+            grundläggande matematiska begrepp och metoder och deras användbarhet. Vidare ska
+            eleverna genom undervisningen ges möjligheter att utveckla kunskaper i att använda
+            digitala verktyg och programmering för att kunna undersöka problemställningar.
+          </p>
+          <p>
+            Undervisningen ska bidra till att eleverna utvecklar kunskaper för att kunna
+            formulera och lösa problem samt reflektera över och värdera valda strategier,
+            modeller och resultat. Eleverna ska även ges förutsättningar att utveckla kunskaper
+            för att kunna tolka vardagliga och matematiska situationer.
+          </p>
+
+          <h2>Centralt innehåll</h2>
+          <p>
+            I årskurs 1–3 behandlar undervisningen naturliga tal och deras egenskaper, hur tal
+            kan delas upp och hur de kan användas för att ange antal och ordning. De fyra
+            räknesätten och hur de kan uttryckas och visas med ord, konkret material, bilder och
+            symboler ingår också i det centrala innehållet.
+          </p>
+          <p>
+            Vidare behandlas slumpmässiga händelser, enkla tabeller och diagram samt hur de kan
+            användas för att sortera data och beskriva resultat från undersökningar, såväl med
+            som utan digitala verktyg.
+          </p>
+
+          <h2>Betygskriterier</h2>
+          <p>
+            Eleven visar grundläggande kunskaper om matematiska begrepp och använder dem i
+            välkända sammanhang på ett i huvudsak fungerande sätt. Eleven löser enkla problem
+            och bidrar till resonemang om tillvägagångssätt och rimlighet i resultaten.
+          </p>
+          <p>
+            Sammanhang och relevans är centrala för bedömningen. Genom att ställa och besvara
+            frågor som i huvudsak hör till ämnet bidrar eleven till att föra resonemangen framåt.
+          </p>
+        </article>
+
+        <!-- RIGHT RAIL — pinned, two independently-scrolling zones -->
+        <aside class="hidden lg:block">
+          <!--
+            The whole rail is sticky and capped to the viewport height.
+            Inside: a fixed CTA card up top (never scrolls away) + a TOC that
+            scrolls inside its OWN box, so a 200-item curriculum can't push
+            the CTA off-screen.
+          -->
+          <div class="sticky top-20 flex max-h-[calc(100vh-6rem)] flex-col gap-4">
+            <!-- ▼ CTA CARD (flex-shrink-0 — always visible) ▼ -->
+            <div class="shrink-0" data-cta-card></div>
+
+            <!-- ▼ TOC (flex-1, scrolls internally) ▼ -->
+            <nav class="flex min-h-0 flex-1 flex-col rounded-2xl border border-border/70 bg-card/50">
+              <p class="shrink-0 border-b border-border/60 px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                Innehåll
+              </p>
+              <div id="toc" class="toc-scroll min-h-0 flex-1 space-y-0.5 overflow-y-auto p-2 text-sm"></div>
+            </nav>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <!-- ───────────────────── MOBILE sticky bottom bar ───────────────────── -->
+    <div id="mobile-bar" class="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 p-3 backdrop-blur lg:hidden">
+      <button onclick="document.querySelector('[data-cta-card] input')?.focus(); document.querySelector('[data-cta-card]')?.scrollIntoView({behavior:'smooth',block:'center'});"
+        class="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground">
+        Vilka lagar gäller för ert företag?
+        <i data-lucide="arrow-right" class="h-4 w-4"></i>
+      </button>
+    </div>
+
+    <!-- ───────────────────── RESULT MODAL (improved selling popup) ───────────────────── -->
+    <div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+      <div id="modal-backdrop" class="absolute inset-0 bg-foreground/40 backdrop-blur-sm"></div>
+      <div id="modal-card" class="relative w-full max-w-md"></div>
+    </div>
+
+    <script>
+      // ── CTA CARD template (reuses the landing org-nr input pattern) ──────────
+      // Contextual headline ties the generic org-nr lookup to the page the user
+      // is on ("denna föreskrift"), bridging single-law reader → full laglista.
+      const ctaCardHTML = `
+        <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <div class="border-b border-border/60 bg-gradient-to-b from-secondary/60 to-transparent px-4 py-3.5">
+            <p class="flex items-center gap-1.5 font-safiro text-[13px] font-medium text-amber-700">
+              <span class="relative flex h-1.5 w-1.5">
+                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500/70 opacity-70"></span>
+                <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-600"></span>
+              </span>
+              För företag
+            </p>
+            <p class="mt-1.5 text-sm font-medium leading-snug text-foreground">
+              Berörs ert företag av denna föreskrift?
+            </p>
+            <p class="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Ange organisationsnummer så visar vi alla regelområden som gäller er — inklusive den ni läser nu.
+            </p>
+          </div>
+          <form class="cta-form p-4">
+            <div class="relative">
+              <i data-lucide="building-2" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"></i>
+              <input type="text" inputmode="numeric" value="556734-1188"
+                class="h-11 w-full rounded-md border border-border bg-background pl-9 pr-3 text-sm text-foreground outline-none ring-primary/20 transition focus:border-primary focus:ring-4"
+                placeholder="Organisationsnummer" aria-label="Organisationsnummer" />
+            </div>
+            <button type="submit"
+              class="mt-2.5 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90">
+              Se er regelöversikt
+              <i data-lucide="arrow-right" class="h-4 w-4"></i>
+            </button>
+            <p class="mt-2.5 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+              <i data-lucide="check" class="h-3.5 w-3.5 text-emerald-600"></i>
+              Inget betalkort · 15 dagar gratis
+            </p>
+          </form>
+        </div>`;
+
+      // ── Improved "Din regelöversikt" popup (diagnosis → sell → CTA) ──────────
+      const areaIcon = { GDPR:'lock', 'Bokföring':'calculator', 'Bolagsrätt':'scale',
+        'Kemikaliesäkerhet':'flask-conical', 'Arbetsmiljö':'hard-hat' };
+      const popupHTML = (c) => `
+        <div class="relative overflow-hidden rounded-2xl border border-border bg-card text-left shadow-2xl shadow-foreground/10">
+          <button type="button" id="modal-close"
+            class="absolute right-3.5 top-3.5 z-10 grid h-8 w-8 place-items-center rounded-lg border border-border bg-background/80 text-muted-foreground transition hover:text-foreground">
+            <i data-lucide="x" class="h-4 w-4"></i>
+          </button>
+
+          <!-- identity -->
+          <div class="bg-gradient-to-b from-secondary/60 to-transparent px-5 pb-4 pt-5">
+            <p class="mb-3 flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground">
+              <i data-lucide="sparkles" class="h-3 w-3 text-amber-500"></i> Din regelöversikt
+            </p>
+            <div class="flex items-start gap-3 pr-6">
+              <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-foreground font-safiro text-lg text-background">${c.name.charAt(0)}</div>
+              <div class="min-w-0">
+                <h3 class="font-safiro text-lg leading-tight">${c.name}</h3>
+                <div class="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                  <span class="inline-flex items-center gap-1 rounded-md bg-background/70 px-1.5 py-0.5 ring-1 ring-border/60"><i data-lucide="building-2" class="h-3 w-3"></i> ${c.legalForm}</span>
+                  <span class="inline-flex items-center gap-1 rounded-md bg-background/70 px-1.5 py-0.5 ring-1 ring-border/60"><i data-lucide="map-pin" class="h-3 w-3"></i> ${c.municipality}</span>
+                </div>
+              </div>
+            </div>
+            <p class="mt-3 text-[13px] leading-relaxed text-muted-foreground">${c.summary}</p>
+          </div>
+
+          <!-- diagnosis: regelområden -->
+          <div class="border-t border-border/70 px-5 py-4">
+            <div class="mb-3 flex items-center gap-2.5">
+              <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><i data-lucide="shield-check" class="h-4 w-4"></i></span>
+              <p class="text-sm leading-snug">Minst <span class="font-safiro text-base text-foreground">${c.areas.length}</span> regelområden kan beröra er verksamhet</p>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              ${c.areas.map(a => `<span class="inline-flex items-center gap-1.5 rounded-lg bg-secondary/70 px-2.5 py-1.5 text-[12.5px] font-medium text-foreground/80 ring-1 ring-border/50"><i data-lucide="${areaIcon[a]||'file-text'}" class="h-3.5 w-3.5 text-foreground/45"></i>${a}</span>`).join('')}
+            </div>
+          </div>
+
+          <!-- ★ NEW: the sell — what laglig.se actually does about it ★ -->
+          <div class="border-t border-border/70 bg-section-sage/40 px-5 py-4">
+            <p class="mb-2.5 font-safiro text-[13px] font-medium text-foreground">Så får ni kontroll med laglig.se</p>
+            <ul class="space-y-2.5 text-[13px] text-foreground/80">
+              <li class="flex items-start gap-2.5">
+                <i data-lucide="list-checks" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600"></i>
+                <span><span class="font-medium text-foreground">Komplett laglista</span> för er bransch — automatiskt genererad ur er verksamhet.</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <i data-lucide="bell-ring" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600"></i>
+                <span><span class="font-medium text-foreground">Bevakning av varje lagändring</span> — ni får notis så fort något som rör er ändras.</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <i data-lucide="sparkles" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600"></i>
+                <span><span class="font-medium text-foreground">En AI-agent</span> som gör efterlevnadsarbetet åt er och håller listan levande.</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- CTA -->
+          <div class="px-5 pb-5 pt-4">
+            <a href="#" class="inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90">
+              Skapa er laglista — testa gratis
+              <i data-lucide="arrow-right" class="h-4 w-4"></i>
+            </a>
+            <p class="mt-2.5 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+              <i data-lucide="check" class="h-3.5 w-3.5 text-emerald-600"></i> Gratis i 15 dagar · inget betalkort krävs
+            </p>
+          </div>
+        </div>`;
+
+      // company used in the demo lookup
+      const COMPANY = {
+        name: 'Medea AB', legalForm: 'AB', municipality: 'Stockholm',
+        summary: 'Partihandelsföretag inom glas, porslin och rengöringsmedel som även erbjuder försäljningskonsulttjänster samt produkter inom IT och skyddsutrustning.',
+        areas: ['GDPR', 'Bokföring', 'Bolagsrätt', 'Kemikaliesäkerhet'],
+      };
+
+      // ── render the CTA cards into every [data-cta-card] slot ──
+      document.querySelectorAll('[data-cta-card]').forEach(slot => { slot.innerHTML = ctaCardHTML; });
+
+      // ── build a deliberately LONG, repetitive TOC (mirrors the läroplan) ──
+      const tocItems = ['Läsa och skriva','Tala, lyssna och samtala','Texter','Språkbruk',
+        'Informationssökning och källkritik','5.19 Teckenspråk för hörande','Kommunikationens innehåll',
+        'Avläsa – reception','Teckna och samtala – produktion och interaktion','Kommunikationens innehåll',
+        'Avläsa – reception','Teckna och samtala – produktion och interaktion','Kommunikationens innehåll',
+        'Avläsa – reception','5.20 Teknik','Teknik, människa, samhälle och miljö','Tekniska lösningar',
+        'Arbetsmetoder för utveckling av tekniska…','Teknik, människa, samhälle och miljö','Tekniska lösningar',
+        'Arbetsmetoder för utveckling av tekniska…','Teknik, människa, samhälle och miljö','Tekniska lösningar',
+        'Arbetsmetoder för utveckling av tekniska…'];
+      const toc = document.getElementById('toc');
+      tocItems.forEach((t, i) => {
+        const a = document.createElement('a');
+        a.href = '#';
+        a.className = 'block truncate rounded-md px-3 py-1.5 text-muted-foreground transition hover:bg-secondary hover:text-foreground' + (i===6 ? ' bg-secondary text-foreground' : '');
+        a.textContent = t;
+        toc.appendChild(a);
+      });
+
+      // ── modal open/close + form submit (loading → result) ──
+      const modal = document.getElementById('modal');
+      const modalCard = document.getElementById('modal-card');
+      function openModal(html) {
+        modalCard.innerHTML = html;
+        modal.classList.remove('hidden'); modal.classList.add('flex');
+        lucide.createIcons();
+        modalCard.querySelector('#modal-close')?.addEventListener('click', closeModal);
+      }
+      function closeModal() { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+      document.getElementById('modal-backdrop').addEventListener('click', closeModal);
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+      document.querySelectorAll('.cta-form').forEach(form => {
+        form.addEventListener('submit', e => {
+          e.preventDefault();
+          // loading state in the modal
+          openModal(`<div class="rounded-2xl border border-border bg-card p-6 shadow-2xl">
+            <div class="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+              <i data-lucide="loader-circle" class="h-4 w-4 animate-spin text-amber-600"></i> Hämtar uppgifter från Bolagsverket…
+            </div>
+            <div class="space-y-2.5"><div class="h-11 rounded-md shimmer"></div><div class="h-11 rounded-md shimmer"></div><div class="h-20 rounded-md shimmer"></div></div>
+          </div>`);
+          setTimeout(() => openModal(popupHTML(COMPANY)), 1100);
+        });
+      });
+
+      lucide.createIcons();
+    </script>
+  </body>
+</html>
