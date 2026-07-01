@@ -1,5 +1,40 @@
 # Changelog
 
+## Version 1.6 (2026-07-01)
+
+**Post-Epic 17 → open-beta build-out — Epics 18–27, plus Epic 5/9/14 progress**
+
+Grounded in merged PRs #44–#90 since v1.5 (2026-04-07).
+
+**New epics scoped/delivered since v1.5:**
+
+- **Epic 18 — Mobile UX Optimization:** Mobile document-hero stacking, workspace shell rebuild, responsive polish (#67, #74).
+- **Epic 19 — Agent Partner (Attachments, Skills, Subagents & Continuous Governance):** Agent authoring triad + dual-version sub-epic + landing-v3 (#69, 62 commits), Phase-5 authoring + tracking instrumentation (#75), adaptive thinking 19.14 + agent progress timeline 19.15 (#82). Extends Epic 14's agentic architecture.
+- **Epic 20 — Workspace Krav Overview & Per-Krav Assignment:** Krav overview surface + theming (#57), per-krav comments + split-panel modal shell + activity UX overhaul (#56).
+- **Epic 21 — Lagefterlevnadskontroll (Compliance Audit Cycle Module):** Full audit-cycle module (#58), kontroller tables (#82), serverless/crash hardening (#80, #81). Lifecycle `PLANERAD → PAGAENDE → AVSLUTAD`. Substantially done.
+- **Epic 22 — UI Primitives Alignment (Done):** Table chrome, filters, `PageHeader`/`TableToolbar`/`Badge`/`FilterChip` aligned across the workspace (#60).
+- **Epic 23 — Anmärkningar as first-class objects:** Scoped; anmärkning crash/scroll fixes landed alongside kontroller (#81).
+- **Epic 24 — Import Existing Law List (Done):** Full import epic + UX polish (#63).
+- **Epic 25 — First-Run Onboarding Modal:** Modal + SEO/perf catch-up (#66); B.0 pre-MVP wedge shipped.
+- **Epic 26 — Marketing Pages + SEO Content Engine (In Progress):** Tier-1 marketing pages (#75), Lead component + page-inventory plan (#84), marketing chrome unification + mega-menu + content briefs across 121 pages (#85), MDX/table + Swedish-copy corrections (#86, #87, #88, #89). Supporting SEO infra: chunked/static sitemap generation + GSC fixes (#65, #70–#73), open-beta badge.
+- **Epic 27 — Company Profile Interview:** Scoped (3 stories); evidence base from the 2026-06-10 model A/B.
+
+**Progress on existing epics:**
+
+- **Epic 5 — Workspace Management (billing/team/auth):** Stripe billing + trial gate + legal pages (#62), team invite system + restyled transactional emails (#45), Google OAuth via Supabase + NextAuth bridge (#46), RLS on all public tables (#59).
+- **Epic 9 — Legal Intelligence & AI Enrichment:** Socialstyrelsen amendment monitoring + SFS amendment-crawler fixes (#76), agency-ingestion status docs (#77), Skolverket SKOLFS ingestion + amendment monitoring + personalized law-list gap audit (#90).
+- **Epic 14/17 — Agent & DMS:** Anthropic web search + extended thinking + stop button (#47), Epic 17 kravpunkter + chat-streaming fixes (#44), unified page rendering + lawlist group-aware linking (#54).
+- **Marketing/analytics:** Cookie banner + Google Consent Mode v2 + GA4 lazy-load (#64), Google Ads signup conversion tracking (#78), consent-update fixes (#79).
+
+**Documentation:**
+
+- **Epic 7 — HR Module re-scoped (2026-07-01):** Original 12-story MVP HR vision replaced with an 8-story epic — Fortnox-native, sync-ready `Employee` model (+ `EmployeeGroup`, `CollectiveAgreement`), Personalregister/Personalkort reusing canonical `PageHeader`/`DocumentListTable`/`SplitPanelModal`, kollektivavtal ingested into the existing RAG, employee-aware corpus-grounded AI, and Fortnox mapping/sync scaffolding. Grounded in `docs/reference/fortnox-employee-schema-analysis.md`.
+- `index.md` refreshed to v1.6 (27 epics, detailed links 18–27); `epic-list.md` Epic 26 entry added.
+
+**Note:** `docs/prd.md` (pre-shard monolith, v1.3) remains superseded by the sharded PRD under `docs/prd/`.
+
+---
+
 ## Version 1.5 (2026-04-07)
 
 **Post-Epic 17 Documentation Alignment — Brownfield Epics 9–17**

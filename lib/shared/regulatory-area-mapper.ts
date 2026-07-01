@@ -18,13 +18,20 @@ export function mapRegulatoryAreas(input: RegulatoryAreaInput): string[] {
   areas.push('GDPR')
   areas.push('Bokföring')
 
-  // Legal form
+  // Legal form — keep in sync with the baseline forms in
+  // lib/agent/skills/baseline-laws.ts so the preview matches what generation seeds.
   if (legalForm === 'AB') {
     areas.push('Bolagsrätt')
   } else if (legalForm === 'HB' || legalForm === 'KB') {
     areas.push('Handelsbolagslagen')
   } else if (legalForm === 'EF') {
     areas.push('Enskild näringsidkare')
+  } else if (legalForm === 'EKONOMISK_FORENING' || legalForm === 'EK') {
+    areas.push('Föreningsrätt')
+  } else if (legalForm === 'STIFTELSE') {
+    areas.push('Stiftelserätt')
+  } else if (legalForm === 'IDEELL') {
+    areas.push('Föreningsrätt')
   }
 
   // Tax status

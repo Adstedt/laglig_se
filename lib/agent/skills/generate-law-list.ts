@@ -12,13 +12,21 @@ import { prisma } from '@/lib/prisma'
 import { createAgentTools } from '@/lib/agent/tools'
 import { createGetTemplateLawsTool } from '@/lib/agent/tools/get-template-laws'
 import { createAddLawsToListTool } from '@/lib/agent/tools/add-laws-to-list'
+import {
+  baselineFormLabel,
+  resolveBaselineForm,
+  resolveBaselineLaws,
+} from '@/lib/agent/skills/baseline-laws'
 
 // Law-list generation runs ONCE per workspace (onboarding) and is the user's
 // first impression of the product, so it defaults to the strongest model with a
 // high reasoning budget — the per-run cost is negligible at this frequency and
 // the task is reasoning-heavy (derive applicable agencies, mine the free-text
 // description, judge each föreskrift). Override via LAW_LIST_GENERATION_MODEL
-// (e.g. claude-sonnet-4-6 or claude-fable-5) to A/B output quality vs cost.
+// (e.g. claude-sonnet-5 or claude-fable-5) to A/B output quality vs cost.
+// NB: claude-sonnet-5 was A/B'd 2026-07-01 and under-discovered badly on this
+// flow (31 vs 71 items for the Nordvik school fixture; 0 SKOLFS vs 4) — Opus 4.8
+// stays the default; Sonnet is also worse per-discovered-law here.
 const GENERATION_MODEL =
   process.env.LAW_LIST_GENERATION_MODEL ?? 'claude-opus-4-8'
 
@@ -183,7 +191,7 @@ För varje dokument, skriv ett \`businessContext\`-fält (2-3 meningar) som för
 Exempel: "Ni omfattas av Arbetsmiljölagen som arbetsgivare med 12 anställda inom restaurangbranschen. Lagen berör era köksprocesser, serveringspersonal och arbetsmiljöansvarig chef. Relevant vid Arbetsmiljöverkets inspektioner och vid ert systematiska arbetsmiljöarbete."
 
 ## Redan tillagda lagar (lägg INTE till dessa igen)
-Följande grundläggande lagar har redan lagts till automatiskt: Aktiebolagslagen, Årsredovisningslagen, Bokföringslagen, Medbestämmandelagen, Inkomstskattelagen, Skatteförfarandelagen, Mervärdesskattelagen. Fokusera på bransch- och verksamhetsspecifika lagar och föreskrifter istället.
+De grundläggande bolags-, skatte- och redovisningslagarna för företagets juridiska form har redan lagts till automatiskt (bl.a. bokförings-, skatte- och bolagsformslagar). Fokusera på bransch- och verksamhetsspecifika lagar och föreskrifter istället. Om du ändå råkar lägga till en redan tillagd lag hoppas den över automatiskt.
 
 ## Regler
 - Sikta på en heltäckande lista — typiskt 40-80 dokument, men låt verksamhetens komplexitet styra. En verksamhet med många myndighetsföreskrifter (t.ex. skola, vård) kan med rätta ha fler.
@@ -258,58 +266,8 @@ Gör INGET annat. Leta INTE efter nya regelområden. Lägg INTE till lagar "för
 - Återanvänd den befintliga listans gruppnamn.
 - Standardläge: lägg till noll. Lägg bara till det som DIREKT förankrar något som redan finns i listan.`
 
-/**
- * Universal laws that apply to every Swedish aktiebolag.
- * Pre-seeded deterministically — no LLM steps wasted on these.
- */
-const UNIVERSAL_AB_LAWS: Array<{
-  documentId: string
-  group: string
-  businessContext: string
-}> = [
-  {
-    documentId: '3a1a8e98-2628-4282-8950-a330a3913cdb', // ABL
-    group: 'Bolagsrätt',
-    businessContext:
-      'Aktiebolagslagen reglerar bolagets organisation, styrelseansvar, bolagsstämma, kapitalskydd och utdelning. Grundläggande för all bolagsstyrning.',
-  },
-  {
-    documentId: '653b9d3d-6e14-4481-a975-43f28dde5047', // ÅRL
-    group: 'Bolagsrätt',
-    businessContext:
-      'Årsredovisningslagen ställer krav på bokslut, årsredovisning, förvaltningsberättelse och revision. Gäller alla aktiebolag.',
-  },
-  {
-    documentId: '35df26f0-ffed-46ff-b9e1-9fb1d6c5841b', // BFL
-    group: 'Bolagsrätt',
-    businessContext:
-      'Bokföringslagen kräver löpande bokföring, verifikationer och arkivering av räkenskapsinformation. Grundläggande för ekonomiavdelningen.',
-  },
-  {
-    documentId: '3ea0659a-282e-4669-8aa9-827bd23babc8', // MBL
-    group: 'Arbetsrätt',
-    businessContext:
-      'Medbestämmandelagen reglerar informations- och förhandlingsskyldighet gentemot fackliga organisationer. Relevant vid alla större förändringar i verksamheten.',
-  },
-  {
-    documentId: 'f4cd631b-8c7c-4708-afc4-c863974f4d16', // IL
-    group: 'Skatt & Redovisning',
-    businessContext:
-      'Inkomstskattelagen reglerar bolagsskatt, tjänstebeskattning och kapitalinkomster. Berör bolagets skatteplanering och deklaration.',
-  },
-  {
-    documentId: 'b3301284-c87e-4c1f-bf69-3c642fc8249b', // SFL
-    group: 'Skatt & Redovisning',
-    businessContext:
-      'Skatteförfarandelagen reglerar deklarationsskyldighet, arbetsgivaravgifter, skatteavdrag och Skatteverkets kontroller.',
-  },
-  {
-    documentId: '620d076d-8095-4963-92d2-43ff542513cb', // ML
-    group: 'Skatt & Redovisning',
-    businessContext:
-      'Mervärdesskattelagen reglerar moms på varor och tjänster. Berör fakturering, momsredovisning och avdragsrätt.',
-  },
-]
+// Baseline laws are now resolved per företagsform in lib/agent/skills/baseline-laws.ts
+// (universal + form-specific + fact-gated conditionals) and pre-seeded in generateLawList.
 
 /**
  * Move the conversation cache breakpoints to the tail of the message list.
@@ -538,10 +496,22 @@ export async function generateLawList(
     data: { law_list_generation_progress: [] },
   })
 
-  // Pre-seed universal AB laws deterministically
+  // Pre-seed the per-företagsform baseline laws deterministically (universal +
+  // form-specific corporate/registration + fact-gated conditionals). Keyed on the
+  // raw CompanyProfile.legal_form so KB gets HB's law base, not AB's.
+  const profile = await prisma.companyProfile.findUnique({
+    where: { workspace_id: workspaceId },
+    select: { legal_form: true, employee_count: true },
+  })
+  const baselineForm = resolveBaselineForm(profile?.legal_form ?? null)
+  const baselineLaws = resolveBaselineLaws({
+    form: baselineForm,
+    employeeCount: profile?.employee_count ?? null,
+  })
+
   const addTool = createAddLawsToListTool(workspaceId, userId)
   await addTool.execute!(
-    { laws: UNIVERSAL_AB_LAWS },
+    { laws: baselineLaws },
     {
       toolCallId: 'pre-seed',
       messages: [],
@@ -550,9 +520,9 @@ export async function generateLawList(
   )
   await updateProgress(
     workspaceId,
-    'Grundläggande bolagslagar tillagda',
+    `Grundläggande lagar för ${baselineFormLabel(baselineForm)} tillagda`,
     'done',
-    '7 lagar'
+    `${baselineLaws.length} lagar`
   )
 
   const chatTools = createAgentTools(workspaceId, userId)

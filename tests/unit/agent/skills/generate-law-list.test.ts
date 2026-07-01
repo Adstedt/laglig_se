@@ -13,6 +13,9 @@ vi.mock('@/lib/prisma', () => ({
     lawListItem: {
       findMany: vi.fn(),
     },
+    companyProfile: {
+      findUnique: vi.fn(),
+    },
   },
 }))
 
@@ -58,6 +61,7 @@ const mockWorkspaceUpdate = vi.mocked(prisma.workspace.update)
 const mockWorkspaceFindUnique = vi.mocked(prisma.workspace.findUnique)
 const mockLawListFindFirst = vi.mocked(prisma.lawList.findFirst)
 const mockLawListItemFindMany = vi.mocked(prisma.lawListItem.findMany)
+const mockCompanyProfileFindUnique = vi.mocked(prisma.companyProfile.findUnique)
 
 const WORKSPACE_ID = 'ws-test-123'
 const USER_ID = 'user-test-456'
@@ -71,6 +75,12 @@ describe('generateLawList skill', () => {
     } as never)
 
     mockWorkspaceUpdate.mockResolvedValue({} as never)
+
+    // Deterministic baseline pre-seed reads the company form/employees.
+    mockCompanyProfileFindUnique.mockResolvedValue({
+      legal_form: 'AB',
+      employee_count: 5,
+    } as never)
 
     // Phase B (gap audit) reads the freshly-built list back. Default to an
     // empty list so the audit short-circuits (count 0 → no audit pass runs),

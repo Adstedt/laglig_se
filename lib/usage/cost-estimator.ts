@@ -62,6 +62,16 @@ export const PRICING: Record<string, ModelPricing> = {
     cacheRead: 0.5,
     cacheWrite: 6.25,
   },
+  // Sonnet 5 (claude-sonnet-5): standard rates $3/$15, same as Sonnet 4.6.
+  // Intro pricing of $2/$10 is in effect through 2026-08-31; we carry the
+  // durable standard rate here so unit-economics never undercount (it slightly
+  // over-counts during the intro window, which is the safe direction).
+  'claude-sonnet-5': {
+    input: 3.0,
+    output: 15.0,
+    cacheRead: 0.3,
+    cacheWrite: 3.75,
+  },
   'claude-haiku-4-5': {
     input: 1.0,
     output: 5.0,

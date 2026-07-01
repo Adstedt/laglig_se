@@ -289,6 +289,233 @@ WHERE {
 }
 
 // ============================================================================
+// In-Force Corpus (Story 2.6) — the ingestion/monitoring target set
+// ============================================================================
+
+const RESOURCE_TYPE_REG =
+  'http://publications.europa.eu/resource/authority/resource-type/REG'
+const RESOURCE_TYPE_DIR =
+  'http://publications.europa.eu/resource/authority/resource-type/DIR'
+const LANGUAGE_SWE =
+  'http://publications.europa.eu/resource/authority/language/SWE'
+
+/** One base act in the ingestion corpus (Story 2.6, AC 1). */
+export interface EuCorpusEntry {
+  /** Base-act CELEX, e.g. "32016R0679" (never the dated consolidated CELEX). */
+  celex: string
+  contentType: 'EU_REGULATION' | 'EU_DIRECTIVE'
+  /** Latest consolidated CELEX, e.g. "02014R0139-20260222", or null if never amended. */
+  latestConsolidatedCelex: string | null
+  latestConsolidatedDate: Date | null
+}
+
+/**
+ * Builds the in-force corpus query: REG + DIR works with a Swedish expression
+ * that are either `in-force = true` OR carry a future entry-into-force date.
+ * A1-spike-validated (strict in-force = true returned 7,323).
+ *
+ * @param todayIso - today's date as `YYYY-MM-DD`; injected (not `new Date()` inline)
+ *   so the builder stays pure and testable.
+ * NB: CELEX is a typed literal — downstream comparisons must use `STR(?celex)`.
+ */
+export function buildInForceCorpusQuery(todayIso: string): string {
+  return `
+PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT DISTINCT ?celex ?typeName
+WHERE {
+  VALUES ?type { <${RESOURCE_TYPE_REG}> <${RESOURCE_TYPE_DIR}> }
+  ?work cdm:work_has_resource-type ?type .
+  ?work cdm:resource_legal_id_celex ?celex .
+  ?expr cdm:expression_belongs_to_work ?work .
+  ?expr cdm:expression_uses_language <${LANGUAGE_SWE}> .
+  OPTIONAL { ?work cdm:resource_legal_in-force ?inForce }
+  OPTIONAL { ?work cdm:resource_legal_date_entry-into-force ?eif }
+  FILTER( STR(?inForce) = "true" || (BOUND(?eif) && STR(?eif) > "${todayIso}") )
+  FILTER NOT EXISTS { ?work cdm:do_not_index "true"^^xsd:boolean }
+  BIND( IF(?type = <${RESOURCE_TYPE_REG}>, "EU_REGULATION", "EU_DIRECTIVE") AS ?typeName )
+}
+`
+}
+
+/**
+ * Builds a batched query resolving every consolidated version of the given base
+ * acts. A1-spike-confirmed predicates: `act_consolidated_based_on_resource_legal`
+ * links a consolidated work to its (single) base act; `act_consolidated_date`
+ * is the version date. Caller picks the max date per base (see `fetchCorpus`).
+ */
+export function buildLatestConsolidatedQuery(
+  baseCelexNumbers: string[]
+): string {
+  const celexFilter = baseCelexNumbers
+    .map((c) => `STR(?baseCelex) = "${c}"`)
+    .join(' || ')
+  return `
+PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
+
+SELECT ?baseCelex ?consCelex ?consDate
+WHERE {
+  ?cons cdm:act_consolidated_based_on_resource_legal ?base .
+  ?base cdm:resource_legal_id_celex ?baseCelex .
+  FILTER(${celexFilter})
+  ?cons cdm:resource_legal_id_celex ?consCelex .
+  ?cons cdm:act_consolidated_date ?consDate .
+}
+`
+}
+
+/**
+ * Fetches the full in-force corpus and resolves each base act to its latest
+ * consolidated version (Story 2.6, AC 1). Returns one entry per base act.
+ *
+ * @param opts.today - `YYYY-MM-DD` for the future-EIF filter (defaults to now).
+ * @param opts.consolidatedBatchSize - base CELEX per consolidated-lookup query.
+ * @param opts.executor - SPARQL executor (injectable for tests).
+ */
+export async function fetchCorpus(opts?: {
+  today?: string
+  consolidatedBatchSize?: number
+  executor?: (_query: string) => Promise<SPARQLResponse>
+}): Promise<EuCorpusEntry[]> {
+  const executor = opts?.executor ?? executeSparqlQuery
+  const today = opts?.today ?? new Date().toISOString().slice(0, 10)
+  const batchSize = opts?.consolidatedBatchSize ?? 50
+
+  const corpusResp = await executor(buildInForceCorpusQuery(today))
+  const bases = corpusResp.results.bindings
+    .map((b) => {
+      const row = b as Record<string, { value: string } | undefined>
+      const celex = row.celex?.value
+      const contentType = row.typeName?.value
+      if (!celex || !contentType) return null
+      return {
+        celex,
+        contentType: contentType as 'EU_REGULATION' | 'EU_DIRECTIVE',
+      }
+    })
+    .filter(
+      (
+        x
+      ): x is {
+        celex: string
+        contentType: 'EU_REGULATION' | 'EU_DIRECTIVE'
+      } => x !== null
+    )
+
+  // Resolve latest consolidated version per base act, in batches.
+  const latestByBase = new Map<string, { celex: string; date: Date }>()
+  for (let i = 0; i < bases.length; i += batchSize) {
+    const batch = bases.slice(i, i + batchSize).map((b) => b.celex)
+    const resp = await executor(buildLatestConsolidatedQuery(batch))
+    for (const binding of resp.results.bindings) {
+      const row = binding as Record<string, { value: string } | undefined>
+      const baseCelex = row.baseCelex?.value
+      const consCelex = row.consCelex?.value
+      const consDateRaw = row.consDate?.value
+      if (!baseCelex || !consCelex || !consDateRaw) continue
+      const date = new Date(consDateRaw)
+      if (Number.isNaN(date.getTime())) continue
+      const current = latestByBase.get(baseCelex)
+      if (!current || date > current.date) {
+        latestByBase.set(baseCelex, { celex: consCelex, date })
+      }
+    }
+  }
+
+  return bases.map((b) => {
+    const latest = latestByBase.get(b.celex)
+    return {
+      celex: b.celex,
+      contentType: b.contentType,
+      latestConsolidatedCelex: latest?.celex ?? null,
+      latestConsolidatedDate: latest?.date ?? null,
+    }
+  })
+}
+
+/** Per-work monitoring baseline metadata (Story 2.6, AC 5). */
+export interface EuWorkMetadata {
+  title: string | null
+  inForce: boolean | null
+  endOfValidity: Date | null
+  signatureDate: Date | null
+  eeaRelevant: boolean | null
+  eli: string | null
+  /** Multi-valued (phased application) — ISO date strings. */
+  entryIntoForceDates: string[]
+  /** Multi-valued (compliance/transposition deadlines) — ISO date strings. */
+  deadlineDates: string[]
+  directoryCodes: string[]
+  subjectMatters: string[]
+}
+
+/** Builds a single-work metadata query keyed by CELEX (STR-compared). */
+export function buildWorkMetadataQuery(celex: string): string {
+  return `
+PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
+
+SELECT ?title ?inForce ?endOfValidity ?signatureDate ?eea ?eli
+       (GROUP_CONCAT(DISTINCT STR(?eif); separator="|") AS ?eifs)
+       (GROUP_CONCAT(DISTINCT STR(?deadline); separator="|") AS ?deadlines)
+       (GROUP_CONCAT(DISTINCT STR(?dirCode); separator="|") AS ?dirCodes)
+       (GROUP_CONCAT(DISTINCT STR(?subject); separator="|") AS ?subjects)
+WHERE {
+  ?work cdm:resource_legal_id_celex ?celex .
+  FILTER(STR(?celex) = "${celex}")
+  ?expr cdm:expression_belongs_to_work ?work .
+  ?expr cdm:expression_uses_language <${LANGUAGE_SWE}> .
+  OPTIONAL { ?expr cdm:expression_title ?title }
+  OPTIONAL { ?work cdm:resource_legal_in-force ?inForce }
+  OPTIONAL { ?work cdm:resource_legal_date_end-of-validity ?endOfValidity }
+  OPTIONAL { ?work cdm:resource_legal_date_entry-into-force ?eif }
+  OPTIONAL { ?work cdm:resource_legal_date_deadline ?deadline }
+  OPTIONAL { ?work cdm:resource_legal_date_signature ?signatureDate }
+  OPTIONAL { ?work cdm:resource_legal_eea ?eea }
+  OPTIONAL { ?work cdm:resource_legal_eli ?eli }
+  OPTIONAL { ?work cdm:resource_legal_is_about_concept_directory-code ?dirCode }
+  OPTIONAL { ?work cdm:resource_legal_is_about_subject-matter ?subject }
+}
+GROUP BY ?title ?inForce ?endOfValidity ?signatureDate ?eea ?eli
+`
+}
+
+/** Fetches per-work monitoring baseline metadata for one CELEX. */
+export async function fetchEuWorkMetadata(
+  celex: string
+): Promise<EuWorkMetadata | null> {
+  const resp = await executeSparqlQuery(buildWorkMetadataQuery(celex))
+  const b = resp.results.bindings[0] as
+    | Record<string, { value: string } | undefined>
+    | undefined
+  if (!b) return null
+  const splitPipe = (v?: string) =>
+    (v ?? '')
+      .split('|')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+  const toDate = (v?: string) => {
+    if (!v) return null
+    const d = new Date(v)
+    return Number.isNaN(d.getTime()) ? null : d
+  }
+  const toBool = (v?: string) =>
+    v === undefined ? null : v === 'true' || v === '1'
+  return {
+    title: b.title?.value ?? null,
+    inForce: toBool(b.inForce?.value),
+    endOfValidity: toDate(b.endOfValidity?.value),
+    signatureDate: toDate(b.signatureDate?.value),
+    eeaRelevant: toBool(b.eea?.value),
+    eli: b.eli?.value ?? null,
+    entryIntoForceDates: splitPipe(b.eifs?.value),
+    deadlineDates: splitPipe(b.deadlines?.value),
+    directoryCodes: splitPipe(b.dirCodes?.value),
+    subjectMatters: splitPipe(b.subjects?.value),
+  }
+}
+
+// ============================================================================
 // Year-Based Query Builders with Enhanced Fields
 // ============================================================================
 

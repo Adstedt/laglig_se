@@ -72,13 +72,13 @@
 
 ---
 
-## Epic 7: HR Module (Employee Management)
+## Epic 7: HR Module — Employee Data Model & Kollektivavtal Intelligence
 
-**Status:** Not Started (0 completed, 12 in backlog)
+**Status:** Not Started (0 completed, 8 stories) — re-scoped 2026-07-01 (supersedes the original 12-story MVP HR vision)
 
-**Goal:** Connect employees to laws for context-aware HR compliance, improving AI chatbot value.
+**Goal:** Fortnox-grounded, sync-ready employee register + kollektivavtal ingested into the existing RAG, so the AI answers employee-specific questions grounded in the full law & regulation corpus **and** the company's collective agreement.
 
-**Delivers:** Employee CRUD, CSV import, compliance status, kollektivavtal, drag to chat
+**Delivers:** Fortnox-native `Employee` model (sync-ready), Personalregister (canonical `PageHeader` + `DocumentListTable`, org grouping), Personalkort tabbed modal (`SplitPanelModal`), kollektivavtal upload (Settings + HR area) → RAG, employee-aware corpus-grounded AI, Fortnox mapping/sync scaffolding
 
 **Requirements covered:** FR13, FR14, FR15, FR16, FR41, NFR4
 
@@ -389,6 +389,20 @@
 **Note:** Brownfield enhancement. Schema additions are purely additive (3 nullable columns + 1 new table). B.0 is the **pre-MVP wedge** — ships before Epic 24 with import button visibly disabled, stops token waste from auto-fired generation in 1.5 days. Source artefacts: `docs/onboarding-first-run-brief.md` (brief), `docs/architecture/first-run-onboarding-modal.md` (architecture: schema, state machine, re-entry hierarchy, source-tree additions), `_prototypes/onboarding-tutorial-modal.html` (high-fidelity 6-frame visual reference with real Safiro fonts and realistic mini-mockups of every product surface). See `docs/prd/epic-25-first-run-onboarding-modal.md`.
 
 **Priority:** High — token-cost rationale (B.0 wedge) plus activation-conversion rationale (full modal). B.0 is the highest-leverage near-term ship: 1.5 days of work that stops measurable token waste per signup immediately.
+
+---
+
+## Epic 26: Marketing Pages + SEO Content Engine
+
+**Status:** In Progress (12 stories scoped: template architecture → industry/feature/topic/comparison/glossary/blog pages)
+
+**Goal:** Build the conversion-funnel layer the marketing site lacks — feature, industry, topic/area, and comparison pages on one shared template architecture, each targeting a long-tail Swedish search cluster and a buyer mental model, bidirectionally linked to the ~10k-page public law catalog so authority compounds across both surfaces.
+
+**Delivers:** Template architecture (3 layout primitives + ~10 reusable section components, MDX-in-repo, OG-image + JSON-LD + UTM CTAs), megamenu IA expansion (Branscher/Områden), catalog-link primitive, first validation batch (5 pages), Tier-1 industry + feature pages, Tier-2 topic pages, comparison pages, conversion supports (/kom-igang, /demo, /kundcase), programmatic ordbok, blog substrate.
+
+**Requirements covered:** Marketing-site strategy (`docs/marketing-site-strategy.md`), Epic 26 briefs (`docs/prd/epic-26-content-briefs/`), page inventory (`docs/prd/epic-26-page-inventory.md`). See `docs/prd/epic-26-marketing-pages-seo-content-engine.md`.
+
+**Priority:** High — drives the open-beta conversion funnel; template architecture (26.1–26.3) unlocks editorial-pace page rollout.
 
 ---
 
