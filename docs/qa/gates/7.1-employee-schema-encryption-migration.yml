@@ -1,0 +1,53 @@
+schema: 1
+story: '7.1'
+story_title: 'Employee schema, encryption & migration'
+gate: PASS
+status_reason: 'All 7 ACs met; encryption/isolation correct and tested. The CONCERNS from the first review (fortnox_raw PII exposure, per-row decrypt fragility, dead getKey branch) were fixed by the dev *review-qa pass and verified by 2 new regression tests (17/17 green).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-07-01T12:31:00Z'
+
+waiver: { active: false }
+
+quality_score: 100
+expires: '2026-07-15T12:31:00Z'
+
+history:
+  - at: '2026-07-01T12:23:00Z'
+    gate: CONCERNS
+    note: 'Initial review — 5 findings (1 med security-latent, reliability, hygiene).'
+  - at: '2026-07-01T12:31:00Z'
+    gate: PASS
+    note: 'Dev applied all fixes; re-review confirms closed with regression coverage.'
+
+evidence:
+  tests_reviewed: 17
+  tests_independently_rerun: 17
+  risks_identified: 5
+  risks_resolved: 4
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Encryption at rest correct + fail-closed; masking leak-safe; RLS default-deny on new tables. fortnox_raw is now Omitted from EmployeeView and stripped in toView — plaintext PII no longer leaves the repository layer (regression-tested).'
+  performance:
+    status: PASS
+    notes: 'fortnox_raw over-fetch/leak closed at the mapping layer. Adequate for 7.1.'
+  reliability:
+    status: PASS
+    notes: 'Per-row decrypt now degrades to mask on failure instead of throwing out of listEmployees (regression-tested).'
+  maintainability:
+    status: PASS
+    notes: 'Dead base64 branch in getKey removed; guard clarified with a comment.'
+
+top_issues: []
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Apply the migration to a preview/staging DB to confirm clean apply before prod (manual-migration workflow).'
+      refs: ['prisma/migrations/20260701000000_add_employee_model/migration.sql']
+    - action: 'Carry the workspace_id → workspaces FK question forward if referential integrity is later wanted (dev deliberately followed the epic block, which has no FK).'
+      refs: ['prisma/schema.prisma']

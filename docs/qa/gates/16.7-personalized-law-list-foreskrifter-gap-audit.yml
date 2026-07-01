@@ -1,0 +1,70 @@
+# <!-- Powered by BMAD™ Core -->
+schema: 1
+story: '16.7'
+story_title: 'Personalized law-list generation — agency föreskrifter + gap-audit pipeline'
+gate: CONCERNS
+status_reason: 'Feature is functional, well-reasoned, and merged to main, but ships with one high-severity reliability risk (full-corpus runtime 639s exceeds the 600s maxDuration → killed onboarding generations) and zero automated coverage on now-merged, LLM-free Phase B logic.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-06-29T11:10:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'REL-001'
+    severity: high
+    finding: 'Final config measured 639s on the full SKOLFS corpus (Completion Notes), exceeding maxDuration=600 (route.ts:33). On Vercel the invocation is terminated at 600s, leaving status stuck in_progress until /generation-status stale-recovery flips it to failed — the user sees a failed onboarding generation. This is now live (merged via PR #90).'
+    suggested_action: 'Raise maxDuration to 800 (Fluid Compute ceiling) OR reduce pipeline cost (cheaper/earlier-skipped consolidate stage), then re-measure on the full corpus to confirm a safe margin under the chosen cap.'
+  - id: 'TEST-001'
+    severity: medium
+    finding: 'Phase B pure logic is LLM-free and unit-testable but has zero tests: cross-pass token/step aggregation (sumUsage, cacheWrite sum, steps.audit/auditPasses), the loop-until-dry stop-early condition (after <= before), and the AUDIT_PASSES stage config. The 6 existing tests cover Phase A only (tool composition, result shape, progress init, model, onStepFinish).'
+    suggested_action: 'Add unit tests for the aggregation math and the stop-early loop control (mock per-pass results; assert summed usage/steps and that a zero-add pass halts the pipeline).'
+  - id: 'REL-002'
+    severity: medium
+    finding: 'A run measured 1706s with ~2x cache-write tokens when SKOLFS ingestion competed for Anthropic throughput (5-min prompt-cache TTL lapsed between steps). Concurrent onboardings + crons could reproduce this latency spiral in production.'
+    suggested_action: 'Monitor via the new steps/auditPasses + cost telemetry; consider a wall-clock guard that skips the consolidate stage if Phase A + discover already neared budget.'
+  - id: 'DOC-001'
+    severity: low
+    finding: "Story status is Review and File List says Phase B is 'uncommitted', but the work is committed (e8574f28) and merged to main (PR #90, f703a4ce). The doc is stale relative to reality."
+    suggested_action: 'PO/SM to update Status → Done and File List to reflect the merge once this gate is accepted. (QA is not authorized to edit those sections.)'
+  - id: 'QUAL-001'
+    severity: low
+    finding: 'No objective quality measure — list quality was assessed by domain eyeballing on a single seeded workspace (Nordvik). The dangerous failure mode (a missing material law) is invisible without ground truth.'
+    suggested_action: 'Build the gold-standard eval harness recommended in the story (friskola archetype first; recall-weighted on material laws). Highest-value follow-up.'
+  - id: 'QUAL-002'
+    severity: low
+    finding: 'businessContext parity between Phase A and audit-added items is unverified. Under the draft-for-user-audit model, businessContext is the trim-enabler, so weak context on audit-added items degrades the review experience.'
+    suggested_action: 'Spot-check audit-added items carry businessContext on par with build-phase items (cheap, no full re-run needed).'
+
+risk_summary:
+  totals: { critical: 0, high: 1, medium: 2, low: 3 }
+  recommendations:
+    must_fix:
+      - 'REL-001: bring full-corpus runtime under the maxDuration cap (raise cap or cut pipeline cost) — currently a live failed-onboarding risk.'
+    monitor:
+      - 'REL-002: watch for cache-expiry latency spirals under concurrent load via the new telemetry.'
+      - 'TEST-001: add Phase B aggregation + loop-control unit tests.'
+
+quality_score: 70
+
+evidence:
+  tests_reviewed: 6
+  risks_identified: 6
+  trace:
+    ac_covered: [4, 14] # model + result-shape (incl. steps) partially asserted by existing tests
+    ac_gaps: [1, 2, 3, 7, 8, 9, 10, 11, 12, 13, 16] # föreskrifter behaviour (LLM) + all Phase B logic + language — validated only manually
+
+nfr_validation:
+  security: { status: PASS, notes: 'No new attack surface; env-gated (LAW_LIST_GENERATION_MODEL, LAW_LIST_GAP_AUDIT); prompt inputs come from the already-trusted company profile.' }
+  performance: { status: CONCERNS, notes: 'Full-corpus final config 639s > 600s budget; cost ~$4–5.80/run (cache-write dominated). Acceptable cost, but runtime breaches the cap (REL-001).' }
+  reliability: { status: CONCERNS, notes: 'Timeout failure mode (REL-001) + cache-expiry-under-load (REL-002). Partially mitigated by /generation-status stale-recovery, but the UX is a failed onboarding.' }
+  maintainability: { status: PASS, notes: 'Well-structured two-phase design, documented decisions, kill switch + observability. Offset by the Phase B test gap (TEST-001).' }
+
+recommendations:
+  immediate:
+    - action: 'Resolve REL-001: raise maxDuration to 800 or reduce pipeline cost, then re-measure full-corpus runtime under the cap.'
+      refs: ['app/api/workspace/generate-law-list/route.ts:33']
+  future:
+    - action: 'Add Phase B aggregation + stop-early unit tests.'
+      refs: ['lib/agent/skills/generate-law-list.ts', 'tests/unit/agent/skills/generate-law-list.test.ts']
+    - action: 'Build a recall-weighted gold-standard eval harness (friskola archetype first).'
+      refs: ['lib/agent/skills/generate-law-list.ts']

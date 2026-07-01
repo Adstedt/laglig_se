@@ -19,7 +19,13 @@ export interface SyncResult {
   duration: number
 }
 
-const ALLOWED_CONTENT_TYPES = new Set(['SFS_LAW', 'AGENCY_REGULATION'])
+const ALLOWED_CONTENT_TYPES = new Set([
+  'SFS_LAW',
+  'AGENCY_REGULATION',
+  // Story 2.6: EU legislation is chunked/embedded once normalized (markdown_content present).
+  'EU_REGULATION',
+  'EU_DIRECTIVE',
+])
 
 /**
  * Sync chunks for a single document.

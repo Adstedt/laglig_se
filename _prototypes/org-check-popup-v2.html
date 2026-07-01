@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Laglig.se — Regelöversikt-popup v2 (nuvarande vs förbättrad)</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+    <style>
+      @font-face {
+        font-family: 'Safiro';
+        src: url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'),
+             url('../public/fonts/safiro-medium-webfont.woff') format('woff');
+        font-weight: 500; font-style: normal; font-display: swap;
+      }
+      @font-face {
+        font-family: 'Google Sans Flex';
+        src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype');
+        font-weight: 100 900; font-style: normal; font-display: swap;
+      }
+      :root {
+        --background: 40 20% 98%; --foreground: 30 10% 10%; --card: 40 15% 99%;
+        --primary: 30 15% 12%; --primary-foreground: 40 20% 98%; --secondary: 40 15% 95%;
+        --muted: 40 12% 94%; --muted-foreground: 30 8% 45%; --accent: 40 15% 93%;
+        --border: 35 10% 88%; --section-sage: 140 25% 95%;
+      }
+    </style>
+    <script>
+      tailwind.config = { theme: { extend: {
+        fontFamily: {
+          sans: ['Google Sans Flex','system-ui','sans-serif'],
+          safiro: ['Safiro','Georgia','serif'],
+        },
+        colors: {
+          background:'hsl(var(--background)/<alpha-value>)', foreground:'hsl(var(--foreground)/<alpha-value>)',
+          card:'hsl(var(--card)/<alpha-value>)', primary:'hsl(var(--primary)/<alpha-value>)',
+          'primary-foreground':'hsl(var(--primary-foreground)/<alpha-value>)', secondary:'hsl(var(--secondary)/<alpha-value>)',
+          muted:'hsl(var(--muted)/<alpha-value>)', 'muted-foreground':'hsl(var(--muted-foreground)/<alpha-value>)',
+          accent:'hsl(var(--accent)/<alpha-value>)', border:'hsl(var(--border)/<alpha-value>)',
+          'section-sage':'hsl(var(--section-sage)/<alpha-value>)',
+        },
+        borderRadius: { lg:'0.5rem', md:'calc(0.5rem - 2px)', sm:'calc(0.5rem - 4px)' },
+      }}};
+    </script>
+    <style>
+      * { box-sizing: border-box; }
+      body { font-family:'Google Sans Flex',system-ui,sans-serif; -webkit-font-smoothing:antialiased; color:hsl(30 10% 10%); }
+      .font-safiro { font-family:'Safiro',Georgia,serif; font-weight:500; }
+      /* tinted backdrop like the screenshot */
+      .stage { background:
+        radial-gradient(1200px 500px at 50% -10%, hsl(40 30% 92%), transparent),
+        hsl(40 12% 88%); }
+    </style>
+  </head>
+
+  <body class="stage min-h-screen">
+    <div class="mx-auto max-w-6xl px-6 py-12">
+      <header class="mb-10 text-center">
+        <h1 class="font-safiro text-2xl tracking-tight">Regelöversikt-popup — säljande variant</h1>
+        <p class="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
+          Den nuvarande popupen ställer rätt diagnos men hoppar direkt till knappen. Den förbättrade
+          bygger en bro: <span class="text-foreground">diagnos → vad laglig.se gör åt det → CTA</span>.
+        </p>
+      </header>
+
+      <div class="grid items-start gap-8 lg:grid-cols-2">
+        <!-- CURRENT -->
+        <div>
+          <p class="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <span class="grid h-5 w-5 place-items-center rounded-full bg-foreground/10 text-[10px]">A</span> Nuvarande
+          </p>
+          <div id="popup-current" class="mx-auto w-full max-w-md"></div>
+        </div>
+        <!-- IMPROVED -->
+        <div>
+          <p class="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-amber-700">
+            <span class="grid h-5 w-5 place-items-center rounded-full bg-amber-400/30 text-[10px] text-amber-800">B</span> Förbättrad — säljer produkten
+          </p>
+          <div id="popup-improved" class="mx-auto w-full max-w-md"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const C = {
+        name:'Medea AB', legalForm:'AB', municipality:'Stockholm',
+        summary:'Partihandelsföretag inom glas, porslin och rengöringsmedel som även erbjuder försäljningskonsulttjänster samt produkter inom IT och skyddsutrustning.',
+        areas:['GDPR','Bokföring','Bolagsrätt','Kemikaliesäkerhet'],
+      };
+      const areaIcon = { GDPR:'lock','Bokföring':'calculator','Bolagsrätt':'scale','Kemikaliesäkerhet':'flask-conical' };
+
+      // shared blocks ----------------------------------------------------------
+      const closeBtn = `<button type="button" class="absolute right-3.5 top-3.5 z-10 grid h-8 w-8 place-items-center rounded-lg border border-border bg-background/80 text-muted-foreground transition hover:text-foreground"><i data-lucide="x" class="h-4 w-4"></i></button>`;
+
+      const identity = `
+        <div class="bg-gradient-to-b from-secondary/60 to-transparent px-5 pb-4 pt-5">
+          <p class="mb-3 flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground"><i data-lucide="sparkles" class="h-3 w-3 text-amber-500"></i> Din regelöversikt</p>
+          <div class="flex items-start gap-3 pr-6">
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-foreground font-safiro text-lg text-background">${C.name.charAt(0)}</div>
+            <div class="min-w-0">
+              <h3 class="font-safiro text-lg leading-tight">${C.name}</h3>
+              <div class="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                <span class="inline-flex items-center gap-1 rounded-md bg-background/70 px-1.5 py-0.5 ring-1 ring-border/60"><i data-lucide="building-2" class="h-3 w-3"></i> ${C.legalForm}</span>
+                <span class="inline-flex items-center gap-1 rounded-md bg-background/70 px-1.5 py-0.5 ring-1 ring-border/60"><i data-lucide="map-pin" class="h-3 w-3"></i> ${C.municipality}</span>
+              </div>
+            </div>
+          </div>
+          <p class="mt-3 text-[13px] leading-relaxed text-muted-foreground">${C.summary}</p>
+        </div>`;
+
+      const diagnosis = `
+        <div class="border-t border-border/70 px-5 py-4">
+          <div class="mb-3 flex items-center gap-2.5">
+            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><i data-lucide="shield-check" class="h-4 w-4"></i></span>
+            <p class="text-sm leading-snug">Minst <span class="font-safiro text-base text-foreground">${C.areas.length}</span> regelområden kan beröra er verksamhet</p>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            ${C.areas.map(a=>`<span class="inline-flex items-center gap-1.5 rounded-lg bg-secondary/70 px-2.5 py-1.5 text-[12.5px] font-medium text-foreground/80 ring-1 ring-border/50"><i data-lucide="${areaIcon[a]}" class="h-3.5 w-3.5 text-foreground/45"></i>${a}</span>`).join('')}
+          </div>
+        </div>`;
+
+      // ── A: current popup (exact current markup) ──
+      document.getElementById('popup-current').innerHTML = `
+        <div class="relative overflow-hidden rounded-2xl border border-border bg-card text-left shadow-2xl shadow-foreground/10">
+          ${closeBtn}${identity}${diagnosis}
+          <div class="px-5 pb-5 pt-1">
+            <a href="#" class="inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90">Testa gratis<i data-lucide="arrow-right" class="ml-1 h-4 w-4"></i></a>
+            <p class="mt-2.5 flex items-center justify-center gap-1.5 text-xs text-muted-foreground"><i data-lucide="check" class="h-3.5 w-3.5 text-emerald-600"></i> Gratis i 15 dagar · inget betalkort krävs</p>
+          </div>
+        </div>`;
+
+      // ── B: improved popup — adds the "what laglig.se does" sell + a proof line ──
+      const sell = `
+        <div class="border-t border-border/70 bg-section-sage/40 px-5 py-4">
+          <p class="mb-2.5 font-safiro text-[13px] font-medium text-foreground">Så får ni kontroll med laglig.se</p>
+          <ul class="space-y-2.5 text-[13px] text-foreground/80">
+            <li class="flex items-start gap-2.5"><i data-lucide="list-checks" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600"></i><span><span class="font-medium text-foreground">Komplett laglista</span> för er bransch — automatiskt genererad ur er verksamhet.</span></li>
+            <li class="flex items-start gap-2.5"><i data-lucide="bell-ring" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600"></i><span><span class="font-medium text-foreground">Bevakning av varje lagändring</span> — ni får notis så fort något som rör er ändras.</span></li>
+            <li class="flex items-start gap-2.5"><i data-lucide="sparkles" class="mt-0.5 h-4 w-4 shrink-0 text-emerald-600"></i><span><span class="font-medium text-foreground">En AI-agent</span> som gör efterlevnadsarbetet åt er och håller listan levande.</span></li>
+          </ul>
+        </div>`;
+
+      document.getElementById('popup-improved').innerHTML = `
+        <div class="relative overflow-hidden rounded-2xl border border-border bg-card text-left shadow-2xl shadow-foreground/10">
+          ${closeBtn}${identity}${diagnosis}${sell}
+          <div class="px-5 pb-5 pt-4">
+            <a href="#" class="inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90">Skapa er laglista — testa gratis<i data-lucide="arrow-right" class="ml-1 h-4 w-4"></i></a>
+            <p class="mt-2.5 flex items-center justify-center gap-1.5 text-xs text-muted-foreground"><i data-lucide="check" class="h-3.5 w-3.5 text-emerald-600"></i> Gratis i 15 dagar · inget betalkort krävs</p>
+          </div>
+        </div>`;
+
+      lucide.createIcons();
+    </script>
+  </body>
+</html>

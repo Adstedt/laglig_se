@@ -72,12 +72,15 @@ const workspaceRatelimit = isRedisConfigured()
     })
   : null
 
-// Maximum duration for streaming responses (90s). Story 19.14: adaptive thinking
+// Maximum duration for streaming responses (300s). Story 19.14: adaptive thinking
 // (per-context `effort`, capped at `high`) lets the model self-regulate think time
-// within the effort ceiling, so `max` is avoided to keep tool-heavy CHANGE turns
-// under this 90s budget without raising it. Effort values + the provider-options
-// builder live in lib/agent/thinking-effort.ts, wired in below.
-export const maxDuration = 90
+// within the effort ceiling. Effort values + the provider-options builder live in
+// lib/agent/thinking-effort.ts, wired in below. Raised from 90s → 300s: heavy
+// styrdokument drafts ("samtliga krav" policies) do ~8 search_laws then emit a
+// large document as draft_styrdokument args, which overran the 90s wall and left
+// the assistant stub empty forever (no onFinish → frozen "skriver utkast"). 300s
+// is the Vercel Pro function-timeout ceiling.
+export const maxDuration = 300
 
 export async function POST(req: Request) {
   try {

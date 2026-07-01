@@ -1351,6 +1351,11 @@ model WorkspaceFile {
   // Story 17.16: Kravpunkter evidence links
   requirement_evidence_links RequirementEvidenceLink[]
 
+  // Story 7.1 (Epic 7): Kollektivavtal that were uploaded as this file. Virtual
+  // back-relation for CollectiveAgreement.workspace_file_id — adds NO column to
+  // workspace_files (Prisma relation-completeness requirement only).
+  collective_agreements CollectiveAgreement[]
+
   // Story 6.7b: Unique filename within same folder
   @@unique([workspace_id, parent_folder_id, filename], name: "unique_filename_in_folder")
   @@index([workspace_id])
@@ -2452,22 +2457,34 @@ model WorkspaceCost {
   id           String @id @default(uuid())
   workspace_id String
 
-  /** First day of the reported month (UTC). */
+  /**
+   * First day of the reported month (UTC).
+   */
   month DateTime
 
-  /** AI/Claude cost for the month, SEK (sum of cost_usd_estimate × FX). */
+  /**
+   * AI/Claude cost for the month, SEK (sum of cost_usd_estimate × FX).
+   */
   ai_cost Decimal @default(0) @db.Decimal(12, 4)
 
-  /** Storage + flat infra allocation for the month, SEK. */
+  /**
+   * Storage + flat infra allocation for the month, SEK.
+   */
   infra_cost Decimal @default(0) @db.Decimal(12, 4)
 
-  /** ai_cost + infra_cost, SEK. */
+  /**
+   * ai_cost + infra_cost, SEK.
+   */
   total_cost Decimal @default(0) @db.Decimal(12, 4)
 
-  /** Subscription revenue for the month, SEK. Null for Enterprise w/o manual entry. */
+  /**
+   * Subscription revenue for the month, SEK. Null for Enterprise w/o manual entry.
+   */
   revenue Decimal? @db.Decimal(12, 4)
 
-  /** (revenue − total_cost) / revenue × 100. Null when revenue is 0/absent. */
+  /**
+   * (revenue − total_cost) / revenue × 100. Null when revenue is 0/absent.
+   */
   gross_margin_pct Decimal? @db.Decimal(6, 2)
 
   created_at DateTime @default(now())
@@ -2588,4 +2605,152 @@ model CatalogIngestRequest {
   @@index([workspace_id, status, created_at])
   @@index([handler_user_id])
   @@map("catalog_ingest_requests")
+}
+
+// ============================================================================
+// EPIC 7 — HR MODULE: EMPLOYEE DATA MODEL (Story 7.1)
+// Fortnox-mapped compliance subset. Enum members ARE the Fortnox codes
+// (identity-mappable; UI supplies Swedish labels). Column names mirror Fortnox
+// property names (snake_cased). See docs/reference/fortnox-employee-schema-analysis.md
+// and docs/prd/epic-7-hr-module-employee-management-detailed.md#Data Model.
+// ============================================================================
+
+model Employee {
+  id           String @id @default(uuid())
+  workspace_id String
+  created_by   String
+
+  // --- Fortnox: Personal & Contact (Personalinformation) ---
+  employee_id_ref String? // Fortnox EmployeeId (Anställnings-ID, 1–15 chars, unique/company)
+  personnummer    String? // Fortnox PersonalIdentityNumber — ENCRYPTED AT REST (Fortnox-optional)
+  first_name      String // FirstName (Fortnox-required)
+  last_name       String // LastName (Fortnox-required)
+  email           String? // Email (Fortnox-required for sync-OUT — flagged in completeness)
+  phone1          String? // Phone1
+  phone2          String? // Phone2
+  address1        String? // Address1
+  address2        String? // Address2
+  post_code       String? // PostCode
+  city            String? // City
+  country         String? @default("SE") // Country
+  job_title       String? // JobTitle (max 30 chars)
+
+  // --- Fortnox: Employment (Anställning) — LAS core ---
+  employment_date DateTime? // EmploymentDate (Anställningsdatum)
+  employed_to     DateTime? // EmployedTo (Slutdatum, visstid)
+  employment_form EmploymentForm? // EmploymentForm — LAS §4–5, §5a
+  personel_type   PersonelType? // PersonelType (Fortnox spelling; Tjänsteman/Arbetare)
+  inactive        Boolean         @default(false) // Fortnox Inactive (Aktiv/Inaktiv)
+
+  // --- Fortnox: Schedule / working time ---
+  full_time_equivalent Decimal? @db.Decimal(4, 3) // FullTimeEquivalent (0–1; 1.0 = 100%, sysselsättningsgrad)
+  average_weekly_hours Decimal? @db.Decimal(5, 2) // AverageWeeklyHours
+  schedule_id          String? // ScheduleId (opaque Fortnox ref; stored for sync fidelity)
+
+  // --- Fortnox: Salary form (Löneuppgifter — form only, no amounts) ---
+  salary_form SalaryForm? // SalaryForm (Månadslön/Timlön)
+
+  // --- Fortnox: Vacation (Semester — headline only; full ledger stays in Fortnox) ---
+  vacation_days_paid Decimal? @db.Decimal(5, 2) // VacationDaysPaid (Semesterlagen headline)
+
+  // --- Kollektivavtal assignment + org grouping (laglig-native) ---
+  collective_agreement_id String? // FK → CollectiveAgreement
+  group_id                String? // FK → EmployeeGroup (enhet/avdelning). Laglig-native, NOT Fortnox-synced.
+  manager_id              String? // laglig-native self-relation (Chef)
+
+  // --- Fortnox sync metadata (reserved; null until integration) ---
+  fortnox_employee_id String? // Fortnox internal id once synced
+  fortnox_synced_at   DateTime?
+  fortnox_sync_status FortnoxSyncStatus @default(NOT_LINKED)
+  fortnox_raw         Json? // last raw Fortnox payload (audit / conflict resolution)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations (reverse sides declared on the referenced models)
+  manager              Employee?            @relation("EmployeeManager", fields: [manager_id], references: [id], onDelete: SetNull)
+  reports              Employee[]           @relation("EmployeeManager")
+  group                EmployeeGroup?       @relation(fields: [group_id], references: [id], onDelete: SetNull)
+  collective_agreement CollectiveAgreement? @relation(fields: [collective_agreement_id], references: [id], onDelete: SetNull)
+
+  @@unique([workspace_id, fortnox_employee_id])
+  @@index([workspace_id])
+  @@index([workspace_id, inactive])
+  @@map("employees")
+}
+
+// Enum members ARE the Fortnox codes (identity-mappable). UI supplies Swedish labels.
+enum EmploymentForm {
+  TV // Tillsvidareanställning (permanent)
+  PRO // Provanställning (probation)
+  TID // Tidsbegränsad (temporary)
+  SVT // Säsongsvisa (seasonal)
+  VIK // Vikariat (substitute)
+  PRJ // Projektanställning (project)
+  PRA // Praktik (internship)
+  FER // Feriearbete (summer job)
+  SES // Sessionsanställning
+  NEJ // Ingen (none)
+}
+
+enum PersonelType {
+  TJM // Tjänsteman (salaried employee)
+  ARB // Arbetare (worker)
+}
+
+enum SalaryForm {
+  MAN // Månadslön (monthly)
+  TIM // Timlön (hourly)
+}
+
+enum FortnoxSyncStatus {
+  NOT_LINKED
+  LINKED
+  SYNCING
+  CONFLICT
+  ERROR
+}
+
+// Org grouping — mirrors the law-list group model so DocumentListTable's group
+// API works unchanged. Laglig-native; NOT Fortnox-synced. Replaces the earlier
+// free-text `department`.
+model EmployeeGroup {
+  id           String     @id @default(uuid())
+  workspace_id String
+  name         String // "Lager", "Huvudkontor", "HR"…
+  position     Int        @default(0) // ordering of group headers
+  created_at   DateTime   @default(now())
+  employees    Employee[]
+
+  @@unique([workspace_id, name])
+  @@index([workspace_id])
+  @@map("employee_groups")
+}
+
+// Kollektivavtal record (Story 7.1 — model only; ingestion/status wiring is
+// Story 7.5). `workspace_file_id` links to the uploaded source PDF (WorkspaceFile).
+model CollectiveAgreement {
+  id                String                    @id @default(uuid())
+  workspace_id      String
+  name              String // e.g. "Byggnads Kollektivavtal 2024"
+  personel_type     PersonelType? // target audience (Arbetare/Tjänsteman)
+  workspace_file_id String? // FK → WorkspaceFile (uploaded PDF)
+  uploaded_by       String // plain user id (lightweight audit convention, no User FK)
+  status            CollectiveAgreementStatus @default(PENDING)
+  created_at        DateTime                  @default(now())
+  updated_at        DateTime                  @updatedAt
+
+  workspace_file WorkspaceFile? @relation(fields: [workspace_file_id], references: [id], onDelete: SetNull)
+  employees      Employee[]
+
+  @@index([workspace_id])
+  @@map("collective_agreements")
+}
+
+// Kollektivavtal ingestion lifecycle (placeholder; wired in Story 7.5).
+enum CollectiveAgreementStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
 }

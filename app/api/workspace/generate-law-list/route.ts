@@ -13,7 +13,7 @@
  * and prevented the tutorial-while-waiting UX from ever rendering.
  *
  * Background-job lifetime: `after()` keeps the serverless function alive
- * until the callback completes or maxDuration (600s, see below) hits,
+ * until the callback completes or maxDuration (800s, see below) hits,
  * regardless of whether the client disconnects. If the LLM job still overruns
  * the cap, status stays stuck on 'in_progress' until the `generation-status`
  * route's stale-recovery flips it to 'failed'.
@@ -30,7 +30,12 @@ import { generateLawList } from '@/lib/agent/skills/generate-law-list'
 // using Opus 4.8 + high adaptive thinking, which has been observed at ~354s and
 // will grow as the corpus and list lengths grow — 600s gives real headroom over
 // the previous 300s cap (which silently killed runs mid-flight in prod).
-export const maxDuration = 600
+// 800s = the Pro + Fluid Compute ceiling. Raised from 600 after QA REL-001:
+// the shipped config measured 639s on the full SKOLFS corpus, which a 600s cap
+// would have killed mid-run. 800 gives ~25% headroom for the 639s baseline.
+// NOTE: this does NOT cover the cache-expiry latency spiral (QA REL-002, ~1706s
+// under concurrent API load) — that needs a wall-clock guard, not a bigger cap.
+export const maxDuration = 800
 
 export async function POST() {
   try {

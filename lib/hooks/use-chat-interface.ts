@@ -22,6 +22,13 @@ import {
 
 export type ChatContextType = 'global' | 'task' | 'law' | 'change'
 
+// Stall watchdog thresholds. A turn is considered stalled after this long with
+// zero stream activity. Kept comfortably below the 300s server maxDuration but
+// well above a normal turn (heavy drafts complete in ~50s of active streaming),
+// so it only trips on true silence, not slow-but-progressing generation.
+const STALL_TIMEOUT_MS = 90_000
+const STALL_POLL_MS = 5_000
+
 export interface ChatContextInitial {
   title?: string | undefined
   description?: string | undefined
@@ -109,6 +116,11 @@ export function useChatInterface(
   } = options
 
   const [retryAfter, setRetryAfter] = useState<number | undefined>(undefined)
+  // Client-side stall watchdog: when a turn overruns the server (or a heavy
+  // draft_styrdokument tool call stalls mid-args), the connection can go silent
+  // with no error event, leaving the "skriver utkast" spinner spinning forever.
+  // This synthetic error surfaces a retry instead. See the watchdog effect below.
+  const [stalledError, setStalledError] = useState<Error | null>(null)
   const [isLoadingHistory, setIsLoadingHistory] = useState(true)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [historyLoaded, setHistoryLoaded] = useState(false)
@@ -116,6 +128,9 @@ export function useChatInterface(
   const lastMessageRef = useRef<string>('')
   const initialMessageSentRef = useRef(false)
   const startTimeRef = useRef<number>(0)
+  // Timestamp of the last observed stream progress (any message/status change).
+  // The watchdog fires only after this goes silent for STALL_TIMEOUT_MS.
+  const lastActivityRef = useRef<number>(0)
   const pendingSaveRef = useRef<Set<string>>(new Set())
   const nextCursorRef = useRef<string | null>(null)
 
@@ -192,6 +207,39 @@ export function useChatInterface(
       }
     },
   })
+
+  // Reset the activity marker on every streaming progress event. useChat hands
+  // back a new `messages` reference on each throttled token/tool-part flush, and
+  // `status` transitions on submit/stream — so as long as bytes are flowing this
+  // keeps the watchdog from firing. A genuine stall stops updating both.
+  useEffect(() => {
+    lastActivityRef.current = Date.now()
+  }, [messages, status])
+
+  // Stall watchdog. While a turn is in flight, poll for total silence longer
+  // than STALL_TIMEOUT_MS. If the stream never delivers a terminal event (Vercel
+  // function killed at maxDuration, dropped connection, or a stuck generation),
+  // abort locally and surface a retryable error rather than an eternal spinner.
+  useEffect(() => {
+    const loading = status === 'streaming' || status === 'submitted'
+    if (!loading) return
+
+    const interval = setInterval(() => {
+      if (Date.now() - lastActivityRef.current > STALL_TIMEOUT_MS) {
+        stop()
+        // Message carries "timeout" so <ChatError> classifies it as the timeout
+        // branch ("Förfrågan tog för lång tid. Försök igen.") — the displayed
+        // copy comes from ERROR_MESSAGES, not this raw string.
+        setStalledError(new Error('Chat stream stalled — timeout'))
+        trackEvent('ai_chat_stalled', {
+          contextType,
+          elapsedMs: Date.now() - startTimeRef.current,
+        })
+      }
+    }, STALL_POLL_MS)
+
+    return () => clearInterval(interval)
+  }, [status, stop, contextType])
 
   // Load chat history on mount (skip if AI SDK already has messages in memory)
   useEffect(() => {
@@ -273,7 +321,9 @@ export function useChatInterface(
 
       // Reset state
       setRetryAfter(undefined)
+      setStalledError(null)
       startTimeRef.current = Date.now()
+      lastActivityRef.current = Date.now()
       lastMessageRef.current = content
 
       // Track message sent
@@ -318,6 +368,7 @@ export function useChatInterface(
 
   const handleRetry = useCallback(() => {
     setRetryAfter(undefined)
+    setStalledError(null)
 
     // If there was a last message, resend it
     if (lastMessageRef.current) {
@@ -379,13 +430,21 @@ export function useChatInterface(
     }
   }, [contextType, contextId, isLoadingMore, setMessages])
 
-  const isLoading = status === 'streaming' || status === 'submitted'
+  // A watchdog stall presents as a terminal error: force status to 'error' and
+  // hand back the synthetic error so the panel renders <ChatError> with a retry
+  // instead of a stuck spinner. Otherwise pass useChat's own state through.
+  const effectiveStatus: UseChatInterfaceReturn['status'] = stalledError
+    ? 'error'
+    : status
+  const effectiveError = stalledError ?? error ?? null
+  const isLoading =
+    effectiveStatus === 'streaming' || effectiveStatus === 'submitted'
 
   return {
     messages,
     sendMessage,
-    status,
-    error: error ?? null,
+    status: effectiveStatus,
+    error: effectiveError,
     stop,
     retryAfter,
     handleRetry,

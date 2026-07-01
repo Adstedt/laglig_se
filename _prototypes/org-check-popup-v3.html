@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Laglig.se — Regelöversikt-popup v3 (S-tier)</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+    <style>
+      @font-face {
+        font-family: 'Safiro';
+        src: url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'),
+             url('../public/fonts/safiro-medium-webfont.woff') format('woff');
+        font-weight: 500; font-style: normal; font-display: swap;
+      }
+      @font-face {
+        font-family: 'Google Sans Flex';
+        src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype');
+        font-weight: 100 900; font-style: normal; font-display: swap;
+      }
+      :root {
+        --background: 40 20% 98%; --foreground: 30 10% 10%; --card: 40 15% 99%;
+        --primary: 30 15% 12%; --primary-foreground: 40 20% 98%; --secondary: 40 15% 95%;
+        --muted: 40 12% 94%; --muted-foreground: 30 8% 45%; --accent: 40 15% 93%;
+        --border: 35 10% 88%;
+      }
+    </style>
+    <script>
+      tailwind.config = { theme: { extend: {
+        fontFamily: { sans:['Google Sans Flex','system-ui','sans-serif'], safiro:['Safiro','Georgia','serif'] },
+        colors: {
+          background:'hsl(var(--background)/<alpha-value>)', foreground:'hsl(var(--foreground)/<alpha-value>)',
+          card:'hsl(var(--card)/<alpha-value>)', primary:'hsl(var(--primary)/<alpha-value>)',
+          'primary-foreground':'hsl(var(--primary-foreground)/<alpha-value>)', secondary:'hsl(var(--secondary)/<alpha-value>)',
+          muted:'hsl(var(--muted)/<alpha-value>)', 'muted-foreground':'hsl(var(--muted-foreground)/<alpha-value>)',
+          accent:'hsl(var(--accent)/<alpha-value>)', border:'hsl(var(--border)/<alpha-value>)',
+        },
+        borderRadius: { lg:'0.5rem', md:'calc(0.5rem - 2px)', sm:'calc(0.5rem - 4px)' },
+      }}};
+    </script>
+    <style>
+      * { box-sizing: border-box; }
+      body { font-family:'Google Sans Flex',system-ui,sans-serif; -webkit-font-smoothing:antialiased; color:hsl(30 10% 10%); }
+      .font-safiro { font-family:'Safiro',Georgia,serif; font-weight:500; letter-spacing:-0.01em; }
+
+      /* tinted L-shape stage + blurred page behind (Linear/HubSpot chrome) */
+      .stage { background:
+        radial-gradient(900px 420px at 50% -8%, hsl(42 34% 91%), transparent 70%),
+        linear-gradient(hsl(40 14% 89%), hsl(38 12% 86%)); }
+
+      /* layered premium shadow — ported from landing glass-frame */
+      .float {
+        box-shadow:
+          0 1px 2px 0 rgb(0 0 0 / 0.04),
+          0 10px 20px -6px rgb(0 0 0 / 0.10),
+          0 28px 56px -14px rgb(0 0 0 / 0.18),
+          0 60px 120px -30px rgb(0 0 0 / 0.22);
+      }
+      /* entrance */
+      @keyframes pop { 0% { opacity:0; transform: translateY(14px) scale(.985); } 100% { opacity:1; transform:none; } }
+      .pop { animation: pop .5s cubic-bezier(.16,1,.3,1) both; }
+      @keyframes rowin { 0% { opacity:0; transform: translateX(-6px); } 100% { opacity:1; transform:none; } }
+      .rowin { animation: rowin .45s cubic-bezier(.16,1,.3,1) both; }
+    </style>
+  </head>
+
+  <body class="stage min-h-screen">
+    <!-- blurred faux law-page context behind the modal (like the screenshot) -->
+    <div aria-hidden class="pointer-events-none fixed inset-0 select-none overflow-hidden opacity-[0.16] blur-[2px]">
+      <div class="mx-auto mt-24 max-w-3xl px-10">
+        <p class="font-safiro text-6xl leading-tight">Arbetsmiljölagen</p>
+        <p class="mt-6 text-2xl leading-relaxed text-foreground/70">1 § Lagens ändamål är att förebygga ohälsa och olycksfall i arbetet samt att även i övrigt uppnå en god arbetsmiljö. 2 § Denna lag gäller varje verksamhet i vilken arbetstagare utför arbete för en arbetsgivares räkning…</p>
+      </div>
+    </div>
+
+    <div class="relative flex min-h-screen items-center justify-center p-4">
+      <!-- ════════════════════ POPUP v3 ════════════════════ -->
+      <div class="pop float relative w-full max-w-[760px] overflow-hidden rounded-[20px] border border-border/80 bg-card text-left">
+
+        <!-- close -->
+        <button type="button" class="absolute right-4 top-4 z-20 grid h-8 w-8 place-items-center rounded-lg border border-border/80 bg-background/70 text-muted-foreground backdrop-blur transition hover:border-border hover:text-foreground">
+          <i data-lucide="x" class="h-4 w-4"></i>
+        </button>
+
+        <div class="grid md:grid-cols-[0.92fr_1fr]">
+          <!-- ═══════ LEFT: who you are · what's at stake · the action ═══════ -->
+          <div class="flex flex-col gap-4 bg-gradient-to-b from-secondary/70 to-transparent p-5 md:gap-5">
+            <!-- 1 · IDENTITY (recognition) -->
+            <div>
+              <p class="mb-3 font-safiro text-[12px] font-medium uppercase tracking-wider text-amber-700">Din regelöversikt</p>
+              <div class="flex items-start gap-3 pr-8">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-foreground font-safiro text-lg text-background shadow-sm">M</div>
+                <div class="min-w-0 pt-0.5">
+                  <h3 class="font-safiro text-[19px] leading-tight">Medea AB</h3>
+                  <div class="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11.5px] text-muted-foreground">
+                    <span class="inline-flex items-center gap-1 rounded-md bg-background/80 px-1.5 py-0.5 ring-1 ring-border/60"><i data-lucide="building-2" class="h-3 w-3"></i> AB</span>
+                    <span class="inline-flex items-center gap-1 rounded-md bg-background/80 px-1.5 py-0.5 ring-1 ring-border/60"><i data-lucide="map-pin" class="h-3 w-3"></i> Stockholm</span>
+                    <span class="inline-flex items-center gap-1 rounded-md bg-background/80 px-1.5 py-0.5 ring-1 ring-border/60"><i data-lucide="package" class="h-3 w-3"></i> Partihandel</span>
+                  </div>
+                </div>
+              </div>
+              <p class="mt-2.5 line-clamp-2 text-[12.5px] leading-relaxed text-muted-foreground">
+                Partihandel inom glas, porslin och kemtekniska produkter, med försäljnings­konsulttjänster samt IT- och skyddsutrustning.
+              </p>
+            </div>
+
+            <!-- 2 · STAKES (the realization) -->
+            <div>
+              <div class="flex items-center gap-3 rounded-xl bg-background/60 px-3.5 py-3 ring-1 ring-border/50">
+                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-foreground/[0.06] text-foreground/70">
+                  <i data-lucide="shield-check" class="h-[18px] w-[18px]"></i>
+                </span>
+                <p class="text-[13px] leading-snug text-foreground/80">
+                  <span class="font-safiro text-[15px] text-foreground">4 regelområden</span> ·
+                  cirka <span class="font-safiro text-[15px] text-foreground">40 lagkrav</span>
+                  kan beröra er verksamhet — och de ändras löpande.
+                </p>
+              </div>
+              <div class="mt-2.5 flex flex-wrap gap-1.5">
+                <span class="inline-flex items-center gap-1.5 rounded-lg bg-background/70 px-2.5 py-1.5 text-[12px] font-medium text-foreground/80 ring-1 ring-border/50"><i data-lucide="lock" class="h-3.5 w-3.5 text-foreground/40"></i> GDPR</span>
+                <span class="inline-flex items-center gap-1.5 rounded-lg bg-background/70 px-2.5 py-1.5 text-[12px] font-medium text-foreground/80 ring-1 ring-border/50"><i data-lucide="calculator" class="h-3.5 w-3.5 text-foreground/40"></i> Bokföring</span>
+                <span class="inline-flex items-center gap-1.5 rounded-lg bg-background/70 px-2.5 py-1.5 text-[12px] font-medium text-foreground/80 ring-1 ring-border/50"><i data-lucide="scale" class="h-3.5 w-3.5 text-foreground/40"></i> Bolagsrätt</span>
+                <span class="inline-flex items-center gap-1.5 rounded-lg bg-background/70 px-2.5 py-1.5 text-[12px] font-medium text-foreground/80 ring-1 ring-border/50"><i data-lucide="flask-conical" class="h-3.5 w-3.5 text-foreground/40"></i> Kemikaliesäkerhet</span>
+              </div>
+            </div>
+
+            <!-- 4 · ACTION (pinned to bottom of the column) -->
+            <div class="mt-auto pt-1">
+              <a href="#" class="group inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90">
+                Skapa er laglista — testa gratis
+                <i data-lucide="arrow-right" class="h-4 w-4 transition-transform group-hover:translate-x-0.5"></i>
+              </a>
+              <p class="mt-2.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11.5px] text-muted-foreground">
+                <span class="inline-flex items-center gap-1"><i data-lucide="check" class="h-3.5 w-3.5 text-emerald-600"></i> 15 dagar gratis</span>
+                <span class="inline-flex items-center gap-1"><i data-lucide="check" class="h-3.5 w-3.5 text-emerald-600"></i> Inget betalkort</span>
+                <span class="inline-flex items-center gap-1"><i data-lucide="shield" class="h-3.5 w-3.5 text-emerald-600"></i> Data från Bolagsverket</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- ═══════ RIGHT: what laglig.se does about it ═══════ -->
+          <div class="flex flex-col border-t border-border/70 p-5 md:border-l md:border-t-0">
+            <p class="mb-3 font-safiro text-[12.5px] font-medium text-foreground">Så här hanterar laglig.se det åt er</p>
+
+            <ul class="flex flex-1 flex-col justify-between gap-y-2.5">
+            <!-- feature 1 — the requested import/create line, leads -->
+            <li class="rowin flex items-start gap-3" style="animation-delay:.04s">
+              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-foreground/[0.06] text-foreground/70"><i data-lucide="list-plus" class="h-[17px] w-[17px]"></i></span>
+              <div class="min-w-0 pt-0.5">
+                <p class="text-[13px] font-medium leading-tight text-foreground">Skapa eller importera befintlig laglista</p>
+                <p class="mt-0.5 text-[12px] leading-snug text-muted-foreground">Generera automatiskt ur er bransch — eller ta med er nuvarande lista.</p>
+              </div>
+            </li>
+
+            <!-- feature 2 — bevakning -->
+            <li class="rowin flex items-start gap-3" style="animation-delay:.09s">
+              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-foreground/[0.06] text-foreground/70"><i data-lucide="bell-ring" class="h-[17px] w-[17px]"></i></span>
+              <div class="min-w-0 pt-0.5">
+                <p class="text-[13px] font-medium leading-tight text-foreground">Automatisk bevakning av lagändringar</p>
+                <p class="mt-0.5 text-[12px] leading-snug text-muted-foreground">Ni får notis så fort en lag som rör er ändras.</p>
+              </div>
+            </li>
+
+            <!-- feature 3 — the differentiator, highlighted (the one amber moment) -->
+            <li class="rowin -mx-1 flex items-start gap-3 rounded-xl bg-amber-50/60 px-2.5 py-2 ring-1 ring-amber-200/50" style="animation-delay:.14s">
+              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-amber-100/80 text-amber-700"><i data-lucide="scan-search" class="h-[17px] w-[17px]"></i></span>
+              <div class="min-w-0 pt-0.5">
+                <p class="text-[13px] font-medium leading-tight text-foreground">AI bedömer varje ändring utifrån er verksamhet</p>
+                <p class="mt-0.5 text-[12px] leading-snug text-muted-foreground">Tolkar vad ändringen faktiskt betyder för just era uppgifter, styrdokument och processer — inte bara att lagen ändrats.</p>
+              </div>
+            </li>
+
+            <!-- feature 4 — efterlevnadskontroller -->
+            <li class="rowin flex items-start gap-3" style="animation-delay:.19s">
+              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-foreground/[0.06] text-foreground/70"><i data-lucide="clipboard-check" class="h-[17px] w-[17px]"></i></span>
+              <div class="min-w-0 pt-0.5">
+                <p class="text-[13px] font-medium leading-tight text-foreground">Efterlevnadskontroller</p>
+                <p class="mt-0.5 text-[12px] leading-snug text-muted-foreground">Återkommande kontroller som visar att ni faktiskt följer kraven.</p>
+              </div>
+            </li>
+
+            <!-- feature 5 — åtgärder & styrdokument -->
+            <li class="rowin flex items-start gap-3" style="animation-delay:.24s">
+              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-foreground/[0.06] text-foreground/70"><i data-lucide="files" class="h-[17px] w-[17px]"></i></span>
+              <div class="min-w-0 pt-0.5">
+                <p class="text-[13px] font-medium leading-tight text-foreground">Åtgärder &amp; styrdokument samlat</p>
+                <p class="mt-0.5 text-[12px] leading-snug text-muted-foreground">Koppla rutiner, checklistor och policyer till rätt lagkrav.</p>
+              </div>
+            </li>
+
+            <!-- and more -->
+            <li class="rowin flex items-center gap-3 pt-0.5" style="animation-delay:.29s">
+              <span class="grid h-8 w-8 shrink-0 place-items-center text-foreground/40"><i data-lucide="plus" class="h-4 w-4"></i></span>
+              <p class="text-[12px] font-medium text-muted-foreground">… och mycket mer</p>
+            </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- design notes -->
+    <div class="relative mx-auto max-w-[760px] px-4 pb-12">
+      <details class="rounded-xl border border-border/70 bg-card/70 px-4 py-3 text-[13px] backdrop-blur">
+        <summary class="cursor-pointer font-safiro font-medium text-foreground/80">Designnoteringar (v3)</summary>
+        <ul class="mt-3 space-y-2 text-muted-foreground">
+          <li><span class="font-medium text-foreground">Tvåspalt</span> — bred layout: vem ni är · vad som står på spel · CTA till vänster, funktionerna till höger. Håller höjden nere så popupen får plats i viewporten utan scroll.</li>
+          <li><span class="font-medium text-foreground">Berättelsebåge</span> — igenkänning → insikt → lösning → handling.</li>
+          <li><span class="font-medium text-foreground">Insikten som säljer</span> — "4 områden · ~40 lagkrav … ändras löpande" får manuell koll att kännas omöjlig.</li>
+          <li><span class="font-medium text-foreground">Funktionslista</span> — fem värden + "och mycket mer", med "skapa eller importera befintlig laglista" först.</li>
+          <li><span class="font-medium text-foreground">Färg = mening</span> — den enda amber-accenten lyfter differentiatorn: att AI:n bedömer ändringen utifrån er verksamhet, inte bara flaggar att lagen ändrats. Övriga rader hålls lugna och monokroma.</li>
+        </ul>
+      </details>
+    </div>
+
+    <script> lucide.createIcons(); </script>
+  </body>
+</html>
