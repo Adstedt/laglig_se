@@ -1,31 +1,32 @@
 'use server'
 
 /**
- * Story 7.5: Kollektivavtal upload + list server actions.
+ * Story 7.5 + 7.6: Kollektivavtal server actions — upload, list, edit,
+ * delete (full cascade) and bulk assignment.
  *
- * `uploadCollectiveAgreement` stores the PDF via the established WorkspaceFile
- * path (category AVTAL, bucket workspace-files, quota + dedupe checks — the
- * storage logic is a scoped re-implementation of `app/actions/files.ts#uploadFile`
- * rather than a call to it: that action reads its own FormData contract,
- * revalidates `/filer`, and returns the heavy links shape; and `files.ts` is
- * outside this story's file boundary so no helper could be extracted from it.
- * Constants and semantics are kept identical — see the Dev Agent Record).
+ * `uploadCollectiveAgreement` stores the PDF via the shared upload core
+ * (`lib/files/upload-core.ts`, Story 7.6 DUP-001 — one implementation of the
+ * dedupe/quota/hash/Storage legs shared with `files.ts#uploadFile`), with
+ * category AVTAL. The upload self-queues for RAG ingestion:
+ * `extraction_status: PENDING` puts the file in the extract-files cron's
+ * batch, whose Story 7.5 seam routes agreement-backed files into
+ * COLLECTIVE_AGREEMENT chunks and drives the CollectiveAgreementStatus
+ * lifecycle (PENDING → PROCESSING → READY/FAILED).
  *
- * The upload self-queues for RAG ingestion: `extraction_status: PENDING` puts
- * the file in the extract-files cron's batch, whose Story 7.5 seam routes
- * agreement-backed files into COLLECTIVE_AGREEMENT chunks and drives the
- * CollectiveAgreementStatus lifecycle (PENDING → PROCESSING → READY/FAILED).
+ * `deleteCollectiveAgreement` (Story 7.6) reverses the whole footprint in
+ * order: chunks → agreement (FK `onDelete: SetNull` auto-unassigns employees)
+ * → backing WorkspaceFile row → Storage object (fail-safe), with
+ * CompanyProfile honesty (flag/name reset or repoint) in the same transaction.
  *
  * Permission model (PO-corrected): mutations are gated `employees:manage`
- * ONLY. The first-upload CompanyProfile sync is a scoped in-ctx Prisma update
- * of exactly `has_collective_agreement` + `collective_agreement_name` plus the
- * shared completeness-recompute helper — NOT a call to the
+ * ONLY. Every CompanyProfile write in this module is a scoped in-ctx Prisma
+ * update of exactly `has_collective_agreement` / `collective_agreement_name`
+ * plus the shared completeness-recompute helper — NOT a call to the
  * `workspace:settings`-gated `updateCompanyProfile` action (HR_MANAGER does
  * not hold that permission).
  */
 
 import { revalidatePath } from 'next/cache'
-import { createHash } from 'crypto'
 import { z } from 'zod'
 import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import { prisma } from '@/lib/prisma'
@@ -35,11 +36,11 @@ import {
 } from '@/lib/auth/workspace-context'
 import { getStorageClient } from '@/lib/supabase/storage'
 import {
-  assertWithinStorageQuota,
-  formatBytesSwedish,
-  StorageQuotaExceededError,
-} from '@/lib/usage/storage'
-import { isExtractableMimeType } from '@/lib/documents/extractable-mime'
+  BUCKET_NAME,
+  PDF_MIME_TYPE,
+  stageWorkspaceFileUpload,
+  validateUploadFile,
+} from '@/lib/files/upload-core'
 import { calculateProfileCompleteness } from '@/lib/profile-completeness'
 import type {
   CollectiveAgreementStatus,
@@ -48,12 +49,8 @@ import type {
 } from '@prisma/client'
 
 // ============================================================================
-// Constants (mirrors app/actions/files.ts#uploadFile — kept identical)
+// Constants
 // ============================================================================
-
-const MAX_FILE_SIZE = 25 * 1024 * 1024 // 25MB
-const BUCKET_NAME = 'workspace-files'
-const PDF_MIME_TYPE = 'application/pdf'
 
 const PERSONALREGISTER_PATH = '/personalregister'
 const SETTINGS_PATH = '/settings'
@@ -130,6 +127,24 @@ type AgreementRecord = {
   _count?: { employees: number }
 }
 
+/** Shared select for the full list-item shape (list + post-edit refetch). */
+const LIST_ITEM_SELECT = {
+  id: true,
+  name: true,
+  personel_type: true,
+  status: true,
+  effective_from: true,
+  effective_to: true,
+  uploaded_by: true,
+  created_at: true,
+  _count: { select: { employees: true } },
+} satisfies Prisma.CollectiveAgreementSelect
+
+/** YYYY-MM-DD (validated) → UTC-midnight DateTime, '' /null → null. */
+function toUtcDate(iso: string | null): Date | null {
+  return iso ? new Date(`${iso}T00:00:00.000Z`) : null
+}
+
 function toListItem(record: AgreementRecord): CollectiveAgreementListItem {
   return {
     id: record.id,
@@ -168,20 +183,15 @@ export async function uploadCollectiveAgreement(
     return await withWorkspace(async (ctx) => {
       const { workspaceId, userId } = ctx
 
-      // ── File validation (PDF only, ≤25MB) ────────────────────────────────
-      const file = formData.get('file')
-      if (!file || !(file instanceof File)) {
-        return { success: false, error: 'Ingen fil vald' }
+      // ── File validation (PDF only, ≤25MB — shared core, Story 7.6) ───────
+      const validated = validateUploadFile(formData.get('file'), {
+        allowedMimeTypes: [PDF_MIME_TYPE],
+        typeError: 'Endast PDF-filer kan laddas upp som kollektivavtal.',
+      })
+      if (!validated.ok) {
+        return { success: false, error: validated.error }
       }
-      if (file.type !== PDF_MIME_TYPE) {
-        return {
-          success: false,
-          error: 'Endast PDF-filer kan laddas upp som kollektivavtal.',
-        }
-      }
-      if (file.size > MAX_FILE_SIZE) {
-        return { success: false, error: 'Filen är för stor (max 25MB)' }
-      }
+      const file = validated.file
 
       // ── Field validation ─────────────────────────────────────────────────
       const rawType = (formData.get('personel_type') as string | null) || null
@@ -200,75 +210,36 @@ export async function uploadCollectiveAgreement(
       }
       const fields = parsed.data
 
-      // ── WorkspaceFile path (mirrors uploadFile: dedupe → quota → storage) ─
-      const existingFile = await prisma.workspaceFile.findFirst({
-        where: {
-          workspace_id: workspaceId,
-          parent_folder_id: null,
-          filename: file.name,
-        },
-        select: { id: true },
+      // ── WorkspaceFile path (shared core: dedupe → quota → storage) ───────
+      const staged = await stageWorkspaceFileUpload({
+        workspaceId,
+        file,
+        parentFolderId: null,
+        duplicateError: 'En fil med samma namn finns redan i Filer.',
       })
-      if (existingFile) {
+      if (!staged.ok) {
         return {
           success: false,
-          error: 'En fil med samma namn finns redan i Filer.',
+          error: staged.error,
+          ...(staged.code ? { code: staged.code } : {}),
         }
-      }
-
-      try {
-        await assertWithinStorageQuota(workspaceId, file.size)
-      } catch (error) {
-        if (error instanceof StorageQuotaExceededError) {
-          return {
-            success: false,
-            error: `Lagringsgräns uppnådd. Du har använt ${formatBytesSwedish(error.currentBytes)} av ${formatBytesSwedish(error.limitBytes)}. Filen kunde inte laddas upp. Frigör utrymme eller uppgradera planen.`,
-            code: 'STORAGE_QUOTA_EXCEEDED',
-          }
-        }
-        throw error
-      }
-
-      const fileId = crypto.randomUUID()
-      const safeFileName = file.name
-        .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
-        .replace(/[^a-zA-Z0-9._-]/g, '_')
-        .replace(/_+/g, '_')
-      const storagePath = `${workspaceId}/files/${fileId}/${safeFileName}`
-
-      const buffer = Buffer.from(await file.arrayBuffer())
-      const contentHash = createHash('sha256').update(buffer).digest('hex')
-
-      const storageClient = getStorageClient()
-      const { error: uploadError } = await storageClient.storage
-        .from(BUCKET_NAME)
-        .upload(storagePath, buffer, {
-          contentType: file.type,
-          upsert: false,
-        })
-      if (uploadError) {
-        console.error('[uploadCollectiveAgreement] storage error:', uploadError)
-        return { success: false, error: 'Kunde inte ladda upp filen' }
       }
 
       // extraction_status PENDING self-queues the PDF for the extract-files
       // cron; its Story 7.5 seam then ingests it as COLLECTIVE_AGREEMENT chunks.
       await prisma.workspaceFile.create({
         data: {
-          id: fileId,
+          id: staged.fileId,
           workspace_id: workspaceId,
           uploaded_by: userId,
           filename: file.name,
           original_filename: file.name,
           file_size: file.size,
           mime_type: file.type,
-          storage_path: storagePath,
+          storage_path: staged.storagePath,
           category: 'AVTAL',
-          extraction_status: isExtractableMimeType(file.type)
-            ? 'PENDING'
-            : 'UNSUPPORTED',
-          content_hash: contentHash,
+          extraction_status: staged.extractionStatus,
+          content_hash: staged.contentHash,
         },
       })
 
@@ -278,15 +249,11 @@ export async function uploadCollectiveAgreement(
           workspace_id: workspaceId,
           name: fields.name,
           personel_type: fields.personel_type,
-          workspace_file_id: fileId,
+          workspace_file_id: staged.fileId,
           uploaded_by: userId,
           status: 'PENDING',
-          effective_from: fields.effective_from
-            ? new Date(`${fields.effective_from}T00:00:00.000Z`)
-            : null,
-          effective_to: fields.effective_to
-            ? new Date(`${fields.effective_to}T00:00:00.000Z`)
-            : null,
+          effective_from: toUtcDate(fields.effective_from),
+          effective_to: toUtcDate(fields.effective_to),
         },
       })
 
@@ -392,17 +359,7 @@ export async function listCollectiveAgreements(): Promise<
         prisma.collectiveAgreement.findMany({
           where: { workspace_id: ctx.workspaceId },
           orderBy: { name: 'asc' },
-          select: {
-            id: true,
-            name: true,
-            personel_type: true,
-            status: true,
-            effective_from: true,
-            effective_to: true,
-            uploaded_by: true,
-            created_at: true,
-            _count: { select: { employees: true } },
-          },
+          select: LIST_ITEM_SELECT,
         }),
       'employees:view'
     )
@@ -419,5 +376,397 @@ export async function listCollectiveAgreements(): Promise<
     }
     console.error('[listCollectiveAgreements]', error)
     return { success: false, error: 'Kunde inte hämta kollektivavtal.' }
+  }
+}
+
+// ============================================================================
+// Story 7.6: Edit
+// ============================================================================
+
+export interface UpdateCollectiveAgreementInput {
+  name: string
+  /** 'ARB' | 'TJM' | null (Övrigt). */
+  personel_type: PersonelType | null
+  /** YYYY-MM-DD or null. */
+  effective_from: string | null
+  effective_to: string | null
+}
+
+/**
+ * Edit namn/typ/giltighetsperiod on an agreement. Gated `employees:manage`,
+ * verify-then-act + compound-where write (cross-workspace ids rejected).
+ *
+ * Profile repoint: renaming the agreement whose name is
+ * `CompanyProfile.collective_agreement_name` updates the profile name too —
+ * same scoped-write + completeness-recompute path as the 7.5 upload sync
+ * (never the `workspace:settings`-gated company-profile action).
+ */
+export async function updateCollectiveAgreement(
+  id: string,
+  input: UpdateCollectiveAgreementInput
+): Promise<ActionResult<CollectiveAgreementListItem>> {
+  try {
+    return await withWorkspace(async (ctx) => {
+      const { workspaceId } = ctx
+
+      const parsed = UploadAgreementFieldsSchema.safeParse(input)
+      if (!parsed.success) {
+        return {
+          success: false,
+          error: parsed.error.issues[0]?.message ?? 'Ogiltig indata',
+        }
+      }
+      const fields = parsed.data
+
+      // Verify-then-act: the agreement must belong to ctx workspace.
+      const existing = await prisma.collectiveAgreement.findFirst({
+        where: { id, workspace_id: workspaceId },
+        select: { id: true, name: true },
+      })
+      if (!existing) {
+        return { success: false, error: 'Kollektivavtalet hittades inte.' }
+      }
+
+      await prisma.$transaction(async (tx) => {
+        // Compound where — defense in depth on top of the verify above.
+        await tx.collectiveAgreement.updateMany({
+          where: { id, workspace_id: workspaceId },
+          data: {
+            name: fields.name,
+            personel_type: fields.personel_type,
+            effective_from: toUtcDate(fields.effective_from),
+            effective_to: toUtcDate(fields.effective_to),
+          },
+        })
+
+        if (fields.name !== existing.name) {
+          await repointCompanyProfileName(tx, workspaceId, {
+            fromName: existing.name,
+            toName: fields.name,
+          })
+        }
+      })
+
+      const refreshed = await prisma.collectiveAgreement.findFirst({
+        where: { id, workspace_id: workspaceId },
+        select: LIST_ITEM_SELECT,
+      })
+      if (!refreshed) {
+        return { success: false, error: 'Kollektivavtalet hittades inte.' }
+      }
+
+      revalidatePath(PERSONALREGISTER_PATH)
+      revalidatePath(SETTINGS_PATH)
+
+      return { success: true, data: toListItem(refreshed) }
+    }, 'employees:manage')
+  } catch (error) {
+    if (error instanceof WorkspaceAccessError) {
+      return { success: false, error: 'Åtkomst nekad' }
+    }
+    console.error('[updateCollectiveAgreement]', error)
+    return { success: false, error: 'Kunde inte uppdatera kollektivavtalet.' }
+  }
+}
+
+/**
+ * If the profile's `collective_agreement_name` matches `fromName`, repoint it
+ * to `toName` and recompute completeness (7.5's scoped-write path).
+ */
+async function repointCompanyProfileName(
+  tx: Prisma.TransactionClient,
+  workspaceId: string,
+  { fromName, toName }: { fromName: string; toName: string }
+): Promise<void> {
+  const profile = await tx.companyProfile.findUnique({
+    where: { workspace_id: workspaceId },
+  })
+  if (!profile || profile.collective_agreement_name !== fromName) return
+
+  const updated = await tx.companyProfile.update({
+    where: { workspace_id: workspaceId },
+    data: { collective_agreement_name: toName },
+  })
+  const score = calculateProfileCompleteness(updated)
+  if (score !== updated.profile_completeness) {
+    await tx.companyProfile.update({
+      where: { workspace_id: workspaceId },
+      data: { profile_completeness: score },
+    })
+  }
+}
+
+// ============================================================================
+// Story 7.6: Delete (full cascade)
+// ============================================================================
+
+/**
+ * Delete an agreement and its whole footprint. Gated `employees:manage`,
+ * verify-then-act. Order (Dev Notes): chunks → agreement (FK `onDelete:
+ * SetNull` auto-unassigns employees) → backing WorkspaceFile row → Storage
+ * object. The DB legs plus the profile-honesty sync run in ONE transaction;
+ * the Storage-object removal is fail-safe (an orphaned blob is a cleanup
+ * nuisance — a half-deleted agreement would be a bug).
+ *
+ * The backing file is deleted deliberately (SM/PO decision): it was created
+ * by the CA upload flow and 7.5's root-folder filename dedupe would otherwise
+ * block re-uploading the same PDF.
+ */
+export async function deleteCollectiveAgreement(
+  id: string
+): Promise<ActionResult> {
+  try {
+    return await withWorkspace(async (ctx) => {
+      const { workspaceId } = ctx
+
+      const agreement = await prisma.collectiveAgreement.findFirst({
+        where: { id, workspace_id: workspaceId },
+        select: { id: true, name: true, workspace_file_id: true },
+      })
+      if (!agreement) {
+        return { success: false, error: 'Kollektivavtalet hittades inte.' }
+      }
+
+      // Workspace-verified read of the backing file; the storage path is
+      // captured for the post-commit object removal.
+      const backingFile = agreement.workspace_file_id
+        ? await prisma.workspaceFile.findFirst({
+            where: {
+              id: agreement.workspace_file_id,
+              workspace_id: workspaceId,
+            },
+            select: { id: true, storage_path: true },
+          })
+        : null
+
+      await prisma.$transaction(async (tx) => {
+        // 1) De-index chunks FIRST — the agent must never retrieve a deleted
+        //    agreement's content. Filter includes BOTH source_id and
+        //    workspace_id (defense in depth; mirrors files.ts' USER_FILE
+        //    cleanup precedent).
+        await tx.contentChunk.deleteMany({
+          where: {
+            source_type: 'COLLECTIVE_AGREEMENT',
+            source_id: agreement.id,
+            workspace_id: workspaceId,
+          },
+        })
+
+        // 2) The agreement — employees auto-unassign via FK onDelete: SetNull.
+        await tx.collectiveAgreement.delete({ where: { id: agreement.id } })
+
+        // 3) The backing WorkspaceFile row (frees the root-folder filename).
+        if (backingFile) {
+          await tx.workspaceFile.delete({ where: { id: backingFile.id } })
+        }
+
+        // 4) Profile honesty (runs after the delete so the remaining-agreement
+        //    read reflects it — same scoped-write path as 7.5).
+        await syncCompanyProfileAfterDelete(tx, workspaceId, agreement.name)
+      })
+
+      // 5) Storage object — fail-safe: log, never abort (DB legs committed).
+      if (backingFile?.storage_path) {
+        try {
+          const storageClient = getStorageClient()
+          const { error: removeError } = await storageClient.storage
+            .from(BUCKET_NAME)
+            .remove([backingFile.storage_path])
+          if (removeError) {
+            console.error(
+              '[deleteCollectiveAgreement] storage remove failed:',
+              removeError
+            )
+          }
+        } catch (error) {
+          console.error(
+            '[deleteCollectiveAgreement] storage remove failed:',
+            error
+          )
+        }
+      }
+
+      revalidatePath(PERSONALREGISTER_PATH)
+      revalidatePath(SETTINGS_PATH)
+
+      return { success: true }
+    }, 'employees:manage')
+  } catch (error) {
+    if (error instanceof WorkspaceAccessError) {
+      return { success: false, error: 'Åtkomst nekad' }
+    }
+    console.error('[deleteCollectiveAgreement]', error)
+    return { success: false, error: 'Kunde inte ta bort kollektivavtalet.' }
+  }
+}
+
+/**
+ * Profile-sync honesty after a delete (AC 3): if no agreements remain →
+ * `has_collective_agreement = false` + name null; if the deleted agreement's
+ * name matches the profile name → repoint to a remaining agreement's name
+ * (first by name, same order as the list). Completeness recomputed with the
+ * shared helper. Runs inside the delete transaction.
+ */
+async function syncCompanyProfileAfterDelete(
+  tx: Prisma.TransactionClient,
+  workspaceId: string,
+  deletedName: string
+): Promise<void> {
+  const profile = await tx.companyProfile.findUnique({
+    where: { workspace_id: workspaceId },
+  })
+  if (!profile) return
+
+  const remaining = await tx.collectiveAgreement.findMany({
+    where: { workspace_id: workspaceId },
+    orderBy: { name: 'asc' },
+    select: { name: true },
+    take: 1,
+  })
+
+  let data: Prisma.CompanyProfileUpdateInput | null = null
+  if (remaining.length === 0) {
+    if (
+      profile.has_collective_agreement ||
+      profile.collective_agreement_name !== null
+    ) {
+      data = {
+        has_collective_agreement: false,
+        collective_agreement_name: null,
+      }
+    }
+  } else if (profile.collective_agreement_name === deletedName) {
+    data = { collective_agreement_name: remaining[0]!.name }
+  }
+  if (!data) return
+
+  const updated = await tx.companyProfile.update({
+    where: { workspace_id: workspaceId },
+    data,
+  })
+  const score = calculateProfileCompleteness(updated)
+  if (score !== updated.profile_completeness) {
+    await tx.companyProfile.update({
+      where: { workspace_id: workspaceId },
+      data: { profile_completeness: score },
+    })
+  }
+}
+
+// ============================================================================
+// Story 7.6: Bulk assignment (Fortnox "Avtal för löner" semantics)
+// ============================================================================
+
+const BulkAssignTargetSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('personel_type'), value: z.enum(['ARB', 'TJM']) }),
+  z.object({ kind: z.literal('group'), groupId: z.string().min(1) }),
+])
+
+export type BulkAssignTarget = z.infer<typeof BulkAssignTargetSchema>
+
+/**
+ * Resolve a validated bulk target to a workspace-scoped Employee filter.
+ * Group targets are ownership-verified — a cross-workspace groupId is
+ * rejected, never silently matched to zero rows.
+ */
+async function resolveBulkTargetWhere(
+  workspaceId: string,
+  target: BulkAssignTarget
+): Promise<{ where: Prisma.EmployeeWhereInput } | { error: string }> {
+  if (target.kind === 'group') {
+    const group = await prisma.employeeGroup.findFirst({
+      where: { id: target.groupId, workspace_id: workspaceId },
+      select: { id: true },
+    })
+    if (!group) return { error: 'Gruppen hittades inte.' }
+    return { where: { workspace_id: workspaceId, group_id: group.id } }
+  }
+  return { where: { workspace_id: workspaceId, personel_type: target.value } }
+}
+
+/**
+ * Preview how many employees a bulk assignment would target — the SAME
+ * compound filter the mutation uses, so the "Tilldelar X anställda" guardrail
+ * can never disagree with the write. Gated `employees:manage` (it exists only
+ * to arm the bulk-assign confirm).
+ */
+export async function previewBulkAssignCount(
+  target: BulkAssignTarget
+): Promise<ActionResult<{ count: number }>> {
+  try {
+    return await withWorkspace(async (ctx) => {
+      const parsed = BulkAssignTargetSchema.safeParse(target)
+      if (!parsed.success) {
+        return { success: false, error: 'Ogiltig indata' }
+      }
+      const resolved = await resolveBulkTargetWhere(
+        ctx.workspaceId,
+        parsed.data
+      )
+      if ('error' in resolved) {
+        return { success: false, error: resolved.error }
+      }
+      const count = await prisma.employee.count({ where: resolved.where })
+      return { success: true, data: { count } }
+    }, 'employees:manage')
+  } catch (error) {
+    if (error instanceof WorkspaceAccessError) {
+      return { success: false, error: 'Åtkomst nekad' }
+    }
+    console.error('[previewBulkAssignCount]', error)
+    return { success: false, error: 'Kunde inte beräkna antalet anställda.' }
+  }
+}
+
+/**
+ * Assign an agreement to all employees matching the target (by Personaltyp or
+ * by EmployeeGroup). Gated `employees:manage`. Overwrites existing
+ * assignments for the targeted employees — deliberate Fortnox semantics
+ * (AC 2); the preview count is the guardrail. Both the agreement AND a group
+ * target must belong to ctx workspace.
+ */
+export async function assignCollectiveAgreementBulk(
+  agreementId: string,
+  target: BulkAssignTarget
+): Promise<ActionResult<{ assigned: number }>> {
+  try {
+    return await withWorkspace(async (ctx) => {
+      const { workspaceId } = ctx
+
+      const parsed = BulkAssignTargetSchema.safeParse(target)
+      if (!parsed.success) {
+        return { success: false, error: 'Ogiltig indata' }
+      }
+
+      const agreement = await prisma.collectiveAgreement.findFirst({
+        where: { id: agreementId, workspace_id: workspaceId },
+        select: { id: true },
+      })
+      if (!agreement) {
+        return { success: false, error: 'Kollektivavtalet hittades inte.' }
+      }
+
+      const resolved = await resolveBulkTargetWhere(workspaceId, parsed.data)
+      if ('error' in resolved) {
+        return { success: false, error: resolved.error }
+      }
+
+      // Compound workspace filter on the write itself (defense in depth).
+      const result = await prisma.employee.updateMany({
+        where: resolved.where,
+        data: { collective_agreement_id: agreement.id },
+      })
+
+      revalidatePath(PERSONALREGISTER_PATH)
+      revalidatePath(SETTINGS_PATH)
+
+      return { success: true, data: { assigned: result.count } }
+    }, 'employees:manage')
+  } catch (error) {
+    if (error instanceof WorkspaceAccessError) {
+      return { success: false, error: 'Åtkomst nekad' }
+    }
+    console.error('[assignCollectiveAgreementBulk]', error)
+    return { success: false, error: 'Kunde inte tilldela kollektivavtalet.' }
   }
 }

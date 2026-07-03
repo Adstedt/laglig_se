@@ -11,38 +11,16 @@ import { withWorkspace } from '@/lib/auth/workspace-context'
 import { getStorageClient } from '@/lib/supabase/storage'
 import { z } from 'zod'
 import type { FileCategory, FileExtractionStatus } from '@prisma/client'
+import { type StorageWarning } from '@/lib/usage/storage'
+// Story 7.6 (DUP-001): the storage-upload legs (validation, dedupe, quota,
+// hash, Storage write) live in the shared upload core — one implementation
+// for Filer uploads and kollektivavtal uploads.
 import {
-  assertWithinStorageQuota,
-  formatBytesSwedish,
-  StorageQuotaExceededError,
-  type StorageWarning,
-} from '@/lib/usage/storage'
-import { createHash } from 'crypto'
-import { isExtractableMimeType } from '@/lib/documents/extractable-mime'
-
-// ============================================================================
-// Constants
-// ============================================================================
-
-const MAX_FILE_SIZE = 25 * 1024 * 1024 // 25MB
-const BUCKET_NAME = 'workspace-files'
-
-const ALLOWED_MIME_TYPES = [
-  'application/pdf',
-  'image/png',
-  'image/jpeg',
-  'image/gif',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'application/vnd.ms-powerpoint',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  // Story 17.8: plain-text formats are extractable (direct → markdown).
-  'text/plain',
-  'text/markdown',
-  'text/csv',
-]
+  ALLOWED_MIME_TYPES,
+  BUCKET_NAME,
+  stageWorkspaceFileUpload,
+  validateUploadFile,
+} from '@/lib/files/upload-core'
 
 // ============================================================================
 // Types
@@ -263,20 +241,15 @@ export async function uploadFile(
 ): Promise<ActionResult<WorkspaceFileWithLinks>> {
   try {
     return await withWorkspace(async ({ workspaceId, userId }) => {
-      const file = formData.get('file') as File
-      if (!file || !(file instanceof File)) {
-        return { success: false, error: 'Ingen fil vald' }
+      // Story 7.6 (DUP-001): shared validation (presence → mime → size).
+      const validated = validateUploadFile(formData.get('file'), {
+        allowedMimeTypes: ALLOWED_MIME_TYPES,
+        typeError: 'Otillåten filtyp',
+      })
+      if (!validated.ok) {
+        return { success: false, error: validated.error }
       }
-
-      // Validate file type
-      if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-        return { success: false, error: 'Otillåten filtyp' }
-      }
-
-      // Validate file size
-      if (file.size > MAX_FILE_SIZE) {
-        return { success: false, error: 'Filen är för stor (max 25MB)' }
-      }
+      const file = validated.file
 
       // Get optional category from formData
       const categoryValue = formData.get('category') as string | null
@@ -302,75 +275,28 @@ export async function uploadFile(
         }
       }
 
-      // Check for duplicate filename in same folder
-      const existingFile = await prisma.workspaceFile.findFirst({
-        where: {
-          workspace_id: workspaceId,
-          parent_folder_id: parentFolderId,
-          filename: file.name,
-        },
+      // Story 7.6 (DUP-001): shared staging — same-folder dedupe, Story 5.5b
+      // storage-quota gate (soft warn at 80% surfaced on the result), filename
+      // sanitization + sha256 hash, and the Storage write (`upsert: false`).
+      const staged = await stageWorkspaceFileUpload({
+        workspaceId,
+        file,
+        parentFolderId,
+        duplicateError: 'En fil med samma namn finns redan i mappen',
       })
-      if (existingFile) {
+      if (!staged.ok) {
         return {
           success: false,
-          error: 'En fil med samma namn finns redan i mappen',
+          error: staged.error,
+          ...(staged.code ? { code: staged.code } : {}),
         }
       }
-
-      // Story 5.5b: storage quota gate. Runs BEFORE the Supabase Storage
-      // write so a blocked upload doesn't create an orphaned object. Soft
-      // warn at 80% surfaces alongside the success result so the UI can
-      // show a non-blocking toast.
-      let storageWarning: StorageWarning | undefined
-      try {
-        const result = await assertWithinStorageQuota(workspaceId, file.size)
-        storageWarning = result.warning
-      } catch (error) {
-        if (error instanceof StorageQuotaExceededError) {
-          return {
-            success: false,
-            error: `Lagringsgräns uppnådd. Du har använt ${formatBytesSwedish(error.currentBytes)} av ${formatBytesSwedish(error.limitBytes)}. Filen kunde inte laddas upp. Frigör utrymme eller uppgradera planen.`,
-            code: 'STORAGE_QUOTA_EXCEEDED',
-          }
-        }
-        throw error
-      }
-
-      const fileId = crypto.randomUUID()
-      // Supabase Storage rejects spaces and most non-ASCII chars in keys —
-      // sanitize the filename portion while keeping the original on the row.
-      const safeFileName = file.name
-        .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
-        .replace(/[^a-zA-Z0-9._-]/g, '_')
-        .replace(/_+/g, '_')
-      const storagePath = `${workspaceId}/files/${fileId}/${safeFileName}`
-
-      // Convert File to Buffer for upload
-      const arrayBuffer = await file.arrayBuffer()
-      const buffer = Buffer.from(arrayBuffer)
-
-      // Story 17.8: content hash (dedupe + 17.9 incremental sync).
-      const contentHash = createHash('sha256').update(buffer).digest('hex')
-
-      // Upload to Supabase Storage
-      const storageClient = getStorageClient()
-      const { error: uploadError } = await storageClient.storage
-        .from(BUCKET_NAME)
-        .upload(storagePath, buffer, {
-          contentType: file.type,
-          upsert: false,
-        })
-
-      if (uploadError) {
-        console.error('Storage upload error:', uploadError)
-        return { success: false, error: 'Kunde inte ladda upp filen' }
-      }
+      const storageWarning: StorageWarning | undefined = staged.warning
 
       // Create database record
       const workspaceFile = await prisma.workspaceFile.create({
         data: {
-          id: fileId,
+          id: staged.fileId,
           workspace_id: workspaceId,
           uploaded_by: userId,
           parent_folder_id: parentFolderId, // Story 6.7b: folder context
@@ -378,14 +304,12 @@ export async function uploadFile(
           original_filename: file.name,
           file_size: file.size,
           mime_type: file.type,
-          storage_path: storagePath,
+          storage_path: staged.storagePath,
           category,
-          // Story 17.8: queue extractable types for the extract-files cron;
-          // others are UNSUPPORTED. Extraction never runs inline (Vercel).
-          extraction_status: isExtractableMimeType(file.type)
-            ? 'PENDING'
-            : 'UNSUPPORTED',
-          content_hash: contentHash,
+          // Story 17.8: PENDING self-queues extractable types for the
+          // extract-files cron (computed in the shared core).
+          extraction_status: staged.extractionStatus,
+          content_hash: staged.contentHash,
         },
         include: {
           uploader: {

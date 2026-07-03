@@ -17,30 +17,18 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { DatePicker, toISODate } from '@/components/ui/date-picker'
+import { toISODate } from '@/components/ui/date-picker'
 import {
   uploadCollectiveAgreement,
   type CollectiveAgreementListItem,
 } from '@/app/actions/collective-agreements'
+import {
+  KollektivavtalAgreementFields,
+  type TypValue,
+} from './kollektivavtal-agreement-fields'
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024 // 25MB — mirrors the server action
 const PDF_MIME_TYPE = 'application/pdf'
-
-/** Typ select values — `OVRIGT` maps to `personel_type: null` on the wire. */
-const TYP_OPTIONS = [
-  { value: 'ARB', label: 'Arbetare' },
-  { value: 'TJM', label: 'Tjänstemän' },
-  { value: 'OVRIGT', label: 'Övrigt' },
-] as const
-
-type TypValue = (typeof TYP_OPTIONS)[number]['value']
 
 export interface KollektivavtalUploadFormProps {
   onUploaded: (_agreement: CollectiveAgreementListItem) => void
@@ -126,71 +114,20 @@ export function KollektivavtalUploadForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-      <div className="space-y-1.5">
-        <Label htmlFor="ca-name">
-          Namn <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="ca-name"
-          placeholder="T.ex. Byggnads Kollektivavtal 2024"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          disabled={submitting}
-          aria-required="true"
-          aria-invalid={errors.name ? true : undefined}
-        />
-        {errors.name && (
-          <p className="text-sm text-destructive">{errors.name}</p>
-        )}
-      </div>
-
-      <div className="space-y-1.5">
-        <Label htmlFor="ca-typ">Typ</Label>
-        <Select
-          value={typ}
-          onValueChange={(v) => setTyp(v as TypValue)}
-          disabled={submitting}
-        >
-          <SelectTrigger id="ca-typ">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {TYP_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-1.5">
-        <Label>
-          Giltighetsperiod{' '}
-          <span className="text-xs font-normal text-muted-foreground">
-            (valfritt)
-          </span>
-        </Label>
-        <div className="grid grid-cols-2 gap-2">
-          <DatePicker
-            id="ca-effective-from"
-            value={effectiveFrom}
-            onChange={setEffectiveFrom}
-            placeholder="Från"
-            disabled={submitting}
-          />
-          <DatePicker
-            id="ca-effective-to"
-            value={effectiveTo}
-            onChange={setEffectiveTo}
-            placeholder="Till"
-            disabled={submitting}
-          />
-        </div>
-        {errors.period && (
-          <p className="text-sm text-destructive">{errors.period}</p>
-        )}
-      </div>
+      {/* Story 7.6: shared fieldset (also mounted by the edit dialog). */}
+      <KollektivavtalAgreementFields
+        idPrefix="ca"
+        name={name}
+        onNameChange={setName}
+        typ={typ}
+        onTypChange={setTyp}
+        effectiveFrom={effectiveFrom}
+        onEffectiveFromChange={setEffectiveFrom}
+        effectiveTo={effectiveTo}
+        onEffectiveToChange={setEffectiveTo}
+        errors={errors}
+        disabled={submitting}
+      />
 
       <div className="space-y-1.5">
         <Label htmlFor="ca-file">

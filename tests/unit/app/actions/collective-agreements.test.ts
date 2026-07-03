@@ -9,6 +9,12 @@
  * (scoped in-ctx update + shared completeness recompute — never the
  * workspace:settings-gated action; not on second upload; never overwriting an
  * existing collective_agreement_name).
+ *
+ * Story 7.6 adds: updateCollectiveAgreement (compound-where write + profile
+ * repoint on rename), deleteCollectiveAgreement (chunks → agreement → file
+ * row → storage object, profile-honesty matrix, fail-safe storage removal),
+ * assignCollectiveAgreementBulk + previewBulkAssignCount (workspace-verified
+ * targeting incl. cross-workspace group/agreement rejection).
  */
 import { describe, test, expect, vi, beforeEach } from 'vitest'
 import type { WorkspaceContext } from '@/lib/auth/workspace-context'
@@ -16,14 +22,23 @@ import type { Permission } from '@/lib/auth/permissions'
 
 const mockFileFindFirst = vi.fn()
 const mockFileCreate = vi.fn()
+const mockFileDelete = vi.fn()
 const mockAgreementCreate = vi.fn()
+const mockAgreementFindFirst = vi.fn()
 const mockAgreementFindMany = vi.fn()
+const mockAgreementUpdateMany = vi.fn()
+const mockAgreementDelete = vi.fn()
+const mockChunkDeleteMany = vi.fn()
+const mockEmployeeUpdateMany = vi.fn()
+const mockEmployeeCount = vi.fn()
+const mockGroupFindFirst = vi.fn()
 const mockProfileFindUnique = vi.fn()
 const mockProfileUpdate = vi.fn()
 const mockProfileCreate = vi.fn()
 const mockTransaction = vi.fn()
 const mockRevalidatePath = vi.fn()
 const mockStorageUpload = vi.fn()
+const mockStorageRemove = vi.fn()
 const mockAssertQuota = vi.fn()
 const mockCalculateCompleteness = vi.fn()
 
@@ -32,6 +47,17 @@ const txClient = {
     findUnique: (...args: unknown[]) => mockProfileFindUnique(...args),
     update: (...args: unknown[]) => mockProfileUpdate(...args),
     create: (...args: unknown[]) => mockProfileCreate(...args),
+  },
+  contentChunk: {
+    deleteMany: (...args: unknown[]) => mockChunkDeleteMany(...args),
+  },
+  collectiveAgreement: {
+    updateMany: (...args: unknown[]) => mockAgreementUpdateMany(...args),
+    delete: (...args: unknown[]) => mockAgreementDelete(...args),
+    findMany: (...args: unknown[]) => mockAgreementFindMany(...args),
+  },
+  workspaceFile: {
+    delete: (...args: unknown[]) => mockFileDelete(...args),
   },
 }
 
@@ -43,7 +69,15 @@ vi.mock('@/lib/prisma', () => ({
     },
     collectiveAgreement: {
       create: (...args: unknown[]) => mockAgreementCreate(...args),
+      findFirst: (...args: unknown[]) => mockAgreementFindFirst(...args),
       findMany: (...args: unknown[]) => mockAgreementFindMany(...args),
+    },
+    employee: {
+      updateMany: (...args: unknown[]) => mockEmployeeUpdateMany(...args),
+      count: (...args: unknown[]) => mockEmployeeCount(...args),
+    },
+    employeeGroup: {
+      findFirst: (...args: unknown[]) => mockGroupFindFirst(...args),
     },
     $transaction: (...args: unknown[]) => mockTransaction(...args),
   },
@@ -58,6 +92,7 @@ vi.mock('@/lib/supabase/storage', () => ({
     storage: {
       from: () => ({
         upload: (...args: unknown[]) => mockStorageUpload(...args),
+        remove: (...args: unknown[]) => mockStorageRemove(...args),
       }),
     },
   }),
@@ -130,6 +165,10 @@ vi.mock('@/lib/auth/workspace-context', () => ({
 import {
   uploadCollectiveAgreement,
   listCollectiveAgreements,
+  updateCollectiveAgreement,
+  deleteCollectiveAgreement,
+  assignCollectiveAgreementBulk,
+  previewBulkAssignCount,
 } from '@/app/actions/collective-agreements'
 
 function makePdf(name = 'byggavtalet.pdf', size = 1024): File {
@@ -166,6 +205,20 @@ const CREATED_AGREEMENT = {
   created_at: new Date('2026-07-03T10:00:00.000Z'),
 }
 
+/** Full record satisfying both the verify select and the LIST_ITEM_SELECT refetch. */
+const FULL_AGREEMENT = {
+  id: 'agr-1',
+  name: 'Byggavtalet 2024',
+  personel_type: 'ARB',
+  status: 'READY',
+  effective_from: null,
+  effective_to: null,
+  uploaded_by: 'user-1',
+  created_at: new Date('2026-07-01T08:00:00.000Z'),
+  _count: { employees: 3 },
+  workspace_file_id: 'file-1',
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
   vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -173,9 +226,18 @@ beforeEach(() => {
 
   mockFileFindFirst.mockResolvedValue(null)
   mockFileCreate.mockResolvedValue({ id: 'file-1' })
+  mockFileDelete.mockResolvedValue({})
   mockAgreementCreate.mockResolvedValue(CREATED_AGREEMENT)
+  mockAgreementFindFirst.mockResolvedValue(FULL_AGREEMENT)
   mockAgreementFindMany.mockResolvedValue([])
+  mockAgreementUpdateMany.mockResolvedValue({ count: 1 })
+  mockAgreementDelete.mockResolvedValue({})
+  mockChunkDeleteMany.mockResolvedValue({ count: 4 })
+  mockEmployeeUpdateMany.mockResolvedValue({ count: 3 })
+  mockEmployeeCount.mockResolvedValue(3)
+  mockGroupFindFirst.mockResolvedValue({ id: 'grp-1' })
   mockStorageUpload.mockResolvedValue({ error: null })
+  mockStorageRemove.mockResolvedValue({ error: null })
   mockAssertQuota.mockResolvedValue({ warning: undefined })
   mockCalculateCompleteness.mockReturnValue(0)
   // $transaction(cb) → run the callback against the tx stand-in.
@@ -507,5 +569,474 @@ describe('listCollectiveAgreements', () => {
     const result = await listCollectiveAgreements()
     expect(result.success).toBe(false)
     expect(result.error).toBe('Kunde inte hämta kollektivavtal.')
+  })
+})
+
+// ===========================================================================
+// Story 7.6: updateCollectiveAgreement
+// ===========================================================================
+
+const UPDATE_INPUT = {
+  name: 'Byggavtalet 2025',
+  personel_type: 'ARB' as const,
+  effective_from: '2025-04-01',
+  effective_to: '2026-03-31',
+}
+
+describe('updateCollectiveAgreement', () => {
+  test('is gated employees:manage', async () => {
+    await updateCollectiveAgreement('agr-1', UPDATE_INPUT)
+    expect(lastRequiredPermission).toBe('employees:manage')
+  })
+
+  test('rejects invalid input (empty Namn) before touching the DB', async () => {
+    const result = await updateCollectiveAgreement('agr-1', {
+      ...UPDATE_INPUT,
+      name: '   ',
+    })
+    expect(result.success).toBe(false)
+    expect(result.error).toBe('Namn krävs.')
+    expect(mockAgreementFindFirst).not.toHaveBeenCalled()
+    expect(mockAgreementUpdateMany).not.toHaveBeenCalled()
+  })
+
+  test('rejects a period that ends before it starts', async () => {
+    const result = await updateCollectiveAgreement('agr-1', {
+      ...UPDATE_INPUT,
+      effective_from: '2026-01-01',
+      effective_to: '2025-01-01',
+    })
+    expect(result.success).toBe(false)
+    expect(result.error).toBe(
+      'Giltighetsperiodens slutdatum måste vara efter startdatumet.'
+    )
+  })
+
+  test('cross-workspace agreement id is rejected — verify uses compound where, no write happens', async () => {
+    mockAgreementFindFirst.mockResolvedValue(null)
+
+    const result = await updateCollectiveAgreement('agr-other-ws', UPDATE_INPUT)
+
+    expect(result.success).toBe(false)
+    expect(result.error).toBe('Kollektivavtalet hittades inte.')
+    expect(mockAgreementFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'agr-other-ws', workspace_id: WORKSPACE_ID },
+      })
+    )
+    expect(mockAgreementUpdateMany).not.toHaveBeenCalled()
+  })
+
+  test('writes via compound where (workspace filter ON the mutation) with UTC dates + typ mapping', async () => {
+    const result = await updateCollectiveAgreement('agr-1', UPDATE_INPUT)
+
+    expect(result.success).toBe(true)
+    expect(mockAgreementUpdateMany).toHaveBeenCalledWith({
+      where: { id: 'agr-1', workspace_id: WORKSPACE_ID },
+      data: {
+        name: 'Byggavtalet 2025',
+        personel_type: 'ARB',
+        effective_from: new Date('2025-04-01T00:00:00.000Z'),
+        effective_to: new Date('2026-03-31T00:00:00.000Z'),
+      },
+    })
+  })
+
+  test('Övrigt clears personel_type and empty period clears the dates', async () => {
+    await updateCollectiveAgreement('agr-1', {
+      name: 'Byggavtalet 2024',
+      personel_type: null,
+      effective_from: null,
+      effective_to: null,
+    })
+    expect(mockAgreementUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          name: 'Byggavtalet 2024',
+          personel_type: null,
+          effective_from: null,
+          effective_to: null,
+        },
+      })
+    )
+  })
+
+  test('returns the refreshed serialized list item and revalidates both surfaces', async () => {
+    mockAgreementFindFirst
+      .mockResolvedValueOnce({ id: 'agr-1', name: 'Byggavtalet 2024' })
+      .mockResolvedValueOnce({
+        ...FULL_AGREEMENT,
+        name: 'Byggavtalet 2025',
+        effective_from: new Date('2025-04-01T00:00:00.000Z'),
+        effective_to: new Date('2026-03-31T00:00:00.000Z'),
+      })
+
+    const result = await updateCollectiveAgreement('agr-1', UPDATE_INPUT)
+
+    expect(result.success).toBe(true)
+    expect(result.data).toMatchObject({
+      id: 'agr-1',
+      name: 'Byggavtalet 2025',
+      effective_from: '2025-04-01',
+      effective_to: '2026-03-31',
+      assignedEmployeeCount: 3,
+    })
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/personalregister')
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/settings')
+  })
+
+  test('renaming the profile-named agreement repoints CompanyProfile (scoped write + recompute)', async () => {
+    mockProfileFindUnique.mockResolvedValue({
+      workspace_id: WORKSPACE_ID,
+      has_collective_agreement: true,
+      collective_agreement_name: 'Byggavtalet 2024', // matches existing.name
+      profile_completeness: 30,
+    })
+    mockCalculateCompleteness.mockReturnValue(30)
+
+    await updateCollectiveAgreement('agr-1', UPDATE_INPUT)
+
+    expect(mockProfileUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { workspace_id: WORKSPACE_ID },
+        data: { collective_agreement_name: 'Byggavtalet 2025' },
+      })
+    )
+  })
+
+  test('no profile write when the profile name is a different agreement', async () => {
+    mockProfileFindUnique.mockResolvedValue({
+      workspace_id: WORKSPACE_ID,
+      has_collective_agreement: true,
+      collective_agreement_name: 'Tjänstemannaavtalet',
+      profile_completeness: 30,
+    })
+
+    await updateCollectiveAgreement('agr-1', UPDATE_INPUT)
+
+    expect(mockProfileUpdate).not.toHaveBeenCalled()
+  })
+
+  test('no profile lookup at all when the name is unchanged', async () => {
+    await updateCollectiveAgreement('agr-1', {
+      ...UPDATE_INPUT,
+      name: 'Byggavtalet 2024', // === existing.name
+    })
+    expect(mockProfileFindUnique).not.toHaveBeenCalled()
+  })
+})
+
+// ===========================================================================
+// Story 7.6: deleteCollectiveAgreement (full cascade)
+// ===========================================================================
+
+const BACKING_FILE = {
+  id: 'file-1',
+  storage_path: `${WORKSPACE_ID}/files/file-1/byggavtalet.pdf`,
+}
+
+describe('deleteCollectiveAgreement', () => {
+  test('is gated employees:manage', async () => {
+    await deleteCollectiveAgreement('agr-1')
+    expect(lastRequiredPermission).toBe('employees:manage')
+  })
+
+  test('cross-workspace agreement id is rejected — nothing is deleted', async () => {
+    mockAgreementFindFirst.mockResolvedValue(null)
+
+    const result = await deleteCollectiveAgreement('agr-other-ws')
+
+    expect(result.success).toBe(false)
+    expect(result.error).toBe('Kollektivavtalet hittades inte.')
+    expect(mockChunkDeleteMany).not.toHaveBeenCalled()
+    expect(mockAgreementDelete).not.toHaveBeenCalled()
+    expect(mockFileDelete).not.toHaveBeenCalled()
+    expect(mockStorageRemove).not.toHaveBeenCalled()
+  })
+
+  test('chunk cleanup filter includes BOTH source_id and workspace_id (defense in depth)', async () => {
+    mockFileFindFirst.mockResolvedValue(BACKING_FILE)
+
+    await deleteCollectiveAgreement('agr-1')
+
+    expect(mockChunkDeleteMany).toHaveBeenCalledWith({
+      where: {
+        source_type: 'COLLECTIVE_AGREEMENT',
+        source_id: 'agr-1',
+        workspace_id: WORKSPACE_ID,
+      },
+    })
+  })
+
+  test('deletion order: chunks → agreement → file row → storage object', async () => {
+    mockFileFindFirst.mockResolvedValue(BACKING_FILE)
+
+    const result = await deleteCollectiveAgreement('agr-1')
+
+    expect(result.success).toBe(true)
+    const chunkOrder = mockChunkDeleteMany.mock.invocationCallOrder[0]!
+    const agreementOrder = mockAgreementDelete.mock.invocationCallOrder[0]!
+    const fileOrder = mockFileDelete.mock.invocationCallOrder[0]!
+    const storageOrder = mockStorageRemove.mock.invocationCallOrder[0]!
+    expect(chunkOrder).toBeLessThan(agreementOrder)
+    expect(agreementOrder).toBeLessThan(fileOrder)
+    expect(fileOrder).toBeLessThan(storageOrder)
+
+    expect(mockAgreementDelete).toHaveBeenCalledWith({ where: { id: 'agr-1' } })
+    expect(mockFileDelete).toHaveBeenCalledWith({ where: { id: 'file-1' } })
+    expect(mockStorageRemove).toHaveBeenCalledWith([BACKING_FILE.storage_path])
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/personalregister')
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/settings')
+  })
+
+  test('the backing-file lookup is workspace-verified; a foreign file row is left alone', async () => {
+    mockFileFindFirst.mockResolvedValue(null) // not found in ctx workspace
+
+    const result = await deleteCollectiveAgreement('agr-1')
+
+    expect(result.success).toBe(true)
+    expect(mockFileFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: 'file-1',
+          workspace_id: WORKSPACE_ID,
+        }),
+      })
+    )
+    expect(mockAgreementDelete).toHaveBeenCalled()
+    expect(mockFileDelete).not.toHaveBeenCalled()
+    expect(mockStorageRemove).not.toHaveBeenCalled()
+  })
+
+  test('an agreement without a backing file skips the file + storage legs', async () => {
+    mockAgreementFindFirst.mockResolvedValue({
+      ...FULL_AGREEMENT,
+      workspace_file_id: null,
+    })
+
+    const result = await deleteCollectiveAgreement('agr-1')
+
+    expect(result.success).toBe(true)
+    expect(mockFileFindFirst).not.toHaveBeenCalled()
+    expect(mockFileDelete).not.toHaveBeenCalled()
+    expect(mockStorageRemove).not.toHaveBeenCalled()
+  })
+
+  test('storage removal is fail-safe: a failed remove logs but the delete still succeeds', async () => {
+    mockFileFindFirst.mockResolvedValue(BACKING_FILE)
+    mockStorageRemove.mockRejectedValue(new Error('storage down'))
+
+    const result = await deleteCollectiveAgreement('agr-1')
+
+    expect(result.success).toBe(true)
+  })
+
+  test('profile honesty — deleting the LAST agreement clears flag + name', async () => {
+    mockFileFindFirst.mockResolvedValue(BACKING_FILE)
+    mockAgreementFindMany.mockResolvedValue([]) // none remain after the delete
+    mockProfileFindUnique.mockResolvedValue({
+      workspace_id: WORKSPACE_ID,
+      has_collective_agreement: true,
+      collective_agreement_name: 'Byggavtalet 2024',
+      profile_completeness: 30,
+    })
+    mockCalculateCompleteness.mockReturnValue(20)
+
+    await deleteCollectiveAgreement('agr-1')
+
+    expect(mockProfileUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { workspace_id: WORKSPACE_ID },
+        data: {
+          has_collective_agreement: false,
+          collective_agreement_name: null,
+        },
+      })
+    )
+    // Completeness recomputed with the shared helper (score changed 30 → 20).
+    expect(mockProfileUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { profile_completeness: 20 },
+      })
+    )
+  })
+
+  test('profile honesty — deleting the PROFILE-NAMED agreement repoints to a remaining one', async () => {
+    mockFileFindFirst.mockResolvedValue(BACKING_FILE)
+    mockAgreementFindMany.mockResolvedValue([{ name: 'Tjänstemannaavtalet' }])
+    mockProfileFindUnique.mockResolvedValue({
+      workspace_id: WORKSPACE_ID,
+      has_collective_agreement: true,
+      collective_agreement_name: 'Byggavtalet 2024', // the deleted one
+      profile_completeness: 30,
+    })
+    mockCalculateCompleteness.mockReturnValue(30)
+
+    await deleteCollectiveAgreement('agr-1')
+
+    expect(mockProfileUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { workspace_id: WORKSPACE_ID },
+        data: { collective_agreement_name: 'Tjänstemannaavtalet' },
+      })
+    )
+    // The flag stays true — agreements remain.
+    const wroteFlagFalse = mockProfileUpdate.mock.calls.some(
+      (call) =>
+        (call[0] as { data: Record<string, unknown> }).data
+          .has_collective_agreement === false
+    )
+    expect(wroteFlagFalse).toBe(false)
+  })
+
+  test('profile honesty — deleting a NON-named agreement (others remain) writes nothing', async () => {
+    mockFileFindFirst.mockResolvedValue(BACKING_FILE)
+    mockAgreementFindMany.mockResolvedValue([{ name: 'Tjänstemannaavtalet' }])
+    mockProfileFindUnique.mockResolvedValue({
+      workspace_id: WORKSPACE_ID,
+      has_collective_agreement: true,
+      collective_agreement_name: 'Tjänstemannaavtalet',
+      profile_completeness: 30,
+    })
+
+    await deleteCollectiveAgreement('agr-1')
+
+    expect(mockProfileUpdate).not.toHaveBeenCalled()
+  })
+})
+
+// ===========================================================================
+// Story 7.6: bulk assignment + preview
+// ===========================================================================
+
+describe('assignCollectiveAgreementBulk', () => {
+  test('is gated employees:manage', async () => {
+    await assignCollectiveAgreementBulk('agr-1', {
+      kind: 'personel_type',
+      value: 'ARB',
+    })
+    expect(lastRequiredPermission).toBe('employees:manage')
+  })
+
+  test('cross-workspace agreement id is rejected before any write', async () => {
+    mockAgreementFindFirst.mockResolvedValue(null)
+
+    const result = await assignCollectiveAgreementBulk('agr-other-ws', {
+      kind: 'personel_type',
+      value: 'ARB',
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.error).toBe('Kollektivavtalet hittades inte.')
+    expect(mockAgreementFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'agr-other-ws', workspace_id: WORKSPACE_ID },
+      })
+    )
+    expect(mockEmployeeUpdateMany).not.toHaveBeenCalled()
+  })
+
+  test('cross-workspace group id is rejected before any write', async () => {
+    mockGroupFindFirst.mockResolvedValue(null)
+
+    const result = await assignCollectiveAgreementBulk('agr-1', {
+      kind: 'group',
+      groupId: 'grp-other-ws',
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.error).toBe('Gruppen hittades inte.')
+    expect(mockGroupFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'grp-other-ws', workspace_id: WORKSPACE_ID },
+      })
+    )
+    expect(mockEmployeeUpdateMany).not.toHaveBeenCalled()
+  })
+
+  test('personaltyp targeting: compound workspace filter on the updateMany itself', async () => {
+    const result = await assignCollectiveAgreementBulk('agr-1', {
+      kind: 'personel_type',
+      value: 'ARB',
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data).toEqual({ assigned: 3 })
+    expect(mockEmployeeUpdateMany).toHaveBeenCalledWith({
+      where: { workspace_id: WORKSPACE_ID, personel_type: 'ARB' },
+      data: { collective_agreement_id: 'agr-1' },
+    })
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/personalregister')
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/settings')
+  })
+
+  test('group targeting: whole enhet, workspace-filtered', async () => {
+    mockEmployeeUpdateMany.mockResolvedValue({ count: 5 })
+
+    const result = await assignCollectiveAgreementBulk('agr-1', {
+      kind: 'group',
+      groupId: 'grp-1',
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data).toEqual({ assigned: 5 })
+    expect(mockEmployeeUpdateMany).toHaveBeenCalledWith({
+      where: { workspace_id: WORKSPACE_ID, group_id: 'grp-1' },
+      data: { collective_agreement_id: 'agr-1' },
+    })
+  })
+
+  test('malformed target is rejected', async () => {
+    const result = await assignCollectiveAgreementBulk('agr-1', {
+      kind: 'personel_type',
+      value: 'CHEF',
+    } as never)
+    expect(result.success).toBe(false)
+    expect(result.error).toBe('Ogiltig indata')
+    expect(mockEmployeeUpdateMany).not.toHaveBeenCalled()
+  })
+})
+
+describe('previewBulkAssignCount', () => {
+  test('is gated employees:manage and counts with the SAME compound filter as the mutation', async () => {
+    const result = await previewBulkAssignCount({
+      kind: 'personel_type',
+      value: 'TJM',
+    })
+
+    expect(lastRequiredPermission).toBe('employees:manage')
+    expect(result.success).toBe(true)
+    expect(result.data).toEqual({ count: 3 })
+    expect(mockEmployeeCount).toHaveBeenCalledWith({
+      where: { workspace_id: WORKSPACE_ID, personel_type: 'TJM' },
+    })
+  })
+
+  test('group preview verifies group ownership; cross-workspace group is rejected', async () => {
+    mockGroupFindFirst.mockResolvedValue(null)
+
+    const result = await previewBulkAssignCount({
+      kind: 'group',
+      groupId: 'grp-other-ws',
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.error).toBe('Gruppen hittades inte.')
+    expect(mockEmployeeCount).not.toHaveBeenCalled()
+  })
+
+  test('group preview counts the whole enhet, workspace-filtered', async () => {
+    mockEmployeeCount.mockResolvedValue(7)
+
+    const result = await previewBulkAssignCount({
+      kind: 'group',
+      groupId: 'grp-1',
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data).toEqual({ count: 7 })
+    expect(mockEmployeeCount).toHaveBeenCalledWith({
+      where: { workspace_id: WORKSPACE_ID, group_id: 'grp-1' },
+    })
   })
 })

@@ -45,6 +45,7 @@ import {
   type EmployeeGroupSummary,
 } from '@/app/actions/employees'
 import { assessEmployeeCompleteness } from '@/lib/employees/employee-completeness'
+import { KollektivavtalManagerDialog } from '@/components/features/kollektivavtal/kollektivavtal-manager-dialog'
 import type { EmployeeRow } from './employee-row'
 import { filterEmployees, type EmployeeStatusTab } from './filter-employees'
 import { EmployeeListTable } from './employee-list-table'
@@ -272,6 +273,12 @@ export function PersonalregisterContent({
                 aria-label="Sök anställda"
               />
             </div>
+
+            {/* Checkpoint round (7.6): kollektivavtal management/Tilldela must
+                be reachable from the register, not only Settings. Shown for
+                all viewers — the manager itself renders view-only without
+                `employees:manage` and every mutation is server-gated. */}
+            <KollektivavtalManagerDialog canManage={canManage} />
 
             {canManage && <ManageGroupsPopover groups={groups} />}
           </div>

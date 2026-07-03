@@ -44,6 +44,21 @@ vi.mock('@/components/features/personalregister/manage-groups-popover', () => ({
   ManageGroupsPopover: () => <div data-testid="manage-groups-popover" />,
 }))
 
+// Checkpoint round (7.6): the toolbar's Kollektivavtal dialog mount — stubbed
+// at its props contract; the wrapper's own behavior is covered in
+// kollektivavtal-manager-dialog.test.tsx.
+vi.mock(
+  '@/components/features/kollektivavtal/kollektivavtal-manager-dialog',
+  () => ({
+    KollektivavtalManagerDialog: ({ canManage }: { canManage: boolean }) => (
+      <div
+        data-testid="kollektivavtal-manager-dialog"
+        data-can-manage={String(canManage)}
+      />
+    ),
+  })
+)
+
 // Story 7.3: Personalkort modal stub at its props contract — renders the
 // received id/row and buttons that fire onEmployeeChange/onClose so the
 // island's optimistic insert/update wiring is observable.
@@ -434,5 +449,25 @@ describe('PersonalregisterContent — groups load failure (QA REL-001)', () => {
   test('no notice in the normal case', () => {
     renderContent()
     expect(screen.queryByText(/Grupper kunde inte laddas/)).toBeNull()
+  })
+})
+
+describe('PersonalregisterContent — Kollektivavtal toolbar mount (7.6 checkpoint)', () => {
+  test('mounts the dialog wrapper on the toolbar with canManage passed through', () => {
+    renderContent()
+    expect(screen.getByTestId('kollektivavtal-manager-dialog')).toHaveAttribute(
+      'data-can-manage',
+      'true'
+    )
+  })
+
+  test('stays mounted for view-only users (manager renders read-only)', () => {
+    renderContent({ canManage: false })
+    expect(screen.getByTestId('kollektivavtal-manager-dialog')).toHaveAttribute(
+      'data-can-manage',
+      'false'
+    )
+    // Hantera grupper remains manage-gated.
+    expect(screen.queryByTestId('manage-groups-popover')).toBeNull()
   })
 })

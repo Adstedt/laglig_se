@@ -38,12 +38,22 @@ vi.mock('@/hooks/use-workspace', () => ({
 
 // Story 7.5: the Kollektivavtal tab mounts KollektivavtalManager, whose module
 // imports the collective-agreements server actions — mock at the boundary.
+// Story 7.6 adds edit/delete/bulk-assign actions + the assign dialog's
+// lazy group fetch.
 vi.mock('@/app/actions/collective-agreements', () => ({
   uploadCollectiveAgreement: vi.fn(),
   listCollectiveAgreements: vi.fn().mockResolvedValue({
     success: true,
     data: [],
   }),
+  updateCollectiveAgreement: vi.fn(),
+  deleteCollectiveAgreement: vi.fn(),
+  assignCollectiveAgreementBulk: vi.fn(),
+  previewBulkAssignCount: vi.fn(),
+}))
+
+vi.mock('@/app/actions/employees', () => ({
+  getEmployeeGroups: vi.fn().mockResolvedValue({ success: true, data: [] }),
 }))
 
 import { useWorkspace } from '@/hooks/use-workspace'
@@ -286,8 +296,8 @@ describe('SettingsTabs', () => {
     })
   })
 
-  describe('Kollektivavtal tab (Story 7.5)', () => {
-    it('shows the Kollektivavtal tab for OWNER (workspace:settings)', () => {
+  describe('Kollektivavtal tab (Story 7.5 + 7.6 UX-ADMIN-001)', () => {
+    it('shows the Kollektivavtal tab for OWNER (workspace:settings AND employees:view)', () => {
       vi.mocked(useWorkspace).mockReturnValue(
         mockWorkspaceContext({ role: 'OWNER' as WorkspaceRole })
       )
@@ -297,14 +307,23 @@ describe('SettingsTabs', () => {
       ).toBeInTheDocument()
     })
 
-    it('shows the tab for ADMIN too (settings visibility ≠ upload permission)', () => {
+    it('UX-ADMIN-001: hides the tab for ADMIN (workspace:settings but NO employees:view — the tab was permanently broken)', () => {
       vi.mocked(useWorkspace).mockReturnValue(
         mockWorkspaceContext({ role: 'ADMIN' as WorkspaceRole })
       )
       renderTabs()
+      expect(screen.queryByRole('tab', { name: /kollektivavtal/i })).toBeNull()
+    })
+
+    it('UX-ADMIN-001: ADMIN gets no tab content either, even with the tab param forced', () => {
+      vi.mocked(useWorkspace).mockReturnValue(
+        mockWorkspaceContext({ role: 'ADMIN' as WorkspaceRole })
+      )
+      renderTabs({ initialTab: 'kollektivavtal' })
       expect(
-        screen.getByRole('tab', { name: /kollektivavtal/i })
-      ).toBeInTheDocument()
+        screen.queryByText('Inga kollektivavtal har laddats upp än.')
+      ).toBeNull()
+      expect(screen.queryByText('Kollektivavtal kunde inte laddas.')).toBeNull()
     })
 
     it('hides the tab for HR_MANAGER (no workspace:settings — HR mount is their entry point) and MEMBER', () => {
@@ -333,18 +352,6 @@ describe('SettingsTabs', () => {
       ).toBeInTheDocument()
       // OWNER holds employees:manage → the shared upload form renders.
       expect(screen.getByLabelText(/PDF-fil/)).toBeInTheDocument()
-    })
-
-    it('ADMIN (no employees:manage) gets the list but no upload form', () => {
-      vi.mocked(useWorkspace).mockReturnValue(
-        mockWorkspaceContext({ role: 'ADMIN' as WorkspaceRole })
-      )
-      renderTabs({ initialTab: 'kollektivavtal' })
-
-      expect(
-        screen.getByText('Inga kollektivavtal har laddats upp än.')
-      ).toBeInTheDocument()
-      expect(screen.queryByLabelText(/PDF-fil/)).toBeNull()
     })
   })
 

@@ -164,7 +164,7 @@ export async function GET(request: Request) {
 
         if (result.truncated) {
           console.warn(
-            `[EXTRACT-FILES] ${file.filename} (${file.id}) truncated at 200k chars`
+            `[EXTRACT-FILES] ${file.filename} (${file.id}) truncated at 800k chars`
           )
         }
 

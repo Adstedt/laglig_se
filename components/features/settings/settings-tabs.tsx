@@ -123,11 +123,14 @@ export function SettingsTabs({
   const typedRole = role as WorkspaceRole
   const canAccessBilling = hasPermission(typedRole, 'workspace:billing')
   const canAccessSettings = hasPermission(typedRole, 'workspace:settings')
-  // Story 7.5: settings-tab visibility ≠ upload permission (defense in depth).
-  // The tab is gated like company-profile; the upload form additionally
-  // requires `employees:manage` (which e.g. ADMIN does not hold — the
-  // mutation actions enforce this server-side regardless).
+  // Story 7.6 (UX-ADMIN-001): the Kollektivavtal tab requires BOTH settings
+  // access AND `employees:view` — the tab's list read is employees-gated, so
+  // ADMIN (no employees permission) previously saw a permanently broken tab.
+  // The upload/edit/delete affordances additionally require
+  // `employees:manage` (mutation actions enforce this server-side regardless).
+  const canViewEmployees = hasPermission(typedRole, 'employees:view')
   const canManageEmployees = hasPermission(typedRole, 'employees:manage')
+  const showKollektivavtalTab = canAccessSettings && canViewEmployees
 
   return (
     <Tabs
@@ -146,7 +149,7 @@ export function SettingsTabs({
             <span className="hidden sm:inline">Företagsprofil</span>
           </TabsTrigger>
         )}
-        {canAccessSettings && (
+        {showKollektivavtalTab && (
           <TabsTrigger value="kollektivavtal" className="gap-2">
             <Handshake className="h-4 w-4" />
             <span className="hidden sm:inline">Kollektivavtal</span>
@@ -197,7 +200,7 @@ export function SettingsTabs({
         </TabsContent>
       )}
 
-      {canAccessSettings && (
+      {showKollektivavtalTab && (
         <TabsContent value="kollektivavtal">
           <KollektivavtalManager
             initialAgreements={collectiveAgreements}

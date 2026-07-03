@@ -3,7 +3,7 @@
  * dialog mount — both surfaces render the SAME upload form component.
  */
 import { describe, test, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { KollektivavtalManager } from '@/components/features/kollektivavtal/kollektivavtal-manager'
 import { KollektivavtalUploadDialog } from '@/components/features/kollektivavtal/kollektivavtal-upload-dialog'
@@ -11,9 +11,23 @@ import type { CollectiveAgreementListItem } from '@/app/actions/collective-agree
 
 const mockUpload = vi.fn()
 const mockList = vi.fn()
+const mockUpdate = vi.fn()
+const mockDelete = vi.fn()
+const mockAssign = vi.fn()
+const mockPreview = vi.fn()
 vi.mock('@/app/actions/collective-agreements', () => ({
   uploadCollectiveAgreement: (...args: unknown[]) => mockUpload(...args),
   listCollectiveAgreements: (...args: unknown[]) => mockList(...args),
+  updateCollectiveAgreement: (...args: unknown[]) => mockUpdate(...args),
+  deleteCollectiveAgreement: (...args: unknown[]) => mockDelete(...args),
+  assignCollectiveAgreementBulk: (...args: unknown[]) => mockAssign(...args),
+  previewBulkAssignCount: (...args: unknown[]) => mockPreview(...args),
+}))
+
+// Story 7.6: the assign dialog fetches groups lazily.
+const mockGetGroups = vi.fn()
+vi.mock('@/app/actions/employees', () => ({
+  getEmployeeGroups: (...args: unknown[]) => mockGetGroups(...args),
 }))
 
 vi.mock('sonner', () => ({
@@ -41,6 +55,11 @@ beforeEach(() => {
   vi.clearAllMocks()
   mockList.mockResolvedValue({ success: true, data: [] })
   mockUpload.mockResolvedValue({ success: true, data: makeItem() })
+  mockUpdate.mockResolvedValue({ success: true, data: makeItem() })
+  mockDelete.mockResolvedValue({ success: true })
+  mockAssign.mockResolvedValue({ success: true, data: { assigned: 3 } })
+  mockPreview.mockResolvedValue({ success: true, data: { count: 3 } })
+  mockGetGroups.mockResolvedValue({ success: true, data: [] })
 })
 
 describe('KollektivavtalManager — list', () => {
@@ -102,6 +121,163 @@ describe('KollektivavtalManager — list', () => {
     render(<KollektivavtalManager initialAgreements={[]} canManage={false} />)
     expect(screen.queryByLabelText(/PDF-fil/)).toBeNull()
     expect(screen.queryByRole('button', { name: /Ladda upp/ })).toBeNull()
+  })
+
+  test("variant='dialog' renders flat: no Card chrome, no own title; 'page' default keeps the cards", () => {
+    // Dialog chrome (checkpoint round): the mounting dialog's header carries
+    // the title/description, so the manager must not duplicate them or wrap
+    // sections in bordered cards (frame-in-frame).
+    const { container, unmount } = render(
+      <KollektivavtalManager
+        initialAgreements={[makeItem()]}
+        canManage
+        variant="dialog"
+      />
+    )
+    expect(container.querySelector('.bg-card')).toBeNull()
+    expect(screen.queryByText('Kollektivavtal')).toBeNull()
+    expect(screen.queryByText(/Uppladdade avtal blir valbara/)).toBeNull()
+    // Upload section keeps its own Safiro section label + the form.
+    const uploadLabel = screen.getByRole('heading', {
+      name: 'Ladda upp kollektivavtal',
+    })
+    expect(uploadLabel).toHaveClass('font-safiro', 'font-medium')
+    expect(screen.getByText('Byggavtalet 2024')).toBeInTheDocument()
+    unmount()
+
+    // Settings mount unchanged: card chrome + own title/description.
+    const { container: pageContainer } = render(
+      <KollektivavtalManager initialAgreements={[makeItem()]} canManage />
+    )
+    expect(pageContainer.querySelector('.bg-card')).not.toBeNull()
+    expect(screen.getByText('Kollektivavtal')).toBeInTheDocument()
+    expect(
+      screen.getByText(/Uppladdade avtal blir valbara/)
+    ).toBeInTheDocument()
+  })
+})
+
+describe('KollektivavtalManager — row actions (Story 7.6)', () => {
+  test('shows Uppladdad in the row meta (AC 1)', () => {
+    render(<KollektivavtalManager initialAgreements={[makeItem()]} canManage />)
+    expect(screen.getByText(/Uppladdad: 2026-07-01/)).toBeInTheDocument()
+  })
+
+  test('canManage renders a first-class Tilldela button + Redigera/Ta bort in the overflow menu', async () => {
+    const user = userEvent.setup()
+    render(<KollektivavtalManager initialAgreements={[makeItem()]} canManage />)
+
+    expect(screen.getByRole('button', { name: /Tilldela/ })).toBeInTheDocument()
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Fler åtgärder för Byggavtalet 2024',
+      })
+    )
+    expect(
+      await screen.findByRole('menuitem', { name: /Redigera/ })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('menuitem', { name: /Ta bort/ })
+    ).toBeInTheDocument()
+  })
+
+  test('canManage=false hides every action affordance (server actions remain the boundary)', () => {
+    render(
+      <KollektivavtalManager
+        initialAgreements={[makeItem()]}
+        canManage={false}
+      />
+    )
+    expect(screen.queryByRole('button', { name: /Tilldela/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: /Fler åtgärder/ })).toBeNull()
+  })
+
+  test('Ta bort → confirmation with consequence copy → delete removes the row', async () => {
+    const user = userEvent.setup()
+    render(
+      <KollektivavtalManager
+        initialAgreements={[makeItem({ assignedEmployeeCount: 3 })]}
+        canManage
+      />
+    )
+
+    await user.click(
+      screen.getByRole('button', { name: 'Fler åtgärder för Byggavtalet 2024' })
+    )
+    await user.click(await screen.findByRole('menuitem', { name: /Ta bort/ }))
+
+    // Consequence dialog (AC 3) before anything happens.
+    expect(
+      await screen.findByText('3 anställda kommer att avtilldelas.')
+    ).toBeInTheDocument()
+    expect(mockDelete).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole('button', { name: 'Ta bort' }))
+
+    await waitFor(() => expect(mockDelete).toHaveBeenCalledWith('agr-1'))
+    // Optimistic removal + server refresh.
+    await waitFor(() =>
+      expect(screen.queryByText('Byggavtalet 2024')).toBeNull()
+    )
+    expect(mockList).toHaveBeenCalled()
+  })
+
+  test('Redigera opens the edit dialog prefilled; saving updates the row', async () => {
+    const user = userEvent.setup()
+    mockUpdate.mockResolvedValue({
+      success: true,
+      data: makeItem({ name: 'Byggavtalet 2025' }),
+    })
+    mockList.mockResolvedValue({
+      success: true,
+      data: [makeItem({ name: 'Byggavtalet 2025' })],
+    })
+    render(<KollektivavtalManager initialAgreements={[makeItem()]} canManage />)
+
+    await user.click(
+      screen.getByRole('button', { name: 'Fler åtgärder för Byggavtalet 2024' })
+    )
+    await user.click(await screen.findByRole('menuitem', { name: /Redigera/ }))
+
+    // Scope to the edit dialog — the upload form behind it has its own Namn.
+    const dialog = await screen.findByRole('dialog')
+    const nameInput = within(dialog).getByLabelText(/Namn/)
+    expect(nameInput).toHaveValue('Byggavtalet 2024')
+
+    await user.clear(nameInput)
+    await user.type(nameInput, 'Byggavtalet 2025')
+    await user.click(screen.getByRole('button', { name: 'Spara' }))
+
+    await waitFor(() =>
+      expect(mockUpdate).toHaveBeenCalledWith(
+        'agr-1',
+        expect.objectContaining({ name: 'Byggavtalet 2025' })
+      )
+    )
+    expect(await screen.findByText('Byggavtalet 2025')).toBeInTheDocument()
+  })
+
+  test('Tilldela opens the bulk-assign dialog with the preview count; confirm refreshes the list', async () => {
+    const user = userEvent.setup()
+    render(<KollektivavtalManager initialAgreements={[makeItem()]} canManage />)
+
+    await user.click(screen.getByRole('button', { name: /Tilldela/ }))
+
+    // Live preview (agreement typ ARB is the default target).
+    expect(
+      await screen.findByText('Tilldelar 3 anställda.')
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Tilldela' }))
+
+    await waitFor(() =>
+      expect(mockAssign).toHaveBeenCalledWith('agr-1', {
+        kind: 'personel_type',
+        value: 'ARB',
+      })
+    )
+    await waitFor(() => expect(mockList).toHaveBeenCalled())
   })
 })
 

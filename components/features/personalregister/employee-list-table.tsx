@@ -187,10 +187,17 @@ export function EmployeeListTable({
     setColumnState(loadEmployeeColumnState(workspaceId))
   }, [workspaceId])
 
+  // Story 7.6 (STATE-001): functional setState — the handlers derive the next
+  // state from `prev`, never from a captured `columnState` (a stale closure
+  // could otherwise clobber the sibling half of the state on rapid updates).
   const applyColumnState = useCallback(
-    (next: EmployeeColumnState) => {
-      setColumnState(next)
-      if (workspaceId) saveEmployeeColumnState(workspaceId, next)
+    (compute: (_prev: EmployeeColumnState) => EmployeeColumnState) => {
+      setColumnState((prev) => {
+        const next = compute(prev)
+        // Persistence is skipped when there's no workspace id (empty register).
+        if (workspaceId) saveEmployeeColumnState(workspaceId, next)
+        return next
+      })
     },
     [workspaceId]
   )
@@ -199,26 +206,26 @@ export function EmployeeListTable({
     (visibility: VisibilityState) => {
       // Sanitizer drops non-hideable ids (Anställd, drag handle) — defense
       // in depth on top of `enableHiding: false` and the disabled checkbox.
-      applyColumnState({
+      applyColumnState((prev) => ({
         visibility: sanitizeEmployeeColumnVisibility(visibility),
-        sizing: columnState.sizing,
-      })
+        sizing: prev.sizing,
+      }))
     },
-    [applyColumnState, columnState.sizing]
+    [applyColumnState]
   )
 
   // Clamp BEFORE storing (law-table fix: `onEnd` mode commits
   // `startSize + deltaOffset` unclamped on extreme drags).
   const handleColumnSizingChange = useCallback(
     (updater: Updater<ColumnSizingState>) => {
-      const raw =
-        typeof updater === 'function' ? updater(columnState.sizing) : updater
-      applyColumnState({
-        visibility: columnState.visibility,
-        sizing: clampEmployeeColumnSizing(raw),
-      })
+      applyColumnState((prev) => ({
+        visibility: prev.visibility,
+        sizing: clampEmployeeColumnSizing(
+          typeof updater === 'function' ? updater(prev.sizing) : updater
+        ),
+      }))
     },
-    [applyColumnState, columnState.sizing, columnState.visibility]
+    [applyColumnState]
   )
 
   const columnControls: EmployeeColumnControls = useMemo(

@@ -503,6 +503,56 @@ describe('EmployeeListTable — column controls (Story 7.4b)', () => {
     expect(screen.getByText('Anna Svensson')).toBeInTheDocument()
   })
 
+  test('TEST-002 (Story 7.6): no workspace id → column toggles work in-session but persistence is skipped', async () => {
+    const user = userEvent.setup()
+    // ALL_ROWS carry no workspace_id → the table derives workspaceId null.
+    renderTable({ employees: ALL_ROWS })
+
+    await user.click(screen.getByRole('button', { name: /kolumner/i }))
+    await waitFor(() => {
+      expect(screen.getByText('Visa kolumner')).toBeInTheDocument()
+    })
+    await user.click(columnMenuItem('Personnummer'))
+
+    // In-session state still applies (every rendered section)…
+    await waitFor(() => {
+      expect(
+        screen.queryAllByRole('button', { name: 'Personnummer' })
+      ).toHaveLength(0)
+    })
+    // …but NOTHING was persisted — no workspace key exists to write under.
+    expect(window.localStorage.length).toBe(0)
+  })
+
+  test('STATE-001 (Story 7.6): two sequential toggles both land and persist (functional setState — no stale clobber)', async () => {
+    const user = userEvent.setup()
+    renderFlatTable(makeWorkspaceRows())
+
+    await user.click(screen.getByRole('button', { name: /kolumner/i }))
+    await waitFor(() => {
+      expect(screen.getByText('Visa kolumner')).toBeInTheDocument()
+    })
+    await user.click(columnMenuItem('Personnummer'))
+
+    // The menu closes on select — reopen for the second toggle.
+    await user.click(screen.getByRole('button', { name: /kolumner/i }))
+    await waitFor(() => {
+      expect(screen.getByText('Visa kolumner')).toBeInTheDocument()
+    })
+    await user.click(columnMenuItem('Personaltyp'))
+
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Personnummer' })).toBeNull()
+    })
+    expect(screen.queryByRole('button', { name: 'Personaltyp' })).toBeNull()
+
+    // BOTH hidden flags persisted — the second write derived from fresh prev
+    // state, not a stale closure that would have resurrected Personnummer.
+    const stored = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? '{}')
+    expect(stored.visibility?.personnummer).toBe(false)
+    expect(stored.visibility?.personel_type).toBe(false)
+  })
+
   test('grouped view: toggling a column hides it in EVERY group section', async () => {
     const user = userEvent.setup()
     renderTable({ employees: ALL_ROWS })
