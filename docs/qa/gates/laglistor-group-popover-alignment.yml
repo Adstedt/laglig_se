@@ -1,0 +1,110 @@
+schema: 1
+story: 'laglistor-group-popover-alignment'
+story_title: 'Laglistor group management → Personalregister popover pattern'
+gate: CONCERNS
+status_reason: >-
+  Handler parity with the deleted modal verified line-by-line (identical action
+  names + payloads, delete copy byte-identical, reorder logic verbatim) and all
+  untouchables git-clean; CONCERNS only because the focus-guard behavior
+  (dropdown-close focus dance, keyboard reachability, tab-out no longer
+  dismissing) on the app's most-used surface is provable only in a real
+  browser, plus one low mount-gate drift (AlertDialog can outlive the popover
+  if activeListId nulls mid-confirmation).
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-07-03T22:55:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'A11Y-001'
+    severity: medium
+    finding: >-
+      onFocusOutside is unconditionally prevented so the ViewMenu dropdown's
+      close-time focus restore cannot insta-dismiss the popover. Code reading
+      shows Escape and outside-click dismissal survive in every state (no
+      undismissable state constructible, no focus trap), but the end state of
+      the focus race (does focus land on the ViewMenu trigger while the popover
+      is portaled at body end? can keyboard users reach the popover content?)
+      and the acceptability of tab-out no longer dismissing are only provable
+      in a real browser. happy-dom cannot verify Radix focus timing.
+    suggested_action: >-
+      User browser pass: open via "Grupper" with mouse AND keyboard-only;
+      confirm no flash-close, confirm popover content is keyboard-reachable,
+      confirm Escape closes the AlertDialog first and the popover second.
+      Product nod on tab-out staying open.
+    suggested_owner: dev
+  - id: 'GATE-001'
+    severity: low
+    finding: >-
+      Mount-gate drift vs the old `{activeListId && <GroupManager/>}`: the
+      delete AlertDialog is gated only on groupToDelete, not on open. If
+      activeListId becomes null while the delete confirmation is showing, the
+      popover closes but the AlertDialog survives and can still fire
+      deleteListGroup on the stale group (old code unmounted everything).
+      Hard to reach in practice.
+    suggested_action: >-
+      Clear groupToDelete in the existing `!open` reset effect in
+      manage-law-groups-popover.tsx.
+    suggested_owner: dev
+  - id: 'LAYOUT-001'
+    severity: low
+    finding: >-
+      PopoverPrimitive.Anchor renders a real wrapping <div> around the ViewMenu
+      slot inside the toolbar's shrink-0 wrapper. AC5's "no layout shift" holds
+      by inspection at normal widths but the wrapped-toolbar (flex-wrap /
+      narrow-width) case is browser-only verifiable (dev scrutiny item 4).
+    suggested_action: >-
+      Include narrow-width toolbar check in the browser pass; if it shifts,
+      consider `asChild` on the Anchor.
+    suggested_owner: dev
+
+quality_score: 90
+expires: '2026-07-17T00:00:00Z'
+
+evidence:
+  tests_reviewed: 9
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 5]
+    ac_gaps: [4]
+    notes: >-
+      AC1: popover mirrors HR pattern (header, rows with count/arrows/rename/
+      delete, inline create) — code + RTL verified; anchoring visuals need
+      browser. AC2: parity proven by side-by-side diff against
+      `git show HEAD:components/features/document-list/group-manager.tsx` and
+      by RTL payload assertions (create/rename/delete/reorder exact-match).
+      AC3: file deleted, grep shows zero code references. AC4: handler
+      invocation unit-covered; the end-to-end halves (header updates, docs land
+      ungrouped, section order changes, drag-to-group unaffected) are
+      browser-pass residue. AC5: DocumentListTable git-clean; layout shift at
+      wrapped widths browser-only.
+  verification:
+    - 'pnpm vitest run tests/unit/components/features/document-list/ — 33 files / 357 tests pass (includes the new 9-test popover suite)'
+    - 'pnpm vitest run <document-list-store, document-list-sort, validation/document-list, scope-selector> — 4 files / 156 tests pass; git diff confirms ZERO edits to those four test files'
+    - 'pnpm typecheck — clean'
+    - 'git diff HEAD --stat on document-list-table.tsx, grouped-document-list-table.tsx, legal-document-modal/**, components/ui/popover.tsx, app/actions/document-list.ts, lib/** — empty (untouchables clean)'
+    - 'Other working-tree changes (kollektivavtal, personalregister, settings, collective-agreements/files actions) attributed by content to parallel stories 7.5b/7.6/7.7 — not findings of this review'
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Same five Story 4.13 server actions, identical payloads; no new surface, no client-side authz.'
+  performance:
+    status: PASS
+    notes: 'Strictly lighter than the modal; fetch-on-open and optimistic reorder unchanged. Stale-groups flash on reopen matches old cross-list-switch behavior — not a regression.'
+  reliability:
+    status: PASS
+    notes: 'All error/revert paths copied verbatim (error banner, revert-on-failed-reorder, granular busy states, per-row arrow disabling, maxLength=50 guards).'
+  maintainability:
+    status: PASS
+    notes: 'Well-documented judgment calls in the file header; direct Radix Anchor import is a justified exception keeping components/ui/popover.tsx untouched. Shared GroupManagerPopover extraction correctly deferred (parallel story owns the HR side).'
+
+recommendations:
+  immediate:
+    - action: 'User browser pass on the six-item QA scrutiny list — items 1 (focus dance, keyboard-only), 3 (tab-out acceptability), 4 (narrow-width anchor) genuinely need the browser; 2 (Escape layering), 5 (rapid reorder), 6 (drag-to-group) are near-certain from code but confirm while there'
+      refs: ['components/features/document-list/manage-law-groups-popover.tsx', 'components/features/document-list/document-list-page-content.tsx']
+    - action: 'Reset groupToDelete when the popover closes (one-line addition to the !open effect)'
+      refs: ['components/features/document-list/manage-law-groups-popover.tsx']
+  future:
+    - action: 'Fix inherited `if (!moved) return` after setIsReordering(true) outside try/finally (unreachable busy-state leak, pre-existing from the modal) in a story that owns this file'
+      refs: ['components/features/document-list/manage-law-groups-popover.tsx']

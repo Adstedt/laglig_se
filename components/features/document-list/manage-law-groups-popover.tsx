@@ -1,22 +1,28 @@
 'use client'
 
 /**
- * Story 4.13: Group Manager Component
- * Dialog for managing groups within a law list:
- * - Create new groups
- * - Edit existing groups (rename)
- * - Delete groups (items move to ungrouped)
- * - Reorder groups (up/down buttons)
+ * Laglistor group management — compact anchored popover, mirroring the
+ * Personalregister pattern (`personalregister/manage-groups-popover.tsx`).
+ * Replaces the old full-screen `GroupManager` dialog (Story 4.13).
+ *
+ * Presentation-layer swap ONLY: every control calls the exact Story 4.13
+ * server action the dialog called, with identical payloads —
+ * `getListGroups` on open, `createListGroup`, `updateListGroup`,
+ * `deleteListGroup` (behind the same AlertDialog confirmation), and
+ * `reorderGroups` with integer indexes (the server owns the Float
+ * fractional ranking of `LawListGroup.position`).
+ *
+ * The trigger is a standalone toolbar button ("Hantera grupper"),
+ * mirroring the Personalregister affordance. Open state stays controlled
+ * by the parent so it can gate opening on an active list.
  */
 
 import { useState, useEffect, useCallback } from 'react'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog'
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,14 +36,15 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
-  Loader2,
-  Plus,
-  Pencil,
-  Trash2,
-  ChevronUp,
-  ChevronDown,
-  FolderPlus,
+  ArrowDown,
+  ArrowUp,
   Check,
+  Folder,
+  FolderCog,
+  Loader2,
+  Pencil,
+  Plus,
+  Trash2,
   X,
 } from 'lucide-react'
 import {
@@ -48,27 +55,25 @@ import {
   reorderGroups,
   type ListGroupSummary,
 } from '@/app/actions/document-list'
-import { cn } from '@/lib/utils'
 
-interface GroupManagerProps {
+interface ManageLawGroupsPopoverProps {
   open: boolean
   onOpenChange: (_open: boolean) => void
-  listId: string
+  listId: string | null
   onGroupsUpdated: () => void
 }
 
-export function GroupManager({
+export function ManageLawGroupsPopover({
   open,
   onOpenChange,
   listId,
   onGroupsUpdated,
-}: GroupManagerProps) {
+}: ManageLawGroupsPopoverProps) {
   const [groups, setGroups] = useState<ListGroupSummary[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // New group creation
-  const [isCreating, setIsCreating] = useState(false)
   const [newGroupName, setNewGroupName] = useState('')
   const [isSubmittingNew, setIsSubmittingNew] = useState(false)
 
@@ -86,7 +91,7 @@ export function GroupManager({
   // Reordering state
   const [isReordering, setIsReordering] = useState(false)
 
-  // Fetch groups when dialog opens
+  // Fetch groups when the popover opens
   const fetchGroups = useCallback(async () => {
     if (!listId) return
 
@@ -112,18 +117,21 @@ export function GroupManager({
     if (open && listId) {
       fetchGroups()
     }
-    // Reset states when dialog closes
+    // Reset states when the popover closes
     if (!open) {
-      setIsCreating(false)
       setNewGroupName('')
       setEditingGroupId(null)
       setError(null)
+      // QA GATE-001: the delete AlertDialog is gated on `groupToDelete`, not
+      // `open` — clear it here so the confirmation can never outlive the
+      // popover (e.g. activeListId nulling mid-confirmation).
+      setGroupToDelete(null)
     }
   }, [open, listId, fetchGroups])
 
   // Create new group
   const handleCreateGroup = async () => {
-    if (!newGroupName.trim()) return
+    if (!listId || !newGroupName.trim()) return
 
     setIsSubmittingNew(true)
     setError(null)
@@ -136,7 +144,6 @@ export function GroupManager({
 
       if (result.success) {
         setNewGroupName('')
-        setIsCreating(false)
         await fetchGroups()
         onGroupsUpdated()
       } else {
@@ -219,6 +226,8 @@ export function GroupManager({
 
   // Move group up/down
   const handleMoveGroup = async (groupId: string, direction: 'up' | 'down') => {
+    if (!listId) return
+
     const currentIndex = groups.findIndex((g) => g.id === groupId)
     if (currentIndex === -1) return
 
@@ -260,23 +269,28 @@ export function GroupManager({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FolderPlus className="h-5 w-5" />
-              Hantera grupper
-            </DialogTitle>
-            <DialogDescription>
-              Organisera din lista med grupper. Dokument kan placeras i grupper
-              för bättre överblick.
-            </DialogDescription>
-          </DialogHeader>
+      <Popover open={open} onOpenChange={onOpenChange}>
+        <PopoverTrigger asChild>
+          {/* Disabled without an active list (LawListPrimaryAction precedent) —
+              an inert-but-clickable button would lie about its affordance. */}
+          <Button variant="outline" size="sm" disabled={!listId}>
+            <FolderCog className="mr-1.5 h-4 w-4" />
+            Hantera grupper
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          align="end"
+          className="w-80"
+          // Keep the popover open behind the delete-confirmation dialog.
+          onInteractOutside={(e) => {
+            if (groupToDelete) e.preventDefault()
+          }}
+        >
+          <div className="space-y-3">
+            <p className="text-sm font-medium">Grupper</p>
 
-          <div className="flex flex-col gap-4 py-4">
-            {/* Error message */}
             {error && (
-              <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+              <div className="rounded-md border border-destructive/50 bg-destructive/10 p-2 text-sm text-destructive">
                 {error}
                 <button
                   onClick={() => setError(null)}
@@ -287,192 +301,155 @@ export function GroupManager({
               </div>
             )}
 
-            {/* Loading state */}
             {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
               </div>
             ) : (
               <>
-                {/* Existing groups list */}
-                <div className="flex flex-col gap-2">
-                  {groups.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      Inga grupper skapade ännu.
-                    </p>
-                  ) : (
-                    groups.map((group, index) => (
-                      <div
-                        key={group.id}
-                        className={cn(
-                          'flex items-center gap-2 rounded-md border p-2',
-                          editingGroupId === group.id && 'ring-2 ring-primary'
-                        )}
-                      >
+                {groups.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Inga grupper ännu. Skapa en för att organisera dokumenten i
+                    listan.
+                  </p>
+                )}
+
+                {groups.length > 0 && (
+                  <ul className="space-y-1">
+                    {groups.map((group, index) => (
+                      <li key={group.id} className="flex items-center gap-1">
                         {editingGroupId === group.id ? (
-                          // Edit mode
                           <>
                             {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
                             <Input
                               value={editingName}
                               onChange={(e) => setEditingName(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleSaveEdit(group.id)
+                                if (e.key === 'Escape') cancelEditing()
+                              }}
                               className="h-8 flex-1"
-                              placeholder="Gruppnamn"
                               maxLength={50}
                               autoFocus
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  handleSaveEdit(group.id)
-                                } else if (e.key === 'Escape') {
-                                  cancelEditing()
-                                }
-                              }}
+                              disabled={isSubmittingEdit}
+                              aria-label="Nytt gruppnamn"
                             />
                             <Button
-                              size="icon"
                               variant="ghost"
+                              size="icon"
                               className="h-8 w-8"
                               onClick={() => handleSaveEdit(group.id)}
                               disabled={!editingName.trim() || isSubmittingEdit}
+                              title="Spara namn"
                             >
                               {isSubmittingEdit ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
-                                <Check className="h-4 w-4 text-green-600" />
+                                <Check className="h-4 w-4" />
                               )}
                             </Button>
                             <Button
-                              size="icon"
                               variant="ghost"
+                              size="icon"
                               className="h-8 w-8"
                               onClick={cancelEditing}
                               disabled={isSubmittingEdit}
+                              title="Avbryt"
                             >
-                              <X className="h-4 w-4 text-muted-foreground" />
+                              <X className="h-4 w-4" />
                             </Button>
                           </>
                         ) : (
-                          // Display mode
                           <>
-                            {/* Reorder buttons */}
-                            <div className="flex flex-col">
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-5 w-5 p-0"
-                                onClick={() => handleMoveGroup(group.id, 'up')}
-                                disabled={index === 0 || isReordering}
-                              >
-                                <ChevronUp className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-5 w-5 p-0"
-                                onClick={() =>
-                                  handleMoveGroup(group.id, 'down')
-                                }
-                                disabled={
-                                  index === groups.length - 1 || isReordering
-                                }
-                              >
-                                <ChevronDown className="h-3 w-3" />
-                              </Button>
-                            </div>
-
-                            {/* Group name and count */}
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">
-                                {group.name}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {group.itemCount} dokument
-                              </p>
-                            </div>
-
-                            {/* Actions */}
+                            <Folder className="h-4 w-4 text-primary shrink-0" />
+                            <span className="flex-1 truncate text-sm">
+                              {group.name}
+                            </span>
+                            <span className="text-xs text-muted-foreground tabular-nums">
+                              {group.itemCount}
+                            </span>
                             <Button
-                              size="icon"
                               variant="ghost"
+                              size="icon"
                               className="h-8 w-8"
-                              onClick={() => startEditing(group)}
+                              onClick={() => handleMoveGroup(group.id, 'up')}
+                              disabled={index === 0 || isReordering}
+                              title="Flytta upp"
                             >
-                              <Pencil className="h-4 w-4" />
+                              <ArrowUp className="h-3.5 w-3.5" />
                             </Button>
                             <Button
-                              size="icon"
                               variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => handleMoveGroup(group.id, 'down')}
+                              disabled={
+                                index === groups.length - 1 || isReordering
+                              }
+                              title="Flytta ned"
+                            >
+                              <ArrowDown className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => startEditing(group)}
+                              title="Byt namn"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               className="h-8 w-8 text-destructive hover:text-destructive"
                               onClick={() => setGroupToDelete(group)}
+                              title="Ta bort grupp"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                           </>
                         )}
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                {/* Create new group */}
-                {isCreating ? (
-                  <div className="flex items-center gap-2">
-                    {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
-                    <Input
-                      value={newGroupName}
-                      onChange={(e) => setNewGroupName(e.target.value)}
-                      placeholder="Nytt gruppnamn..."
-                      maxLength={50}
-                      autoFocus
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleCreateGroup()
-                        } else if (e.key === 'Escape') {
-                          setIsCreating(false)
-                          setNewGroupName('')
-                        }
-                      }}
-                    />
-                    <Button
-                      size="icon"
-                      onClick={handleCreateGroup}
-                      disabled={!newGroupName.trim() || isSubmittingNew}
-                    >
-                      {isSubmittingNew ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Check className="h-4 w-4" />
-                      )}
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      onClick={() => {
-                        setIsCreating(false)
-                        setNewGroupName('')
-                      }}
-                      disabled={isSubmittingNew}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsCreating(true)}
-                    className="w-full"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Skapa ny grupp
-                  </Button>
+                      </li>
+                    ))}
+                  </ul>
                 )}
+
+                <div className="flex items-center gap-2 pt-1">
+                  <Input
+                    value={newGroupName}
+                    onChange={(e) => setNewGroupName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleCreateGroup()
+                    }}
+                    placeholder="Ny grupp…"
+                    className="h-8 flex-1"
+                    maxLength={50}
+                    disabled={isSubmittingNew}
+                    aria-label="Namn på ny grupp"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleCreateGroup}
+                    disabled={
+                      isSubmittingNew || newGroupName.trim().length === 0
+                    }
+                  >
+                    {isSubmittingNew ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Plus className="mr-1 h-4 w-4" />
+                    )}
+                    Skapa
+                  </Button>
+                </div>
               </>
             )}
           </div>
-        </DialogContent>
-      </Dialog>
+        </PopoverContent>
+      </Popover>
 
-      {/* Delete confirmation */}
+      {/* Delete confirmation — preserved from the old GroupManager dialog */}
       <AlertDialog
         open={!!groupToDelete}
         onOpenChange={() => setGroupToDelete(null)}

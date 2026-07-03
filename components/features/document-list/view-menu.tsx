@@ -1,8 +1,9 @@
 'use client'
 
 /**
- * View Menu — consolidated dropdown for view mode, columns, groups, and export.
- * Replaces the scattered ViewToggle + ColumnSettings + ExportDropdown + Groups button.
+ * View Menu — consolidated dropdown for view mode, columns, and export.
+ * Replaces the scattered ViewToggle + ColumnSettings + ExportDropdown.
+ * (Group management lives in the standalone "Hantera grupper" toolbar button.)
  */
 
 import { useState, useCallback } from 'react'
@@ -28,7 +29,6 @@ import {
   ClipboardList,
   ChevronDown,
   Columns3,
-  FolderPlus,
   ChevronsUpDown,
   FileSpreadsheet,
   Library,
@@ -50,7 +50,6 @@ interface ViewMenuProps {
   complianceColumnVisibility: VisibilityState
   onComplianceColumnVisibilityChange: (_v: VisibilityState) => void
   hasGroups: boolean
-  onOpenGroupManager: () => void
   onExpandAll: () => void
   onCollapseAll: () => void
   listId: string | null
@@ -76,7 +75,6 @@ export function ViewMenu({
   complianceColumnVisibility,
   onComplianceColumnVisibilityChange,
   hasGroups,
-  onOpenGroupManager,
   onExpandAll,
   onCollapseAll,
   listId,
@@ -181,11 +179,8 @@ export function ViewMenu({
           </DropdownMenuSub>
         )}
 
-        {/* Group management */}
-        <DropdownMenuItem onClick={onOpenGroupManager}>
-          <FolderPlus className="mr-2 h-3.5 w-3.5" />
-          Grupper
-        </DropdownMenuItem>
+        {/* Group management moved to the standalone "Hantera grupper"
+            toolbar button (ManageLawGroupsPopover). */}
 
         {/* Expand / collapse (only when groups exist) */}
         {hasGroups && (
