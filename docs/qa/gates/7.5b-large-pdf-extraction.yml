@@ -1,0 +1,184 @@
+schema: 1
+story: '7.5b'
+story_title: 'Large-PDF extraction — kollektivavtal-scale documents'
+gate: PASS
+status_reason: >-
+  The cost bug is structurally dead: stop_reason=max_tokens returns from
+  inside the try — no code path re-enters the retry loop for a completed
+  response, in the single-call, window, and halve-once paths alike (exactly-1
+  and exactly-2 call counts test-pinned); transient-error retries verified
+  intact. Window math is provably contiguous/complete (250→84+83+83), the
+  ≤100-page path sends the ORIGINAL buffer byte-identically (base64 equality
+  asserted), and the halve-once fallback fails honestly. All four external-API
+  claims (haiku-4-5 64K output, 100-page PDF limit for 200K-context models,
+  streaming required >16K, stream().finalMessage() pattern) independently
+  verified against the current Anthropic reference. Markers cannot pollute
+  contextual_header section detection (heading-block invariant in the
+  chunker); contract unchanged (consumer suites pass untouched); the cron
+  diff in the working tree is Story 7.5's, not a zone violation. 38/38 zone
+  tests + 71/71 consumer tests + typecheck re-run clean. Five low-severity
+  notes only.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-07-03T22:20:00+02:00'
+
+top_issues:
+  - id: 'LOG-001'
+    severity: low
+    finding: >-
+      Cron route logs "truncated at 200k chars" but MAX_CHARS is now 800k —
+      stale string only (the truncated flag itself is correct). Out of 7.5b's
+      zone by the story's own boundary; dev self-flagged.
+    suggested_action: >-
+      Fix the string (or derive it from MAX_CHARS) next time
+      app/api/cron/extract-files/route.ts is in a story's zone.
+    suggested_owner: dev
+  - id: 'DUR-001'
+    severity: low
+    finding: >-
+      Sequential windows near the 64K output ceiling can take minutes each; a
+      250-page 3-window doc could exceed cron maxDuration 300. Dev correctly
+      flagged for the orchestrator. The live Vårdföretagarna re-run (~1–2
+      windows) is comfortably inside budget.
+    suggested_action: >-
+      Monitor the first ≥3-window document through the cron; if it bites,
+      choose per-window checkpointing or a longer budget (cron route out of
+      7.5b scope).
+    suggested_owner: po
+  - id: 'MARKER-001'
+    severity: low
+    finding: >-
+      The <!-- [pdf-window] --> marker joins as its own paragraph; the chunker
+      usually merges it into an adjacent ~400-token block (harmless, arguably
+      useful provenance). A marker-ONLY chunk (34 chars > MIN_CHUNK_CHARS 20)
+      is possible when it lands between two blocks that both cannot absorb it
+      — low probability. It can NEVER pollute contextual_header/section
+      detection: extractLeadingHeading requires a leading #-heading line and
+      mergeParagraphs guarantees headings always start their own block.
+    suggested_action: >-
+      Only if marker-only chunks surface in retrieval QA: filter
+      "<!-- [pdf-window]" lines in chunkWorkspaceMarkdown's block loop
+      (lib/chunks is outside 7.5b's zone by design).
+    suggested_owner: dev
+  - id: 'PROV-001'
+    severity: low
+    finding: >-
+      The first emitted segment never carries a marker (i === 0 rule) — per
+      the AC ("between segments") — but when window 1 is blank, the first
+      non-blank segment's page range is then implicit, losing provenance.
+      Cosmetic; whole-doc EMPTY-only-when-all-blank semantics are correct.
+    suggested_action: >-
+      Optional: prepend the marker to the first segment on multi-window docs.
+    suggested_owner: dev
+  - id: 'TEL-001'
+    severity: low
+    finding: >-
+      An ENCRYPTED result mid-window returns without the summed usage object,
+      dropping telemetry for prior windows' calls. Practically unreachable —
+      encryption is pre-detected by pdf-lib before any API call, and a
+      whole-file property cannot first appear on window N — and matches the
+      pre-7.5b ENCRYPTED-without-usage shape. Nit for completeness.
+    suggested_action: 'None required; fold into any future telemetry pass.'
+    suggested_owner: dev
+waiver: { active: false }
+
+quality_score: 100
+expires: '2026-07-17T00:00:00+02:00'
+
+evidence:
+  tests_reviewed: 38
+  risks_identified: 5
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6]
+    ac_gaps: []
+    # AC1: streaming call pinned with max_tokens 64_000 + FILE_TRANSCRIPTION_
+    # PROMPT + document block; 64K verified as haiku-4-5's real output cap
+    # (200K-context tier) and streaming as required >16K against the current
+    # Anthropic reference. MAX_CHARS 800k: truncation test proves >200k
+    # survives and boundary-backup + truncated flag are unchanged; grep finds
+    # no functional 200k consumer (only the cosmetic cron log string, LOG-001).
+    # AC2: oversize is terminal-per-call by construction (return inside try);
+    # exactly-1-call pinned for the 1-page and unknown-page-count legs;
+    # exactly-2-calls pinned for half-re-oversize (no second halving, second
+    # half never attempted); transient 529 retry leg still works (2 calls →
+    # DONE). Encrypted API error → ENCRYPTED without retry (1 call).
+    # AC3: computeWindows pinned at 99/100/101/250 with contiguity/coverage/
+    # ≤100 assertions (250 → 84+83+83); 150-page doc → two real 75-page
+    # sub-PDFs (decoded from the mock calls and re-counted with pdf-lib),
+    # ordered concatenation with "sidor 76-150" marker between segments;
+    # 100-page input limit for 200K-context models verified against the
+    # Anthropic reference; pdf-lib already in the dependency tree (no new dep).
+    # AC4: halve-once pinned both ways — 4-page oversize → halves {1-2}/{3-4}
+    # extracted in order with summed usage; halved window re-oversize → FAILED
+    # honestly; halveWindow(1-page) → null.
+    # AC5: small path sends the ORIGINAL buffer (base64 equality asserted —
+    # byte-equivalence is real); no marker on single-window docs; EMPTY /
+    # ENCRYPTED / UNSUPPORTED / DOCX / XLSX / CSV / TXT legs unchanged;
+    # unparseable-by-pdf-lib buffer falls back to the legacy single call
+    # (corrupt ≠ ENCRYPTED — pdf-lib corrupt-error text does not match
+    # /encrypt|password/i); cron + actions consumer suites pass untouched.
+    # AC6: usage summed across calls into ONE object (215/64055 and 1900/900
+    # assertions) → cron writes one FILE_EXTRACTION row per file (existing
+    # pattern); usage omitted when zero calls completed, matching pre-7.5b;
+    # usage-on-FAILED-with-completed-calls is pre-existing behavior (verified
+    # in the diff), not a 7.5b change.
+    # Zone: working-tree cron-route changes attribute to Story 7.5
+    # (indexExtractedFile / markAgreementFailedForFile + untracked
+    # lib/chunks/ingest-extracted-file.ts); 7.5b touched exactly its File
+    # List. Verification re-run independently: pnpm vitest run
+    # tests/unit/documents/ → 38/38; consumer suites (cron, actions, chunks)
+    # → 71/71; pnpm typecheck clean.
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      No new surface: no schema/PII/auth changes, buffers in-process only,
+      API-key handling unchanged. pdf-lib parses untrusted PDFs but is
+      pre-existing in the tree and failures are contained (try/catch → legacy
+      single-call fallback; extractFile never throws). The
+      /encrypt|password/i message-classification pattern is pre-existing, not
+      new exposure.
+  performance:
+    status: PASS
+    notes: >-
+      The headline fix IS the cost win: deterministic oversize now costs 1
+      call instead of 3 (checkpoint upload burned ~172s + 3x transcription
+      cost). Even-split windows balance output tokens per window, minimizing
+      halve-fallback probability. Residual: DUR-001 (≥3-window docs vs cron
+      maxDuration 300) — flagged, monitored, not blocking.
+  reliability:
+    status: PASS
+    notes: >-
+      Failure semantics are honest end-to-end: FAILED only after the halve
+      ladder is exhausted or a genuine error; ENCRYPTED detected pre-flight
+      without burning an API call; corrupt buffers degrade to the legacy path
+      and let the API arbitrate; blank windows cannot fail a document that has
+      content elsewhere; whole-doc EMPTY only when all windows are blank.
+      extractFile still never throws.
+  maintainability:
+    status: PASS
+    notes: >-
+      Clean separation (call policy / window orchestration / pure window
+      math); pdf-windows.ts is pure and independently tested with real
+      pdf-lib; comments carry the WHY (API limits, cost bug, byte-equivalence
+      claim). Discriminated ClaudeCallResult union beats the old inline
+      status returns. Tests read as behavioral specs.
+
+recommendations:
+  immediate: []
+  future:
+    - action: >-
+        Fix the stale 200k truncation log string when the cron route next
+        enters a story's zone (LOG-001); same story can consider surfacing
+        window count in the cron log for DUR-001 observability.
+      refs: ['app/api/cron/extract-files/route.ts']
+    - action: >-
+        Monitor the first ≥3-window document against cron maxDuration 300
+        (DUR-001); decide per-window checkpointing vs longer budget only if
+        it actually bites.
+      refs: ['lib/documents/extract-file.ts', 'app/api/cron/extract-files/route.ts']
+    - action: >-
+        Optional polish if retrieval QA ever surfaces marker noise: filter
+        pdf-window comment lines in the chunker (MARKER-001) and/or prepend
+        the marker to the first segment on multi-window docs (PROV-001).
+      refs: ['lib/chunks/chunk-workspace-document.ts', 'lib/documents/extract-file.ts']
