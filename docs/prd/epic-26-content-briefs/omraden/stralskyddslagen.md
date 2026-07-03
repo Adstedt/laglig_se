@@ -89,3 +89,9 @@ Strålskyddslagen (2018:396) ställer krav på tillstånd, dosgränser och berä
 
 ## Anmärkningar
 - Lagförklaringssida (intent-nav); canonical mot denna områdessida, inte mot katalogens /lagar-post. Avgränsa mot /omraden/arbetsmiljo och en ev. radon-sida. Länka till /funktioner/kontroller för dokumentation. SSMFS uppdateras löpande — använd ChangeFeedEmbed.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** strålskyddslagen — 390/mån, KD 17 (låg konkurrens).
+- **Upptäckta:** joniserande strålning (1 000/mån, KD 24) → definitions-H2; RADON på arbetsplatser tillagd som egen H2 (vanligaste beröringspunkten för vanliga företag — breddar sidan bortom vård/industri).
+- **Faktakontroll (fulltext):** 200 Bq/m³ (3 kap. 6 § förordningen), 20 mSv/år (2 kap. 2 §), tillståndsförbud (6 kap. 1 §), straffskala (9 kap. 1 §), intraoral röntgen anmälningspliktig (SSMFS 2018:2), radonanmälan (SSMFS 2018:10 4 §) — alla verifierade. 10 författningar ACTIVE inkl. SSMFS-serien.

@@ -86,3 +86,8 @@ Penningtvättsregelverket ställer krav på allmän riskbedömning, kundkännedo
 
 ## Anmärkningar
 - Flera SFS-nummer markerade [bekräfta i katalogen] — verifiera före publicering. Konceptintent här; länka till /funktioner/lagandringar för hur AML-skärpningar bevakas. Undvik dubblering med ev. branschsida fastighet (penningtvätt för fastighetsmäklare) — den ska vinkla branschspecifikt, denna är områdesöversikt.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** penningtvättslagen — 1 600/mån, KD 32 (+ penningtvätt 1 900 — brottet/lagen disambiguerade i lead); kundkännedom (720, KD 23!) → egen H2 + KYC-ProcessSteps.
+- **Faktakontroll (fulltext):** verksamhetsutövarlistan + trösklar 5 000/10 000 euro (1 kap. 2 §), KYC-detaljer (3 kap. 1/10/12/13 §§), rapportering utan dröjsmål (4 kap. 3 §), Bolagsverket-anmälan (7 kap. 3 §), tre länsstyrelser (förordning 2009:92 § 16) — verifierade; gamla lagen 2009:62 REPEALED (endast historisk); AML-direktiven MISS → olänkade; AMLR/AMLA utan datum.

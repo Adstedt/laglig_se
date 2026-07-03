@@ -87,3 +87,10 @@ En kemikalieförteckning är ett uttryckligt krav i egenkontrollen enligt miljö
 
 ## Anmärkningar
 - Närliggande /omraden/miljo och /omraden/riskbedomning; håll fokus på just förteckningskravet och länka uppåt för bredare miljö-/arbetsmiljökontext. Undvik kannibalisering mot /omraden/miljo genom att inte upprepa hela egenkontrollavsnittet.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** kemikalieförteckning — 260/mån, KD 15 (låg konkurrens, vinnbar).
+- **Upptäckta/bekräftade:** kemikalieförteckning mall (110, KD 13) → egen H2 om innehållet med exempeltabell (ingen nedladdningsbar mall); säkerhetsdatablad (880, KD 27) → egen H2 om SDB↔förteckning (REACH art. 31, 16 avsnitt).
+- **Faktakontroll:** DefinitionBox-parafrasen av 7 § egenkontrollförordningen verifierad mot lagtexten i katalogen (namn, omfattning/användning, hälso-/miljöskadlighet, klassificering — korrekt); KIFS 2017:7 verifierad ACTIVE.
+- **Kapabilitet:** förteckningen förs inte i appen — kravet ligger som kravpunkt med förteckningen länkad som bevis.

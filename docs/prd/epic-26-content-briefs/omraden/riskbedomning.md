@@ -89,3 +89,10 @@ Riskbedömning är navet i både systematiskt arbetsmiljöarbete och egenkontrol
 
 ## Anmärkningar
 - Bred konceptsida som spänner över flera områden; håll den på konceptnivå och länka till /omraden/arbetsmiljo, /omraden/miljo och /omraden/gdpr istället för att duplicera deras innehåll. Funktionsintent (riskhantering i appen) kanoniseras till /funktioner/kontroller.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** riskbedömning — 1 300/mån, KD 23.
+- **Upptäckta keywords (ej i brief som struktur):** riskbedömning arbetsmiljö mall (1 300, KD 18 → egen H2 om mallens kolumner); riskanalys (1 300, KD 31) + riskanalys mall (720, KD 16) → jämförelse-H2 med tabell; riskmatris (480, KD 21 → egen H3 med renderad 3×3-matris); risk och konsekvensanalys (590, KD 24 → vid förändring-avsnitt); konsekvensanalys (260, KD 19).
+- **Nedgraderade:** nortonskala-klustret (vårdspecifikt) ignorerat; "riskbedömning mall gratis" → ingen gratis-mall utlovas, mall-intentionen serveras beskrivande.
+- **Strategibeslut/kapabilitet:** Laglig ersätter INTE riskbedömningsmallen — sidan lovar endast kravpunkter (ansvarig/status/länkat bevis) för regler som kräver riskbedömning + uppföljning via kontroller. Ronder/riskbedömningar utförs inte i appen.

@@ -97,3 +97,9 @@ Laglig.se följer NIS2-direktivet och den svenska implementeringen i en bevakad 
 ## Anmärkningar
 
 Den svenska implementeringen är under utveckling — markera tydligt med "[bekräfta i katalogen]" och undvik att påstå exakta ikraftträdandedatum eller SFS-nummer som inte är bekräftade. Länka till katalogens NIS2-/cybersäkerhetssida som auktoritativ källa för att undvika kannibalisering.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** NIS2 — 1 300/mån, KD 30 + NIS2-direktivet 1 300/KD26; cybersäkerhetslagen (480, KD 25) → egen H2 om svenska genomförandet — differentieringen.
+- **KATALOGFYND:** cybersäkerhetslagen FINNS — SFS 2025:1506 ACTIVE, länkad med exakt nummer (+ förordningen 2025:1507). NIS2-direktivet (32022L2555) MISS → olänkat.
+- **Faktakontroll (fulltext 2025:1506):** ikraft 15 jan 2026; upphäver 2018:1174; frister 24 h/72 h/en månad; sanktioner 2 %/10 M€ resp. 1,4 %/7 M€. DATAKVALITETSBUGG: SFS 2018:1174 står ACTIVE i katalogen men är upphävd enligt lagtexten — bör rättas i ingestion.

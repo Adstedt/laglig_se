@@ -98,3 +98,9 @@ Laglig.se samlar dataskyddsförordningen och svensk kompletterande dataskyddsreg
 ## Anmärkningar
 
 Hålls på områdes-/förklaringsnivå; undvik kannibalisering mot katalogsidan /lagar/dataskyddsforordningen genom att länka dit som auktoritativ källa och kanonisera ordförklaringar till ev. /ordbok-poster. Inga SHA-256/krypto-påståenden i revisionsrapport-omtal.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** GDPR — 12 100/mån, KD 43 (klustrets största lagterm); dataskyddsförordningen (1 900) är KD 59 + navigational → formell benämning, ej target; personuppgifter (1 900, KD 34) → definitions-H2.
+- **SERP:** IMY + explainer-sajter (gdprsummary, gdpr.eu) → explainer rankar; vår vinkel = företagsskyldigheterna + lagtexten i katalogen.
+- **Faktakontroll (fulltext):** art. 5/6/28/30/33, 72-timmarsfristen, 20 M€/4 % — verifierade; gamla LEK (2003:389) REPEALED → ersatt med 2022:482 i kataloglistan; 8 författningar ACTIVE.

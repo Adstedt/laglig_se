@@ -98,3 +98,9 @@ Laglig.se följer EU:s AI-förordning och den svenska tillsynsstrukturen i en be
 ## Anmärkningar
 
 AI Act fasas in över tid och svensk tillsyn är under uppbyggnad — markera tydligt med "[bekräfta i katalogen]" och undvik att påstå exakta ikraftträdandedatum, sanktionsnivåer eller högriskbilagor som inte är bekräftade. Länka till katalogens AI Act-sida som auktoritativ källa för att undvika kannibalisering. Inga SHA-256/krypto-påståenden i revisionsrapport-omtal.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Volymläge:** "AI Act"/"AI-förordningen" ~0 uppmätt i se-databasen — sidan är ett freshness-/GEO-spel byggt för växande sökintresse, extremt GEO-first skriven.
+- **KATALOGFYND:** AI-förordningen (32024R1689) FINNS ACTIVE → länkad.
+- **Faktakontroll (fulltext):** stegvisa datum (2 feb/2 aug 2025, 2026, 2027) och sanktioner (35 M€/7 %, 15 M€/3 %) verifierade mot art. 99/113; art. 4 AI-kunnighet + art. 5-förbuden lästa i fulltext.

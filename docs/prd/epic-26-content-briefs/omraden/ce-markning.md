@@ -103,3 +103,9 @@ Laglig.se samlar de produktdirektiv och föreskrifter som ligger bakom CE-märkn
 ## Anmärkningar
 
 CE-märkning är ett EU-rättsligt paraply utan en enskild svensk SFS — undvik att påstå en svensk "CE-lag". Maskinförordningen (EU) 2023/1230 börjar tillämpas och ersätter maskindirektivet; ange "[bekräfta tillämpningsdatum i katalogen]" istället för exakt datum. Länka till /omraden/maskindirektivet för fördjupning och undvik överlapp.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** CE-märkning — 2 900/mån, KD 36; hur-gör-man-intentionen → femstegs-ProcessSteps; "försäkran om överensstämmelse" egen H2; missuppfattningen "CE = kvalitetsmärkning" som FAQ.
+- **Faktakontroll:** maskinförordningen (32023R1230), elsäkerhetslagen, leksakslagen (2011:791) ACTIVE; 32008R0765, 32019R1020, byggproduktförordningen, MDR var MISS → olänkade. Marknadskontrollmyndigheter mjukt exemplifierade.
+- **Redaktionell notering:** sidan ligger under Bygg & fastighet i hubben men är industri-tung — ev. omgruppering vid tillfälle. Bild: mikroskopisk gravyr-gibberish på skjutmått (oläslig i visningsstorlek).

@@ -89,3 +89,10 @@ REACH (förordning (EG) nr 1907/2006) styr registrering, tillstånd, begränsnin
 
 ## Anmärkningar
 - Lagförklaringssida (intent-nav); sätt canonical mot denna områdessida, inte mot katalogens /lagar-post. Tydlig avgränsning mot en ev. CLP-sida och mot /omraden/miljo. Länka till /funktioner/kontroller för dokumentation. SVHC-listan uppdateras vanligen två gånger per år — använd ChangeFeedEmbed för att signalera färdighet/aktualitet.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** reach — 1 600/mån men KD 38 och tvetydigt (engelska ordet) → "REACH-förordningen" i alla rubriker; reach förordningen (390, KD 31) + vad är reach förordningen (70) bekräftar intentionen.
+- **Upptäckta (ej i brief):** säkerhetsblad (1 000, KD 19!) — folk söker UTAN "data" → båda formerna tidigt i SDB-H2:n; sdb (390, KD 25); svhc ämnen (90, KD 11) → kandidatförteckning/SVHC-H2; clp (720, KD 24) → REACH vs CLP-H2; reach lista (70, KD 13) → trelistors-tabell (kandidatförteckningen/bilaga XIV/bilaga XVII).
+- **Nedgraderade:** "kemikalieförordningen" 0 uppmätt volym.
+- **Strategibeslut:** antal ämnen på kandidatförteckningen hedgat ("över 200"); uppdateringsfrekvens "vanligen två gånger per år"; REACH-ändringar (bilaga XVII) som lagbevaknings-case.

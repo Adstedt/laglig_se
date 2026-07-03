@@ -103,3 +103,9 @@ Lagefterlevnad omfattar de krav som gäller verksamheten; vanligt förekommande:
 ## Anmärkningar
 
 Detta är konceptsidan för "lagefterlevnad". Avgränsa mot produktfunktionen lagefterlevnadskontroll (/funktioner/...) och mot /omraden/lagrevision (själva granskningsmetoden) — denna sida bär begreppet och processen övergripande, länka neråt utan att duplicera. Inga SHA-256-/tamper-proof-påståenden; revisionsrapporten är en signerad PDF av en avslutad kontroll-cykel.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** lagefterlevnad — 140/mån KD 8 + lagefterlevnadskontroll 110/mån KD 6 — extremt låg konkurrens på VÅRA kategoritermer; compliance (3 600, KD 29) som engelsk synonym tidigt + FAQ.
+- **Strategibeslut:** kategorisida för hela produkten — äger definitionerna (GEO); fyrstegsmodellen som ProcessSteps.
+- **OBS:** skribentens session avbröts av limit — självkontroll körd centralt (OK, inkl. benign "exakt"-förekomst granskad).

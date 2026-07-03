@@ -98,3 +98,9 @@ Laglig.se samlar DORA-förordningen, dess tekniska standarder och Finansinspekti
 ## Anmärkningar
 
 Bekräfta numren på Finansinspektionens föreskrifter och sektorslagar i katalogen innan publicering. Förklara tydligt förhållandet DORA vs NIS2 (lex specialis) för att undvika förvirring. Länka till katalogens DORA-sida som auktoritativ källa för att undvika kannibalisering. Inga SHA-256/krypto-påståenden i revisionsrapport-omtal.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Primärt disambiguerat:** "dora" 5 400/mån KD 26 men kraftigt tvetydigt → "DORA-förordningen" i alla rubriker (REACH-strategin).
+- **Faktakontroll:** DORA (32022R2554) är MISS i katalogen → genomgående olänkad; kataloglistan bär GDPR + svenska sektorslagar (2004:297, 2010:751, 2018:585). Ingestion-kandidat! Tillämplig 17 jan 2025 + FI-tillsyn ur grounded facts; frister/TLPT mjukade.
+- **Bild:** v1 förkastad (Dell-logga).

@@ -99,3 +99,9 @@ Laglig.se samlar reglerna om obligatorisk ventilationskontroll i en bevakad lagl
 ## Anmärkningar
 
 OVK-intervall och BFS-föreskriftsnummer måste verifieras i katalogen innan publicering — använd "[bekräfta intervall/BFS-nummer i katalogen]" och påstå inte exakta intervall (t.ex. 3 eller 6 år) utan verifiering. Sidan kompletterar /omraden/egenkontroll och fastighetsbranschsidan utan att överlappa.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** OVK — 2 400/mån, KD 28; OVK-besiktning (1 300, KD 18!) → egen H2; intervallfrågan som fråge-H2 med tabell.
+- **PROMPTFEL RÄTTAT AV SKRIBENTEN:** intervallen (3/6 år) står i BFS 2011:16 § 3, INTE i PBF — verifierade ordagrant mot föreskriftens fulltext (inkl. undantag § 2, K/N-behörighet § 6); ägaransvar/protokoll/intyg mot PBF 5 kap.; förelägganden mot PBL 11 kap.
+- **OBS:** AFS 2020:1 MISS → AFS 2023:12 används.

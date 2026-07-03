@@ -101,3 +101,9 @@ Laglig.se samlar miljöbalken och egenkontrollförordningen i en bevakad laglist
 ## Anmärkningar
 
 Risk för kannibalisering mot /omraden/miljo — låt den här sidan fokusera specifikt på egenkontroll som metod och på egenkontrollförordningen, och länka uppåt till /omraden/miljo som paraply. Verifiera föreskriftsbeteckningar (Naturvårdsverket, miljöprövningsförordningens tillämplighet) i katalogen.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Primärt JUSTERAT:** briefens "egenkontroll miljö" har bara 20/mån. Sidan riktar i stället "egenkontroll" brett (880/mån, KD 28) — related-datat domineras av el (egenkontroll elinstallation 390), bygg (260) och mall-intent (egenkontroll mall 320, KD 13).
+- **Upptäckta:** egenkontrollförordningen (170, KD 17) + förordning om egenkontroll (140, KD 13) → 1998:901 tidigt och genomgående; mall-intentionen → egen H2 om egenkontrollprogrammets innehåll (ingen nedladdningsbar mall utlovas).
+- **Strategibeslut:** djupet ligger på miljöbalkens egenkontroll (26 kap. 19 § + 1998:901); el/bygg/livsmedel hanteras ärligt i jämförelsetabell med mjukade påståenden. /omraden/miljobalken äger lagen i stort.

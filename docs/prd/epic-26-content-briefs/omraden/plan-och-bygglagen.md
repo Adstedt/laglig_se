@@ -102,3 +102,8 @@ Plan- och bygglagen styr planläggning, lov och tekniska krav på byggnader — 
 ## Anmärkningar
 
 Denna sida äger "vad innebär / krav / sammanfattning" för PBL. Bevaka att Boverkets byggregler är under omläggning (ny regelmodell) — markera BBR/BFS-referenser [bekräfta] tills katalogen är verifierad. Katalogsidan /lagar äger "läs lagtexten". Länka till /branscher/bygg och /branscher/fastighet för bransch-/verksamhetsintent utan att duplicera.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** plan- och bygglagen — 2 400/mån, KD 33 + PBL 6 600/KD26 → förkortningen tidigt; bygglov (6 600) konsumenttungt → företagsvinkel (lokaler, skyltar, ändrad användning); kontrollplan (880, KD 15!) och kontrollansvarig (1 000, KD 26) → egna H2.
+- **Faktakontroll:** 8 författningar ACTIVE (PBL, PBF, BFS-serien, 2006:985, 2014:227); byggsanktionsbelopp mjukade; katalogens PBL-fulltext innehåller 2026-ändringar → kapitelnivå-citat.

@@ -97,3 +97,8 @@ Laglig.se samlar taxonomiförordningen och dess delegerade akter i en bevakad la
 ## Anmärkningar
 
 Hålls på områdesnivå och länka till CSRD-sidan för rapporteringskontext för att undvika överlapp. Bekräfta numren på de delegerade akterna i katalogen innan publicering. Undvik kannibalisering mot katalogens taxonomi-/hållbarhetssida genom att länka dit som auktoritativ källa. Inga SHA-256/krypto-påståenden i revisionsrapport-omtal.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Primärt JUSTERAT:** briefens "EU-taxonomin" har ~0 uppmätt volym; folk söker "taxonomin" (1 300/mån, KD 26) + "eu-taxonomi" (210, KD 17) → H1 behåller EU-taxonomin (disambiguering) men "Vad är taxonomin?" är första H2 och kortformen används genomgående.
+- **Faktakontroll:** taxonomiförordningen (32020R0852) ACTIVE och länkad; delegerade akterna (2021/2139, 2021/2178), CSRD och SFDR är MISS → nämns olänkade utan nummer trots att briefen listade dem; sex miljömålen ur grounded facts; KPI:er och infasning mjukade.

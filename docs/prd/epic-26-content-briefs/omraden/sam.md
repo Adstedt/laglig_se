@@ -102,3 +102,10 @@ Laglig.se samlar arbetsmiljölagen och Arbetsmiljöverkets föreskrifter om syst
 ## Anmärkningar
 
 Arbetsmiljöverkets föreskrifter omstrukturerades i en ny regelmodell som började gälla 2025 — flera klassiska AFS-nummer (t.ex. AFS 2001:1, AFS 2015:4) kan ha bytt beteckning. Markera tydligt med "[bekräfta aktuell beteckning i katalogen]" och behåll de gamla numren endast som igenkänning. Hålls på områdesnivå; länka till /omraden/arbetsmiljo för det breda området och till /omraden/iso-45001 för ledningssystemsvinkeln för att undvika överlapp. Inga SHA-256/krypto-påståenden i revisionsrapport-omtal.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** systematiskt arbetsmiljöarbete — 1 900/mån, KD 28. OBS: "SAM" ensamt har 6 600/mån men KD 45 och kraftigt tvetydigt (samverkansavtal m.m.) → används som alias, inte primärt.
+- **Upptäckta keywords (ej i brief):** sam hjulet / sam-hjulet (480+480, KD 16 → centerpiece-H2 + ProcessSteps); arbetsmiljöpolicy exempel (880, KD 18) + arbetsmiljöpolicy (320, KD 19 → egen H2 med innehållslista); skyddsrond (720, KD 16 → egen sektion); afs 2001 1 (590, KD 18 → "gamla numret"-stycke, folk söker fortfarande på det); risk och konsekvensanalys (590, KD 24 → länk till /omraden/riskbedomning).
+- **Bekräftat ur brief:** vad är systematiskt arbetsmiljöarbete (140, KD 17 → första H2 verbatim).
+- **Faktakontroll mot AFS 2023:1 i katalogen:** policy/rutiner/uppgiftsfördelning skriftliga vid ≥10 arbetstagare, riskbedömningar "ska alltid dokumenteras skriftligt", årlig uppföljning — allt bekräftat verbatim.

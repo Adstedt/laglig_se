@@ -85,3 +85,9 @@ Lagen om energikartläggning i stora företag ställer återkommande krav som l�
 
 ## Anmärkningar
 - Stark koppling till /omraden/iso-50001 (undantaget för energiledningssystem) — länka tydligt, konkurrera inte. Verifiera trösklarna för "stort företag" och eventuella nya krav från reviderade EED i katalogen innan publicering; markera osäkra nummer med [bekräfta i katalogen].
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** energikartläggning — 390/mån, KD 15 (låg konkurrens); EKL (210, KD 12) → förkortningen tidigt; energikartläggning stora företag (90, KD 18) → exakt fras som H2.
+- **Faktakontroll:** SFS 2014:266 + 2014:347 verifierade AKTIVA i katalogen; storlekskriterier (250 anställda / 50 M€ / 43 M€, koncernregel via 2003/361/EG), fyraårscykeln, certifierad kartläggare, rapportering till Energimyndigheten — verifierade mot lagens fulltext i DB.
+- **Strategibeslut:** EU-revideringen (nya energieffektivitetsdirektivet) nämns UTAN specifika framtida trösklar/datum — bevakningsvinkel i stället; kartläggningen görs inte i appen (kravpunkt + rapport som länkat bevis).

@@ -104,3 +104,8 @@ Laglig.se samlar maskindirektivet, den svenska maskinföreskriften och kommande 
 ## Anmärkningar
 
 Maskindirektivet (2006/42/EG) ersätts av maskinförordningen (EU) 2023/1230 — eftersom tillämpningen sker stegvis, använd "[bekräfta tillämpningsdatum i katalogen]" och påstå inte exakt datum. AFS 2008:3 kan ha ändrad beteckning i den nya AFS-strukturen från Arbetsmiljöverket — verifiera i katalogen. Länka till /omraden/ce-markning som överordnad CE-sida och undvik kannibalisering genom att hålla denna sida maskinspecifik.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** maskindirektivet — 720/mån, KD 23; "maskinförordningen" ~0 uppmätt men ÄGER sidans hook: 2006/42/EG ersätts av (EU) 2023/1230 från 14 jan 2027 (AFS 2001:1-mönstret — folk söker gamla namnet).
+- **Faktakontroll:** 32023R1230 ACTIVE och länkad; 32006L0042 MISS → olänkat; AFS 2023:4 verifierad (genomför 2006/42/EG enligt katalogsammanfattning; bruksanvisning på svenska + sanktionsavgift verifierade mot AFS 2023:4-fulltext); ombyggnad→tillverkaransvar ur grounded facts.

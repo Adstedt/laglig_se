@@ -59,6 +59,7 @@ async function main() {
   const args = parseArgs()
   const eurlex = await import('../lib/external/eurlex')
   const { transformEuHtml } = await import('../lib/eu/eu-html-transformer')
+  const { mergeBasePreamble } = await import('../lib/eu/merge-preamble')
   const { buildSlugMap, linkifyHtmlContent, saveCrossReferences } =
     await import('../lib/linkify')
   const { htmlToMarkdown, htmlToPlainText } = await import(
@@ -140,6 +141,9 @@ async function main() {
             : null,
           entryIntoForceDates: meta?.entryIntoForceDates ?? [],
           deadlineDates: meta?.deadlineDates ?? [],
+          // Which version html_content actually holds — drives the Stage 2
+          // preamble merge (consolidated body lacks recitals; base has them).
+          htmlSource: fetchCelex === baseCelex ? 'base' : 'consolidated',
         }
 
         // Reconcile (AC 12a): find the existing row by CELEX first (handles
@@ -239,15 +243,37 @@ async function main() {
           results.push(row)
           continue
         }
+        const prevMeta = (doc.metadata as Record<string, unknown> | null) ?? {}
         const transformed = transformEuHtml(doc.html_content, {
           celex: baseCelex,
           documentNumber: baseCelex,
           shortTitle: doc.title ?? undefined,
         })
-        const linked = linkifyHtmlContent(transformed.html, slugMap, baseCelex)
+
+        // Preamble merge (Story 2.6): consolidated CELLAR HTML lacks recitals.
+        // When html_content is the consolidated body, fetch the base act and
+        // splice its recital-rich preamble into the consolidated article.
+        let articleHtml = transformed.html
+        if (prevMeta.htmlSource === 'consolidated') {
+          const baseRaw = await eurlex.fetchDocumentContentViaCellar(baseCelex)
+          if (baseRaw) {
+            const baseXform = transformEuHtml(baseRaw.html, {
+              celex: baseCelex,
+              documentNumber: baseCelex,
+              shortTitle: doc.title ?? undefined,
+            })
+            const m = mergeBasePreamble(transformed.html, baseXform.html)
+            articleHtml = m.html
+            row.preambleMerged = m.merged
+            row.recitalParas = m.recitalParas
+          } else {
+            row.preambleMerged = 'base-fetch-failed'
+          }
+        }
+
+        const linked = linkifyHtmlContent(articleHtml, slugMap, baseCelex)
         const markdown = htmlToMarkdown(linked.html)
         const plainText = htmlToPlainText(linked.html)
-        const prevMeta = (doc.metadata as Record<string, unknown> | null) ?? {}
         await prisma.legalDocument.update({
           where: { id: docId },
           data: {

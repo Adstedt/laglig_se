@@ -103,3 +103,9 @@ Ett QMS är produkt- och branschoberoende, så kraven varierar. Vanligt förekom
 ## Anmärkningar
 
 Avgränsa tydligt mot /omraden/iso-9001 (standard-specifik: krav kapitel för kapitel och certifiering). Denna sida = begreppet "kvalitetsledningssystem" och uppbyggnaden; länka till ISO 9001-sidan utan att duplicera kapitelgenomgången. CatalogLawList ska sägas vara "vanligt förekommande" snarare än obligatoriska. Inga krypto-påståenden om revisionsrapporten.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** kvalitetsledningssystem — 480/mån, KD 20 + kvalitetsledning 480/KD20 + QMS 590/KD22 → alla tre tidigt.
+- **Strategibeslut:** sidan äger begreppet; iso-9001 äger standarden; iso-9000 äger principerna. ISO 9001-lagkravet utan klausulnummer (8.2.2 mjukad).
+- **Kapabilitet:** "styrdokument med versionshantering" verifierad mot funktioner/styrdokument-sidans egen copy.
