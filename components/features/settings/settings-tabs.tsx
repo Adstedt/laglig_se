@@ -19,6 +19,7 @@ import {
   Plug,
   Columns,
   Building2,
+  Handshake,
 } from 'lucide-react'
 import type { WorkspaceRole, SubscriptionTier } from '@prisma/client'
 import { GeneralTab } from './general-tab'
@@ -28,7 +29,9 @@ import { NotificationsTab } from './notifications-tab'
 import { IntegrationsTab } from './integrations-tab'
 import { WorkflowTab } from './workflow-tab'
 import { CompanyProfileTab } from './company-profile-tab'
+import { KollektivavtalManager } from '@/components/features/kollektivavtal/kollektivavtal-manager'
 import type { TaskColumnWithCount } from '@/app/actions/tasks'
+import type { CollectiveAgreementListItem } from '@/app/actions/collective-agreements'
 import type { CompanyProfile } from '@prisma/client'
 
 export interface WorkspaceData {
@@ -73,6 +76,9 @@ interface SettingsTabsProps {
   // (the user MUST be able to reach the Fakturering tab to convert) — the
   // Company tab just shows a placeholder until they do.
   companyProfile: CompanyProfile | null
+  // Story 7.5: prefetched kollektivavtal for the Kollektivavtal tab; null when
+  // the fetch failed or the workspace is billing-gated (tab shows a fallback).
+  collectiveAgreements: CollectiveAgreementListItem[] | null
   billing: BillingData
   initialTab: string
   showPastDueBanner: boolean
@@ -87,6 +93,7 @@ export function SettingsTabs({
   members,
   columns,
   companyProfile,
+  collectiveAgreements,
   billing,
   initialTab,
   showPastDueBanner,
@@ -116,6 +123,11 @@ export function SettingsTabs({
   const typedRole = role as WorkspaceRole
   const canAccessBilling = hasPermission(typedRole, 'workspace:billing')
   const canAccessSettings = hasPermission(typedRole, 'workspace:settings')
+  // Story 7.5: settings-tab visibility ≠ upload permission (defense in depth).
+  // The tab is gated like company-profile; the upload form additionally
+  // requires `employees:manage` (which e.g. ADMIN does not hold — the
+  // mutation actions enforce this server-side regardless).
+  const canManageEmployees = hasPermission(typedRole, 'employees:manage')
 
   return (
     <Tabs
@@ -132,6 +144,12 @@ export function SettingsTabs({
           <TabsTrigger value="company-profile" className="gap-2">
             <Building2 className="h-4 w-4" />
             <span className="hidden sm:inline">Företagsprofil</span>
+          </TabsTrigger>
+        )}
+        {canAccessSettings && (
+          <TabsTrigger value="kollektivavtal" className="gap-2">
+            <Handshake className="h-4 w-4" />
+            <span className="hidden sm:inline">Kollektivavtal</span>
           </TabsTrigger>
         )}
         <TabsTrigger value="team" className="gap-2">
@@ -176,6 +194,15 @@ export function SettingsTabs({
               prenumeration i Fakturering-fliken för att fortsätta.
             </div>
           )}
+        </TabsContent>
+      )}
+
+      {canAccessSettings && (
+        <TabsContent value="kollektivavtal">
+          <KollektivavtalManager
+            initialAgreements={collectiveAgreements}
+            canManage={canManageEmployees}
+          />
         </TabsContent>
       )}
 

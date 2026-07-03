@@ -178,3 +178,143 @@ describe('chunkWorkspaceDocument — styrdokument (Story 17.9b)', () => {
     expect(chunks.every((c) => c.content_role === 'HEADING')).toBe(true)
   })
 })
+
+// ---------------------------------------------------------------------------
+// Story 7.5: chunkCollectiveAgreement — section-aware agreement chunks
+// ---------------------------------------------------------------------------
+
+import {
+  chunkCollectiveAgreement,
+  buildAgreementHeader,
+  type ChunkCollectiveAgreementInput,
+} from '@/lib/chunks/chunk-workspace-document'
+
+function makeAgreement(
+  overrides: Partial<ChunkCollectiveAgreementInput> = {}
+): ChunkCollectiveAgreementInput {
+  return {
+    agreementId: 'agr-1',
+    workspaceId: 'ws-1',
+    agreementName: 'Byggavtalet 2024',
+    filename: 'byggavtalet.pdf',
+    personelType: 'ARB',
+    workspaceFileId: 'file-9',
+    markdown:
+      'Inledande bestämmelser om avtalets omfattning och parternas åtaganden.',
+    contentHash: 'ca-hash-1',
+    ...overrides,
+  }
+}
+
+describe('chunkCollectiveAgreement — source-type + isolation (Story 7.5)', () => {
+  it('stamps COLLECTIVE_AGREEMENT, the AGREEMENT id (not the file id), and a non-null workspace_id', () => {
+    const chunks = chunkCollectiveAgreement(makeAgreement())
+    expect(chunks.length).toBeGreaterThan(0)
+    for (const c of chunks) {
+      expect(c.source_type).toBe('COLLECTIVE_AGREEMENT')
+      expect(c.source_id).toBe('agr-1') // NOT 'file-9'
+      expect(c.workspace_id).toBe('ws-1')
+      expect(c.workspace_id).not.toBeNull()
+    }
+  })
+
+  it('write-side invariant: throws rather than emit a chunk with a null/empty workspace_id', () => {
+    expect(() =>
+      chunkCollectiveAgreement(makeAgreement({ workspaceId: '' }))
+    ).toThrow(/workspace_id is required/)
+  })
+
+  it('writes metadata {agreement_name, filename, personel_type, workspace_file_id, content_hash}', () => {
+    const chunks = chunkCollectiveAgreement(makeAgreement())
+    expect(chunks[0]!.metadata).toMatchObject({
+      agreement_name: 'Byggavtalet 2024',
+      filename: 'byggavtalet.pdf',
+      personel_type: 'ARB',
+      workspace_file_id: 'file-9',
+      content_hash: 'ca-hash-1',
+    })
+  })
+
+  it('omits personel_type / workspace_file_id / content_hash from metadata when absent', () => {
+    const chunks = chunkCollectiveAgreement(
+      makeAgreement({
+        personelType: null,
+        workspaceFileId: null,
+        contentHash: null,
+      })
+    )
+    expect(chunks[0]!.metadata).not.toHaveProperty('personel_type')
+    expect(chunks[0]!.metadata).not.toHaveProperty('workspace_file_id')
+    expect(chunks[0]!.metadata).not.toHaveProperty('content_hash')
+    expect(chunks[0]!.metadata).toMatchObject({
+      agreement_name: 'Byggavtalet 2024',
+    })
+  })
+})
+
+describe('chunkCollectiveAgreement — section-aware contextual_header (AC 5)', () => {
+  const markdown = [
+    'Inledande bestämmelser om avtalets omfattning som ligger före första rubriken i dokumentet.',
+    '## Arbetstid',
+    'Ordinarie arbetstid utgör fyrtio timmar per helgfri vecka i genomsnitt per kalenderår.',
+    '## Semester',
+    'Semester utgår enligt semesterlagen med de tillägg som anges i detta avtal om semesterlön.',
+  ].join('\n\n')
+
+  it('chunks before the first heading carry agreement name only; later chunks carry the nearest section', () => {
+    const chunks = chunkCollectiveAgreement(makeAgreement({ markdown }))
+
+    const intro = chunks.find((c) =>
+      c.content.startsWith('Inledande bestämmelser')
+    )
+    expect(intro).toBeDefined()
+    expect(intro!.contextual_header).toBe('Byggavtalet 2024 (Kollektivavtal)')
+
+    const arbetstid = chunks.find((c) =>
+      c.content.includes('Ordinarie arbetstid')
+    )
+    expect(arbetstid).toBeDefined()
+    expect(arbetstid!.contextual_header).toBe(
+      'Byggavtalet 2024 (Kollektivavtal) > Arbetstid'
+    )
+
+    const semester = chunks.find((c) =>
+      c.content.includes('Semester utgår enligt semesterlagen')
+    )
+    expect(semester).toBeDefined()
+    expect(semester!.contextual_header).toBe(
+      'Byggavtalet 2024 (Kollektivavtal) > Semester'
+    )
+  })
+
+  it('the header identifies agreement + section, never just the filename', () => {
+    const chunks = chunkCollectiveAgreement(makeAgreement({ markdown }))
+    for (const c of chunks) {
+      expect(c.contextual_header).toContain('Byggavtalet 2024')
+      expect(c.contextual_header).toContain('(Kollektivavtal)')
+      expect(c.contextual_header).not.toContain('byggavtalet.pdf')
+    }
+  })
+
+  it('buildAgreementHeader renders with and without a section', () => {
+    expect(buildAgreementHeader('Byggavtalet 2024', null)).toBe(
+      'Byggavtalet 2024 (Kollektivavtal)'
+    )
+    expect(buildAgreementHeader('Byggavtalet 2024', 'Arbetstid')).toBe(
+      'Byggavtalet 2024 (Kollektivavtal) > Arbetstid'
+    )
+  })
+
+  it('USER_FILE chunking is untouched by the section-aware path (fixed header)', () => {
+    const chunks = chunkUserFile(
+      makeFile({
+        markdown,
+        filename: 'byggavtalet.pdf',
+        category: 'AVTAL',
+      })
+    )
+    for (const c of chunks) {
+      expect(c.contextual_header).toBe('byggavtalet.pdf (AVTAL)')
+    }
+  })
+})

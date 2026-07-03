@@ -1,0 +1,186 @@
+schema: 1
+story: '7.5'
+story_title: 'Upload kollektivavtal (Settings + HR area) + ingest into RAG'
+gate: PASS
+status_reason: >-
+  The epic's primary risk — cross-workspace agreement leakage — is
+  structurally closed: every COLLECTIVE_AGREEMENT chunk write funnels through
+  syncWorkspaceChunks → chunkCollectiveAgreement, BOTH of which hard-throw on
+  a falsy workspace_id, the chunk input type requires a non-null string, the
+  only caller feeds WorkspaceFile.workspace_id (non-nullable column), and a
+  codebase-wide grep finds no other CA chunk writer. Agreement lookups and
+  status writes carry the workspace filter inside the query itself. Migration
+  is additive-only and precedent-conformant; all failure legs land the
+  agreement on FAILED; 253 targeted tests + typecheck + offline prisma
+  validate independently re-run clean. Four low-severity notes only.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-07-03T20:55:00+02:00'
+
+top_issues:
+  - id: 'UX-ADMIN-001'
+    severity: low
+    finding: >-
+      ADMIN holds workspace:settings (sees the Kollektivavtal Settings tab)
+      but neither employees:view nor employees:manage — in production the tab
+      permanently renders the muted "Kollektivavtal kunde inte laddas." with
+      no upload form. Intended per the story's accepted role-visibility note,
+      but it reads like a broken tab to an ADMIN, not a permission boundary.
+    suggested_action: >-
+      Product to confirm acceptable, or relax the list read (e.g. to a
+      settings-visible read) in 7.6; alternatively hide the tab for roles
+      lacking employees:view.
+    suggested_owner: po
+  - id: 'DUP-001'
+    severity: low
+    finding: >-
+      uploadCollectiveAgreement deliberately re-implements the storage leg of
+      files.ts#uploadFile (dedupe → quota → sanitized key → sha256 →
+      upsert:false upload → workspaceFile.create). Verified line-by-line
+      identical in constants and semantics today (25MB, workspace-files
+      bucket, PENDING self-queue, root-folder dedupe), but two copies WILL
+      drift when files.ts changes.
+    suggested_action: >-
+      When 7.6 brings files.ts into scope (delete/replace), extract the
+      shared storage helper and re-point both callers.
+    suggested_owner: dev
+  - id: 'SEC-MIME-001'
+    severity: low
+    finding: >-
+      PDF gating trusts the client-declared File.type (both client and server
+      side) — identical to the uploadFile precedent, so no regression, but a
+      renamed non-PDF passes validation and lands with extraction deciding
+      its fate (extract FAILED → agreement FAILED, honest status; no leak).
+    suggested_action: >-
+      Future hardening (both upload paths together): magic-byte sniff
+      (%PDF-) before storage.
+    suggested_owner: dev
+  - id: 'VER-001'
+    severity: low
+    finding: >-
+      The live loop (upload → extract-files cron ≤10 min → Bearbetas → Klart,
+      both mounts) is unverified in a browser because the migration is
+      unapplied by design. All seams are unit-pinned; this is the documented
+      checkpoint, not a gap the dev could have closed.
+    suggested_action: >-
+      User applies `pnpm db:migrate`, then a manual browser pass of both
+      mounts + one failing PDF (encrypted) to see Misslyckades.
+    suggested_owner: dev
+waiver: { active: false }
+
+quality_score: 100
+expires: '2026-07-17T00:00:00+02:00'
+
+evidence:
+  tests_reviewed: 253
+  risks_identified: 4
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6]
+    ac_gaps: []
+    # AC1: one shared KollektivavtalUploadForm — Settings mounts it via
+    # KollektivavtalManager (settings-tabs tests: tab gated canAccessSettings
+    # on trigger AND content, canManage threaded), HR mounts it via
+    # KollektivavtalUploadDialog from the Personalkort empty state
+    # (personalkort-modal tests: real dialog replaces the 7.3 placeholder,
+    # refetch-after-upload, view-only text leg). Both call the same
+    # uploadCollectiveAgreement, gated employees:manage (action tests).
+    # AC2: PDF-only/25MB/Namn-required/Typ-mapping (ARB/TJM/''→null)/period
+    # order — client and server validation both pinned; category AVTAL +
+    # extraction_status PENDING self-queue asserted on the created
+    # WorkspaceFile row.
+    # AC3: sync-workspace-chunks CA test asserts every chunk carries
+    # source_type COLLECTIVE_AGREEMENT, source_id = AGREEMENT id (not file
+    # id), workspace_id 'ws-1'; the empty-workspace_id throw is pinned for
+    # the CA path specifically; dedupe via content_hash asserted.
+    # AC4: AgreementStatusBadge maps all four statuses to tone-system badges
+    # (Väntar/Bearbetas/Klart/Misslyckades); ingest tests pin
+    # PROCESSING→READY, chunk-error→FAILED, status-write fail-safety, and
+    # markAgreementFailedForFile for the extraction-failure legs (route wires
+    # it on missing storage_path, download failure, non-DONE extract,
+    # DONE-without-markdown, catch-all — verified by inspection).
+    # AC5: chunker tests pin agreement-name-only before the first heading,
+    # nearest-section headers after ("<name> (Kollektivavtal) > <section>"),
+    # never-filename-only, and that USER_FILE/WORKSPACE_DOCUMENT headers are
+    # byte-identical to before (no regression via the shared core).
+    # AC6: migration file read: additive-only, ADD VALUE not USED
+    # in-transaction with the PG-12+ comment per the 20260522/20260524
+    # precedents, two nullable TIMESTAMP(3) columns; schema.prisma in sync;
+    # prisma validate (offline, dummy env) clean; newest timestamp in the
+    # migrations dir; NOT applied (no migrate command run).
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      ISOLATION VERDICT — no path can write an agreement chunk with a null or
+      foreign workspace_id: (1) the only CA chunk producer is
+      chunkCollectiveAgreement, whose shared core throws on falsy
+      workspaceId; (2) syncWorkspaceChunks independently throws on falsy
+      workspaceId before any DB write; (3) WorkspaceChunkInput.workspace_id
+      is a required string, so the createMany insert cannot omit it; (4) the
+      single call site (indexExtractedFile) sources workspace_id from
+      WorkspaceFile.workspace_id, a non-nullable column; (5) grep confirms no
+      other writer of source_type COLLECTIVE_AGREEMENT exists. Defense in
+      depth: the agreement lookup pairs workspace_file_id WITH workspace_id,
+      and status writes use updateMany carrying the workspace filter in the
+      WHERE. Read side: lib/agent/retrieval.ts, context-assembly.ts and all
+      lib/agent/tools/* are CA-free (verified) — agreements are not
+      retrievable until 7.7 adds workspace-filtered search. Permissions:
+      mutations employees:manage, list employees:view, first-upload profile
+      sync is a scoped two-field update inside the upload's own ctx (the
+      workspace:settings-gated action is NOT called) — all test-pinned.
+      SEC-MIME-001 (client-declared mime, precedent-consistent) logged low.
+  performance:
+    status: PASS
+    notes: >-
+      Upload does one sha256 + one storage PUT + three small queries;
+      chunk/embed cost is cron-side and content_hash-deduped (re-ingest of an
+      unchanged PDF skips the whole OpenAI spend — test-pinned). The
+      dev-flagged markAgreementFailedForFile lookup on every non-indexed file
+      (incl. DONE CHAT_ATTACHMENTs) is one indexed-by-workspace... one
+      findFirst against a tiny table per file, batch-capped at 25 — noise.
+      Settings page adds the agreements fetch inside the existing
+      Promise.all (no extra waterfall).
+  reliability:
+    status: PASS
+    notes: >-
+      The seam never throws (indexExtractedFile catches both routes;
+      markAgreementFailedForFile and setAgreementStatus swallow their own
+      failures) — a poisoned PDF cannot stall the batch, and the file row's
+      17.9 semantics are preserved byte-identically on the USER_FILE path
+      (test-pinned). Every extraction dead-end lands the agreement on FAILED
+      instead of an eternal "Väntar" (beyond the AC letter, correct call).
+      Upload is fail-safe around the profile sync; agreement lookup errors
+      degrade to USER_FILE indexing rather than data loss. One honest gap:
+      storage upload succeeded + workspaceFile.create failed leaves an
+      orphaned storage object (same exposure as uploadFile — precedent,
+      not a regression).
+  maintainability:
+    status: PASS
+    notes: >-
+      The seam extraction (ingest-extracted-file.ts) is the right move — the
+      route shrank and the branch logic is unit-tested without cron
+      scaffolding. Section-aware headers reuse the shared core via one
+      optional callback instead of a forked chunker. Transparency switch
+      stays exhaustive (no default) so a missed SourceType breaks the build,
+      not production. DUP-001 (storage-leg copy, boundary-forced) logged with
+      a clear consolidation path in 7.6. Copy rules honored ("Ej ifylld",
+      badge tones, Safiro font-medium, no banned noun).
+
+recommendations:
+  immediate: []
+  future:
+    - action: >-
+        Product call on the ADMIN Kollektivavtal-tab dead end (UX-ADMIN-001):
+        relax the list read or hide the tab for roles without employees:view.
+      refs: ['components/features/settings/settings-tabs.tsx', 'app/actions/collective-agreements.ts']
+    - action: >-
+        Extract the shared WorkspaceFile storage helper when 7.6 opens
+        files.ts, and add magic-byte PDF sniffing to both upload paths
+        (DUP-001, SEC-MIME-001).
+      refs: ['app/actions/collective-agreements.ts', 'app/actions/files.ts']
+    - action: >-
+        After `pnpm db:migrate`: browser-pass both mounts, one happy PDF to
+        Klart, one encrypted PDF to Misslyckades (VER-001); 7.6 must add
+        agreement-chunk cleanup on delete/replace (files.ts de-index is still
+        USER_FILE-only — noted, deferred by design).
+      refs: ['app/api/cron/extract-files/route.ts']

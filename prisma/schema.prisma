@@ -1921,6 +1921,7 @@ enum SourceType {
   CONVERSATION
   ASSESSMENT
   WORKSPACE_DOCUMENT
+  COLLECTIVE_AGREEMENT // Story 7.5: workspace-isolated kollektivavtal chunks (source_id = CollectiveAgreement.id)
 }
 
 enum ContentRole {
@@ -2737,6 +2738,8 @@ model CollectiveAgreement {
   workspace_file_id String? // FK → WorkspaceFile (uploaded PDF)
   uploaded_by       String // plain user id (lightweight audit convention, no User FK)
   status            CollectiveAgreementStatus @default(PENDING)
+  effective_from    DateTime? // Story 7.5: optional giltighetsperiod (from)
+  effective_to      DateTime? // Story 7.5: optional giltighetsperiod (to)
   created_at        DateTime                  @default(now())
   updated_at        DateTime                  @updatedAt
 

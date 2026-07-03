@@ -18,7 +18,10 @@ import { getStorageClient } from '@/lib/supabase/storage'
 import { startJobRun, completeJobRun, failJobRun } from '@/lib/admin/job-logger'
 import { extractFile } from '@/lib/documents/extract-file'
 import { estimateCostUsd } from '@/lib/usage/cost-estimator'
-import { syncWorkspaceChunks } from '@/lib/chunks/sync-workspace-chunks'
+import {
+  indexExtractedFile,
+  markAgreementFailedForFile,
+} from '@/lib/chunks/ingest-extracted-file'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
@@ -121,6 +124,7 @@ export async function GET(request: Request) {
             where: { id: file.id },
             data: { extraction_status: 'FAILED', extracted_at: new Date() },
           })
+          await markAgreementFailedForFile(file) // Story 7.5: honest CA status
           stats.processed++
           stats.failed++
           continue
@@ -137,6 +141,7 @@ export async function GET(request: Request) {
             where: { id: file.id },
             data: { extraction_status: 'FAILED', extracted_at: new Date() },
           })
+          await markAgreementFailedForFile(file) // Story 7.5: honest CA status
           stats.processed++
           stats.failed++
           continue
@@ -189,11 +194,16 @@ export async function GET(request: Request) {
           }
         }
 
-        // ── Story 17.9: chunk + embed into the RAG pipeline ─────────────────
+        // ── Story 17.9 / 7.5: chunk + embed into the RAG pipeline ───────────
         // On DONE, hand off the extracted markdown for workspace-scoped indexing.
         // Cron-triggered (not fire-and-forget) per 17.8/17.9's reliability rule.
-        // Fail-safe: a chunking error must not fail the file (already DONE) or the
-        // rest of the batch — it's retryable via re-sync / extractWorkspaceFile.
+        // Story 7.5 extracted the routing into `indexExtractedFile`: a file
+        // backing a CollectiveAgreement is indexed as COLLECTIVE_AGREEMENT
+        // chunks (source_id = agreement.id) with PENDING→PROCESSING→READY/FAILED
+        // status transitions; every other file keeps the USER_FILE path.
+        // Fail-safe: the helper never throws — a chunking error must not fail
+        // the file (already DONE) or the rest of the batch; it's retryable via
+        // re-sync / extractWorkspaceFile.
         // Story 19.1: CHAT_ATTACHMENT files are conversational — extracted (so the
         // chat converter can read them) but NOT embedded into the RAG index. They
         // become searchable only if promoted to a curated category (Story 19.1b).
@@ -202,33 +212,28 @@ export async function GET(request: Request) {
           result.markdown &&
           file.category !== 'CHAT_ATTACHMENT'
         ) {
-          try {
-            const sync = await syncWorkspaceChunks(
-              file.id,
-              'USER_FILE',
-              file.workspace_id,
-              result.markdown,
-              {
-                filename: file.filename,
-                category: file.category,
-                content_hash: file.content_hash,
-              }
-            )
-            if (sync.skipped) {
+          const indexed = await indexExtractedFile(file, result.markdown)
+          if (!indexed.chunkError && indexed.sync) {
+            const label =
+              indexed.routedAs === 'COLLECTIVE_AGREEMENT'
+                ? `agreement ${indexed.agreementId}`
+                : file.id
+            if (indexed.sync.skipped) {
               console.log(
-                `[EXTRACT-FILES] ${file.id} chunks unchanged (content_hash) — re-embed skipped`
+                `[EXTRACT-FILES] ${label} chunks unchanged (content_hash) — re-embed skipped`
               )
             } else {
               console.log(
-                `[EXTRACT-FILES] ${file.id} indexed: ${sync.chunksCreated} chunks, ${sync.chunksEmbedded} embedded`
+                `[EXTRACT-FILES] ${label} indexed: ${indexed.sync.chunksCreated} chunks, ${indexed.sync.chunksEmbedded} embedded`
               )
             }
-          } catch (e) {
-            console.error(
-              `[EXTRACT-FILES] chunk+embed failed for ${file.id}:`,
-              e instanceof Error ? e.message : e
-            )
           }
+        } else {
+          // Story 7.5: extraction produced nothing usable (FAILED / EMPTY /
+          // ENCRYPTED / UNSUPPORTED, or DONE without markdown). If this file
+          // backs a CollectiveAgreement, land it on FAILED so the user-facing
+          // status is honest instead of "Väntar" forever. No-op for other files.
+          await markAgreementFailedForFile(file)
         }
         // ────────────────────────────────────────────────────────────────────
       } catch (err) {
@@ -240,6 +245,7 @@ export async function GET(request: Request) {
             data: { extraction_status: 'FAILED', extracted_at: new Date() },
           })
           .catch(() => {})
+        await markAgreementFailedForFile(file) // Story 7.5: honest CA status
         stats.processed++
         stats.failed++
       }

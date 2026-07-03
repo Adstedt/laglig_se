@@ -15,6 +15,7 @@
 import { Prisma } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import {
+  chunkCollectiveAgreement,
   chunkUserFile,
   chunkWorkspaceDocument,
   type WorkspaceSourceType,
@@ -28,10 +29,16 @@ import { generateEmbeddingsBatch, vectorToString } from './embed-chunks'
  *   - `WORKSPACE_DOCUMENT` (Story 17.9b): `title` + `document_type` + `status`
  */
 export interface SyncWorkspaceMeta {
-  /** USER_FILE: original filename. */
+  /** USER_FILE + COLLECTIVE_AGREEMENT: original filename. */
   filename?: string
   /** USER_FILE: `FileCategory` value. */
   category?: string
+  /** COLLECTIVE_AGREEMENT (Story 7.5): agreement display name — drives the section-aware contextual_header. */
+  agreement_name?: string
+  /** COLLECTIVE_AGREEMENT (Story 7.5): `PersonelType` value (ARB/TJM) or null. */
+  personel_type?: string | null
+  /** COLLECTIVE_AGREEMENT (Story 7.5): backing WorkspaceFile.id (metadata traceability; source_id is the AGREEMENT id). */
+  workspace_file_id?: string | null
   /** WORKSPACE_DOCUMENT: document title. */
   title?: string
   /** WORKSPACE_DOCUMENT: `WorkspaceDocumentType` value. */
@@ -216,21 +223,35 @@ export async function syncWorkspaceChunks(
           markdown: text,
           contentHash: meta.content_hash ?? null,
         })
-      : chunkWorkspaceDocument({
-          documentId: sourceId,
-          workspaceId,
-          title: meta.title ?? '',
-          documentType: meta.document_type ?? '',
-          status: meta.status ?? '',
-          // exactOptionalPropertyTypes: omit when undefined rather than pass undefined.
-          ...(typeof meta.version_number === 'number'
-            ? { versionNumber: meta.version_number }
-            : {}),
-          markdown: text,
-          contentHash: meta.content_hash ?? null,
-          // Story 17.18: thread the tier discriminator onto each chunk's metadata.
-          ...(meta.tier ? { tier: meta.tier } : {}),
-        })
+      : sourceType === 'COLLECTIVE_AGREEMENT'
+        ? // Story 7.5: agreement chunks — source_id is the CollectiveAgreement id
+          // (NOT the WorkspaceFile id) and the contextual_header carries
+          // agreement name + nearest markdown section (AC 5).
+          chunkCollectiveAgreement({
+            agreementId: sourceId,
+            workspaceId,
+            agreementName: meta.agreement_name ?? '',
+            filename: meta.filename ?? '',
+            personelType: meta.personel_type ?? null,
+            workspaceFileId: meta.workspace_file_id ?? null,
+            markdown: text,
+            contentHash: meta.content_hash ?? null,
+          })
+        : chunkWorkspaceDocument({
+            documentId: sourceId,
+            workspaceId,
+            title: meta.title ?? '',
+            documentType: meta.document_type ?? '',
+            status: meta.status ?? '',
+            // exactOptionalPropertyTypes: omit when undefined rather than pass undefined.
+            ...(typeof meta.version_number === 'number'
+              ? { versionNumber: meta.version_number }
+              : {}),
+            markdown: text,
+            contentHash: meta.content_hash ?? null,
+            // Story 17.18: thread the tier discriminator onto each chunk's metadata.
+            ...(meta.tier ? { tier: meta.tier } : {}),
+          })
 
   // No chunks produced (e.g. content below the minimum) → clear stale chunks.
   // Story 17.18: tier-scoped delete.
