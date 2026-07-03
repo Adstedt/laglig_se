@@ -1,0 +1,103 @@
+schema: 1
+story: '7.2'
+story_title: 'Personalregister — employee list view'
+gate: PASS
+status_reason: >-
+  All five findings from the 2026-07-03 review are verifiably closed:
+  ?anstalld= logic extracted to a tested hook + 18 new RTL tests (TEST-001),
+  reorder hardened to contiguous workspace-scoped renumbering (DATA-001),
+  groups-load failure surfaced (REL-001), unfiltered group counts/hints
+  (UX-001), per-row rollback (REL-002). 50/50 targeted tests, typecheck clean.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-07-03T12:05:00+02:00'
+
+top_issues: []
+waiver: { active: false }
+
+quality_score: 100
+expires: '2026-07-17T00:00:00+02:00'
+
+evidence:
+  tests_reviewed: 50
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 5, 6, 7, 8, 9, 10]
+    ac_gaps: [2, 3, 4, 11]
+    # Remaining "gaps" are static UI/nav (PageHeader usage, button styling,
+    # table scaffolding parity, sidebar link) verified by code review — unit
+    # tests would be low-value. AC8 is now directly tested (hook + component).
+    # Residual (accepted, non-blocking): the dnd-kit drag path itself and the
+    # row-click interactive-element guard remain review-verified only —
+    # exercise in a browser when 7.3 mounts the modal.
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      Unchanged from first review (PASS) and re-verified after fixes: all
+      mutations workspace-scoped via compound filters under
+      withWorkspace('employees:manage'); move validates target-group
+      ownership; PII sanitization contract (decrypt/mask + fortnox_raw strip)
+      intact; UI crypto-free; masked personnummer unsearchable. The DATA-001
+      hardening also removed the last input-shape oddity (foreign ids now
+      fully inert).
+  performance:
+    status: PASS
+    notes: >-
+      reorderEmployeeGroups gained one indexed findMany (id-only select) —
+      negligible; everything else unchanged from first review. Unbounded ids
+      input is now harmless (intersected with workspace groups before any
+      writes).
+  reliability:
+    status: PASS
+    notes: >-
+      REL-001 closed: page logs the failure and passes groupsLoadFailed; the
+      island renders a role="status" amber notice while keeping rows usable
+      (tested). REL-002 closed: rollback restores only the affected row from
+      values captured BEFORE the optimistic update; impure setState snapshot
+      removed; concurrency case (failed move does not revert a persisted
+      one) covered by a dedicated test.
+  maintainability:
+    status: PASS
+    notes: >-
+      The useAnstalldParam extraction improves the 7.3 handoff (openEmployee/
+      closeEmployee/selectedEmployeeId is exactly the contract the modal
+      mounts on); test-stub strategy is layered sensibly (hook-level, stubbed
+      island contract, real-table rendering).
+
+history:
+  - date: '2026-07-03T11:55:00+02:00'
+    gate: CONCERNS
+    quality_score: 80
+    note: >-
+      Initial review: TEST-001 (medium — no automated/browser coverage of
+      the interactive client layer), DATA-001, REL-001, UX-001, REL-002
+      (low). Server-side security & PII contract already PASS.
+  - date: '2026-07-03T12:05:00+02:00'
+    gate: PASS
+    quality_score: 100
+    note: >-
+      Re-review after apply-qa-fixes: all five findings closed and
+      independently verified (code diff + 50/50 targeted tests + typecheck).
+
+recommendations:
+  immediate: []
+  future:
+    - action: >-
+        When Story 7.3 mounts the Personalkort modal, do one manual browser
+        pass covering the full loop: row click -> modal, back/forward, drag
+        between groups, failed move rollback (dnd path and click guard are
+        still review-verified only).
+      refs: ['components/features/personalregister/employee-list-table.tsx']
+    - action: >-
+        Wrap moveEmployeeToGroup's group-check + employee update in a
+        transaction to close the small TOCTOU window (carried over,
+        cosmetic).
+      refs: ['app/actions/employees.ts']
+    - action: >-
+        Fix the pre-existing assessment-detail.test.tsx date fixture to be
+        relative (calendar time-bomb, unrelated chore).
+      refs:
+        [
+          'tests/unit/components/features/ai-chat/details/assessment-detail.test.tsx',
+        ]

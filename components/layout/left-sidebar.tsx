@@ -159,12 +159,13 @@ const workItems: NavItem[] = [
     icon: ClipboardList,
     href: '/workspace/activity',
   },
+  // Story 7.2: HR item enabled — route itself is gated by employees:view
+  // (sidebar has no permission mechanism today; the route bounces
+  // unauthorized roles to /dashboard).
   {
     title: 'HR',
     icon: Users,
-    href: '#',
-    disabled: true,
-    badge: 'snart',
+    href: '/personalregister',
   },
 ]
 

@@ -99,11 +99,93 @@ export async function getEmployee(
 }
 
 /**
+ * Story 7.2: employee list row for the Personalregister table — the plain
+ * `EmployeeView` plus the display names of the org group and kollektivavtal
+ * relations (id + name only; nothing sensitive lives on either relation).
+ */
+export type EmployeeListRow = EmployeeView & {
+  group: { id: string; name: string } | null
+  collective_agreement: { id: string; name: string } | null
+}
+
+/**
+ * Story 7.2: list employees with relation names for the register table.
+ * Same personnummer decrypt/mask + `fortnox_raw` stripping as `listEmployees`
+ * (delegates to `toView`); same workspace scoping.
+ */
+export async function listEmployeeRows(
+  ctx: WorkspaceContext
+): Promise<EmployeeListRow[]> {
+  const canManage = ctx.hasPermission('employees:manage')
+
+  const employees = await prisma.employee.findMany({
+    where: { workspace_id: ctx.workspaceId },
+    include: {
+      group: { select: { id: true, name: true } },
+      collective_agreement: { select: { id: true, name: true } },
+    },
+    orderBy: [{ last_name: 'asc' }, { first_name: 'asc' }],
+  })
+
+  return employees.map((row) => {
+    // Split the relations off before toView so the sanitization contract
+    // (drop ciphertext personnummer + fortnox_raw) applies to the base record.
+    const { group, collective_agreement, ...employee } = row
+    return {
+      ...toView(employee, canManage),
+      group,
+      collective_agreement,
+    }
+  })
+}
+
+/**
+ * Story 7.3: fetch a single employee as a list row (with relation names),
+ * scoped to the caller's workspace. Same sanitization contract as
+ * `listEmployeeRows` — ciphertext personnummer replaced (decrypt/mask via
+ * `toView`), `fortnox_raw` stripped. Returns null for foreign/missing ids.
+ *
+ * Used by the 7.3 create/update server actions to return a sanitized row —
+ * never the raw Prisma record.
+ */
+export async function getEmployeeRow(
+  ctx: WorkspaceContext,
+  id: string
+): Promise<EmployeeListRow | null> {
+  const canManage = ctx.hasPermission('employees:manage')
+
+  const row = await prisma.employee.findFirst({
+    where: { id, workspace_id: ctx.workspaceId },
+    include: {
+      group: { select: { id: true, name: true } },
+      collective_agreement: { select: { id: true, name: true } },
+    },
+  })
+
+  if (!row) return null
+
+  const { group, collective_agreement, ...employee } = row
+  return {
+    ...toView(employee, canManage),
+    group,
+    collective_agreement,
+  }
+}
+
+/**
  * Public entry point: list employees for the current workspace, gated by
  * `employees:view`.
  */
 export function getWorkspaceEmployees(): Promise<EmployeeView[]> {
   return withWorkspace((ctx) => listEmployees(ctx), 'employees:view')
+}
+
+/**
+ * Story 7.2 public entry point: list employee rows (with relation names) for
+ * the current workspace, gated by `employees:view`.
+ */
+export function getWorkspaceEmployeeRows(): Promise<EmployeeListRow[]> {
+  return withWorkspace((ctx) => listEmployeeRows(ctx), 'employees:view')
 }
 
 /**

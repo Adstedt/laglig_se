@@ -118,12 +118,11 @@ const workItems = [
     icon: ClipboardList,
     href: '/workspace/activity',
   },
+  // Story 7.2: HR item enabled — route itself is gated by employees:view.
   {
     title: 'HR',
     icon: Users,
-    href: '#',
-    disabled: true,
-    badge: 'snart',
+    href: '/personalregister',
   },
 ]
 
