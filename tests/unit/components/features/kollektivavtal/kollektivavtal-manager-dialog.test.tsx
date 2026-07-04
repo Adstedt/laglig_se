@@ -110,6 +110,19 @@ describe('KollektivavtalManagerDialog', () => {
       name: 'Ladda upp kollektivavtal',
     })
     expect(uploadLabel).toHaveClass('font-safiro', 'font-medium')
+    // Checkpoint round 2: the agreements render as a structured table under
+    // their own Safiro section label.
+    const listLabel = within(dialog).getByRole('heading', {
+      name: 'Uppladdade avtal',
+    })
+    expect(listLabel).toHaveClass('font-safiro', 'font-medium')
+    const table = within(dialog).getByRole('table')
+    for (const label of ['Namn', 'Typ', 'Giltighetsperiod', 'Status']) {
+      expect(
+        within(table).getByRole('columnheader', { name: label })
+      ).toBeInTheDocument()
+    }
+    expect(within(table).getByText('Byggavtalet 2024')).toBeInTheDocument()
   })
 
   test('view-only (canManage=false): list renders without Tilldela or upload', async () => {

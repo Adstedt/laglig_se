@@ -13,6 +13,11 @@
  *
  * Checkpoint round: `variant="dialog"` (Personalregister-toolbar mount)
  * renders the same sections flat — no Card chrome, no own top-level heading.
+ *
+ * Checkpoint round 2 (user): the agreements list is a structured mini-table
+ * (Namn · Typ · Giltighetsperiod · Uppladdad · Kopplade · Status · actions)
+ * instead of a name + meta run-on line — same table in both variants; the
+ * dialog variant labels the section "Uppladdade avtal" (Safiro).
  */
 
 import { useCallback, useState } from 'react'
@@ -31,6 +36,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import {
   listCollectiveAgreements,
   type CollectiveAgreementListItem,
@@ -58,6 +71,12 @@ function periodLabel(item: CollectiveAgreementListItem): string {
 /** created_at ISO timestamp → YYYY-MM-DD for the Uppladdad column (AC 1). */
 function uploadedLabel(item: CollectiveAgreementListItem): string {
   return item.created_at.slice(0, 10)
+}
+
+/** Kopplade column: bare "0", then natural Swedish singular/plural. */
+function assignedLabel(count: number): string {
+  if (count === 0) return '0'
+  return count === 1 ? '1 anställd' : `${count} anställda`
 }
 
 export interface KollektivavtalManagerProps {
@@ -153,71 +172,96 @@ export function KollektivavtalManager({
         Inga kollektivavtal har laddats upp än.
       </p>
     ) : (
-      <ul className="divide-y">
-        {agreements.map((agreement) => (
-          <li
-            key={agreement.id}
-            className="flex items-start justify-between gap-4 py-3 first:pt-0 last:pb-0"
-          >
-            <div className="min-w-0 space-y-0.5">
-              <p className="truncate text-sm font-medium">{agreement.name}</p>
-              <p className="text-xs text-muted-foreground">
-                {typLabel(agreement.personel_type)}
-                {' · Giltighetsperiod: '}
-                {periodLabel(agreement)}
-                {' · Uppladdad: '}
-                {uploadedLabel(agreement)}
-                {' · '}
-                {agreement.assignedEmployeeCount === 1
-                  ? '1 anställd kopplad'
-                  : `${agreement.assignedEmployeeCount} anställda kopplade`}
-              </p>
-            </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <AgreementStatusBadge status={agreement.status} />
+      // Structured mini-table (user checkpoint round 2). The shared Table
+      // primitive wraps itself in an overflow-auto container, so at dialog
+      // width (sm:max-w-2xl) the table scrolls horizontally inside the
+      // rounded frame instead of overflowing the dialog.
+      <div className="overflow-hidden rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/40 hover:bg-muted/40">
+              <TableHead className="h-10 px-3 font-safiro">Namn</TableHead>
+              <TableHead className="h-10 px-3 font-safiro">Typ</TableHead>
+              <TableHead className="h-10 whitespace-nowrap px-3 font-safiro">
+                Giltighetsperiod
+              </TableHead>
+              <TableHead className="h-10 px-3 font-safiro">Uppladdad</TableHead>
+              <TableHead className="h-10 px-3 font-safiro">Kopplade</TableHead>
+              <TableHead className="h-10 px-3 font-safiro">Status</TableHead>
               {canManage && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setAssignTarget(agreement)}
-                  >
-                    <Users className="mr-1.5 h-3.5 w-3.5" />
-                    Tilldela
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        aria-label={`Fler åtgärder för ${agreement.name}`}
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onSelect={() => setEditTarget(agreement)}
-                      >
-                        <Pencil className="mr-2 h-4 w-4" />
-                        Redigera
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onSelect={() => setDeleteTarget(agreement)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Ta bort
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </>
+                <TableHead className="h-10 px-3 text-right">
+                  <span className="sr-only">Åtgärder</span>
+                </TableHead>
               )}
-            </div>
-          </li>
-        ))}
-      </ul>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {agreements.map((agreement) => (
+              <TableRow key={agreement.id}>
+                <TableCell className="px-3 py-2.5 font-medium">
+                  {agreement.name}
+                </TableCell>
+                <TableCell className="whitespace-nowrap px-3 py-2.5 text-muted-foreground">
+                  {typLabel(agreement.personel_type)}
+                </TableCell>
+                <TableCell className="whitespace-nowrap px-3 py-2.5 text-muted-foreground">
+                  {periodLabel(agreement)}
+                </TableCell>
+                <TableCell className="whitespace-nowrap px-3 py-2.5 text-muted-foreground">
+                  {uploadedLabel(agreement)}
+                </TableCell>
+                <TableCell className="whitespace-nowrap px-3 py-2.5 text-muted-foreground">
+                  {assignedLabel(agreement.assignedEmployeeCount)}
+                </TableCell>
+                <TableCell className="px-3 py-2.5">
+                  <AgreementStatusBadge status={agreement.status} />
+                </TableCell>
+                {canManage && (
+                  <TableCell className="px-3 py-2.5">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setAssignTarget(agreement)}
+                      >
+                        <Users className="mr-1.5 h-3.5 w-3.5" />
+                        Tilldela
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            aria-label={`Fler åtgärder för ${agreement.name}`}
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onSelect={() => setEditTarget(agreement)}
+                          >
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Redigera
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onSelect={() => setDeleteTarget(agreement)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Ta bort
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     )
 
   const actionDialogs = canManage && (
@@ -254,7 +298,10 @@ export function KollektivavtalManager({
   if (variant === 'dialog') {
     return (
       <div className="space-y-5">
-        {listBody}
+        <div className="space-y-3">
+          <h3 className="font-safiro text-sm font-medium">Uppladdade avtal</h3>
+          {listBody}
+        </div>
 
         {canManage && (
           <div className="space-y-3 border-t pt-5">

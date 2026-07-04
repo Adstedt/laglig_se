@@ -76,7 +76,9 @@ export function KollektivavtalManagerDialog({
         <ScrollText className="mr-1.5 h-4 w-4" />
         Kollektivavtal
       </Button>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+      {/* User checkpoint: widened from 2xl so the agreements table's seven
+          columns fit without truncation/clipping at dialog width. */}
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-4xl">
         {/* Visible header (user checkpoint): gives the ✕ its own space and
             carries the title/description the manager's page-card otherwise
             renders — the manager mounts flat (`variant="dialog"`). */}

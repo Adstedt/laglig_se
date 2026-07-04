@@ -62,19 +62,35 @@ beforeEach(() => {
   mockGetGroups.mockResolvedValue({ success: true, data: [] })
 })
 
-describe('KollektivavtalManager — list', () => {
-  test('renders agreements with typ, period, assigned count and status badge', () => {
+describe('KollektivavtalManager — list (structured table, checkpoint round 2)', () => {
+  test('renders a table with Namn/Typ/Giltighetsperiod/Uppladdad/Kopplade/Status columns', () => {
     render(<KollektivavtalManager initialAgreements={[makeItem()]} canManage />)
 
-    expect(screen.getByText('Byggavtalet 2024')).toBeInTheDocument()
+    const table = screen.getByRole('table')
+    for (const label of [
+      'Namn',
+      'Typ',
+      'Giltighetsperiod',
+      'Uppladdad',
+      'Kopplade',
+      'Status',
+    ]) {
+      expect(
+        within(table).getByRole('columnheader', { name: label })
+      ).toBeInTheDocument()
+    }
+    // Row values live in their own cells — no meta run-on line.
+    expect(within(table).getByText('Byggavtalet 2024')).toBeInTheDocument()
+    expect(within(table).getByText('Arbetare')).toBeInTheDocument()
     expect(
-      screen.getByText(/Arbetare · Giltighetsperiod: 2024-04-01 – 2025-03-31/)
+      within(table).getByText('2024-04-01 – 2025-03-31')
     ).toBeInTheDocument()
-    expect(screen.getByText(/3 anställda kopplade/)).toBeInTheDocument()
-    expect(screen.getByText('Klart')).toBeInTheDocument()
+    expect(within(table).getByText('2026-07-01')).toBeInTheDocument()
+    expect(within(table).getByText('3 anställda')).toBeInTheDocument()
+    expect(within(table).getByText('Klart')).toBeInTheDocument()
   })
 
-  test('missing period shows "Ej ifylld" (empty-state label, not omitted)', () => {
+  test('missing period shows "Ej ifylld" (empty-state label, not omitted); 0 kopplade shows "0"', () => {
     render(
       <KollektivavtalManager
         initialAgreements={[
@@ -83,18 +99,30 @@ describe('KollektivavtalManager — list', () => {
             effective_to: null,
             personel_type: null,
             status: 'PENDING',
-            assignedEmployeeCount: 1,
+            assignedEmployeeCount: 0,
           }),
         ]}
         canManage
       />
     )
 
+    const table = screen.getByRole('table')
+    expect(within(table).getByText('Övrigt')).toBeInTheDocument()
+    expect(within(table).getByText('Ej ifylld')).toBeInTheDocument()
+    expect(within(table).getByText('0')).toBeInTheDocument()
+    expect(within(table).getByText('Väntar')).toBeInTheDocument()
+  })
+
+  test('kopplade count uses natural Swedish singular ("1 anställd")', () => {
+    render(
+      <KollektivavtalManager
+        initialAgreements={[makeItem({ assignedEmployeeCount: 1 })]}
+        canManage
+      />
+    )
     expect(
-      screen.getByText(/Övrigt · Giltighetsperiod: Ej ifylld/)
+      within(screen.getByRole('table')).getByText('1 anställd')
     ).toBeInTheDocument()
-    expect(screen.getByText(/1 anställd kopplad/)).toBeInTheDocument()
-    expect(screen.getByText('Väntar')).toBeInTheDocument()
   })
 
   test('empty list → empty state; null (failed fetch) → muted error, never empty-state', () => {
@@ -137,6 +165,11 @@ describe('KollektivavtalManager — list', () => {
     expect(container.querySelector('.bg-card')).toBeNull()
     expect(screen.queryByText('Kollektivavtal')).toBeNull()
     expect(screen.queryByText(/Uppladdade avtal blir valbara/)).toBeNull()
+    // Checkpoint round 2: the agreements table gets its own Safiro section
+    // label in the dialog chrome (the page card's header covers this on
+    // the Settings mount).
+    const listLabel = screen.getByRole('heading', { name: 'Uppladdade avtal' })
+    expect(listLabel).toHaveClass('font-safiro', 'font-medium')
     // Upload section keeps its own Safiro section label + the form.
     const uploadLabel = screen.getByRole('heading', {
       name: 'Ladda upp kollektivavtal',
@@ -154,13 +187,22 @@ describe('KollektivavtalManager — list', () => {
     expect(
       screen.getByText(/Uppladdade avtal blir valbara/)
     ).toBeInTheDocument()
+    // The dialog-only section label does not leak into the page chrome
+    // (the card header already frames the list there).
+    expect(
+      screen.queryByRole('heading', { name: 'Uppladdade avtal' })
+    ).toBeNull()
   })
 })
 
 describe('KollektivavtalManager — row actions (Story 7.6)', () => {
-  test('shows Uppladdad in the row meta (AC 1)', () => {
+  test('shows Uppladdad as its own column (AC 1)', () => {
     render(<KollektivavtalManager initialAgreements={[makeItem()]} canManage />)
-    expect(screen.getByText(/Uppladdad: 2026-07-01/)).toBeInTheDocument()
+    const table = screen.getByRole('table')
+    expect(
+      within(table).getByRole('columnheader', { name: 'Uppladdad' })
+    ).toBeInTheDocument()
+    expect(within(table).getByText('2026-07-01')).toBeInTheDocument()
   })
 
   test('canManage renders a first-class Tilldela button + Redigera/Ta bort in the overflow menu', async () => {
