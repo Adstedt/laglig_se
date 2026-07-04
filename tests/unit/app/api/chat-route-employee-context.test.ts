@@ -225,8 +225,12 @@ describe('POST /api/chat — employee context (Story 7.7)', () => {
 
     const toolCtx = mockCreateAgentTools.mock.calls[0]![2] as {
       biasAgreementId?: string
+      biasEmployeeId?: string
     }
     expect(toolCtx.biasAgreementId).toBe('agreement-42')
+    // Story 7.10: the re-gated pill id is threaded as get_employee_salary's
+    // closure default.
+    expect(toolCtx.biasEmployeeId).toBe('emp-1')
   })
 
   it('foreign/unknown employeeId → null fetch → no block, no bias, NO error leak (200)', async () => {
@@ -245,8 +249,11 @@ describe('POST /api/chat — employee context (Story 7.7)', () => {
     expect(promptOpts.employeeContext).toBeUndefined()
     const toolCtx = mockCreateAgentTools.mock.calls[0]![2] as {
       biasAgreementId?: string
+      biasEmployeeId?: string
     }
     expect(toolCtx.biasAgreementId).toBeUndefined()
+    // Story 7.10: no resolved employee → no salary-tool bias either.
+    expect(toolCtx.biasEmployeeId).toBeUndefined()
   })
 
   it('role WITHOUT employees:view (MEMBER) → the employee table is never queried', async () => {

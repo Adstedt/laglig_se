@@ -264,6 +264,9 @@ export async function POST(req: Request) {
     // whole branch is skipped and the hot path is untouched.
     let employeeContext: string | undefined
     let biasAgreementId: string | undefined
+    // Story 7.10: the re-gated pill employee id — get_employee_salary's closure
+    // default (only set once the id is validated under workspace + view).
+    let biasEmployeeId: string | undefined
     if (
       typeof employeeId === 'string' &&
       employeeId.length > 0 &&
@@ -291,6 +294,11 @@ export async function POST(req: Request) {
         // AC 4: assigned agreement → hard CA-retrieval bias (closure default
         // in the search_collective_agreements tool factory).
         biasAgreementId = employee.collective_agreement?.id
+        // Story 7.10: the validated pill id becomes get_employee_salary's
+        // closure default (the tool is only registered for manage roles).
+        // NOTE: salary itself is NEVER read here — it stays out of the
+        // always-on employee_context block (trap #5).
+        biasEmployeeId = employeeId
       }
     }
 
@@ -396,6 +404,9 @@ export async function POST(req: Request) {
         // Story 7.7: the in-context employee's assigned agreement (undefined
         // without an employee) — CA tool's closure-level retrieval bias.
         biasAgreementId,
+        // Story 7.10: the in-context employee id — get_employee_salary's
+        // closure default (undefined without an employee; tool is manage-gated).
+        biasEmployeeId,
       },
       role,
       activeSkills

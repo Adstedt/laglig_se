@@ -49,9 +49,10 @@ export function createLookupEmployeeTool(workspaceId: string) {
     description: `Slå upp en anställd i arbetsytans personalregister via namn (skiftlägesokänslig delsträngsmatchning på för- och efternamn).
 Använd detta verktyg när användaren nämner en anställd vid namn och frågan gäller den personens anställning (uppsägningstid, anställningsform, kollektivavtal m.m.).
 
-Returnerar upp till ${MAX_MATCHES} matchningar med namn, anställningsform, anställningsdatum, personaltyp, sysselsättningsgrad, status (Aktiv/Inaktiv) och tilldelat kollektivavtal ({id, name}).
+Returnerar upp till ${MAX_MATCHES} matchningar med \`id\`, namn, anställningsform, anställningsdatum, personaltyp, sysselsättningsgrad, status (Aktiv/Inaktiv) och tilldelat kollektivavtal ({id, name}).
 Får du flera matchningar: be användaren förtydliga vilken person som avses.
-Har den anställda ett tilldelat kollektivavtal: skicka \`collectiveAgreement.id\` som \`agreementId\` till search_collective_agreements när du söker i avtalet.`,
+Har den anställda ett tilldelat kollektivavtal: skicka \`collectiveAgreement.id\` som \`agreementId\` till search_collective_agreements när du söker i avtalet.
+Gäller frågan lön/ersättning: skicka \`id\` som \`employeeId\` till get_employee_salary.`,
     inputSchema: zodSchema(lookupEmployeeSchema),
     execute: async ({ name }: LookupEmployeeInput) => {
       const startTime = Date.now()
@@ -73,7 +74,10 @@ Har den anställda ett tilldelat kollektivavtal: skicka \`collectiveAgreement.id
         const employees = await prisma.employee.findMany({
           where,
           // ALLOWLIST select — never personnummer/email/phone/address/fortnox_raw.
+          // Story 7.10: `id` is included so the typed-name path can feed
+          // get_employee_salary (still salary/PII-free otherwise).
           select: {
+            id: true,
             first_name: true,
             last_name: true,
             employment_form: true,
@@ -97,6 +101,7 @@ Har den anställda ett tilldelat kollektivavtal: skicka \`collectiveAgreement.id
         }
 
         const results = employees.map((e) => ({
+          id: e.id,
           name: `${e.first_name} ${e.last_name}`.trim(),
           employmentForm: employmentFormLabel(e.employment_form),
           employmentDate: formatEmploymentDate(e.employment_date),

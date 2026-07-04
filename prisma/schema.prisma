@@ -2648,8 +2648,13 @@ model Employee {
   average_weekly_hours Decimal? @db.Decimal(5, 2) // AverageWeeklyHours
   schedule_id          String? // ScheduleId (opaque Fortnox ref; stored for sync fidelity)
 
-  // --- Fortnox: Salary form (Löneuppgifter — form only, no amounts) ---
-  salary_form SalaryForm? // SalaryForm (Månadslön/Timlön)
+  // --- Fortnox: Salary (Löneuppgifter) ---
+  salary_form    SalaryForm? // SalaryForm (Månadslön/Timlön)
+  // Story 7.10: amounts for kollektivavtal minimilön compliance. ENCRYPTED AT
+  // REST (AES-256-GCM, like personnummer) — stored as ciphertext TEXT, not
+  // Decimal; decrypted only for employees:manage. Fortnox: MonthlySalary/HourlyPay.
+  monthly_salary String? // Månadslön (kr), encrypted — used when salary_form=MAN
+  hourly_pay     String? // Timlön (kr/tim), encrypted — used when salary_form=TIM
 
   // --- Fortnox: Vacation (Semester — headline only; full ledger stays in Fortnox) ---
   vacation_days_paid Decimal? @db.Decimal(5, 2) // VacationDaysPaid (Semesterlagen headline)

@@ -28,13 +28,17 @@
  * - Story 7.4b: column show/hide ("Kolumner" — the shared law-table
  *   affordance) + resize with per-column clamped bounds and
  *   `columnResizeMode: 'onEnd'` (the law table's drag-to-infinite-width fix,
- *   not reintroduced). State persists per user in localStorage keyed by
- *   workspace id — deliberately NOT the document-list Zustand store. No
- *   column reordering (explicit user exclusion).
+ *   not reintroduced). No column reordering (explicit user exclusion).
+ *   User-checkpoint layout round: the column state (visibility + sizing) and
+ *   its per-workspace localStorage persistence now live in the parent island
+ *   (`personalregister-content.tsx`) so the "Kolumner" control shares one
+ *   toolbar row with Kollektivavtal/Hantera grupper — this table is a
+ *   CONTROLLED consumer, receiving column state + change handlers via props
+ *   and no longer rendering the Kolumner control itself.
  * - No row virtualization (registers are small).
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -100,24 +104,15 @@ import { assessEmployeeCompleteness } from '@/lib/employees/employee-completenes
 import type { EmployeeGroupSummary } from '@/app/actions/employees'
 import type { EmployeeRow } from './employee-row'
 import { EmployeeGroupEditor } from './employee-group-editor'
-import {
-  EmployeeColumnSettings,
-  EMPLOYEE_COLUMN_LABELS,
-} from './employee-column-settings'
-import {
-  clampEmployeeColumnSizing,
-  defaultEmployeeColumnState,
-  loadEmployeeColumnState,
-  sanitizeEmployeeColumnVisibility,
-  saveEmployeeColumnState,
-  type EmployeeColumnState,
-} from './employee-column-state'
+import { EMPLOYEE_COLUMN_LABELS } from './employee-column-settings'
 import { formatPersonnummerDisplay } from './format-personnummer'
 import { EmployeeStatusBadge } from './personalkort-modal/status-badge'
 import {
   employmentFormLabel,
   personelTypeLabel,
   salaryFormLabel,
+  formatMonthlySalary,
+  formatHourlyPay,
   EMPTY_FIELD_LABEL,
 } from './labels'
 
@@ -143,6 +138,16 @@ interface EmployeeListTableProps {
    * behind the "Ej komplett" badge and the group rollups.
    */
   workspaceHasCollectiveAgreement: boolean
+  /**
+   * Column show/hide + resize state (Story 7.4b + 7.10), OWNED by the parent
+   * island (`personalregister-content.tsx`) so the "Kolumner" control can sit
+   * in the shared toolbar row. This table is controlled: it renders columns at
+   * these widths/visibility and reports changes back through the handlers.
+   */
+  columnVisibility: VisibilityState
+  columnSizing: ColumnSizingState
+  onColumnVisibilityChange: (_visibility: VisibilityState) => void
+  onColumnSizingChange: (_updater: Updater<ColumnSizingState>) => void
   onRowClick: (_employeeId: string) => void
   onMoveToGroup: (
     _employeeId: string,
@@ -159,6 +164,10 @@ export function EmployeeListTable({
   canManage,
   totalCount,
   workspaceHasCollectiveAgreement,
+  columnVisibility,
+  columnSizing,
+  onColumnVisibilityChange,
+  onColumnSizingChange,
   onRowClick,
   onMoveToGroup,
   onAddEmployee,
@@ -170,72 +179,22 @@ export function EmployeeListTable({
     Record<string, boolean>
   >({})
 
-  // Story 7.4b: column visibility + sizing, persisted per user per workspace.
-  // The workspace id comes off the rows themselves (every EmployeeRow is
-  // workspace-scoped) — an empty register has no rows and nothing worth
-  // persisting, so persistence is simply skipped then.
-  const workspaceId = allEmployees[0]?.workspace_id ?? null
-  const [columnState, setColumnState] = useState<EmployeeColumnState>(
-    defaultEmployeeColumnState
-  )
-
-  // Hydrate AFTER mount: the island is server-rendered, so reading
-  // localStorage during the first render would mismatch hydration. Corrupt
-  // or stale stored state degrades to defaults inside the loader.
-  useEffect(() => {
-    if (!workspaceId) return
-    setColumnState(loadEmployeeColumnState(workspaceId))
-  }, [workspaceId])
-
-  // Story 7.6 (STATE-001): functional setState — the handlers derive the next
-  // state from `prev`, never from a captured `columnState` (a stale closure
-  // could otherwise clobber the sibling half of the state on rapid updates).
-  const applyColumnState = useCallback(
-    (compute: (_prev: EmployeeColumnState) => EmployeeColumnState) => {
-      setColumnState((prev) => {
-        const next = compute(prev)
-        // Persistence is skipped when there's no workspace id (empty register).
-        if (workspaceId) saveEmployeeColumnState(workspaceId, next)
-        return next
-      })
-    },
-    [workspaceId]
-  )
-
-  const handleColumnVisibilityChange = useCallback(
-    (visibility: VisibilityState) => {
-      // Sanitizer drops non-hideable ids (Anställd, drag handle) — defense
-      // in depth on top of `enableHiding: false` and the disabled checkbox.
-      applyColumnState((prev) => ({
-        visibility: sanitizeEmployeeColumnVisibility(visibility),
-        sizing: prev.sizing,
-      }))
-    },
-    [applyColumnState]
-  )
-
-  // Clamp BEFORE storing (law-table fix: `onEnd` mode commits
-  // `startSize + deltaOffset` unclamped on extreme drags).
-  const handleColumnSizingChange = useCallback(
-    (updater: Updater<ColumnSizingState>) => {
-      applyColumnState((prev) => ({
-        visibility: prev.visibility,
-        sizing: clampEmployeeColumnSizing(
-          typeof updater === 'function' ? updater(prev.sizing) : updater
-        ),
-      }))
-    },
-    [applyColumnState]
-  )
-
+  // Story 7.4b: column visibility + sizing are OWNED by the parent island now
+  // (user-checkpoint layout round) — this table is controlled and simply
+  // threads the props into the per-section TanStack instances.
   const columnControls: EmployeeColumnControls = useMemo(
     () => ({
-      visibility: columnState.visibility,
-      sizing: columnState.sizing,
-      onVisibilityChange: handleColumnVisibilityChange,
-      onSizingChange: handleColumnSizingChange,
+      visibility: columnVisibility,
+      sizing: columnSizing,
+      onVisibilityChange: onColumnVisibilityChange,
+      onSizingChange: onColumnSizingChange,
     }),
-    [columnState, handleColumnVisibilityChange, handleColumnSizingChange]
+    [
+      columnVisibility,
+      columnSizing,
+      onColumnVisibilityChange,
+      onColumnSizingChange,
+    ]
   )
 
   const sensors = useSensors(
@@ -460,6 +419,50 @@ export function EmployeeListTable({
           ),
       },
       {
+        // Story 7.10: Lön — HIDDEN BY DEFAULT (screen-share privacy). The
+        // repository has already decrypted (manage) or masked (view) the value
+        // BEFORE serialization, so the cell never touches crypto and a view
+        // browser never received the amount regardless of this toggle.
+        id: 'salary',
+        accessorFn: (row) => row.monthly_salary ?? row.hourly_pay ?? '',
+        size: 130,
+        minSize: 120,
+        maxSize: 200,
+        header: ({ column }) => (
+          <EmployeeSortableHeader
+            column={column}
+            label={EMPLOYEE_COLUMN_LABELS.salary ?? ''}
+          />
+        ),
+        cell: ({ row }) => {
+          const { salary_masked, monthly_salary, hourly_pay, salary_form } =
+            row.original
+          // Masked (view role, or an undecryptable ciphertext) → render the
+          // fixed mask the repo already put on the value; never a real amount.
+          if (salary_masked) {
+            return (
+              <span className="tabular-nums">
+                {monthly_salary ?? hourly_pay ?? '—'}
+              </span>
+            )
+          }
+          // Show what EXISTS: prefer the salary_form's kind, but a stored amount
+          // of the other kind still renders (a mismatched form must not hide a
+          // real value).
+          const monthly = monthly_salary
+            ? formatMonthlySalary(monthly_salary)
+            : null
+          const hourly = hourly_pay ? formatHourlyPay(hourly_pay) : null
+          const display =
+            salary_form === 'TIM' ? (hourly ?? monthly) : (monthly ?? hourly)
+          return display ? (
+            <span className="tabular-nums">{display}</span>
+          ) : (
+            <span className="text-muted-foreground">{EMPTY_FIELD_LABEL}</span>
+          )
+        },
+      },
+      {
         id: 'collective_agreement',
         accessorFn: (row) => row.collective_agreement?.name ?? '',
         size: 170,
@@ -657,14 +660,8 @@ export function EmployeeListTable({
 
     return (
       <div className="flex flex-col gap-4">
-        {/* Story 7.4b: Kolumner control — same right-aligned toolbar slot as
-            the grouped branch. */}
-        <div className="flex justify-end">
-          <EmployeeColumnSettings
-            columnVisibility={columnState.visibility}
-            onColumnVisibilityChange={handleColumnVisibilityChange}
-          />
-        </div>
+        {/* User-checkpoint layout round: the "Kolumner" control moved up to the
+            content-island toolbar; this table only renders the columns. */}
         <div className="rounded-md border overflow-x-auto">
           <EmployeeSectionTable
             rows={ungroupedRows}
@@ -690,13 +687,10 @@ export function EmployeeListTable({
           )}
         </p>
         {/* Task 3b: expand/collapse-all controls above the group sections
-            (law-table placement + affordance). */}
+            (law-table placement + affordance). The "Kolumner" control now
+            lives in the content-island toolbar (user-checkpoint layout
+            round) — only the view-state controls remain here. */}
         <div className="flex items-center gap-1 sm:gap-2">
-          {/* Story 7.4b: Kolumner control (shared law-table affordance). */}
-          <EmployeeColumnSettings
-            columnVisibility={columnState.visibility}
-            onColumnVisibilityChange={handleColumnVisibilityChange}
-          />
           <Button
             variant="ghost"
             size="sm"

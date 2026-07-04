@@ -952,7 +952,7 @@ describe('formatEmployeeContext (Story 7.7)', () => {
 
   // PII BY CONSTRUCTION (guardrail): the formatter is an allowlist — a wider
   // object carrying personnummer/email/phone/address must never leak a byte.
-  it('NEVER emits personnummer/email/phone/address — even from a polluted record', () => {
+  it('NEVER emits personnummer/email/phone/address/salary — even from a polluted record', () => {
     const polluted = {
       ...makeEmployee(),
       personnummer: '19850101-1234',
@@ -964,6 +964,11 @@ describe('formatEmployeeContext (Story 7.7)', () => {
       address2: 'Lgh 1201',
       post_code: '11122',
       city: 'Stockholm',
+      // Story 7.10 (guardrail): salary NEVER enters formatEmployeeContext —
+      // it reaches the AI ONLY via the manage-gated get_employee_salary tool.
+      monthly_salary: '45000.00',
+      hourly_pay: '185.50',
+      salary_masked: false,
       fortnox_raw: { PersonalIdentityNumber: '19850101-1234' },
     } as unknown as EmployeeContextEmployee
 
@@ -979,6 +984,11 @@ describe('formatEmployeeContext (Story 7.7)', () => {
     expect(result).not.toContain('Lgh 1201')
     expect(result).not.toContain('11122')
     expect(result).not.toContain('Stockholm')
+    // Salary absence (Story 7.10).
+    expect(result).not.toContain('45000')
+    expect(result).not.toContain('185.50')
+    expect(result).not.toMatch(/lön/i)
+    expect(result).not.toMatch(/salary/i)
   })
 })
 

@@ -33,6 +33,7 @@ function makeTool(workspaceId = 'ws-1') {
  *  proves the output mapping is an allowlist, not a pass-through. */
 function dbRow(over: Record<string, unknown> = {}) {
   return {
+    id: 'emp-1',
     first_name: 'Anna',
     last_name: 'Svensson',
     employment_form: 'TV',
@@ -105,6 +106,7 @@ describe('lookup_employee — query shape', () => {
     }
     expect(Object.keys(args.select).sort()).toEqual(
       [
+        'id',
         'first_name',
         'last_name',
         'employment_form',
@@ -132,6 +134,7 @@ describe('lookup_employee — output (PII absence by construction)', () => {
 
     expect(out.data).toHaveLength(1)
     expect(out.data[0]).toEqual({
+      id: 'emp-1',
       name: 'Anna Svensson',
       employmentForm: 'Tillsvidareanställning',
       employmentDate: '2020-03-01',

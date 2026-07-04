@@ -75,6 +75,16 @@ export const personalkortFormSchema = z.object({
   employment_form: z.union([z.nativeEnum(EmploymentForm), z.literal('')]),
   personel_type: z.union([z.nativeEnum(PersonelType), z.literal('')]),
   salary_form: z.union([z.nativeEnum(SalaryForm), z.literal('')]),
+  // Story 7.10: salary amounts (kept as strings in form state; encrypted at
+  // the server boundary). Shown conditionally on salary_form.
+  monthly_salary: optionalNumericString({
+    min: 0,
+    message: 'Ange ett giltigt lönebelopp (0 eller mer)',
+  }),
+  hourly_pay: optionalNumericString({
+    min: 0,
+    message: 'Ange ett giltigt lönebelopp (0 eller mer)',
+  }),
   employment_percent: optionalNumericString({
     min: 0,
     max: 100,
@@ -118,6 +128,8 @@ export function emptyFormValues(): PersonalkortFormValues {
     employment_form: '',
     personel_type: '',
     salary_form: '',
+    monthly_salary: '',
+    hourly_pay: '',
     employment_percent: '',
     average_weekly_hours: '',
     manager_id: '',
@@ -156,6 +168,11 @@ export function formValuesFromRow(row: EmployeeRow): PersonalkortFormValues {
     employment_form: row.employment_form ?? '',
     personel_type: row.personel_type ?? '',
     salary_form: row.salary_form ?? '',
+    // Story 7.10: a masked salary (view role, or an undecryptable ciphertext
+    // under manage) prefills empty — the mask must never round-trip as a value.
+    // The decrypted value arrives as a canonical decimal string already.
+    monthly_salary: row.salary_masked ? '' : (row.monthly_salary ?? ''),
+    hourly_pay: row.salary_masked ? '' : (row.hourly_pay ?? ''),
     employment_percent:
       row.full_time_equivalent === null
         ? ''
@@ -198,17 +215,30 @@ function numericOrNull(value: string): number | null {
 export function toEmployeeInput(
   values: PersonalkortFormValues,
   groupId: string | null,
-  options: { personnummerMasked?: boolean } = {}
+  options: { personnummerMasked?: boolean; salaryMasked?: boolean } = {}
 ): EmployeeInput {
   const percent = numericOrNull(values.employment_percent)
   const personnummer = stringOrNull(values.personnummer)
   // Masked prefill + still empty → omit the key entirely (= keep stored).
   const personnummerInput =
     options.personnummerMasked && personnummer === null ? {} : { personnummer }
+  // Story 7.10: salary is three-state exactly like personnummer — a masked
+  // prefill left empty omits the key (keep stored ciphertext); a value or an
+  // explicit clear (on a healthy manage prefill) is sent through.
+  const monthlySalary = stringOrNull(values.monthly_salary)
+  const monthlySalaryInput =
+    options.salaryMasked && monthlySalary === null
+      ? {}
+      : { monthly_salary: monthlySalary }
+  const hourlyPay = stringOrNull(values.hourly_pay)
+  const hourlyPayInput =
+    options.salaryMasked && hourlyPay === null ? {} : { hourly_pay: hourlyPay }
   return {
     first_name: values.first_name.trim(),
     last_name: values.last_name.trim(),
     ...personnummerInput,
+    ...monthlySalaryInput,
+    ...hourlyPayInput,
     email: stringOrNull(values.email),
     phone1: stringOrNull(values.phone1),
     phone2: stringOrNull(values.phone2),

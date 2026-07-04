@@ -12,6 +12,7 @@ import {
   defaultEmployeeColumnState,
   loadEmployeeColumnState,
   saveEmployeeColumnState,
+  EMPLOYEE_DEFAULT_HIDDEN_COLUMN_IDS,
 } from '@/components/features/personalregister/employee-column-state'
 import { EMPLOYEE_COLUMN_OPTIONS } from '@/components/features/personalregister/employee-column-settings'
 
@@ -80,15 +81,37 @@ describe('load/save round-trip', () => {
     expect(loadEmployeeColumnState(WS)).toEqual(defaultEmployeeColumnState())
   })
 
-  test('save → load round-trips visibility and sizing', () => {
+  test('save → load round-trips visibility and sizing (salary seeds hidden)', () => {
     saveEmployeeColumnState(WS, {
       visibility: { personnummer: false },
       sizing: { name: 300 },
     })
     expect(loadEmployeeColumnState(WS)).toEqual({
-      visibility: { personnummer: false },
+      // Story 7.10: the default-hidden Lön column is seeded on load.
+      visibility: { personnummer: false, salary: false },
       sizing: { name: 300 },
     })
+  })
+
+  test('Story 7.10: salary (defaultVisible:false) seeds HIDDEN on first load', () => {
+    // Nothing stored — a brand-new user must NOT see the Lön column.
+    expect(loadEmployeeColumnState(WS).visibility.salary).toBe(false)
+    expect(defaultEmployeeColumnState().visibility.salary).toBe(false)
+  })
+
+  test('Story 7.10: salary stays hidden even for a blob that predates the column', () => {
+    // A returning user whose persisted state has no salary key must still get
+    // it hidden (the sanitizer would otherwise default it visible).
+    window.localStorage.setItem(
+      KEY,
+      JSON.stringify({ visibility: { group: false }, sizing: {} })
+    )
+    expect(loadEmployeeColumnState(WS).visibility.salary).toBe(false)
+  })
+
+  test('Story 7.10: an explicit stored salary:true is honored (user toggled it on)', () => {
+    saveEmployeeColumnState(WS, { visibility: { salary: true }, sizing: {} })
+    expect(loadEmployeeColumnState(WS).visibility.salary).toBe(true)
   })
 
   test('corrupt JSON degrades to defaults', () => {
@@ -115,7 +138,8 @@ describe('load/save round-trip', () => {
       })
     )
     expect(loadEmployeeColumnState(WS)).toEqual({
-      visibility: { personnummer: false },
+      // Story 7.10: salary seeds hidden alongside the surviving personnummer.
+      visibility: { personnummer: false, salary: false },
       sizing: { name: EMPLOYEE_COLUMN_SIZE_BOUNDS.name!.max },
     })
   })
@@ -139,6 +163,17 @@ describe('column catalog invariants', () => {
         `missing bounds for ${option.id}`
       ).toBeDefined()
     }
+  })
+
+  test('Story 7.10: the default-hidden set mirrors the options defaultVisible:false', () => {
+    const optionHidden = EMPLOYEE_COLUMN_OPTIONS.filter(
+      (o) => o.defaultVisible === false
+    ).map((o) => o.id)
+    expect(optionHidden).toContain('salary')
+    // The two sources must never drift.
+    expect([...EMPLOYEE_DEFAULT_HIDDEN_COLUMN_IDS].sort()).toEqual(
+      optionHidden.sort()
+    )
   })
 
   test('Anställd is the only mandatory toggle option; drag handle is not listed', () => {

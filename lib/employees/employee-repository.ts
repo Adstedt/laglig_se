@@ -19,26 +19,60 @@ import {
   type WorkspaceContext,
 } from '@/lib/auth/workspace-context'
 import { decryptPersonnummer, maskPersonnummer } from './personnummer'
+import { decryptSalary, maskSalary } from './salary'
 
 /**
  * Employee as returned to callers: the stored `personnummer` ciphertext is
  * replaced by either the decrypted value (authorized) or a fixed mask, with a
  * `personnummer_masked` flag so the UI knows which it received.
  *
+ * Story 7.10: the `monthly_salary` / `hourly_pay` ciphertext columns are
+ * treated the SAME way but STRICTER — decrypted only for `employees:manage`,
+ * masked/nulled for every other role. A single `salary_masked` flag covers
+ * both amounts. Column visibility in the register is display-only: this repo
+ * gate is the real access control, applied BEFORE the row serializes to the
+ * client, so a view-only browser never receives salary ciphertext or plaintext.
+ *
  * `fortnox_raw` is deliberately dropped — the raw Fortnox payload snapshot
  * contains the plaintext PersonalIdentityNumber, so it must never travel out of
  * this layer alongside a masked personnummer (it would defeat the masking). It
  * stays server-side only.
  */
-export type EmployeeView = Omit<Employee, 'personnummer' | 'fortnox_raw'> & {
+export type EmployeeView = Omit<
+  Employee,
+  'personnummer' | 'fortnox_raw' | 'monthly_salary' | 'hourly_pay'
+> & {
   personnummer: string | null
   personnummer_masked: boolean
+  monthly_salary: string | null
+  hourly_pay: string | null
+  salary_masked: boolean
+}
+
+/**
+ * Decrypt a stored salary ciphertext for a manage role, degrading a single
+ * corrupt/undecryptable value to the mask instead of throwing out of the whole
+ * list (mirrors the personnummer contract). For non-manage roles the ciphertext
+ * is masked outright — the plaintext is never touched.
+ */
+function toSalaryView(
+  cipher: string | null,
+  canManage: boolean
+): { value: string | null; masked: boolean } {
+  if (!cipher) return { value: null, masked: false }
+  if (!canManage) return { value: maskSalary(), masked: true }
+  try {
+    return { value: decryptSalary(cipher), masked: false }
+  } catch {
+    return { value: maskSalary(), masked: true }
+  }
 }
 
 function toView(employee: Employee, canManage: boolean): EmployeeView {
-  // Strip both the ciphertext personnummer and fortnox_raw (plaintext PII) from
-  // the outgoing shape; re-add a safe personnummer below.
-  const { personnummer, fortnox_raw, ...rest } = employee
+  // Strip the ciphertext personnummer/salary columns and fortnox_raw (plaintext
+  // PII) from the outgoing shape; re-add safe values below.
+  const { personnummer, fortnox_raw, monthly_salary, hourly_pay, ...rest } =
+    employee
   void fortnox_raw // intentionally not returned to callers
 
   let value: string | null = null
@@ -61,7 +95,20 @@ function toView(employee: Employee, canManage: boolean): EmployeeView {
     }
   }
 
-  return { ...rest, personnummer: value, personnummer_masked: masked }
+  // Story 7.10: manage-only salary. A masked/undecryptable amount on EITHER
+  // column raises the shared `salary_masked` flag (the form uses it to keep the
+  // stored ciphertext on an empty submit).
+  const monthly = toSalaryView(monthly_salary, canManage)
+  const hourly = toSalaryView(hourly_pay, canManage)
+
+  return {
+    ...rest,
+    personnummer: value,
+    personnummer_masked: masked,
+    monthly_salary: monthly.value,
+    hourly_pay: hourly.value,
+    salary_masked: monthly.masked || hourly.masked,
+  }
 }
 
 /**

@@ -68,6 +68,8 @@ const ANSTALLNING_FIELDS: (keyof PersonalkortFormValues)[] = [
   'employment_form',
   'personel_type',
   'salary_form',
+  'monthly_salary',
+  'hourly_pay',
   'employment_percent',
   'average_weekly_hours',
   'manager_id',
@@ -156,12 +158,17 @@ export function PersonalkortForm({
   const personnummerMasked =
     mode === 'edit' && row?.personnummer_masked === true
 
+  // Story 7.10: same masked-prefill three-state for salary — an empty submit
+  // on a masked (view or undecryptable-manage) prefill keeps the stored value.
+  const salaryMasked = mode === 'edit' && row?.salary_masked === true
+
   const onSubmit = useCallback(
     async (values: PersonalkortFormValues) => {
       if (mode === 'edit' && !row) return
       try {
         const input = toEmployeeInput(values, row?.group_id ?? null, {
           personnummerMasked,
+          salaryMasked,
         })
         const result =
           mode === 'create' || !row
@@ -181,7 +188,7 @@ export function PersonalkortForm({
         toast.error('Något gick fel. Försök igen.')
       }
     },
-    [mode, row, personnummerMasked, onSaved, onClose]
+    [mode, row, personnummerMasked, salaryMasked, onSaved, onClose]
   )
 
   // Jump to the first tab containing a validation error (errors on a hidden
@@ -545,6 +552,64 @@ export function PersonalkortForm({
                   <FieldError message={errors.employment_percent?.message} />
                 </div>
               </div>
+
+              {/* Story 7.10: salary amount, shown by the chosen Löneform
+                  (MAN → Månadslön, TIM → Timlön; both hidden until a form is
+                  picked). Encrypted at rest, manage-only — read-only + masked
+                  helper text for view roles / undecryptable ciphertext. */}
+              {salaryForm === 'MAN' || salaryForm === 'TIM' ? (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {salaryForm === 'MAN' ? (
+                    <div className="space-y-1.5">
+                      <Label htmlFor="pk-monthly-salary">Månadslön</Label>
+                      <div className="relative">
+                        <Input
+                          id="pk-monthly-salary"
+                          inputMode="decimal"
+                          placeholder="45 000"
+                          className="pr-10"
+                          {...register('monthly_salary')}
+                          disabled={readOnly}
+                          aria-invalid={!!errors.monthly_salary}
+                        />
+                        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-muted-foreground">
+                          kr
+                        </span>
+                      </div>
+                      <FieldError message={errors.monthly_salary?.message} />
+                      {salaryMasked && !readOnly && (
+                        <p className="text-sm text-muted-foreground">
+                          Befintlig lön behålls om fältet lämnas tomt.
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      <Label htmlFor="pk-hourly-pay">Timlön</Label>
+                      <div className="relative">
+                        <Input
+                          id="pk-hourly-pay"
+                          inputMode="decimal"
+                          placeholder="185,50"
+                          className="pr-14"
+                          {...register('hourly_pay')}
+                          disabled={readOnly}
+                          aria-invalid={!!errors.hourly_pay}
+                        />
+                        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-muted-foreground">
+                          kr/tim
+                        </span>
+                      </div>
+                      <FieldError message={errors.hourly_pay?.message} />
+                      {salaryMasked && !readOnly && (
+                        <p className="text-sm text-muted-foreground">
+                          Befintlig lön behålls om fältet lämnas tomt.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : null}
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">

@@ -142,6 +142,9 @@ function makeRow(overrides: Partial<EmployeeRow> = {}): EmployeeRow {
     employment_form: 'TV',
     personel_type: 'TJM',
     salary_form: 'MAN',
+    monthly_salary: '45000.00',
+    hourly_pay: null,
+    salary_masked: false,
     inactive: false,
     full_time_equivalent: 0.75,
     average_weekly_hours: 30,
@@ -171,6 +174,26 @@ describe('formValuesFromRow', () => {
       makeRow({ personnummer: '••••••-••••', personnummer_masked: true })
     )
     expect(formValues.personnummer).toBe('')
+  })
+
+  test('Story 7.10: salary prefills from the decrypted canonical string', () => {
+    const formValues = formValuesFromRow(
+      makeRow({ monthly_salary: '45000.00', hourly_pay: null })
+    )
+    expect(formValues.monthly_salary).toBe('45000.00')
+    expect(formValues.hourly_pay).toBe('')
+  })
+
+  test('Story 7.10: a masked salary prefills empty — the mask never round-trips', () => {
+    const formValues = formValuesFromRow(
+      makeRow({
+        monthly_salary: '•••••',
+        hourly_pay: '•••••',
+        salary_masked: true,
+      })
+    )
+    expect(formValues.monthly_salary).toBe('')
+    expect(formValues.hourly_pay).toBe('')
   })
 })
 
@@ -242,6 +265,47 @@ describe('toEmployeeInput', () => {
     )
     expect('personnummer' in input).toBe(true)
     expect(input.personnummer).toBeNull()
+  })
+
+  // Story 7.10 — the SAME three-state contract for salary.
+  test('Story 7.10: masked salary + untouched empty fields omit the salary keys (keep)', () => {
+    const input = toEmployeeInput(
+      values({
+        first_name: 'Anna',
+        last_name: 'Svensson',
+        monthly_salary: '',
+        hourly_pay: '',
+      }),
+      null,
+      { salaryMasked: true }
+    )
+    expect('monthly_salary' in input).toBe(false)
+    expect('hourly_pay' in input).toBe(false)
+  })
+
+  test('Story 7.10: masked salary + newly typed value sends the value (replace)', () => {
+    const input = toEmployeeInput(
+      values({
+        first_name: 'Anna',
+        last_name: 'Svensson',
+        monthly_salary: '52000',
+      }),
+      null,
+      { salaryMasked: true }
+    )
+    expect(input.monthly_salary).toBe('52000')
+    // the untouched hourly field is still omitted (keep stored)
+    expect('hourly_pay' in input).toBe(false)
+  })
+
+  test('Story 7.10: plaintext salary deliberately cleared sends null (clear)', () => {
+    const input = toEmployeeInput(
+      values({ first_name: 'Anna', last_name: 'Svensson', monthly_salary: '' }),
+      null,
+      { salaryMasked: false }
+    )
+    expect('monthly_salary' in input).toBe(true)
+    expect(input.monthly_salary).toBeNull()
   })
 
   test('preserves the row group_id (the form has no group field)', () => {

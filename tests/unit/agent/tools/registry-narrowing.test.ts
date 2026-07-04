@@ -27,11 +27,17 @@ import type { WorkspaceRole } from '@prisma/client'
 type Ctx = 'global' | 'task' | 'law' | 'change'
 
 // The full factory set = policy keys minus the route-injected web_search and
-// minus the role-conditional lookup_employee (Story 7.7: registered only for
-// roles holding employees:view — the MEMBER used throughout lacks it; its
-// presence/absence matrix is pinned in registry-role-filter.test.ts).
+// minus the role-conditional employee tools (Story 7.7: lookup_employee needs
+// employees:view; Story 7.10: get_employee_salary needs employees:manage — the
+// MEMBER used throughout lacks both; their presence/absence matrix is pinned in
+// registry-role-filter.test.ts).
 const FULL = Object.keys(TOOL_REGISTRY_POLICY)
-  .filter((n) => n !== 'web_search' && n !== 'lookup_employee')
+  .filter(
+    (n) =>
+      n !== 'web_search' &&
+      n !== 'lookup_employee' &&
+      n !== 'get_employee_salary'
+  )
   .sort()
 
 // What the chat route computes for `activeSkills` in each context.
@@ -132,10 +138,12 @@ describe('registry narrowing — no-regression harness (Story 19.7c)', () => {
 
   // Story 7.7 Task 2b: when the role DOES hold employees:view, both new tools
   // are in ALWAYS_AVAILABLE — skill narrowing must never drop them.
-  it('OWNER keeps lookup_employee + search_collective_agreements under narrowing', () => {
+  it('OWNER keeps lookup_employee + get_employee_salary + search_collective_agreements under narrowing', () => {
     for (const ctx of ['global', 'task', 'law', 'change'] as const) {
       const k = toolKeys('OWNER', activeFor(ctx))
       expect(k).toContain('lookup_employee')
+      // Story 7.10: OWNER holds employees:manage → salary tool survives narrowing.
+      expect(k).toContain('get_employee_salary')
       expect(k).toContain('search_collective_agreements')
     }
   })

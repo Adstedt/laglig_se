@@ -31,6 +31,7 @@ import {
   type WorkspaceContext,
 } from '@/lib/auth/workspace-context'
 import { encryptPersonnummer } from '@/lib/employees/personnummer'
+import { normalizeSalary, encryptSalary } from '@/lib/employees/salary'
 import { validatePersonnummer } from '@/lib/employees/personnummer-validation'
 import { getEmployeeRow } from '@/lib/employees/employee-repository'
 import {
@@ -382,6 +383,15 @@ const EmployeeInputSchema = z.object({
   employment_form: z.nativeEnum(EmploymentForm).nullish(),
   personel_type: z.nativeEnum(PersonelType).nullish(),
   salary_form: z.nativeEnum(SalaryForm).nullish(),
+  /**
+   * Story 7.10: salary amounts (encrypted at rest, manage-only). Same
+   * three-state contract as personnummer — absent/undefined = keep the stored
+   * ciphertext on update, ''/null = clear → null, value = normalize + encrypt +
+   * set. Kept as raw numeric strings here (comma or dot); `normalizeSalary`
+   * canonicalizes + rejects negative/NaN at write time.
+   */
+  monthly_salary: z.string().trim().nullish(),
+  hourly_pay: z.string().trim().nullish(),
   full_time_equivalent: z
     .number()
     .min(0, 'Sysselsättningsgrad måste vara mellan 0 och 1.')
@@ -405,6 +415,12 @@ export type EmployeeInput = z.infer<typeof EmployeeInputSchema>
 
 const EMPLOYEE_ENCRYPTION_ERROR =
   'Personnummer kunde inte sparas säkert just nu. Försök igen eller kontakta support.'
+
+const EMPLOYEE_SALARY_INVALID_ERROR =
+  'Ange ett giltigt lönebelopp (0 eller mer).'
+
+const EMPLOYEE_SALARY_ENCRYPTION_ERROR =
+  'Lönen kunde inte sparas säkert just nu. Försök igen eller kontakta support.'
 
 function firstIssueMessage(error: z.ZodError, fallback: string): string {
   return error.issues[0]?.message ?? fallback
@@ -512,6 +528,32 @@ function encryptPersonnummerOrError(
   } catch {
     // Deliberately no error/value logging here — fail closed and quiet.
     return { ok: false, error: EMPLOYEE_ENCRYPTION_ERROR }
+  }
+}
+
+/**
+ * Story 7.10: encrypt a salary amount for storage (mirrors
+ * `encryptPersonnummerOrError`). `''`/absent → null (clear). A value is
+ * NORMALIZED first (`normalizeSalary` — comma→dot, toFixed(2), the single
+ * canonicalization point) which also rejects negative/NaN with a friendly
+ * error; the canonical string is then encrypted. Fail-closed: a missing/invalid
+ * ENCRYPTION_KEY becomes a friendly error — plaintext is NEVER persisted or
+ * logged.
+ */
+function encryptSalaryOrError(
+  value: string | null | undefined
+): { ok: true; ciphertext: string | null } | { ok: false; error: string } {
+  const trimmed = value?.trim() ?? ''
+  if (trimmed === '') return { ok: true, ciphertext: null }
+  const normalized = normalizeSalary(trimmed)
+  if (normalized === null) {
+    return { ok: false, error: EMPLOYEE_SALARY_INVALID_ERROR }
+  }
+  try {
+    return { ok: true, ciphertext: encryptSalary(normalized) }
+  } catch {
+    // Deliberately no error/value logging here — fail closed and quiet.
+    return { ok: false, error: EMPLOYEE_SALARY_ENCRYPTION_ERROR }
   }
 }
 
@@ -634,12 +676,21 @@ export async function createEmployee(
       const encrypted = encryptPersonnummerOrError(parsed.data.personnummer)
       if (!encrypted.ok) return { ok: false as const, error: encrypted.error }
 
+      // Story 7.10: salary is encrypted the same way (create has no stored
+      // value to preserve — absent/empty both → null ciphertext).
+      const monthly = encryptSalaryOrError(parsed.data.monthly_salary)
+      if (!monthly.ok) return { ok: false as const, error: monthly.error }
+      const hourly = encryptSalaryOrError(parsed.data.hourly_pay)
+      if (!hourly.ok) return { ok: false as const, error: hourly.error }
+
       const created = await prisma.employee.create({
         data: {
           workspace_id: ctx.workspaceId,
           created_by: ctx.userId,
           ...toEmployeeData(parsed.data),
           personnummer: encrypted.ciphertext,
+          monthly_salary: monthly.ciphertext,
+          hourly_pay: hourly.ciphertext,
         },
         select: { id: true },
       })
@@ -718,6 +769,23 @@ export async function updateEmployee(
         personnummerWrite = { personnummer: encrypted.ciphertext }
       }
 
+      // Story 7.10: salary is three-state too — an absent key (e.g. a masked
+      // prefill submitted empty by a view/degraded-manage path) OMITS the
+      // column so the stored ciphertext survives; ''/null clears; a value is
+      // normalized + encrypted.
+      let monthlySalaryWrite: { monthly_salary: string | null } | undefined
+      if (parsed.data.monthly_salary !== undefined) {
+        const monthly = encryptSalaryOrError(parsed.data.monthly_salary)
+        if (!monthly.ok) return { ok: false as const, error: monthly.error }
+        monthlySalaryWrite = { monthly_salary: monthly.ciphertext }
+      }
+      let hourlyPayWrite: { hourly_pay: string | null } | undefined
+      if (parsed.data.hourly_pay !== undefined) {
+        const hourly = encryptSalaryOrError(parsed.data.hourly_pay)
+        if (!hourly.ok) return { ok: false as const, error: hourly.error }
+        hourlyPayWrite = { hourly_pay: hourly.ciphertext }
+      }
+
       // updateMany keeps the workspace filter in the write itself (defense in
       // depth against TOCTOU) — `updated_at` is maintained by @updatedAt.
       await prisma.employee.updateMany({
@@ -725,6 +793,8 @@ export async function updateEmployee(
         data: {
           ...toEmployeeData(parsed.data),
           ...personnummerWrite,
+          ...monthlySalaryWrite,
+          ...hourlyPayWrite,
         },
       })
 

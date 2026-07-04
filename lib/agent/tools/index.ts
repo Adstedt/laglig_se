@@ -10,6 +10,8 @@ import { createSearchWorkspaceFilesTool } from './search-workspace-files'
 import { createSearchCollectiveAgreementsTool } from './search-collective-agreements'
 // Story 7.7 Task 2b: name lookup in the personalregister — ROLE-CONDITIONAL registration.
 import { createLookupEmployeeTool } from './lookup-employee'
+// Story 7.10: decrypted salary for one employee — ROLE-CONDITIONAL on employees:manage.
+import { createGetEmployeeSalaryTool } from './get-employee-salary'
 // Story 19.2: read ANY workspace file in full (PDF/image/extracted text).
 import { createReadFileTool } from './read-file'
 // Story 19.4a: id-resolution / discovery over the company compliance graph.
@@ -107,6 +109,10 @@ export interface AgentToolContext {
    *  the CA search tool's closure default (hard `source_id` bias). Resolved
    *  server-side in the chat route (never trusted from the client). */
   biasAgreementId?: string | undefined
+  /** Story 7.10: the pill-selected employee's id — the get_employee_salary
+   *  tool's closure default (used when the model omits an explicit employeeId).
+   *  Resolved server-side in the chat route (re-fetched, never trusted). */
+  biasEmployeeId?: string | undefined
 }
 
 /**
@@ -120,6 +126,7 @@ type ToolName =
   | 'search_workspace_files'
   | 'search_collective_agreements'
   | 'lookup_employee'
+  | 'get_employee_salary'
   | 'read_file'
   | 'search_law_list_items'
   | 'search_tasks'
@@ -163,6 +170,10 @@ export const TOOL_REGISTRY_POLICY = {
   // factory only builds it when the session role holds `employees:view`
   // (like web_search, the policy entry exists but registration is gated).
   lookup_employee: 'read',
+  // Story 7.10: read-tier but ROLE-CONDITIONALLY registered — the factory only
+  // builds it when the session role holds `employees:manage` (stricter than
+  // lookup_employee's `employees:view` gate; salary is manage-level).
+  get_employee_salary: 'read',
   read_file: 'read',
   search_law_list_items: 'read',
   search_tasks: 'read',
@@ -340,6 +351,14 @@ export function createAgentTools(
     // exactOptionalPropertyTypes). Role-conditional REGISTRATION happens
     // right below — the key is deleted outright without `employees:view`.
     lookup_employee: createLookupEmployeeTool(workspaceId),
+    // Story 7.10: declared unconditionally (same shape-stability reason as
+    // lookup_employee). Role-conditional REGISTRATION happens below — deleted
+    // outright without `employees:manage`. biasEmployeeId = the pill-selected
+    // employee id (closure default when the model omits employeeId).
+    get_employee_salary: createGetEmployeeSalaryTool(
+      workspaceId,
+      context?.biasEmployeeId
+    ),
   }
 
   // Story 7.7 Task 2b: lookup_employee is ROLE-CONDITIONAL — present ONLY
@@ -350,6 +369,14 @@ export function createAgentTools(
   // never wrapped or logged.
   if (!(role != null && hasPermission(role, 'employees:view'))) {
     delete (tools as Record<string, unknown>).lookup_employee
+  }
+
+  // Story 7.10 (trap #1): get_employee_salary is ROLE-CONDITIONAL on the
+  // STRICTER `employees:manage` — a view-only role's agent must never extract a
+  // salary the UI masks. Fail-closed: undefined role → no tool. Same
+  // delete-before-wrapping timing as lookup_employee.
+  if (!(role != null && hasPermission(role, 'employees:manage'))) {
+    delete (tools as Record<string, unknown>).get_employee_salary
   }
 
   // Story 19.5: wrap every tool's execute to log the invocation (fail-safe).

@@ -30,6 +30,7 @@ import {
   encryptPersonnummer,
   PERSONNUMMER_MASK,
 } from '@/lib/employees/personnummer'
+import { encryptSalary, SALARY_MASK } from '@/lib/employees/salary'
 
 const WORKSPACE_ID = 'ws-0001'
 const OTHER_WORKSPACE_ID = 'ws-9999'
@@ -171,6 +172,62 @@ describe('employee-repository — personnummer role gating', () => {
     const result = await listEmployees(makeCtx(['employees:manage']))
     expect(result[0]?.personnummer).toBe(PERSONNUMMER_MASK)
     expect(result[0]?.personnummer_masked).toBe(true)
+  })
+})
+
+// Story 7.10: salary is manage-only, encrypted at rest — decrypt for manage,
+// mask/strip for view, degrade a corrupt ciphertext, NEVER emit ciphertext.
+describe('employee-repository — salary role gating (Story 7.10)', () => {
+  const MONTHLY = '45000.00'
+  const HOURLY = '185.50'
+
+  test('decrypts salary for employees:manage', async () => {
+    mockFindFirst.mockResolvedValueOnce(
+      makeRow({
+        monthly_salary: encryptSalary(MONTHLY),
+        hourly_pay: encryptSalary(HOURLY),
+      })
+    )
+    const emp = await getEmployee(
+      makeCtx(['employees:view', 'employees:manage']),
+      'emp-1'
+    )
+    expect(emp?.monthly_salary).toBe(MONTHLY)
+    expect(emp?.hourly_pay).toBe(HOURLY)
+    expect(emp?.salary_masked).toBe(false)
+  })
+
+  test('masks salary for a view-only role and never emits the ciphertext', async () => {
+    const monthlyCipher = encryptSalary(MONTHLY)
+    mockFindMany.mockResolvedValueOnce([
+      makeRow({ monthly_salary: monthlyCipher, hourly_pay: null }),
+    ])
+    const [emp] = await listEmployees(makeCtx(['employees:view']))
+    expect(emp?.monthly_salary).toBe(SALARY_MASK)
+    expect(emp?.salary_masked).toBe(true)
+    // Neither the plaintext amount nor the ciphertext leaks.
+    expect(emp?.monthly_salary).not.toBe(MONTHLY)
+    expect(JSON.stringify(emp)).not.toContain(monthlyCipher)
+    expect(JSON.stringify(emp)).not.toContain(MONTHLY)
+  })
+
+  test('null salary stays null (no mask, not flagged)', async () => {
+    mockFindMany.mockResolvedValueOnce([
+      makeRow({ monthly_salary: null, hourly_pay: null }),
+    ])
+    const [emp] = await listEmployees(makeCtx(['employees:manage']))
+    expect(emp?.monthly_salary).toBeNull()
+    expect(emp?.hourly_pay).toBeNull()
+    expect(emp?.salary_masked).toBe(false)
+  })
+
+  test('degrades a corrupt ciphertext to the mask (does not throw)', async () => {
+    mockFindMany.mockResolvedValueOnce([
+      makeRow({ monthly_salary: 'not-a-valid-ciphertext', hourly_pay: null }),
+    ])
+    const result = await listEmployees(makeCtx(['employees:manage']))
+    expect(result[0]?.monthly_salary).toBe(SALARY_MASK)
+    expect(result[0]?.salary_masked).toBe(true)
   })
 })
 

@@ -33,6 +33,10 @@ export const EMPLOYEE_COLUMN_OPTIONS: ColumnOption[] = [
   { id: 'personel_type', label: 'Personaltyp', defaultVisible: true },
   { id: 'employment_form', label: 'Anställningsform', defaultVisible: true },
   { id: 'salary_form', label: 'Löneform', defaultVisible: true },
+  // Story 7.10: Lön — hidden by default (stronger screen-share-privacy default
+  // than personnummer). The repository also gates the value for non-manage
+  // roles before it ever ships to the client (visibility is display-only).
+  { id: 'salary', label: 'Lön', defaultVisible: false },
   { id: 'collective_agreement', label: 'Kollektivavtal', defaultVisible: true },
   { id: 'group', label: 'Grupp', defaultVisible: true },
   { id: 'status', label: 'Status', defaultVisible: true },

@@ -111,6 +111,12 @@ const TOOL_CONFIG: Record<
     doneLabel: 'Slog upp anställd',
     icon: Search,
   },
+  // Story 7.10: decrypted salary for löne-compliance (employees:manage-gated).
+  get_employee_salary: {
+    label: 'Hämtar löneuppgifter',
+    doneLabel: 'Hämtade löneuppgifter',
+    icon: Search,
+  },
   // Story 17.9c: semantic search over the workspace's own uploaded files.
   search_workspace_files: {
     label: 'Söker i uppladdade filer',

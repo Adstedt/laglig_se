@@ -24,6 +24,11 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import type {
+  ColumnSizingState,
+  Updater,
+  VisibilityState,
+} from '@tanstack/react-table'
 import {
   CircleAlert,
   Search,
@@ -49,6 +54,15 @@ import { KollektivavtalManagerDialog } from '@/components/features/kollektivavta
 import type { EmployeeRow } from './employee-row'
 import { filterEmployees, type EmployeeStatusTab } from './filter-employees'
 import { EmployeeListTable } from './employee-list-table'
+import { EmployeeColumnSettings } from './employee-column-settings'
+import {
+  clampEmployeeColumnSizing,
+  defaultEmployeeColumnState,
+  loadEmployeeColumnState,
+  sanitizeEmployeeColumnVisibility,
+  saveEmployeeColumnState,
+  type EmployeeColumnState,
+} from './employee-column-state'
 import { ManageGroupsPopover } from './manage-groups-popover'
 import { PersonalkortModal } from './personalkort-modal'
 import { NEW_EMPLOYEE_SENTINEL, useAnstalldParam } from './use-anstalld-param'
@@ -95,6 +109,69 @@ export function PersonalregisterContent({
   useEffect(() => {
     setRows(initialRows)
   }, [initialRows])
+
+  // --------------------------------------------------------------------
+  // Column show/hide + resize state (Story 7.4b + 7.10). Lifted here from
+  // `EmployeeListTable` (user-checkpoint layout round) so the "Kolumner"
+  // control lives in the content-island toolbar next to Kollektivavtal and
+  // Hantera grupper; the table is now a CONTROLLED consumer of this state.
+  // The workspace id comes off the rows themselves (every EmployeeRow is
+  // workspace-scoped) — an empty register has no rows and nothing worth
+  // persisting, so persistence is simply skipped then.
+  // --------------------------------------------------------------------
+  const workspaceId = rows[0]?.workspace_id ?? null
+  const [columnState, setColumnState] = useState<EmployeeColumnState>(
+    defaultEmployeeColumnState
+  )
+
+  // Hydrate AFTER mount: the island is server-rendered, so reading
+  // localStorage during the first render would mismatch hydration. Corrupt
+  // or stale stored state degrades to defaults inside the loader.
+  useEffect(() => {
+    if (!workspaceId) return
+    setColumnState(loadEmployeeColumnState(workspaceId))
+  }, [workspaceId])
+
+  // Story 7.6 (STATE-001): functional setState — the handlers derive the next
+  // state from `prev`, never from a captured `columnState` (a stale closure
+  // could otherwise clobber the sibling half of the state on rapid updates).
+  const applyColumnState = useCallback(
+    (compute: (_prev: EmployeeColumnState) => EmployeeColumnState) => {
+      setColumnState((prev) => {
+        const next = compute(prev)
+        // Persistence is skipped when there's no workspace id (empty register).
+        if (workspaceId) saveEmployeeColumnState(workspaceId, next)
+        return next
+      })
+    },
+    [workspaceId]
+  )
+
+  const handleColumnVisibilityChange = useCallback(
+    (visibility: VisibilityState) => {
+      // Sanitizer drops non-hideable ids (Anställd, drag handle) — defense
+      // in depth on top of `enableHiding: false` and the disabled checkbox.
+      applyColumnState((prev) => ({
+        visibility: sanitizeEmployeeColumnVisibility(visibility),
+        sizing: prev.sizing,
+      }))
+    },
+    [applyColumnState]
+  )
+
+  // Clamp BEFORE storing (law-table fix: `onEnd` mode commits
+  // `startSize + deltaOffset` unclamped on extreme drags).
+  const handleColumnSizingChange = useCallback(
+    (updater: Updater<ColumnSizingState>) => {
+      applyColumnState((prev) => ({
+        visibility: prev.visibility,
+        sizing: clampEmployeeColumnSizing(
+          typeof updater === 'function' ? updater(prev.sizing) : updater
+        ),
+      }))
+    },
+    [applyColumnState]
+  )
 
   // --------------------------------------------------------------------
   // `?anstalld=` URL param + Personalkort modal (Story 7.3).
@@ -281,6 +358,15 @@ export function PersonalregisterContent({
             <KollektivavtalManagerDialog canManage={canManage} />
 
             {canManage && <ManageGroupsPopover groups={groups} />}
+
+            {/* User-checkpoint layout round: "Kolumner" lives here so
+                Kollektivavtal, Hantera grupper and Kolumner share one toolbar
+                row. Shown for all viewers (visibility is display-only; the
+                repository already gates privileged values server-side). */}
+            <EmployeeColumnSettings
+              columnVisibility={columnState.visibility}
+              onColumnVisibilityChange={handleColumnVisibilityChange}
+            />
           </div>
         </div>
 
@@ -291,6 +377,10 @@ export function PersonalregisterContent({
           canManage={canManage}
           totalCount={rows.length}
           workspaceHasCollectiveAgreement={workspaceHasCollectiveAgreement}
+          columnVisibility={columnState.visibility}
+          columnSizing={columnState.sizing}
+          onColumnVisibilityChange={handleColumnVisibilityChange}
+          onColumnSizingChange={handleColumnSizingChange}
           onRowClick={handleOpenEmployee}
           onMoveToGroup={handleMoveToGroup}
           onAddEmployee={

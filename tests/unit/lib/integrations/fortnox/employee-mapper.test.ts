@@ -46,6 +46,9 @@ function makeEmployee(
     average_weekly_hours: 38.25,
     schedule_id: 'HELTID',
     salary_form: 'MAN',
+    // Story 7.10: decrypted plaintext amounts (the mapper never sees ciphertext).
+    monthly_salary: '45000.00',
+    hourly_pay: '185.50',
     vacation_days_paid: 25.5,
     ...overrides,
   }
@@ -76,6 +79,8 @@ function makeFortnoxSample(): FortnoxEmployee {
     AverageWeeklyHours: '38.25',
     ScheduleId: 'HELTID',
     SalaryForm: 'MAN',
+    MonthlySalary: '45000.00',
+    HourlyPay: '185.50',
     VacationDaysPaid: 25.5,
   }
 }
@@ -344,6 +349,31 @@ describe('string-vs-float Fortnox emission (spec-verified split)', () => {
   it('emits AverageWeeklyHours as a string', () => {
     const payload = toFortnox(makeEmployee())
     expect(typeof payload.AverageWeeklyHours).toBe('string')
+  })
+
+  // Story 7.10: salary amounts are Fortnox STRINGS (spec split), mapped from
+  // decrypted plaintext.
+  it('emits MonthlySalary and HourlyPay as decimal strings', () => {
+    const payload = toFortnox(makeEmployee())
+    expect(payload.MonthlySalary).toBe('45000.00')
+    expect(payload.HourlyPay).toBe('185.50')
+    expect(typeof payload.MonthlySalary).toBe('string')
+    expect(typeof payload.HourlyPay).toBe('string')
+  })
+
+  it('round-trips salary through fromFortnox → toFortnox', () => {
+    const input = fromFortnox(makeFortnoxSample())
+    expect(input.monthly_salary).toBe('45000.00')
+    expect(input.hourly_pay).toBe('185.50')
+    const payload = toFortnox(input)
+    expect(payload.MonthlySalary).toBe('45000.00')
+    expect(payload.HourlyPay).toBe('185.50')
+  })
+
+  it('nulls salary out on an empty record (never throws)', () => {
+    const payload = toFortnox({} as EmployeeMappable)
+    expect(payload.MonthlySalary).toBeNull()
+    expect(payload.HourlyPay).toBeNull()
   })
 })
 

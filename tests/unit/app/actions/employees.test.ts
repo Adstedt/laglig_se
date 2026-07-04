@@ -64,6 +64,20 @@ vi.mock('@/lib/employees/personnummer', () => ({
   maskPersonnummer: () => '••••••-••••',
 }))
 
+// Story 7.10: same deterministic crypto stand-in for salary — real
+// normalizeSalary/maskSalary, `enc:`-prefixed encrypt/decrypt so both the write
+// (action) and read (repository via getEmployeeRow) legs are inspectable.
+vi.mock('@/lib/employees/salary', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/employees/salary')>(
+    '@/lib/employees/salary'
+  )
+  return {
+    ...actual,
+    encryptSalary: (value: string) => `enc:${value}`,
+    decryptSalary: (cipher: string) => cipher.replace(/^enc:/, ''),
+  }
+})
+
 const WORKSPACE_ID = 'ws-0001'
 
 let lastRequiredPermission: Permission | undefined
@@ -455,6 +469,8 @@ function makeDbEmployee(overrides: Record<string, unknown> = {}) {
     average_weekly_hours: null,
     schedule_id: null,
     salary_form: null,
+    monthly_salary: null,
+    hourly_pay: null,
     vacation_days_paid: null,
     collective_agreement_id: null,
     group_id: null,
@@ -854,6 +870,113 @@ describe('updateEmployee (Story 7.3)', () => {
     expect(serialized).not.toContain('fortnox_raw')
     expect(serialized).not.toContain('RAW-FORTNOX-PII')
     expect(serialized).not.toContain('enc:')
+  })
+})
+
+// ===========================================================================
+// Story 7.10: salary encrypt-on-write (three-state) + no plaintext in return
+// ===========================================================================
+describe('employee salary (Story 7.10)', () => {
+  test('createEmployee normalizes + encrypts the salary before store', async () => {
+    mockEmployeeCreate.mockResolvedValueOnce({ id: 'emp-new' })
+    mockEmployeeFindFirst.mockResolvedValueOnce(makeDbEmployee())
+
+    // Raw input with a Swedish comma + thousands space — normalized to
+    // "45000.50" then encrypted.
+    await createEmployee({
+      ...MINIMAL_INPUT,
+      salary_form: 'MAN',
+      monthly_salary: '45 000,50',
+    })
+
+    const createArg = mockEmployeeCreate.mock.calls[0]?.[0] as {
+      data: Record<string, unknown>
+    }
+    expect(createArg.data.monthly_salary).toBe('enc:45000.50')
+    expect(createArg.data.hourly_pay).toBeNull()
+    // The RAW, un-normalized input never reaches the persisted payload (real
+    // ciphertext hides the normalized value too — the `enc:` stand-in can't).
+    expect(JSON.stringify(createArg.data)).not.toContain('"45 000,50"')
+    expect(JSON.stringify(createArg.data)).not.toContain('45 000,50')
+  })
+
+  test('createEmployee returns the decrypted salary — no ciphertext leaks', async () => {
+    mockEmployeeCreate.mockResolvedValueOnce({ id: 'emp-new' })
+    mockEmployeeFindFirst.mockResolvedValueOnce(
+      makeDbEmployee({ salary_form: 'MAN', monthly_salary: 'enc:45000.00' })
+    )
+
+    const result = await createEmployee({
+      ...MINIMAL_INPUT,
+      salary_form: 'MAN',
+      monthly_salary: '45000',
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data?.monthly_salary).toBe('45000.00')
+    expect(result.data?.salary_masked).toBe(false)
+    expect(JSON.stringify(result.data)).not.toContain('enc:')
+  })
+
+  test('createEmployee rejects an invalid salary with a friendly error, no DB touch', async () => {
+    const result = await createEmployee({
+      ...MINIMAL_INPUT,
+      salary_form: 'MAN',
+      monthly_salary: '-100',
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.error).toBe('Ange ett giltigt lönebelopp (0 eller mer).')
+    expect(mockEmployeeCreate).not.toHaveBeenCalled()
+  })
+
+  test('three-state: input WITHOUT the salary keys leaves the columns untouched', async () => {
+    mockEmployeeFindFirst
+      .mockResolvedValueOnce({ id: 'emp-1' })
+      .mockResolvedValueOnce(makeDbEmployee({ id: 'emp-1' }))
+    mockEmployeeUpdateMany.mockResolvedValueOnce({ count: 1 })
+
+    // MINIMAL_INPUT carries no salary keys → the masked-prefill keep path.
+    await updateEmployee('emp-1', MINIMAL_INPUT)
+
+    const updateArg = mockEmployeeUpdateMany.mock.calls[0]?.[0] as {
+      data: Record<string, unknown>
+    }
+    expect('monthly_salary' in updateArg.data).toBe(false)
+    expect('hourly_pay' in updateArg.data).toBe(false)
+  })
+
+  test("three-state: explicit '' clears the stored salary to null", async () => {
+    mockEmployeeFindFirst
+      .mockResolvedValueOnce({ id: 'emp-1' })
+      .mockResolvedValueOnce(makeDbEmployee({ id: 'emp-1' }))
+    mockEmployeeUpdateMany.mockResolvedValueOnce({ count: 1 })
+
+    await updateEmployee('emp-1', { ...MINIMAL_INPUT, monthly_salary: '' })
+
+    const updateArg = mockEmployeeUpdateMany.mock.calls[0]?.[0] as {
+      data: Record<string, unknown>
+    }
+    expect('monthly_salary' in updateArg.data).toBe(true)
+    expect(updateArg.data.monthly_salary).toBeNull()
+  })
+
+  test('three-state: a value is normalized + encrypted + set', async () => {
+    mockEmployeeFindFirst
+      .mockResolvedValueOnce({ id: 'emp-1' })
+      .mockResolvedValueOnce(makeDbEmployee({ id: 'emp-1' }))
+    mockEmployeeUpdateMany.mockResolvedValueOnce({ count: 1 })
+
+    await updateEmployee('emp-1', {
+      ...MINIMAL_INPUT,
+      salary_form: 'TIM',
+      hourly_pay: '185,5',
+    })
+
+    const updateArg = mockEmployeeUpdateMany.mock.calls[0]?.[0] as {
+      data: Record<string, unknown>
+    }
+    expect(updateArg.data.hourly_pay).toBe('enc:185.50')
   })
 })
 

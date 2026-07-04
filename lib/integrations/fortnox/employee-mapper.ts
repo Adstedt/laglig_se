@@ -26,6 +26,11 @@
  * - `personnummer` ↔ `PersonalIdentityNumber` is mapped as an OPAQUE field.
  *   Our column stores ciphertext; the future sync job owns encrypt/decrypt
  *   at its boundary. This module never imports crypto.
+ * - Story 7.10: `monthly_salary`/`hourly_pay` ↔ `MonthlySalary`/`HourlyPay` are
+ *   mapped as PLAIN NUMBERS (decrypted plaintext) — SAME crypto boundary as
+ *   personnummer: the future sync job DECRYPTS before `toFortnox` and ENCRYPTS
+ *   the `fromFortnox` output before persisting. The mapper stays crypto-free and
+ *   never sees ciphertext.
  * - No I/O, no network, no Prisma client import — pure functions only.
  */
 
@@ -77,7 +82,7 @@ export type SalaryFormCode = (typeof SALARY_FORM_CODES)[number]
  *
  * CRITICAL type split (verified from the Fortnox spec — NOT uniform):
  * - `MonthlySalary`, `HourlyPay`, `AverageHourlyWage`, `AverageWeeklyHours`
- *   are Fortnox STRINGS.
+ *   are Fortnox STRINGS (MonthlySalary/HourlyPay now mapped — Story 7.10).
  * - `FullTimeEquivalent`, `VacationDaysPaid` are Fortnox FLOATS.
  *
  * Unmapped Fortnox fields (payroll/tax/bank, full vacation ledger, flex/comp
@@ -177,10 +182,18 @@ export interface FortnoxEmployee {
   // --- Salary ---
   /** ↔ `Employee.salary_form` — identity enum (codes above). */
   SalaryForm: SalaryFormCode | null
-  /** Fortnox STRING; NOT mapped (no amount columns) — survives via `fortnox_raw`. */
-  MonthlySalary?: string
-  /** Fortnox STRING; NOT mapped — survives via `fortnox_raw`. */
-  HourlyPay?: string
+  /**
+   * ↔ `Employee.monthly_salary` (Story 7.10) — Fortnox STRING, emitted as a
+   * decimal string (e.g. `"45000.00"`). The mapper operates on the DECRYPTED
+   * plaintext amount; our column stores ciphertext and the future sync job
+   * owns encrypt/decrypt at its boundary (same contract as personnummer).
+   */
+  MonthlySalary: string | null
+  /**
+   * ↔ `Employee.hourly_pay` (Story 7.10) — Fortnox STRING, decimal string
+   * (e.g. `"185.50"`). Decrypted-plaintext contract as MonthlySalary.
+   */
+  HourlyPay: string | null
   /** Fortnox STRING; NOT mapped — survives via `fortnox_raw`. */
   AverageHourlyWage?: string
 
@@ -239,6 +252,12 @@ export interface EmployeeMappable {
   average_weekly_hours: NumericInput
   schedule_id: string | null
   salary_form: SalaryFormCode | null
+  /**
+   * Story 7.10: DECRYPTED plaintext salary amounts (the mapper never sees
+   * ciphertext — the sync job decrypts before calling `toFortnox`).
+   */
+  monthly_salary: NumericInput
+  hourly_pay: NumericInput
   vacation_days_paid: NumericInput
 }
 
@@ -281,6 +300,14 @@ export interface EmployeeInput {
   average_weekly_hours: string | null
   schedule_id: string | null
   salary_form: SalaryFormCode | null
+  /**
+   * Story 7.10: DECRYPTED plaintext salary as a decimal string (e.g.
+   * `"45000.00"`). The sync job ENCRYPTS this before writing the column — the
+   * mapper output is never persisted verbatim (same boundary as personnummer).
+   */
+  monthly_salary: string | null
+  /** Story 7.10: decrypted hourly pay decimal string (e.g. `"185.50"`). */
+  hourly_pay: string | null
   /** Decimal string (e.g. `"25.5"`), safe for Prisma `Decimal(5,2)`. */
   vacation_days_paid: string | null
 }
@@ -412,6 +439,9 @@ export function toFortnox(employee: EmployeeMappable): FortnoxEmployee {
     AverageWeeklyHours: toDecimalString(employee.average_weekly_hours),
     ScheduleId: strOrNull(employee.schedule_id),
     SalaryForm: toEnumCode(SALARY_FORM_CODES, employee.salary_form),
+    // STRING in Fortnox (Story 7.10 — decrypted plaintext amounts).
+    MonthlySalary: toDecimalString(employee.monthly_salary),
+    HourlyPay: toDecimalString(employee.hourly_pay),
     // Float in Fortnox (spec-verified type split).
     VacationDaysPaid: toDecimalNumber(employee.vacation_days_paid),
   }
@@ -467,6 +497,9 @@ export function fromFortnox(payload: Partial<FortnoxEmployee>): EmployeeInput {
     average_weekly_hours: toDecimalString(payload.AverageWeeklyHours),
     schedule_id: strOrNull(payload.ScheduleId),
     salary_form: toEnumCode(SALARY_FORM_CODES, payload.SalaryForm),
+    // Story 7.10: decimal strings — the sync job encrypts before persisting.
+    monthly_salary: toDecimalString(payload.MonthlySalary),
+    hourly_pay: toDecimalString(payload.HourlyPay),
     vacation_days_paid: toDecimalString(payload.VacationDaysPaid),
   }
 }

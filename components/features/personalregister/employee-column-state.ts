@@ -41,6 +41,9 @@ export const EMPLOYEE_COLUMN_SIZE_BOUNDS: Record<
   personel_type: { min: 115, max: 220 },
   employment_form: { min: 150, max: 260 },
   salary_form: { min: 110, max: 220 },
+  // Story 7.10: Lön column — hidden by default (see
+  // EMPLOYEE_DEFAULT_HIDDEN_COLUMN_IDS).
+  salary: { min: 120, max: 200 },
   collective_agreement: { min: 140, max: 300 },
   group: { min: 120, max: 280 },
   status: { min: 140, max: 260 },
@@ -64,6 +67,33 @@ const HIDEABLE_COLUMN_IDS: ReadonlySet<string> = new Set(
   )
 )
 
+/**
+ * Story 7.10 (trap #4): columns that must seed HIDDEN on first load. The
+ * sanitizer DROPS unknown ids, and an absent id defaults to TanStack-visible —
+ * so a `defaultVisible: false` column (Lön) would otherwise appear on first
+ * load AND for every user whose persisted blob predates the column. This set is
+ * the source of the hidden seed; it mirrors the `defaultVisible: false` options
+ * in `employee-column-settings.tsx` (a catalog-invariant test cross-checks the
+ * two never drift). A user who explicitly toggles the column stores an explicit
+ * `true`/`false`, which is then honored on load (present → kept).
+ */
+export const EMPLOYEE_DEFAULT_HIDDEN_COLUMN_IDS: ReadonlySet<string> = new Set([
+  'salary',
+])
+
+/**
+ * Seed the hidden default for any default-hidden column NOT already carrying an
+ * explicit stored entry. Applied on every load so first-load-hidden holds even
+ * for returning users whose blob predates the column.
+ */
+function seedDefaultHidden(visibility: VisibilityState): VisibilityState {
+  const seeded: VisibilityState = { ...visibility }
+  for (const id of EMPLOYEE_DEFAULT_HIDDEN_COLUMN_IDS) {
+    if (!(id in seeded)) seeded[id] = false
+  }
+  return seeded
+}
+
 // ---------------------------------------------------------------------------
 // State shape
 // ---------------------------------------------------------------------------
@@ -73,9 +103,12 @@ export interface EmployeeColumnState {
   sizing: ColumnSizingState
 }
 
-/** Fresh default state: everything visible, column-def default widths. */
+/**
+ * Fresh default state: column-def default widths, everything visible EXCEPT the
+ * default-hidden columns (Story 7.10: Lön), which seed hidden.
+ */
 export function defaultEmployeeColumnState(): EmployeeColumnState {
-  return { visibility: {}, sizing: {} }
+  return { visibility: seedDefaultHidden({}), sizing: {} }
 }
 
 // ---------------------------------------------------------------------------
@@ -142,7 +175,11 @@ export function loadEmployeeColumnState(
     }
     const record = parsed as Record<string, unknown>
     return {
-      visibility: sanitizeEmployeeColumnVisibility(record.visibility),
+      // Seed the default-hidden columns (Lön) for any blob that lacks an
+      // explicit entry — first-load-hidden survives stale persisted state.
+      visibility: seedDefaultHidden(
+        sanitizeEmployeeColumnVisibility(record.visibility)
+      ),
       sizing: clampEmployeeColumnSizing(
         typeof record.sizing === 'object' && record.sizing !== null
           ? (record.sizing as ColumnSizingState)

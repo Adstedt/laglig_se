@@ -45,3 +45,28 @@ export function personelTypeLabel(type: PersonelType | null): string {
 export function salaryFormLabel(form: SalaryForm | null): string {
   return form ? SALARY_FORM_LABELS[form] : EMPTY_FIELD_LABEL
 }
+
+// ---------------------------------------------------------------------------
+// Story 7.10: salary display (client-safe — no crypto import). Amounts arrive
+// already decrypted (manage) as canonical decimal strings, e.g. "45000.00".
+// ---------------------------------------------------------------------------
+
+const MONTHLY_SALARY_FORMATTER = new Intl.NumberFormat('sv-SE', {
+  maximumFractionDigits: 0,
+})
+const HOURLY_PAY_FORMATTER = new Intl.NumberFormat('sv-SE', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})
+
+/** Månadslön → `45 000 kr` (thin-space thousands, sv-SE). */
+export function formatMonthlySalary(value: string): string {
+  const n = Number(value)
+  return Number.isFinite(n) ? `${MONTHLY_SALARY_FORMATTER.format(n)} kr` : value
+}
+
+/** Timlön → `185,50 kr/tim` (decimal comma, sv-SE). */
+export function formatHourlyPay(value: string): string {
+  const n = Number(value)
+  return Number.isFinite(n) ? `${HOURLY_PAY_FORMATTER.format(n)} kr/tim` : value
+}

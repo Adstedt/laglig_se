@@ -9,6 +9,7 @@
  * cell, ÅÅMMDD-XXXX personnummer display, Visa alla / Dölj alla).
  */
 import { describe, test, expect, vi, beforeEach } from 'vitest'
+import { useState, type ComponentProps } from 'react'
 import {
   render,
   screen,
@@ -17,10 +18,81 @@ import {
   waitFor,
 } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import type {
+  ColumnSizingState,
+  Updater,
+  VisibilityState,
+} from '@tanstack/react-table'
 import { EmployeeListTable } from '@/components/features/personalregister/employee-list-table'
+import { PersonalregisterContent } from '@/components/features/personalregister/personalregister-content'
 import { filterEmployees } from '@/components/features/personalregister/filter-employees'
 import type { EmployeeRow } from '@/components/features/personalregister/employee-row'
 import type { EmployeeGroupSummary } from '@/app/actions/employees'
+
+// ---------------------------------------------------------------------------
+// The column-state OWNERSHIP moved to the island (`personalregister-content`)
+// in the user-checkpoint layout round, so the Story 7.4b column tests render
+// the real island (which mounts the real table). These mocks stub only the
+// island's peripheral toolbar/modal deps — the table + column state + the
+// Kolumner control are all exercised for real.
+// ---------------------------------------------------------------------------
+let mockSearchParams = new URLSearchParams()
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => mockSearchParams,
+}))
+vi.mock('@/app/actions/employees', () => ({
+  moveEmployeeToGroup: vi.fn(async () => ({ success: true })),
+}))
+vi.mock('sonner', () => ({
+  toast: { error: vi.fn(), success: vi.fn() },
+}))
+vi.mock('@/components/features/personalregister/manage-groups-popover', () => ({
+  ManageGroupsPopover: () => <div data-testid="manage-groups-popover" />,
+}))
+vi.mock(
+  '@/components/features/kollektivavtal/kollektivavtal-manager-dialog',
+  () => ({
+    KollektivavtalManagerDialog: () => (
+      <div data-testid="kollektivavtal-manager-dialog" />
+    ),
+  })
+)
+vi.mock('@/components/features/personalregister/personalkort-modal', () => ({
+  PersonalkortModal: () => null,
+}))
+
+/**
+ * The table is now a CONTROLLED consumer of column state. For the standalone
+ * table tests (group counts, badges, design parity) this thin stateful harness
+ * supplies that state locally — Lön seeds hidden to mirror the real default.
+ */
+type ControlledTableProps = Omit<
+  ComponentProps<typeof EmployeeListTable>,
+  | 'columnVisibility'
+  | 'columnSizing'
+  | 'onColumnVisibilityChange'
+  | 'onColumnSizingChange'
+>
+
+function ControlledTable(props: ControlledTableProps) {
+  const [visibility, setVisibility] = useState<VisibilityState>({
+    salary: false,
+  })
+  const [sizing, setSizing] = useState<ColumnSizingState>({})
+  return (
+    <EmployeeListTable
+      {...props}
+      columnVisibility={visibility}
+      columnSizing={sizing}
+      onColumnVisibilityChange={setVisibility}
+      onColumnSizingChange={(updater: Updater<ColumnSizingState>) =>
+        setSizing((prev) =>
+          typeof updater === 'function' ? updater(prev) : updater
+        )
+      }
+    />
+  )
+}
 
 const GROUPS: EmployeeGroupSummary[] = [
   { id: 'grp-1', name: 'Lager', position: 0, employeeCount: 2 },
@@ -79,7 +151,7 @@ function renderTable({
   workspaceHasCollectiveAgreement?: boolean
 }) {
   return render(
-    <EmployeeListTable
+    <ControlledTable
       employees={employees}
       allEmployees={allEmployees}
       groups={GROUPS}
@@ -369,17 +441,28 @@ function makeWorkspaceRows(): EmployeeRow[] {
   ]
 }
 
-function renderFlatTable(rows: EmployeeRow[]) {
+/**
+ * Render the real island — it now owns the column state + persistence and
+ * mounts the real table. `groups: []` yields flat mode; passing groups renders
+ * the grouped sections. The Kolumner control lives in the island toolbar.
+ */
+function renderIsland({
+  initialRows,
+  groups = [],
+  canManage = true,
+  workspaceHasCollectiveAgreement = false,
+}: {
+  initialRows: EmployeeRow[]
+  groups?: EmployeeGroupSummary[]
+  canManage?: boolean
+  workspaceHasCollectiveAgreement?: boolean
+}) {
   return render(
-    <EmployeeListTable
-      employees={rows}
-      allEmployees={rows}
-      groups={[]}
-      canManage
-      totalCount={rows.length}
-      workspaceHasCollectiveAgreement={false}
-      onRowClick={noop}
-      onMoveToGroup={noopMove}
+    <PersonalregisterContent
+      initialRows={initialRows}
+      groups={groups}
+      canManage={canManage}
+      workspaceHasCollectiveAgreement={workspaceHasCollectiveAgreement}
     />
   )
 }
@@ -394,24 +477,43 @@ function columnMenuItem(label: string): HTMLElement {
   return item
 }
 
-describe('EmployeeListTable — column controls (Story 7.4b)', () => {
+describe('Personalregister column controls in the island toolbar (Story 7.4b, layout round)', () => {
   beforeEach(() => {
     window.localStorage.clear()
+    mockSearchParams = new URLSearchParams()
+  })
+
+  test('Kollektivavtal, Hantera grupper and Kolumner render in ONE toolbar row', () => {
+    renderIsland({ initialRows: makeWorkspaceRows(), groups: GROUPS })
+
+    // The Kolumner trigger and both sibling controls share the same toolbar
+    // container (user checkpoint: the three controls must be on one row).
+    const kolumner = screen.getByRole('button', { name: /kolumner/i })
+    const toolbar = kolumner.parentElement
+    if (!(toolbar instanceof HTMLElement)) throw new Error('toolbar not found')
+    expect(
+      within(toolbar).getByTestId('kollektivavtal-manager-dialog')
+    ).toBeInTheDocument()
+    expect(
+      within(toolbar).getByTestId('manage-groups-popover')
+    ).toBeInTheDocument()
   })
 
   test('Kolumner lists every data column; Anställd is locked (Obligatorisk); no structural entries', async () => {
     const user = userEvent.setup()
-    renderFlatTable(makeWorkspaceRows())
+    renderIsland({ initialRows: makeWorkspaceRows() })
 
     await user.click(screen.getByRole('button', { name: /kolumner/i }))
     await waitFor(() => {
       expect(screen.getByText('Visa kolumner')).toBeInTheDocument()
     })
 
-    // All nine data columns are listed — nothing structural (no drag handle;
-    // flat mode has none, and the option catalog never includes it).
+    // All ten data columns are listed — nothing structural (no drag handle;
+    // flat mode has none, and the option catalog never includes it). Story
+    // 7.10 added the Lön column (hidden by default, but still toggleable).
     const items = screen.getAllByRole('menuitemcheckbox')
-    expect(items).toHaveLength(9)
+    expect(items).toHaveLength(10)
+    expect(columnMenuItem('Lön')).toBeInTheDocument()
 
     // Anställd is present but disabled with the Obligatorisk hint (AC2);
     // Personnummer is a plain, enabled toggle (the screen-share case).
@@ -421,9 +523,50 @@ describe('EmployeeListTable — column controls (Story 7.4b)', () => {
     expect(columnMenuItem('Personnummer')).not.toHaveAttribute('data-disabled')
   })
 
+  test('Story 7.10: Lön is HIDDEN by default and, when shown, formats by salary_form / masks for view', async () => {
+    const user = userEvent.setup()
+    const rows = [
+      makeCompleteRow({
+        id: 'emp-1',
+        salary_form: 'MAN',
+        monthly_salary: '45000.00',
+        hourly_pay: null,
+        salary_masked: false,
+      } as Partial<EmployeeRow> & { id: string }),
+      makeCompleteRow({
+        id: 'emp-2',
+        first_name: 'Bo',
+        last_name: 'Ek',
+        salary_form: 'TIM',
+        monthly_salary: null,
+        // A view-only masked row — the repo already replaced the amount with
+        // the fixed mask before serialization.
+        hourly_pay: '•••••',
+        salary_masked: true,
+      } as unknown as Partial<EmployeeRow> & { id: string }),
+    ]
+
+    renderIsland({ initialRows: rows })
+
+    // Hidden by default: no formatted amount visible yet (sv-SE groups with a
+    // non-breaking space — match on \s to stay separator-agnostic).
+    expect(screen.queryByText(/45\s000\skr/)).not.toBeInTheDocument()
+
+    // Reveal the column.
+    await user.click(screen.getByRole('button', { name: /kolumner/i }))
+    await waitFor(() => {
+      expect(screen.getByText('Visa kolumner')).toBeInTheDocument()
+    })
+    await user.click(columnMenuItem('Lön'))
+
+    // MAN → monthly formatted; masked row → the mask, never a real amount.
+    expect(screen.getByText(/45\s000\skr/)).toBeInTheDocument()
+    expect(screen.getByText('•••••')).toBeInTheDocument()
+  })
+
   test('hiding Personnummer removes header and cells, keeps Anställd, and persists per workspace', async () => {
     const user = userEvent.setup()
-    renderFlatTable(makeWorkspaceRows())
+    renderIsland({ initialRows: makeWorkspaceRows() })
 
     // Visible before: header sort button + formatted cell value.
     expect(
@@ -458,7 +601,7 @@ describe('EmployeeListTable — column controls (Story 7.4b)', () => {
         sizing: { name: 99999 }, // stale out-of-bounds width
       })
     )
-    renderFlatTable(makeWorkspaceRows())
+    renderIsland({ initialRows: makeWorkspaceRows() })
 
     await waitFor(() => {
       expect(screen.queryByRole('button', { name: 'Personnummer' })).toBeNull()
@@ -472,7 +615,7 @@ describe('EmployeeListTable — column controls (Story 7.4b)', () => {
 
   test('corrupt persisted state degrades to defaults without crashing', async () => {
     window.localStorage.setItem(STORAGE_KEY, '{definitely not json')
-    renderFlatTable(makeWorkspaceRows())
+    renderIsland({ initialRows: makeWorkspaceRows() })
 
     // All columns render at defaults.
     await waitFor(() => {
@@ -496,7 +639,7 @@ describe('EmployeeListTable — column controls (Story 7.4b)', () => {
       STORAGE_KEY,
       JSON.stringify({ visibility: { personnummer: false }, sizing: {} })
     )
-    renderFlatTable(rows)
+    renderIsland({ initialRows: rows })
     await waitFor(() => {
       expect(screen.queryByRole('button', { name: 'Personnummer' })).toBeNull()
     })
@@ -505,8 +648,8 @@ describe('EmployeeListTable — column controls (Story 7.4b)', () => {
 
   test('TEST-002 (Story 7.6): no workspace id → column toggles work in-session but persistence is skipped', async () => {
     const user = userEvent.setup()
-    // ALL_ROWS carry no workspace_id → the table derives workspaceId null.
-    renderTable({ employees: ALL_ROWS })
+    // ALL_ROWS carry no workspace_id → the island derives workspaceId null.
+    renderIsland({ initialRows: ALL_ROWS, groups: GROUPS })
 
     await user.click(screen.getByRole('button', { name: /kolumner/i }))
     await waitFor(() => {
@@ -526,7 +669,7 @@ describe('EmployeeListTable — column controls (Story 7.4b)', () => {
 
   test('STATE-001 (Story 7.6): two sequential toggles both land and persist (functional setState — no stale clobber)', async () => {
     const user = userEvent.setup()
-    renderFlatTable(makeWorkspaceRows())
+    renderIsland({ initialRows: makeWorkspaceRows() })
 
     await user.click(screen.getByRole('button', { name: /kolumner/i }))
     await waitFor(() => {
@@ -555,7 +698,7 @@ describe('EmployeeListTable — column controls (Story 7.4b)', () => {
 
   test('grouped view: toggling a column hides it in EVERY group section', async () => {
     const user = userEvent.setup()
-    renderTable({ employees: ALL_ROWS })
+    renderIsland({ initialRows: ALL_ROWS, groups: GROUPS })
 
     // Two sections render rows (Lager + Ogrupperad) → two headers each.
     expect(
