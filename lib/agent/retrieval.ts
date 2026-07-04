@@ -23,6 +23,14 @@ export interface RetrievalOptions {
   sourceType?: string
   /** Multi source-type filter, e.g. `['USER_FILE']` (Story 17.9). */
   sourceTypes?: string[]
+  /**
+   * Single-source hard filter (Story 7.7): restrict to chunks whose
+   * `source_id` equals this id — e.g. ONE kollektivavtal when an employee
+   * with an assigned agreement is in chat context. Same null-safe shape as
+   * the sourceType filters; the workspace clause stays underneath, so a
+   * foreign/hallucinated id simply filters to zero rows.
+   */
+  sourceId?: string
   contentType?: string
   overFetchMultiplier?: number
   minRelevanceScore?: number
@@ -105,6 +113,7 @@ export async function retrieveContext(
     topK = DEFAULT_TOP_K,
     sourceType = null,
     sourceTypes = null,
+    sourceId = null,
     contentType = null,
     overFetchMultiplier = DEFAULT_OVER_FETCH_MULTIPLIER,
     minRelevanceScore,
@@ -170,6 +179,7 @@ export async function retrieveContext(
         AND (cc.workspace_id IS NULL OR cc.workspace_id = ${workspaceId})
         AND (${sourceType}::text IS NULL OR cc.source_type = ${sourceType}::"SourceType")
         AND (${sourceTypes}::text[] IS NULL OR cc.source_type = ANY(${sourceTypes}::"SourceType"[]))
+        AND (${sourceId}::text IS NULL OR cc.source_id = ${sourceId})
         AND (${contentType}::text IS NULL OR ld.content_type = ${contentType}::"ContentType")
         AND (cc.source_type != 'LEGAL_DOCUMENT' OR ld.status != 'REPEALED')
       ORDER BY cc.embedding <=> ${queryVectorStr}::vector ASC

@@ -546,6 +546,70 @@ export async function getCollectiveAgreements(): Promise<
 }
 
 /**
+ * Story 7.7: minimal, PII-safe employee list for the chat employee pill.
+ * Gated by `employees:view`. ALLOWLIST select only — no personnummer (any
+ * form), no email/phone/address, no fortnox_raw. Decimal/Date fields are
+ * serialized at the boundary (number / ISO date string) for the client.
+ */
+export interface ChatContextEmployee {
+  id: string
+  first_name: string
+  last_name: string
+  personel_type: PersonelType | null
+  employment_form: EmploymentForm | null
+  /** YYYY-MM-DD, or null when not set. */
+  employment_date: string | null
+  /** 0–1 (1.0 = heltid), or null when not set. */
+  full_time_equivalent: number | null
+  inactive: boolean
+  collective_agreement: { id: string; name: string } | null
+}
+
+export async function getEmployeesForChatContext(): Promise<
+  ActionResult<ChatContextEmployee[]>
+> {
+  try {
+    const employees = await withWorkspace(
+      (ctx) =>
+        prisma.employee.findMany({
+          where: { workspace_id: ctx.workspaceId },
+          orderBy: [{ last_name: 'asc' }, { first_name: 'asc' }],
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+            personel_type: true,
+            employment_form: true,
+            employment_date: true,
+            full_time_equivalent: true,
+            inactive: true,
+            collective_agreement: { select: { id: true, name: true } },
+          },
+        }),
+      'employees:view'
+    )
+
+    return {
+      success: true,
+      data: employees.map((e) => ({
+        ...e,
+        employment_date: e.employment_date
+          ? e.employment_date.toISOString().slice(0, 10)
+          : null,
+        // Decimal → number at the boundary (0 is a real value, only null is missing).
+        full_time_equivalent:
+          e.full_time_equivalent != null
+            ? e.full_time_equivalent.toNumber()
+            : null,
+      })),
+    }
+  } catch (error) {
+    console.error('[getEmployeesForChatContext]', error)
+    return { success: false, error: 'Kunde inte hämta anställda.' }
+  }
+}
+
+/**
  * Create an employee. Personnummer (when present) is encrypted via
  * `encryptPersonnummer` before store; `created_by` comes from ctx. Returns the
  * sanitized serialized row (never the raw Prisma record — no ciphertext, no

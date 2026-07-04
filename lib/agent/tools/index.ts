@@ -6,6 +6,10 @@
 import { createSearchLawsTool } from './search-laws'
 // Story 17.9c: semantic search over the workspace's own uploaded files (USER_FILE).
 import { createSearchWorkspaceFilesTool } from './search-workspace-files'
+// Story 7.7: semantic search over the workspace's kollektivavtal (COLLECTIVE_AGREEMENT).
+import { createSearchCollectiveAgreementsTool } from './search-collective-agreements'
+// Story 7.7 Task 2b: name lookup in the personalregister — ROLE-CONDITIONAL registration.
+import { createLookupEmployeeTool } from './lookup-employee'
 // Story 19.2: read ANY workspace file in full (PDF/image/extracted text).
 import { createReadFileTool } from './read-file'
 // Story 19.4a: id-resolution / discovery over the company compliance graph.
@@ -99,6 +103,10 @@ export interface AgentToolContext {
   /** Story 19.4a: active LawListItem id — the law-item write tools default to
    *  this when their `lawListItemId` arg is omitted (e.g. in a LAW chat). */
   lawListItemId?: string | undefined
+  /** Story 7.7: the pill-selected employee's assigned kollektivavtal id —
+   *  the CA search tool's closure default (hard `source_id` bias). Resolved
+   *  server-side in the chat route (never trusted from the client). */
+  biasAgreementId?: string | undefined
 }
 
 /**
@@ -110,6 +118,8 @@ export interface AgentToolContext {
 type ToolName =
   | 'search_laws'
   | 'search_workspace_files'
+  | 'search_collective_agreements'
+  | 'lookup_employee'
   | 'read_file'
   | 'search_law_list_items'
   | 'search_tasks'
@@ -147,6 +157,12 @@ type ToolName =
 export const TOOL_REGISTRY_POLICY = {
   search_laws: 'read',
   search_workspace_files: 'read',
+  // Story 7.7: kollektivavtal search — read-tier, always registered.
+  search_collective_agreements: 'read',
+  // Story 7.7 Task 2b: read-tier but ROLE-CONDITIONALLY registered — the
+  // factory only builds it when the session role holds `employees:view`
+  // (like web_search, the policy entry exists but registration is gated).
+  lookup_employee: 'read',
   read_file: 'read',
   search_law_list_items: 'read',
   search_tasks: 'read',
@@ -238,6 +254,13 @@ export function createAgentTools(
     search_laws: createSearchLawsTool(workspaceId),
     // Story 17.9c: read-only, additive — never widens the legal search.
     search_workspace_files: createSearchWorkspaceFilesTool(workspaceId),
+    // Story 7.7: kollektivavtal search (one sourceType per tool — search_laws
+    // stays untouched). biasAgreementId = the in-context employee's assigned
+    // agreement; a model-supplied agreementId param overrides it per call.
+    search_collective_agreements: createSearchCollectiveAgreementsTool(
+      workspaceId,
+      context?.biasAgreementId
+    ),
     // Story 19.2: read ANY workspace file in full (search → read loop).
     read_file: createReadFileTool(workspaceId),
     // Story 19.4a: resolve a law-list item / task by name (GLOBAL-chat entry).
@@ -311,6 +334,22 @@ export function createAgentTools(
     search_workspace_documents: createSearchWorkspaceDocumentsTool(workspaceId),
     get_workspace_document: createGetWorkspaceDocumentTool(workspaceId),
     list_workspace_documents: createListWorkspaceDocumentsTool(workspaceId),
+    // Story 7.7 Task 2b: declared unconditionally so `typeof tools` keeps a
+    // NON-optional shape (an optional tool property poisons the AI SDK's
+    // toolCalls union for consumers like generate-law-list under
+    // exactOptionalPropertyTypes). Role-conditional REGISTRATION happens
+    // right below — the key is deleted outright without `employees:view`.
+    lookup_employee: createLookupEmployeeTool(workspaceId),
+  }
+
+  // Story 7.7 Task 2b: lookup_employee is ROLE-CONDITIONAL — present ONLY
+  // when the session role holds `employees:view`. Fail-closed: an undefined
+  // role (legacy callers / unauthenticated fallback) gets NO tool. A role
+  // without the permission has no tool at all in the registry — not a
+  // refusing tool. Runs before decision-log wrapping so a removed tool is
+  // never wrapped or logged.
+  if (!(role != null && hasPermission(role, 'employees:view'))) {
+    delete (tools as Record<string, unknown>).lookup_employee
   }
 
   // Story 19.5: wrap every tool's execute to log the invocation (fail-safe).

@@ -26,8 +26,14 @@ import {
   Image as ImageIcon,
   Sheet,
   Loader2,
+  UserRound,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+// Story 7.7: employee-in-context picker + pill (capability-gated inside).
+import {
+  EmployeeContextPicker,
+  type ChatEmployeeOption,
+} from './employee-context-picker'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -124,6 +130,12 @@ interface ChatInputModernProps {
   onRemoveAttachment?: (_fileId: string) => void
   attachmentError?: string | null
   attachmentsUploading?: boolean
+  // Story 7.7: employee-in-context pill. The picker renders only when
+  // onSelectEmployee is provided (and the picker itself is capability-gated
+  // on employees:view). selectedEmployee renders as a removable chip.
+  selectedEmployee?: ChatEmployeeOption | null
+  onSelectEmployee?: ((_employee: ChatEmployeeOption) => void) | undefined
+  onRemoveEmployee?: (() => void) | undefined
 }
 
 export const ChatInputModern = forwardRef<
@@ -147,6 +159,9 @@ export const ChatInputModern = forwardRef<
     onRemoveAttachment,
     attachmentError,
     attachmentsUploading = false,
+    selectedEmployee,
+    onSelectEmployee,
+    onRemoveEmployee,
   },
   ref
 ) {
@@ -309,9 +324,41 @@ export const ChatInputModern = forwardRef<
             tabIndex={-1}
           />
 
-          {/* Attachment chips (Story 19.1) */}
-          {(hasAttachments || attachmentsUploading || !!attachmentError) && (
+          {/* Attachment chips (Story 19.1) + employee pill (Story 7.7) */}
+          {(hasAttachments ||
+            attachmentsUploading ||
+            !!attachmentError ||
+            !!selectedEmployee) && (
             <div className="flex flex-wrap items-center gap-2 px-4 pt-3">
+              {/* Story 7.7: removable employee-in-context pill (attachment-
+                  chip pattern). Persists in panel state until removed. */}
+              {selectedEmployee && (
+                <span
+                  data-testid="chat-employee-pill"
+                  className="inline-flex max-w-[240px] items-center gap-1.5 rounded-md border border-border bg-muted/50 px-2 py-1 text-xs text-foreground/80"
+                >
+                  <UserRound className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <span className="truncate">
+                    {selectedEmployee.name}
+                    {selectedEmployee.personelTypeLabel && (
+                      <span className="text-muted-foreground">
+                        {' '}
+                        · {selectedEmployee.personelTypeLabel}
+                      </span>
+                    )}
+                  </span>
+                  {onRemoveEmployee && (
+                    <button
+                      type="button"
+                      onClick={onRemoveEmployee}
+                      className="shrink-0 rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      aria-label={`Ta bort ${selectedEmployee.name} från chatten`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </span>
+              )}
               {attachments.map((att) => {
                 const Icon = attachmentIcon(att.mimeType)
                 return (
@@ -412,6 +459,16 @@ export const ChatInputModern = forwardRef<
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
+              )}
+
+              {/* Story 7.7: employee picker (renders nothing without
+                  employees:view — gated inside the component). */}
+              {onSelectEmployee && (
+                <EmployeeContextPicker
+                  onSelect={onSelectEmployee}
+                  disabled={disabled || isLoading}
+                  isExpanded={isExpanded}
+                />
               )}
 
               {/* Model selector - only render after mount to prevent hydration mismatch */}

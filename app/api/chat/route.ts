@@ -28,7 +28,10 @@ import type { WorkspaceRole } from '@prisma/client'
 import {
   buildSystemPrompt,
   formatCompanyContext,
+  formatEmployeeContext,
 } from '@/lib/agent/system-prompt'
+// Story 7.7: server-side re-gating of the client-supplied employeeId.
+import { hasPermission } from '@/lib/auth/permissions'
 // Story 19.7c: derive the context's primary skill to narrow the tool registry.
 import { getPrimarySkillForContext } from '@/lib/agent/skill-loader'
 import { buildPendingActionsContext } from '@/lib/agent/context-assembly'
@@ -190,6 +193,7 @@ export async function POST(req: Request) {
       contextId,
       lawListItemId,
       attachmentIds,
+      employeeId,
       ...initialContext
     } = body as {
       messages: UIMessage[]
@@ -200,6 +204,9 @@ export async function POST(req: Request) {
       lawListItemId?: string
       // Story 19.1: chat attachment file ids (top-level body field, not message parts)
       attachmentIds?: string[]
+      // Story 7.7: pill-selected employee id (per-send body field). NEVER
+      // trusted as-is — re-fetched below under workspace + employees:view.
+      employeeId?: string
       title?: string
       description?: string
       sfsNumber?: string
@@ -250,6 +257,43 @@ export async function POST(req: Request) {
       workspaceRow?.name ?? undefined
     )
 
+    // Story 7.7: employee-in-focus context. The client's employeeId is NEVER
+    // trusted — we re-fetch under the workspace filter AND re-gate on
+    // `employees:view`. A foreign/unknown id (or an insufficient role) yields
+    // null → no block, no bias, no error leak. Without an employeeId this
+    // whole branch is skipped and the hot path is untouched.
+    let employeeContext: string | undefined
+    let biasAgreementId: string | undefined
+    if (
+      typeof employeeId === 'string' &&
+      employeeId.length > 0 &&
+      workspaceId !== 'default' &&
+      role != null &&
+      hasPermission(role, 'employees:view')
+    ) {
+      // ALLOWLIST select — the PII fields (personnummer, email, phone,
+      // address, fortnox_raw) are never read on this path.
+      const employee = await prisma.employee.findFirst({
+        where: { id: employeeId, workspace_id: workspaceId },
+        select: {
+          first_name: true,
+          last_name: true,
+          employment_form: true,
+          employment_date: true,
+          personel_type: true,
+          full_time_equivalent: true,
+          inactive: true,
+          collective_agreement: { select: { id: true, name: true } },
+        },
+      })
+      if (employee) {
+        employeeContext = formatEmployeeContext(employee)
+        // AC 4: assigned agreement → hard CA-retrieval bias (closure default
+        // in the search_collective_agreements tool factory).
+        biasAgreementId = employee.collective_agreement?.id
+      }
+    }
+
     // Story 14.22: agent feedback loop — inject pending/decided action proposals
     // as workflow state. Built before the stub message so it reflects the
     // previous turn's state (the current stub is excluded by content != '').
@@ -273,6 +317,9 @@ export async function POST(req: Request) {
 
     const systemPrompt = await buildSystemPrompt({
       companyContext,
+      // Story 7.7: undefined on the no-employee path → no block, prompt
+      // byte-identical to pre-7.7 output (hot-path inertness guard).
+      employeeContext,
       contextType,
       contextId,
       lawListItemId: resolvedLawListItemId,
@@ -283,7 +330,21 @@ export async function POST(req: Request) {
       // and REASONING_GUIDANCE injection (system-prompt gates on this field).
       thinkingEnabled: isAnthropic,
       ...(!isAnthropic && pendingActionsBlock ? { pendingActionsBlock } : {}),
-      ...initialContext,
+      // SEC-001 (QA 7.7): NEVER spread the raw body rest into the prompt
+      // options — it used to spread LAST, letting any authenticated client
+      // override server-computed fields (employeeContext, companyContext,
+      // pendingActionsBlock, thinkingEnabled, …) straight from the request
+      // body. Only the display-context strings the mounts legitimately send
+      // (ChatContextInitial) pass through, type-checked, server values last.
+      ...(typeof initialContext.title === 'string'
+        ? { title: initialContext.title }
+        : {}),
+      ...(typeof initialContext.sfsNumber === 'string'
+        ? { sfsNumber: initialContext.sfsNumber }
+        : {}),
+      ...(typeof initialContext.summary === 'string'
+        ? { summary: initialContext.summary }
+        : {}),
     })
 
     // Story 14.22 / ADR-14.22-A: preallocate the assistant message id and write
@@ -332,6 +393,9 @@ export async function POST(req: Request) {
         contextId: contextId ?? null,
         lawListItemId: resolvedLawListItemId,
         modelVersion: modelName,
+        // Story 7.7: the in-context employee's assigned agreement (undefined
+        // without an employee) — CA tool's closure-level retrieval bias.
+        biasAgreementId,
       },
       role,
       activeSkills

@@ -17,6 +17,7 @@ const mockGroupUpdateMany = vi.fn()
 const mockGroupDeleteMany = vi.fn()
 const mockEmployeeUpdateMany = vi.fn()
 const mockEmployeeFindFirst = vi.fn()
+const mockEmployeeFindMany = vi.fn()
 const mockEmployeeCreate = vi.fn()
 const mockAgreementFindMany = vi.fn()
 const mockAgreementFindFirst = vi.fn()
@@ -35,6 +36,7 @@ vi.mock('@/lib/prisma', () => ({
     employee: {
       updateMany: (...args: unknown[]) => mockEmployeeUpdateMany(...args),
       findFirst: (...args: unknown[]) => mockEmployeeFindFirst(...args),
+      findMany: (...args: unknown[]) => mockEmployeeFindMany(...args),
       create: (...args: unknown[]) => mockEmployeeCreate(...args),
     },
     collectiveAgreement: {
@@ -97,6 +99,7 @@ import {
   createEmployee,
   updateEmployee,
   getCollectiveAgreements,
+  getEmployeesForChatContext,
 } from '@/app/actions/employees'
 
 beforeEach(() => {
@@ -108,6 +111,7 @@ beforeEach(() => {
   mockGroupDeleteMany.mockReset()
   mockEmployeeUpdateMany.mockReset()
   mockEmployeeFindFirst.mockReset()
+  mockEmployeeFindMany.mockReset()
   mockEmployeeCreate.mockReset()
   mockAgreementFindMany.mockReset()
   mockAgreementFindFirst.mockReset()
@@ -895,5 +899,86 @@ describe('getCollectiveAgreements (Story 7.3)', () => {
     const result = await getCollectiveAgreements()
     expect(result.success).toBe(false)
     expect(result.error).toBe('Kunde inte hämta kollektivavtal.')
+  })
+})
+
+describe('getEmployeesForChatContext (Story 7.7)', () => {
+  test('workspace-scoped ALLOWLIST select gated by employees:view, serialized at the boundary', async () => {
+    mockEmployeeFindMany.mockResolvedValueOnce([
+      {
+        id: 'emp-1',
+        first_name: 'Anna',
+        last_name: 'Svensson',
+        personel_type: 'TJM',
+        employment_form: 'TV',
+        employment_date: new Date('2020-03-01T00:00:00Z'),
+        full_time_equivalent: { toNumber: () => 0.75 },
+        inactive: false,
+        collective_agreement: { id: 'ca-1', name: 'Teknikavtalet' },
+      },
+      {
+        id: 'emp-2',
+        first_name: 'Bert',
+        last_name: 'Karlsson',
+        personel_type: null,
+        employment_form: null,
+        employment_date: null,
+        full_time_equivalent: null,
+        inactive: true,
+        collective_agreement: null,
+      },
+    ])
+
+    const result = await getEmployeesForChatContext()
+
+    expect(lastRequiredPermission).toBe('employees:view')
+    const arg = mockEmployeeFindMany.mock.calls[0]?.[0] as {
+      where: { workspace_id: string }
+      select: Record<string, unknown>
+    }
+    expect(arg.where.workspace_id).toBe(WORKSPACE_ID)
+    // PII allowlist: no personnummer/email/phone/address/fortnox_raw.
+    expect(Object.keys(arg.select).sort()).toEqual(
+      [
+        'id',
+        'first_name',
+        'last_name',
+        'personel_type',
+        'employment_form',
+        'employment_date',
+        'full_time_equivalent',
+        'inactive',
+        'collective_agreement',
+      ].sort()
+    )
+    expect(arg.select.personnummer).toBeUndefined()
+    expect(arg.select.email).toBeUndefined()
+    expect(arg.select.phone1).toBeUndefined()
+    expect(arg.select.address1).toBeUndefined()
+    expect(arg.select.fortnox_raw).toBeUndefined()
+
+    expect(result.success).toBe(true)
+    // Decimal -> number, Date -> YYYY-MM-DD (client-boundary serialization).
+    expect(result.data?.[0]).toMatchObject({
+      id: 'emp-1',
+      employment_date: '2020-03-01',
+      full_time_equivalent: 0.75,
+      collective_agreement: { id: 'ca-1', name: 'Teknikavtalet' },
+    })
+    expect(result.data?.[1]).toMatchObject({
+      id: 'emp-2',
+      employment_date: null,
+      full_time_equivalent: null,
+      collective_agreement: null,
+    })
+    // Absence in the payload too, not just the select.
+    expect(JSON.stringify(result.data)).not.toMatch(/personnummer|@|fortnox/i)
+  })
+
+  test('returns a friendly error on failure', async () => {
+    mockEmployeeFindMany.mockRejectedValueOnce(new Error('db down'))
+    const result = await getEmployeesForChatContext()
+    expect(result.success).toBe(false)
+    expect(result.error).toBe('Kunde inte hämta anställda.')
   })
 })

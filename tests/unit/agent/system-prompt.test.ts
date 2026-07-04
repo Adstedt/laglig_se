@@ -21,6 +21,8 @@ vi.mock('@/lib/utils/effective-date', () => ({
 import {
   buildSystemPrompt,
   formatCompanyContext,
+  formatEmployeeContext,
+  type EmployeeContextEmployee,
 } from '@/lib/agent/system-prompt'
 import { prisma } from '@/lib/prisma'
 import type { CompanyProfile } from '@prisma/client'
@@ -879,5 +881,146 @@ describe('formatCompanyContext', () => {
       expect(warn).not.toHaveBeenCalled()
       warn.mockRestore()
     })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Story 7.7: formatEmployeeContext + <employee_context> injection
+// ---------------------------------------------------------------------------
+
+function makeEmployee(
+  overrides: Partial<EmployeeContextEmployee> = {}
+): EmployeeContextEmployee {
+  return {
+    first_name: 'Anna',
+    last_name: 'Svensson',
+    employment_form: 'TV',
+    employment_date: new Date('2020-03-01T00:00:00Z'),
+    personel_type: 'TJM',
+    full_time_equivalent: { toNumber: () => 0.75 },
+    inactive: false,
+    collective_agreement: { id: 'agreement-42', name: 'Teknikavtalet' },
+    ...overrides,
+  }
+}
+
+describe('formatEmployeeContext (Story 7.7)', () => {
+  it('formats the full allowlist with Swedish labels', () => {
+    const result = formatEmployeeContext(makeEmployee())!
+
+    expect(result).toContain('- Namn: Anna Svensson')
+    expect(result).toContain('- Anställningsform: Tillsvidareanställning')
+    expect(result).toContain('- Anställningsdatum: 2020-03-01')
+    expect(result).toContain('- Personaltyp: Tjänsteman')
+    expect(result).toContain('- Sysselsättningsgrad: 75 %')
+    expect(result).toContain(
+      '- Tilldelat kollektivavtal: Teknikavtalet (avtals-ID: agreement-42)'
+    )
+    expect(result).toContain('- Status: Aktiv')
+  })
+
+  it('returns undefined for null (no employee → no block)', () => {
+    expect(formatEmployeeContext(null)).toBeUndefined()
+  })
+
+  it('renders "Ej ifylld" for missing optional fields + Inaktiv + no agreement', () => {
+    const result = formatEmployeeContext(
+      makeEmployee({
+        employment_form: null,
+        employment_date: null,
+        personel_type: null,
+        full_time_equivalent: null,
+        inactive: true,
+        collective_agreement: null,
+      })
+    )!
+
+    expect(result).toContain('- Anställningsform: Ej ifylld')
+    expect(result).toContain('- Anställningsdatum: Ej ifylld')
+    expect(result).toContain('- Personaltyp: Ej ifylld')
+    expect(result).toContain('- Sysselsättningsgrad: Ej ifylld')
+    expect(result).toContain('- Tilldelat kollektivavtal: Inget tilldelat')
+    expect(result).toContain('- Status: Inaktiv')
+  })
+
+  it('accepts a plain number for full_time_equivalent (Decimal-free callers)', () => {
+    const result = formatEmployeeContext(
+      makeEmployee({ full_time_equivalent: 1 })
+    )!
+    expect(result).toContain('- Sysselsättningsgrad: 100 %')
+  })
+
+  // PII BY CONSTRUCTION (guardrail): the formatter is an allowlist — a wider
+  // object carrying personnummer/email/phone/address must never leak a byte.
+  it('NEVER emits personnummer/email/phone/address — even from a polluted record', () => {
+    const polluted = {
+      ...makeEmployee(),
+      personnummer: '19850101-1234',
+      personnummer_masked: false,
+      email: 'anna.svensson@example.com',
+      phone1: '070-123 45 67',
+      phone2: '08-555 123',
+      address1: 'Storgatan 1',
+      address2: 'Lgh 1201',
+      post_code: '11122',
+      city: 'Stockholm',
+      fortnox_raw: { PersonalIdentityNumber: '19850101-1234' },
+    } as unknown as EmployeeContextEmployee
+
+    const result = formatEmployeeContext(polluted)!
+
+    expect(result).not.toContain('19850101')
+    expect(result).not.toContain('19850101-1234')
+    expect(result).not.toMatch(/personnummer/i)
+    expect(result).not.toContain('@')
+    expect(result).not.toContain('070-123')
+    expect(result).not.toContain('08-555')
+    expect(result).not.toContain('Storgatan')
+    expect(result).not.toContain('Lgh 1201')
+    expect(result).not.toContain('11122')
+    expect(result).not.toContain('Stockholm')
+  })
+})
+
+describe('buildSystemPrompt — <employee_context> (Story 7.7)', () => {
+  it('injects the wrapped block when employeeContext is provided', async () => {
+    const employeeContext = formatEmployeeContext(makeEmployee())!
+    const prompt = await buildSystemPrompt({ employeeContext })
+
+    expect(prompt).toContain('<employee_context>')
+    expect(prompt).toContain('## Anställd i fokus')
+    expect(prompt).toContain('- Namn: Anna Svensson')
+    expect(prompt).toContain('search_collective_agreements')
+    expect(prompt).toContain('</employee_context>')
+  })
+
+  it('HOT-PATH INERTNESS: no employeeContext → byte-identical prompt (undefined AND absent)', async () => {
+    // The pre-7.7 shape of the call (no employeeContext key at all)...
+    const baseline = await buildSystemPrompt({
+      companyContext: '- Företag: Test AB',
+      contextType: 'global',
+    })
+    // ...must be byte-identical both when the key is explicitly undefined
+    // (what the route passes on the no-employee path)...
+    const withUndefined = await buildSystemPrompt({
+      companyContext: '- Företag: Test AB',
+      contextType: 'global',
+      employeeContext: undefined,
+    })
+    expect(withUndefined).toBe(baseline)
+    // ...and must not contain any trace of the employee block.
+    expect(baseline).not.toContain('<employee_context>')
+    expect(baseline).not.toContain('Anställd i fokus')
+  })
+
+  it('block ordering: employee context sits after company context', async () => {
+    const prompt = await buildSystemPrompt({
+      companyContext: '- Företag: Test AB',
+      employeeContext: '- Namn: Anna Svensson',
+    })
+    const companyIdx = prompt.indexOf('<company_context>')
+    const employeeIdx = prompt.indexOf('<employee_context>')
+    expect(companyIdx).toBeGreaterThanOrEqual(0)
+    expect(employeeIdx).toBeGreaterThan(companyIdx)
   })
 })

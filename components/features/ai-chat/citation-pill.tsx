@@ -19,6 +19,7 @@ import {
   ExternalLink,
   FileText,
   Globe,
+  Handshake,
   Paperclip,
 } from 'lucide-react'
 import { trackEvent } from '@/lib/track-event'
@@ -115,6 +116,13 @@ export function CitationPillInline({
   const workspaceDocId = source?.workspaceDocumentId ?? null
   const isWorkspaceDocResolved = !!workspaceDocId
 
+  // Story 7.7: kollektivavtal sources carry a collectiveAgreementId. Checked
+  // BEFORE the plain-file discriminator (a CA source also carries the backing
+  // PDF's fileId for the QuickPreview CTA). A CA pill gets a Handshake icon,
+  // "Kollektivavtal" labeling and an "Öppna kollektivavtalet" CTA.
+  const collectiveAgreementId = source?.collectiveAgreementId ?? null
+  const isCollectiveAgreementResolved = !!collectiveAgreementId
+
   // Story 17.9d: uploaded-file sources carry a fileId. Presence of fileId is
   // the file discriminator — mirrors isWorkspaceDocResolved. A file pill gets a
   // Paperclip icon + snippet preview + "Öppna filen" (QuickPreview), and its
@@ -176,6 +184,18 @@ export function CitationPillInline({
       return
     }
 
+    // Kollektivavtal sources (Story 7.7): open the agreement's backing PDF
+    // via the file QuickPreview. Checked BEFORE the plain-file branch —
+    // a CA source carries fileId alongside its CA discriminator. Without a
+    // backing file there is nothing to open; the hover card still previews.
+    if (isCollectiveAgreementResolved) {
+      trackEvent('ca_citation_clicked', {
+        collectiveAgreementId: collectiveAgreementId ?? '',
+      })
+      if (fileId) void handleOpenFile()
+      return
+    }
+
     // File sources (Story 17.9d): open the file preview, never the legal
     // sidebar. Mirrors the web-source early return above.
     if (isFileResolved) {
@@ -230,6 +250,9 @@ export function CitationPillInline({
     isChunkResolved,
     resolvedAnchor,
     resolvedPath,
+    isCollectiveAgreementResolved,
+    collectiveAgreementId,
+    fileId,
     isFileResolved,
     handleOpenFile,
     isWorkspaceDocResolved,
@@ -267,8 +290,13 @@ export function CitationPillInline({
   // Chunk-level legal source has path — show its snippet. Story 17.9d: file
   // sources also preview their cited passage, gated on the SEPARATE
   // isFileResolved condition so legal doc-level suppression stays unchanged.
+  // Story 7.7: kollektivavtal sources preview their cited passage too (incl.
+  // agreements without a backing file).
   const isChunkLevel = !!source.path
-  const description = isChunkLevel || isFileResolved ? source.snippet : null
+  const description =
+    isChunkLevel || isFileResolved || isCollectiveAgreementResolved
+      ? source.snippet
+      : null
 
   return (
     <>
@@ -285,11 +313,13 @@ export function CitationPillInline({
             }
             {...(isWebSource
               ? { icon: <Globe className="h-3 w-3" /> }
-              : isWorkspaceDocResolved
-                ? { icon: <FileText className="h-3 w-3" /> }
-                : isFileResolved
-                  ? { icon: <Paperclip className="h-3 w-3" /> }
-                  : {})}
+              : isCollectiveAgreementResolved
+                ? { icon: <Handshake className="h-3 w-3" /> }
+                : isWorkspaceDocResolved
+                  ? { icon: <FileText className="h-3 w-3" /> }
+                  : isFileResolved
+                    ? { icon: <Paperclip className="h-3 w-3" /> }
+                    : {})}
           />
           <InlineCitationCardBody
             onMouseEnter={handleEnter}
@@ -302,9 +332,17 @@ export function CitationPillInline({
             {isWebSource && webDomain && (
               <p className="text-[11px] text-muted-foreground">{webDomain}</p>
             )}
+            {/* Story 7.7: CA pills label the source type instead of echoing
+                the (long) contextual-header key as a pseudo document number. */}
+            {isCollectiveAgreementResolved && (
+              <p className="text-[11px] text-muted-foreground">
+                Kollektivavtal
+              </p>
+            )}
             {!isWebSource &&
               !isWorkspaceDocResolved &&
               !isFileResolved &&
+              !isCollectiveAgreementResolved &&
               source.documentNumber && (
                 <p className="text-[11px] text-muted-foreground">
                   {source.documentNumber}
@@ -346,7 +384,20 @@ export function CitationPillInline({
                 <ArrowUpRight className="h-3 w-3" />
               </Link>
             )}
-            {isFileResolved && (
+            {/* Story 7.7: CA CTA — opens the agreement's backing PDF via the
+                existing file QuickPreview path. Only when a backing file
+                exists; replaces (never duplicates) the generic file CTA. */}
+            {isCollectiveAgreementResolved && fileId && (
+              <button
+                type="button"
+                onClick={handleOpenFile}
+                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline mt-2"
+              >
+                Öppna kollektivavtalet
+                <ArrowUpRight className="h-3 w-3" />
+              </button>
+            )}
+            {isFileResolved && !isCollectiveAgreementResolved && (
               <button
                 type="button"
                 onClick={handleOpenFile}

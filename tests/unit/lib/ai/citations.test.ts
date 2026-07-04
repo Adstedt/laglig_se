@@ -197,6 +197,86 @@ describe('extractSourcesFromToolResult', () => {
     expect(src!.path).toBeNull()
   })
 
+  // Story 7.7 (AC 5): kollektivavtal branch — citationKey = the contextual
+  // header; collectiveAgreementId is the CA discriminator; the backing PDF's
+  // fileId rides along for the QuickPreview CTA.
+  it('extracts CA entries from search_collective_agreements (Story 7.7)', () => {
+    const result = {
+      data: [
+        {
+          agreementId: 'agreement-42',
+          agreementName: 'Teknikavtalet',
+          workspaceFileId: 'file-9',
+          snippet: 'Uppsägningstiden är enligt avtalet minst tre månader.',
+          relevanceScore: 0.91,
+          citationKey: 'Teknikavtalet (Kollektivavtal) > § 12 Uppsägning',
+        },
+      ],
+      _meta: {
+        tool: 'search_collective_agreements',
+        executionTimeMs: 40,
+        resultCount: 1,
+      },
+    }
+
+    const sources = extractSourcesFromToolResult(
+      'search_collective_agreements',
+      result
+    )
+
+    // Full contextual-header key (the citationKey the model is told to use).
+    const src = sources['Teknikavtalet (Kollektivavtal) > § 12 Uppsägning']
+    expect(src).toBeDefined()
+    expect(src!.collectiveAgreementId).toBe('agreement-42')
+    expect(src!.fileId).toBe('file-9')
+    expect(src!.title).toBe('Teknikavtalet')
+    expect(src!.snippet).toBe(
+      'Uppsägningstiden är enligt avtalet minst tre månader.'
+    )
+    expect(src!.slug).toBeNull()
+    expect(src!.path).toBeNull()
+
+    // Fallback keys: bare agreement name + "name (Kollektivavtal)" so shorter
+    // model citations still resolve to the same agreement (snippet-less).
+    expect(sources['Teknikavtalet']?.collectiveAgreementId).toBe('agreement-42')
+    expect(
+      sources['Teknikavtalet (Kollektivavtal)']?.collectiveAgreementId
+    ).toBe('agreement-42')
+
+    // resolveSource resolves the exact citationKey via the bare-label fallback.
+    const resolved = resolveSource(
+      'Teknikavtalet (Kollektivavtal) > § 12 Uppsägning',
+      sourcesToMap(sources)
+    )
+    expect(resolved?.collectiveAgreementId).toBe('agreement-42')
+  })
+
+  it('skips CA rows without agreementId/citationKey; null workspaceFileId → fileId null (Story 7.7)', () => {
+    const result = {
+      data: [
+        { agreementName: 'Trasigt', snippet: 'x' }, // no agreementId → skipped
+        {
+          agreementId: 'agreement-7',
+          agreementName: 'Byggavtalet',
+          workspaceFileId: null,
+          snippet: 'Arbetstiden är 40 timmar.',
+          citationKey: 'Byggavtalet (Kollektivavtal)',
+        },
+      ],
+      _meta: { tool: 'search_collective_agreements', resultCount: 2 },
+    }
+
+    const sources = extractSourcesFromToolResult(
+      'search_collective_agreements',
+      result
+    )
+    expect(sources['Trasigt']).toBeUndefined()
+    const src = sources['Byggavtalet (Kollektivavtal)']
+    expect(src).toBeDefined()
+    expect(src!.collectiveAgreementId).toBe('agreement-7')
+    expect(src!.fileId).toBeNull()
+  })
+
   // Story 17.9d (AC 6/AC 7a guard): legal (search_laws) mappings must NOT gain
   // a fileId — the file discriminator stays exclusive to uploaded files so the
   // pill never misroutes a legal source to the file branch.
