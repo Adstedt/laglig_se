@@ -54,27 +54,30 @@ Riskhanteringsåtgärder, incidentrapportering inom 24 timmar, utbildningskrav f
 
 ## Vad är NIS2?
 
-<DefinitionBox term="NIS2-direktivet" source="Direktiv (EU) 2022/2555 · genomfört i Sverige genom cybersäkerhetslagen (2025:1506)">
+<DefinitionBox
+  term="NIS2-direktivet"
+  source="Direktiv (EU) 2022/2555 · genomfört i Sverige genom cybersäkerhetslagen (2025:1506)"
+>
   NIS2 är EU-direktivet om åtgärder för en hög gemensam cybersäkerhetsnivå i
-  hela unionen. Det ersätter det första NIS-direktivet från 2016, utökar
-  kretsen av sektorer och verksamheter som omfattas och ställer krav på
-  riskhantering, incidentrapportering och ledningens ansvar. Som direktiv
-  gäller det inte företag direkt — kraven blir bindande genom nationell lag,
-  i Sverige genom cybersäkerhetslagen.
+  hela unionen. Det ersätter det första NIS-direktivet från 2016, utökar kretsen
+  av sektorer och verksamheter som omfattas och ställer krav på riskhantering,
+  incidentrapportering och ledningens ansvar. Som direktiv gäller det inte
+  företag direkt — kraven blir bindande genom nationell lag, i Sverige genom
+  cybersäkerhetslagen.
 </DefinitionBox>
 
 Bakgrunden är enkel: samhällsviktiga tjänster är i dag digitala, och angreppen mot dem har ökat. Det första NIS-direktivet träffade en smal krets av leverantörer av samhällsviktiga och digitala tjänster. NIS2 breddar kraftigt — fler sektorer, en enhetlig storleksregel och skarpare tillsyn — så att cybersäkerheten hänger med i hela leveranskedjan, inte bara hos de största aktörerna.
 
 ## Vem omfattas av NIS2?
 
-NIS2 omfattar verksamheter i utpekade sektorer som storleksmässigt motsvarar minst ett medelstort företag — och delar in dem i två kategorier med olika tillsynsnivå. Direktivet talar om *väsentliga* och *viktiga entiteter*; den svenska cybersäkerhetslagen använder i stället begreppet *verksamhetsutövare*. Väsentliga verksamhetsutövare är i huvudsak statliga myndigheter samt större aktörer i de mest kritiska sektorerna — övriga som omfattas räknas som viktiga. Skillnaden märks framför allt i tillsynen: väsentliga verksamhetsutövare kan granskas löpande i förväg, medan viktiga i regel granskas först när något tyder på brister.
+NIS2 omfattar verksamheter i utpekade sektorer som storleksmässigt motsvarar minst ett medelstort företag — och delar in dem i två kategorier med olika tillsynsnivå. Direktivet talar om _väsentliga_ och _viktiga entiteter_; den svenska cybersäkerhetslagen använder i stället begreppet _verksamhetsutövare_. Väsentliga verksamhetsutövare är i huvudsak statliga myndigheter samt större aktörer i de mest kritiska sektorerna — övriga som omfattas räknas som viktiga. Skillnaden märks framför allt i tillsynen: väsentliga verksamhetsutövare kan granskas löpande i förväg, medan viktiga i regel granskas först när något tyder på brister.
 
 Sektorerna följer direktivets två bilagor:
 
-| Kritikalitet | Sektorer (urval) |
-| --- | --- |
+| Kritikalitet                             | Sektorer (urval)                                                                                                                                                                                    |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Sektorer med hög kritikalitet (bilaga 1) | Energi, transport, bankverksamhet, finansmarknadsinfrastruktur, hälso- och sjukvård, dricksvatten, avloppsvatten, digital infrastruktur, förvaltning av IKT-tjänster, offentlig förvaltning, rymden |
-| Andra kritiska sektorer (bilaga 2) | Post- och budtjänster, avfallshantering, kemikalier, livsmedel, tillverkning, digitala leverantörer, forskning |
+| Andra kritiska sektorer (bilaga 2)       | Post- och budtjänster, avfallshantering, kemikalier, livsmedel, tillverkning, digitala leverantörer, forskning                                                                                      |
 
 Vissa verksamheter — till exempel leverantörer av DNS-tjänster och registreringsenheter för toppdomäner — omfattas oavsett storlek, och även mindre aktörer kan träffas om de är enda leverantör av en samhällskritisk tjänst i Sverige. Exakt var gränserna går framgår av lagen; en [laglista](/funktioner/laglista) byggd på ert organisationsnummer visar vilka delar av regelområdet som kan beröra just er.
 
@@ -119,12 +122,12 @@ För er som verksamhet betyder det tre saker. För det första gäller kraven nu
 
 NIS2 skyddar samhällsviktiga tjänster, GDPR skyddar personuppgifter och DORA skyddar finanssektorns digitala motståndskraft — tre regelverk som överlappar men inte ersätter varandra. Samma incident kan utlösa skyldigheter enligt flera av dem samtidigt.
 
-| | NIS2 / cybersäkerhetslagen | [GDPR](/omraden/gdpr) | [DORA](/omraden/dora) |
-| --- | --- | --- | --- |
-| Skyddar | Nätverk, informationssystem och samhällsviktiga tjänster | Fysiska personers personuppgifter | Den finansiella sektorns digitala motståndskraft |
-| Omfattar | Väsentliga och viktiga verksamhetsutövare i utpekade sektorer | Alla som behandlar personuppgifter | Finansiella entiteter och deras IKT-leverantörer |
+|                      | NIS2 / cybersäkerhetslagen                                      | [GDPR](/omraden/gdpr)                                                            | [DORA](/omraden/dora)                                                          |
+| -------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Skyddar              | Nätverk, informationssystem och samhällsviktiga tjänster        | Fysiska personers personuppgifter                                                | Den finansiella sektorns digitala motståndskraft                               |
+| Omfattar             | Väsentliga och viktiga verksamhetsutövare i utpekade sektorer   | Alla som behandlar personuppgifter                                               | Finansiella entiteter och deras IKT-leverantörer                               |
 | Incidentrapportering | Tidig upplysning inom 24 timmar, incidentanmälan inom 72 timmar | Personuppgiftsincident till IMY utan onödigt dröjsmål, om möjligt inom 72 timmar | Rapportering av allvarliga IKT-incidenter till finansiella tillsynsmyndigheter |
-| Sanktioner | Upp till 2 % av global omsättning eller 10 miljoner euro | Upp till 4 % av global omsättning eller 20 miljoner euro | Tillsyns- och sanktionsbefogenheter via finanstillsynen |
+| Sanktioner           | Upp till 2 % av global omsättning eller 10 miljoner euro        | Upp till 4 % av global omsättning eller 20 miljoner euro                         | Tillsyns- och sanktionsbefogenheter via finanstillsynen                        |
 
 Driver ni verksamhet i en NIS2-sektor och behandlar kunddata är alltså både cybersäkerhetslagen och [dataskyddsförordningen (EU) 2016/679](/eu/forordningar/forordning-eu-679-2016-32016r0679) relevanta — och är ni ett finansiellt företag tar DORA i stor utsträckning över som specialreglering.
 
