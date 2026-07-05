@@ -116,7 +116,7 @@ export function WorkspaceShell({
       {/* Row-first layout: sidebar | column(header + content) */}
       <div className="flex h-screen overflow-hidden bg-muted/60">
         {/* Left Sidebar - full height, desktop only */}
-        <LeftSidebar user={user} />
+        <LeftSidebar user={user} role={role} />
 
         {/* Right column: header + content. Matching bg-muted/60 here makes the
             rounded-tl cutout reveal the same double-layered tint as the
@@ -135,6 +135,7 @@ export function WorkspaceShell({
             open={mobileMenuOpen}
             onOpenChange={setMobileMenuOpen}
             user={user}
+            role={role}
           />
 
           {/* Content area below header — rounded top-left forms the inner
