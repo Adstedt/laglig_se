@@ -216,6 +216,13 @@ export function PersonalregisterContent({
     []
   )
 
+  // Story 7.3: drop a hard-deleted employee from the island's row state so the
+  // table and header "Kompletta" stat update immediately (the server action
+  // also revalidates the route). The modal closes itself after delete.
+  const handleEmployeeDelete = useCallback((id: string) => {
+    setRows((current) => current.filter((existing) => existing.id !== id))
+  }, [])
+
   // --------------------------------------------------------------------
   // Group moves (drag + inline select) with optimistic local update.
   // Rollback is PER ROW (QA REL-002): a failed move restores only the moved
@@ -398,6 +405,7 @@ export function PersonalregisterContent({
           workspaceHasCollectiveAgreement={workspaceHasCollectiveAgreement}
           onClose={closeEmployee}
           onEmployeeChange={handleEmployeeChange}
+          onEmployeeDelete={handleEmployeeDelete}
         />
       </div>
     </div>

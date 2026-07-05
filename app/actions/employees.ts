@@ -861,3 +861,35 @@ export async function moveEmployeeToGroup(
     return { success: false, error: 'Kunde inte flytta den anställda.' }
   }
 }
+
+/**
+ * Permanently delete an employee (GDPR right-to-erasure). Hard delete — the
+ * record holds encrypted PII (personnummer, lön) and the reversible "hide"
+ * case is already covered by the `inactive` flag / Inaktiva tab.
+ *
+ * FK-safe: no other model references Employee, and the manager self-relation
+ * is `onDelete: SetNull`, so any reports' `manager_id` is nulled by the DB.
+ * The workspace filter lives in the `deleteMany` write itself (defense in
+ * depth against TOCTOU); `count === 0` means the id was foreign or stale.
+ */
+export async function deleteEmployee(id: string): Promise<ActionResult> {
+  try {
+    const deleted = await withWorkspace(
+      (ctx) =>
+        prisma.employee.deleteMany({
+          where: { id, workspace_id: ctx.workspaceId },
+        }),
+      'employees:manage'
+    )
+
+    if (deleted.count === 0) {
+      return { success: false, error: 'Anställd kunde inte hittas.' }
+    }
+
+    revalidatePath(PERSONALREGISTER_PATH)
+    return { success: true }
+  } catch (error) {
+    console.error('[deleteEmployee]', error)
+    return { success: false, error: 'Kunde inte ta bort den anställda.' }
+  }
+}

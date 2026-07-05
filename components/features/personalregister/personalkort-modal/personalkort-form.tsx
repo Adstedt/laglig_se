@@ -18,7 +18,7 @@
 import { useCallback, useState } from 'react'
 import { useForm, Controller, type FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2, Upload } from 'lucide-react'
+import { Loader2, Trash2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,6 +37,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   createEmployee,
   updateEmployee,
+  deleteEmployee,
   type CollectiveAgreementOption,
 } from '@/app/actions/employees'
 import { KollektivavtalUploadDialog } from '@/components/features/kollektivavtal/kollektivavtal-upload-dialog'
@@ -56,6 +57,7 @@ import {
   type PersonalkortFormValues,
 } from './form-schema'
 import { EmployeeStatusBadge } from './status-badge'
+import { EmployeeDeleteDialog } from './employee-delete-dialog'
 
 // User-checkpoint change: the Semester tab collapsed the modal (single field),
 // so semester lives as a section on the Anställning tab instead.
@@ -100,6 +102,9 @@ interface PersonalkortFormProps {
    */
   onAgreementUploaded?: (() => void) | undefined
   onSaved: (_row: EmployeeRow, _mode: 'created' | 'updated') => void
+  /** Story 7.3: edit mode only — called after a hard delete succeeds so the
+   *  register can drop the row optimistically and close the modal. */
+  onDeleted?: ((_id: string) => void) | undefined
   onClose: () => void
 }
 
@@ -117,6 +122,7 @@ export function PersonalkortForm({
   readOnly,
   onAgreementUploaded,
   onSaved,
+  onDeleted,
   onClose,
 }: PersonalkortFormProps) {
   const [activeTab, setActiveTab] = useState<PersonalkortTab>(
@@ -190,6 +196,33 @@ export function PersonalkortForm({
     },
     [mode, row, personnummerMasked, salaryMasked, onSaved, onClose]
   )
+
+  // Story 7.3: hard-delete flow (edit mode only). The AlertDialog gates the
+  // irreversible action; on success the register drops the row via onDeleted
+  // and the modal closes.
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const onConfirmDelete = useCallback(async () => {
+    if (!row) return
+    setIsDeleting(true)
+    try {
+      const result = await deleteEmployee(row.id)
+      if (result.success) {
+        toast.success('Anställd borttagen.')
+        onDeleted?.(row.id)
+        onClose()
+      } else {
+        toast.error(result.error ?? 'Kunde inte ta bort. Försök igen.')
+        setIsDeleting(false)
+        setDeleteDialogOpen(false)
+      }
+    } catch {
+      toast.error('Något gick fel. Försök igen.')
+      setIsDeleting(false)
+      setDeleteDialogOpen(false)
+    }
+  }, [row, onDeleted, onClose])
 
   // Jump to the first tab containing a validation error (errors on a hidden
   // tab would otherwise be invisible).
@@ -783,20 +816,52 @@ export function PersonalkortForm({
       </ScrollArea>
 
       {!readOnly && (
-        <div className="flex shrink-0 items-center justify-end gap-2 border-t bg-background px-6 py-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
-            Avbryt
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {mode === 'create' ? 'Lägg till anställd' : 'Spara ändringar'}
-          </Button>
+        <div className="flex shrink-0 items-center justify-between gap-2 border-t bg-background px-6 py-4">
+          {/* Destructive delete sits on the left, apart from the primary
+              Avbryt/Spara pair — edit mode only (nothing to delete on create). */}
+          {mode === 'edit' && row ? (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setDeleteDialogOpen(true)}
+              disabled={isSubmitting || isDeleting}
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Ta bort anställd
+            </Button>
+          ) : (
+            <span />
+          )}
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isSubmitting || isDeleting}
+            >
+              Avbryt
+            </Button>
+            <Button type="submit" disabled={isSubmitting || isDeleting}>
+              {isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {mode === 'create' ? 'Lägg till anställd' : 'Spara ändringar'}
+            </Button>
+          </div>
         </div>
+      )}
+
+      {mode === 'edit' && row && (
+        <EmployeeDeleteDialog
+          open={deleteDialogOpen}
+          onOpenChange={(open) => {
+            if (!isDeleting) setDeleteDialogOpen(open)
+          }}
+          employeeName={`${row.first_name} ${row.last_name}`.trim()}
+          onConfirm={onConfirmDelete}
+          isDeleting={isDeleting}
+        />
       )}
     </form>
   )

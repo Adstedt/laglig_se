@@ -47,6 +47,8 @@ export interface PersonalkortModalProps {
   workspaceHasCollectiveAgreement?: boolean
   onClose: () => void
   onEmployeeChange: (_row: EmployeeRow, _mode: 'created' | 'updated') => void
+  /** Story 7.3: called after an employee is hard-deleted from the form. */
+  onEmployeeDelete: (_id: string) => void
 }
 
 export function PersonalkortModal({
@@ -57,6 +59,7 @@ export function PersonalkortModal({
   workspaceHasCollectiveAgreement = false,
   onClose,
   onEmployeeChange,
+  onEmployeeDelete,
 }: PersonalkortModalProps) {
   const open = anstalldId !== null
   const isCreate = anstalldId === NEW_EMPLOYEE_SENTINEL
@@ -148,6 +151,7 @@ export function PersonalkortModal({
             onAgreementUploaded={loadAgreements}
             readOnly={!canManage}
             onSaved={onEmployeeChange}
+            onDeleted={onEmployeeDelete}
             onClose={onClose}
           />
         ) : null
