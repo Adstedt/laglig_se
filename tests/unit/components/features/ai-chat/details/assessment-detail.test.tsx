@@ -19,7 +19,11 @@ const mockAssessmentData: AssessmentDetailData = {
   amendmentSfs: 'SFS 2026:145',
   changeType: 'AMENDMENT',
   affectedSections: ['Kap 3 § 2', 'Kap 3 § 4'],
-  effectiveDate: new Date('2026-07-01'),
+  // Computed ~90 days ahead of the run so the "Träder i kraft" (future) badge
+  // assertion below is stable forever. A hardcoded date here decayed into the
+  // past (was 2026-07-01) and flipped the badge to "I kraft sedan …", failing
+  // CI daily from 2026-07-02 onward.
+  effectiveDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
   existingAssessment: {
     status: 'REVIEWED',
     impactLevel: 'MEDIUM',
