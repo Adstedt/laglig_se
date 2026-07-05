@@ -171,7 +171,7 @@ export function WorkspaceShell({
                 content's intrinsic width when the right sidebar opens —
                 without it the editor overflows and scrolls horizontally
                 instead of reflowing narrower. */}
-            <main className="flex-1 min-w-0 overflow-auto bg-background p-4 md:p-6">
+            <main className="flex-1 min-w-0 overflow-auto [scrollbar-gutter:stable] bg-background p-4 md:p-6">
               <Breadcrumbs />
               {children}
             </main>

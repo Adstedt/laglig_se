@@ -34,7 +34,17 @@ export interface CreateTaskToolContext {
 
 const createTaskSchema = z.object({
   title: z.string().describe('Task title'),
-  description: z.string().optional().describe('Task description'),
+  description: z
+    .string()
+    .optional()
+    .describe(
+      `Beskrivning i markdown — punktlistor och fetstil renderas i uppgiften. ` +
+        `Anpassa djupet efter uppgiften: en enkel påminnelse får en mening; en ` +
+        `flerstegsåtgärd får (1) varför — vilken lag/§ eller ändring som ligger ` +
+        `bakom, (2) konkreta steg som punktlista, (3) en sista rad om när ` +
+        `uppgiften räknas som klar. Skriv aldrig samma slags text av samma längd ` +
+        `för varje uppgift — låt uppgiftens omfattning styra formen.`
+    ),
   relatedDocumentId: z
     .string()
     .optional()
@@ -67,7 +77,21 @@ och vill spåra den som en uppgift. Uppgiften skapas i den första kolumnen på 
 
 Anropa verktyget direkt — det skapar ett inline-förslagskort i chatten där användaren
 granskar, justerar och godkänner. Kortet är bekräftelsen: beskriv inte fälten i löpande
-text och fråga inte om lov först. Uppgiften skapas först när användaren godkänner kortet.`,
+text och fråga inte om lov först. Uppgiften skapas först när användaren godkänner kortet.
+
+Två kontrasterande exempel på beskrivningar — formen följer uppgiften, inte en mall:
+
+Enkel uppgift, en mening räcker:
+"Boka årets genomgång av brandskyddsrutinen med skyddsombudet före den 30 september."
+
+Flerstegsåtgärd, varför + steg + när den är klar:
+"Kemikalieförteckningen saknar riskbedömningar för tre nyinköpta produkter (AFS 2011:19, 5–8 §§).
+
+- Begär säkerhetsdatablad från leverantören
+- Riskbedöm varje produkt och dokumentera i förteckningen
+- Informera berörda operatörer om skyddsåtgärderna
+
+Klar när alla tre produkter har en dokumenterad riskbedömning."`,
     inputSchema: zodSchema(createTaskSchema),
     execute: async ({
       title,

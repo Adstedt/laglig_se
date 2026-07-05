@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Laglig.se — Designspråk: Elevation (koncept-prototyp)</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Brand fonts — same convention as landing-v4.html / design-language.html -->
+    <style>
+      @font-face {
+        font-family: 'Safiro';
+        src:
+          url('../public/fonts/safiro-medium-webfont.woff2') format('woff2'),
+          url('../public/fonts/safiro-medium-webfont.woff') format('woff');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Google Sans Flex';
+        src: url('../public/fonts/GoogleSansFlex.ttf') format('truetype');
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      :root {
+        /* ── Befintliga tokens (globals.css) ─────────────────────────── */
+        --background: 40 20% 98%;
+        --foreground: 30 10% 10%;
+        --card: 40 15% 99%;
+        --primary: 30 15% 12%;
+        --primary-foreground: 40 20% 98%;
+        --secondary: 40 15% 95%;
+        --muted: 40 12% 94%;
+        --muted-foreground: 30 8% 45%;
+        --accent: 40 15% 93%;
+        --border: 35 10% 88%;
+        --section-warm: 45 30% 96%;
+        --section-cream: 35 40% 97%;
+
+        /* ── FÖRSLAG: nya tokens ─────────────────────────────────────── */
+        /* Bläck — inverterade sektioner (CTA, trust-band, footer) */
+        --ink: 28 14% 9%;
+        --ink-soft: 28 11% 13%;
+        --ink-foreground: 40 25% 96%;
+        --ink-muted: 35 8% 62%;
+        --ink-border: 35 8% 22%;
+
+        /* Amber-ramp — EN accent, fyra intensiteter med tydliga roller */
+        --amber-wash: 42 75% 94%;  /* bakgrundston — paneler, ::selection   */
+        --amber-line: 38 70% 58%;  /* streck — underlines, markörer         */
+        --amber-ink:  30 62% 36%;  /* textsäker — eyebrows, länkar, siffror */
+        --amber-core: 38 88% 54%;  /* punktljus — max EN per viewport       */
+      }
+    </style>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Google Sans Flex', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+              display: ['Safiro', 'Georgia', 'serif'],
+            },
+            colors: {
+              background: 'hsl(var(--background) / <alpha-value>)',
+              foreground: 'hsl(var(--foreground) / <alpha-value>)',
+              card: 'hsl(var(--card) / <alpha-value>)',
+              primary: 'hsl(var(--primary) / <alpha-value>)',
+              'primary-foreground': 'hsl(var(--primary-foreground) / <alpha-value>)',
+              secondary: 'hsl(var(--secondary) / <alpha-value>)',
+              muted: 'hsl(var(--muted) / <alpha-value>)',
+              'muted-foreground': 'hsl(var(--muted-foreground) / <alpha-value>)',
+              accent: 'hsl(var(--accent) / <alpha-value>)',
+              border: 'hsl(var(--border) / <alpha-value>)',
+              'section-warm': 'hsl(var(--section-warm) / <alpha-value>)',
+              'section-cream': 'hsl(var(--section-cream) / <alpha-value>)',
+              ink: 'hsl(var(--ink) / <alpha-value>)',
+              'ink-soft': 'hsl(var(--ink-soft) / <alpha-value>)',
+              'ink-foreground': 'hsl(var(--ink-foreground) / <alpha-value>)',
+              'ink-muted': 'hsl(var(--ink-muted) / <alpha-value>)',
+              'ink-border': 'hsl(var(--ink-border) / <alpha-value>)',
+              'amber-wash': 'hsl(var(--amber-wash) / <alpha-value>)',
+              'amber-line': 'hsl(var(--amber-line) / <alpha-value>)',
+              'amber-ink': 'hsl(var(--amber-ink) / <alpha-value>)',
+              'amber-core': 'hsl(var(--amber-core) / <alpha-value>)',
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        font-family: 'Google Sans Flex', system-ui, -apple-system, sans-serif;
+        background: hsl(var(--background));
+        color: hsl(var(--foreground));
+        -webkit-font-smoothing: antialiased;
+      }
+      .font-display { font-family: 'Safiro', Georgia, serif; font-weight: 500; letter-spacing: -0.02em; }
+
+      /* ── FÖRSLAG 1: amber ::selection — märks först när man markerar text ── */
+      ::selection { background: hsl(var(--amber-wash)); color: hsl(var(--foreground)); }
+      .on-ink ::selection { background: hsl(var(--amber-ink) / 0.55); color: hsl(var(--ink-foreground)); }
+
+      /* ── FÖRSLAG 2: varma skuggor — brunsvart i stället för rent svart ──
+         Nuvarande (hero-v3): rgb(0 0 0 / x) → känns "skärm".
+         Förhöjt: hsl(28 40% 12% / x) → känns "papper i varmt ljus". */
+      .shadow-cold {
+        box-shadow:
+          0 1px 2px 0 rgb(0 0 0 / 0.03),
+          0 8px 16px -4px rgb(0 0 0 / 0.05),
+          0 24px 48px -12px rgb(0 0 0 / 0.10),
+          0 56px 112px -28px rgb(0 0 0 / 0.16);
+      }
+      .shadow-warm {
+        box-shadow:
+          0 1px 2px 0 hsl(28 40% 12% / 0.04),
+          0 8px 16px -4px hsl(28 40% 12% / 0.06),
+          0 24px 48px -12px hsl(28 45% 14% / 0.11),
+          0 56px 112px -28px hsl(28 50% 15% / 0.18);
+      }
+      .shadow-warm-sm {
+        box-shadow:
+          0 1px 2px 0 hsl(28 40% 12% / 0.05),
+          0 4px 10px -2px hsl(28 45% 14% / 0.08);
+      }
+
+      /* ── FÖRSLAG 3: papperskorn — feTurbulence-brus på hero + bläcksektioner.
+         3–4 % opacity: syns inte, men ytan slutar kännas digital-slät. */
+      .grain::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.035;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+      .grain-strong::after { opacity: 0.06; }
+
+      /* ── FÖRSLAG 4: gradient-hårlinjer — linjer som tonar ut i ändarna ── */
+      .hairline-x {
+        height: 1px;
+        background: linear-gradient(to right, transparent, hsl(var(--border)), transparent);
+      }
+      .hairline-x-ink {
+        height: 1px;
+        background: linear-gradient(to right, transparent, hsl(var(--ink-border)), transparent);
+      }
+      /* Dubbel linje — sektionsbrytare med juridisk/typografisk känsla */
+      .rule-double {
+        border-top: 1px solid hsl(var(--border));
+        border-bottom: 1px solid hsl(var(--border));
+        height: 4px;
+      }
+
+      /* ── FÖRSLAG 5: amber-understrykning — handritad SVG-stroke under
+         nyckelord. Ersätter "andra raden i 45 % opacity" som enda
+         headline-grepp. Max ett ord per rubrik. */
+      .u-amber { position: relative; white-space: nowrap; }
+      .u-amber svg {
+        position: absolute;
+        left: -1%;
+        bottom: -0.12em;
+        width: 102%;
+        height: 0.22em;
+        overflow: visible;
+      }
+      .u-amber svg path {
+        fill: none;
+        stroke: hsl(var(--amber-line));
+        stroke-width: 5;
+        stroke-linecap: round;
+        vector-effect: non-scaling-stroke;
+      }
+      @keyframes draw-under { to { stroke-dashoffset: 0; } }
+      .u-amber svg path {
+        stroke-dasharray: 120;
+        stroke-dashoffset: 120;
+        animation: draw-under 0.7s cubic-bezier(.6,0,.3,1) 0.9s forwards;
+      }
+
+      /* Toppkant-highlight — ljus som fångar ovankanten på ramar (finns i
+         hero-v3 idag; här som återanvändbar klass för ALLA kort/ramar) */
+      .edge-light { position: relative; }
+      .edge-light::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 1px;
+        z-index: 10;
+        background: linear-gradient(to right, transparent, rgb(255 255 255 / 0.85), transparent);
+      }
+      .edge-light-ink::before {
+        background: linear-gradient(to right, transparent, rgb(255 255 255 / 0.14), transparent);
+      }
+
+      /* Primärknapp med inre toppljus — "pressad mässing" i stället för platt */
+      .btn-ink {
+        background: linear-gradient(to bottom, hsl(30 15% 18%), hsl(var(--primary)));
+        box-shadow:
+          inset 0 1px 0 rgb(255 255 255 / 0.12),
+          0 1px 2px hsl(28 40% 12% / 0.2),
+          0 4px 12px -2px hsl(28 45% 14% / 0.25);
+        transition: transform .15s ease, box-shadow .15s ease;
+      }
+      .btn-ink:hover {
+        transform: translateY(-1px);
+        box-shadow:
+          inset 0 1px 0 rgb(255 255 255 / 0.14),
+          0 2px 4px hsl(28 40% 12% / 0.2),
+          0 8px 20px -4px hsl(28 45% 14% / 0.3);
+      }
+      .btn-cream {
+        background: linear-gradient(to bottom, hsl(42 30% 99%), hsl(40 22% 94%));
+        box-shadow:
+          inset 0 1px 0 rgb(255 255 255 / 0.9),
+          0 1px 2px hsl(28 40% 8% / 0.4),
+          0 6px 16px -4px hsl(28 40% 5% / 0.5);
+        transition: transform .15s ease;
+      }
+      .btn-cream:hover { transform: translateY(-1px); }
+
+      /* Ghost-paragraf — stort §-tecken i Safiro som vattenmärke */
+      .ghost-glyph {
+        font-family: 'Safiro', Georgia, serif;
+        font-weight: 500;
+        color: hsl(var(--foreground) / 0.045);
+        user-select: none;
+        pointer-events: none;
+        line-height: 1;
+      }
+
+      /* Scroll-reveal */
+      .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1); }
+      .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+      /* Annotationsetiketter (bara för prototypen, inte del av designspråket) */
+      .note {
+        font-size: 11px;
+        letter-spacing: 0.02em;
+        color: hsl(var(--amber-ink));
+        background: hsl(var(--amber-wash) / 0.6);
+        border: 1px solid hsl(var(--amber-line) / 0.35);
+        border-radius: 999px;
+        padding: 3px 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .note::before { content: ''; width: 5px; height: 5px; border-radius: 999px; background: hsl(var(--amber-line)); }
+
+      .eyebrow {
+        font-size: 11.5px;
+        font-weight: 550;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      code.tok {
+        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+        font-size: 12px;
+        background: hsl(var(--muted));
+        border: 1px solid hsl(var(--border));
+        border-radius: 5px;
+        padding: 1.5px 6px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ══════════════════════════════════════════════════════════════════
+         INTRO — diagnos + tes
+    ═══════════════════════════════════════════════════════════════════ -->
+    <header class="relative mx-auto max-w-5xl px-6 pb-16 pt-20">
+      <p class="eyebrow mb-5 text-amber-ink">Designspråk · Elevation av landing v3</p>
+      <h1 class="font-display mb-6 text-4xl leading-[1.08] md:text-5xl">
+        Samma språk.<br />
+        <span class="text-foreground/45">Rikare material.</span>
+      </h1>
+      <div class="max-w-2xl space-y-4 text-[15.5px] leading-relaxed text-muted-foreground">
+        <p>
+          V3:s grund är rätt: varm monokrom, Safiro, en sparsam amber. Det som
+          skiljer den från Linear/Stripe-klassen är inte paletten utan
+          <em class="not-italic text-foreground">materialkänslan</em> — allt ljus är i dag
+          neutralt, alla skuggor är rent svarta, alla ytor är matematiskt släta,
+          och sidan saknar en mörk vilopunkt.
+        </p>
+        <p>
+          Tre riktningar nedan, byggda för att kombineras — inga nya kulörer,
+          ingen ny typografi. Bara mer omsorg i ljus, rytm och detalj.
+        </p>
+      </div>
+      <nav class="mt-8 flex flex-wrap gap-2 text-[13px]">
+        <a href="#ljus" class="rounded-full border border-border bg-card px-4 py-1.5 transition-colors hover:border-foreground/25">01 · Varmt ljus</a>
+        <a href="#black" class="rounded-full border border-border bg-card px-4 py-1.5 transition-colors hover:border-foreground/25">02 · Bläck</a>
+        <a href="#paragraf" class="rounded-full border border-border bg-card px-4 py-1.5 transition-colors hover:border-foreground/25">03 · Paragraf</a>
+        <a href="#hero" class="rounded-full border border-border bg-card px-4 py-1.5 transition-colors hover:border-foreground/25">04 · Allt ihop: hero</a>
+        <a href="#tokens" class="rounded-full border border-border bg-card px-4 py-1.5 transition-colors hover:border-foreground/25">Tokens</a>
+      </nav>
+    </header>
+
+    <div class="hairline-x mx-auto max-w-5xl"></div>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         01 · VARMT LJUS — skuggor, korn, kanter, amber-ramp
+    ═══════════════════════════════════════════════════════════════════ -->
+    <section id="ljus" class="mx-auto max-w-5xl px-6 py-20">
+      <div class="reveal">
+        <div class="mb-3 flex items-baseline gap-4">
+          <span class="font-display text-2xl text-foreground/25">01</span>
+          <h2 class="font-display text-3xl">Varmt ljus</h2>
+        </div>
+        <p class="mb-10 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
+          Minsta ingreppet, störst effekt. Skuggorna tintas brunsvarta i stället
+          för rent svarta, varje ram får ett toppljus, och hero + mörka ytor får
+          ett knappt synligt papperskorn. Ingen enskild detalj syns — men ytan
+          går från &rdquo;skärm&rdquo; till &rdquo;papper i eftermiddagsljus&rdquo;.
+        </p>
+      </div>
+
+      <!-- Före / efter -->
+      <div class="reveal grid gap-8 md:grid-cols-2">
+        <div>
+          <p class="eyebrow mb-3 text-muted-foreground">Nu — kall skugga, platt yta</p>
+          <div class="shadow-cold overflow-hidden rounded-2xl bg-card ring-1 ring-foreground/[0.07]">
+            <img src="../public/images/landing-v3/showcase-lagandringar.webp" alt="" class="block w-full" />
+          </div>
+        </div>
+        <div>
+          <p class="eyebrow mb-3 text-amber-ink">Förhöjt — varm skugga, toppljus, korn</p>
+          <div class="shadow-warm edge-light grain relative overflow-hidden rounded-2xl bg-card ring-1 ring-[hsl(30_20%_20%/0.09)]">
+            <img src="../public/images/landing-v3/showcase-lagandringar.webp" alt="" class="block w-full" />
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <span class="note">skugga: hsl(28 45% 14%) — inte #000</span>
+            <span class="note">1px toppljus på ramen</span>
+            <span class="note">3,5 % feTurbulence-korn</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Amber-ramp -->
+      <div class="reveal mt-16">
+        <p class="eyebrow mb-4 text-muted-foreground">Amber blir ett system — fyra intensiteter, fyra roller</p>
+        <div class="grid gap-3 sm:grid-cols-4">
+          <div class="shadow-warm-sm rounded-xl border border-border bg-card p-4">
+            <div class="mb-3 h-12 rounded-lg bg-amber-wash"></div>
+            <p class="text-[13px] font-medium">amber-wash</p>
+            <p class="mt-0.5 text-xs leading-snug text-muted-foreground">Bakgrund: markerad text, tonade paneler. Aldrig som &rdquo;färgblock&rdquo;.</p>
+          </div>
+          <div class="shadow-warm-sm rounded-xl border border-border bg-card p-4">
+            <div class="mb-3 h-12 rounded-lg bg-amber-line"></div>
+            <p class="text-[13px] font-medium">amber-line</p>
+            <p class="mt-0.5 text-xs leading-snug text-muted-foreground">Streck: understrykningar, grafmarkörer, aktiv-indikatorer.</p>
+          </div>
+          <div class="shadow-warm-sm rounded-xl border border-border bg-card p-4">
+            <div class="mb-3 h-12 rounded-lg bg-amber-ink"></div>
+            <p class="text-[13px] font-medium">amber-ink</p>
+            <p class="mt-0.5 text-xs leading-snug text-muted-foreground">Textsäker: eyebrows, inline-länkar, siffror i statistik.</p>
+          </div>
+          <div class="shadow-warm-sm rounded-xl border border-border bg-card p-4">
+            <div class="mb-3 h-12 rounded-lg bg-amber-core"></div>
+            <p class="text-[13px] font-medium">amber-core</p>
+            <p class="mt-0.5 text-xs leading-snug text-muted-foreground">Punktljus. Max <em class="not-italic font-medium text-foreground">en</em> per viewport — regeln som håller sidan monokrom.</p>
+          </div>
+        </div>
+        <p class="mt-4 max-w-2xl text-[13.5px] leading-relaxed text-muted-foreground">
+          Markera texten i det här stycket —
+          <span class="text-foreground">::selection blir amber-wash</span>. En detalj
+          ingen designar men alla känner. Inline-länkar får
+          <a href="#" class="text-amber-ink underline decoration-amber-line/50 underline-offset-[3px] transition-colors hover:decoration-amber-line">den här behandlingen</a>
+          i stället för dagens neutrala.
+        </p>
+      </div>
+    </section>
+
+    <div class="hairline-x mx-auto max-w-5xl"></div>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         02 · BLÄCK — rytm genom invertering
+    ═══════════════════════════════════════════════════════════════════ -->
+    <section id="black" class="mx-auto max-w-5xl px-6 py-20">
+      <div class="reveal mb-10">
+        <div class="mb-3 flex items-baseline gap-4">
+          <span class="font-display text-2xl text-foreground/25">02</span>
+          <h2 class="font-display text-3xl">Bläck</h2>
+        </div>
+        <p class="max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
+          V3 är ljus från topp till botten — ögat får aldrig vila, och slut-CTA:n
+          konkurrerar på samma ljushet som allt annat. En inverterad sektion i
+          varmt brunsvart (<code class="tok">--ink: 28 14% 9%</code> — samma varma
+          familj, inte kall grafit) ger sidan en basnot. Reserverad för två
+          platser: slut-CTA:n och footern. Här bär amber-core sitt enda framträdande.
+        </p>
+      </div>
+
+      <!-- Rendered ink CTA -->
+      <div class="reveal on-ink shadow-warm grain grain-strong edge-light edge-light-ink relative overflow-hidden rounded-[1.5rem] bg-ink text-ink-foreground">
+        <!-- ambient amber glow, mycket svag -->
+        <div aria-hidden class="pointer-events-none absolute -top-40 left-1/2 h-96 w-[42rem] -translate-x-1/2 rounded-full bg-amber-core/[0.07] blur-3xl"></div>
+
+        <div class="relative px-8 py-16 md:px-16 md:py-20">
+          <p class="eyebrow mb-6 text-amber-ink" style="color: hsl(38 70% 62%)">Kom igång · 30 sekunder</p>
+          <h3 class="font-display max-w-2xl text-4xl leading-[1.08] md:text-[3.4rem]">
+            Er laglista finns redan.
+            <span class="block text-ink-foreground/40">Vi har byggt den åt er.</span>
+          </h3>
+          <p class="mt-6 max-w-xl text-[15.5px] leading-relaxed text-ink-muted">
+            Ange ert organisationsnummer så visar Laglig vilka regelverk som
+            gäller just er verksamhet — innan ni ens skapat ett konto.
+          </p>
+
+          <!-- org-check på bläck -->
+          <div class="mt-9 flex max-w-xl flex-col gap-3 sm:flex-row">
+            <div class="flex h-12 flex-1 items-center rounded-xl border border-ink-border bg-ink-soft px-4 shadow-[inset_0_1px_2px_rgb(0_0_0/0.3)]">
+              <span class="text-[15px] text-ink-muted">556677-8899</span>
+              <span class="ml-px inline-block h-5 w-px animate-pulse bg-amber-core"></span>
+            </div>
+            <button class="btn-cream h-12 shrink-0 rounded-xl px-6 text-[15px] font-medium text-foreground">
+              Visa våra regler
+            </button>
+          </div>
+
+          <!-- footnote-rad -->
+          <div class="mt-12 border-t border-ink-border/60 pt-5">
+            <p class="text-[12.5px] leading-relaxed text-ink-muted/80">
+              Ingen betalning, inget kortnummer. Laglistan genereras från
+              Bolagsverkets SNI-koder och 14 000+ författningar i SFS.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal mt-4 flex flex-wrap gap-2">
+        <span class="note">bläcket är varmt — hue 28, som paletten</span>
+        <span class="note">amber-glöd 7 % — sidans enda amber-core</span>
+        <span class="note">knapp: gräddvit, inte amber — accenten förblir sparsam</span>
+        <span class="note">grövre korn (6 %) — mörka ytor tål mer textur</span>
+      </div>
+
+      <!-- Ink stat strip variant -->
+      <div class="reveal on-ink mt-10 grid overflow-hidden rounded-2xl bg-ink text-ink-foreground sm:grid-cols-3">
+        <div class="relative px-8 py-7">
+          <p class="font-display text-3xl">14 212</p>
+          <p class="mt-1 text-[13px] text-ink-muted">författningar bevakade</p>
+        </div>
+        <div class="relative border-t border-ink-border/60 px-8 py-7 sm:border-l sm:border-t-0">
+          <p class="font-display text-3xl">4 min</p>
+          <p class="mt-1 text-[13px] text-ink-muted">från orgnr till laglista</p>
+        </div>
+        <div class="relative border-t border-ink-border/60 px-8 py-7 sm:border-l sm:border-t-0">
+          <p class="font-display text-3xl text-amber-core" style="color: hsl(38 80% 60%)">Varje dag</p>
+          <p class="mt-1 text-[13px] text-ink-muted">kontroll mot SFS &amp; EUR-Lex</p>
+        </div>
+      </div>
+      <p class="reveal mt-3 text-[13px] text-muted-foreground">
+        Samma bläck som smalt band — trust-strip under hero eller ovanför footern.
+        En amber-siffra pekar ut det viktigaste talet.
+      </p>
+    </section>
+
+    <div class="hairline-x mx-auto max-w-5xl"></div>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         03 · PARAGRAF — redaktionell juridisk detaljering
+    ═══════════════════════════════════════════════════════════════════ -->
+    <section id="paragraf" class="mx-auto max-w-5xl px-6 py-20">
+      <div class="reveal mb-10">
+        <div class="mb-3 flex items-baseline gap-4">
+          <span class="font-display text-2xl text-foreground/25">03</span>
+          <h2 class="font-display text-3xl">Paragraf</h2>
+        </div>
+        <p class="max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
+          Laglig.se:s råmaterial är författningstext — ett av världens mest
+          formaliserade typografiska system. I stället för att låna Linears
+          SaaS-detaljer kan sektionsapparaten låna lagbokens: paragraftecken,
+          SFS-nummer, fotnoter, dubbla linjer. Det är differentieringen ingen
+          konkurrent kan kopiera trovärdigt.
+        </p>
+      </div>
+
+      <!-- Section label evolution -->
+      <div class="reveal mb-14">
+        <p class="eyebrow mb-5 text-muted-foreground">Sektionsetiketter — från chip till lagboksmarginal</p>
+        <div class="grid gap-6 md:grid-cols-2">
+          <div class="rounded-xl border border-border bg-card p-8">
+            <p class="mb-6 text-xs text-muted-foreground">Nu</p>
+            <span class="rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">02 · Bevakning</span>
+          </div>
+          <div class="rounded-xl border border-border bg-card p-8 shadow-warm-sm">
+            <p class="mb-6 text-xs text-amber-ink">Förhöjt</p>
+            <div class="flex items-center gap-4">
+              <span class="font-display text-[15px] tracking-tight text-amber-ink">2 §</span>
+              <span class="eyebrow text-foreground/70">Bevakning</span>
+              <span class="hairline-x flex-1"></span>
+              <span class="text-[11px] tabular-nums text-muted-foreground/60">02 / 07</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature block with ghost § + footnote citations -->
+      <div class="reveal relative overflow-hidden rounded-2xl border border-border bg-section-cream p-8 shadow-warm-sm md:p-14">
+        <span class="ghost-glyph absolute -right-6 -top-14 text-[16rem] md:text-[20rem]">§</span>
+
+        <div class="relative max-w-2xl">
+          <div class="mb-5 flex items-center gap-4">
+            <span class="font-display text-[15px] text-amber-ink">3 §</span>
+            <span class="eyebrow text-foreground/70">Bedömning</span>
+          </div>
+          <h3 class="font-display mb-5 text-3xl leading-[1.12] md:text-4xl">
+            Varje lagändring landar färdigbedömd<span class="text-amber-ink">.</span>
+          </h3>
+          <p class="text-[15.5px] leading-relaxed text-muted-foreground">
+            När arbetsmiljölagen ändras får ni inte en länk till lagtexten — ni
+            får en bedömning av vad ändringen betyder för just er verksamhet,
+            grundad i er laglista och era kollektivavtal<sup class="text-amber-ink">1</sup>.
+            Klar att godkänna eller skicka vidare<sup class="text-amber-ink">2</sup>.
+          </p>
+
+          <!-- footnotes -->
+          <div class="mt-10 border-t border-border pt-4">
+            <ol class="space-y-1.5 text-[12.5px] leading-relaxed text-muted-foreground/85">
+              <li><span class="mr-2 text-amber-ink">1</span>Bedömningen citerar alltid källan — t.ex. SFS 2023:349, 3 kap. 2 a §.</li>
+              <li><span class="mr-2 text-amber-ink">2</span>Med full historik: vem som bedömde vad, när, och på vilket underlag.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal mt-4 flex flex-wrap gap-2">
+        <span class="note">ghost-§ i 4,5 % — vattenmärke, inte dekoration</span>
+        <span class="note">amber-punkt avslutar rubriken — ersätter 45 %-raden ibland</span>
+        <span class="note">riktiga fotnoter — trust genom form, inte påstående</span>
+      </div>
+
+      <!-- Double rule divider demo -->
+      <div class="reveal mt-14">
+        <p class="eyebrow mb-5 text-muted-foreground">Sektionsbrytare — dubbel linje i stället för ton-i-ton-bakgrundsbyte</p>
+        <div class="rule-double"></div>
+        <div class="flex items-center justify-between py-3">
+          <span class="eyebrow text-foreground/60">Nästa: Öppna databasen</span>
+          <span class="font-display text-sm text-foreground/30">4 §</span>
+        </div>
+        <div class="hairline-x"></div>
+      </div>
+    </section>
+
+    <div class="hairline-x mx-auto max-w-5xl"></div>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         04 · ALLT IHOP — hero i förhöjt utförande
+    ═══════════════════════════════════════════════════════════════════ -->
+    <section id="hero" class="py-20">
+      <div class="mx-auto max-w-5xl px-6">
+        <div class="reveal mb-10">
+          <div class="mb-3 flex items-baseline gap-4">
+            <span class="font-display text-2xl text-foreground/25">04</span>
+            <h2 class="font-display text-3xl">Allt ihop — hero</h2>
+          </div>
+          <p class="max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
+            Samma hero som i dag — rubrik, org-check, produktbild — med alla tre
+            riktningarna pålagda. Skillnaden ska kännas mer än synas.
+          </p>
+        </div>
+      </div>
+
+      <!-- Full-bleed rendered hero -->
+      <div class="reveal relative mx-auto max-w-[1400px] px-4">
+        <div class="grain edge-light relative overflow-hidden rounded-[1.75rem] border border-border bg-background shadow-warm">
+          <!-- svag varm gradient uppe till vänster — "fönsterljus" -->
+          <div aria-hidden class="pointer-events-none absolute -left-32 -top-48 h-[34rem] w-[34rem] rounded-full bg-[hsl(42_80%_88%/0.5)] blur-3xl"></div>
+
+          <div class="relative px-6 pt-14 md:px-14 md:pt-20">
+            <!-- nav -->
+            <div class="mb-14 flex items-center justify-between">
+              <span class="font-display text-xl">Laglig<span class="text-amber-ink">.</span>se</span>
+              <div class="hidden items-center gap-7 text-[13.5px] text-muted-foreground md:flex">
+                <span>Produkt</span><span>Branscher</span><span>Lagdatabas</span><span>Priser</span>
+                <button class="btn-ink rounded-lg px-4 py-2 text-[13.5px] font-medium text-primary-foreground">Logga in</button>
+              </div>
+            </div>
+
+            <!-- headline -->
+            <h1 class="font-display mb-6 max-w-4xl text-[2.6rem] leading-[1.05] tracking-tight md:text-6xl lg:text-[4.5rem]">
+              <span class="block">Håll koll på
+                <span class="u-amber">reglerna<svg viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M2 7 Q 28 3, 52 6 T 98 5"/></svg></span>.
+              </span>
+              <span class="block text-foreground/40">Automatiskt.</span>
+            </h1>
+
+            <div class="mb-12 flex flex-col items-start gap-8 lg:flex-row lg:items-end lg:justify-between">
+              <p class="max-w-xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+                Laglig hjälper svenska företag, myndigheter och organisationer
+                att hålla koll på reglerna — så att ni kan fokusera på affärerna.
+              </p>
+              <!-- org-check, förhöjd -->
+              <div class="w-full shrink-0 lg:w-[400px]">
+                <p class="eyebrow mb-2.5 text-amber-ink">Vilka regler gäller er? · 30 sek</p>
+                <div class="flex gap-2.5">
+                  <div class="shadow-warm-sm flex h-12 flex-1 items-center rounded-xl border border-border bg-card px-4">
+                    <span class="text-[15px] text-muted-foreground/70">Organisationsnummer</span>
+                  </div>
+                  <button class="btn-ink h-12 shrink-0 rounded-xl px-5 text-[14.5px] font-medium text-primary-foreground">Visa</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- product shot — nederkanten dyker ned bakom bläckbandet (ren
+               överlappning i stället för gradient-fade, som smetar på ljus UI) -->
+          <div class="relative z-0 -mb-16 px-4 md:px-10">
+            <div class="edge-light shadow-warm relative overflow-hidden rounded-[1.25rem] bg-card ring-1 ring-[hsl(30_20%_20%/0.09)]">
+              <img src="../public/images/landing-v3/hero.webp" alt="Laglig.se — laglista" class="block w-full" />
+            </div>
+          </div>
+
+          <!-- ink trust band, direkt under produktbilden -->
+          <div class="on-ink relative z-10 bg-ink px-6 py-6 text-ink-foreground shadow-[0_-16px_40px_-12px_hsl(28_30%_8%/0.35)] md:px-14">
+            <div class="flex flex-wrap items-center justify-between gap-x-10 gap-y-3 text-[13px] text-ink-muted">
+              <span class="eyebrow text-ink-muted/90" style="letter-spacing:0.12em">Byggd på hela svensk rätt</span>
+              <div class="flex flex-wrap items-center gap-x-8 gap-y-2">
+                <span>SFS · 14 212 författningar</span>
+                <span class="hidden h-3 w-px bg-ink-border sm:block"></span>
+                <span>EUR-Lex</span>
+                <span class="hidden h-3 w-px bg-ink-border sm:block"></span>
+                <span>Domstolsverket</span>
+                <span class="hidden h-3 w-px bg-ink-border sm:block"></span>
+                <span class="text-ink-foreground/90">Uppdaterad i dag <span class="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-amber-core align-middle" style="background: hsl(38 85% 55%)"></span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 flex flex-wrap gap-2 px-2">
+          <span class="note">amber-understrykning ritas efter textens fade-up</span>
+          <span class="note">produktbilden dyker ned bakom bläckbandet — hero får ett golv</span>
+          <span class="note">"fönsterljus"-gradient uppe till vänster, 50 % blur</span>
+          <span class="note">logotypen: amber-punkt — Laglig.se</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="hairline-x mx-auto max-w-5xl"></div>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         TOKENS — vad som faktiskt läggs till i globals.css
+    ═══════════════════════════════════════════════════════════════════ -->
+    <section id="tokens" class="mx-auto max-w-5xl px-6 py-20">
+      <div class="reveal mb-8">
+        <h2 class="font-display mb-3 text-3xl">Tokens — hela ingreppet</h2>
+        <p class="max-w-2xl text-[15px] leading-relaxed text-muted-foreground">
+          Allt ovan är ~20 rader CSS-variabler plus fem utilities. Inga nya
+          typsnitt, inga nya kulörfamiljer — bläcket och ambern ligger båda i
+          palettens befintliga varma hue-band (28–42°).
+        </p>
+      </div>
+
+      <div class="reveal overflow-x-auto rounded-2xl bg-ink p-8 text-[13px] leading-relaxed text-ink-foreground/90 shadow-warm">
+<pre style="font-family: ui-monospace, 'SF Mono', Menlo, monospace;"><span class="text-ink-muted">/* Bläck — inverterade sektioner (slut-CTA, footer, trust-band) */</span>
+--ink: 28 14% 9%;            --ink-foreground: 40 25% 96%;
+--ink-soft: 28 11% 13%;      --ink-muted: 35 8% 62%;
+--ink-border: 35 8% 22%;
+
+<span class="text-ink-muted">/* Amber-ramp — en accent, fyra roller */</span>
+--amber-wash: 42 75% 94%;    <span class="text-ink-muted">/* ::selection, tonade paneler   */</span>
+--amber-line: 38 70% 58%;    <span class="text-ink-muted">/* understrykningar, markörer    */</span>
+--amber-ink:  30 62% 36%;    <span class="text-ink-muted">/* textsäker — eyebrows, länkar  */</span>
+--amber-core: 38 88% 54%;    <span class="text-ink-muted">/* punktljus — max EN / viewport */</span>
+
+<span class="text-ink-muted">/* Varm skugga — ersätter rgb(0 0 0 / x) i alla marketing-ramar */</span>
+.shadow-warm { box-shadow:
+  0 1px 2px 0    hsl(28 40% 12% / .04),
+  0 8px 16px -4px  hsl(28 40% 12% / .06),
+  0 24px 48px -12px hsl(28 45% 14% / .11),
+  0 56px 112px -28px hsl(28 50% 15% / .18); }
+
+<span class="text-ink-muted">/* Övrigt: .grain (3,5 % feTurbulence), .edge-light (1px toppljus),
+   .hairline-x (gradient-hårlinje), ::selection → amber-wash */</span></pre>
+      </div>
+
+      <div class="reveal mt-10 grid gap-4 md:grid-cols-3">
+        <div class="rounded-xl border border-border bg-card p-5 shadow-warm-sm">
+          <p class="mb-1.5 text-[13px] font-medium">Steg 1 — gratis</p>
+          <p class="text-[13px] leading-relaxed text-muted-foreground">Varma skuggor, ::selection, edge-light, gradient-hårlinjer. Ren token-swap, noll layoutrisk.</p>
+        </div>
+        <div class="rounded-xl border border-border bg-card p-5 shadow-warm-sm">
+          <p class="mb-1.5 text-[13px] font-medium">Steg 2 — rytm</p>
+          <p class="text-[13px] leading-relaxed text-muted-foreground">Bläck-CTA + bläck-footer + trust-band under hero. Störst upplevd lyft-per-timme.</p>
+        </div>
+        <div class="rounded-xl border border-border bg-card p-5 shadow-warm-sm">
+          <p class="mb-1.5 text-[13px] font-medium">Steg 3 — signatur</p>
+          <p class="text-[13px] leading-relaxed text-muted-foreground">Paragraf-apparaten: §-etiketter, fotnoter, ghost-glyfer, amber-understrykning i hero.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="on-ink bg-ink px-6 py-10 text-center text-[13px] text-ink-muted">
+      Koncept-prototyp · _prototypes/landing-design-elevation.html · bygger vidare på landing v3
+    </footer>
+
+    <script>
+      const io = new IntersectionObserver(
+        (entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add('is-visible')),
+        { threshold: 0.12 }
+      );
+      document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+    </script>
+  </body>
+</html>
