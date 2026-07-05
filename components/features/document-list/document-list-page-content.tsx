@@ -28,7 +28,7 @@ import { GroupedDocumentListTable } from './grouped-document-list-table'
 import { ComplianceDetailTable } from './compliance-detail-table'
 // Story 6.18: Grouped compliance table (same accordion structure as table view)
 import { GroupedComplianceTable } from './grouped-compliance-table'
-import { GroupManager } from './group-manager'
+import { ManageLawGroupsPopover } from './manage-law-groups-popover'
 import { ManageListModal } from './manage-list-modal'
 import { EmptyLawListState } from './empty-law-list-state'
 // Story 6.3: Legal Document Modal
@@ -107,7 +107,7 @@ export function DocumentListPageContent({
   >([])
   // Story 6.15: Task columns for status dropdown in TaskModal
   const [taskColumns, setTaskColumns] = useState<TaskColumnWithCount[]>([])
-  // Story 4.13: Group management modal
+  // Story 4.13: Group management popover (standalone toolbar trigger)
   const [isGroupManagerOpen, setIsGroupManagerOpen] = useState(false)
   // Story 6.3: Legal document modal - Now with URL state management
   // Modal state is derived from URL, not local state
@@ -785,23 +785,32 @@ export function DocumentListPageContent({
             isFilterBarOpen={isFilterBarOpen}
             onToggleFilterBar={() => setIsFilterBarOpen((o) => !o)}
             viewMenu={
-              <ViewMenu
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-                columnVisibility={columnVisibility}
-                onColumnVisibilityChange={setColumnVisibility}
-                complianceColumnVisibility={complianceColumnVisibility}
-                onComplianceColumnVisibilityChange={
-                  setComplianceColumnVisibility
-                }
-                hasGroups={groups.length > 0}
-                onOpenGroupManager={() => setIsGroupManagerOpen(true)}
-                onExpandAll={expandAllGroups}
-                onCollapseAll={collapseAllGroups}
-                listId={activeListId}
-                listName={activeList?.name ?? 'lista'}
-                exportDisabled={!activeListId || listItems.length === 0}
-              />
+              <div className="flex items-center gap-2">
+                {/* Standalone group-management trigger, mirroring the
+                    Personalregister "Hantera grupper" toolbar button. */}
+                <ManageLawGroupsPopover
+                  open={Boolean(isGroupManagerOpen && activeListId)}
+                  onOpenChange={setIsGroupManagerOpen}
+                  listId={activeListId}
+                  onGroupsUpdated={handleGroupsUpdated}
+                />
+                <ViewMenu
+                  viewMode={viewMode}
+                  onViewModeChange={setViewMode}
+                  columnVisibility={columnVisibility}
+                  onColumnVisibilityChange={setColumnVisibility}
+                  complianceColumnVisibility={complianceColumnVisibility}
+                  onComplianceColumnVisibilityChange={
+                    setComplianceColumnVisibility
+                  }
+                  hasGroups={groups.length > 0}
+                  onExpandAll={expandAllGroups}
+                  onCollapseAll={collapseAllGroups}
+                  listId={activeListId}
+                  listName={activeList?.name ?? 'lista'}
+                  exportDisabled={!activeListId || listItems.length === 0}
+                />
+              </div>
             }
             settingsAction={
               <Button
@@ -1110,16 +1119,6 @@ export function DocumentListPageContent({
         onUpdated={handleListUpdated}
         onDeleted={handleListDeleted}
       />
-
-      {/* Story 4.13: Group manager modal */}
-      {activeListId && (
-        <GroupManager
-          open={isGroupManagerOpen}
-          onOpenChange={setIsGroupManagerOpen}
-          listId={activeListId}
-          onGroupsUpdated={handleGroupsUpdated}
-        />
-      )}
 
       {/* Story 6.3: Legal document modal - pass initialData for instant display */}
       <LegalDocumentModal

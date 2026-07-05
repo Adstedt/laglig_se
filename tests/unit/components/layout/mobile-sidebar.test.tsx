@@ -5,6 +5,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi, describe, beforeEach, it, expect } from 'vitest'
+import type { WorkspaceRole } from '@prisma/client'
 import { MobileSidebar } from '@/components/layout/mobile-sidebar'
 
 // Mock next/navigation
@@ -46,6 +47,14 @@ global.fetch = vi.fn().mockResolvedValue({
 
 describe('MobileSidebar', () => {
   const mockOnOpenChange = vi.fn()
+
+  // Passing `role` as a variable (not a string literal) avoids the
+  // jsx-a11y/aria-role false positive on the component's `role` prop.
+  function renderSidebar(role?: WorkspaceRole) {
+    return render(
+      <MobileSidebar open={true} onOpenChange={mockOnOpenChange} role={role} />
+    )
+  }
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -146,6 +155,40 @@ describe('MobileSidebar', () => {
       expect(screen.getByText('Aktivitetslogg').closest('a')).toHaveAttribute(
         'href',
         '/workspace/activity'
+      )
+    })
+  })
+
+  describe('HR nav permission gating (Story 7.2b)', () => {
+    it('mutes the HR item for a role without employees:view (MEMBER)', () => {
+      renderSidebar('MEMBER')
+
+      const hr = screen.getByText('HR')
+      expect(hr.closest('a')).toBeNull()
+      expect(hr.closest('span.cursor-not-allowed')).not.toBeNull()
+    })
+
+    it('mutes the HR item when no role is provided', () => {
+      renderSidebar()
+
+      expect(screen.getByText('HR').closest('a')).toBeNull()
+    })
+
+    it('renders HR as an active link for OWNER', () => {
+      renderSidebar('OWNER')
+
+      expect(screen.getByText('HR').closest('a')).toHaveAttribute(
+        'href',
+        '/personalregister'
+      )
+    })
+
+    it('renders HR as an active link for HR_MANAGER', () => {
+      renderSidebar('HR_MANAGER')
+
+      expect(screen.getByText('HR').closest('a')).toHaveAttribute(
+        'href',
+        '/personalregister'
       )
     })
   })

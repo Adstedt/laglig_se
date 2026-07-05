@@ -104,3 +104,9 @@ Laglig.se samlar lagen om skydd mot olyckor och anslutande brandskyddsregler i e
 ## Anmärkningar
 
 Risk för kannibalisering mot /omraden/brandskydd — låt den här sidan vara den fokuserade "SBA"-sidan (metod, årshjul, dokumentation) och låt /omraden/brandskydd vara den bredare paraplysidan; länka tydligt mellan dem och differentiera H1/meta. Använd "[bekräfta i katalogen]" för MSB-beteckning och BBR-föreskrifter; påstå inte exakta nummer utan verifiering.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** systematiskt brandskyddsarbete — 720/mån, KD 23; "SBA" 1 600/mån KD 22 söks MER än frasen → förkortningen tidigt och genomgående.
+- **Upptäckta:** brandskyddsansvarig (320, KD 13) → egen H2. SERP = räddningstjänsternas vägledningar → hur-gör-man-struktur med ProcessSteps.
+- **Faktakontroll:** 2 kap. 3 § LSO upphävd genom lag (2020:882) — verifierad mot fulltext; MSB:s allmänna råd korrekt beskrivna som icke-bindande; rondintervall mjukade ("lagen anger inget fast intervall").

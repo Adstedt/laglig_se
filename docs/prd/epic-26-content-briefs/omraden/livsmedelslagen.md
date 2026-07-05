@@ -88,3 +88,8 @@ Livsmedelslagen (2006:804) tillsammans med EU:s livsmedelsförordningar ställer
 
 ## Anmärkningar
 - Lagförklaringssida med områdes-intent; länka till /funktioner/kontroller för hur efterlevnad dokumenteras. Undvik kannibalisering med katalogens /lagar-sida för livsmedelslagen — denna sida är förklaring och intent-nav, katalogen är lagtext/struktur. Sätt canonical på denna för nyckelordet "livsmedelslagen".
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** livsmedelslagen — 390/mån, KD 28; HACCP (1 300/mån, KD 24!) → substantiell egen H2 med sju principerna som ProcessSteps; livsmedelskontroll (170) + registrering → egna H2.
+- **Faktakontroll:** sanktionsavgift (30a §), syfte (1 §), godkännande-bemyndigande (7 §), omhändertagande (24 §) verifierade; EU-förordningarna (178/2002, 852/853/2004, 1169/2011) är alla MISS i katalogen → nämns olänkade (ingestion-kandidater!).

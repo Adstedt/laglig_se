@@ -1,0 +1,120 @@
+schema: 1
+story: '7.4'
+story_title: 'Completeness / "Ej komplett" status'
+gate: PASS
+status_reason: >-
+  One pure rule (assessEmployeeCompleteness) verifiably feeds all five
+  surfaces over UNFILTERED rows — no re-implementations, no filtered-count
+  leaks (UX-001 class closed on every new surface). The null-check-only
+  contract is safe ('' unreachable in storage via the 7.3 three-state write
+  path, semantics pinned by tests), the island-owned PageHeader seam leaks
+  nothing server-only and keeps gating server-side, Task 3b parity landed
+  without touching shared primitives, and the banned noun appears nowhere
+  user-facing. 176/176 targeted tests + typecheck independently re-run
+  clean. Two low-severity polish items only.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-07-03T16:00:00+02:00'
+
+top_issues:
+  - id: 'SEARCH-001'
+    severity: low
+    finding: >-
+      Personnummer search matches the raw stored string while the cell now
+      displays ÅÅMMDD-XXXX (Task 3b) — typing the displayed hyphenated form
+      misses a digit-only stored value and vice versa. Pre-existing search
+      behavior; the new display formatting widens the visible mismatch.
+    suggested_action: >-
+      Normalize both the stored value and the query to digits inside
+      matchesSearch (filter-employees.ts).
+    suggested_owner: dev
+  - id: 'A11Y-001'
+    severity: low
+    finding: >-
+      The hover-reveal sort icon (EmployeeSortableHeader) appears on
+      group-hover only — keyboard users focusing the header button get no
+      affordance reveal.
+    suggested_action: >-
+      Add group-focus-within/head:opacity-50 alongside the hover class in
+      employee-list-table.tsx.
+    suggested_owner: dev
+waiver: { active: false }
+
+quality_score: 100
+expires: '2026-07-17T00:00:00+02:00'
+
+evidence:
+  tests_reviewed: 176
+  risks_identified: 2
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6]
+    ac_gaps: []
+    # AC1: 13-test rule matrix (each field individually, combinations,
+    # stable reason order, flag on/off, masked AND '' count as present —
+    # the null-check-only contract is pinned, not incidental).
+    # AC2: filter-employees ej_kompletta cases (orthogonal to Aktiv/Inaktiv,
+    # composes with search) + island passes only incomplete rows.
+    # AC3: modal sidebar verdict describe (create-mode neutral hint,
+    # Komplett, per-field reasons in stable order, flag-gated avtal reason).
+    # AC4: stat from UNFILTERED rows, unchanged under filtering (UX-001),
+    # optimistic update after save, no 0/0 on empty register.
+    # AC5: group rollup from unfiltered rows; empty group renders "0".
+    # AC6: badge only when incomplete, alongside Aktiv; both badges on an
+    # inactive incomplete row.
+    # Task 3b: two-line Anställd (no "Ej ifylld" secondary), display-only
+    # personnummer formatting (stored value untouched — asserted), masked
+    # renders verbatim, Visa/Dölj alla, hover-reveal sort — all RTL-covered;
+    # git confirms components/ui/sortable-header.tsx and
+    # components/features/document-list/** untouched.
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      Read-only story on the PII axis: the rule checks null-ness only and
+      never inspects, compares or logs personnummer content; display
+      formatting operates on already-authorized values (repository decrypts
+      only for manage roles) and never mutates rows; crypto and write paths
+      untouched; employees:view gate verified to run before any fetch and
+      canManage stays server-computed despite the PageHeader moving into
+      the island.
+  performance:
+    status: PASS
+    notes: >-
+      O(n) assessments over in-memory rows with memoized aggregates
+      (completeCount, unfilteredCounts); one getCompanyProfile added to the
+      existing Promise.all. Informational: getCompanyProfile upserts, so a
+      profile-less workspace performs one insert on first register view —
+      pre-existing Settings behavior reused.
+  reliability:
+    status: PASS
+    notes: >-
+      Company-profile fetch failure degrades to flag=false with a
+      console.error (no crash path, no wrong-positive — true only from the
+      stored field); completeness recomputes automatically after saves
+      because every surface derives from the row state onEmployeeChange
+      updates; nothing persisted, so the rule cannot drift from data.
+  maintainability:
+    status: PASS
+    notes: >-
+      Single-source rule with structural typing and exhaustive pure tests;
+      exact-string reason constants exported for test pinning; local
+      EmployeeSortableHeader documents WHY it exists instead of editing the
+      shared primitive; banned noun confined to comments documenting the
+      ban. Two low-severity polish items logged (SEARCH-001, A11Y-001).
+
+recommendations:
+  immediate: []
+  future:
+    - action: >-
+        Digit-normalize personnummer search (SEARCH-001) so the displayed
+        ÅÅMMDD-XXXX form and digit-only input both match.
+      refs: ['components/features/personalregister/filter-employees.ts']
+    - action: >-
+        Reveal the sort affordance on keyboard focus as well as hover
+        (A11Y-001).
+      refs: ['components/features/personalregister/employee-list-table.tsx']
+    - action: >-
+        Manual browser pass of the register (carried from 7.2/7.3) — now
+        also covering hover-reveal sort, header separators, Visa/Dölj alla
+        and the amber badge at real viewport sizes.
+      refs: ['components/features/personalregister/employee-list-table.tsx']

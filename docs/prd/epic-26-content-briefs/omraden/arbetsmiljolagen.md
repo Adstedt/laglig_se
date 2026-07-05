@@ -102,3 +102,10 @@ Arbetsmiljölagen är ramlagen som preciseras av Arbetsmiljöverkets föreskrift
 ## Anmärkningar
 
 Denna sida äger "vad innebär / krav / sammanfattning" för själva arbetsmiljölagen; håll den på lagförklaringsnivå och länka till /omraden/arbetsmiljo (områdesöversikt) och /omraden/afs (föreskrifterna) för att undvika kannibalisering. Katalogsidan /lagar äger "läs lagtexten". AFS-numreringen ändrades 1 jan 2025 — använd [bekräfta nummer i katalogen] där exakt nummer inte är verifierat.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** arbetsmiljölagen — 6 600/mån, KD 35.
+- **Upptäckta keywords (ej i brief):** skyddsombud (3 600, KD 23 → egen H2); arbetsmiljöförordningen (480, KD 26 → länkad + kataloglista); 6 6a anmälan (390, KD 19 → paragraf namngiven i skyddsombuds-H2); arbetsmiljölagen 1977 1160 / arbetsmiljölagen aml (210+210 → SFS-nummer + AML-alias i inledningen); skyddsombudsstopp (170, KD 14 → 6 kap. 7 §-stycke).
+- **Nedgraderade:** briefens long-tails ~0 volym ("vad säger arbetsmiljölagen" 20) → FAQ-formuleringar.
+- **Strategibeslut:** AML-vs-AFS-relationen egen H2 (afs arbetsmiljö 260 + arbetsmiljölagen afs 170). Faktakontroll mot lagtext i katalogen: skyddsombud ≥5 anställda, skyddskommitté ≥50, ikraft 1978 bekräftade; "god tro"-förbehåll för skyddsombudsstopp finns INTE i lagen (6 kap. 7 § ger fri ersättningsskyldighet) — korrigerat.

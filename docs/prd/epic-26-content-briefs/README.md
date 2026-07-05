@@ -2,6 +2,23 @@
 
 **121 page briefs** · **1612 keyword mappings** · **1457 unique keywords**.
 
+## Status: omraden-klustret (uppdaterad 2026-07-03)
+
+**Klart: 49/49 + hubbsidan `/omraden` — omraden-klustret komplett 2026-07-03.** En sida räknas som klar när dess `.mdx` ligger i `content/marketing/omraden/` OCH briefen fått sitt `## Semrush-validering`-block (appendas som sista steg i pipelinen — saknas blocket är sidan inte färdigvaliderad).
+
+| Våg | Sidor | Status |
+|---|---|---|
+| 1 — Arbetsmiljö (kärna) + pilot | miljobalken, arbetsmiljo, arbetsmiljolagen, afs, sam, riskbedomning | ✅ Klar 2026-07-03 |
+| 2 — Miljö | miljo, egenkontroll, avfallsforordningen, avfallstrappan, kemikalieforteckning, reach, energikartlaggning | ✅ Klar 2026-07-03 |
+| 3 — Säkerhet & brand | brandskydd, sba, lag-om-skydd-mot-olyckor, elsakerhetslagen, stralskyddslagen | ✅ Klar 2026-07-03 |
+| 4 — Ledningssystem & ISO | ledningssystem, kvalitetsledningssystem, miljoledningssystem, iso-9000, iso-9001, iso-14001, iso-45001, internrevision, lagrevision, lagefterlevnad | ✅ Klar 2026-07-03 |
+| 5 — Dataskydd & IT | gdpr, nis2, dora, ai-act, iso-27001 | ✅ Klar 2026-07-03 |
+| 6 — Hållbarhet | csrd, esg, eu-taxonomin, iso-50001 | ✅ Klar 2026-07-03 |
+| 7 — Bygg & fastighet | plan-och-bygglagen, boverkets-byggregler, ovk, ce-markning, maskindirektivet | ✅ Klar 2026-07-03 |
+| 8 — Arbetsmiljö (rest) & övrig efterlevnad | arbetstidslagen, diskrimineringslagen, las, alkohollagen, livsmedelslagen, penningtvatt, visselblasarlagen | ✅ Klar 2026-07-03 |
+
+Pipeline per sida: Semrush-validera briefen (db=se): volym/KD/intent på briefens keywords + phrase_related-utforskning + phrase_organic på primärtermen (vilken sidtyp SERP:en belönar — lagtext, myndighetsvägledning eller explainer) — datat vinner konflikter med briefen och styr sidans struktur → verifiera författningsnummer mot katalogen → skriv MDX (mall: miljobalken.mdx) → hero-bild (look-rotation, distinkt scen, kort svensk skyltning ok, inga företagsnamn/finstilt) → faktakontroll mot lagtext i DB → kapabilitetskontroll (inga produktlöften utanför funktioner-sidorna) → render-/länkvalidering → appenda Semrush-validering-blocket i briefen. Hubben `/omraden` uppdaterar sig själv från publicerade sidor.
+
 SEMrush: [`keywords.csv`](./keywords.csv) (keyword · type · cluster · page · intent) · [`keywords.txt`](./keywords.txt) (unique, one per line for Position Tracking import).
 
 Parent plan: [`../epic-26-page-inventory.md`](../epic-26-page-inventory.md)

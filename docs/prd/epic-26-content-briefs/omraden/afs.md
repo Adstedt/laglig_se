@@ -101,3 +101,10 @@ Arbetsmiljöverkets föreskrifter (AFS) preciserar arbetsmiljölagens krav i det
 ## Anmärkningar
 
 Hela poängen med sidan är att hjälpa användare navigera nya AFS-strukturen — använd [bekräfta nummer i katalogen] för enskilda AFS där exakt nytt nummer inte är verifierat (numreringen ändrades 1 jan 2025). Länka till /omraden/arbetsmiljolagen (ramlagen) och /omraden/arbetsmiljo (områdesöversikt) för att undvika kannibalisering. Katalogsidan /lagar äger "läs föreskriftstexten".
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Primärt justerat:** "AFS" har 6 600/mån men KD 51 och hög tvetydighet → realistiska mål är vad är en afs (260, KD 26), vad står afs för (210, KD 30), arbetsmiljöverkets föreskrifter (390, KD 33). Sidan byggd definition-först därefter.
+- **Upptäckta keywords:** afs 2001 1 (590 — gamla nummer söks fortfarande → omnumreringstabell gamla→nya som centralt GEO-element); afs arbetsmiljö (260); vad är afs (260, KD 16).
+- **Nedgraderade:** briefens long-tails ("nya AFS-regelstrukturen 2025" m.fl.) ~0 uppmätt volym → rubrik-/FAQ-formuleringar.
+- **Strategibeslut:** ingen totalsiffra för antal gällande AFS utöver "15 föreskrifter i nya strukturen" (katalogen har 81 ACTIVE AFS-poster inkl. ändringsföreskrifter — siffror går isär, undvik). Sanktionsavgiftsspannet 1 000–1 000 000 kr bekräftat mot AML 8 kap. i katalogen.

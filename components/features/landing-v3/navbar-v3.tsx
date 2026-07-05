@@ -470,6 +470,17 @@ export function NavbarV3({
                         </li>
                       ))}
                     </ul>
+                    <div className="mt-2 border-t border-border/60 pt-2">
+                      <NavigationMenuLink asChild>
+                        <Link
+                          href="/omraden"
+                          className="flex items-center justify-between rounded-lg px-2.5 py-2 font-safiro text-sm font-medium tracking-tight text-foreground/80 transition-colors hover:bg-foreground/[0.04] hover:text-foreground"
+                        >
+                          Visa alla områden
+                          <span aria-hidden>→</span>
+                        </Link>
+                      </NavigationMenuLink>
+                    </div>
                   </div>
                 </NavigationMenuContent>
               </NavigationMenuItem>
@@ -584,6 +595,9 @@ export function NavbarV3({
                       onClick={close}
                     />
                   ))}
+                  <MobileLink href="/omraden" onClick={close}>
+                    Visa alla områden →
+                  </MobileLink>
                 </MobileSection>
                 <MobileSection title="Regelverk">
                   {REGELVERK.map((i) => (

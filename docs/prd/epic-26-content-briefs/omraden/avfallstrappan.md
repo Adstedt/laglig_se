@@ -87,3 +87,10 @@ Avfallstrappan är inte bara en princip utan en rättsligt styrande prioritering
 
 ## Anmärkningar
 - Begreppssida som ligger nära /omraden/miljo; håll fokus på avfallshierarkin och länka uppåt för bredare miljökontext. Undvik kannibalisering genom att inte upprepa hela egenkontrollavsnittet från miljösidan.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** avfallstrappan — 880/mån, KD 23; avfallshierarkin (260, KD 26) som synonym tidigt (EU-termen).
+- **Upptäckta:** vad är deponi (170, KD 10) → eget H3 med fristående definition.
+- **Nedgraderade:** "avfallstrappan steg" 0 uppmätt volym — men femstegsstrukturen (ProcessSteps) bär sidan ändå.
+- **Strategibeslut:** inga paragrafnummer i 15 kap. MB (ej verifierade); deponikrav hållna generella; SFS 2001:512 ej citerad (utanför verifierad lista).

@@ -103,3 +103,8 @@ Lagrevisionen omfattar de krav som gäller verksamheten; vanligt förekommande:
 ## Anmärkningar
 
 Avgränsa mot /omraden/internrevision (bredare ledningssystemsrevision) och /funktioner/revisionsrapport (produktfunktionen). Denna sida är konceptet/metoden; länka till funktionssidan för produktdetaljer, konkurrera inte. Inga SHA-256-/krypteringspåståenden — rapporten är en signerad PDF av en avslutad kontroll-cykel.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Volymläge:** ~0 uppmätt volym — KOMMERSIELL sida, inte volymsida: termen används av ISO-certifierade företag (vår ICP); GEO-first + produktnära.
+- **OBS:** skribentens session avbröts av limit — hero genererades centralt (godkänd: KONFERENSRUM/PLANERING korrekt svenska), rapport-/PDF-påstående mjukat till verifierad funktioner-copy, självkontroll körd centralt (OK).

@@ -186,6 +186,12 @@ async function buildChildSitemap(id: number): Promise<{
             changefreq: 'weekly',
             priority: 0.8,
           },
+          {
+            loc: `${baseUrl}/omraden`,
+            lastmod: now,
+            changefreq: 'weekly',
+            priority: 0.8,
+          },
           ...LEGAL_DOCS.map((doc) => ({
             loc: `${baseUrl}/${doc.slug}`,
             lastmod: now,

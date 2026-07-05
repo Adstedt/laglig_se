@@ -592,6 +592,11 @@ export function RichTextDisplay({
       className={cn(
         'prose prose-sm dark:prose-invert max-w-none',
         '[&_p]:my-2 [&_ul]:my-2 [&_ol]:my-2',
+        // @tailwindcss/typography is not installed, so the `prose` classes are
+        // inert — list markers must be restored explicitly (preflight strips
+        // them). Mirrors the `.tiptap` list CSS in globals.css.
+        '[&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6',
+        '[&_ul_ul]:list-[circle] [&_ul_ul_ul]:list-[square]',
         '[&_li]:my-0.5',
         '[&_a]:text-primary [&_a]:underline',
         '[&_blockquote]:border-l-2 [&_blockquote]:border-muted-foreground/30 [&_blockquote]:pl-4 [&_blockquote]:italic',

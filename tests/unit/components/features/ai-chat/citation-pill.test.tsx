@@ -177,6 +177,98 @@ describe('CitationPillInline — file sources (Story 17.9d)', () => {
   })
 })
 
+// --- Story 7.7: kollektivavtal variant ---------------------------------------
+
+function caSource(overrides: Partial<SourceInfo> = {}): SourceInfo {
+  return {
+    documentNumber: 'Teknikavtalet (Kollektivavtal) > § 12 Uppsägning',
+    title: 'Teknikavtalet',
+    snippet: 'Uppsägningstiden är enligt avtalet minst tre månader.',
+    slug: null,
+    path: null,
+    anchorId: null,
+    collectiveAgreementId: 'agreement-42',
+    fileId: 'file-9',
+    ...overrides,
+  }
+}
+
+const CA_LABEL = 'Teknikavtalet (Kollektivavtal) > § 12 Uppsägning'
+// The pill truncates labels > 35 chars ("xxx…"); match the visible prefix.
+const CA_PILL_TEXT = /Teknikavtalet \(Kollektivavtal\)/
+
+describe('CitationPillInline — kollektivavtal sources (Story 7.7 AC 5)', () => {
+  it('renders the distinct Handshake icon (not Paperclip/FileText)', () => {
+    const { container } = renderPill(CA_LABEL, caSource())
+    expect(container.querySelector('.lucide-handshake')).not.toBeNull()
+    expect(container.querySelector('.lucide-paperclip')).toBeNull()
+    expect(container.querySelector('.lucide-file-text')).toBeNull()
+  })
+
+  it('hover card shows the snippet, the "Kollektivavtal" label and "Öppna kollektivavtalet"', () => {
+    vi.useFakeTimers()
+    try {
+      renderPill(CA_LABEL, caSource())
+      fireEvent.mouseEnter(screen.getByText(CA_PILL_TEXT))
+      act(() => {
+        vi.advanceTimersByTime(250)
+      })
+      expect(
+        screen.getByText(
+          'Uppsägningstiden är enligt avtalet minst tre månader.'
+        )
+      ).toBeInTheDocument()
+      expect(screen.getByText('Kollektivavtal')).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /Öppna kollektivavtalet/i })
+      ).toBeInTheDocument()
+      // The generic file CTA is replaced, not duplicated.
+      expect(
+        screen.queryByRole('button', { name: /^Öppna filen/i })
+      ).not.toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('click opens the agreement PDF via QuickPreview (workspace_file_id), never the sidebar', async () => {
+    mockGetFileById.mockResolvedValue({
+      success: true,
+      data: { id: 'file-9', filename: 'teknikavtalet.pdf' },
+    })
+    renderPill(CA_LABEL, caSource())
+    fireEvent.click(screen.getByText(CA_PILL_TEXT))
+    await waitFor(() => expect(mockGetFileById).toHaveBeenCalledWith('file-9'))
+    expect(mockOpenDetail).not.toHaveBeenCalled()
+    expect(await screen.findByTestId('quick-preview')).toBeInTheDocument()
+  })
+
+  it('CA source WITHOUT a backing file: no CTA, no crash, snippet still previews', () => {
+    vi.useFakeTimers()
+    try {
+      renderPill(CA_LABEL, caSource({ fileId: null }))
+      fireEvent.click(screen.getByText(CA_PILL_TEXT))
+      // No file to open and never the legal sidebar.
+      expect(mockGetFileById).not.toHaveBeenCalled()
+      expect(mockOpenDetail).not.toHaveBeenCalled()
+      fireEvent.mouseEnter(screen.getByText(CA_PILL_TEXT))
+      act(() => {
+        vi.advanceTimersByTime(250)
+      })
+      expect(
+        screen.getByText(
+          'Uppsägningstiden är enligt avtalet minst tre månader.'
+        )
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: /Öppna kollektivavtalet/i })
+      ).not.toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
+
 describe('CitationPillInline — legal non-regression (Story 17.9d AC 6)', () => {
   it('suppresses a legal doc-level snippet and still routes to the sidebar', () => {
     renderPill('SFS 1977:1160', legalSource())

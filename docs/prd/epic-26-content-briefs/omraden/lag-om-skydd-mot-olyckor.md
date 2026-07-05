@@ -102,3 +102,9 @@ Lag om skydd mot olyckor lägger ansvaret för skäligt brandskydd på ägare oc
 ## Anmärkningar
 
 Denna sida äger "vad innebär / krav / sammanfattning" för LSO; länka till /omraden/brandskydd (områdesöversikt) för att undvika kannibalisering. Katalogsidan /lagar äger "läs lagtexten". OBS: kravet på skriftlig redogörelse för brandskyddet har ändrats över tid — markera [bekräfta aktualitet] och verifiera mot MSB innan publicering. Verifiera SRVFS- och LBE-nummer mot katalogen.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** lag om skydd mot olyckor — 720/mån, KD 22 + "LSO" 1 000/mån KD 19 → båda tidigt.
+- **Upptäckta:** "skäligt brandskydd" → egen frågeformad H2 (kärnbegreppet).
+- **Faktakontroll:** AFS 2020:1 var MISS → ersatt med AFS 2023:12; skriftlig redogörelse-upphävandet verifierat (2 kap. 3 § upphävd genom 2020:882); statlig tillsynsmyndighet medvetet ej namngiven (MSB→Myndigheten för civilt försvar-övergång 2026) — endast kommunal tillsyn beskrivs.

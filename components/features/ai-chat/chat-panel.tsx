@@ -5,12 +5,21 @@
  * Unified chat UI used by main sidebar, task modal, and law document modal
  */
 
-import { useRef, useEffect, useMemo, useCallback, ReactNode } from 'react'
+import {
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+  useState,
+  ReactNode,
+} from 'react'
 import { X, Download } from 'lucide-react'
 import { LexaIcon } from '@/components/ui/lexa-icon'
 import { Button } from '@/components/ui/button'
 import { ChatMessageList } from './chat-message-list'
 import { ChatInputModern } from './chat-input-modern'
+// Story 7.7: employee-in-context pill type (picker lives in the chat input).
+import type { ChatEmployeeOption } from './employee-context-picker'
 import { useChatAttachments } from '@/lib/hooks/use-chat-attachments'
 import { ChatError } from './chat-error'
 import { AssessmentResolution } from '@/components/features/changes/assessment-resolution'
@@ -285,25 +294,49 @@ function ChatPanelBody({
     uploading: attachmentsUploading,
   } = useChatAttachments()
 
+  // Story 7.7 (AC 1): employee-in-context pill. Panel state — persists until
+  // the user removes the pill; the id rides EVERY send (incl. followups) as a
+  // per-send body field. The server re-gates it, so this is pure transport.
+  const [contextEmployee, setContextEmployee] =
+    useState<ChatEmployeeOption | null>(null)
+
   const handleSendMessage = useCallback(
     (content: string) => {
       dismissFollowups()
-      sendMessage(content, pendingAttachments)
+      sendMessage(
+        content,
+        pendingAttachments,
+        contextEmployee ? { employeeId: contextEmployee.id } : undefined
+      )
       clearAttachments()
     },
-    [sendMessage, dismissFollowups, pendingAttachments, clearAttachments]
+    [
+      sendMessage,
+      dismissFollowups,
+      pendingAttachments,
+      clearAttachments,
+      contextEmployee,
+    ]
   )
 
   const handleFollowupClick = useCallback(
     (question: string) => {
       dismissFollowups()
-      sendMessage(question)
+      sendMessage(
+        question,
+        undefined,
+        contextEmployee ? { employeeId: contextEmployee.id } : undefined
+      )
     },
-    [sendMessage, dismissFollowups]
+    [sendMessage, dismissFollowups, contextEmployee]
   )
 
   const handleSuggestedQuestion = (question: string) => {
-    sendMessage(question)
+    sendMessage(
+      question,
+      undefined,
+      contextEmployee ? { employeeId: contextEmployee.id } : undefined
+    )
   }
 
   const inlineAssessment = useMemo(() => {
@@ -443,6 +476,9 @@ function ChatPanelBody({
         onRemoveAttachment={removeAttachment}
         attachmentError={attachmentError}
         attachmentsUploading={attachmentsUploading}
+        selectedEmployee={contextEmployee}
+        onSelectEmployee={setContextEmployee}
+        onRemoveEmployee={() => setContextEmployee(null)}
       />
     </div>
   )

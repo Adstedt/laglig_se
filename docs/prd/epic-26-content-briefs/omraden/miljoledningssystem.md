@@ -103,3 +103,9 @@ ISO 14001 (krav 6.1.3) innebär att ni ska fastställa bindande krav kopplade ti
 ## Anmärkningar
 
 Avgränsa tydligt mot /omraden/iso-14001 (standard-specifik: krav och certifiering) och /omraden/miljo (lagstiftningsområdet). Denna sida = begreppet "miljöledningssystem" och uppbyggnaden; länka till båda utan att duplicera. Inga krypto-påståenden om revisionsrapporten.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** miljöledningssystem — 320/mån, KD 18 + miljöledning 320; EMAS (170, KD 14) → egen H2 med jämförelsetabell.
+- **Faktakontroll:** EMAS-förordningen (32009R1221) MISS → olänkad (detaljer ur brief, flaggade); ISO 14001-avsnittsnummer (6.1.3/9.1.2) ej verifierbara (ISO ej i katalogen); SFS 1998:901 länkad verifierad.
+- **Bild:** v1 förkastad (rappakalja-finstilt).

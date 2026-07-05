@@ -1,0 +1,83 @@
+schema: 1
+story: '7.8'
+story_title: 'Fortnox mapping layer & sync scaffolding (no live sync)'
+gate: PASS
+status_reason: 'Pure, zero-import mapper with exact fidelity to the reference schema (spot-verified property-by-property), precision-safe string-based Decimal boundary, a clean single-throw contract, and 40/40 substantive tests including Prisma-enum drift guards. All 6 ACs fully traced; remaining notes are accepted-low future-sync considerations, none in this story''s code path.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-07-03T23:35:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'DATE-001'
+    severity: low
+    finding: 'toFortnoxDate serializes Date via toISOString().slice(0,10) (UTC). A DateTime NOT stored at UTC midnight (e.g. a local-midnight write from a UTC+2 form path = 22:00Z previous day) would emit the prior calendar day. fromFortnoxDate correctly produces UTC-midnight Dates, and the 7.1 convention is UTC midnight, so current data is safe — but nothing in the mapper enforces the convention.'
+    suggested_action: 'Accept for 7.8 (pure mapper, convention holds). When the employee edit UI / sync job land, ensure employment_date/employed_to writes stay UTC-midnight normalized.'
+    suggested_owner: dev
+  - id: 'SYNC-001'
+    severity: low
+    finding: 'EmployeeInput.country is non-nullable string defaulting ''SE'' (dev scrutiny item 3 — accepted: makes the default explicit and keeps the shape round-trippable). Consequence for the FUTURE sync job: a naive full-row upsert from a Fortnox record with no Country would overwrite a manually-set non-SE country with ''SE''. Same class of concern as the documented null-emission policy (plan-doc assumption 5), but inbound.'
+    suggested_action: 'When the sync story lands, the merge policy must treat mapper-defaulted fields (country, inactive) deliberately, not as authoritative Fortnox values. Add a line to the conflict-policy section when that story is drafted.'
+    suggested_owner: dev
+  - id: 'ENV-001'
+    severity: low
+    finding: 'Full-repo pnpm typecheck is currently RED — but entirely outside 7.8''s zone: lib/agent/skills/generate-law-list.ts (4× TS18048 toolCall possibly undefined) and components/features/ai-chat/citation-pill.tsx, both in Story 7.7''s concurrent working-tree area (uncommitted edits to lib/agent/tools/index.ts etc. confirm active 7.7 work). Zero type errors reference lib/integrations/** or tests/unit/lib/integrations/**; the dev''s "typecheck clean" claim was evidently true at their run time.'
+    suggested_action: 'Route to the 7.7 dev — resolve before either story merges so the branch typechecks green.'
+    suggested_owner: dev
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'No crypto import (verified: the mapper has ZERO imports). personnummer mapped as opaque ciphertext with the encrypt/decrypt boundary explicitly assigned to the future sync job in both the module doc-block and the plan doc. No I/O, no network, no Prisma runtime.'
+  performance:
+    status: PASS
+    notes: 'Pure synchronous projections; 40 tests run in 6ms. No hot-path concerns.'
+  reliability:
+    status: PASS
+    notes: 'Throw contract is minimal and typed (FortnoxMappingError, stable code FORTNOX_MISSING_REQUIRED_NAME, names-only); every other malformed/absent field null-degrades — tested for dates, enums, numerics in both directions. toFortnox proven throw-free even on {}.'
+  maintainability:
+    status: PASS
+    notes: 'Follows the lib/external/eurlex.ts house convention (doc-block, sectioned, named exports). Field map lives as per-property doc comments on FortnoxEmployee (single source of truth per AC2); assumptions honestly quarantined in two date helpers + the plan doc for easy live-API adjustment.'
+
+requirements_traceability:
+  - ac: 'AC1 (pure mapping adapter, identity enums, casing/dates/Decimal/country only)'
+    coverage: full
+    notes: 'toFortnox/fromFortnox pure, zero imports. Enum identity loop-tested over ALL members of all three Prisma enums both directions, plus set-equality drift guards against Object.values() of the Prisma enums (arrays match schema L2684-2705 exactly).'
+  - ac: 'AC2 (typed FortnoxEmployee transcribed with per-field column↔property doc comments)'
+    coverage: full
+    notes: 'All mapped properties + the type-split-critical unmapped compensation fields (MonthlySalary/HourlyPay/AverageHourlyWage as strings) + FullName transcribed; names/types spot-verified against the reference doc verbatim. The ~80 unmapped payroll/ledger fields documented as fortnox_raw-preserved rather than transcribed — a sound reading of the AC''s intent (mapping source of truth), documented in the interface doc-block.'
+  - ac: 'AC3 (minimal-record tolerance, nulls -> "Ej komplett" via 7.4)'
+    coverage: full
+    notes: 'Email/FirstName/LastName-only record asserted no-throw with every other field null (or documented default SE/false), field-by-field.'
+  - ac: 'AC4 (round-trip ≈ for retained fields; fortnox_raw ownership documented)'
+    coverage: full
+    notes: 'toFortnox(fromFortnox(sample)) toEqual(sample) over the full mapped set; second test proves EmployeeInput is structurally re-acceptable without conversion loss. fortnox_raw non-management stated in the module doc-block, EmployeeInput doc, and plan-doc assumption 2.'
+  - ac: 'AC5 (@@unique verified not re-added; sync-status transitions documented)'
+    coverage: full
+    notes: 'Independently confirmed @@unique([workspace_id, fortnox_employee_id]) at prisma/schema.prisma L2677 (matches dev claim); schema.prisma untouched in the working tree. Full transition table in the plan doc incl. CONFLICT/ERROR/unlink paths.'
+  - ac: 'AC6 (no OAuth/network/UI/schema/migration; plan doc in house style)'
+    coverage: full
+    notes: 'Zone check via git: 7.8''s files are all new, all in-zone; no schema or dependency changes. Plan doc covers all six required deferred pieces (OAuth, conflict policy, sync direction, rate limits, fortnox_raw, two-id) and matches the reference doc''s conventions (metadata block, --- sections, ts fenced blocks, dated footer).'
+
+evidence:
+  tests_reviewed: 40
+  tests_added: 40
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6]
+    ac_gaps: []
+  verification: 'Independent: pnpm vitest run tests/unit/lib/integrations -> 40/40 (6ms); eslint on both new files -> clean; Prisma enums + @@unique + Decimal precisions grepped from schema.prisma and matched against mapper constants and doc claims; string-vs-float split re-verified against fortnox-employee-schema-analysis.md sections 3/4/6.'
+
+quality_score: 100
+
+expires: '2026-07-17T00:00:00Z'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Sync-story merge policy: treat mapper-defaulted inbound fields (country->SE, inactive->false) as non-authoritative (SYNC-001).'
+      refs: ['lib/integrations/fortnox/employee-mapper.ts', 'docs/reference/fortnox-integration-plan.md']
+    - action: 'Verify the YYYY-MM-DD date wire format against the live Fortnox API during the OAuth story (documented assumption 1; isolated in toFortnoxDate/fromFortnoxDate).'
+      refs: ['lib/integrations/fortnox/employee-mapper.ts']
+    - action: 'Keep employment_date/employed_to writes UTC-midnight normalized in upcoming edit/sync stories (DATE-001).'
+      refs: ['lib/integrations/fortnox/employee-mapper.ts']

@@ -89,3 +89,9 @@ Boverkets byggregler (BBR, BFS 2011:6 med ändringar) preciserar plan- och byggl
 
 ## Anmärkningar
 - BBR är under reform (övergång till nya byggregler/funktionskrav) — undvik att låsa fast en exakt version i brödtext; verifiera aktuell BFS i katalogen och använd ChangeFeedEmbed. Lagförklaringssida (intent-nav); canonical mot denna områdessida. Avgränsa mot /omraden/brandskydd (drift) och en ev. PBL-sida.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** boverkets byggregler — 1 300/mån KD 42 (navigational-tungt) + BBR 2 900/KD31 → förkortningen tidigt.
+- **KATALOGFYND (reformen):** BÅDE BBR (BFS 2011:6) och nya regelmodellen (BFS 2024:6–13, ikraft 1 juli 2025, övergångsregler via 2024:14) är ACTIVE — sidan beskriver övergången exakt per katalogen; reformen är lagbevaknings-hooken.
+- **Faktakontroll:** PBL 8 kap. 4 §-listan + byggherreansvar verifierade mot fulltext; 12 författningar ACTIVE.

@@ -160,3 +160,42 @@ describe('formatSourceCitation', () => {
     expect(result).toBe('[Källa: Ändring]')
   })
 })
+
+// ---------------------------------------------------------------------------
+// Story 7.5: COLLECTIVE_AGREEMENT — "Kollektivavtal" labeling
+// ---------------------------------------------------------------------------
+
+describe('COLLECTIVE_AGREEMENT sources (Story 7.5)', () => {
+  it('formatTransparencyBlock labels agreements with (Kollektivavtal)', () => {
+    const sources: TransparencySource[] = [
+      {
+        documentTitle: 'Byggavtalet 2024',
+        sourceType: 'COLLECTIVE_AGREEMENT',
+      },
+    ]
+
+    const result = formatTransparencyBlock(sources)
+    expect(result).toContain('Byggavtalet 2024 (Kollektivavtal)')
+    expect(result).toContain('Hittade 1 relevanta avsnitt')
+  })
+
+  it('formatSourceCitation uses the section-aware contextual header', () => {
+    const source: CitationSource = {
+      sourceType: 'COLLECTIVE_AGREEMENT',
+      contextualHeader: 'Byggavtalet 2024 (Kollektivavtal) > Arbetstid',
+    }
+
+    expect(formatSourceCitation(source)).toBe(
+      '[Källa: Byggavtalet 2024 (Kollektivavtal) > Arbetstid]'
+    )
+  })
+
+  it('formatSourceCitation falls back to the Kollektivavtal label without a header', () => {
+    const source: CitationSource = {
+      sourceType: 'COLLECTIVE_AGREEMENT',
+      contextualHeader: null,
+    }
+
+    expect(formatSourceCitation(source)).toBe('[Källa: Kollektivavtal]')
+  })
+})

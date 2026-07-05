@@ -63,9 +63,18 @@ export interface ChatAttachmentMeta {
   mimeType: string | null
 }
 
+/** Story 7.7: per-send options — the employee pill's id rides the body. */
+export interface SendMessageOptions {
+  employeeId?: string | undefined
+}
+
 export interface UseChatInterfaceReturn {
   messages: UIMessage[]
-  sendMessage: (_content: string, _attachments?: ChatAttachmentMeta[]) => void
+  sendMessage: (
+    _content: string,
+    _attachments?: ChatAttachmentMeta[],
+    _options?: SendMessageOptions
+  ) => void
   status: 'submitted' | 'streaming' | 'ready' | 'error'
   error: Error | null
   stop: () => void
@@ -314,7 +323,11 @@ export function useChatInterface(
   }, [historyLoaded, initialMessage, messages.length])
 
   const sendMessage = useCallback(
-    (content: string, attachments?: ChatAttachmentMeta[]) => {
+    (
+      content: string,
+      attachments?: ChatAttachmentMeta[],
+      options?: SendMessageOptions
+    ) => {
       const hasAttachments = !!attachments && attachments.length > 0
       // Allow an attachment-only message (no text) per Story 19.1.
       if (!content.trim() && !hasAttachments) return
@@ -349,6 +362,17 @@ export function useChatInterface(
       // Send message; Story 19.1 threads attachment file ids as a per-call body
       // override (AI SDK v6 ChatRequestOptions.body) — the route converts them
       // server-side and merges the content blocks into this user message.
+      // Story 7.7: the employee pill's id rides the same per-send body
+      // override (the route re-fetches + re-gates it server-side). Without
+      // attachments AND without an employee the call is byte-identical to
+      // the pre-7.7 behavior (no body override at all).
+      const bodyOverride: Record<string, unknown> = {}
+      if (hasAttachments) {
+        bodyOverride.attachmentIds = attachments.map((a) => a.fileId)
+      }
+      if (options?.employeeId) {
+        bodyOverride.employeeId = options.employeeId
+      }
       sendChatMessage(
         hasAttachments
           ? {
@@ -357,8 +381,8 @@ export function useChatInterface(
               metadata: { attachments },
             }
           : { parts: [{ type: 'text', text: content }] },
-        hasAttachments
-          ? { body: { attachmentIds: attachments.map((a) => a.fileId) } }
+        Object.keys(bodyOverride).length > 0
+          ? { body: bodyOverride }
           : undefined
       )
       onMessageSent?.()

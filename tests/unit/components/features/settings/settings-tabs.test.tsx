@@ -36,6 +36,26 @@ vi.mock('@/hooks/use-workspace', () => ({
   useWorkspace: vi.fn(),
 }))
 
+// Story 7.5: the Kollektivavtal tab mounts KollektivavtalManager, whose module
+// imports the collective-agreements server actions — mock at the boundary.
+// Story 7.6 adds edit/delete/bulk-assign actions + the assign dialog's
+// lazy group fetch.
+vi.mock('@/app/actions/collective-agreements', () => ({
+  uploadCollectiveAgreement: vi.fn(),
+  listCollectiveAgreements: vi.fn().mockResolvedValue({
+    success: true,
+    data: [],
+  }),
+  updateCollectiveAgreement: vi.fn(),
+  deleteCollectiveAgreement: vi.fn(),
+  assignCollectiveAgreementBulk: vi.fn(),
+  previewBulkAssignCount: vi.fn(),
+}))
+
+vi.mock('@/app/actions/employees', () => ({
+  getEmployeeGroups: vi.fn().mockResolvedValue({ success: true, data: [] }),
+}))
+
 import { useWorkspace } from '@/hooks/use-workspace'
 
 // Helper to create mock workspace context
@@ -75,17 +95,21 @@ const mockBilling: BillingData = {
   paymentGracePeriodEndsAt: null,
 }
 
-function renderTabs() {
+function renderTabs(
+  props: Partial<React.ComponentProps<typeof SettingsTabs>> = {}
+) {
   return render(
     <SettingsTabs
       workspace={mockWorkspace}
       members={mockMembers}
       columns={mockColumns}
       companyProfile={null}
+      collectiveAgreements={[]}
       billing={mockBilling}
       initialTab="general"
       showPastDueBanner={false}
       showCheckoutSuccess={false}
+      {...props}
     />
   )
 }
@@ -269,6 +293,65 @@ describe('SettingsTabs', () => {
       renderTabs()
 
       expect(screen.queryByText('Fakturering')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Kollektivavtal tab (Story 7.5 + 7.6 UX-ADMIN-001)', () => {
+    it('shows the Kollektivavtal tab for OWNER (workspace:settings AND employees:view)', () => {
+      vi.mocked(useWorkspace).mockReturnValue(
+        mockWorkspaceContext({ role: 'OWNER' as WorkspaceRole })
+      )
+      renderTabs()
+      expect(
+        screen.getByRole('tab', { name: /kollektivavtal/i })
+      ).toBeInTheDocument()
+    })
+
+    it('UX-ADMIN-001: hides the tab for ADMIN (workspace:settings but NO employees:view — the tab was permanently broken)', () => {
+      vi.mocked(useWorkspace).mockReturnValue(
+        mockWorkspaceContext({ role: 'ADMIN' as WorkspaceRole })
+      )
+      renderTabs()
+      expect(screen.queryByRole('tab', { name: /kollektivavtal/i })).toBeNull()
+    })
+
+    it('UX-ADMIN-001: ADMIN gets no tab content either, even with the tab param forced', () => {
+      vi.mocked(useWorkspace).mockReturnValue(
+        mockWorkspaceContext({ role: 'ADMIN' as WorkspaceRole })
+      )
+      renderTabs({ initialTab: 'kollektivavtal' })
+      expect(
+        screen.queryByText('Inga kollektivavtal har laddats upp än.')
+      ).toBeNull()
+      expect(screen.queryByText('Kollektivavtal kunde inte laddas.')).toBeNull()
+    })
+
+    it('hides the tab for HR_MANAGER (no workspace:settings — HR mount is their entry point) and MEMBER', () => {
+      vi.mocked(useWorkspace).mockReturnValue(
+        mockWorkspaceContext({ role: 'HR_MANAGER' as WorkspaceRole })
+      )
+      const { unmount } = renderTabs()
+      expect(screen.queryByRole('tab', { name: /kollektivavtal/i })).toBeNull()
+      unmount()
+
+      vi.mocked(useWorkspace).mockReturnValue(
+        mockWorkspaceContext({ role: 'MEMBER' as WorkspaceRole })
+      )
+      renderTabs()
+      expect(screen.queryByRole('tab', { name: /kollektivavtal/i })).toBeNull()
+    })
+
+    it('mounts the shared KollektivavtalManager in the tab content (OWNER: list + upload form)', () => {
+      vi.mocked(useWorkspace).mockReturnValue(
+        mockWorkspaceContext({ role: 'OWNER' as WorkspaceRole })
+      )
+      renderTabs({ initialTab: 'kollektivavtal' })
+
+      expect(
+        screen.getByText('Inga kollektivavtal har laddats upp än.')
+      ).toBeInTheDocument()
+      // OWNER holds employees:manage → the shared upload form renders.
+      expect(screen.getByLabelText(/PDF-fil/)).toBeInTheDocument()
     })
   })
 

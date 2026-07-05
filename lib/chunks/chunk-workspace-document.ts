@@ -24,7 +24,10 @@ const CAP_THRESHOLD_TOKENS = 1000
 const MIN_CHUNK_CHARS = 20
 
 /** Workspace-scoped source types that flow through this module. */
-export type WorkspaceSourceType = 'USER_FILE' | 'WORKSPACE_DOCUMENT'
+export type WorkspaceSourceType =
+  | 'USER_FILE'
+  | 'WORKSPACE_DOCUMENT'
+  | 'COLLECTIVE_AGREEMENT'
 
 /**
  * content_role for workspace chunks. The Prisma `ContentRole` enum has **no
@@ -168,11 +171,81 @@ export function chunkWorkspaceDocument(
   })
 }
 
+/**
+ * `contextual_header` for a kollektivavtal chunk (Story 7.5, AC 5): agreement
+ * name + nearest markdown section — citations must identify the agreement AND
+ * where in it the text lives, not just the source filename.
+ */
+export function buildAgreementHeader(
+  agreementName: string,
+  section: string | null
+): string {
+  const base = `${agreementName} (Kollektivavtal)`
+  return section ? `${base} > ${section}` : base
+}
+
+/** Input for chunking an uploaded kollektivavtal's extracted markdown (Story 7.5). */
+export interface ChunkCollectiveAgreementInput {
+  /** `CollectiveAgreement.id` — the chunk's source_id (NOT the WorkspaceFile id). */
+  agreementId: string
+  workspaceId: string
+  /** Agreement display name, e.g. "Byggnads Kollektivavtal 2024". */
+  agreementName: string
+  /** Original filename of the uploaded PDF (metadata only). */
+  filename: string
+  /** `PersonelType` value (ARB/TJM) or null (Övrigt). */
+  personelType?: string | null
+  /** Backing `WorkspaceFile.id` (metadata only — traceability to the PDF). */
+  workspaceFileId?: string | null
+  /** Structure-preserving markdown from Story 17.8's extraction. */
+  markdown: string
+  /** sha256 of the file bytes — stored in chunk metadata for dedupe. */
+  contentHash?: string | null
+}
+
+/**
+ * Chunk an uploaded kollektivavtal's extracted markdown into workspace-scoped
+ * `COLLECTIVE_AGREEMENT` chunks (Story 7.5). Same paragraph-merge core as the
+ * other workspace sources, but with a **section-aware** contextual header:
+ * `mergeParagraphs` never merges across markdown headings, so each merged
+ * block deterministically belongs to the nearest preceding section title.
+ */
+export function chunkCollectiveAgreement(
+  agreement: ChunkCollectiveAgreementInput
+): WorkspaceChunkInput[] {
+  const metadata: Record<string, unknown> = {
+    agreement_name: agreement.agreementName,
+    filename: agreement.filename,
+  }
+  if (agreement.personelType) metadata.personel_type = agreement.personelType
+  if (agreement.workspaceFileId)
+    metadata.workspace_file_id = agreement.workspaceFileId
+  if (agreement.contentHash) metadata.content_hash = agreement.contentHash
+
+  return chunkWorkspaceMarkdown({
+    sourceType: 'COLLECTIVE_AGREEMENT',
+    sourceId: agreement.agreementId,
+    workspaceId: agreement.workspaceId,
+    contextualHeader: buildAgreementHeader(agreement.agreementName, null),
+    headerForSection: (section) =>
+      buildAgreementHeader(agreement.agreementName, section),
+    markdown: agreement.markdown,
+    metadata,
+  })
+}
+
 interface ChunkWorkspaceMarkdownArgs {
   sourceType: WorkspaceSourceType
   sourceId: string
   workspaceId: string
   contextualHeader: string
+  /**
+   * Story 7.5 (AC 5): when set, each chunk's `contextual_header` is derived
+   * from the nearest preceding markdown section title (`null` before the
+   * first heading). When omitted, every chunk carries the fixed
+   * `contextualHeader` (USER_FILE / WORKSPACE_DOCUMENT behavior, unchanged).
+   */
+  headerForSection?: (_section: string | null) => string
   markdown: string
   metadata: Record<string, unknown> | null
 }
@@ -198,10 +271,25 @@ function chunkWorkspaceMarkdown(
 
   const chunks: WorkspaceChunkInput[] = []
   let chunkIndex = 1
+  // Story 7.5 (AC 5): nearest preceding markdown section title. Updated as the
+  // merged blocks stream past; `mergeParagraphs` never merges across headings,
+  // so a block's section is fully determined by its own first line or the last
+  // heading seen before it.
+  let currentSection: string | null = null
 
   for (const block of merged) {
     const trimmed = block.trim()
+
+    if (args.headerForSection) {
+      const heading = extractLeadingHeading(trimmed)
+      if (heading) currentSection = heading
+    }
+
     if (trimmed.length < MIN_CHUNK_CHARS) continue
+
+    const contextualHeader = args.headerForSection
+      ? args.headerForSection(currentSection)
+      : args.contextualHeader
 
     const subBlocks =
       estimateTokenCount(trimmed) > CAP_THRESHOLD_TOKENS
@@ -216,7 +304,7 @@ function chunkWorkspaceMarkdown(
         source_id: args.sourceId,
         workspace_id: args.workspaceId,
         path: `file.chunk${chunkIndex}`,
-        contextual_header: args.contextualHeader,
+        contextual_header: contextualHeader,
         content: subTrimmed,
         content_role: detectContentRole(subTrimmed),
         token_count: estimateTokenCount(subTrimmed),
@@ -227,6 +315,17 @@ function chunkWorkspaceMarkdown(
   }
 
   return chunks
+}
+
+/**
+ * Section title from a block's first line when it is a markdown heading
+ * (`# …` – `###### …`), stripped of the `#` markers and any trailing closing
+ * hashes; null otherwise. Used by the section-aware header path (Story 7.5).
+ */
+function extractLeadingHeading(block: string): string | null {
+  const firstLine = block.split('\n', 1)[0]?.trim() ?? ''
+  const match = firstLine.match(/^#{1,6}\s+(.+?)\s*#*\s*$/)
+  return match?.[1]?.trim() || null
 }
 
 /**

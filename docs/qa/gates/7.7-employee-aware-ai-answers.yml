@@ -1,0 +1,113 @@
+schema: 1
+story: '7.7'
+story_title: 'Employee-aware, corpus-grounded AI answers with source-distinguished citations'
+gate: PASS
+status_reason: 'SEC-001 fixed and adversarially re-verified: the raw body rest-spread is gone from buildSystemPrompt — only three individually type-checked ChatContextInitial display strings (title/sfsNumber/summary) pass through, so ALL server-computed prompt fields (employeeContext, companyContext, pendingActionsBlock, thinkingEnabled, skill) are structurally unoverridable from the request body, with a MEMBER-role smuggling regression test pinning it. 60/60 targeted + 69/69 route suites + branch typecheck green. Remaining residuals are all low and externally-owned (staging eval run, analytics dedupe, commit hygiene).'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-07-04T00:05:00Z'
+
+waiver: { active: false }
+
+history:
+  - date: '2026-07-03T23:59:00Z'
+    gate: CONCERNS
+    note: 'Initial deep review. SEC-001 (medium): `...initialContext` body rest spread LAST into buildSystemPrompt let any authenticated client inject a spoofed employeeContext/companyContext/pendingActionsBlock, bypassing the employees:view gate for block existence (no PII exposure). PII, trust-boundary and inert-path verdicts all PASS; quality score 90.'
+  - date: '2026-07-04T00:05:00Z'
+    gate: PASS
+    note: 'SEC-001 fix re-reviewed (orchestrator fix round): rest-spread removed, per-key typeof-checked allowlist passthrough (title/sfsNumber/summary only — no key collides with a server field); regression test asserts each server field unspoofed, JSON-wide absence of smuggled content, and legit display fields still flowing under MEMBER. Fix closes the injection class for every server-computed field, not just employeeContext. Legit LAW/TASK mount flow intact (buildSystemPrompt never consumed `description`; no behavior loss). Independently verified: 60/60 (route-employee-context 6 incl. SEC-001 test, system-prompt 47, chat-quota 7), all 11 app/api suites 69/69, pnpm typecheck exit 0.'
+
+top_issues:
+  - id: 'EVAL-001'
+    severity: low
+    finding: 'scripts/eval-ca-grounding.ts is authored to spec and reviewed line-by-line (the hostile probe — foreign workspace + target agreementId → asserts zero rows — exercises the exact WHERE conjunction and would catch a leakage regression; reference queries match the epic''s three legal areas) but has NOT been executed: no live DB in the dev or review environment. The sourceId unit tests assert bound SQL parameters against a mocked $queryRaw, so the epic''s cross-workspace Risk-Mitigation check is still unproven against real SQL semantics.'
+    suggested_action: 'Run `npx tsx scripts/eval-ca-grounding.ts` against staging before epic sign-off; require exit 0.'
+    suggested_owner: po
+  - id: 'ANA-001'
+    severity: low
+    finding: 'CA citation-pill click fires ca_citation_clicked and then reuses handleOpenFile, which also fires file_citation_clicked — dashboards counting file opens will include CA opens (dev-flagged, accepted to avoid forking the fetch logic).'
+    suggested_action: 'Extract the file-fetch from the tracking in handleOpenFile (or pass a suppress-event flag) in a polish pass.'
+    suggested_owner: dev
+  - id: 'HYG-001'
+    severity: low
+    finding: 'The shared working tree carries out-of-story edits not in 7.7''s File List: app/globals.css (dark-mode banding fix), components/layout/workspace-shell.tsx (scrollbar-gutter), plus 7.8''s lib/integrations/** and misc prototypes/briefs. Not 7.7 code, but a blanket commit would make the story''s File List untruthful.'
+    suggested_action: 'Commit 7.7''s files selectively; land the visual tweaks and 7.8 separately. Resolves at the commit step.'
+    suggested_owner: dev
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      PII-into-LLM verdict: PASS by construction. All four employee-data paths
+      (route fetch, formatEmployeeContext, lookup_employee, getEmployeesForChatContext)
+      use typed/Prisma ALLOWLISTS — personnummer (any form), email, phone, address and
+      fortnox_raw are structurally unreachable, and tests assert byte-level ABSENCE
+      from polluted records (incl. bare "@", city, postcode). Nothing logs the employee
+      block; AgentDecisionLog persists lookup_employee output but that output IS the
+      allowlist mapping (workspace-scoped, same tier as chat content).
+      Trust-boundary verdict: PASS — compound WHERE (id + workspace_id), employees:view
+      re-gate against the real permission matrix, workspaceId !== 'default' guard;
+      foreign/deleted/foreign-workspace ids yield 200 with no block, no bias, no
+      existence leak; biasAgreementId is not client-reachable; model-supplied
+      agreementId is workspace-clamped (foreign id → zero rows, tested).
+      lookup_employee registration fail-closed (OWNER/HR_MANAGER only; ADMIN/MEMBER/
+      AUDITOR/undefined absent; delete precedes decision-log wrapping).
+      SEC-001 RESOLVED (2026-07-04): raw body rest-spread removed from
+      buildSystemPrompt; per-key typeof-checked allowlist (title/sfsNumber/summary)
+      makes every server-computed prompt slot structurally unoverridable from the
+      request body — regression-tested under MEMBER with smuggled fields.
+  performance:
+    status: PASS
+    notes: 'Hot-path inertness proven at three independent layers: buildSystemPrompt byte-identity (toBe), route-level (prisma.employee never queried, employeeContext undefined, no biasAgreementId) and transport (no body override — pre-7.7 call shape). The employee branch costs one indexed findFirst only when an id is present under permission. Retrieval adds one null-guarded predicate, same shape as the existing sourceType filters. All pre-existing chat suites pass unchanged (git-verified additive-only test edits); SEC-001 fix re-verified against all 11 app/api suites (69/69).'
+  reliability:
+    status: PASS
+    notes: 'Both tools wrap DB/retrieval failures into Swedish error envelopes (never throw into the stream); empty-result guidance steers the model back to unbiased search / search_laws; CA pill degrades gracefully without a backing file (hover preview, no CTA, no crash); picker fetch failure → non-fatal error text with retry-on-reopen; fail-closed on undefined role everywhere.'
+  maintainability:
+    status: PASS
+    notes: 'Every seam mirrors its cited precedent; label duplication is drift-guarded by a test pinning lib/employees/labels.ts to the personalregister maps; registry counts + role matrix pinned; exactOptionalPropertyTypes ripple solved at the type-definition side without touching the out-of-zone consumer; the SEC-001 fix is self-documenting with the QA finding cited inline.'
+
+requirements_traceability:
+  - ac: 'AC1 (employee pill/selector, employees:view-gated, removable, id rides per send)'
+    coverage: full
+    notes: 'employee-context-picker.test.tsx (5), chat-input-modern-employee-pill.test.tsx (4), use-chat-interface-employee.test.tsx (4 — incl. compose-with-attachments and strict-undefined inert shape). Fail-closed can.viewEmployees gate + server re-gate.'
+  - ac: 'AC2 (<employee_context> block mirroring formatCompanyContext; PII omitted, asserted by test)'
+    coverage: full
+    notes: 'system-prompt.test.ts +8: full allowlist rendering, Ej ifylld, null → no block, polluted-record byte-absence, byte-identity inertness, block ordering. Block-spoofing vector closed by the SEC-001 fix + regression test.'
+  - ac: 'AC3 (search_collective_agreements, one sourceType, search_laws untouched, always available)'
+    coverage: full
+    notes: 'Tool tests pin exactly sourceTypes [COLLECTIVE_AGREEMENT] and assert LEGAL_DOCUMENT never appears; search-laws.ts unmodified (git); registry tests pin presence for every role incl. AUDITOR.'
+  - ac: 'AC4 (sourceId hard filter; param > closure > none; workspace isolation unchanged)'
+    coverage: full
+    notes: 'WHERE line verified in source (null-safe, workspace clause underneath); retrieval tests bind/omit the param incl. combined with sourceTypes; precedence matrix 4 cases; foreign id pass-through → zero rows. Live-SQL semantics deferred to EVAL-001 by design.'
+  - ac: 'AC5 (citations distinguish Kollektivavtal; discriminator; pill variant; QuickPreview CTA)'
+    coverage: full
+    notes: 'collectiveAgreementId discriminator checked BEFORE the file branch in both extraction and pill; fallback citation keys with first-write-wins set(); Handshake icon + Kollektivavtal label + Öppna kollektivavtalet CTA; no-file degradation. citations.test.ts +2, citation-pill.test.tsx +4. Persistence path untouched.'
+  - ac: 'AC6 (scoped grounding eval: workspace/agreement-correct, zero foreign chunks, ≥2 legal areas)'
+    coverage: full
+    notes: 'Script authored per spec and reviewed line-by-line — assertions (a)/(b)/(c) all present, hostile foreign-workspace+agreementId probe requires exactly zero rows, three epic reference queries (LAS/Semesterlagen/ATL), auto-discovery + flags, exit-code contract. EXECUTION pending (EVAL-001) — needs a live DB.'
+
+evidence:
+  tests_reviewed: 97
+  tests_added: 71
+  risks_identified: 4
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6]
+    ac_gaps: []
+  verification: 'Initial review: targeted vitest sweep (agent + lib/agent + lib/ai + app/api + ai-chat components + employees + lib/hooks) → 932 passed / 1 failed (documented pre-existing assessment-detail calendar time-bomb, file untouched); pnpm typecheck exit 0 (discharges ENV-001 from the 7.8 gate); git-verified generate-law-list.ts NOT edited, all pre-existing test diffs additive-only, search-laws.ts and the retrieval workspace clause untouched. Re-review (SEC-001 fix): chat-route-employee-context (6, incl. the new smuggling test) + system-prompt (47) + chat-quota-enforcement (7) → 60/60; all 11 tests/unit/app/api suites → 69/69; pnpm typecheck exit 0.'
+
+quality_score: 100
+
+expires: '2026-07-18T00:00:00Z'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Run scripts/eval-ca-grounding.ts against staging (exit 0 required) — the epic''s cross-workspace Risk-Mitigation check (EVAL-001).'
+      refs: ['scripts/eval-ca-grounding.ts']
+    - action: 'Browser pass: picker popover layering in the chat sidebar, CA-pill QuickPreview flow, live tone of the <employee_context> instructions.'
+      refs: ['components/features/ai-chat/employee-context-picker.tsx', 'components/features/ai-chat/citation-pill.tsx']
+    - action: 'Dedupe the CA-pill double analytics event (ANA-001).'
+      refs: ['components/features/ai-chat/citation-pill.tsx']
+    - action: 'Commit 7.7 selectively so its File List stays truthful (HYG-001).'
+      refs: ['app/globals.css', 'components/layout/workspace-shell.tsx']
+    - action: 'PO confirm: AUDITOR may search kollektivavtal text while never seeing the employee pill/lookup (documented stance, pinned by registry tests).'
+      refs: ['docs/stories/7.7.employee-aware-ai-answers.md']

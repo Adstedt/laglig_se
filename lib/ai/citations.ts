@@ -53,6 +53,16 @@ export interface SourceInfo {
    * than the legal sidebar. Mirrors the workspaceDocumentId convention.
    */
   fileId?: string | null
+  /**
+   * CollectiveAgreement id for kollektivavtal citations (set by the
+   * search_collective_agreements extractor — Story 7.7). Presence of
+   * `collectiveAgreementId` is the CA discriminator: the citation pill
+   * renders a distinct icon + "Kollektivavtal" labeling and an "Öppna
+   * kollektivavtalet" CTA that opens the agreement's backing PDF via the
+   * file QuickPreview (`fileId` = the agreement's workspace_file_id, carried
+   * alongside). Checked BEFORE the plain-file discriminator.
+   */
+  collectiveAgreementId?: string | null
 }
 
 /** Metadata shape attached to assistant messages via messageMetadata callback */
@@ -238,6 +248,49 @@ export function extractSourcesFromToolResult(
             // open the file. Presence of fileId is the file discriminator.
             fileId: item.fileId ?? null,
           })
+        }
+      }
+    } else if (toolName === 'search_collective_agreements') {
+      // Story 7.7: kollektivavtal results (mirrors the workspace-files branch).
+      // citationKey = the chunk's contextual header ("<Avtal> (Kollektivavtal)
+      // > <avsnitt>") — carried in `documentNumber` to keep it a non-optional
+      // string. `collectiveAgreementId` is the CA discriminator; the backing
+      // PDF's `fileId` rides along so the pill can open the agreement via
+      // QuickPreview.
+      const data = output.data as
+        | Array<{
+            agreementId?: string
+            agreementName?: string
+            workspaceFileId?: string | null
+            snippet?: string
+            citationKey?: string
+          }>
+        | undefined
+
+      if (Array.isArray(data)) {
+        for (const item of data) {
+          const key = item.citationKey ?? item.agreementName
+          if (!key || !item.agreementId) continue
+          const info: SourceInfo = {
+            documentNumber: key,
+            title: item.agreementName ?? key,
+            snippet: item.snippet ?? null,
+            slug: null,
+            path: null,
+            anchorId: null,
+            collectiveAgreementId: item.agreementId,
+            fileId: item.workspaceFileId ?? null,
+          }
+          set(key, info)
+          // Fallback keys so shorter model citations still resolve:
+          // [Källa: <avtalsnamn>] and [Källa: <avtalsnamn> (Kollektivavtal)].
+          if (item.agreementName) {
+            set(item.agreementName, { ...info, snippet: null })
+            set(`${item.agreementName} (Kollektivavtal)`, {
+              ...info,
+              snippet: null,
+            })
+          }
         }
       }
     } else if (toolName === 'search_workspace_documents') {

@@ -98,3 +98,9 @@ Laglig.se samlar lagen om skydd mot olyckor och anslutande brandskyddsregler i e
 ## Anmärkningar
 
 Boverkets byggregler genomgår förändring (nya regler ersätter äldre BBR) — använd "[bekräfta föreskriftsnummer i katalogen]" och påstå inte exakta beteckningar utan verifiering. Håll på översiktsnivå; länka till djupare /omraden/systematiskt-brandskyddsarbete om sådan finns för att undvika kannibalisering.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** brandskydd — 1 000/mån, KD 44, intent COMMERCIAL → produktvinkel tidigare än på lagförklaringssidor.
+- **Strategibeslut:** översiktssida; "systematiskt brandskyddsarbete" (720) + "sba" (1 600) ägs av /omraden/sba, "lag om skydd mot olyckor" (720) + "lso" (1 000) av LSO-sidan — sammanfattning + nedåtlänkar. SERP domineras av räddningstjänster/Brandskyddsföreningen → praktisk vägledningsstruktur.
+- **Faktakontroll:** 9 författningar verifierade ACTIVE (LSO, FSO, SRVFS 2004:3, BFS 2011:6, PBL m.fl.); skriftlig redogörelse borttagen 2021. Bildskavank: finstilt på brandsläckaretikett (oläsligt i visningsstorlek) — polish-kandidat.

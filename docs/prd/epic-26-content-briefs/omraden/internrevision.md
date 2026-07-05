@@ -101,3 +101,8 @@ Internrevisionen omfattar verksamhetens tillämpliga krav; vanligt förekommande
 ## Anmärkningar
 
 Avgränsa mot /omraden/lagrevision (enbart lagkrav) och /omraden/ledningssystem (själva systemet). Internrevision = metoden/processen; ISO-svitens sidor bär standarddetaljerna. Länka till /funktioner/revisionsrapport för produktdelen, konkurrera inte. Inga krypto-/tamper-proof-påståenden om rapporten.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** internrevision — 390/mån, KD 13 + intern revision 390/KD13 (LÅG konkurrens, båda skrivsätten tidigt); revisionsplan → egen H2; disambiguering mot finansiell internrevision tidigt.
+- **OBS:** skribentens session avbröts av limit — självkontroll körd centralt (OK).

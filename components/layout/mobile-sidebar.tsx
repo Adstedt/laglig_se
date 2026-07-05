@@ -17,9 +17,12 @@ import {
   Users,
   Settings,
   ChevronRight,
+  Lock,
   LogOut,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { hasPermission } from '@/lib/auth/permissions'
+import type { WorkspaceRole } from '@prisma/client'
 import {
   Sheet,
   SheetContent,
@@ -42,6 +45,7 @@ interface MobileSidebarProps {
     email?: string | null
     image?: string | null
   }
+  role?: WorkspaceRole
 }
 
 // Nav items without Inställningar (pinned to bottom)
@@ -118,12 +122,11 @@ const workItems = [
     icon: ClipboardList,
     href: '/workspace/activity',
   },
+  // Story 7.2: HR item enabled — route itself is gated by employees:view.
   {
     title: 'HR',
     icon: Users,
-    href: '#',
-    disabled: true,
-    badge: 'snart',
+    href: '/personalregister',
   },
 ]
 
@@ -131,6 +134,7 @@ export function MobileSidebar({
   open,
   onOpenChange,
   user,
+  role,
 }: MobileSidebarProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -191,12 +195,23 @@ export function MobileSidebar({
         .slice(0, 2)
     : user?.email?.[0]?.toUpperCase() || 'U'
 
+  // Story 7.2b: mirror the desktop HR nav gating — mute (not hide) the HR
+  // item for roles without employees:view. The route already redirects
+  // unauthorized roles; this is UX/discoverability.
+  const canViewEmployees = role ? hasPermission(role, 'employees:view') : false
+  const gatedWorkItems = workItems.map((item) =>
+    item.href === '/personalregister' && !canViewEmployees
+      ? { ...item, disabled: true, lockedReason: 'Kräver HR-behörighet' }
+      : item
+  )
+
   const renderNavItem = (
     item: (typeof platformItems)[0] & {
       isToggle?: boolean
       isAccordion?: boolean
       disabled?: boolean
       badge?: string
+      lockedReason?: string
       subItems?: { title: string; href: string }[]
     }
   ) => {
@@ -291,6 +306,7 @@ export function MobileSidebar({
               {item.badge}
             </span>
           )}
+          {item.lockedReason && <Lock className="h-3.5 w-3.5 shrink-0" />}
         </span>
       )
     }
@@ -350,7 +366,9 @@ export function MobileSidebar({
               <h3 className="mb-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Arbetsyta
               </h3>
-              <div className="space-y-1">{workItems.map(renderNavItem)}</div>
+              <div className="space-y-1">
+                {gatedWorkItems.map(renderNavItem)}
+              </div>
             </div>
           </nav>
 

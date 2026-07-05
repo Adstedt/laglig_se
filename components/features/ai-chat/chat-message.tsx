@@ -99,6 +99,24 @@ const TOOL_CONFIG: Record<
     doneLabel: 'Sökte i lagdatabasen',
     icon: Search,
   },
+  // Story 7.7: semantic search over the workspace's kollektivavtal chunks.
+  search_collective_agreements: {
+    label: 'Söker i kollektivavtal',
+    doneLabel: 'Sökte i kollektivavtal',
+    icon: Search,
+  },
+  // Story 7.7: employee lookup for typed-name questions (employees:view-gated).
+  lookup_employee: {
+    label: 'Slår upp anställd',
+    doneLabel: 'Slog upp anställd',
+    icon: Search,
+  },
+  // Story 7.10: decrypted salary for löne-compliance (employees:manage-gated).
+  get_employee_salary: {
+    label: 'Hämtar löneuppgifter',
+    doneLabel: 'Hämtade löneuppgifter',
+    icon: Search,
+  },
   // Story 17.9c: semantic search over the workspace's own uploaded files.
   search_workspace_files: {
     label: 'Söker i uppladdade filer',

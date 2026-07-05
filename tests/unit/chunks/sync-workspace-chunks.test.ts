@@ -494,3 +494,82 @@ describe('syncWorkspaceChunks — Story 17.18 tier-scoped paths', () => {
     expect(mockPrisma.$queryRaw).toHaveBeenCalled()
   })
 })
+
+// ---------------------------------------------------------------------------
+// Story 7.5: COLLECTIVE_AGREEMENT routing through the agreement chunker
+// ---------------------------------------------------------------------------
+
+describe('syncWorkspaceChunks — COLLECTIVE_AGREEMENT (Story 7.5)', () => {
+  const CA_META = {
+    agreement_name: 'Byggavtalet 2024',
+    personel_type: 'ARB',
+    filename: 'byggavtalet.pdf',
+    workspace_file_id: 'file-9',
+    content_hash: 'ca-h1',
+  }
+  const CA_MARKDOWN =
+    'Inledning om avtalets omfattning.\n\n## Arbetstid\n\nOrdinarie arbetstid utgör fyrtio timmar per helgfri vecka i genomsnitt.'
+
+  it('routes through the agreement chunker: COLLECTIVE_AGREEMENT chunks with source_id = agreement id + section-aware headers', async () => {
+    const result = await syncWorkspaceChunks(
+      'agr-1',
+      'COLLECTIVE_AGREEMENT',
+      'ws-1',
+      CA_MARKDOWN,
+      CA_META
+    )
+
+    expect(result.chunksCreated).toBe(1)
+    const createArg = mockPrisma.contentChunk.createMany.mock.calls[0]![0] as {
+      data: Array<Record<string, unknown>>
+    }
+    expect(createArg.data.length).toBeGreaterThan(0)
+    for (const chunk of createArg.data) {
+      expect(chunk.source_type).toBe('COLLECTIVE_AGREEMENT')
+      expect(chunk.source_id).toBe('agr-1') // agreement id, NOT file-9
+      expect(chunk.workspace_id).toBe('ws-1')
+      expect(chunk.contextual_header).toContain(
+        'Byggavtalet 2024 (Kollektivavtal)'
+      )
+    }
+    const sectionChunk = createArg.data.find((c) =>
+      String(c.content).includes('Ordinarie arbetstid')
+    )
+    expect(sectionChunk).toBeDefined()
+    expect(sectionChunk!.contextual_header).toBe(
+      'Byggavtalet 2024 (Kollektivavtal) > Arbetstid'
+    )
+  })
+
+  it('throws (never indexes) when workspace_id is empty — isolation invariant applies to agreements too', async () => {
+    await expect(
+      syncWorkspaceChunks(
+        'agr-1',
+        'COLLECTIVE_AGREEMENT',
+        '',
+        CA_MARKDOWN,
+        CA_META
+      )
+    ).rejects.toThrow(/workspace_id is required/)
+    expect(mockPrisma.contentChunk.createMany).not.toHaveBeenCalled()
+  })
+
+  it('content_hash dedupe short-circuits an unchanged agreement re-sync', async () => {
+    mockPrisma.contentChunk.findFirst.mockResolvedValue({
+      metadata: { content_hash: 'ca-h1' },
+    })
+    // REL-001 null-embedding count check → 0 nulls (fully embedded).
+    mockPrisma.$queryRaw.mockResolvedValueOnce([{ count: 0 }])
+
+    const result = await syncWorkspaceChunks(
+      'agr-1',
+      'COLLECTIVE_AGREEMENT',
+      'ws-1',
+      CA_MARKDOWN,
+      CA_META
+    )
+
+    expect(result.skipped).toBe(true)
+    expect(mockPrisma.contentChunk.createMany).not.toHaveBeenCalled()
+  })
+})

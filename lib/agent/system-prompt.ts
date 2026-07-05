@@ -9,8 +9,22 @@
 
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
-import type { CompanyProfile } from '@prisma/client'
+import type {
+  CompanyProfile,
+  EmploymentForm,
+  PersonelType,
+} from '@prisma/client'
 import { prisma } from '@/lib/prisma'
+// Story 7.7: Swedish labels for the employee context block. lib/ may not
+// import from components/, so these live in lib/employees/labels.ts (a
+// drift-pinned duplicate of the personalregister label maps).
+import {
+  employmentFormLabel,
+  personelTypeLabel,
+  formatEmploymentDate,
+  formatFullTimeEquivalent,
+  employeeStatusLabel,
+} from '@/lib/employees/labels'
 import {
   resolveEffectiveDate,
   getEffectiveDateBadge,
@@ -30,6 +44,10 @@ import {
 
 export interface SystemPromptOptions {
   companyContext?: string | undefined
+  /** Story 7.7: pre-formatted employee facts (from `formatEmployeeContext`).
+   *  Injected as an `<employee_context>` block. Undefined → NO block, zero
+   *  behavior change (the no-employee chat path must stay byte-identical). */
+  employeeContext?: string | undefined
   contextType?: 'global' | 'task' | 'law' | 'change' | undefined
   contextId?: string | undefined
   /** Story 19.4a: active LawListItem id — surfaced in the LAW block so the agent
@@ -229,6 +247,66 @@ export function formatCompanyContext(
 }
 
 // ---------------------------------------------------------------------------
+// formatEmployeeContext (Story 7.7)
+// ---------------------------------------------------------------------------
+
+/**
+ * The minimal, PII-safe employee shape the chat route fetches for the context
+ * block. This is an ALLOWLIST BY CONSTRUCTION: the type has no place for
+ * personnummer, email, phone or address, and `formatEmployeeContext` only
+ * reads these fields — extra properties on a wider object are never emitted
+ * (tests assert their absence).
+ */
+export interface EmployeeContextEmployee {
+  first_name: string
+  last_name: string
+  employment_form: EmploymentForm | null
+  employment_date: Date | null
+  personel_type: PersonelType | null
+  /** Prisma Decimal (server-side) or plain number — formatted at the boundary. */
+  full_time_equivalent: { toNumber(): number } | number | null
+  inactive: boolean
+  collective_agreement: { id: string; name: string } | null
+}
+
+/**
+ * Formats an employee record into a compact Swedish context string for prompt
+ * injection (mirrors `formatCompanyContext`). Returns undefined when null —
+ * no employee → no block.
+ *
+ * Allowlisted fields ONLY: namn, anställningsform, anställningsdatum,
+ * personaltyp, sysselsättningsgrad, tilldelat kollektivavtal ({id, name}),
+ * aktiv/inaktiv. Personnummer (any form), email, phone and address are never
+ * present. Missing optional values render as "Ej ifylld".
+ */
+export function formatEmployeeContext(
+  employee: EmployeeContextEmployee | null
+): string | undefined {
+  if (!employee) return undefined
+
+  const lines: string[] = []
+  lines.push(`- Namn: ${`${employee.first_name} ${employee.last_name}`.trim()}`)
+  lines.push(
+    `- Anställningsform: ${employmentFormLabel(employee.employment_form)}`
+  )
+  lines.push(
+    `- Anställningsdatum: ${formatEmploymentDate(employee.employment_date)}`
+  )
+  lines.push(`- Personaltyp: ${personelTypeLabel(employee.personel_type)}`)
+  lines.push(
+    `- Sysselsättningsgrad: ${formatFullTimeEquivalent(employee.full_time_equivalent)}`
+  )
+  lines.push(
+    employee.collective_agreement
+      ? `- Tilldelat kollektivavtal: ${employee.collective_agreement.name} (avtals-ID: ${employee.collective_agreement.id})`
+      : '- Tilldelat kollektivavtal: Inget tilldelat'
+  )
+  lines.push(`- Status: ${employeeStatusLabel(employee.inactive)}`)
+
+  return lines.join('\n')
+}
+
+// ---------------------------------------------------------------------------
 // Reasoning guidance (appended when extended thinking is enabled)
 // ---------------------------------------------------------------------------
 
@@ -268,6 +346,15 @@ export async function buildSystemPrompt(
   if (options?.companyContext) {
     sections.push(
       `<company_context>\n## Om företaget\n${options.companyContext}\n</company_context>`
+    )
+  }
+
+  // Story 7.7: employee-in-focus block (only when the route resolved an
+  // employee under workspace + `employees:view` gating). No employee →
+  // no block → the prompt is byte-identical to the pre-7.7 output.
+  if (options?.employeeContext) {
+    sections.push(
+      `<employee_context>\n## Anställd i fokus\nAnvändaren har lagt till en anställd som kontext för samtalet. Anpassa svaren till denna person.\n${options.employeeContext}\n\nNär frågan rör kollektivavtalet, använd search_collective_agreements — finns ett avtals-ID ovan kan du skicka det som agreementId (det tilldelade avtalet är annars redan förvalt). Lagens regler söker du som vanligt med search_laws.\n</employee_context>`
     )
   }
 

@@ -90,3 +90,8 @@ Arbetstidslagen (1982:673) ställer konkreta gränser för ordinarie arbetstid, 
 
 ## Anmärkningar
 - Lagförklaringssida (intent-nav), inte katalogens /lagar-post. Sätt canonical mot denna områdessida; undvik kannibalisering med en ev. ordbok-post för samma begrepp. Länka till /funktioner/kontroller för hur efterlevnaden dokumenteras.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** arbetstidslagen — 4 400/mån, KD 29; dygnsvila (2 400, KD 24!) och veckovila (1 900, KD 17!) → egna H2 (EU-uppmärksamheten gör termerna heta); semidispositiviteten introducerad tidigt.
+- **Faktakontroll (fulltext):** alla timtal paragrafverifierade — 40 h (5 §), 200 h övertid (8 §), 150 h extra (8a §), 48 h sammanlagd (10b §), 11 h dygnsvila inkl. midnattsregeln (13 §), 36 h veckovila (14 §), rast efter 5 h (15 §), sanktionsavgift 1 % av prisbasbeloppet/timme (26 §).

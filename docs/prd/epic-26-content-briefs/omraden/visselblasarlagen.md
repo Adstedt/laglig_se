@@ -86,3 +86,9 @@ Visselblåsarlagen (2021:890) ställer konkreta krav på interna rapporteringska
 
 ## Anmärkningar
 - Håll konceptintent här; länka till /funktioner/kontroller för hur efterlevnaden dokumenteras. Undvik kannibalisering med en ev. ordbok-/lagförklaringssida för samma lag — denna sida är områdes-/intent-nav, ordboken är definition.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** visselblåsarlagen — 1 600/mån, KD 26; visselblåsarfunktion (320, KD 16!) → substantiell egen H2; visselblåsning (590, KD 27).
+- **Faktakontroll (fulltext):** 50-gränsen (5 kap. 2 §), 7 dagar/3 månader (5 kap. 8 §), oberoende behöriga personer (5 kap. 5 §), dokumentation (5 kap. 6 §), skyddskretsen (1 kap. 8 §), AV-tillsyn (förordningen 3 kap. 1 §) — verifierade.
+- **KATALOGBUGG:** EU-posten för celex 32019L1937 har fel titel ("direktiv (EU) 2019/1936") — direktivet därför olänkat; bör rättas i ingestion.

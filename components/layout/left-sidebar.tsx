@@ -30,6 +30,8 @@ import {
   Palette,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { hasPermission } from '@/lib/auth/permissions'
+import type { WorkspaceRole } from '@prisma/client'
 import { WorkspaceSwitcher } from '@/components/layout/workspace-switcher'
 import { useLayoutStore } from '@/lib/stores/layout-store'
 import { useState, useRef, useEffect } from 'react'
@@ -68,6 +70,7 @@ interface LeftSidebarProps {
     email?: string | null
     image?: string | null
   }
+  role?: WorkspaceRole
 }
 
 interface NavItem {
@@ -159,12 +162,13 @@ const workItems: NavItem[] = [
     icon: ClipboardList,
     href: '/workspace/activity',
   },
+  // Story 7.2: HR item enabled — route itself is gated by employees:view
+  // (sidebar has no permission mechanism today; the route bounces
+  // unauthorized roles to /dashboard).
   {
     title: 'HR',
     icon: Users,
-    href: '#',
-    disabled: true,
-    badge: 'snart',
+    href: '/personalregister',
   },
 ]
 
@@ -266,7 +270,7 @@ function CollapsedAccordionItem({
   )
 }
 
-export function LeftSidebar({ user }: LeftSidebarProps) {
+export function LeftSidebar({ user, role }: LeftSidebarProps) {
   const pathname = usePathname()
   const { toggleRightSidebar, leftSidebarCollapsed, toggleLeftSidebar } =
     useLayoutStore()
@@ -295,6 +299,17 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
   }, [])
 
   const collapsed = mounted ? leftSidebarCollapsed : false
+
+  // Story 7.2b: gate the HR nav item on the employees:view permission.
+  // Discoverable-but-muted (not hidden): roles without the permission see the
+  // item disabled with the Lock affordance. The route itself already redirects
+  // unauthorized roles — this is UX/discoverability, not the security boundary.
+  const canViewEmployees = role ? hasPermission(role, 'employees:view') : false
+  const gatedWorkItems: NavItem[] = workItems.map((item) =>
+    item.href === '/personalregister' && !canViewEmployees
+      ? { ...item, disabled: true, lockedReason: 'Kräver HR-behörighet' }
+      : item
+  )
 
   const isActive = (href: string) => {
     if (href === '#') return false
@@ -574,7 +589,9 @@ export function LeftSidebar({ user }: LeftSidebarProps) {
                 </span>
               )}
             </div>
-            <div className="space-y-0.5">{workItems.map(renderNavItem)}</div>
+            <div className="space-y-0.5">
+              {gatedWorkItems.map(renderNavItem)}
+            </div>
           </div>
         </nav>
 

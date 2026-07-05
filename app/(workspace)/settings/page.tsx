@@ -14,6 +14,7 @@ import { SettingsTabs } from '@/components/features/settings/settings-tabs'
 import { PageHeader } from '@/components/ui/page-header'
 import { getTaskColumns } from '@/app/actions/tasks'
 import { getCompanyProfile } from '@/app/actions/company-profile'
+import { listCollectiveAgreements } from '@/app/actions/collective-agreements'
 
 /**
  * Story 5.13: server actions called from this page (getCompanyProfile,
@@ -137,24 +138,38 @@ export default async function SettingsPage({
   // billing tab to convert (gates are enforced everywhere ELSE in workspace).
   const context = await getWorkspaceContextBypassBillingGates()
 
-  const [workspace, billing, members, columnsResult, companyProfile] =
-    await Promise.all([
-      getWorkspaceData(context.workspaceId),
-      getWorkspaceBillingData(context.workspaceId),
-      getWorkspaceMembers(context.workspaceId),
-      // Story 5.13: getTaskColumns + getCompanyProfile internally call the
-      // gated getWorkspaceContext. When trial-expired / past-due, those
-      // throw — but the settings page is the conversion surface and MUST
-      // render. Fall back to safe defaults; the relevant tabs (Workflow,
-      // Company) just show empty state until the user converts.
-      safeWorkspaceFetch(getTaskColumns(), {
-        success: false as const,
-        error: 'Provperiod slut — välj plan i Fakturering-fliken',
-      }),
-      safeWorkspaceFetch(getCompanyProfile(), null),
-    ])
+  const [
+    workspace,
+    billing,
+    members,
+    columnsResult,
+    companyProfile,
+    agreementsResult,
+  ] = await Promise.all([
+    getWorkspaceData(context.workspaceId),
+    getWorkspaceBillingData(context.workspaceId),
+    getWorkspaceMembers(context.workspaceId),
+    // Story 5.13: getTaskColumns + getCompanyProfile internally call the
+    // gated getWorkspaceContext. When trial-expired / past-due, those
+    // throw — but the settings page is the conversion surface and MUST
+    // render. Fall back to safe defaults; the relevant tabs (Workflow,
+    // Company) just show empty state until the user converts.
+    safeWorkspaceFetch(getTaskColumns(), {
+      success: false as const,
+      error: 'Provperiod slut — välj plan i Fakturering-fliken',
+    }),
+    safeWorkspaceFetch(getCompanyProfile(), null),
+    // Story 7.5: Kollektivavtal tab data. Same billing-gate fallback contract.
+    safeWorkspaceFetch(listCollectiveAgreements(), {
+      success: false as const,
+      error: 'Provperiod slut — välj plan i Fakturering-fliken',
+    }),
+  ])
 
   const columns = columnsResult.success ? (columnsResult.data ?? []) : []
+  const collectiveAgreements = agreementsResult.success
+    ? (agreementsResult.data ?? [])
+    : null
 
   if (!workspace || !billing) {
     return (
@@ -179,6 +194,7 @@ export default async function SettingsPage({
         members={members}
         columns={columns}
         companyProfile={companyProfile}
+        collectiveAgreements={collectiveAgreements}
         billing={{
           subscriptionStatus: billing.subscription_status,
           stripeCustomerId: billing.stripe_customer_id,

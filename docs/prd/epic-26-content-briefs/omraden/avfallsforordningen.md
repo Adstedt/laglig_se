@@ -90,3 +90,9 @@ Avfallsförordningen (2020:614) ställer krav på avfallshierarki, anteckningssk
 
 ## Anmärkningar
 - Lagförklaringssida (intent-nav), sätt canonical mot denna områdessida och inte mot katalogens /lagar-post. Tydlig avgränsning mot /omraden/miljo (övergripande) och producentansvars-föreskrifter. Länka till /funktioner/kontroller för dokumentation.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** avfallsförordningen — 2 400/mån, KD 28. Näst störst i hela omraden-klustret.
+- **Upptäckta (ej i brief):** hantering av farligt avfall (880, KD 16 → egen H2); vad är farligt avfall (110, KD 12) + farligt avfall lista (110, KD 18) → definition + exempeltabell; avfallskoder (210, KD 10) + ewc koder (170, KD 8) + avfallskoder lista (90, KD 9) → egen H2 som förklarar kodsystemet utan att lista specifika koder; avfallsdirektivet (110, KD 19) → en mening, olänkad (2008/98/EG finns ej i katalogen).
+- **Strategibeslut/faktakontroll:** gamla avfallsförordningen (2011:927) är UPPHÄVD i katalogen — nämns endast historiskt; NFS 2020:5 (rapportering farligt avfall) verifierad ACTIVE och länkad; tidsfrister/mängdgränser mjukade ("inom föreskriven tid"); rapportering sker i Naturvårdsverkets e-tjänst, inte i appen.

@@ -1921,6 +1921,7 @@ enum SourceType {
   CONVERSATION
   ASSESSMENT
   WORKSPACE_DOCUMENT
+  COLLECTIVE_AGREEMENT // Story 7.5: workspace-isolated kollektivavtal chunks (source_id = CollectiveAgreement.id)
 }
 
 enum ContentRole {
@@ -2647,8 +2648,13 @@ model Employee {
   average_weekly_hours Decimal? @db.Decimal(5, 2) // AverageWeeklyHours
   schedule_id          String? // ScheduleId (opaque Fortnox ref; stored for sync fidelity)
 
-  // --- Fortnox: Salary form (Löneuppgifter — form only, no amounts) ---
-  salary_form SalaryForm? // SalaryForm (Månadslön/Timlön)
+  // --- Fortnox: Salary (Löneuppgifter) ---
+  salary_form    SalaryForm? // SalaryForm (Månadslön/Timlön)
+  // Story 7.10: amounts for kollektivavtal minimilön compliance. ENCRYPTED AT
+  // REST (AES-256-GCM, like personnummer) — stored as ciphertext TEXT, not
+  // Decimal; decrypted only for employees:manage. Fortnox: MonthlySalary/HourlyPay.
+  monthly_salary String? // Månadslön (kr), encrypted — used when salary_form=MAN
+  hourly_pay     String? // Timlön (kr/tim), encrypted — used when salary_form=TIM
 
   // --- Fortnox: Vacation (Semester — headline only; full ledger stays in Fortnox) ---
   vacation_days_paid Decimal? @db.Decimal(5, 2) // VacationDaysPaid (Semesterlagen headline)
@@ -2737,6 +2743,8 @@ model CollectiveAgreement {
   workspace_file_id String? // FK → WorkspaceFile (uploaded PDF)
   uploaded_by       String // plain user id (lightweight audit convention, no User FK)
   status            CollectiveAgreementStatus @default(PENDING)
+  effective_from    DateTime? // Story 7.5: optional giltighetsperiod (from)
+  effective_to      DateTime? // Story 7.5: optional giltighetsperiod (to)
   created_at        DateTime                  @default(now())
   updated_at        DateTime                  @updatedAt
 

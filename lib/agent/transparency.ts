@@ -14,14 +14,22 @@
 export interface TransparencySource {
   documentTitle: string
   documentNumber?: string | null
-  sourceType: 'LEGAL_DOCUMENT' | 'USER_FILE' | 'CHANGE_EVENT'
+  sourceType:
+    | 'LEGAL_DOCUMENT'
+    | 'USER_FILE'
+    | 'CHANGE_EVENT'
+    | 'COLLECTIVE_AGREEMENT'
   relevanceScore?: number | undefined
 }
 
 export interface CitationSource {
   documentNumber?: string | null
   contextualHeader?: string | null
-  sourceType: 'LEGAL_DOCUMENT' | 'USER_FILE' | 'CHANGE_EVENT'
+  sourceType:
+    | 'LEGAL_DOCUMENT'
+    | 'USER_FILE'
+    | 'CHANGE_EVENT'
+    | 'COLLECTIVE_AGREEMENT'
   path?: string | null
 }
 
@@ -65,6 +73,12 @@ export function formatTransparencyBlock(
       case 'CHANGE_EVENT':
         label = `Ändring i ${source.documentTitle}`
         break
+      // Story 7.5: kollektivavtal chunks exist in the index from here on —
+      // the switch stays exhaustive so nothing crashes when they surface.
+      // (Agent retrieval-spanning of agreements is Story 7.7.)
+      case 'COLLECTIVE_AGREEMENT':
+        label = `${source.documentTitle} (Kollektivavtal)`
+        break
     }
     uniqueLabels.push(label)
   }
@@ -104,6 +118,11 @@ export function formatSourceCitation(source: CitationSource): string {
         ? `Ändring ${source.documentNumber}`
         : 'Ändring'
       return `[Källa: ${changeRef}]`
+    }
+    // Story 7.5: the agreement chunk's contextual_header already carries
+    // "<Avtal> (Kollektivavtal) > <avsnitt>" (AC 5), so it IS the citation.
+    case 'COLLECTIVE_AGREEMENT': {
+      return `[Källa: ${source.contextualHeader ?? 'Kollektivavtal'}]`
     }
   }
 }

@@ -86,3 +86,9 @@ Alkohollagen (2010:1622) ställer krav på serveringstillstånd, lämplighet och
 
 ## Anmärkningar
 - Lagförklaringssida med områdes-intent; länka till /funktioner/kontroller för dokumentation. Undvik kannibalisering med katalogens /lagar-sida för alkohollagen — denna sida är förklaring/intent-nav, katalogen är lagtext. Sätt canonical på denna för nyckelordet "alkohollagen".
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** alkohollagen — 1 900/mån, KD 21 (bra ratio); serveringstillstånd (590, KD 23) → egen fråge-H2 med typtabell.
+- **BRIEF-FEL RÄTTAT (stort):** det klassiska MAT-KRAVET (8 kap. 15 §) är UPPHÄVT genom lag (2026:511) enligt katalogens fulltext — briefens matkravs-vinkel hade blivit fel; sidan nämner endast mjukt att kraven på serveringsstället ändrats.
+- **Faktakontroll:** 8:1, 8:11–12 (kunskapsprov), 8:18–21, 9:17–18 (erinran/varning/återkallelse), straffskalan — verifierade; egenkontrollprogram-kravets exakta omfattning verifierad (uttryckligt för folköl m.m.).

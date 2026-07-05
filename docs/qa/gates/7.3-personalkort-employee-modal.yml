@@ -1,0 +1,116 @@
+schema: 1
+story: '7.3'
+story_title: 'Personalkort — create & edit employee (tabbed modal)'
+gate: PASS
+status_reason: >-
+  All four review findings verifiably closed and independently re-verified.
+  DATA-001's three-state personnummer contract is enforced at both layers
+  (key omitted from the Prisma write on masked/untouched prefill — asserted
+  as key-ABSENCE, incl. the transient-ENCRYPTION_KEY scenario; ''/null =
+  explicit clear; value = validate+encrypt). Fail-closed encryption now
+  tested for create AND update; AC9/AC10 UI legs covered; failed agreements
+  fetch no longer masquerades as an empty state. COPY-001 + DESIGN-001..005
+  addenda verified; SplitPanelModal still untouched. 110/110 re-run,
+  typecheck clean.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-07-03T14:20:00+02:00'
+
+top_issues: []
+waiver: { active: false }
+
+quality_score: 100
+expires: '2026-07-17T00:00:00+02:00'
+
+evidence:
+  tests_reviewed: 136
+  risks_identified: 4
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    ac_gaps: []
+    # Round-1 gaps closed: AC9 (Chef select — active non-self listed, self +
+    # inactive excluded, inactive CURRENT manager kept) and AC10 (empty →
+    # kommer-snart placeholder; failed fetch → disabled select seeded with
+    # the current agreement + "Kollektivavtal kunde inte laddas.") now have
+    # RTL assertions. DATA-001 tests assert payload key-absence
+    # ('personnummer' in data === false) at BOTH the toEmployeeInput and the
+    # prisma.updateMany boundaries — not merely null-ness — plus
+    # encryptPersonnummer-never-called on the keep path. Re-run: 110/110
+    # across the 8 re-touched suites (actions 40 / form-schema 17 / modal 15
+    # = the 72 targeted, + island/table/filter/hook/labels); the unchanged
+    # lib/employees suites (26) passed in round 1. Typecheck exit 0.
+    # SplitPanelModal + components/ui/tabs.tsx confirmed untouched via git.
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      Unchanged from round 1 (PASS) and re-verified after the fix round: the
+      three-state refactor did not weaken the PII contract — explicit values
+      still route through encryptPersonnummerOrError before any Prisma call,
+      the fail-closed branch stays quiet (console spy asserted), plaintext
+      probes on persisted payloads and serialized returns still pass, and
+      cross-workspace/relation/self-management guards are untouched.
+  performance:
+    status: PASS
+    notes: >-
+      No new queries; the keep path SKIPS encryption entirely (one fewer
+      crypto op on routine masked edits). Cosmetic sv-locale insert-order
+      divergence noted in round 1 stands, unchanged.
+  reliability:
+    status: PASS
+    notes: >-
+      Round-1 CONCERNS resolved: the silent personnummer wipe is structurally
+      impossible — a masked/untouched prefill omits the column from the
+      write, so an unreadable-but-recoverable ciphertext survives routine
+      edits during key misconfiguration (dedicated transient-key test).
+      Explicit clears remain intentional and tested ('' and null → column
+      present, value null). Fail-closed encryption tested on both mutations
+      (friendly error, zero writes, no revalidate). Failed agreements fetch
+      is now a distinct, honest UI state.
+  maintainability:
+    status: PASS
+    notes: >-
+      Fixes landed cleanly: the three-state contract is documented at schema,
+      action and mapper with matching QA ids; shared EmployeeStatusBadge
+      removes duplicated badge markup (DESIGN-001); the form owning its
+      ScrollArea with an outside footer mirrors the law-modal layout; tests
+      grew in the right layers (schema unit + RTL + action) without
+      duplication.
+
+history:
+  - date: '2026-07-03T13:05:00+02:00'
+    gate: CONCERNS
+    quality_score: 90
+    note: >-
+      Initial deep review (first PII write path): DATA-001 (medium — silent
+      personnummer wipe on masked prefill + manage save, incl. the
+      transient-ENCRYPTION_KEY scenario where the ciphertext is fully
+      recoverable), TEST-001/TEST-002/UX-001 (low). Security PASS from the
+      start; 120/120 touched suites, typecheck clean.
+  - date: '2026-07-03T14:20:00+02:00'
+    gate: PASS
+    quality_score: 100
+    note: >-
+      Re-review after apply-qa-fixes + user-checkpoint addenda: all four
+      findings closed with genuine key-absence/fail-closed/RTL assertions;
+      COPY-001 and DESIGN-001..005 verified; SplitPanelModal untouched;
+      110/110 re-run + typecheck clean, independently executed.
+
+recommendations:
+  immediate: []
+  future:
+    - action: >-
+        Manual browser pass of the full open→edit→save→optimistic-row loop
+        (carried from the 7.2 gate; natural 7.3/7.4 checkpoint — also
+        exercises the relocated footer and entity header at real viewport
+        sizes).
+      refs: ['components/features/personalregister/personalkort-modal/index.tsx']
+    - action: >-
+        Wrap relation checks + write in a transaction (cosmetic TOCTOU,
+        carried from 7.2).
+      refs: ['app/actions/employees.ts']
+    - action: >-
+        Consider samordningsnummer (coordination numbers, day+60) support in
+        the validator when Fortnox-synced personnel appear — currently
+        rejected by the calendar-date check.
+      refs: ['lib/employees/personnummer-validation.ts']

@@ -1,0 +1,141 @@
+schema: 1
+story: '7.4b'
+story_title: 'Register column controls — show/hide + resize'
+gate: PASS
+status_reason: >-
+  The infinite-width bug is structurally unreachable: every sizing path
+  (onEnd commit via resolved updater, functional or direct, live preview,
+  localStorage load AND save) funnels through clampEmployeeColumnSizing,
+  whose bounds table matches the column defs 1:1 — the register is stricter
+  than the law table it mirrors (unknown ids dropped, non-finite values
+  rejected). Non-hideable Anställd/drag-handle is a verified triple defense
+  (enableHiding:false, sanitizer strip on load/save/change, disabled
+  Obligatorisk checkbox). Shared primitive consumed untouched, no
+  law-list-typed imports, AC1-6 all covered. 35/35 targeted tests +
+  typecheck independently re-run clean. Three low-severity notes only.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-07-03T20:40:00+02:00'
+
+top_issues:
+  - id: 'STATE-001'
+    severity: low
+    finding: >-
+      handleColumnVisibilityChange and handleColumnSizingChange each rebuild
+      the full EmployeeColumnState from the OTHER half's closure value using
+      non-functional setState. Unreachable from today's UI (visibility
+      changes only from the single Kolumner control as full state; sizing
+      only from one grip at a time), but a future caller firing both in one
+      tick would clobber one half with a stale value.
+    suggested_action: >-
+      Future-proof with functional updates:
+      setColumnState((prev) => ...) inside applyColumnState, merging the
+      changed half over prev.
+    suggested_owner: dev
+  - id: 'TEST-001'
+    severity: low
+    finding: >-
+      No component-level test drives an actual resize drag through the
+      onEnd commit path (jsdom pointer-drag limits); the clamp is pinned at
+      unit level (clampEmployeeColumnSizing) and via the hydrate-clamps-to-
+      480px assertion, and the commit path was verified by code review.
+    suggested_action: >-
+      Cover resize drag + grip/sort/dnd seam in the carried-over manual
+      browser pass (or a future Playwright pass) of the register.
+    suggested_owner: dev
+  - id: 'TEST-002'
+    severity: low
+    finding: >-
+      The workspaceId-null path (register with groups but zero employees:
+      Kolumner control renders, toggling skips persistence) is code-verified
+      safe (applyColumnState guards the save, effect guards the load) but
+      not pinned by a test.
+    suggested_action: >-
+      Add one test rendering groups with allEmployees=[] and toggling a
+      column — asserts no crash and localStorage stays empty.
+    suggested_owner: dev
+waiver: { active: false }
+
+quality_score: 100
+expires: '2026-07-17T00:00:00+02:00'
+
+evidence:
+  tests_reviewed: 35
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6]
+    ac_gaps: []
+    # AC1: Kolumner control lists all nine data columns (flat + grouped
+    # toolbars), toggle removes header+cells, grouped test proves the hide
+    # applies to EVERY section (shared lifted state, one instance per group).
+    # AC2: Anställd present-but-disabled with Obligatorisk (data-disabled
+    # asserted), drag handle absent from the catalog (invariant test),
+    # sanitizer strips name/dragHandle=false (unit) and hide-personnummer
+    # keeps Anställd (RTL). Triple defense verified in code: enableHiding,
+    # sanitizer on load/save/change, mandatory checkbox.
+    # AC3: clamp unit matrix (out-of-bounds both directions, unknown ids,
+    # NaN/Infinity) + stale 99999px hydrates as exactly 480px (RTL);
+    # columnResizeMode 'onEnd' + commit-path clamp-before-store verified by
+    # review; bounds table matches column-def size/minSize/maxSize 1:1 for
+    # all ten ids. TEST-001 notes the missing drag simulation.
+    # AC4: persist-on-change under laglig:personalregister:columns:v1:{ws},
+    # hydrate-on-mount, per-workspace isolation, corrupt JSON and
+    # wrong-shape JSON degrade to defaults, unknown/new columns default
+    # visible — all pinned.
+    # AC5: no reorder — grep confirms zero columnOrder/onColumnOrderChange
+    # machinery in the personalregister dir (absence, verified by
+    # inspection rather than test).
+    # AC6: filterEmployees matches a personnummer digit query with the
+    # column hidden AND the matched row renders; filter-employees.ts
+    # untouched (search is over data, not cells).
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      No PII surface: persisted state is column ids, booleans and widths
+      only — never row data; the personnummer privacy case (hide while
+      screen-sharing) works and hydrates hidden before any interaction.
+      localStorage is workspace-keyed, and stale/foreign keys cannot
+      resurrect hidden-column content (visibility only gates rendering).
+  performance:
+    status: PASS
+    notes: >-
+      Sizing state lifted once, memoized columnControls, clamp is O(cols);
+      localStorage writes only on user changes (visibility toggle, resize
+      commit — onEnd means one write per drag, not per frame). Live preview
+      recomputes per pointer move as in the law table; registers are small
+      and unvirtualized by design.
+  reliability:
+    status: PASS
+    notes: >-
+      Every persistence failure mode degrades to defaults without crashing
+      (corrupt JSON, wrong shape, disabled storage, quota — load and save
+      both try/catch); SSR-safe post-mount hydration avoids mismatch;
+      empty-register/null-workspace path skips persistence safely
+      (TEST-002: pin it).
+  maintainability:
+    status: PASS
+    notes: >-
+      Single label source (EMPLOYEE_COLUMN_LABELS) shared by headers and
+      toggle list; bounds table documented as clamp source of truth with a
+      catalog-invariant test guarding drift; shared ui/column-settings
+      consumed as-is (git: untouched, along with document-list/**); no
+      law-list-typed imports; banned noun absent from 7.4b files. STATE-001
+      logged for the dual-callback state merge.
+
+recommendations:
+  immediate: []
+  future:
+    - action: >-
+        Switch applyColumnState to functional setState merging over prev
+        (STATE-001) before any new surface can update both halves in one
+        tick.
+      refs: ['components/features/personalregister/employee-list-table.tsx']
+    - action: >-
+        Pin the empty-register toggle path (TEST-002) and cover a real
+        resize drag + grip/sort seam in the carried-over manual browser
+        pass (TEST-001).
+      refs:
+        [
+          'tests/unit/components/features/personalregister/employee-list-table.test.tsx',
+        ]

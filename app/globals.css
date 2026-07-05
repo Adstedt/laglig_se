@@ -81,8 +81,12 @@
 
   .dark {
     /* Darker neutral grays — main ~#1a1a1a, sidebar ~#0f0f0f (deeper than
-       ChatGPT-aligned defaults for a more pronounced dark surface). */
-    --background: 0 0% 10%;
+       ChatGPT-aligned defaults for a more pronounced dark surface).
+       NB: 10% maps to RGB 25.50 — exactly on the rounding boundary, so Chrome's
+       tile rasterizer rounds it to 25 in some full-width tiles and 26 in others,
+       producing faint horizontal banding on the dark background. 10.2% → RGB 26.0
+       (off the .5 boundary) so every tile rounds identically. Keep it off x.5. */
+    --background: 0 0% 10.2%;
     --foreground: 0 0% 93%;
     /* Card sinks just below bg for a subtle "reader surface" / panel feel in dark mode */
     --card: 0 0% 9%;

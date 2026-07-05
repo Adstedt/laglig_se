@@ -98,3 +98,9 @@ Laglig.se samlar CSRD, ESRS och den svenska implementeringen i årsredovisningsl
 ## Anmärkningar
 
 CSRD:s tidsplan och omfattning är i rörelse pga EU:s Omnibus-förslag — markera tydligt med "[bekräfta i katalogen]" och undvik att påstå exakta ikraftträdande- eller infasningsdatum som inte är bekräftade. Håll på områdesnivå och länka till katalogens CSRD-/hållbarhetssida som auktoritativ källa för att undvika kannibalisering. Inga SHA-256/krypto-påståenden i revisionsrapport-omtal.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** CSRD — 3 600/mån, KD 29; hållbarhetsrapportering (390, KD 22) + ESRS (720, KD 24 → egen H2).
+- **Strategibeslut:** FAKTAFRYS pga EU:s omnibus-omförhandling — inga trösklar eller första-rapporteringsår anges som fasta; osäkerheten används som lagbevakningsargument. "dubbel väsentlighet" egen H2.
+- **Faktakontroll:** CSRD-direktivet (32022L2464), ESRS (32023R2772) och SFDR är MISS i katalogen → nämns olänkade; ÅRL (1995:1554) verifierad ACTIVE med hållbarhetsrapportregler i fulltexten och bär kataloglistan; SFS 2018:1093 löste till FEL lag (OSL-ändring) och skippades.

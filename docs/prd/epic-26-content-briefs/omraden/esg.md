@@ -91,3 +91,9 @@ ESG handlar i praktiken om ett växande knippe bindande regler — CSRD, ESRS, t
 
 ## Anmärkningar
 - Brett begrepp med rörlig reglering (CSRD/CSDDD-infasning ändrades politiskt 2025-2026) — verifiera aktuell omfattning och tidplan innan publicering och markera osäkerheter med [bekräfta i katalogen]. Länka till /omraden/miljo och /omraden/iso-14001 för E-dimensionen istället för att duplicera; undvik överlappning med ev. dedikerad CSRD-sida.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** ESG — 2 400/mån, KD 30; esg rapportering (170, KD 31).
+- **Strategibeslut:** sidan äger BEGREPPET (E/S/G, ESG vs CSR vs hållbarhet); /omraden/csrd äger direktivet. DefinitionBox utan författningsnummer (ESG är ramverk, ej författning).
+- **Faktakontroll:** 6 författningar ACTIVE i kataloglistan (taxonomiförordningen, ÅRL, MB, AML, diskrimineringslagen m.fl.); CSRD/CSDDD-trösklar medvetet mjukade (omnibus).

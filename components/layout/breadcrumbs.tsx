@@ -27,6 +27,7 @@ const routeLabels: Record<string, string> = {
   filer: 'Filer',
   hr: 'HR',
   employees: 'Anställda',
+  personalregister: 'Personalregister',
   compliance: 'Efterlevnad',
   laglistor: 'Laglistor',
   krav: 'Krav',

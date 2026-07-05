@@ -90,3 +90,9 @@ Miljölagstiftningen är spridd över miljöbalken, dussintals förordningar och
 
 ## Anmärkningar
 - Konceptintent ligger här; produkt-/funktionsintent för "laglista" ska kanoniseras till /funktioner/laglista — länka dit, konkurrera inte. Håll CatalogLawList som länkar in i /lagar-katalogen utan att duplicera lagtext.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** miljölagstiftning — 110/mån, KD 12. Låg volym men äger navigationsintentionen; sidan är klustrets hubb, inte trafikmotor.
+- **Strategibeslut:** "miljöbalken" (9 900) ägs av /omraden/miljobalken och "egenkontroll" (880) av /omraden/egenkontroll — denna sida sammanfattar och länkar ner (anti-kannibalisering). Alla sex syskonsidor länkade i prosa.
+- **Nedgraderade:** "miljökrav företag" ~0 uppmätt volym; "miljölagar" (50, KD 24) i description/FAQ.

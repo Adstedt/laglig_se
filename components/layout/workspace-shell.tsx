@@ -116,7 +116,7 @@ export function WorkspaceShell({
       {/* Row-first layout: sidebar | column(header + content) */}
       <div className="flex h-screen overflow-hidden bg-muted/60">
         {/* Left Sidebar - full height, desktop only */}
-        <LeftSidebar user={user} />
+        <LeftSidebar user={user} role={role} />
 
         {/* Right column: header + content. Matching bg-muted/60 here makes the
             rounded-tl cutout reveal the same double-layered tint as the
@@ -135,6 +135,7 @@ export function WorkspaceShell({
             open={mobileMenuOpen}
             onOpenChange={setMobileMenuOpen}
             user={user}
+            role={role}
           />
 
           {/* Content area below header — rounded top-left forms the inner
@@ -171,7 +172,7 @@ export function WorkspaceShell({
                 content's intrinsic width when the right sidebar opens —
                 without it the editor overflows and scrolls horizontally
                 instead of reflowing narrower. */}
-            <main className="flex-1 min-w-0 overflow-auto bg-background p-4 md:p-6">
+            <main className="flex-1 min-w-0 overflow-auto [scrollbar-gutter:stable] bg-background p-4 md:p-6">
               <Breadcrumbs />
               {children}
             </main>

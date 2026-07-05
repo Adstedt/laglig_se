@@ -99,3 +99,9 @@ Laglig.se samlar arbetsmiljölagen och Arbetsmiljöverkets föreskrifter (AFS) i
 ## Anmärkningar
 
 AFS-numreringen ändrades med nya regelstrukturen 1 januari 2025 — använd "[bekräfta nummer i katalogen]" för enskilda AFS där exakt nummer inte är verifierat. Undvik kannibalisering mot en ev. djupare /omraden/systematiskt-arbetsmiljoarbete-sida genom att hålla denna på översiktsnivå och länka vidare.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** arbetsmiljö — 2 900/mån, KD 28. Områdesöversikt: sammanfattar och länkar NED till barnsidorna (arbetsmiljolagen, sam, afs, riskbedomning) utan att kannibalisera.
+- **Upptäckta keywords (ej i brief):** psykosocial arbetsmiljö (1 000, KD 18) + organisatorisk och social arbetsmiljö (480, KD 19) → egen H2 (vardagsbegrepp vs OSA-term, AFS 2023:2); arbetsmiljöansvar (210, KD 21 → roll-H2); vad är arbetsmiljö (390, KD 27 → första H2 verbatim).
+- **Medvetet ej jagat:** arbetsmiljöverket (22 200/mån, navigational — kan inte vinnas och fel intention); arbetsmiljöpolicy exempel (880) → ett stycke + länk ner till /omraden/sam som äger ämnet.

@@ -279,4 +279,46 @@ describe('retrieveContext', () => {
     expect(params).toContain(null)
     expect(params).not.toContainEqual(['USER_FILE'])
   })
+
+  // ---------------------------------------------------------------------------
+  // Story 7.7: sourceId single-source hard filter (assigned-agreement bias).
+  // Same caveat as the sourceTypes block above: $queryRaw is mocked, so these
+  // assert the bound SQL parameters; the live-DB isolation check is the
+  // scripts/eval-ca-grounding.ts cross-workspace probe.
+  // ---------------------------------------------------------------------------
+  describe('sourceId filter (Story 7.7)', () => {
+    it('binds the sourceId as a SQL parameter alongside the workspace id', async () => {
+      await retrieveContext('uppsägningstid', 'ws-42', {
+        sourceId: 'agreement-1',
+      })
+
+      const params = mockQueryRaw.mock.calls[0]!.slice(1)
+      expect(params).toContain('agreement-1')
+      // Workspace isolation clause unchanged.
+      expect(params).toContain('ws-42')
+    })
+
+    it('combines with sourceTypes (both params bound)', async () => {
+      await retrieveContext('uppsägningstid', 'ws-42', {
+        sourceTypes: ['COLLECTIVE_AGREEMENT'],
+        sourceId: 'agreement-1',
+      })
+
+      const params = mockQueryRaw.mock.calls[0]!.slice(1)
+      expect(params).toContainEqual(['COLLECTIVE_AGREEMENT'])
+      expect(params).toContain('agreement-1')
+      expect(params).toContain('ws-42')
+    })
+
+    it('null-safe: defaults to null (no single-source filter) when omitted', async () => {
+      await retrieveContext('uppsägningstid', 'ws-1', {
+        sourceTypes: ['COLLECTIVE_AGREEMENT'],
+      })
+
+      const params = mockQueryRaw.mock.calls[0]!.slice(1)
+      // The sourceId slot is bound as null → `::text IS NULL` guard passes.
+      expect(params).toContain(null)
+      expect(params).not.toContain('agreement-1')
+    })
+  })
 })

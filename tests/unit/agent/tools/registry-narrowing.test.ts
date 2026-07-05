@@ -26,9 +26,18 @@ import type { WorkspaceRole } from '@prisma/client'
 
 type Ctx = 'global' | 'task' | 'law' | 'change'
 
-// The full factory set = policy keys minus the route-injected web_search.
+// The full factory set = policy keys minus the route-injected web_search and
+// minus the role-conditional employee tools (Story 7.7: lookup_employee needs
+// employees:view; Story 7.10: get_employee_salary needs employees:manage — the
+// MEMBER used throughout lacks both; their presence/absence matrix is pinned in
+// registry-role-filter.test.ts).
 const FULL = Object.keys(TOOL_REGISTRY_POLICY)
-  .filter((n) => n !== 'web_search')
+  .filter(
+    (n) =>
+      n !== 'web_search' &&
+      n !== 'lookup_employee' &&
+      n !== 'get_employee_salary'
+  )
   .sort()
 
 // What the chat route computes for `activeSkills` in each context.
@@ -75,13 +84,15 @@ const GLOBAL_FLOW_REQUIRED = [
 
 describe('registry narrowing — no-regression harness (Story 19.7c)', () => {
   // Story 17.11b: bumped 33 → 34 (added add_document_section write tool).
-  it('sanity: full factory registry is 34 tools (update flow-required sets if this changes)', () => {
-    expect(FULL).toHaveLength(34)
+  // Story 7.7: bumped 34 → 35 (added search_collective_agreements; the also-
+  // added lookup_employee is role-conditional and excluded from FULL above).
+  it('sanity: full factory registry is 35 tools (update flow-required sets if this changes)', () => {
+    expect(FULL).toHaveLength(35)
   })
 
   it('activeSkills undefined → full set (legacy callers unaffected)', () => {
-    expect(toolKeys('MEMBER', undefined)).toHaveLength(34)
-    expect(toolKeys(undefined, undefined)).toHaveLength(34)
+    expect(toolKeys('MEMBER', undefined)).toHaveLength(35)
+    expect(toolKeys(undefined, undefined)).toHaveLength(35)
   })
 
   it('change context keeps every tool the assessment flow uses', () => {
@@ -117,11 +128,24 @@ describe('registry narrowing — no-regression harness (Story 19.7c)', () => {
     )
   })
 
-  it('activeSkills [] → baseline only (save_assessment gated, 33 tools)', () => {
+  it('activeSkills [] → baseline only (save_assessment gated, 34 tools)', () => {
     const k = toolKeys('MEMBER', [])
     expect(k).not.toContain('save_assessment')
     // Story 17.11b: bumped 32 → 33 (added add_document_section to baseline).
-    expect(k).toHaveLength(33)
+    // Story 7.7: bumped 33 → 34 (search_collective_agreements in baseline).
+    expect(k).toHaveLength(34)
+  })
+
+  // Story 7.7 Task 2b: when the role DOES hold employees:view, both new tools
+  // are in ALWAYS_AVAILABLE — skill narrowing must never drop them.
+  it('OWNER keeps lookup_employee + get_employee_salary + search_collective_agreements under narrowing', () => {
+    for (const ctx of ['global', 'task', 'law', 'change'] as const) {
+      const k = toolKeys('OWNER', activeFor(ctx))
+      expect(k).toContain('lookup_employee')
+      // Story 7.10: OWNER holds employees:manage → salary tool survives narrowing.
+      expect(k).toContain('get_employee_salary')
+      expect(k).toContain('search_collective_agreements')
+    }
   })
 
   // Story 19.8: draft_styrdokument is ACTIVATION-ONLY (contextTypes: []) — it is

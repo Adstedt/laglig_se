@@ -1,0 +1,72 @@
+schema: 1
+story: '7.10'
+story_title: 'Employee salary (Lön) + AI löneavtal-compliance'
+gate: PASS
+status_reason: 'Both security traps verified — the AI salary tool is genuinely removed from the registry for any role lacking employees:manage, and the repo masks/strips salary before serialization to view-only clients. Salary is byte-level absent from every always-on AI path; three-state keep-path and corrupt-ciphertext degradation are tested. 372/372 targeted tests pass, branch typecheck GREEN.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-07-04T00:00:00Z'
+
+top_issues: []
+waiver: { active: false }
+
+quality_score: 100
+expires: '2026-07-18T00:00:00Z'
+
+evidence:
+  tests_reviewed: 372
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7]
+    ac_gaps: []
+  notes: >-
+    Targeted suites (tests/unit/lib/employees, agent/tools salary+registry+lookup,
+    system-prompt, app/actions/employees, chat-route-employee-context,
+    personalregister, fortnox employee-mapper): 22 files / 372 tests PASS.
+    `pnpm typecheck` GREEN branch-wide. Migration is additive TEXT-only
+    (applied manually by the user). employee-completeness.ts + employee-row.ts
+    confirmed untouched by 7.10 via git.
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      TRAP #1 (AI tool permission gate) PASS: get_employee_salary is declared
+      then `delete`d from the registry unless hasPermission(role,'employees:manage'),
+      BEFORE decision-log wrapping — a view-only agent has NO tool (not a refusing
+      stub). Full role matrix asserts absence for MEMBER/ADMIN/AUDITOR/undefined;
+      presence for OWNER/HR_MANAGER. Tool fetch is workspace-scoped; output is a
+      strict PII allowlist (no personnummer/email/phone/address — byte-level tested).
+      TRAP #2 (repo gate before serialization) PASS: EmployeeView Omits the salary
+      ciphertext columns; toSalaryView decrypts only for canManage and masks/nulls
+      otherwise, degrading a corrupt ciphertext to the mask. Byte-level JSON.stringify
+      tests confirm neither ciphertext nor plaintext reaches a view-only row even with
+      the Lön column visible. SALARY ABSENCE in always-on AI paths PASS:
+      formatEmployeeContext byte-level absence test (polluted record), lookup_employee
+      allowlist select (structurally salary-free), biasEmployeeId threaded without
+      reading salary (trap #5). Fail-closed encryption; no plaintext logging.
+  performance:
+    status: PASS
+    notes: >-
+      Encrypt-at-rest forgoes numeric DB aggregation — accepted/documented (AI does
+      the minimilön comparison; analytics out of scope). No hot-path regression: the
+      salary bias reuses the existing single pill-employee re-fetch.
+  reliability:
+    status: PASS
+    notes: >-
+      Corrupt/rotated-key salary ciphertext degrades to mask (repo) / null (tool)
+      instead of throwing out of the list or tool — personnummer parity, tested both
+      sides. Three-state write contract keeps stored ciphertext on an absent key
+      (masked-prefill keep path), tested via `'monthly_salary' in data === false`.
+  maintainability:
+    status: PASS
+    notes: >-
+      Mirrors the proven personnummer pattern (salary.ts thin crypto wrappers,
+      encryptSalaryOrError three-state). Client-safe formatters correctly split into
+      labels.ts to keep Node crypto out of the 'use client' bundle. Catalog-invariant
+      test guards default-hidden drift. Fortnox mapper stays pure/crypto-free.
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Add an explicit byte-level salary-absence assertion to lookup-employee.test.ts for parity with system-prompt.test.ts (regression-proofing; leakage is already structurally impossible via the allowlist select).'
+      refs: ['tests/unit/agent/tools/lookup-employee.test.ts']

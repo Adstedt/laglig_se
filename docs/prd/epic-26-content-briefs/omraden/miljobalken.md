@@ -106,3 +106,10 @@ Miljöbalken är ramlagen som tillsammans med hundratals förordningar och före
 ## Anmärkningar
 
 Denna sida äger intentionen "vad innebär / krav / sammanfattning" för miljöbalken. Katalogsidan /lagar (lagtexten) äger "läs lagtexten" — länka dit via CatalogLawList utan att duplicera paragraftext. Undvik kannibalisering mot översiktssidan /omraden/miljo: den senare är områdesöversikt, denna är lagförklaring. Verifiera förordningsnummer markerade [bekräfta] mot katalogen före publicering.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** miljöbalken — 9 900/mån, KD 32, informational. Vinnbar svårighet.
+- **Upptäckta keywords (ej i brief):** förordning om miljöfarlig verksamhet och hälsoskydd (720, KD 18 → exakt fras i brödtext + kataloglista); försiktighetsprincipen (590, KD 19 → namngivet ProcessSteps-steg); miljöbalken 7 kap (170, KD 14 → 7 kap.-H3 tillagd i kapitelöversikten); miljöbalken 1998 808 (140 → SFS-nummer tidigt); hänsynsreglerna i miljöbalken (110, KD 14 → H2 verbatim); lokaliseringsprincipen (90, KD 17 → steg).
+- **Nedgraderade:** briefens long-tails har ~0 volym utom "vad är miljöbalken" (110, KD 23 → första H2). Övriga används endast som FAQ-formuleringar.
+- **Strategibeslut:** "miljölagstiftning" (110, KD 12) lämnas till /omraden/miljo (kannibalisering). Katalogfynd: förordning (1998:905) om MKB är UPPHÄVD → miljöbedömningsförordningen (2017:966); REACH = 32006R1907, CLP = 32008R1272.

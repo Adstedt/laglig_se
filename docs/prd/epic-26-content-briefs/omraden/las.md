@@ -86,3 +86,8 @@ Lagen om anställningsskydd (1982:80) styr anställningsformer, uppsägningar oc
 
 ## Anmärkningar
 - Lagförklaringssida med områdes-intent; länka till /funktioner/laglista och /funktioner/kontroller. Undvik kannibalisering med katalogens /lagar-sida för LAS — denna sida är förklaring/intent-nav, katalogen är lagtext. Markera tydligt att LAS ändrats över tid; håll fakta neutralt och hänvisa till change feed för senaste lydelse.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** "las" — 18 100/mån, KD 37 (STÖRSTA termen i klustret, tvetydig → "LAS — lagen om anställningsskydd" i title/H1); lagen om anställningsskydd 2 900/KD29; uppsägning (6 600) med arbetsgivarvinkel; turordningsregler (140, KD 14) → egen H2.
+- **Faktakontroll (fulltext):** sakliga skäl (7 §, 2022-reformen bekräftad), särskild visstidsanställning + 12-mån-konvertering (5–5a §§), provanställning (6 §), tre turordningsundantag (22 §), uppsägningstider (11 §), företrädesrätt (25 §), semidispositivitet (2c §) — alla verifierade; MBL (1976:580) ACTIVE i kataloglistan.

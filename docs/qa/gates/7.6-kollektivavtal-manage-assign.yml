@@ -1,0 +1,144 @@
+schema: 1
+story: '7.6'
+story_title: 'Manage & assign kollektivavtal'
+gate: PASS
+status_reason: >-
+  The destructive path is correct end-to-end: verify-then-act with compound
+  where, ONE interactive transaction covering chunks → agreement (FK SetNull)
+  → backing-file row → profile-honesty sync, chunk deleteMany filtered on
+  source_type AND source_id AND workspace_id, storage removal post-commit and
+  fail-safe, and every relation onto WorkspaceFile is onDelete: Cascade so the
+  in-tx file-row delete cannot hit a restrict trap. The profile-honesty matrix
+  (delete-last → flag false + name null; delete-named → repoint; delete-other
+  → no write) is test-pinned in all three branches. Preview-vs-write parity is
+  structural — both paths call the single resolveBulkTargetWhere — and pinned
+  by identical where-object assertions. Both dev-flagged judgment calls are
+  accepted (in-tx profile sync: consistency correctly wins on a destructive
+  op; inactive-included bulk: Fortnox-faithful with an honest preview). All
+  five carried findings verifiably closed. 358 action tests + 87 component
+  tests + typecheck independently re-run clean. Low-severity notes only.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-07-03T23:15:00+02:00'
+
+top_issues:
+  - id: 'BULK-INACTIVE-001'
+    severity: low
+    finding: >-
+      Bulk assign targets ALL employees matching the personaltyp/enhet,
+      including inactive ones (dev-flagged). Fortnox-faithful wholesale
+      semantics; the preview counts them so the guardrail stays honest, and
+      the dialog copy never claims "aktiva". Accepted as implemented — but it
+      is a product-semantics default worth an explicit PO confirmation.
+    suggested_action: >-
+      PO confirms inactive-included is intended. If not, add `inactive: false`
+      in resolveBulkTargetWhere (one line; preview inherits it automatically
+      via the shared resolver).
+    suggested_owner: po
+  - id: 'STATE-002'
+    severity: low
+    finding: >-
+      The STATE-001 fix persists to localStorage INSIDE the setState updater
+      (employee-list-table.tsx applyColumnState). React updaters should be
+      pure; under StrictMode dev double-invocation the write runs twice.
+      Idempotent write → no observable bug, and the fix does close the stale-
+      closure clobber (regression test pins two sequential toggles). Nit only.
+    suggested_action: >-
+      Next time the file is in scope, move the saveEmployeeColumnState call
+      out of the updater (e.g. compute next first, or persist in an effect).
+    suggested_owner: dev
+  - id: 'ORPHAN-001'
+    severity: low
+    finding: >-
+      A failed post-commit storage remove is logged but never queued for
+      retry — orphaned blobs accumulate silently (dev-flagged; explicitly
+      accepted by Dev Notes: fail-safe was mandated, an orphan is a nuisance,
+      a half-deleted agreement would be a bug).
+    suggested_action: >-
+      Future story: an orphaned-object sweep (Storage objects with no
+      WorkspaceFile row) if deletes become frequent.
+    suggested_owner: po
+  - id: 'BROWSER-001'
+    severity: low
+    finding: >-
+      Not verified in a live browser (story rules: no dev server). The full
+      delete → re-upload-same-PDF loop (the dedupe trap AC 3 exists to kill)
+      and both dialog flows have unit coverage only.
+    suggested_action: >-
+      Include the delete → re-upload loop, the Tilldela dialog (both modes)
+      and the delete-consequence dialog in the pending Epic 7 browser pass
+      (alongside 7.5's migration checkpoint).
+    suggested_owner: dev
+
+waiver: { active: false }
+
+quality_score: 100
+expires: '2026-07-17T00:00:00+02:00'
+
+evidence:
+  tests_reviewed: 102
+  risks_identified: 4
+  trace:
+    ac_covered: [1, 2, 3, 4]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      Workspace isolation on EVERY mutation, pinned by tests: edit
+      (verify-then-act + compound-where updateMany), delete (compound verify;
+      chunk filter carries workspace_id; backing-file lookup workspace-scoped
+      — a foreign file row is provably left alone), bulk assign (agreement AND
+      group ownership-verified; the updateMany itself carries the workspace
+      filter). All mutations + preview gated employees:manage. Profile writes
+      are scoped two-field in-ctx updates + shared completeness recompute —
+      never the workspace:settings-gated action (PII/permission contract
+      intact). UX-ADMIN-001 gate is canAccessSettings && canViewEmployees as
+      specified, on both trigger and content.
+  performance:
+    status: PASS
+    notes: >-
+      Bulk assign is a single updateMany; preview a single count. Delete
+      transaction is 4–6 statements — no N+1. The remaining-agreement read
+      uses take: 1. Lazy group fetch happens once per dialog mount cycle;
+      preview requests cancel stale responses via the cancelled flag.
+  reliability:
+    status: PASS
+    notes: >-
+      Atomic cascade: a mid-transaction failure (including the profile-sync
+      leg) rolls everything back to a fully consistent, retriable state —
+      correct polarity for a destructive op (see QA verdict on the dev-flagged
+      deviation). Storage removal fail-safe post-commit (test-pinned: remove
+      failure still returns success). Orphan-blob accumulation accepted
+      (ORPHAN-001). Preview-vs-confirm race is inherent and documented; the
+      count is a guardrail, not a lock.
+  maintainability:
+    status: PASS
+    notes: >-
+      DUP-001 genuinely closed: lib/files/upload-core.ts is the single
+      implementation of validation/dedupe/quota/hash/upsert:false, consumed by
+      both uploadFile and uploadCollectiveAgreement; files.ts action tests
+      pass byte-unchanged (files.test.ts + files-chunk-cleanup.test.ts +
+      files-extraction.test.ts green in the independent run). Shared
+      LIST_ITEM_SELECT and KollektivavtalAgreementFields kill two more
+      duplication seams. STATE-002 nit noted.
+
+recommendations:
+  immediate: []
+  future:
+    - action: >-
+        PO confirmation on inactive-included bulk semantics (BULK-INACTIVE-001)
+      refs: ['app/actions/collective-agreements.ts']
+    - action: >-
+        Browser pass: delete → re-upload-same-PDF loop + both dialogs
+        (BROWSER-001)
+      refs:
+        [
+          'components/features/kollektivavtal/kollektivavtal-delete-dialog.tsx',
+          'components/features/kollektivavtal/kollektivavtal-assign-dialog.tsx',
+        ]
+    - action: >-
+        Move the localStorage write out of the setState updater (STATE-002)
+      refs: ['components/features/personalregister/employee-list-table.tsx']
+    - action: 'Orphaned-storage-object sweep job if deletes become frequent'
+      refs: ['app/actions/collective-agreements.ts']

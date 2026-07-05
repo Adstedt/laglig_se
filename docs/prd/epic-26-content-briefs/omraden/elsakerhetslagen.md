@@ -87,3 +87,9 @@ Elsäkerhetslagen (2016:732) ställer krav på egenkontrollprogram, auktorisatio
 
 ## Anmärkningar
 - Lagförklaringssida med områdes-intent; länka till /funktioner/kontroller för hur egenkontrollen dokumenteras. Undvik kannibalisering med katalogens /lagar-sida för elsäkerhetslagen — denna sida är förklaring/intent-nav. Sätt canonical på denna för nyckelordet "elsäkerhetslagen".
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** elsäkerhetslagen — 390/mån, KD 26.
+- **Upptäckta:** egenkontrollprogram (880/mån, KD 28!) → sidans stora H2; egenkontrollprogram elektriker (210, KD 12). "elsäkerhet" (480) navigational — ej jagad.
+- **BRIEF-FEL RÄTTAT:** briefens FAQ påstod sanktionsavgifter — fulltextverifiering av SFS 2016:732 visar endast förelägganden/förbud + vite (41–43 §§) och straffansvar (48–49 §§); sidan anger korrekt regim. 11 författningar verifierade ACTIVE inkl. ELSÄK-FS-serien.

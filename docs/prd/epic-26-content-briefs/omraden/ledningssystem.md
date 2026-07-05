@@ -102,3 +102,9 @@ Ett ledningssystem omfattar de bindande krav som gäller verksamheten; vanligt f
 ## Anmärkningar
 
 Detta är paraplysidan för begreppet; avgränsa mot de specifika ISO-sidorna (/omraden/iso-9001 etc.) och mot /omraden/miljoledningssystem och /omraden/kvalitetsledningssystem som tar standard-specifika vinklar. Håll sidan generisk och länka neråt. Länka till /funktioner/laglista för produktdelen.
+
+## Semrush-validering (2026-07-03, db=se)
+
+- **Bekräftat primärt:** ledningssystem — 880/mån, KD 35; integrerat ledningssystem (40, KD 8) → egen H2 (låg volym, hög kommersiell relevans).
+- **Strategibeslut:** klusterhubb — standarddetaljer länkas ner till barnsidorna; differentiering mot certifieringsbolags-SERP = lagkraven/efterlevnadsutvärderingen.
+- **Flaggat:** "Annex SL 2012" och "treårscykel" är branschstandard utan katalogkälla (mjukt formulerade).

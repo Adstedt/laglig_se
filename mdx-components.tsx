@@ -4,6 +4,8 @@ import { SplitFeature } from '@/components/marketing/sections/split-feature'
 import { ScreenshotFrame } from '@/components/marketing/media/screenshot-frame'
 import { FeatureGrid } from '@/components/marketing/sections/feature-grid'
 import { ProofBlock } from '@/components/marketing/sections/proof-block'
+import { DefinitionBox } from '@/components/marketing/sections/definition-box'
+import { ProcessSteps } from '@/components/marketing/sections/process-steps'
 import { Lead } from '@/components/marketing/mdx/lead'
 
 /**
@@ -137,6 +139,8 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ScreenshotFrame,
     FeatureGrid,
     ProofBlock,
+    DefinitionBox,
+    ProcessSteps,
     ...components,
   }
 }
