@@ -6,34 +6,34 @@ Bocka av när begärd; kolla av indexerad i GSC:s sidindexeringsrapport efter n�
 
 ## Dag 1
 
-- [ ] https://laglig.se/omraden
-- [ ] https://laglig.se/omraden/lagefterlevnad
-- [ ] https://laglig.se/omraden/sam
-- [ ] https://laglig.se/omraden/riskbedomning
-- [ ] https://laglig.se/omraden/avfallsforordningen
-- [ ] https://laglig.se/omraden/arbetstidslagen
-- [ ] https://laglig.se/omraden/iso-45001
-- [ ] https://laglig.se/omraden/ovk
-- [ ] https://laglig.se/omraden/internrevision
-- [ ] https://laglig.se/omraden/energikartlaggning
+- [x] https://laglig.se/omraden
+- [x] https://laglig.se/omraden/lagefterlevnad
+- [x] https://laglig.se/omraden/sam
+- [x] https://laglig.se/omraden/riskbedomning
+- [x] https://laglig.se/omraden/avfallsforordningen
+- [x] https://laglig.se/omraden/arbetstidslagen
+- [x] https://laglig.se/omraden/iso-45001
+- [x] https://laglig.se/omraden/ovk
+- [x] https://laglig.se/omraden/internrevision
+- [x] https://laglig.se/omraden/energikartlaggning
 
 ## Dag 2
 
-- [ ] https://laglig.se/omraden/miljobalken
-- [ ] https://laglig.se/omraden/arbetsmiljolagen
-- [ ] https://laglig.se/omraden/gdpr
-- [ ] https://laglig.se/omraden/egenkontroll
-- [ ] https://laglig.se/omraden/kemikalieforteckning
-- [ ] https://laglig.se/omraden/sba
-- [ ] https://laglig.se/omraden/stralskyddslagen
-- [ ] https://laglig.se/omraden/visselblasarlagen
-- [ ] https://laglig.se/omraden/plan-och-bygglagen
-- [ ] https://laglig.se/omraden/reach
+- [x] https://laglig.se/omraden/miljobalken
+- [x] https://laglig.se/omraden/arbetsmiljolagen
+- [x] https://laglig.se/omraden/gdpr
+- [x] https://laglig.se/omraden/egenkontroll
+- [x] https://laglig.se/omraden/kemikalieforteckning
+- [x] https://laglig.se/omraden/sba
+- [x] https://laglig.se/omraden/stralskyddslagen
+- [x] https://laglig.se/omraden/visselblasarlagen
+- [x] https://laglig.se/omraden/plan-och-bygglagen
+- [x] https://laglig.se/omraden/reach
 
 ## Dag 3
 
-- [ ] https://laglig.se/omraden/arbetsmiljo
-- [ ] https://laglig.se/omraden/afs
+- [x] https://laglig.se/omraden/arbetsmiljo
+- [x] https://laglig.se/omraden/afs
 - [ ] https://laglig.se/omraden/alkohollagen
 - [ ] https://laglig.se/omraden/penningtvatt
 - [ ] https://laglig.se/omraden/las
