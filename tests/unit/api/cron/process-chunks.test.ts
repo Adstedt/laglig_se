@@ -25,9 +25,11 @@ vi.mock('@/lib/admin/job-logger', () => ({
 }))
 
 const mockSyncDocumentChunks = vi.fn()
+const mockEmbedMissingChunks = vi.fn()
 
 vi.mock('@/lib/chunks/sync-document-chunks', () => ({
   syncDocumentChunks: (...args: unknown[]) => mockSyncDocumentChunks(...args),
+  embedMissingChunks: (...args: unknown[]) => mockEmbedMissingChunks(...args),
 }))
 
 const mockQueryRaw = vi.fn()
@@ -106,6 +108,46 @@ describe('process-chunks cron route', () => {
     expect(body.stats.docsProcessed).toBe(1)
     expect(body.stats.chunksCreated).toBe(10)
     expect(body.stats.chunksDeleted).toBe(8)
+  })
+
+  it('fills missing embeddings without a full resync (reason: missing_embeddings)', async () => {
+    mockQueryRaw.mockResolvedValue([
+      {
+        id: 'doc-3',
+        document_number: 'SFS 2005:551',
+        reason: 'missing_embeddings',
+      },
+    ])
+    mockEmbedMissingChunks.mockResolvedValue(240)
+
+    const res = await GET(makeRequest())
+    const body = await res.json()
+
+    expect(body.stats.docsProcessed).toBe(1)
+    expect(body.stats.chunksEmbedded).toBe(240)
+    // No re-chunking for embedding-only healing
+    expect(body.stats.chunksCreated).toBe(0)
+    expect(body.stats.chunksDeleted).toBe(0)
+    expect(mockEmbedMissingChunks).toHaveBeenCalledWith('doc-3')
+    expect(mockSyncDocumentChunks).not.toHaveBeenCalled()
+  })
+
+  it('handles embedMissingChunks failures gracefully', async () => {
+    mockQueryRaw.mockResolvedValue([
+      {
+        id: 'doc-4',
+        document_number: 'SFS 2005:552',
+        reason: 'missing_embeddings',
+      },
+    ])
+    mockEmbedMissingChunks.mockRejectedValue(new Error('OpenAI down'))
+
+    const res = await GET(makeRequest())
+    const body = await res.json()
+
+    expect(body.success).toBe(true)
+    expect(body.stats.docsFailed).toBe(1)
+    expect(body.stats.failures[0].documentNumber).toBe('SFS 2005:552')
   })
 
   it('returns success with 0 docs when nothing needs processing', async () => {
