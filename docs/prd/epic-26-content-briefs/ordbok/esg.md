@@ -1,3 +1,5 @@
+> **⚠️ ROUTE-ONLY (anti-kannibalisering, 2026-07-05).** Denna term har redan en djupsida på `/omraden/esg` som äger sökintentionen. Bygg INGEN konkurrerande `/ordbok/esg`-sida — det skulle kannibalisera djupsidan. `/ordbok`-indexet listar termen och länkar direkt till `/omraden/esg`. Briefen behålls som referens/routing-post.
+
 # Innehållsbrief — ESG
 
 - **Route:** /ordbok/esg

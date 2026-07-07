@@ -1,3 +1,5 @@
+> **⚠️ ROUTE-ONLY (anti-kannibalisering, 2026-07-05).** Denna term har redan en djupsida på `/omraden/miljobalken` som äger sökintentionen. Bygg INGEN konkurrerande `/ordbok/miljobalken`-sida — det skulle kannibalisera djupsidan. `/ordbok`-indexet listar termen och länkar direkt till `/omraden/miljobalken`. Briefen behålls som referens/routing-post.
+
 # Innehållsbrief — Miljöbalken (begrepp)
 - **Route:** /ordbok/miljobalken
 - **Cluster / template:** ordbok / glossary term

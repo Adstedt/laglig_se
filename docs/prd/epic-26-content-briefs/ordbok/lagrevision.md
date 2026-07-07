@@ -1,3 +1,5 @@
+> **⚠️ ROUTE-ONLY (anti-kannibalisering, 2026-07-05).** Denna term har redan en djupsida på `/omraden/lagrevision` som äger sökintentionen. Bygg INGEN konkurrerande `/ordbok/lagrevision`-sida — det skulle kannibalisera djupsidan. `/ordbok`-indexet listar termen och länkar direkt till `/omraden/lagrevision`. Briefen behålls som referens/routing-post.
+
 # Innehållsbrief — Lagrevision (begrepp)
 - **Route:** /ordbok/lagrevision
 - **Cluster / template:** ordbok / glossary term
