@@ -21,7 +21,6 @@ import {
 } from '@/lib/stores/document-list-store'
 import { DocumentListSwitcher } from './document-list-switcher'
 import { DocumentListTable } from './document-list-table'
-import { GroupedDocumentList } from './grouped-document-list'
 // Story 6.14: Grouped accordion tables for table view
 import { GroupedDocumentListTable } from './grouped-document-list-table'
 // Story 6.18: Compliance detail table (Efterlevnad view)
@@ -905,8 +904,47 @@ export function DocumentListPageContent({
                 </div>
               }
             />
+          ) : viewMode === 'card' &&
+            groups.length > 0 &&
+            !hasFiltersOrSearch &&
+            !activeGroupFilter ? (
+            // Story 28.10: card view = the SAME grouped tables forced into
+            // the core's card renderer (cards show complianceStatus — the
+            // legacy hand-made card's status divergence is retired).
+            <GroupedDocumentListTable
+              items={listItems}
+              groups={groups}
+              expandedGroups={expandedGroups}
+              total={total}
+              hasMore={hasMore}
+              isLoading={isLoadingItems}
+              columnVisibility={columnVisibility}
+              onColumnVisibilityChange={setColumnVisibility}
+              columnSizing={columnSizing}
+              onColumnSizingChange={setColumnSizing}
+              columnOrder={columnOrder}
+              onColumnOrderChange={setColumnOrder}
+              onLoadMore={loadMoreItems}
+              onUpdateItem={handleUpdateItem}
+              onBulkUpdate={handleTableBulkUpdate}
+              onRemoveItem={removeItem}
+              onReorderItems={reorderItems}
+              onMoveToGroup={moveToGroup}
+              onToggleGroup={toggleGroupExpanded}
+              onExpandAll={expandAllGroups}
+              onCollapseAll={collapseAllGroups}
+              onFilterByGroup={handleFilterByGroup}
+              onRowClick={handleOpenModal}
+              workspaceMembers={workspaceMembers}
+              forceCardView
+              emptyMessage={
+                activeListId
+                  ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'
+                  : 'Välj eller skapa en lista för att komma igång.'
+              }
+            />
           ) : viewMode === 'card' ? (
-            <GroupedDocumentList
+            <DocumentListTable
               items={
                 hasFiltersOrSearch
                   ? filteredAndSearchedItems
@@ -914,8 +952,6 @@ export function DocumentListPageContent({
                     ? filteredItems
                     : listItems
               }
-              groups={hasFiltersOrSearch || activeGroupFilter ? [] : groups} // Hide groups when filtering
-              expandedGroups={expandedGroups}
               total={
                 hasFiltersOrSearch
                   ? filteredAndSearchedItems.length
@@ -925,17 +961,24 @@ export function DocumentListPageContent({
               }
               hasMore={
                 hasFiltersOrSearch || activeGroupFilter ? false : hasMore
-              } // Disable pagination when filtering
+              }
               isLoading={isLoadingItems}
+              columnVisibility={columnVisibility}
+              onColumnVisibilityChange={setColumnVisibility}
+              columnSizing={columnSizing}
+              onColumnSizingChange={setColumnSizing}
+              columnOrder={columnOrder}
+              onColumnOrderChange={setColumnOrder}
               onLoadMore={loadMoreItems}
+              onUpdateItem={handleUpdateItem}
+              onBulkUpdate={handleTableBulkUpdate}
               onRemoveItem={removeItem}
               onReorderItems={reorderItems}
+              workspaceMembers={workspaceMembers}
+              groups={groups}
               onMoveToGroup={moveToGroup}
-              onToggleGroup={toggleGroupExpanded}
-              onExpandAll={expandAllGroups}
-              onCollapseAll={collapseAllGroups}
-              onFilterByGroup={handleFilterByGroup}
               onRowClick={handleOpenModal}
+              forceCardView
               emptyMessage={
                 activeListId
                   ? 'Inga dokument i denna lista. Lägg till dokument för att komma igång.'

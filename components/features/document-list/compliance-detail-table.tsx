@@ -146,6 +146,9 @@ interface ComplianceDetailTableProps {
    */
   selectedItemIds?: ReadonlySet<string> | undefined
   onSelectionChange?: ((_next: Set<string>) => void) | undefined
+  /** Story 28.10: the user's persisted viewMode 'card' forces the card
+   *  renderer at every width (container width only affects table modes). */
+  forceCardView?: boolean | undefined
   /** Story 17.17: When true, inline kravpunkter editor renders read-only */
   complianceReadOnly?: boolean | undefined
 }
@@ -554,6 +557,7 @@ export function ComplianceDetailTable({
   disableDndContext = false,
   selectedItemIds: controlledSelected,
   onSelectionChange,
+  forceCardView = false,
   complianceReadOnly = false,
 }: ComplianceDetailTableProps) {
   const sorting = useLocalSorting([])
@@ -1007,7 +1011,7 @@ export function ComplianceDetailTable({
         }
         status={{ isLoading }}
         rowHeight="tall"
-        view={{ cardBelow: 800 }}
+        view={forceCardView ? { force: 'card' } : { cardBelow: 800 }}
       />
     </div>
   )

@@ -70,6 +70,7 @@ interface GroupTableSectionProps {
   onRowClick?: ((_itemId: string) => void) | undefined
   onSelectionChange: (_next: Set<string>) => void
   selectedItemIds: ReadonlySet<string>
+  forceCardView?: boolean | undefined
   workspaceMembers: WorkspaceMemberOption[]
   groups: ListGroupSummary[]
   onMoveToGroup?:
@@ -101,6 +102,7 @@ export const GroupTableSection = memo(function GroupTableSection({
   onRowClick,
   onSelectionChange,
   selectedItemIds,
+  forceCardView = false,
   workspaceMembers,
   groups,
   onMoveToGroup,
@@ -252,6 +254,7 @@ export const GroupTableSection = memo(function GroupTableSection({
               </p>
             ) : (
               <DocumentListTable
+                forceCardView={forceCardView}
                 selectedItemIds={selectedItemIds}
                 onSelectionChange={onSelectionChange}
                 items={items}

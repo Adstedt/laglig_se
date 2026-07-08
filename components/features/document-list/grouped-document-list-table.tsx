@@ -96,6 +96,8 @@ interface GroupedDocumentListTableProps {
   taskProgress?: Map<string, TaskProgress>
   lastActivity?: Map<string, LastActivity>
   emptyMessage?: string | undefined
+  /** Story 28.10: viewMode 'card' renders card lists inside each section. */
+  forceCardView?: boolean | undefined
 }
 
 export function GroupedDocumentListTable({
@@ -126,6 +128,7 @@ export function GroupedDocumentListTable({
   taskProgress,
   lastActivity,
   emptyMessage = 'Inga dokument i listan.',
+  forceCardView = false,
 }: GroupedDocumentListTableProps) {
   const [localItems, setLocalItems] = useState<DocumentListItem[]>(items)
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -413,6 +416,7 @@ export function GroupedDocumentListTable({
 
               return (
                 <GroupTableSection
+                  forceCardView={forceCardView}
                   key={group.id}
                   groupId={group.id}
                   name={group.name}
@@ -450,6 +454,7 @@ export function GroupedDocumentListTable({
             {/* Ungrouped items section */}
             {(ungroupedItems.length > 0 || groups.length > 0) && (
               <GroupTableSection
+                forceCardView={forceCardView}
                 groupId={UNGROUPED_ID}
                 name="Ogrupperade"
                 itemCount={ungroupedItems.length}

@@ -166,6 +166,9 @@ interface DocumentListTableProps {
    */
   selectedItemIds?: ReadonlySet<string> | undefined
   onSelectionChange?: ((_next: Set<string>) => void) | undefined
+  /** Story 28.10: the user's persisted viewMode 'card' forces the card
+   *  renderer at every width (container width only affects table modes). */
+  forceCardView?: boolean | undefined
 }
 
 // ============================================================================
@@ -213,6 +216,7 @@ export function DocumentListTable({
   disableDndContext = false,
   selectedItemIds: controlledSelected,
   onSelectionChange,
+  forceCardView = false,
 }: DocumentListTableProps) {
   const sorting = useLocalSorting([])
   const [localSelected, setLocalSelected] = useState<ReadonlySet<string>>(
@@ -844,7 +848,7 @@ export function DocumentListTable({
           onRowClick ? { onRowClick: (row) => onRowClick(row.id) } : {}
         }
         status={{ isLoading }}
-        view={{ cardBelow: 800 }}
+        view={forceCardView ? { force: 'card' } : { cardBelow: 800 }}
       />
 
       {/* Remove confirmation */}
