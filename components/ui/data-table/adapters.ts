@@ -6,7 +6,7 @@
  * state and per-key localStorage). Zustand/URL consumers build adapters
  * from their own selectors.
  */
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type {
   ColumnOrderState,
   ColumnSizingState,
@@ -80,16 +80,31 @@ export function useLocalStorageColumnState(opts: {
   defaults?: PersistedColumnState
 }): ColumnStateAdapter {
   const { key, defaults } = opts
-  const [state, setState] = useState<PersistedColumnState>(() => {
+  // MUST initialize with server-identical defaults and load storage in an
+  // effect. Reading localStorage in the useState initializer makes the
+  // client's hydration render diverge from the SSR HTML (defaults) — React
+  // does not patch the mismatched attributes, and since later renders keep
+  // producing the same virtual value, the stale server widths stay in the
+  // DOM until some unrelated value change forces a write. (Found by the
+  // 28.3 conformance suite: persisted column widths silently not applied.)
+  const [state, setState] = useState<PersistedColumnState>(() => ({
+    visibility: { ...defaults?.visibility },
+    order: defaults?.order ?? [],
+    sizing: { ...defaults?.sizing },
+  }))
+  const stateRef = useRef(state)
+  stateRef.current = state
+
+  useEffect(() => {
     const loaded = loadColumnState(key)
-    return {
+    setState({
       visibility: { ...defaults?.visibility, ...loaded.visibility },
       order: loaded.order ?? defaults?.order ?? [],
       sizing: { ...defaults?.sizing, ...loaded.sizing },
-    }
-  })
-  const stateRef = useRef(state)
-  stateRef.current = state
+    })
+    // defaults is intentionally captured once — it's a config literal.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key])
 
   const persist = useCallback(
     (next: PersistedColumnState) => {
