@@ -63,11 +63,20 @@ const PageHeaderImpl = React.forwardRef<HTMLDivElement, PageHeaderProps>(
     ref
   ) {
     return (
-      <div ref={ref} className={cn('space-y-4', className)} {...rest}>
+      // Container-width-responsive (Epic 28 follow-up): below 40rem the
+      // actions stack UNDER the title instead of squeezing it (flex-1 has
+      // basis 0, so in a row it shrinks the title to nothing before the
+      // actions ever wrap). In row mode the title keeps a 20rem floor so
+      // wide action clusters wrap below rather than overlap.
+      <div
+        ref={ref}
+        className={cn('@container/page-header space-y-4', className)}
+        {...rest}
+      >
         {breadcrumbs ? <div className="text-xs">{breadcrumbs}</div> : null}
 
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0 flex-1">
+        <div className="flex flex-col gap-3 @[40rem]/page-header:flex-row @[40rem]/page-header:flex-wrap @[40rem]/page-header:items-start @[40rem]/page-header:justify-between @[40rem]/page-header:gap-4">
+          <div className="min-w-0 @[40rem]/page-header:min-w-[20rem] @[40rem]/page-header:flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="font-safiro text-3xl font-medium tracking-tight">
                 {title}

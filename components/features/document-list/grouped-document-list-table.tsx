@@ -361,41 +361,45 @@ export function GroupedDocumentListTable({
         />
       )}
 
-      {/* Header with stats and expand/collapse controls */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground">
-          Visar {items.length} av {total} dokument.
-          {hasGroups && (
-            <span className="hidden sm:inline ml-1">
-              Dra till grupprubriker för att flytta.
-            </span>
-          )}
-        </p>
-        <div className="flex items-center gap-1 sm:gap-2">
-          {hasGroups && (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onExpandAll}
-                className="h-8 text-xs px-2 sm:px-3"
-                title="Visa alla grupper"
-              >
-                <ExpandIcon className="h-3.5 w-3.5 sm:mr-1" />
-                <span className="hidden sm:inline">Visa alla</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onCollapseAll}
-                className="h-8 text-xs px-2 sm:px-3"
-                title="Dölj alla grupper"
-              >
-                <MinusIcon className="h-3.5 w-3.5 sm:mr-1" />
-                <span className="hidden sm:inline">Dölj alla</span>
-              </Button>
-            </>
-          )}
+      {/* Header with stats and expand/collapse controls. Container-width
+          responsive (not viewport): one row always; the drag hint and the
+          button labels drop when the page is squeezed by the chat sidebar. */}
+      <div className="@container">
+        <div className="flex items-center justify-between gap-2">
+          <p className="min-w-0 truncate text-sm text-muted-foreground">
+            Visar {items.length} av {total} dokument.
+            {hasGroups && (
+              <span className="hidden @[40rem]:inline ml-1">
+                Dra till grupprubriker för att flytta.
+              </span>
+            )}
+          </p>
+          <div className="flex shrink-0 items-center gap-1 @[40rem]:gap-2">
+            {hasGroups && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onExpandAll}
+                  className="h-8 text-xs px-2 @[40rem]:px-3"
+                  title="Visa alla grupper"
+                >
+                  <ExpandIcon className="h-3.5 w-3.5 @[40rem]:mr-1" />
+                  <span className="hidden @[40rem]:inline">Visa alla</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onCollapseAll}
+                  className="h-8 text-xs px-2 @[40rem]:px-3"
+                  title="Dölj alla grupper"
+                >
+                  <MinusIcon className="h-3.5 w-3.5 @[40rem]:mr-1" />
+                  <span className="hidden @[40rem]:inline">Dölj alla</span>
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
