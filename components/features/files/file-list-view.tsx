@@ -1,34 +1,33 @@
 'use client'
 
 /**
- * Story 6.7b: Enhanced File List View
- * AC: 9, 10, 11, 12, 13 - Sortable columns, column resize, hover thumbnails
+ * Story 6.7b → migrated in Story 28.11 (Epic 28) onto the unified DataTable
+ * core. The hand-rolled sort/resize/selection scaffolding is gone — the core
+ * supplies sortable headers, clamped resize persistence and controlled
+ * selection. Folders always sort above files (only by name/modified), so
+ * ordering stays consumer-side via a manual SortingAdapter.
+ *
+ * Folder open stays DOUBLE-click (file-explorer convention): the core fires
+ * onRowClick per click, and the second click of a double-click arrives with
+ * event.detail === 2.
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { Checkbox } from '@/components/ui/checkbox'
+import { useMemo, useState, useCallback } from 'react'
+import type { SortingState } from '@tanstack/react-table'
+import type { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+  DataTable,
+  useLocalStorageColumnState,
+} from '@/components/ui/data-table'
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
-import {
-  Folder,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  GripVertical,
-} from 'lucide-react'
+import { Folder } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { SortableHeader } from '@/components/ui/sortable-header'
 import { getFileIcon, formatFileSize } from './file-dropzone'
 import { categoryLabels, categoryColors } from './file-card'
 import { ImagePreviewCompact } from './preview/image-preview'
@@ -55,32 +54,13 @@ interface FileListViewProps {
   showLocationColumn?: boolean
 }
 
-interface ColumnConfig {
-  id: string
-  label: string
-  width: number
-  minWidth: number
-  sortable: boolean
-}
+type FileListRow =
+  | { kind: 'folder'; id: string; folder: FolderInfo }
+  | { kind: 'file'; id: string; file: WorkspaceFileWithLinks }
 
 // ============================================================================
 // Helpers
 // ============================================================================
-
-const STORAGE_KEY = 'file-list-column-widths'
-const DEFAULT_COLUMNS: ColumnConfig[] = [
-  { id: 'name', label: 'Namn', width: 250, minWidth: 150, sortable: true },
-  { id: 'type', label: 'Typ', width: 120, minWidth: 80, sortable: true },
-  { id: 'size', label: 'Storlek', width: 100, minWidth: 80, sortable: true },
-  {
-    id: 'modified',
-    label: 'Ändrad',
-    width: 140,
-    minWidth: 100,
-    sortable: true,
-  },
-  { id: 'location', label: 'Plats', width: 150, minWidth: 100, sortable: true },
-]
 
 /**
  * Get Swedish label for MIME type
@@ -134,87 +114,6 @@ export function getFileTypeLabel(mimeType: string | null): string {
   if (mimeType.startsWith('application/')) return 'Dokument'
 
   return 'Fil'
-}
-
-function loadColumnWidths(): Record<string, number> {
-  if (typeof window === 'undefined') return {}
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    return stored ? JSON.parse(stored) : {}
-  } catch {
-    return {}
-  }
-}
-
-function saveColumnWidths(widths: Record<string, number>) {
-  if (typeof window === 'undefined') return
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(widths))
-  } catch {
-    // Ignore localStorage errors
-  }
-}
-
-// ============================================================================
-// Sortable Header Component
-// ============================================================================
-
-function SortableHeader({
-  label,
-  field,
-  currentSort,
-  currentDirection,
-  onSort,
-  width,
-  onResizeStart,
-  isResizing,
-}: {
-  label: string
-  field: SortField
-  currentSort: SortField
-  currentDirection: SortDirection
-  onSort: (_field: SortField) => void
-  width: number
-  onResizeStart: (_e: React.MouseEvent) => void
-  isResizing: boolean
-}) {
-  const isActive = currentSort === field
-
-  return (
-    <TableHead
-      className="relative select-none"
-      style={{ width: `${width}px`, minWidth: `${width}px` }}
-    >
-      <button
-        type="button"
-        className="flex items-center gap-1 hover:text-foreground transition-colors w-full"
-        onClick={() => onSort(field)}
-      >
-        <span>{label}</span>
-        {isActive ? (
-          currentDirection === 'asc' ? (
-            <ArrowUp className="h-3 w-3" />
-          ) : (
-            <ArrowDown className="h-3 w-3" />
-          )
-        ) : (
-          <ArrowUpDown className="h-3 w-3 opacity-50" />
-        )}
-      </button>
-      {/* Resize handle - using button for accessibility */}
-      <button
-        type="button"
-        aria-label={`Ändra bredd på ${label}-kolumnen`}
-        className={cn(
-          'absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-primary/50 transition-colors focus:bg-primary/50 focus:outline-none border-0 bg-transparent p-0',
-          isResizing && 'bg-primary'
-        )}
-        onMouseDown={onResizeStart}
-      >
-        <GripVertical className="h-3 w-3 absolute top-1/2 -translate-y-1/2 -translate-x-1/2 text-muted-foreground/50" />
-      </button>
-    </TableHead>
-  )
 }
 
 // ============================================================================
@@ -282,6 +181,51 @@ function ImageThumbnailHover({
 }
 
 // ============================================================================
+// Cells
+// ============================================================================
+
+function NameCell({
+  row,
+  getFileUrl,
+}: {
+  row: FileListRow
+  getFileUrl?:
+    | ((_file: WorkspaceFileWithLinks) => Promise<string | null>)
+    | undefined
+}) {
+  if (row.kind === 'folder') {
+    return (
+      <div className="flex items-center gap-2 font-medium">
+        <Folder className="h-4 w-4 text-amber-500 shrink-0" />
+        <span className="truncate">{row.folder.filename}</span>
+      </div>
+    )
+  }
+  return (
+    <ImageThumbnailHover file={row.file} getFileUrl={getFileUrl}>
+      <div className="flex items-center gap-2 font-medium">
+        {getFileIcon(row.file.mime_type)}
+        <span className="truncate">{row.file.filename}</span>
+      </div>
+    </ImageThumbnailHover>
+  )
+}
+
+function TypeCell({ row }: { row: FileListRow }) {
+  if (row.kind === 'folder') {
+    return <span className="text-muted-foreground">Mapp</span>
+  }
+  return (
+    <Badge
+      variant="secondary"
+      className={cn('text-xs', categoryColors[row.file.category])}
+    >
+      {categoryLabels[row.file.category]}
+    </Badge>
+  )
+}
+
+// ============================================================================
 // File List View Component
 // ============================================================================
 
@@ -298,298 +242,227 @@ export function FileListView({
   getFileUrl,
   showLocationColumn = false,
 }: FileListViewProps) {
-  // Sort state
-  const [sortField, setSortField] = useState<SortField>('name')
-  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
-
-  // Column width state
-  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({})
-  const [resizingColumn, setResizingColumn] = useState<string | null>(null)
-  const resizeStartX = useRef(0)
-  const resizeStartWidth = useRef(0)
-
-  // Load column widths from localStorage
-  useEffect(() => {
-    setColumnWidths(loadColumnWidths())
-  }, [])
-
-  // Get effective column width
-  const getColumnWidth = (columnId: string): number => {
-    const stored = columnWidths[columnId]
-    if (stored) return stored
-    const defaultCol = DEFAULT_COLUMNS.find((c) => c.id === columnId)
-    return defaultCol?.width ?? 100
-  }
-
-  // Handle sort
-  const handleSort = useCallback(
-    (field: SortField) => {
-      if (sortField === field) {
-        setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'))
-      } else {
-        setSortField(field)
-        setSortDirection('asc')
-      }
-    },
-    [sortField]
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'name', desc: false },
+  ])
+  const sortingAdapter = useMemo(
+    () => ({ sorting, onSortingChange: setSorting, manual: true as const }),
+    [sorting]
   )
+  const columnState = useLocalStorageColumnState({
+    key: 'laglig:files:columns:v1',
+  })
 
-  // Handle column resize
-  const handleResizeStart = useCallback(
-    (columnId: string, e: React.MouseEvent) => {
-      e.preventDefault()
-      setResizingColumn(columnId)
-      resizeStartX.current = e.clientX
-      resizeStartWidth.current = getColumnWidth(columnId)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [columnWidths]
-  )
+  const sortField = (sorting[0]?.id ?? 'name') as SortField
+  const sortDirection: SortDirection = sorting[0]?.desc ? 'desc' : 'asc'
 
-  // Mouse move handler for resize
-  useEffect(() => {
-    if (!resizingColumn) return
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const delta = e.clientX - resizeStartX.current
-      const minWidth =
-        DEFAULT_COLUMNS.find((c) => c.id === resizingColumn)?.minWidth ?? 50
-      const newWidth = Math.max(minWidth, resizeStartWidth.current + delta)
-
-      setColumnWidths((prev) => ({
-        ...prev,
-        [resizingColumn]: newWidth,
-      }))
-    }
-
-    const handleMouseUp = () => {
-      if (resizingColumn) {
-        saveColumnWidths({
-          ...columnWidths,
-          [resizingColumn]: getColumnWidth(resizingColumn),
-        })
-      }
-      setResizingColumn(null)
-    }
-
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resizingColumn, columnWidths])
-
-  // Sort files
-  const sortedFiles = [...files].sort((a, b) => {
+  // Folders always sort above files; they only participate in name/modified
+  // ordering (legacy parity). Location sort is a no-op until folder paths
+  // exist on file data.
+  const rows = useMemo<FileListRow[]>(() => {
     const multiplier = sortDirection === 'asc' ? 1 : -1
 
-    switch (sortField) {
-      case 'name':
+    const sortedFolders = [...folders].sort((a, b) => {
+      if (sortField === 'name') {
         return multiplier * a.filename.localeCompare(b.filename, 'sv')
-      case 'type':
-        return (
-          multiplier *
-          getFileTypeLabel(a.mime_type).localeCompare(
-            getFileTypeLabel(b.mime_type),
-            'sv'
-          )
-        )
-      case 'size':
-        return multiplier * ((a.file_size ?? 0) - (b.file_size ?? 0))
-      case 'modified':
+      }
+      if (sortField === 'modified') {
         return (
           multiplier *
           (new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime())
         )
-      case 'location':
-        // TODO: Add folder path to file data for location sorting
-        return 0
-      default:
-        return 0
-    }
-  })
+      }
+      return 0
+    })
 
-  // Sort folders (always by name for now)
-  const sortedFolders = [...folders].sort((a, b) => {
-    const multiplier = sortDirection === 'asc' ? 1 : -1
-    if (sortField === 'name') {
-      return multiplier * a.filename.localeCompare(b.filename, 'sv')
-    }
-    if (sortField === 'modified') {
-      return (
-        multiplier *
-        (new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime())
-      )
-    }
-    return 0
-  })
+    const sortedFiles = [...files].sort((a, b) => {
+      switch (sortField) {
+        case 'name':
+          return multiplier * a.filename.localeCompare(b.filename, 'sv')
+        case 'type':
+          return (
+            multiplier *
+            getFileTypeLabel(a.mime_type).localeCompare(
+              getFileTypeLabel(b.mime_type),
+              'sv'
+            )
+          )
+        case 'size':
+          return multiplier * ((a.file_size ?? 0) - (b.file_size ?? 0))
+        case 'modified':
+          return (
+            multiplier *
+            (new Date(a.updated_at).getTime() -
+              new Date(b.updated_at).getTime())
+          )
+        default:
+          return 0
+      }
+    })
 
-  const totalItems = folders.length + files.length
-  const allSelected = selectedIds.size === totalItems && totalItems > 0
+    return [
+      ...sortedFolders.map(
+        (folder): FileListRow => ({ kind: 'folder', id: folder.id, folder })
+      ),
+      ...sortedFiles.map(
+        (file): FileListRow => ({ kind: 'file', id: file.id, file })
+      ),
+    ]
+  }, [folders, files, sortField, sortDirection])
 
-  // Filter columns based on showLocationColumn
-  const visibleColumns = DEFAULT_COLUMNS.filter(
-    (col) => col.id !== 'location' || showLocationColumn
-  )
+  const columns = useMemo<ColumnDef<FileListRow, unknown>[]>(() => {
+    const defs: ColumnDef<FileListRow, unknown>[] = [
+      {
+        id: 'name',
+        header: ({ column }) => <SortableHeader column={column} label="Namn" />,
+        cell: ({ row }) => (
+          <NameCell row={row.original} getFileUrl={getFileUrl} />
+        ),
+        enableSorting: true,
+        size: 250,
+        minSize: 150,
+        meta: {
+          dt: {
+            label: 'Namn',
+            fill: true,
+            mandatory: true,
+            card: { role: 'title' },
+          },
+        },
+      },
+      {
+        id: 'type',
+        header: ({ column }) => <SortableHeader column={column} label="Typ" />,
+        cell: ({ row }) => <TypeCell row={row.original} />,
+        enableSorting: true,
+        size: 120,
+        minSize: 80,
+        meta: {
+          dt: { label: 'Typ', card: { role: 'badge', priority: 0 } },
+        },
+      },
+      {
+        id: 'size',
+        header: ({ column }) => (
+          <SortableHeader column={column} label="Storlek" />
+        ),
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">
+            {row.original.kind === 'file'
+              ? formatFileSize(row.original.file.file_size)
+              : '—'}
+          </span>
+        ),
+        enableSorting: true,
+        size: 100,
+        minSize: 80,
+        meta: {
+          dt: {
+            label: 'Storlek',
+            card: {
+              role: 'meta',
+              priority: 1,
+              renderCard: (row) =>
+                row.original.kind === 'file'
+                  ? formatFileSize(row.original.file.file_size)
+                  : null,
+            },
+          },
+        },
+      },
+      {
+        id: 'modified',
+        header: ({ column }) => (
+          <SortableHeader column={column} label="Ändrad" />
+        ),
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">
+            {new Date(
+              row.original.kind === 'file'
+                ? row.original.file.updated_at
+                : row.original.folder.updated_at
+            ).toLocaleDateString('sv-SE')}
+          </span>
+        ),
+        enableSorting: true,
+        size: 140,
+        minSize: 100,
+        meta: {
+          dt: { label: 'Ändrad', card: { role: 'footer' } },
+        },
+      },
+    ]
+    if (showLocationColumn) {
+      defs.push({
+        id: 'location',
+        header: ({ column }) => (
+          <SortableHeader column={column} label="Plats" />
+        ),
+        // TODO: Show folder path (needs folder path on file data)
+        cell: () => <span className="text-muted-foreground">—</span>,
+        enableSorting: true,
+        size: 150,
+        minSize: 100,
+        meta: {
+          dt: { label: 'Plats', card: { role: 'hidden' } },
+        },
+      })
+    }
+    return defs
+  }, [getFileUrl, showLocationColumn])
+
+  // The parent owns selection as toggle/selectAll/clear callbacks — diff the
+  // core's next-Set against the current one and translate.
+  const selection = useMemo(() => {
+    if (!showSelection) return undefined
+    const totalItems = folders.length + files.length
+    return {
+      selected: selectedIds,
+      onSelectedChange: (next: Set<string>) => {
+        if (next.size === 0 && selectedIds.size > 0) {
+          onClearSelection()
+          return
+        }
+        if (next.size === totalItems && selectedIds.size < totalItems) {
+          onSelectAll()
+          return
+        }
+        for (const id of next) {
+          if (!selectedIds.has(id)) onToggleSelect(id, true)
+        }
+        for (const id of selectedIds) {
+          if (!next.has(id)) onToggleSelect(id, false)
+        }
+      },
+    }
+  }, [
+    showSelection,
+    selectedIds,
+    folders.length,
+    files.length,
+    onToggleSelect,
+    onSelectAll,
+    onClearSelection,
+  ])
 
   return (
-    <div className="border rounded-lg overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {showSelection && (
-              <TableHead className="w-10">
-                <Checkbox
-                  checked={allSelected}
-                  onCheckedChange={(checked) =>
-                    checked ? onSelectAll() : onClearSelection()
-                  }
-                />
-              </TableHead>
-            )}
-            {visibleColumns.map((column) => (
-              <SortableHeader
-                key={column.id}
-                label={column.label}
-                field={column.id as SortField}
-                currentSort={sortField}
-                currentDirection={sortDirection}
-                onSort={handleSort}
-                width={getColumnWidth(column.id)}
-                onResizeStart={(e) => handleResizeStart(column.id, e)}
-                isResizing={resizingColumn === column.id}
-              />
-            ))}
-            <TableHead className="w-10" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {/* Folders (always at top) */}
-          {sortedFolders.map((folder) => (
-            <TableRow
-              key={folder.id}
-              className={cn(
-                'cursor-pointer hover:bg-muted/50',
-                selectedIds.has(folder.id) && 'bg-primary/5'
-              )}
-              onDoubleClick={() => onFolderDoubleClick(folder)}
-            >
-              {showSelection && (
-                <TableCell onClick={(e) => e.stopPropagation()}>
-                  <Checkbox
-                    checked={selectedIds.has(folder.id)}
-                    onCheckedChange={(checked) =>
-                      onToggleSelect(folder.id, !!checked)
-                    }
-                  />
-                </TableCell>
-              )}
-              <TableCell
-                className="font-medium"
-                style={{ width: getColumnWidth('name') }}
-              >
-                <div className="flex items-center gap-2">
-                  <Folder className="h-4 w-4 text-amber-500 shrink-0" />
-                  <span className="truncate">{folder.filename}</span>
-                </div>
-              </TableCell>
-              <TableCell
-                className="text-muted-foreground"
-                style={{ width: getColumnWidth('type') }}
-              >
-                Mapp
-              </TableCell>
-              <TableCell
-                className="text-muted-foreground"
-                style={{ width: getColumnWidth('size') }}
-              >
-                —
-              </TableCell>
-              <TableCell
-                className="text-muted-foreground"
-                style={{ width: getColumnWidth('modified') }}
-              >
-                {new Date(folder.updated_at).toLocaleDateString('sv-SE')}
-              </TableCell>
-              {showLocationColumn && (
-                <TableCell
-                  className="text-muted-foreground"
-                  style={{ width: getColumnWidth('location') }}
-                >
-                  —
-                </TableCell>
-              )}
-              <TableCell />
-            </TableRow>
-          ))}
-
-          {/* Files */}
-          {sortedFiles.map((file) => (
-            <TableRow
-              key={file.id}
-              className={cn(
-                'cursor-pointer hover:bg-muted/50',
-                selectedIds.has(file.id) && 'bg-primary/5'
-              )}
-              onClick={() => onFileClick(file)}
-            >
-              {showSelection && (
-                <TableCell onClick={(e) => e.stopPropagation()}>
-                  <Checkbox
-                    checked={selectedIds.has(file.id)}
-                    onCheckedChange={(checked) =>
-                      onToggleSelect(file.id, !!checked)
-                    }
-                  />
-                </TableCell>
-              )}
-              <TableCell
-                className="font-medium"
-                style={{ width: getColumnWidth('name') }}
-              >
-                <ImageThumbnailHover file={file} getFileUrl={getFileUrl}>
-                  <div className="flex items-center gap-2">
-                    {getFileIcon(file.mime_type)}
-                    <span className="truncate">{file.filename}</span>
-                  </div>
-                </ImageThumbnailHover>
-              </TableCell>
-              <TableCell style={{ width: getColumnWidth('type') }}>
-                <Badge
-                  variant="secondary"
-                  className={cn('text-xs', categoryColors[file.category])}
-                >
-                  {categoryLabels[file.category]}
-                </Badge>
-              </TableCell>
-              <TableCell
-                className="text-muted-foreground"
-                style={{ width: getColumnWidth('size') }}
-              >
-                {formatFileSize(file.file_size)}
-              </TableCell>
-              <TableCell
-                className="text-muted-foreground"
-                style={{ width: getColumnWidth('modified') }}
-              >
-                {new Date(file.updated_at).toLocaleDateString('sv-SE')}
-              </TableCell>
-              {showLocationColumn && (
-                <TableCell
-                  className="text-muted-foreground truncate"
-                  style={{ width: getColumnWidth('location') }}
-                >
-                  {/* TODO: Show folder path */}—
-                </TableCell>
-              )}
-              <TableCell />
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+    <DataTable<FileListRow>
+      data={rows}
+      columns={columns}
+      getRowId={(row) => row.id}
+      sorting={sortingAdapter}
+      columnState={columnState}
+      {...(selection ? { selection } : {})}
+      rowInteraction={{
+        onRowClick: (row, { event }) => {
+          if (row.kind === 'file') {
+            onFileClick(row.file)
+          } else if (event.detail >= 2) {
+            onFolderDoubleClick(row.folder)
+          }
+        },
+      }}
+      view={{ cardBelow: 800 }}
+    />
   )
 }
