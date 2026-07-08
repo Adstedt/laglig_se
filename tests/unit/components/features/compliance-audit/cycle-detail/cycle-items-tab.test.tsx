@@ -426,10 +426,12 @@ describe('CycleDetailPage — items tab', () => {
     // Modal is closed initially (no selectedItemId).
     expect(screen.queryByTestId('split-panel-modal')).toBeNull()
 
-    // Clicking the row body opens the modal.
+    // Clicking the row body opens the modal. Epic 28: the testid lives on
+    // the Dokument cell INSIDE the clickable row/card — climb to the click
+    // surface (card [role=button] in happy-dom's 0-width container, <tr>
+    // in table view).
     const row = screen.getByTestId('cycle-item-row-a')
-    // The row itself has the click handler (inner wrapper div).
-    const clickable = row.querySelector('[role="button"]')
+    const clickable = row.closest('[role="button"]') ?? row.closest('tr')
     expect(clickable).not.toBeNull()
     fireEvent.click(clickable as Element)
 
@@ -457,9 +459,9 @@ describe('CycleDetailPage — items tab', () => {
     // Modal initially closed.
     expect(screen.queryByTestId('split-panel-modal')).toBeNull()
 
-    // Click the row.
+    // Click the row (see modal-open test for the closest() rationale).
     const row = screen.getByTestId('cycle-item-row-a')
-    const clickable = row.querySelector('[role="button"]')
+    const clickable = row.closest('[role="button"]') ?? row.closest('tr')
     expect(clickable).not.toBeNull()
     fireEvent.click(clickable as Element)
 
@@ -480,7 +482,9 @@ describe('CycleDetailPage — items tab', () => {
       items: [makeItem('a', { businessContext: null })],
     })
     const row = screen.getByTestId('cycle-item-row-a')
-    fireEvent.click(row.querySelector('[role="button"]') as Element)
+    fireEvent.click(
+      (row.closest('[role="button"]') ?? row.closest('tr')) as Element
+    )
     expect(
       screen.getByTestId('business-context-empty-state')
     ).toBeInTheDocument()
@@ -488,17 +492,16 @@ describe('CycleDetailPage — items tab', () => {
     expect(screen.getByTestId('business-context-edit-link')).toBeInTheDocument()
   })
 
-  it('Story 21.16 — inline-control stop-propagation wrappers carry role="presentation"', () => {
+  it('Story 21.16 — clicking an inline control does NOT open the modal', () => {
+    // Epic 28: the legacy role="presentation" stop-propagation wrappers are
+    // gone — the DataTable core's interactive-element guard suppresses the
+    // row click when the click lands on a button/input/select. Behavioral
+    // assertion: clicking the Bedömning trigger must not open the modal.
     renderPage()
-    // Structural test: the inline-control wrapper cells (bedomning / motivering /
-    // signerad) carry `role="presentation"` + onClick stopPropagation so clicks
-    // on the controls don't bubble to the row-level click-to-open-modal handler.
-    // Full event-propagation assertion is brittle in happy-dom (Radix Select
-    // intercepts pointer events); this structural pin is the production-safe
-    // proxy.
-    const presentations = document.querySelectorAll('[role="presentation"]')
-    // 3 wrappers × 3 rows = 9 presentation zones on the items table.
-    expect(presentations.length).toBeGreaterThanOrEqual(9)
+    expect(screen.queryByTestId('split-panel-modal')).toBeNull()
+    const trigger = screen.getAllByLabelText('Bedömning')[0]!
+    fireEvent.click(trigger)
+    expect(screen.queryByTestId('split-panel-modal')).toBeNull()
   })
 
   it('progress cluster — shows counts + disables buttons when all complete', () => {
@@ -577,7 +580,10 @@ describe('CycleDetailPage — items tab', () => {
     ).toBeInTheDocument()
   })
 
-  it('virtualisation path used when items.length > 100', () => {
+  it('virtualisation engages when items.length > 100 (partial DOM)', () => {
+    // Epic 28: the plain/virtualized split is internal to the DataTable
+    // core (threshold 100). Observable contract: with 150 items only a
+    // window of rows is mounted, never all 150.
     const manyItems = Array.from({ length: 150 }, (_, i) =>
       makeItem(`${i}`, {
         lawTitle: `Lag ${i}`,
@@ -585,10 +591,12 @@ describe('CycleDetailPage — items tab', () => {
       })
     )
     renderPage({ items: manyItems })
-    expect(
-      screen.getByTestId('cycle-items-list-virtualized')
-    ).toBeInTheDocument()
-    expect(screen.queryByTestId('cycle-items-list')).toBeNull()
+    expect(screen.getByTestId('cycle-items-list')).toBeInTheDocument()
+    // happy-dom has no layout: the 0-height scroll container mounts an
+    // empty (or tiny) virtual window. The regression this guards is "all
+    // 150 rows in the DOM" (virtualization silently disabled).
+    const mounted = document.querySelectorAll('[data-cycle-item-id]').length
+    expect(mounted).toBeLessThan(150)
   })
 
   // --- AC 13 / IV2 performance microtest (GAP-001) -------------------------
@@ -622,8 +630,8 @@ describe('CycleDetailPage — items tab', () => {
     // Confirm virtualisation kicked in (otherwise 500 full-row DOM renders
     // would be the real risk — the threshold guard flags that regression too).
     expect(
-      screen.getByTestId('cycle-items-list-virtualized')
-    ).toBeInTheDocument()
+      document.querySelectorAll('[data-cycle-item-id]').length
+    ).toBeLessThan(500)
   })
 
   it('motivering trigger renders editable button on unsigned rows only', () => {

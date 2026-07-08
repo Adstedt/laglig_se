@@ -2,18 +2,23 @@
 
 /**
  * Story 21.5 + Story 21.16 — Items tab content for /laglistor/kontroller/[cycleId].
+ * Migrated onto the unified DataTable core (Epic 28 follow-up): the hand-rolled
+ * div-grid, virtualizer and stop-propagation wrappers are gone — the core
+ * supplies sortable headers, the interactive-element click guard, tall rows,
+ * virtualization above 100 items and the narrow-container card renderer.
  *
  * Pure presentation + local interaction. The parent (CycleDetailPage) owns
  * SWR state, mutation callbacks, AND the selected-item state that drives the
- * CycleItemModal. Clicking a row calls `onSelectItem(row.id)` which opens the
- * modal; chevron + expanded-row-drawer pattern was removed in Story 21.16 per
- * UX redesign (replaced by the modal).
+ * CycleItemModal. Clicking a row calls `onSelectItem(row.id)`.
+ *
+ * DOM contract kept: the Dokument cell carries `data-cycle-item-id` — the
+ * progress cluster's jump buttons querySelector + scrollIntoView it.
  */
 
-import { useMemo, useRef, useState, type RefObject } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
-import { useVirtualizer, type Virtualizer } from '@tanstack/react-virtual'
+import type { ColumnDef, SortingState } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 import {
   ItemBedomningSelect,
@@ -22,6 +27,7 @@ import {
 } from '@/components/features/compliance-audit/item-bedomning-editor'
 import { COMPLIANCE_STATUS_OPTIONS } from '@/components/features/document-list/table-cell-editors/compliance-status-editor'
 import { CellErrorBoundary } from '@/components/features/document-list/table-cells/cell-error-boundary'
+import { DataTable } from '@/components/ui/data-table'
 import { SortableHeader } from '@/components/ui/sortable-header'
 import { Badge } from '@/components/ui/badge'
 import { getStatusBadgeProps } from '@/lib/ui/badge-tones'
@@ -36,11 +42,6 @@ import {
 } from '@prisma/client'
 import { canSignOffItem } from '@/lib/compliance-audit/authorization-shared'
 import { getCycleReadOnlyReason } from '@/components/features/compliance-audit/cycle-copy'
-
-// Mirror compliance-detail-table.tsx conventions so behaviour is predictable.
-const VIRTUALIZATION_THRESHOLD = 100
-const ESTIMATED_ROW_HEIGHT = 72
-const OVERSCAN_COUNT = 5
 
 // Story 21.16: max number of finding dots rendered inline per row. Beyond
 // this we truncate to "+N" to keep the row compact at high finding counts.
@@ -78,120 +79,9 @@ interface CycleItemsTabProps {
   leadAuditorUserId: string
 }
 
-export function CycleItemsTab({
-  items,
-  readOnly,
-  cycleStatus,
-  highlightedRowId,
-  selectedItemId,
-  onSelectItem,
-  onBedomningChange,
-  onMotiveringChange,
-  onSign,
-  onUnsign,
-  findings,
-  currentUserId,
-  currentUserRole,
-  leadAuditorUserId,
-}: CycleItemsTabProps) {
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const shouldVirtualise = items.length > VIRTUALIZATION_THRESHOLD
-
-  const virtualizer = useVirtualizer({
-    count: items.length,
-    getScrollElement: () => scrollRef.current,
-    estimateSize: () => ESTIMATED_ROW_HEIGHT,
-    overscan: OVERSCAN_COUNT,
-    measureElement: (el) => el.getBoundingClientRect().height,
-  })
-
-  // Local sort over the value columns (see compareItems). Default (null) keeps
-  // the incoming law-list order.
-  const [sort, setSort] = useState<{ key: ItemSortKey; desc: boolean } | null>(
-    null
-  )
-  const sortCol = (key: ItemSortKey): SortColumn => ({
-    getIsSorted: () =>
-      sort?.key === key ? (sort.desc ? 'desc' : 'asc') : false,
-    toggleSorting: (desc?: boolean) => setSort({ key, desc: desc ?? false }),
-  })
-  const sortedItems = useMemo(() => {
-    if (!sort) return items
-    const dir = sort.desc ? -1 : 1
-    return [...items].sort((a, b) => compareItems(a, b, sort.key) * dir)
-  }, [items, sort])
-
-  if (items.length === 0) {
-    return (
-      <div className="rounded-md border p-8 text-center text-sm italic text-muted-foreground">
-        Kontrollen har inga dokument.
-      </div>
-    )
-  }
-
-  return (
-    <div className="rounded-md border overflow-x-auto">
-      <TableHeader sortCol={sortCol} />
-      {shouldVirtualise ? (
-        <VirtualisedBody
-          items={sortedItems}
-          virtualizer={virtualizer}
-          scrollRef={scrollRef}
-          highlightedRowId={highlightedRowId}
-          selectedItemId={selectedItemId}
-          onSelectItem={onSelectItem}
-          readOnly={readOnly}
-          cycleStatus={cycleStatus}
-          onBedomningChange={onBedomningChange}
-          onMotiveringChange={onMotiveringChange}
-          onSign={onSign}
-          onUnsign={onUnsign}
-          findings={findings}
-          currentUserId={currentUserId}
-          currentUserRole={currentUserRole}
-          leadAuditorUserId={leadAuditorUserId}
-        />
-      ) : (
-        <PlainBody
-          items={sortedItems}
-          highlightedRowId={highlightedRowId}
-          selectedItemId={selectedItemId}
-          onSelectItem={onSelectItem}
-          readOnly={readOnly}
-          cycleStatus={cycleStatus}
-          onBedomningChange={onBedomningChange}
-          onMotiveringChange={onMotiveringChange}
-          onSign={onSign}
-          onUnsign={onUnsign}
-          findings={findings}
-          currentUserId={currentUserId}
-          currentUserRole={currentUserRole}
-          leadAuditorUserId={leadAuditorUserId}
-        />
-      )}
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Presentation
-// ---------------------------------------------------------------------------
-
-// Story 21.16: chevron column removed. Row becomes pure navigation — clicking
-// anywhere outside the inline controls opens the modal.
-const COLUMN_CLASS = {
-  lag: 'min-w-[240px] flex-[2_0_0%] px-4',
-  nuvarande: 'w-44 px-4',
-  bedomning: 'w-40 px-4',
-  motivering: 'min-w-[200px] flex-[3_0_0%] px-4',
-  ansvarig: 'w-40 px-4',
-  signerad: 'w-48 px-4',
-} as const
-
 // ---------------------------------------------------------------------------
 // Sorting — local, value-column-only (the inline-editor columns stay in the
-// underlying law-list order). Drives the shared <SortableHeader> primitive via
-// a tiny adapter, same as the cycle-list table.
+// underlying law-list order). Default (no sort) keeps the incoming order.
 // ---------------------------------------------------------------------------
 type ItemSortKey = 'dokument' | 'nuvarande' | 'ansvarig' | 'signerad'
 
@@ -229,80 +119,81 @@ function compareItems(
   }
 }
 
-interface SortColumn {
-  getIsSorted: () => 'asc' | 'desc' | false
-  toggleSorting: (_desc?: boolean) => void
-}
+// ---------------------------------------------------------------------------
+// Cells
+// ---------------------------------------------------------------------------
 
-function TableHeader({
-  sortCol,
+function DokumentCell({
+  row,
+  itemFindings,
 }: {
-  sortCol: (_key: ItemSortKey) => SortColumn
+  row: CycleItemRow
+  itemFindings: FindingRow[]
 }) {
   return (
     <div
-      role="rowheader"
-      className="flex h-12 items-center border-b text-sm font-medium text-muted-foreground"
+      // Progress-cluster jump target (cycle-detail-page querySelector) +
+      // unit-test hook. Lives on the cell so it exists in BOTH renderers.
+      data-cycle-item-id={row.id}
+      data-testid={`cycle-item-row-${row.id}`}
+      className="min-w-0"
     >
-      <div className={COLUMN_CLASS.lag}>
-        <SortableHeader column={sortCol('dokument')} label="Dokument" />
+      <div className="flex items-center gap-1 min-w-0">
+        <span className="text-sm font-medium truncate" title={row.lawTitle}>
+          {row.lawTitle}
+        </span>
+        <Link
+          href="/laglistor"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 opacity-0 transition-opacity hover:text-primary group-hover:opacity-100"
+          aria-label="Öppna i laglistan (ny flik)"
+        >
+          <ExternalLink className="h-3 w-3" aria-hidden="true" />
+        </Link>
       </div>
-      <div className={cn(COLUMN_CLASS.nuvarande, 'whitespace-nowrap')}>
-        <SortableHeader
-          column={sortCol('nuvarande')}
-          label="Nuvarande status"
-        />
-      </div>
-      <div className={COLUMN_CLASS.bedomning}>Bedömning</div>
-      <div className={COLUMN_CLASS.motivering}>Motivering</div>
-      <div className={COLUMN_CLASS.ansvarig}>
-        <SortableHeader column={sortCol('ansvarig')} label="Ansvarig" />
-      </div>
-      <div className={COLUMN_CLASS.signerad}>
-        <SortableHeader column={sortCol('signerad')} label="Signerad" />
+      <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+        <span>{row.lawDocumentNumber}</span>
+        <FindingDots findings={itemFindings} />
       </div>
     </div>
   )
 }
 
-interface RowRenderProps {
-  row: CycleItemRow
-  highlighted: boolean
-  selected: boolean
-  onSelect: () => void
-  readOnly: boolean
-  cycleStatus: ComplianceCycleStatus
-  onBedomningChange: (_next: EfterlevnadsBedomning | null) => Promise<void>
-  onMotiveringChange: (_next: string | null) => Promise<void>
-  onSign: () => Promise<void>
-  onUnsign: () => Promise<void>
-  itemFindings: FindingRow[]
-  currentUserId: string
-  currentUserRole: WorkspaceRole
-  leadAuditorUserId: string
-}
-
-function RowContent({
-  row,
-  highlighted,
-  selected,
-  onSelect,
-  readOnly,
-  cycleStatus,
-  onBedomningChange,
-  onMotiveringChange,
-  onSign,
-  onUnsign,
-  itemFindings,
-  currentUserId,
-  currentUserRole,
-  leadAuditorUserId,
-}: RowRenderProps) {
+function NuvarandeStatusCell({ row }: { row: CycleItemRow }) {
   const statusOption = COMPLIANCE_STATUS_OPTIONS.find(
     (o) => o.value === row.sourceComplianceStatus
   )
+  if (!statusOption) {
+    return <span className="text-xs text-muted-foreground">—</span>
+  }
+  const props = getStatusBadgeProps('compliance-status', statusOption.value)
+  return (
+    <Badge tone={props.tone} variant={props.variant}>
+      {props.label}
+    </Badge>
+  )
+}
 
-  const itemReadOnly = readOnly || row.signedOffAt !== null
+function SigneradCell({
+  row,
+  readOnly,
+  cycleStatus,
+  currentUserId,
+  currentUserRole,
+  leadAuditorUserId,
+  onSign,
+  onUnsign,
+}: {
+  row: CycleItemRow
+  readOnly: boolean
+  cycleStatus: ComplianceCycleStatus
+  currentUserId: string
+  currentUserRole: WorkspaceRole
+  leadAuditorUserId: string
+  onSign: () => Promise<void>
+  onUnsign: () => Promise<void>
+}) {
   const hasMotivering =
     row.motivering !== null && row.motivering.trim().length > 0
   const userCanSignOff = canSignOffItem({
@@ -329,148 +220,21 @@ function RowContent({
           ? 'Endast ansvarig revisor, dokumentets ansvarige eller administratörer kan signera'
           : undefined
 
+  if (readOnly && row.signedOffAt === null) {
+    return <span className="text-xs text-muted-foreground">—</span>
+  }
   return (
-    <div
-      role="row"
-      data-cycle-item-id={row.id}
-      data-testid={`cycle-item-row-${row.id}`}
-      aria-selected={selected}
-      className={cn(
-        'transition-colors',
-        highlighted && 'ring-2 ring-primary',
-        selected && 'bg-muted/40 shadow-[inset_2px_0_0_hsl(var(--primary))]'
-      )}
-    >
-      <div
-        className="flex items-center border-b py-3 transition-colors hover:bg-muted/50 cursor-pointer"
-        onClick={onSelect}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            // Prevent scrolling on Space
-            if (e.target === e.currentTarget) {
-              e.preventDefault()
-              onSelect()
-            }
-          }
-        }}
-        role="button"
-        tabIndex={0}
-        aria-label={`Öppna ${row.lawTitle}`}
-      >
-        <div className={COLUMN_CLASS.lag}>
-          <div className="flex items-start gap-1">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1 min-w-0">
-                <span
-                  className="text-sm font-medium truncate"
-                  title={row.lawTitle}
-                >
-                  {row.lawTitle}
-                </span>
-                <Link
-                  href="/laglistor"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="shrink-0 opacity-0 transition-opacity hover:text-primary group-hover:opacity-100"
-                  aria-label="Öppna i laglistan (ny flik)"
-                >
-                  <ExternalLink className="h-3 w-3" aria-hidden="true" />
-                </Link>
-              </div>
-              <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
-                <span>{row.lawDocumentNumber}</span>
-                <FindingDots findings={itemFindings} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className={COLUMN_CLASS.nuvarande}>
-          {statusOption ? (
-            (() => {
-              const props = getStatusBadgeProps(
-                'compliance-status',
-                statusOption.value
-              )
-              return (
-                <Badge tone={props.tone} variant={props.variant}>
-                  {props.label}
-                </Badge>
-              )
-            })()
-          ) : (
-            <span className="text-xs text-muted-foreground">—</span>
-          )}
-        </div>
-
-        {/* Inline controls — stopPropagation so clicking them doesn't also
-            open the modal. */}
-        {/* Stop-propagation zone: clicking the inline Bedömning control
-            shouldn't bubble to the row-level click-to-open-modal handler. */}
-        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-        <div
-          className={COLUMN_CLASS.bedomning}
-          role="presentation"
-          onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => e.stopPropagation()}
-        >
-          <CellErrorBoundary>
-            <ItemBedomningSelect
-              value={row.efterlevnadsbedomning}
-              onChange={onBedomningChange}
-              readOnly={itemReadOnly}
-            />
-          </CellErrorBoundary>
-        </div>
-
-        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-        <div
-          className={COLUMN_CLASS.motivering}
-          role="presentation"
-          onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => e.stopPropagation()}
-        >
-          <CellErrorBoundary>
-            <ItemMotiveringEditor
-              value={row.motivering}
-              onChange={onMotiveringChange}
-              readOnly={itemReadOnly}
-            />
-          </CellErrorBoundary>
-        </div>
-
-        <div className={COLUMN_CLASS.ansvarig}>
-          <span className="text-sm">
-            {row.sourceResponsibleUser?.name ?? '—'}
-          </span>
-        </div>
-
-        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-        <div
-          className={COLUMN_CLASS.signerad}
-          role="presentation"
-          onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => e.stopPropagation()}
-        >
-          {readOnly && row.signedOffAt === null ? (
-            <span className="text-xs text-muted-foreground">—</span>
-          ) : (
-            <CellErrorBoundary>
-              <ItemSignOffButton
-                signedOffAt={row.signedOffAt}
-                signedOffBy={row.signedOffBy}
-                canSign={canSign}
-                canUnsign={canUnsign}
-                onSign={onSign}
-                onUnsign={onUnsign}
-                disabledReason={signDisabledReason}
-              />
-            </CellErrorBoundary>
-          )}
-        </div>
-      </div>
-    </div>
+    <CellErrorBoundary>
+      <ItemSignOffButton
+        signedOffAt={row.signedOffAt}
+        signedOffBy={row.signedOffBy}
+        canSign={canSign}
+        canUnsign={canUnsign}
+        onSign={onSign}
+        onUnsign={onUnsign}
+        disabledReason={signDisabledReason}
+      />
+    </CellErrorBoundary>
   )
 }
 
@@ -518,39 +282,16 @@ function findingDotColor(f: FindingRow): string {
 }
 
 // ---------------------------------------------------------------------------
-// Plain (non-virtualised) body — used when items ≤ 100
+// Component
 // ---------------------------------------------------------------------------
 
-interface BodyProps {
-  items: CycleItemRow[]
-  highlightedRowId: string | null
-  selectedItemId: string | null
-  onSelectItem: (_itemId: string) => void
-  readOnly: boolean
-  cycleStatus: ComplianceCycleStatus
-  onBedomningChange: (
-    _row: CycleItemRow,
-    _next: EfterlevnadsBedomning | null
-  ) => Promise<void>
-  onMotiveringChange: (
-    _row: CycleItemRow,
-    _next: string | null
-  ) => Promise<void>
-  onSign: (_row: CycleItemRow) => Promise<void>
-  onUnsign: (_row: CycleItemRow) => Promise<void>
-  findings: FindingRow[]
-  currentUserId: string
-  currentUserRole: WorkspaceRole
-  leadAuditorUserId: string
-}
-
-function PlainBody({
+export function CycleItemsTab({
   items,
+  readOnly,
+  cycleStatus,
   highlightedRowId,
   selectedItemId,
   onSelectItem,
-  readOnly,
-  cycleStatus,
   onBedomningChange,
   onMotiveringChange,
   onSign,
@@ -559,124 +300,202 @@ function PlainBody({
   currentUserId,
   currentUserRole,
   leadAuditorUserId,
-}: BodyProps) {
-  return (
-    <div
-      role="grid"
-      aria-rowcount={items.length}
-      data-testid="cycle-items-list"
-    >
-      {items.map((row) => {
-        const itemFindings = findings.filter(
-          (f) => f.lawListItemId === row.lawListItemId
-        )
-        return (
-          <RowContent
-            key={row.id}
-            row={row}
-            highlighted={highlightedRowId === row.id}
-            selected={selectedItemId === row.id}
-            onSelect={() => onSelectItem(row.id)}
+}: CycleItemsTabProps) {
+  const [sorting, setSorting] = useState<SortingState>([])
+  const sortingAdapter = useMemo(
+    () => ({ sorting, onSortingChange: setSorting, manual: true as const }),
+    [sorting]
+  )
+
+  const findingsByItem = useMemo(() => {
+    const map = new Map<string, FindingRow[]>()
+    for (const f of findings) {
+      if (f.lawListItemId === null) continue
+      const list = map.get(f.lawListItemId)
+      if (list) list.push(f)
+      else map.set(f.lawListItemId, [f])
+    }
+    return map
+  }, [findings])
+
+  const sortedItems = useMemo(() => {
+    const active = sorting[0]
+    if (!active) return items
+    const dir = active.desc ? -1 : 1
+    return [...items].sort(
+      (a, b) => compareItems(a, b, active.id as ItemSortKey) * dir
+    )
+  }, [items, sorting])
+
+  const columns = useMemo<ColumnDef<CycleItemRow, unknown>[]>(
+    () => [
+      {
+        id: 'dokument',
+        accessorFn: (row) => row.lawTitle,
+        header: ({ column }) => (
+          <SortableHeader column={column} label="Dokument" />
+        ),
+        cell: ({ row }) => (
+          <DokumentCell
+            row={row.original}
+            itemFindings={findingsByItem.get(row.original.lawListItemId) ?? []}
+          />
+        ),
+        enableSorting: true,
+        size: 280,
+        minSize: 240,
+        meta: {
+          dt: { label: 'Dokument', fill: true, card: { role: 'title' } },
+        },
+      },
+      {
+        id: 'nuvarande',
+        accessorFn: (row) => row.sourceComplianceStatus,
+        header: ({ column }) => (
+          <SortableHeader column={column} label="Nuvarande status" />
+        ),
+        cell: ({ row }) => <NuvarandeStatusCell row={row.original} />,
+        enableSorting: true,
+        size: 176,
+        meta: {
+          dt: {
+            label: 'Nuvarande status',
+            nowrap: true,
+            card: { role: 'badge', priority: 0 },
+          },
+        },
+      },
+      {
+        id: 'bedomning',
+        header: 'Bedömning',
+        cell: ({ row }) => (
+          <CellErrorBoundary>
+            <ItemBedomningSelect
+              value={row.original.efterlevnadsbedomning}
+              onChange={(next) => onBedomningChange(row.original, next)}
+              readOnly={readOnly || row.original.signedOffAt !== null}
+            />
+          </CellErrorBoundary>
+        ),
+        enableSorting: false,
+        size: 160,
+        meta: {
+          dt: {
+            label: 'Bedömning',
+            card: { role: 'meta', priority: 1, interactive: true },
+          },
+        },
+      },
+      {
+        id: 'motivering',
+        header: 'Motivering',
+        cell: ({ row }) => (
+          <CellErrorBoundary>
+            <ItemMotiveringEditor
+              value={row.original.motivering}
+              onChange={(next) => onMotiveringChange(row.original, next)}
+              readOnly={readOnly || row.original.signedOffAt !== null}
+            />
+          </CellErrorBoundary>
+        ),
+        enableSorting: false,
+        size: 240,
+        minSize: 200,
+        meta: {
+          dt: {
+            label: 'Motivering',
+            card: { role: 'meta', priority: 2, interactive: true },
+          },
+        },
+      },
+      {
+        id: 'ansvarig',
+        accessorFn: (row) => row.sourceResponsibleUser?.name ?? '',
+        header: ({ column }) => (
+          <SortableHeader column={column} label="Ansvarig" />
+        ),
+        cell: ({ row }) => (
+          <span className="text-sm">
+            {row.original.sourceResponsibleUser?.name ?? '—'}
+          </span>
+        ),
+        enableSorting: true,
+        size: 160,
+        meta: {
+          dt: { label: 'Ansvarig', card: { role: 'meta', priority: 3 } },
+        },
+      },
+      {
+        id: 'signerad',
+        accessorFn: (row) =>
+          row.signedOffAt ? new Date(row.signedOffAt).getTime() : Infinity,
+        header: ({ column }) => (
+          <SortableHeader column={column} label="Signerad" />
+        ),
+        cell: ({ row }) => (
+          <SigneradCell
+            row={row.original}
             readOnly={readOnly}
             cycleStatus={cycleStatus}
-            onBedomningChange={(next) => onBedomningChange(row, next)}
-            onMotiveringChange={(next) => onMotiveringChange(row, next)}
-            onSign={() => onSign(row)}
-            onUnsign={() => onUnsign(row)}
-            itemFindings={itemFindings}
             currentUserId={currentUserId}
             currentUserRole={currentUserRole}
             leadAuditorUserId={leadAuditorUserId}
+            onSign={() => onSign(row.original)}
+            onUnsign={() => onUnsign(row.original)}
           />
-        )
-      })}
-    </div>
+        ),
+        enableSorting: true,
+        size: 192,
+        meta: {
+          dt: {
+            label: 'Signerad',
+            card: { role: 'meta', priority: 4, interactive: true },
+          },
+        },
+      },
+    ],
+    [
+      findingsByItem,
+      readOnly,
+      cycleStatus,
+      currentUserId,
+      currentUserRole,
+      leadAuditorUserId,
+      onBedomningChange,
+      onMotiveringChange,
+      onSign,
+      onUnsign,
+    ]
   )
-}
 
-// ---------------------------------------------------------------------------
-// Virtualised body — used when items > 100
-// ---------------------------------------------------------------------------
-
-interface VirtualisedBodyProps extends BodyProps {
-  virtualizer: Virtualizer<HTMLDivElement, Element>
-  scrollRef: RefObject<HTMLDivElement | null>
-}
-
-function VirtualisedBody({
-  items,
-  virtualizer,
-  scrollRef,
-  highlightedRowId,
-  selectedItemId,
-  onSelectItem,
-  readOnly,
-  cycleStatus,
-  onBedomningChange,
-  onMotiveringChange,
-  onSign,
-  onUnsign,
-  findings,
-  currentUserId,
-  currentUserRole,
-  leadAuditorUserId,
-}: VirtualisedBodyProps) {
-  return (
-    <div
-      ref={scrollRef}
-      className="max-h-[calc(100vh-18rem)] overflow-auto"
-      role="grid"
-      aria-rowcount={items.length}
-      data-testid="cycle-items-list-virtualized"
-    >
-      <div
-        style={{
-          height: `${virtualizer.getTotalSize()}px`,
-          width: '100%',
-          position: 'relative',
-        }}
-      >
-        {virtualizer.getVirtualItems().map((virtualRow) => {
-          const row = items[virtualRow.index]
-          if (!row) return null
-          const itemFindings = findings.filter(
-            (f) => f.lawListItemId === row.lawListItemId
-          )
-          return (
-            <div
-              key={row.id}
-              data-index={virtualRow.index}
-              ref={(node) => {
-                if (node) virtualizer.measureElement(node)
-              }}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                transform: `translateY(${virtualRow.start}px)`,
-              }}
-            >
-              <RowContent
-                row={row}
-                highlighted={highlightedRowId === row.id}
-                selected={selectedItemId === row.id}
-                onSelect={() => onSelectItem(row.id)}
-                readOnly={readOnly}
-                cycleStatus={cycleStatus}
-                onBedomningChange={(next) => onBedomningChange(row, next)}
-                onMotiveringChange={(next) => onMotiveringChange(row, next)}
-                onSign={() => onSign(row)}
-                onUnsign={() => onUnsign(row)}
-                itemFindings={itemFindings}
-                currentUserId={currentUserId}
-                currentUserRole={currentUserRole}
-                leadAuditorUserId={leadAuditorUserId}
-              />
-            </div>
-          )
-        })}
+  if (items.length === 0) {
+    return (
+      <div className="rounded-md border p-8 text-center text-sm italic text-muted-foreground">
+        Kontrollen har inga dokument.
       </div>
+    )
+  }
+
+  return (
+    <div data-testid="cycle-items-list">
+      <DataTable<CycleItemRow>
+        data={sortedItems}
+        columns={columns}
+        getRowId={(row) => row.id}
+        sorting={sortingAdapter}
+        rowInteraction={{
+          onRowClick: (row) => onSelectItem(row.id),
+          getRowClassName: (row) =>
+            cn(
+              highlightedRowId === row.id && 'ring-2 ring-primary',
+              selectedItemId === row.id &&
+                'bg-muted/40 shadow-[inset_2px_0_0_hsl(var(--primary))]'
+            ),
+        }}
+        rowHeight="tall"
+        virtualization={{ maxHeight: 'calc(100vh - 18rem)' }}
+        view={{ cardBelow: 800 }}
+      />
     </div>
   )
 }

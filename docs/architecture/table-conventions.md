@@ -52,9 +52,14 @@ Current Tier-0 surfaces and why they stay:
 | Surface | Why not the core |
 | --- | --- |
 | `activity/activity-log-table.tsx` | Day-separator rows INSIDE one table (Idag/Igår groups) — the core has no in-table group-header rows, and per-day section tables would repeat column headers. |
-| `compliance-audit/cycle-detail/cycle-items-tab.tsx` | Production DOM contracts: `data-cycle-item-id` drives the progress-jump `querySelector`, `role="presentation"` stop-propagation zones, plain/virtualized testids — pinned by 17 unit tests. Already mirrors core conventions. |
 | `settings` team-tab, changes-tab, billing invoices, import-review | Trivial read-only lists; touch cost > value. |
 | `landing-v3/marketing-document-table.tsx` | Permanently frozen presentational copy (Story 28.4) — marketing never imports the live table. |
+
+(`cycle-items-tab.tsx` was initially kept Tier-0 but migrated onto the core
+in the Epic 28 follow-up — its `data-cycle-item-id` progress-jump anchor
+moved onto the Dokument cell so it exists in both renderers, and the core's
+interactive guard replaced the `role="presentation"` stop-propagation
+zones.)
 
 If a Tier-0 surface later needs selection, resize, cards, or persistence,
 migrate it to the core instead of hand-rolling the feature — that is the
