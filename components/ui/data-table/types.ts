@@ -65,6 +65,8 @@ export interface DataTableColumnMeta<TData = unknown> {
   /** tabular-nums + right-align default. */
   numeric?: boolean
   padding?: 'default' | 'tight' | 'none'
+  /** Clip cell content on one line instead of wrapping (truncate). */
+  nowrap?: boolean
   /** Cannot be hidden via column settings. */
   mandatory?: boolean
   /** Resize clamp. Derived from columnDef.minSize/maxSize when omitted. */

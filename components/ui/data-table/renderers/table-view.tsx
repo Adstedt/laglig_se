@@ -181,7 +181,7 @@ export function TableView<TData>() {
                   // [&_button]:text-xs: SortableHeader renders a ghost
                   // Button whose own text-sm would beat the inherited
                   // header size — force all header buttons to match.
-                  'relative overflow-hidden whitespace-nowrap text-xs [&_button]:text-xs',
+                  'group/head relative overflow-hidden whitespace-nowrap text-xs [&_button]:text-xs',
                   cellClassesFromMeta(header.column, headerIndex === 0)
                 )
                 const headStyle = {

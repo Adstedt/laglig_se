@@ -16,6 +16,12 @@ export {
 export { SELECT_COLUMN_ID } from './chrome-columns'
 export { DataTableSortMenu } from './sort-menu'
 export { DataTableBulkBar } from './bulk-action-bar'
+export {
+  GroupedDataTable,
+  DT_SECTION_DROP_PREFIX,
+  type DataTableSection,
+  type GroupedDataTableProps,
+} from './grouped-data-table'
 export type {
   CardSlot,
   ColumnStateAdapter,

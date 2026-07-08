@@ -40,6 +40,7 @@ export function cellClassesFromMeta<TData>(
     dt.stickyLeft && 'sticky left-0 bg-background z-10',
     dt.padding === 'tight' && 'px-2',
     dt.padding === 'none' && 'p-0',
+    dt.nowrap && 'overflow-hidden whitespace-nowrap',
     isFirstColumn && dt.padding !== 'none' && 'pl-6',
     dt.align === 'center' && 'text-center',
     (dt.align === 'right' || dt.numeric) && 'text-right',
