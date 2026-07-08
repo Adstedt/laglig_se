@@ -33,7 +33,7 @@ Bocka av när begärd; kolla av indexerad i GSC:s sidindexeringsrapport efter n�
 ## Dag 3
 
 - [x] https://laglig.se/omraden/arbetsmiljo
-- [x] https://laglig.se/omraden/afs
+- [ ] https://laglig.se/omraden/afs
 - [ ] https://laglig.se/omraden/alkohollagen
 - [ ] https://laglig.se/omraden/penningtvatt
 - [ ] https://laglig.se/omraden/las
