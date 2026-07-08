@@ -1,12 +1,12 @@
 /**
  * Mock data for the Styrdokument showcase — shaped to the real `DocumentItem`
- * type so the actual `DocumentTable` renders unchanged. Nordviken framing.
+ * type so the frozen `MarketingDocumentTable` renders unchanged. Nordviken framing.
  *
  * Story 17.17 — extended with Story 17.16's dual-pointer fields so the
  * composite "Godkänd v{N} · Utkast v{N+1} pågår" badge gets a live demo
  * (doc-2). The rest stay single-state to keep the showcase honest.
  */
-import type { DocumentItem } from '@/components/features/documents/document-table'
+import type { DocumentItem } from './marketing-document-table'
 
 const TS = (s: string) => new Date(s).toISOString()
 
