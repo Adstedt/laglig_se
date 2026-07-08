@@ -42,7 +42,7 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      testIgnore: [/auth\.setup\.ts/, /epic-21\//],
+      testIgnore: [/auth\.setup\.ts/, /epic-21\//, /\.authed\.spec\.ts$/],
     },
     {
       name: 'chromium-authed',
@@ -50,7 +50,8 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         storageState: 'tests/.auth/user.json',
       },
-      testMatch: /epic-21\/.*\.spec\.ts/,
+      // epic-21 legacy naming + the ".authed.spec.ts" convention (epic-28+).
+      testMatch: [/epic-21\/.*\.spec\.ts/, /.*\.authed\.spec\.ts/],
       dependencies: ['setup'],
     },
   ],
