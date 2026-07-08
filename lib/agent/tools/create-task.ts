@@ -49,6 +49,14 @@ const createTaskSchema = z.object({
     .string()
     .optional()
     .describe('LawListItem ID to link the task to'),
+  // Story 29.1: A6 triage — an agent-proposed corrective task registers as the
+  // finding's åtgärd (Task.compliance_finding_id) instead of becoming an orphan.
+  findingId: z
+    .string()
+    .optional()
+    .describe(
+      'ID för en avvikelse/observation som uppgiften är den korrigerande åtgärden för — uppgiften kopplas till avvikelsen vid godkännande'
+    ),
   priority: z
     .enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'])
     .optional()
@@ -97,11 +105,75 @@ Klar när alla tre produkter har en dokumenterad riskbedömning."`,
       title,
       description,
       relatedDocumentId,
+      findingId,
       priority,
       execute,
     }: CreateTaskInput) => {
       const startTime = Date.now()
       const priorityLabel = PRIORITY_LABELS[priority ?? 'MEDIUM'] ?? 'Medel'
+
+      // Story 29.1 (AC 15): tool-time guards for the finding coupling — the
+      // finding must exist in the workspace, be open, and not already have a
+      // corrective task (A6: propose only "where none exists"). Mirrors
+      // spawnTaskForFinding's guards (app/actions/compliance-finding.ts).
+      // The dispatch re-asserts these at approval time (staleness protection).
+      if (findingId != null) {
+        // QA (29.1): the finding link is created by the approval dispatch ONLY
+        // (AC 16). The legacy execute:true branch has no link step, so allowing
+        // it here would silently create an orphan task — the exact failure mode
+        // this story removes. Reject and steer to the propose path.
+        if (execute) {
+          return wrapToolError(
+            'create_task',
+            'findingId kräver godkännandeflödet',
+            'Anropa create_task med execute: false — uppgiften kopplas till avvikelsen först när användaren godkänner förslagskortet.',
+            startTime
+          )
+        }
+        try {
+          const finding = await prisma.complianceFinding.findFirst({
+            where: { id: findingId, cycle: { workspace_id: workspaceId } },
+            select: {
+              id: true,
+              closed_at: true,
+              corrective_action_task_id: true,
+              cycle_id: true,
+            },
+          })
+          if (!finding) {
+            return wrapToolError(
+              'create_task',
+              'Avvikelsen hittades inte.',
+              'Kontrollera findingId — hitta avvikelser via get_cycle (findingRows).',
+              startTime
+            )
+          }
+          if (finding.closed_at !== null) {
+            return wrapToolError(
+              'create_task',
+              'Kan inte skapa åtgärdsuppgift för stängd finding',
+              'Avvikelsen är redan stängd — en stängd avvikelse behöver ingen ny åtgärd.',
+              startTime
+            )
+          }
+          if (finding.corrective_action_task_id !== null) {
+            return wrapToolError(
+              'create_task',
+              'Åtgärdsuppgift finns redan',
+              'Avvikelsen har redan en åtgärdsuppgift — läs den med get_task och följ upp eller omfördela den via assign_task istället för att skapa en ny.',
+              startTime
+            )
+          }
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err)
+          return wrapToolError(
+            'create_task',
+            `Kunde inte kontrollera avvikelsen: ${message}`,
+            'Ett tekniskt fel uppstod. Försök igen om en stund.',
+            startTime
+          )
+        }
+      }
 
       if (!execute) {
         // Story 14.22: persist the proposal as a PendingAgentAction so the
@@ -124,6 +196,8 @@ Klar när alla tre produkter har en dokumenterad riskbedömning."`,
                   title,
                   description: description ?? null,
                   relatedDocumentId: relatedDocumentId ?? null,
+                  // Story 29.1: dispatch links the approved task to the finding.
+                  findingId: findingId ?? null,
                   priority: priority ?? 'MEDIUM',
                 },
                 expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -141,8 +215,10 @@ Klar när alla tre produkter har en dokumenterad riskbedömning."`,
         const envelope = wrapWriteToolResponse(
           'create_task',
           'create_task',
-          { title, description, relatedDocumentId, priority },
-          `Skapa uppgift: "${title}" med prioritet ${priorityLabel}`,
+          { title, description, relatedDocumentId, findingId, priority },
+          `Skapa uppgift: "${title}" med prioritet ${priorityLabel}${
+            findingId != null ? ' — kopplas som åtgärd till avvikelsen' : ''
+          }`,
           startTime
         )
         return pendingActionId

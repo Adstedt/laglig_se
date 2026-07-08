@@ -1,0 +1,177 @@
+schema: 1
+story: '29.1'
+story_title: 'Cycle Read Tier — list_cycles, get_cycle, get_finding (+ create_task findingId delta)'
+gate: PASS
+status_reason: >-
+  All 22 ACs implemented and conform to the pinned query plans byte-for-byte:
+  guards trio asserted at tool time AND re-asserted at dispatch (before
+  createTask, row stays PENDING on failure), the 21.8 invariant runs in ONE
+  prisma.$transaction with the exact partial-failure message, Epic 23
+  nullable-cycle tolerance is typed + runtime-guarded + unit-tested, every
+  query is workspace-scoped with names-not-ids output, and the bounded
+  count/groupBy plans have no N+1. One real gap found and fixed during review:
+  the legacy execute:true branch of create_task accepted findingId but has no
+  link step — it would have created exactly the orphan corrective task this
+  story removes; now rejected with a steering error + regression test.
+  64 files / 732 tests green, tsc 0 errors, eslint clean.
+reviewer: 'Quinn (Test Architect)'
+updated: '2026-07-08T21:30:00Z'
+
+waiver: { active: false }
+
+top_issues:
+  - id: 'QA-FIX-001'
+    severity: medium
+    status: RESOLVED_DURING_REVIEW
+    finding: >-
+      create_task's legacy execute:true branch (pre-14.22) ran the new
+      findingId guards but then created the task via the direct path, which
+      has no finding-link step — a findingId + execute:true call would
+      silently produce an orphan task (the exact failure mode Story 29.1/A6
+      exists to remove). AC 15/16 define the coupling as approval-dispatch
+      only, and every post-14.23 write tool has no direct-execute path at all.
+    suggested_action: >-
+      Fixed in review: findingId + execute:true now returns wrapToolError
+      ("findingId kräver godkännandeflödet") steering to the propose path,
+      before any DB read; regression test added in write-tools.test.ts.
+      Dev to fold lib/agent/tools/create-task.ts + write-tools.test.ts QA
+      edits into the File List (already listed — content updated).
+    suggested_owner: dev
+  - id: 'OBS-001'
+    severity: low
+    finding: >-
+      get_finding and both create_task/dispatch finding guards scope via
+      `cycle: { workspace_id }` without `cycle.deleted_at: null`, so a finding
+      whose parent cycle is soft-deleted stays reachable by remembered id.
+      This exactly matches the story's pinned query plans AND the canonical
+      Epic 21 helper loadFindingScopedToWorkspace
+      (app/actions/compliance-finding.ts:346-354) — product-wide convention,
+      not a 29.1 defect. AC 4's soft-delete rule (cycle ids → hittades inte)
+      is honoured by list_cycles/get_cycle.
+    suggested_action: >-
+      When Epic 23 gives findings their own workspace_id, decide the
+      soft-deleted-parent semantics once, centrally (23.1 owns that where-
+      clause migration; the // Epic 23: comments already mark both sites).
+    suggested_owner: po
+  - id: 'OBS-002'
+    severity: low
+    finding: >-
+      AC 16's specified partial-failure behaviour (link tx fails → task
+      exists, row stays PENDING, error names the partial state) means a
+      second approval of the same card would create a duplicate task. This is
+      the story-pinned design (staleness guards make the retry fail only if
+      the back-fill committed, which it didn't) and is unit-tested as
+      specified; noting the residual for the ops runbook.
+    suggested_action: >-
+      Future: make CREATE_TASK dispatch idempotent (persist taskId on the row
+      before the link tx, resume the link on retry) if the partial state ever
+      shows up in production logs — console.error('[CREATE_TASK] finding link
+      failed…') is the tripwire.
+    suggested_owner: dev
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: >-
+      Multi-tenancy: every query in all three readers + both guard sites is
+      workspace-scoped (list_cycles/get_cycle: workspace_id + deleted_at:null
+      in the WHERE; get_finding + guards: cycle.workspace_id — the only path
+      pre-Epic 23, with the mandated // Epic 23: comment). Cross-workspace and
+      soft-deleted misses return the same "hittades inte" wrapToolError — no
+      existence leak. No raw user-id columns emitted anywhere: lead_auditor/
+      sealed_by/closed_by resolve via userName/userNameOrNull, and tests
+      assert byte-absence of lead_auditor_user_id/sealed_by_user_id/
+      closed_by_user_id from serialized output. Dispatch guards run inside
+      withWorkspace + tasks:edit permission gate (14.23 SEC-001 unchanged) —
+      AUDITOR can read cycles but cannot approve the write. Zero mutation
+      paths against cycles/items/findings/reports (AC 11).
+  performance:
+    status: PASS
+    notes: >-
+      Pinned bounded plans respected exactly: list_cycles = 1 count + 1
+      findMany (Promise.all) then 2 groupBys over the page's ids (no per-cycle
+      N+1, asserted in tests); get_cycle = 1 findFirst with take-capped
+      includes (items/findingRows/task_links = 20, asserted at the Prisma
+      arg level) + 3 count queries in Promise.all; get_finding = 1 findFirst.
+      Caps at `take`, never post-fetch slicing. Reports uncapped per the DB
+      unique (max 1 COMPLETE). System-prompt growth +~170 tokens with the
+      ceiling re-baselined 7100→7400 per the file's established pattern.
+  reliability:
+    status: PASS
+    notes: >-
+      All three readers try/catch into Swedish wrapToolError envelopes (never
+      throw into the stream); invalid completedAfter ISO fails fast before any
+      query; parseScopeSummary is defensive (malformed Json → 'all' fallback,
+      never throws, tested incl. groupIds:'oops'). Dispatch: guards BEFORE
+      createTask (guard fail → row PENDING, createTask not called — tested);
+      link tx failure → named partial-state error, row PENDING (tested);
+      Epic 23 cycle_id-null → link row skipped, no throw (tested).
+  maintainability:
+    status: PASS
+    notes: >-
+      Every seam mirrors its cited precedent (19.3 diagnostics, 19.4 readers,
+      21.8 task-spawner invariant, spawnTaskForFinding guard wordings reused
+      verbatim). Label helpers reuse badge-tones as single source of truth;
+      the two local maps (auditType/bedömning) document WHY they're local
+      ('use client' sources) per the IMPACT_LEVEL_LABELS precedent. The three
+      documented deviations (shared parseScopeSummary, registry-narrowing
+      re-baseline, token-ceiling bump) are all justified, commented in-file,
+      and smaller than the alternatives.
+
+requirements_traceability:
+  - ac: 'AC 1-3 (ContextHandle union, 19.4 conventions, canonical labels)'
+    coverage: full
+    notes: 'types.ts additive union; caps/shortText/names/isoDate verified in source + tests; 5 label helpers + null-handling unit-tested (reader-utils.test.ts +7).'
+  - ac: 'AC 4 (soft-delete invisibility)'
+    coverage: full
+    notes: 'deleted_at:null in list_cycles where (tested via exact where equality) and get_cycle where (tested); miss → hittades inte. Finding-path parity noted as OBS-001 (matches Epic 21 convention + pinned plans).'
+  - ac: 'AC 5-7 (list_cycles filters/count/scopeSummary/bounded math)'
+    coverage: full
+    notes: 'Exact where mapping incl. completedAfter→sealed_at.gte tested; true count independent of take; limit default/clamp; labels-not-enums (serialized absence); scopeSummary all 3 kinds + malformed fallback; closedCount = _count − open; positive-zero success payload.'
+  - ac: 'AC 8-11 (get_cycle scoping, hydration, capped edges, read-only)'
+    coverage: full
+    notes: 'Scoped findFirst + steering miss; take=20 asserted at include level, reports uncapped; leadAuditorName/completedByName with raw-id byte-absence; item/finding/report/task shapes; true progress counts; zero mutation paths.'
+  - ac: 'AC 12-14 (get_finding scope, closure metadata, four nullable handles)'
+    coverage: full
+    notes: 'cycle.workspace_id scope + Epic 23 comment; verificationNote/closeReason/closedByName; lawItem:null = SUCCESS (system-level); requirement/correctiveTask null; cycle:null tolerance shapes null without throwing (the forward-compat assertion).'
+  - ac: 'AC 15 (create_task tool-time guards + params + preview)'
+    coverage: full
+    notes: 'Three guards with spawnTaskForFinding wordings + get_task/assign_task steering; no pending row on guard fail; findingId in params; coupling preview. QA added the execute:true rejection + test (QA-FIX-001).'
+  - ac: 'AC 16-17 (dispatch re-assert, ONE tx, tolerance, revalidates, tasks.ts untouched)'
+    coverage: full
+    notes: '6 dispatch tests: success (all three writes on the tx client + both kontroller revalidates), closed-since/has-task/missing → error before createTask + row PENDING, cycle_id-null skip, tx-fail partial message. Legacy no-findingId byte-identical. app/actions/tasks.ts not in the diff.'
+  - ac: 'AC 18-20 (registry, TOOL_CONFIG, system prompt)'
+    coverage: full
+    notes: 'ToolName + read policy (satisfies) + registration; not skill-gated; AUDITOR keeps all three (asserted); counts 38/40/38 + narrowing 38/37; 3 Swedish TOOL_CONFIG entries with story-exact labels; 3 terse prompt bullets asserted incl. traversal chain + cutoff mark + positive-zero.'
+  - ac: 'AC 21-22 (scope guards, tests)'
+    coverage: full
+    notes: 'git diff confirms no schema/migrations, no server-action changes beyond the dispatch case, no kontroller UI edits, no granular list_findings/get_report tools. Full suite green (732/732 agent+actions; dev-run full unit suite 6438 passed).'
+
+evidence:
+  tests_reviewed: 199
+  tests_added: 45
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+    ac_gaps: []
+  verification: >-
+    Independently ran: pnpm vitest run tests/unit/agent tests/unit/actions →
+    64 files, 732/732 passed (incl. the QA regression test); pnpm tsc --noEmit
+    → 0 errors; eslint on all touched files → clean. Diff-verified: the
+    chat-message.tsx edit is exactly the three AC-19 TOOL_CONFIG entries
+    (icons already imported) — in scope, not creep; app/actions/tasks.ts
+    untouched (AC 17); working tree contains only Story 29.1 files.
+
+quality_score: 100
+
+expires: '2026-07-22T00:00:00Z'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Epic 23 / Story 23.1: when findings gain workspace_id, decide soft-deleted-parent-cycle semantics centrally and move both // Epic 23: where-clauses (OBS-001).'
+      refs: ['lib/agent/tools/get-finding.ts', 'lib/agent/tools/create-task.ts', 'app/actions/pending-agent-actions.ts']
+    - action: 'If "[CREATE_TASK] finding link failed" ever appears in production logs, make the dispatch idempotent (persist taskId before the link tx, resume on retry) to close the duplicate-task-on-reapprove residual (OBS-002).'
+      refs: ['app/actions/pending-agent-actions.ts']
+    - action: 'Story 29.2 (prepare_audit) should exercise the A3 aggregate-coverage evaluation against list_cycles scopeSummary tiling with a multi-quarter fixture — the deep steering deliberately lives in the skill, not the prompt.'
+      refs: ['lib/agent/tools/list-cycles.ts']

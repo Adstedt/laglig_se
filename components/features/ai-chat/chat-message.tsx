@@ -156,6 +156,22 @@ const TOOL_CONFIG: Record<
     doneLabel: 'Hämtade länkade dokument',
     icon: FileText,
   },
+  // Story 29.1: cycle read tier (lagefterlevnadskontroller).
+  list_cycles: {
+    label: 'Hämtar lagefterlevnadskontroller',
+    doneLabel: 'Hämtade lagefterlevnadskontroller',
+    icon: ClipboardList,
+  },
+  get_cycle: {
+    label: 'Läser kontroll',
+    doneLabel: 'Läste kontroll',
+    icon: ClipboardList,
+  },
+  get_finding: {
+    label: 'Läser avvikelse',
+    doneLabel: 'Läste avvikelse',
+    icon: AlertTriangle,
+  },
   // Story 19.3: workspace-wide diagnostic aggregates.
   list_bevis_gaps: {
     label: 'Letar efter bevisluckor',

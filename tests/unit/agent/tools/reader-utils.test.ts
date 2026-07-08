@@ -14,6 +14,12 @@ import {
   complianceStatusLabel,
   priorityLabel,
   impactLevelLabel,
+  cycleStatusLabel,
+  findingTypeLabel,
+  findingSeverityLabel,
+  auditTypeLabel,
+  bedomningLabel,
+  parseScopeSummary,
 } from '@/lib/agent/tools/reader-utils'
 
 // ---------------------------------------------------------------------------
@@ -97,4 +103,96 @@ it('impactLevelLabel: maps enum → label; null → null', () => {
   expect(impactLevelLabel('NONE')).toBe('Ingen')
   expect(impactLevelLabel(null)).toBeNull()
   expect(impactLevelLabel(undefined)).toBeNull()
+})
+
+// ---------------------------------------------------------------------------
+// Story 29.1: cycle-graph labels (CP-001 family)
+// ---------------------------------------------------------------------------
+
+it('cycleStatusLabel: maps enum → label; null → null', () => {
+  expect(cycleStatusLabel('PLANERAD')).toBe('Planerad')
+  expect(cycleStatusLabel('PAGAENDE')).toBe('Pågående')
+  expect(cycleStatusLabel('AVSLUTAD')).toBe('Avslutad')
+  expect(cycleStatusLabel(null)).toBeNull()
+  expect(cycleStatusLabel(undefined)).toBeNull()
+})
+
+it('findingTypeLabel: maps enum → label; null → null', () => {
+  expect(findingTypeLabel('AVVIKELSE')).toBe('Avvikelse')
+  expect(findingTypeLabel('OBSERVATION')).toBe('Observation')
+  expect(findingTypeLabel('FORBATTRING')).toBe('Förbättringsförslag')
+  expect(findingTypeLabel(null)).toBeNull()
+  expect(findingTypeLabel(undefined)).toBeNull()
+})
+
+it('findingSeverityLabel: maps enum → label; null → null (only AVVIKELSE carries one)', () => {
+  expect(findingSeverityLabel('MAJOR')).toBe('Större')
+  expect(findingSeverityLabel('MINOR')).toBe('Mindre')
+  expect(findingSeverityLabel(null)).toBeNull()
+  expect(findingSeverityLabel(undefined)).toBeNull()
+})
+
+it('auditTypeLabel: maps enum → label; null → null', () => {
+  expect(auditTypeLabel('INTERN')).toBe('Intern revision')
+  expect(auditTypeLabel('EXTERN')).toBe('Extern revision')
+  expect(auditTypeLabel(null)).toBeNull()
+  expect(auditTypeLabel(undefined)).toBeNull()
+})
+
+it('bedomningLabel: maps enum → label; null → null', () => {
+  expect(bedomningLabel('UPPFYLLD')).toBe('Uppfylld')
+  expect(bedomningLabel('DELVIS')).toBe('Delvis')
+  expect(bedomningLabel('EJ_UPPFYLLD')).toBe('Ej uppfylld')
+  expect(bedomningLabel('EJ_TILLAMPLIG')).toBe('Ej tillämplig')
+  expect(bedomningLabel(null)).toBeNull()
+  expect(bedomningLabel(undefined)).toBeNull()
+})
+
+// ---------------------------------------------------------------------------
+// Story 29.1: parseScopeSummary (defensive Json parsing)
+// ---------------------------------------------------------------------------
+
+it('parseScopeSummary: all three kinds parse with their counts', () => {
+  expect(parseScopeSummary({ kind: 'all' }, 42)).toEqual({
+    kind: 'all',
+    groupCount: null,
+    itemCount: null,
+    materialisedItemCount: 42,
+  })
+  expect(
+    parseScopeSummary({ kind: 'groups', groupIds: ['g1', 'g2'] }, 10)
+  ).toEqual({
+    kind: 'groups',
+    groupCount: 2,
+    itemCount: null,
+    materialisedItemCount: 10,
+  })
+  expect(
+    parseScopeSummary({ kind: 'items', itemIds: ['i1', 'i2', 'i3'] }, 3)
+  ).toEqual({
+    kind: 'items',
+    groupCount: null,
+    itemCount: 3,
+    materialisedItemCount: 3,
+  })
+})
+
+it('parseScopeSummary: malformed/unknown Json → all-fallback, never throws', () => {
+  const fallback = {
+    kind: 'all',
+    groupCount: null,
+    itemCount: null,
+    materialisedItemCount: 7,
+  }
+  expect(parseScopeSummary(null, 7)).toEqual(fallback)
+  expect(parseScopeSummary(undefined, 7)).toEqual(fallback)
+  expect(parseScopeSummary('garbage', 7)).toEqual(fallback)
+  expect(parseScopeSummary({ kind: 'unknown-kind' }, 7)).toEqual(fallback)
+  // groups without a groupIds array → kind kept, count null
+  expect(parseScopeSummary({ kind: 'groups', groupIds: 'oops' }, 7)).toEqual({
+    kind: 'groups',
+    groupCount: null,
+    itemCount: null,
+    materialisedItemCount: 7,
+  })
 })

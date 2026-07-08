@@ -44,6 +44,11 @@ describe('createAgentTools — role filter (Story 19.5)', () => {
     expect(keys).toContain('get_law_list_item')
     expect(keys).toContain('get_task')
     expect(keys).toContain('list_linked_artifacts')
+    // Story 29.1: the cycle read tier is read-tier → the read-mostly AUDITOR
+    // persona keeps all three automatically (the role filter drops write only).
+    expect(keys).toContain('list_cycles')
+    expect(keys).toContain('get_cycle')
+    expect(keys).toContain('get_finding')
     // Story 19.3: diagnostic aggregates are read-tier → AUDITOR keeps them.
     expect(keys).toContain('list_bevis_gaps')
     expect(keys).toContain('list_unassessed_changes')
@@ -70,7 +75,8 @@ describe('createAgentTools — role filter (Story 19.5)', () => {
     // Story 7.10: get_employee_salary is NOT here — MEMBER lacks
     // employees:manage.
     expect(keys).not.toContain('get_employee_salary')
-    expect(keys).toHaveLength(35) // web_search is injected at the route, not here
+    // Story 29.1: +3 (list_cycles / get_cycle / get_finding) — 35 → 38.
+    expect(keys).toHaveLength(38) // web_search is injected at the route, not here
   })
 
   it('OWNER receives the full set incl. lookup_employee + get_employee_salary', () => {
@@ -80,7 +86,8 @@ describe('createAgentTools — role filter (Story 19.5)', () => {
     expect(keys).toContain('lookup_employee')
     // Story 7.10: OWNER holds employees:manage → salary tool registered.
     expect(keys).toContain('get_employee_salary')
-    expect(keys).toHaveLength(37)
+    // Story 29.1: +3 cycle readers — 37 → 40.
+    expect(keys).toHaveLength(40)
   })
 
   it('HR_MANAGER gets lookup_employee (view) + get_employee_salary (manage)', () => {
@@ -97,7 +104,8 @@ describe('createAgentTools — role filter (Story 19.5)', () => {
 
   it('undefined role → full set minus the employee-gated tools (fail-closed)', () => {
     const keys = Object.keys(createAgentTools('ws', 'u', {}))
-    expect(keys).toHaveLength(35)
+    // Story 29.1: +3 cycle readers — 35 → 38.
+    expect(keys).toHaveLength(38)
     expect(keys).toContain('assign_task')
     // Story 7.7 Task 2b: no role → no employees:view proof → tool absent.
     expect(keys).not.toContain('lookup_employee')

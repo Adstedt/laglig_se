@@ -227,7 +227,7 @@ These can be drafted and scheduled independently of Epic 19. Recommend schedulin
 
 ## Definition of Done
 
-- [ ] All 14 stories completed with their ACs met (incl. 19.4a id-resolution + 19.4b cycle/finding readers)
+- [ ] All 14 stories completed with their ACs met (incl. 19.4a id-resolution + 19.4b cycle/finding readers — **19.4b closed: absorbed and delivered by Story 29.1** (`list_cycles`/`get_cycle`/`get_finding`, 2026-07-08))
 - [ ] Sibling Stories 14.28–14.31 completed (coordinated with Epic 14)
 - [ ] Prisma migrations merged: `AgentDecisionLog`, `Reminder`, `AgentFeedback`, `FileCategory` enum extension, `via_agent` columns on affected tables
 - [ ] Three skills live: `assess_change` (migrated), `gap_analysis` (new), `draft_styrdokument` (new, type-aware with `types/*.md` modules per `WorkspaceDocumentType`)
