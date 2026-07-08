@@ -1,3 +1,5 @@
+> **⚠️ ROUTE-ONLY (anti-kannibalisering, 2026-07-05).** Denna term har redan en djupsida på `/omraden/riskbedomning` som äger sökintentionen. Bygg INGEN konkurrerande `/ordbok/riskbedomning`-sida — det skulle kannibalisera djupsidan. `/ordbok`-indexet listar termen och länkar direkt till `/omraden/riskbedomning`. Briefen behålls som referens/routing-post.
+
 # Innehållsbrief — Riskbedömning (begrepp)
 - **Route:** /ordbok/riskbedomning
 - **Cluster / template:** ordbok / glossary term

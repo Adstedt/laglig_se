@@ -20,6 +20,7 @@ vi.mock('@/lib/prisma', () => ({
     },
     $transaction: vi.fn(),
     $executeRaw: vi.fn(),
+    $queryRaw: vi.fn(),
   },
 }))
 
@@ -38,7 +39,10 @@ vi.mock('@/lib/chunks/embed-chunks', () => ({
 }))
 
 import { prisma } from '@/lib/prisma'
-import { syncDocumentChunks } from '@/lib/chunks/sync-document-chunks'
+import {
+  syncDocumentChunks,
+  embedMissingChunks,
+} from '@/lib/chunks/sync-document-chunks'
 import { generateContextPrefixes } from '@/lib/chunks/generate-context-prefixes'
 import { generateEmbeddingsBatch } from '@/lib/chunks/embed-chunks'
 import type { CanonicalDocumentJson } from '@/lib/transforms/document-json-schema'
@@ -53,6 +57,7 @@ const mockPrisma = prisma as unknown as {
   }
   $transaction: ReturnType<typeof vi.fn>
   $executeRaw: ReturnType<typeof vi.fn>
+  $queryRaw: ReturnType<typeof vi.fn>
 }
 
 const mockGenerateContextPrefixes = generateContextPrefixes as ReturnType<
@@ -222,7 +227,9 @@ describe('syncDocumentChunks', () => {
     expect(result.chunksEmbedded).toBe(1)
   })
 
-  it('does not roll back chunks when embedding fails', async () => {
+  it('still embeds when prefix generation fails (degrades to no-prefix)', async () => {
+    // Regression guard: a Haiku prefix failure used to abort the whole
+    // embedding step, leaving every chunk of the doc invisible to retrieval.
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
     const doc = makeDoc()
     mockPrisma.legalDocument.findUnique.mockResolvedValue(doc)
@@ -239,6 +246,64 @@ describe('syncDocumentChunks', () => {
     mockGenerateContextPrefixes.mockRejectedValue(
       new Error('Anthropic API down')
     )
+    mockGenerateEmbeddingsBatch.mockResolvedValue({
+      embeddings: [new Array(1536).fill(0.1)],
+      totalTokensUsed: 50,
+    })
+
+    const result = await syncDocumentChunks('doc-1')
+
+    expect(result.chunksCreated).toBe(1)
+    // Embedding proceeded without prefixes
+    expect(result.chunksEmbedded).toBe(1)
+    expect(mockGenerateEmbeddingsBatch).toHaveBeenCalledTimes(1)
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('prefix generation failed')
+    )
+    errorSpy.mockRestore()
+  })
+
+  it('embeds even when the document has no markdown_content', async () => {
+    // markdown only feeds prefix generation — its absence must not gate embeddings
+    const doc = makeDoc({ markdown_content: null })
+    mockPrisma.legalDocument.findUnique.mockResolvedValue(doc)
+    mockPrisma.$transaction.mockResolvedValue([{ count: 0 }, { count: 1 }])
+
+    mockPrisma.contentChunk.findMany.mockResolvedValue([
+      {
+        id: 'chunk-1',
+        path: 'kap1.§1',
+        content: 'Text',
+        contextual_header: 'H',
+      },
+    ])
+    mockGenerateEmbeddingsBatch.mockResolvedValue({
+      embeddings: [new Array(1536).fill(0.1)],
+      totalTokensUsed: 50,
+    })
+
+    const result = await syncDocumentChunks('doc-1')
+
+    expect(mockGenerateContextPrefixes).not.toHaveBeenCalled()
+    expect(result.chunksEmbedded).toBe(1)
+  })
+
+  it('does not roll back chunks when embedding fails', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const doc = makeDoc()
+    mockPrisma.legalDocument.findUnique.mockResolvedValue(doc)
+    mockPrisma.$transaction.mockResolvedValue([{ count: 0 }, { count: 1 }])
+
+    mockPrisma.contentChunk.findMany.mockResolvedValue([
+      {
+        id: 'chunk-1',
+        path: 'kap1.§1',
+        content: 'Text',
+        contextual_header: 'H',
+      },
+    ])
+    mockGenerateContextPrefixes.mockResolvedValue(new Map())
+    mockGenerateEmbeddingsBatch.mockRejectedValue(new Error('OpenAI down'))
 
     const result = await syncDocumentChunks('doc-1')
 
@@ -250,5 +315,46 @@ describe('syncDocumentChunks', () => {
       expect.stringContaining('Embedding failed')
     )
     errorSpy.mockRestore()
+  })
+})
+
+describe('embedMissingChunks', () => {
+  it('embeds only the NULL-embedding chunks using existing prefixes', async () => {
+    mockPrisma.$queryRaw.mockResolvedValue([
+      {
+        id: 'chunk-1',
+        content: 'Text A',
+        context_prefix: 'Prefix A',
+        contextual_header: 'H1',
+      },
+      {
+        id: 'chunk-2',
+        content: 'Text B',
+        context_prefix: null,
+        contextual_header: 'H2',
+      },
+    ])
+    mockGenerateEmbeddingsBatch.mockResolvedValue({
+      embeddings: [new Array(1536).fill(0.1), new Array(1536).fill(0.2)],
+      totalTokensUsed: 100,
+    })
+
+    const embedded = await embedMissingChunks('doc-1')
+
+    expect(embedded).toBe(2)
+    expect(mockGenerateEmbeddingsBatch).toHaveBeenCalledWith([
+      { text: 'Text A', contextPrefix: 'Prefix A', contextualHeader: 'H1' },
+      { text: 'Text B', contextPrefix: '', contextualHeader: 'H2' },
+    ])
+    expect(mockPrisma.$executeRaw).toHaveBeenCalledTimes(2)
+  })
+
+  it('returns 0 when no chunks are missing embeddings', async () => {
+    mockPrisma.$queryRaw.mockResolvedValue([])
+
+    const embedded = await embedMissingChunks('doc-1')
+
+    expect(embedded).toBe(0)
+    expect(mockGenerateEmbeddingsBatch).not.toHaveBeenCalled()
   })
 })

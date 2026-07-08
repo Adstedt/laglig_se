@@ -1,3 +1,5 @@
+> **⚠️ ROUTE-ONLY (anti-kannibalisering, 2026-07-05).** Denna term har redan en djupsida på `/omraden/internrevision` som äger sökintentionen. Bygg INGEN konkurrerande `/ordbok/internrevision`-sida — det skulle kannibalisera djupsidan. `/ordbok`-indexet listar termen och länkar direkt till `/omraden/internrevision`. Briefen behålls som referens/routing-post.
+
 # Innehållsbrief — Internrevision (begrepp)
 - **Route:** /ordbok/internrevision
 - **Cluster / template:** ordbok / glossary term

@@ -1,3 +1,5 @@
+> **⚠️ ROUTE-ONLY (anti-kannibalisering, 2026-07-05).** Denna term har redan en djupsida på `/funktioner/kravpunkter` som äger sökintentionen. Bygg INGEN konkurrerande `/ordbok/kravpunkt`-sida — det skulle kannibalisera djupsidan. `/ordbok`-indexet listar termen och länkar direkt till `/funktioner/kravpunkter`. Briefen behålls som referens/routing-post.
+
 # Innehållsbrief — Kravpunkt
 
 - **Route:** /ordbok/kravpunkt

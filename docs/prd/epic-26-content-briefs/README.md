@@ -125,7 +125,13 @@ Parent plan: [`../epic-26-page-inventory.md`](../epic-26-page-inventory.md)
 |---|---|---|---|---|
 | kundcase-mall | `/kundcase/kundcase-mall` | kundcase lagefterlevnad | 8 | [kundcase-mall.md](./kundcase/kundcase-mall.md) |
 
-## ordbok (35)
+## ordbok (Story 26.11)
+
+**Routing-modell (anti-kannibalisering, uppdaterad 2026-07-05):** en indexerbar sida per term. `/ordbok`-indexet listar ALLA begrepp A–Ö men ROUTAR varje till dess kanoniska sida — djupsidan (`/omraden` eller `/funktioner`) om en sådan finns, annars en `/ordbok/[term]`-sida.
+
+- **Route-only (25):** briefer med `> ⚠️ ROUTE-ONLY`-banner — termen har redan en djupsida (afs, gdpr, egenkontroll, sam, riskbedomning, internrevision, ledningssystem, miljobalken, nis2, ovk, penningtvatt, reach, csrd, esg, iso-9001/14001/45001, sba, lagefterlevnad, lagrevision, ce-markning, visselblasarlagen, efterlevnadskontroll→kontroller, kravpunkt→kravpunkter, styrdokument). Bygg INGEN konkurrerande ordbok-sida.
+- **Bygg (27):** genuina begrepp utan djupsida + laglista (pilot, byggd). Rättskällelära (rattskalla, forfattningssamling, forordning, foreskrift, direktiv, ramlag, bemyndigande, proposition, forarbeten, prejudikat, praxis, dispositiv-lag), tillsyn/sanktion (tillsyn, sanktionsavgift, vite, forelaggande, anmalningsplikt), compliance/ISO (avvikelse, bindande-krav, lagbevakning, revisionsrapport, pdca, vasentlighetsanalys), penningtvätt/AML (verklig-huvudman, kundkannedom, due-diligence). Alla har `## Semrush-validering` + `showOrgCheck`-flagga (false för rena rättskällebegrepp, true för produkt-/efterlevnadsnära).
+- **Kvar att bygga:** term-registry (term→kanonisk href) så indexet kan routa icke-byggda termer + de 27 sidorna via content-page-pipelinen. Abbreviations → lagguide-ytan (§6), ej ordbok.
 
 | Page | Route | Primary keyword | # long-tail | Brief |
 |---|---|---|---|---|

@@ -74,3 +74,11 @@
 ## Anmärkningar
 
 Kort ordboksdefinition. Avgränsa mot funktionssidan /funktioner/laglista (produkt) och mot /omraden/lagefterlevnad (metod) — denna sida bär enbart begreppet och länkar vidare. Kanonisk för sökfrasen "vad är en laglista".
+
+## Semrush-validering (2026-07-05, db=se)
+
+- **Bekräftat primärt:** laglista — 90/mån, KD 13, informational. Låg volym (ordbok är en long-tail/GEO-play per epic), men låg konkurrens och produktens flaggskeppsterm.
+- **SERP (phrase_organic):** topp domineras av konsult- och verktygssajter (laglistan.se, lagpunkten.se, WSP, Envicon, Notisum, Ramböll) — INTE rå lagtext. Bekräftar glossary→produkt-strukturen: definiera skarpt (snippet/DefinedTerm) + verktygshandoff. Ordbok-sidan kan ranka här.
+- **Upptäckta (phrase_related, egna ordbok-kandidater/andra kluster):** lagbevakningstjänst 2900/KD9 (kommersiell — ägs av funktioner/jamfor, ej denna); lagrum 1300/KD24 + lagrummet 1300/KD27 (egna ordbok-termer); "nya lagar 2024/2023" 5400/2900 (blogg-/nyhetsintention). Long-tail-fraserna i briefen (vad är en laglista, laglista mall m.fl.) mäter ~0 → FAQ-/rubrikformuleringar.
+- **Faktakontroll:** ISO 14001/45001 bindande krav + efterlevnadsutvärdering, egenkontroll MB 26 kap. 19 §, SAM AFS 2023:1, samt de 5 kataloglagarna (1998:808, 1977:1160, 1998:901, 2020:614, GDPR) — alla verifierade ACTIVE i tidigare omraden-audit; återanvända.
+- **Pilot för 26.11-substratet:** validerade glossary-schema, GlossaryTermTemplate, /ordbok/[term] + /ordbok index, DefinedTerm/DefinedTermSet JSON-LD, sitemap-walker. Template signerad före batch.

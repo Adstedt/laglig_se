@@ -6,71 +6,48 @@
 - **Ordmål:** ~350
 
 ## Nyckelord
-
-- **Primärt:** förordning
-- **Sekundärt:** vad är en förordning, EU-förordning, skillnad lag och förordning
+- **Primärt:** förordning (1000/mån, KD 32)
+- **Sekundärt:** vad är en förordning, EU-förordning, svensk förordning, skillnad lag och förordning
 - **Long-tail:**
   - vad är en förordning
   - skillnad lag och förordning
   - skillnad förordning och direktiv
-  - svensk förordning exempel
-  - EU-förordning betydelse
-  - vem beslutar förordningar
+  - vad är en EU-förordning
+  - vem beslutar en förordning
   - är en förordning bindande
-  - förordning och föreskrift
 
 ## SEO-meta
-
-- **Meta-titel (<=60 tecken):** Förordning — vad är det? Svensk och EU
-- **Meta-beskrivning (~155 tecken):** Vad är en förordning? Definition av svensk förordning och EU-förordning samt skillnaden mot lag och direktiv. Lär dig grunderna och testa med ert org.nr.
-- **H1:** Förordning — vad är det?
+- **Meta-titel (<=60 tecken):** Förordning – svensk förordning och EU-förordning
+- **Meta-beskrivning (~155 tecken):** Förordning – vad betyder det? Ordet har två betydelser: regeringens svenska förordning och EU-förordningen som gäller direkt. Här reds båda ut.
+- **shortDefinition (snippet, <=320 tecken):** Ordet förordning har två betydelser. En svensk förordning är en bindande författning som regeringen beslutar för att precisera en lag. En EU-förordning är en EU-rättsakt som är direktverkande — den gäller direkt i alla medlemsländer utan att först behöva införas i nationell lag.
 
 ## Sidstruktur (H2/H3)
-
-1. **Vad är en förordning?** (DefinitionBox)
-   - Kort definition: i Sverige en bindande författning som regeringen beslutar; inom EU en bindande rättsakt som gäller direkt i alla medlemsländer
-   - Längre förklaring: svensk förordning konkretiserar lag inom regeringens kompetens; EU-förordning gäller direkt utan att infogas i nationell lag
-2. **Svensk förordning vs EU-förordning** (brödtext)
-   - Svensk förordning: regeringen, publiceras i SFS
-   - EU-förordning: bindande och direkt tillämplig i hela EU (t.ex. GDPR)
-3. **Förordningar i Laglig** (kort koppling)
-   - Lagligs katalog samlar både svenska förordningar och tillämpliga EU-förordningar och bevakar ändringar
-   - OrgCheckCta (mid-page)
-4. **Exempel på förordningar** (CatalogLawList)
-5. **Vanliga frågor om förordning** (FaqAccordion)
-6. **Relaterade begrepp** (RelatedPagesGrid)
+1. **Svensk förordning vs EU-förordning** — disambiguering är sidans kärna. Svensk förordning: regeringen, publiceras i SFS, konkretiserar en lag inom regeringens kompetens. EU-förordning: direktverkande i hela EU (t.ex. dataskyddsförordningen).
+2. **Skillnaden mot lag och direktiv** — lag beslutas av riksdagen, förordning av regeringen; ett EU-direktiv måste däremot genomföras i nationell rätt medan EU-förordningen gäller direkt.
 
 ## Kataloglänkar (CatalogLawList)
+- Förordning (1998:901) om verksamhetsutövares egenkontroll — svensk förordning under miljöbalken.
+- Avfallsförordning (SFS 2020:614) — svensk förordning om avfall.
+- Miljötillsynsförordning (SFS 2011:13) — svensk förordning om tillsyn.
+- Dataskyddsförordningen (GDPR) — EU-förordning, direktverkande [bekräfta i katalogen].
 
-- Förordning (1998:901) om verksamhetsutövares egenkontroll — svensk förordning under miljöbalken
-- Avfallsförordningen (SFS 2020:614) — svensk förordning om avfall
-- Dataskyddsförordningen GDPR (EU 2016/679) — EU-förordning, direkt tillämplig
-- Förordning (2013:413) om konsumentskydd [bekräfta i katalogen]
-- Miljötillsynsförordningen (SFS 2011:13) — svensk förordning om tillsyn
-
-## FAQ (3-5, formulerade som riktiga sökfrågor)
-
-- **Vad är en förordning?** — I Sverige en bindande författning beslutad av regeringen; inom EU en rättsakt som gäller direkt i alla medlemsländer.
-- **Vad är skillnaden mellan lag och förordning?** — Lag beslutas av riksdagen, förordning av regeringen inom sin kompetens.
-- **Vad är skillnaden mellan en förordning och ett direktiv i EU?** — En förordning gäller direkt; ett direktiv måste genomföras i nationell rätt.
+## FAQ (3 st, riktiga sökfrågor)
+- **Vad är en förordning?** → I Sverige en bindande författning som regeringen beslutar; inom EU en direktverkande rättsakt som gäller i alla medlemsländer.
+- **Vad är skillnaden mellan lag och förordning?** → Lag beslutas av riksdagen, förordning av regeringen inom sin kompetens.
+- **Vad är skillnaden mellan en förordning och ett direktiv i EU?** → En förordning gäller direkt; ett direktiv måste först genomföras i nationell rätt.
 
 ## Interna länkar (relatedPages)
-
 - /ordbok/direktiv
 - /ordbok/foreskrift
 - /ordbok/rattskalla
 - /ordbok/forfattningssamling
 
-## Bildmaterial
-
-- **Skärmdumpar:** katalogvy med en förordning (t.ex. egenkontrollförordningen) i ScreenshotFrame.
-
-## Källor (grundning)
-
-- riksdagen.se / SFS: förordning (1998:901), avfallsförordningen (2020:614), miljötillsynsförordningen (2011:13)
-- EUR-Lex: GDPR (EU 2016/679)
-- Laglig.se katalog
-
 ## Anmärkningar
+- Kollisionskontroll: ingen djupsida äger termen (verifierat 2026-07-05).
+- Dubbelbetydelsen (svensk förordning vs EU-förordning) är sidans huvudpoäng — håll den tydligt disambiguerad.
+- **showOrgCheck:** false — rent rättskällebegrepp, neutral referens utan produktvinkel.
 
-Kort ordboksdefinition i rättskälle-klustret. Tydliggör dubbelbetydelsen (svensk förordning vs EU-förordning). Avgränsa mot /ordbok/direktiv och /ordbok/foreskrift. Kanonisk för "vad är en förordning".
+## Semrush-validering (2026-07-05, db=se)
+- **Bekräftat primärt:** förordning — 1000/mån, KD 32, informational. Högst volym i klustret; medelhög svårighet men definition-snippet är vinnbart.
+- **Upptäckta/nedgraderade:** "EU-förordning" och "skillnad lag och förordning" bär egen intention → hanteras i H2/FAQ snarare än egna sidor.
+- **Strategibeslut:** disambiguerar de två betydelserna som kärna; kontrasterar mot /ordbok/direktiv. GDPR nämns som EU-exempel men markeras [bekräfta] då det inte resolvar mot ett ACTIVE katalognummer.

@@ -1,3 +1,5 @@
+> **⚠️ ROUTE-ONLY (anti-kannibalisering, 2026-07-05).** Denna term har redan en djupsida på `/omraden/nis2` som äger sökintentionen. Bygg INGEN konkurrerande `/ordbok/nis2`-sida — det skulle kannibalisera djupsidan. `/ordbok`-indexet listar termen och länkar direkt till `/omraden/nis2`. Briefen behålls som referens/routing-post.
+
 # Innehållsbrief — NIS2
 
 - **Route:** /ordbok/nis2

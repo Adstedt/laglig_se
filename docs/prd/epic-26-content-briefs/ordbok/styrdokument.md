@@ -1,3 +1,5 @@
+> **⚠️ ROUTE-ONLY (anti-kannibalisering, 2026-07-05).** Denna term har redan en djupsida på `/funktioner/styrdokument` som äger sökintentionen. Bygg INGEN konkurrerande `/ordbok/styrdokument`-sida — det skulle kannibalisera djupsidan. `/ordbok`-indexet listar termen och länkar direkt till `/funktioner/styrdokument`. Briefen behålls som referens/routing-post.
+
 # Innehållsbrief — Styrdokument
 - **Route:** /ordbok/styrdokument
 - **Cluster / template:** ordbok / glossary term

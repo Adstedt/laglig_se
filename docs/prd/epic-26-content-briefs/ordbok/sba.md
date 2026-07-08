@@ -1,3 +1,5 @@
+> **⚠️ ROUTE-ONLY (anti-kannibalisering, 2026-07-05).** Denna term har redan en djupsida på `/omraden/sba` som äger sökintentionen. Bygg INGEN konkurrerande `/ordbok/sba`-sida — det skulle kannibalisera djupsidan. `/ordbok`-indexet listar termen och länkar direkt till `/omraden/sba`. Briefen behålls som referens/routing-post.
+
 # Innehållsbrief — SBA
 - **Route:** /ordbok/sba
 - **Cluster / template:** ordbok / glossary term
