@@ -1,7 +1,7 @@
 # Epic 28: Unified DataTable Core — Brownfield Consolidation
 
 **Status: Done (2026-07-08).** All 12 stories complete; per-story records with
-documented deviations live in `docs/stories/28.*.md`, the Tier-1/Tier-0
+documented deviations live in `docs/stories/completed/28.*.md`, the Tier-1/Tier-0
 conventions in `docs/architecture/table-conventions.md`, and the CI grep-gate
 in `scripts/check-table-conventions.sh`.
 

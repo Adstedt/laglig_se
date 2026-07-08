@@ -74,7 +74,7 @@
 
 ## Epic 7: HR Module — Employee Data Model & Kollektivavtal Intelligence
 
-**Status:** Not Started (0 completed, 8 stories) — re-scoped 2026-07-01 (supersedes the original 12-story MVP HR vision)
+**Status:** Done (formally closed 2026-07-08 — shipped via PR #92 on `feat/epic-7-hr`; 11 story records with PO implementation sign-off in `docs/stories/completed/7.*.md`)
 
 **Goal:** Fortnox-grounded, sync-ready employee register + kollektivavtal ingested into the existing RAG, so the AI answers employee-specific questions grounded in the full law & regulation corpus **and** the company's collective agreement.
 
@@ -426,7 +426,7 @@
 
 ## Epic 28: Unified DataTable Core
 
-**Status:** Done (2026-07-08 — all 12 stories complete on `feat/epic-28-table-refactoring`; deviations documented per-story in `docs/stories/28.*.md`: no legacy-behind-flag for laglistor (direct migration, unchanged interfaces, conformance suite), grouped wrappers kept on dnd 'external' instead of `GroupedDataTable`, activity-log + cycle-items-tab stay Tier-0 with rationale in `docs/architecture/table-conventions.md`)
+**Status:** Done (2026-07-08 — all 12 stories complete on `feat/epic-28-table-refactoring`; deviations documented per-story in `docs/stories/completed/28.*.md`: no legacy-behind-flag for laglistor (direct migration, unchanged interfaces, conformance suite), grouped wrappers kept on dnd 'external' instead of `GroupedDataTable`, activity-log stays Tier-0 (cycle-items-tab was subsequently migrated onto the core) with rationale in `docs/architecture/table-conventions.md`)
 
 **Goal:** Collapse ~6,400 lines of bespoke table code (9+ implementations; five heavyweight tables each independently "mirroring" `document-list-table.tsx`) into one shared headless `DataTable` core at `components/ui/data-table/` with two renderers over one column definition — semantic `<table>` for wide containers, virtualized card list for narrow — switched by **container width** (ResizeObserver + hysteresis), so mobile and desktop-with-AI-chat-maximized get the same coherent card experience on every record table.
 
@@ -434,7 +434,7 @@
 
 **Requirements covered:** Cross-cutting UX consistency + narrow-container/mobile support for all tabular surfaces; extends Epic 22's primitive-consolidation philosophy to the table layer; enables Epic 18 (Mobile UX) for every table surface.
 
-**Dependencies:** Epic 22 (Done — badge-tones, TableToolbar consumed as-is). Epic 7 (merged PR #92, checklist not formally closed — **Story 28.7 gated on formal closure**). Epic 26 (landing-v3 imports the live `document-table.tsx` — Story 28.4 freezes a presentational copy before migrating).
+**Dependencies:** Epic 22 (Done — badge-tones, TableToolbar consumed as-is). Epic 7 (Done — formally closed 2026-07-08). Epic 26 (landing-v3 imports the live `document-table.tsx` — Story 28.4 freezes a presentational copy before migrating).
 
 **Note:** Brownfield refactor. Governing rules: capability accretion (core gains a feature only with its first consumer), characterization specs before touching laglistor/tasks, legacy behind a flag until parity, core API freeze before laglistor stories. See `docs/prd/epic-28-unified-datatable-core.md`.
 
