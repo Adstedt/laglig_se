@@ -1,46 +1,30 @@
 'use client'
 
 /**
- * Story 20.3: Workspace Krav Table.
- * TanStack Table mirroring `document-list-table.tsx` conventions.
- * Sort state lives in the URL (via KravPageContent) — TanStack is run in
- * `manualSorting` mode and forwards column-header clicks back up via
- * `onSortingChange`.
+ * Story 20.3 → migrated in Story 28.2 (Epic 28) onto the unified DataTable
+ * core. This file is now column definitions + adapter mapping; all table
+ * mechanics (manualSorting, virtualization with measureElement, sticky
+ * header, cursor load-more button, row-click guard, and the narrow-container
+ * card renderer) live in components/ui/data-table.
  *
- * Row click: the whole row opens the law item via onOpenLawItem(row).
- * Cells in INTERACTIVE_COLUMNS (Status toggle, Ansvarig editor) stop
- * propagation so their own controls win over row navigation.
+ * Sort state lives in the URL (via KravPageContent) — the SortingAdapter
+ * runs in `manual` mode and forwards header clicks back up via onSortChange.
  *
- * Interactive cells:
- *   - Status (col 1)     — checkbox toggle → onToggleFulfilled(row)
- *   - Regelverk (col 3)  — focusable button → onOpenLawItem(row) (keyboard
- *                          affordance; the row itself is also clickable)
- *   - Ansvarig (col 5)   — <AssigneeEditor /> with inherited variant
- *
- * Non-interactive cells: Kravpunkt text (col 2), Laglista (col 4),
- * Bevis icon (col 6), Uppdaterad (col 7).
- *
- * Virtualization (AC 28, PERF-001 resolution): auto-enables above 100 rows,
- * mirroring the threshold + `useVirtualizer` config in
- * `document-list-table.tsx:838`. Below threshold: normal render. Above:
- * only the visible window is in the DOM (with OVERSCAN buffer). Fixes the
- * DOM-reflow cost that would otherwise hit users with large workspaces
- * after repeated "Ladda fler" clicks.
+ * Interactive cells (FulfilledToggle, AssigneeEditor, Regelverk button) are
+ * ordinary buttons/popovers — the core's interactive-element guard keeps
+ * their clicks from bubbling into row navigation.
  */
 
-import { useMemo, useRef } from 'react'
-import {
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
-  type ColumnDef,
-  type SortingState,
-  type Updater,
-} from '@tanstack/react-table'
-import { useVirtualizer } from '@tanstack/react-virtual'
+import { useMemo } from 'react'
+import type { ColumnDef, SortingState, Updater } from '@tanstack/react-table'
 import { formatDistanceToNow, format } from 'date-fns'
 import { sv } from 'date-fns/locale'
 import { ShieldAlert, ShieldCheck } from 'lucide-react'
+import {
+  DataTable,
+  DataTableSortMenu,
+  useLocalStorageColumnState,
+} from '@/components/ui/data-table'
 import { FulfilledToggle } from '@/components/ui/fulfilled-toggle'
 import {
   Tooltip,
@@ -48,7 +32,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Button } from '@/components/ui/button'
 import { SortableHeader } from '@/components/ui/sortable-header'
 import { AssigneeEditor } from '@/components/features/document-list/table-cell-editors/assignee-editor'
 import { cn } from '@/lib/utils'
@@ -58,16 +41,6 @@ import type {
   WorkspaceRequirementsSortDirection,
 } from '@/app/actions/workspace-requirements'
 import type { WorkspaceMemberOption } from '@/app/actions/document-list'
-
-// Virtualization constants — mirror document-list-table.tsx:132-138.
-const VIRTUALIZATION_THRESHOLD = 100
-const ESTIMATED_ROW_HEIGHT = 52
-const OVERSCAN_COUNT = 5
-const VIRTUAL_TABLE_MAX_HEIGHT = '70vh'
-
-// Columns with their own interactive controls (toggle, assignee dropdown).
-// Clicks inside these must NOT bubble up to the row-level navigation.
-const INTERACTIVE_COLUMNS = new Set(['is_fulfilled', 'responsible'])
 
 export interface KravTableSort {
   field: WorkspaceRequirementsSortField
@@ -104,7 +77,13 @@ export function KravTable({
   onLoadMore,
   isLoadingMore,
 }: KravTableProps) {
-  const columns = useMemo<ColumnDef<WorkspaceRequirementRow>[]>(
+  // Story 28.2 uplift: per-user persisted column widths (resize grips).
+  // Legacy krav had no resizing; the core gives it for free.
+  const columnState = useLocalStorageColumnState({
+    key: 'laglig:krav:columns:v1',
+  })
+
+  const columns = useMemo<ColumnDef<WorkspaceRequirementRow, unknown>[]>(
     () => [
       {
         id: 'is_fulfilled',
@@ -122,8 +101,50 @@ export function KravTable({
             }
           />
         ),
-        size: 48,
+        // Wide enough for the header label + sort arrow under table-fixed
+        // (the toggle itself only needs ~48px).
+        size: 112,
+        minSize: 112,
+        maxSize: 112,
         enableSorting: true,
+        enableResizing: false,
+        meta: {
+          dt: {
+            label: 'Uppfylld',
+            pinned: 'left',
+            padding: 'tight',
+            // The toggle is krav's primary action — keep it live on cards,
+            // WITH a status label (a bare circle reads as nothing).
+            card: {
+              role: 'badge',
+              priority: 0,
+              interactive: true,
+              renderCard: (row) => (
+                <span className="inline-flex items-center gap-2">
+                  <FulfilledToggle
+                    checked={row.original.isFulfilled}
+                    onCheckedChange={() => onToggleFulfilled(row.original)}
+                    aria-label={
+                      row.original.isFulfilled
+                        ? 'Markerad som uppfylld — klicka för att återställa'
+                        : 'Markera som uppfylld'
+                    }
+                  />
+                  <span
+                    className={cn(
+                      'text-xs font-medium',
+                      row.original.isFulfilled
+                        ? 'text-green-700 dark:text-green-400'
+                        : 'text-muted-foreground'
+                    )}
+                  >
+                    {row.original.isFulfilled ? 'Uppfylld' : 'Ej uppfylld'}
+                  </span>
+                </span>
+              ),
+            },
+          },
+        },
       },
       {
         id: 'text',
@@ -151,7 +172,15 @@ export function KravTable({
             </Tooltip>
           </TooltipProvider>
         ),
+        // Fill column: 280 is the floor; leftover container width lands
+        // here, so the kravpunkt text breathes at every width tier.
+        size: 280,
+        minSize: 240,
+        maxSize: 800,
         enableSorting: false,
+        meta: {
+          dt: { label: 'Kravpunkt', fill: true, card: { role: 'title' } },
+        },
       },
       {
         id: 'law_name',
@@ -173,7 +202,16 @@ export function KravTable({
             {row.original.lawName}
           </button>
         ),
+        size: 200,
+        minSize: 120,
+        maxSize: 420,
         enableSorting: true,
+        meta: {
+          dt: {
+            label: 'Regelverk',
+            card: { role: 'meta', priority: 1, interactive: true },
+          },
+        },
       },
       {
         id: 'laglista_name',
@@ -185,7 +223,16 @@ export function KravTable({
             {row.original.laglistaName}
           </span>
         ),
+        size: 170,
+        minSize: 110,
+        maxSize: 320,
         enableSorting: true,
+        meta: {
+          dt: {
+            label: 'Laglista',
+            card: { role: 'meta', priority: 2 },
+          },
+        },
       },
       {
         id: 'responsible',
@@ -208,8 +255,48 @@ export function KravTable({
             onResetToInherited={() => onResetAssignee(row.original)}
           />
         ),
-        size: 56,
+        size: 72,
+        minSize: 72,
+        maxSize: 72,
         enableSorting: false,
+        enableResizing: false,
+        meta: {
+          dt: {
+            label: 'Ansvarig',
+            padding: 'tight',
+            card: {
+              role: 'meta',
+              priority: 3,
+              interactive: true,
+              renderCard: (row) => {
+                const assignee = row.original.effectiveAssignee
+                const member = members.find((m) => m.id === assignee.userId)
+                return (
+                  <span className="inline-flex items-center gap-2">
+                    <AssigneeEditor
+                      value={assignee.userId}
+                      members={members}
+                      onChange={async (newId) =>
+                        onAssigneeChange(row.original, newId)
+                      }
+                      variant={assignee.isInherited ? 'inherited' : 'direct'}
+                      showResetOption={!assignee.isInherited}
+                      onResetToInherited={() => onResetAssignee(row.original)}
+                    />
+                    <span
+                      className={cn(
+                        'truncate text-sm',
+                        !member && 'text-muted-foreground'
+                      )}
+                    >
+                      {member?.name ?? member?.email ?? 'Ej tilldelad'}
+                    </span>
+                  </span>
+                )
+              },
+            },
+          },
+        },
       },
       {
         id: 'bevis',
@@ -256,7 +343,42 @@ export function KravTable({
             </span>
           )
         },
+        size: 90,
+        minSize: 70,
+        maxSize: 140,
         enableSorting: false,
+        meta: {
+          dt: {
+            label: 'Bevis',
+            card: {
+              role: 'meta',
+              priority: 4,
+              renderCard: (row) => {
+                const { bevisRequired, evidenceCount } = row.original
+                if (evidenceCount > 0) {
+                  return (
+                    <span className="inline-flex items-center gap-1 text-sm text-green-700 dark:text-green-400">
+                      <ShieldCheck className="h-4 w-4" />
+                      <span className="tabular-nums">
+                        {evidenceCount} bifogade
+                      </span>
+                    </span>
+                  )
+                }
+                if (bevisRequired) {
+                  return (
+                    <span className="inline-flex items-center gap-1 text-sm text-amber-700 dark:text-amber-400">
+                      <ShieldAlert className="h-4 w-4" />
+                      Saknar bevis
+                    </span>
+                  )
+                }
+                // Not applicable → no row on the card at all.
+                return null
+              },
+            },
+          },
+        },
       },
       {
         id: 'updated_at',
@@ -283,7 +405,16 @@ export function KravTable({
             </TooltipProvider>
           )
         },
+        size: 150,
+        minSize: 110,
+        maxSize: 240,
         enableSorting: true,
+        meta: {
+          dt: {
+            label: 'Uppdaterad',
+            card: { role: 'footer' },
+          },
+        },
       },
     ],
     [
@@ -295,10 +426,11 @@ export function KravTable({
     ]
   )
 
-  // Sort state: TanStack internal → mapped from/to URL state.
-  const sortingState: SortingState = [
-    { id: sort.field, desc: sort.direction === 'desc' },
-  ]
+  // Sort state: URL (via parent) ↔ TanStack SortingState, manual mode.
+  const sortingState: SortingState = useMemo(
+    () => [{ id: sort.field, desc: sort.direction === 'desc' }],
+    [sort.field, sort.direction]
+  )
 
   const handleSortingChange = (updater: Updater<SortingState>) => {
     const next = typeof updater === 'function' ? updater(sortingState) : updater
@@ -308,181 +440,90 @@ export function KravTable({
       onSortChange({ field: 'updated_at', direction: 'desc' })
       return
     }
-    // Only propagate if the clicked column is one we allow to sort on
-    // (non-sortable columns set enableSorting: false so TanStack won't
-    // include them in the update — defensive cast anyway).
     onSortChange({
       field: first.id as WorkspaceRequirementsSortField,
       direction: first.desc ? 'desc' : 'asc',
     })
   }
 
-  const table = useReactTable({
-    data: rows,
-    columns,
-    state: { sorting: sortingState },
-    manualSorting: true,
-    onSortingChange: handleSortingChange,
-    getCoreRowModel: getCoreRowModel(),
-  })
-
-  // Virtualization (AC 28) — only enabled above threshold.
-  const modelRows = table.getRowModel().rows
-  const shouldVirtualize = modelRows.length > VIRTUALIZATION_THRESHOLD
-  const tableContainerRef = useRef<HTMLDivElement>(null)
-  const rowVirtualizer = useVirtualizer({
-    count: modelRows.length,
-    getScrollElement: () => tableContainerRef.current,
-    estimateSize: () => ESTIMATED_ROW_HEIGHT,
-    overscan: OVERSCAN_COUNT,
-    enabled: shouldVirtualize,
-  })
-  const virtualItems = rowVirtualizer.getVirtualItems()
-
   return (
-    <div className="space-y-4">
-      <div
-        ref={tableContainerRef}
-        className={cn(
-          'w-full rounded-md border overflow-x-auto',
-          shouldVirtualize && 'overflow-y-auto'
-        )}
-        style={
-          shouldVirtualize ? { maxHeight: VIRTUAL_TABLE_MAX_HEIGHT } : undefined
+    <DataTable<WorkspaceRequirementRow>
+      data={rows}
+      columns={columns}
+      getRowId={(row) => row.id}
+      sorting={{
+        sorting: sortingState,
+        onSortingChange: handleSortingChange,
+        manual: true,
+      }}
+      columnState={columnState}
+      loadMore={{
+        kind: 'button',
+        hasMore: nextCursor !== null,
+        isLoading: isLoadingMore,
+        onLoadMore,
+        label: 'Ladda fler',
+      }}
+      rowInteraction={{
+        onRowClick: (row) => onOpenLawItem(row),
+      }}
+      // Two tiers (user decision 2026-07-08): full table with horizontal
+      // scroll down to 800px container, cards below (chat maximized /
+      // mobile). No column shedding here — hidden columns read as lost
+      // data on this surface; scroll keeps everything reachable.
+      view={{ cardBelow: 800, showCardSortMenu: false }}
+      virtualization={{ maxHeight: '70vh' }}
+    />
+  )
+}
+
+// ============================================================================
+// Toolbar sort menu (card regime)
+// ============================================================================
+
+const KRAV_SORT_OPTIONS: Array<{
+  id: WorkspaceRequirementsSortField
+  label: string
+}> = [
+  { id: 'is_fulfilled', label: 'Uppfylld' },
+  { id: 'law_name', label: 'Regelverk' },
+  { id: 'laglista_name', label: 'Laglista' },
+  { id: 'updated_at', label: 'Uppdaterad' },
+]
+
+/**
+ * Sort dropdown for the page toolbar — replaces the DataTable's built-in
+ * card sort row (suppressed via showCardSortMenu: false) so filtering,
+ * search and sort share one control block instead of stacking three rows.
+ * The page shows it only in the card regime via a container-query class.
+ */
+export function KravSortMenu({
+  sort,
+  onSortChange,
+  className,
+}: {
+  sort: KravTableSort
+  onSortChange: (_next: KravTableSort) => void
+  className?: string
+}) {
+  return (
+    <DataTableSortMenu
+      options={KRAV_SORT_OPTIONS}
+      sorting={[{ id: sort.field, desc: sort.direction === 'desc' }]}
+      onSortingChange={(updater) => {
+        const current = [{ id: sort.field, desc: sort.direction === 'desc' }]
+        const next = typeof updater === 'function' ? updater(current) : updater
+        const first = next[0]
+        if (!first) {
+          onSortChange({ field: 'updated_at', direction: 'desc' })
+          return
         }
-        role="region"
-        aria-label="Kravpunkter i arbetsytan"
-      >
-        <table className="w-full text-sm">
-          <thead
-            className={cn(
-              'bg-muted/40',
-              // Sticky header when virtualized so column labels stay visible
-              // while the body scrolls internally.
-              shouldVirtualize && 'sticky top-0 z-10'
-            )}
-          >
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className={cn(
-                      'px-3 py-2 text-left text-xs font-medium text-muted-foreground',
-                      header.column.id === 'is_fulfilled' && 'pl-6'
-                    )}
-                    style={{ width: header.getSize() }}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody
-            style={
-              shouldVirtualize
-                ? {
-                    display: 'block',
-                    height: `${rowVirtualizer.getTotalSize()}px`,
-                    position: 'relative',
-                  }
-                : undefined
-            }
-          >
-            {shouldVirtualize
-              ? virtualItems.map((virtualItem) => {
-                  const row = modelRows[virtualItem.index]
-                  if (!row) return null
-                  return (
-                    <tr
-                      key={row.id}
-                      data-index={virtualItem.index}
-                      ref={(node) => rowVirtualizer.measureElement(node)}
-                      onClick={() => onOpenLawItem(row.original)}
-                      className="border-t hover:bg-muted/30 transition-colors cursor-pointer"
-                      style={{
-                        display: 'table',
-                        tableLayout: 'fixed',
-                        width: '100%',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        transform: `translateY(${virtualItem.start}px)`,
-                      }}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <td
-                          key={cell.id}
-                          onClick={
-                            INTERACTIVE_COLUMNS.has(cell.column.id)
-                              ? (e) => e.stopPropagation()
-                              : undefined
-                          }
-                          className={cn(
-                            'px-3 py-2 align-middle',
-                            cell.column.id === 'is_fulfilled' && 'pl-6'
-                          )}
-                          style={{ width: cell.column.getSize() }}
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  )
-                })
-              : modelRows.map((row) => (
-                  <tr
-                    key={row.id}
-                    onClick={() => onOpenLawItem(row.original)}
-                    className="border-t hover:bg-muted/30 transition-colors cursor-pointer"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <td
-                        key={cell.id}
-                        onClick={
-                          INTERACTIVE_COLUMNS.has(cell.column.id)
-                            ? (e) => e.stopPropagation()
-                            : undefined
-                        }
-                        className={cn(
-                          'px-3 py-2 align-middle',
-                          cell.column.id === 'is_fulfilled' && 'pl-6'
-                        )}
-                        style={{ width: cell.column.getSize() }}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-          </tbody>
-        </table>
-      </div>
-      {nextCursor !== null && (
-        <div className="flex justify-center">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onLoadMore}
-            disabled={isLoadingMore}
-          >
-            {isLoadingMore ? 'Laddar…' : 'Ladda fler'}
-          </Button>
-        </div>
-      )}
-    </div>
+        onSortChange({
+          field: first.id as WorkspaceRequirementsSortField,
+          direction: first.desc ? 'desc' : 'asc',
+        })
+      }}
+      {...(className ? { className } : {})}
+    />
   )
 }

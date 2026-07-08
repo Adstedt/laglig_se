@@ -82,6 +82,7 @@ const FilterChip = React.forwardRef<HTMLButtonElement, FilterChipProps>(
         <span>{children}</span>
         {count !== undefined ? (
           <span
+            data-chip-count=""
             className={cn(
               'inline-flex items-center justify-center rounded-full text-[10px] font-medium px-1.5 min-w-[1.25rem] h-5 tabular-nums',
               pressed
