@@ -1,3 +1,5 @@
+> **⚠️ ROUTE-ONLY (anti-kannibalisering, 2026-07-05).** Denna term har redan en djupsida på `/omraden/sam` som äger sökintentionen. Bygg INGEN konkurrerande `/ordbok/sam`-sida — det skulle kannibalisera djupsidan. `/ordbok`-indexet listar termen och länkar direkt till `/omraden/sam`. Briefen behålls som referens/routing-post.
+
 # Innehållsbrief — SAM
 - **Route:** /ordbok/sam
 - **Cluster / template:** ordbok / glossary term

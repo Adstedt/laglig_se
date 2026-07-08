@@ -1,3 +1,5 @@
+> **⚠️ ROUTE-ONLY (anti-kannibalisering, 2026-07-05).** Denna term har redan en djupsida på `/omraden/egenkontroll` som äger sökintentionen. Bygg INGEN konkurrerande `/ordbok/egenkontroll`-sida — det skulle kannibalisera djupsidan. `/ordbok`-indexet listar termen och länkar direkt till `/omraden/egenkontroll`. Briefen behålls som referens/routing-post.
+
 # Innehållsbrief — Egenkontroll (begrepp)
 - **Route:** /ordbok/egenkontroll
 - **Cluster / template:** ordbok / glossary term

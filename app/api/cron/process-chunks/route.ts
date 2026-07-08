@@ -4,6 +4,8 @@
  * Finds LegalDocuments (SFS_LAW, AGENCY_REGULATION) that need chunking:
  *   - Documents with no ContentChunk records
  *   - Documents where updated_at > latest chunk created_at
+ *   - Documents with chunks whose embedding IS NULL (self-heal: a Haiku
+ *     outage or timeout mid-doc must not leave chunks invisible forever)
  *
  * Calls syncDocumentChunks() for each, which handles:
  *   - Tier-based chunking (json → paragraf, markdown → paragraph-merge)
@@ -16,7 +18,10 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { startJobRun, completeJobRun, failJobRun } from '@/lib/admin/job-logger'
-import { syncDocumentChunks } from '@/lib/chunks/sync-document-chunks'
+import {
+  syncDocumentChunks,
+  embedMissingChunks,
+} from '@/lib/chunks/sync-document-chunks'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 minutes max for cron
@@ -76,17 +81,21 @@ export async function GET(request: Request) {
     // Find documents needing chunking:
     // 1. Documents with no chunks at all
     // 2. Documents updated since their last chunk
+    // 3. Documents whose chunks exist but lack embeddings (interrupted sync)
     const docsNeedingChunks = await prisma.$queryRaw<
       Array<{ id: string; document_number: string; reason: string }>
     >`
       SELECT ld.id, ld.document_number,
         CASE
-          WHEN max_chunk_created IS NULL THEN 'no_chunks'
-          ELSE 'stale_chunks'
+          WHEN cc.max_chunk_created IS NULL THEN 'no_chunks'
+          WHEN ld.updated_at > cc.max_chunk_created THEN 'stale_chunks'
+          ELSE 'missing_embeddings'
         END as reason
       FROM legal_documents ld
       LEFT JOIN (
-        SELECT source_id, MAX(created_at) as max_chunk_created
+        SELECT source_id,
+               MAX(created_at) as max_chunk_created,
+               COUNT(*) FILTER (WHERE embedding IS NULL) as null_embeddings
         FROM content_chunks
         WHERE source_type = 'LEGAL_DOCUMENT'
         GROUP BY source_id
@@ -96,6 +105,7 @@ export async function GET(request: Request) {
         AND (
           cc.max_chunk_created IS NULL
           OR ld.updated_at > cc.max_chunk_created
+          OR cc.null_embeddings > 0
         )
       ORDER BY ld.updated_at DESC
       LIMIT ${BATCH_LIMIT}
@@ -127,19 +137,34 @@ export async function GET(request: Request) {
         console.log(
           `[PROCESS-CHUNKS] Processing: ${doc.document_number} (${doc.reason})`
         )
-        const result = await syncDocumentChunks(doc.id)
 
-        stats.docsProcessed++
-        stats.chunksCreated += result.chunksCreated
-        stats.chunksDeleted += result.chunksDeleted
-        stats.chunksEmbedded += result.chunksEmbedded
+        if (doc.reason === 'missing_embeddings') {
+          // Chunks exist but a prior sync left some without vectors (Haiku
+          // outage, timeout mid-doc). Fill only the missing embeddings — a
+          // full resync would re-chunk and re-run prefix generation for
+          // nothing.
+          const embedded = await embedMissingChunks(doc.id)
+          stats.docsProcessed++
+          stats.chunksEmbedded += embedded
+          console.log(
+            `[PROCESS-CHUNKS]   ✓ ${doc.document_number}: ` +
+              `${embedded} missing embeddings filled`
+          )
+        } else {
+          const result = await syncDocumentChunks(doc.id)
 
-        console.log(
-          `[PROCESS-CHUNKS]   ✓ ${doc.document_number}: ` +
-            `${result.chunksCreated} chunks created, ` +
-            `${result.chunksEmbedded} embedded ` +
-            `(${result.duration}ms)`
-        )
+          stats.docsProcessed++
+          stats.chunksCreated += result.chunksCreated
+          stats.chunksDeleted += result.chunksDeleted
+          stats.chunksEmbedded += result.chunksEmbedded
+
+          console.log(
+            `[PROCESS-CHUNKS]   ✓ ${doc.document_number}: ` +
+              `${result.chunksCreated} chunks created, ` +
+              `${result.chunksEmbedded} embedded ` +
+              `(${result.duration}ms)`
+          )
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
         stats.docsFailed++

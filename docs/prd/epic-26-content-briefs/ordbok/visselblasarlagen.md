@@ -1,3 +1,5 @@
+> **⚠️ ROUTE-ONLY (anti-kannibalisering, 2026-07-05).** Denna term har redan en djupsida på `/omraden/visselblasarlagen` som äger sökintentionen. Bygg INGEN konkurrerande `/ordbok/visselblasarlagen`-sida — det skulle kannibalisera djupsidan. `/ordbok`-indexet listar termen och länkar direkt till `/omraden/visselblasarlagen`. Briefen behålls som referens/routing-post.
+
 # Innehållsbrief — Visselblåsarlagen
 
 - **Route:** /ordbok/visselblasarlagen

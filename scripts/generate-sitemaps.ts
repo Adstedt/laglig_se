@@ -96,6 +96,21 @@ function getMarketingUrls(): UrlEntry[] {
       })
     }
   }
+  // Ordbok / glossary (Story 26.11) — a separate light surface, not a
+  // MARKETING_KIND, so it gets its own walk. One file per term.
+  const ordbokDir = join(contentRoot, 'ordbok')
+  if (existsSync(ordbokDir)) {
+    for (const file of readdirSync(ordbokDir)) {
+      if (!file.endsWith('.mdx') || file.startsWith('_')) continue
+      const slug = file.replace(/\.mdx$/, '')
+      urls.push({
+        loc: `${baseUrl}/ordbok/${slug}`,
+        lastmod: statSync(join(ordbokDir, file)).mtime,
+        changefreq: 'monthly',
+        priority: 0.6,
+      })
+    }
+  }
   return urls
 }
 
@@ -191,6 +206,12 @@ async function buildChildSitemap(id: number): Promise<{
             lastmod: now,
             changefreq: 'weekly',
             priority: 0.8,
+          },
+          {
+            loc: `${baseUrl}/ordbok`,
+            lastmod: now,
+            changefreq: 'weekly',
+            priority: 0.7,
           },
           ...LEGAL_DOCS.map((doc) => ({
             loc: `${baseUrl}/${doc.slug}`,
