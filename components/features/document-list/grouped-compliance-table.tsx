@@ -306,6 +306,11 @@ export function GroupedComplianceTable({
     setSelectedItemIds(new Set())
   }, [])
 
+  // Story 28.9: sections receive the ONE Set + setter.
+  const handleSelectionChange = useCallback((next: Set<string>) => {
+    setSelectedItemIds(next)
+  }, [])
+
   // Get the active item for drag overlay
   const activeItem = activeId
     ? localItems.find((item) => item.id === activeId)
@@ -395,6 +400,8 @@ export function GroupedComplianceTable({
 
               return (
                 <ComplianceGroupSection
+                  selectedItemIds={selectedItemIds}
+                  onSelectionChange={handleSelectionChange}
                   key={group.id}
                   groupId={group.id}
                   name={group.name}
@@ -428,6 +435,8 @@ export function GroupedComplianceTable({
             {/* Ungrouped items section */}
             {(ungroupedItems.length > 0 || groups.length > 0) && (
               <ComplianceGroupSection
+                selectedItemIds={selectedItemIds}
+                onSelectionChange={handleSelectionChange}
                 groupId={UNGROUPED_ID}
                 name="Ogrupperade"
                 itemCount={ungroupedItems.length}

@@ -52,6 +52,9 @@ interface ComplianceGroupSectionProps {
     _items: Array<{ id: string; position: number }>
   ) => Promise<boolean>
   onRowClick?: ((_itemId: string) => void) | undefined
+  /** Story 28.9: grouped-mode shared selection (one Set across sections). */
+  selectedItemIds?: ReadonlySet<string> | undefined
+  onSelectionChange?: ((_next: Set<string>) => void) | undefined
   onAddContent?:
     | ((
         _listItemId: string,
@@ -81,6 +84,8 @@ export const ComplianceGroupSection = memo(function ComplianceGroupSection({
   onRemoveItem,
   onReorderItems,
   onRowClick,
+  selectedItemIds,
+  onSelectionChange,
   onAddContent,
   workspaceMembers,
   groups,
@@ -213,6 +218,8 @@ export const ComplianceGroupSection = memo(function ComplianceGroupSection({
               </p>
             ) : (
               <ComplianceDetailTable
+                selectedItemIds={selectedItemIds}
+                onSelectionChange={onSelectionChange}
                 items={items}
                 total={itemCount}
                 hasMore={false}

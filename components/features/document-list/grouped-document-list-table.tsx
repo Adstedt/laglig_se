@@ -298,23 +298,11 @@ export function GroupedDocumentListTable({
     [localItems, onMoveToGroup, onReorderItems]
   )
 
-  // Handle selection changes from individual sections
-  const handleSelectionChange = useCallback(
-    (_groupId: string, itemIds: string[], isSelected: boolean) => {
-      setSelectedItemIds((prev) => {
-        const next = new Set(prev)
-        itemIds.forEach((id) => {
-          if (isSelected) {
-            next.add(id)
-          } else {
-            next.delete(id)
-          }
-        })
-        return next
-      })
-    },
-    []
-  )
+  // Story 28.9: sections receive the ONE Set + setter — cross-section
+  // select-all and the shared bulk bar are correct by construction.
+  const handleSelectionChange = useCallback((next: Set<string>) => {
+    setSelectedItemIds(next)
+  }, [])
 
   // Handle bulk update for selected items (returns void for BulkActionBar compatibility)
   const handleBulkUpdate = useCallback(
@@ -447,9 +435,7 @@ export function GroupedDocumentListTable({
                   onRemoveItem={onRemoveItem}
                   onReorderItems={onReorderItems}
                   onRowClick={onRowClick}
-                  onSelectionChange={(itemIds, isSelected) =>
-                    handleSelectionChange(group.id, itemIds, isSelected)
-                  }
+                  onSelectionChange={handleSelectionChange}
                   selectedItemIds={selectedItemIds}
                   workspaceMembers={workspaceMembers}
                   groups={groups}
@@ -485,9 +471,7 @@ export function GroupedDocumentListTable({
                 onRemoveItem={onRemoveItem}
                 onReorderItems={onReorderItems}
                 onRowClick={onRowClick}
-                onSelectionChange={(itemIds, isSelected) =>
-                  handleSelectionChange(UNGROUPED_ID, itemIds, isSelected)
-                }
+                onSelectionChange={handleSelectionChange}
                 selectedItemIds={selectedItemIds}
                 workspaceMembers={workspaceMembers}
                 groups={groups}

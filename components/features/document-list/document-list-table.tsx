@@ -159,6 +159,13 @@ interface DocumentListTableProps {
   onRowClick?: ((_listItemId: string) => void) | undefined
   hideGroupColumn?: boolean | undefined
   disableDndContext?: boolean | undefined
+  /**
+   * Story 28.9: controlled selection for grouped mode — the wrapper owns
+   * ONE Set across all sections and renders the single bulk bar. When
+   * provided, this table suppresses its own bulk bar.
+   */
+  selectedItemIds?: ReadonlySet<string> | undefined
+  onSelectionChange?: ((_next: Set<string>) => void) | undefined
 }
 
 // ============================================================================
@@ -204,9 +211,19 @@ export function DocumentListTable({
   onRowClick,
   hideGroupColumn = false,
   disableDndContext = false,
+  selectedItemIds: controlledSelected,
+  onSelectionChange,
 }: DocumentListTableProps) {
   const sorting = useLocalSorting([])
-  const [selected, setSelected] = useState<ReadonlySet<string>>(new Set())
+  const [localSelected, setLocalSelected] = useState<ReadonlySet<string>>(
+    new Set()
+  )
+  const selectionControlled =
+    controlledSelected !== undefined && onSelectionChange !== undefined
+  const selected = selectionControlled ? controlledSelected! : localSelected
+  const setSelected = selectionControlled
+    ? (onSelectionChange as (_next: Set<string>) => void)
+    : setLocalSelected
   const [removeConfirmItem, setRemoveConfirmItem] =
     useState<DocumentListItem | null>(null)
 
@@ -773,7 +790,7 @@ export function DocumentListTable({
 
   return (
     <div className="flex flex-col gap-4">
-      {selectedItemIds.length > 0 && (
+      {!selectionControlled && selectedItemIds.length > 0 && (
         <BulkActionBar
           selectedCount={selectedItemIds.length}
           onClearSelection={() => setSelected(new Set())}

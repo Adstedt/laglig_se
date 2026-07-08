@@ -83,6 +83,20 @@ test('selection shows the bulk bar; clearing hides it', async ({ page }) => {
     .getByRole('checkbox', { name: 'Markera rad' })
     .check()
   await expect(page.getByText(/1 vald/)).toBeVisible()
+
+  // Story 28.9: CROSS-SECTION selection — a row from a DIFFERENT table
+  // (grouped mode renders one table per section) must add to the SAME
+  // bulk-bar count. This was the legacy dead-plumbing bug.
+  const tables = page.locator('main table')
+  if ((await tables.count()) > 1) {
+    await tables
+      .nth(1)
+      .locator('tbody tr')
+      .first()
+      .getByRole('checkbox', { name: 'Markera rad' })
+      .check()
+    await expect(page.getByText(/2 valda/)).toBeVisible()
+  }
   const clear = page.getByRole('button', { name: 'Rensa markering' }).first()
   if (await clear.isVisible().catch(() => false)) {
     await clear.click()

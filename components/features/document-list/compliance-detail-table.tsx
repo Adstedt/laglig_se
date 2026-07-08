@@ -139,6 +139,13 @@ interface ComplianceDetailTableProps {
   /** For nested usage in grouped accordion tables */
   hideGroupColumn?: boolean | undefined
   disableDndContext?: boolean | undefined
+  /**
+   * Story 28.9: controlled selection for grouped mode — the wrapper owns
+   * ONE Set across all sections and renders the single bulk bar. When
+   * provided, this table suppresses its own bulk bar.
+   */
+  selectedItemIds?: ReadonlySet<string> | undefined
+  onSelectionChange?: ((_next: Set<string>) => void) | undefined
   /** Story 17.17: When true, inline kravpunkter editor renders read-only */
   complianceReadOnly?: boolean | undefined
 }
@@ -545,10 +552,20 @@ export function ComplianceDetailTable({
   onAddContent,
   hideGroupColumn: _hideGroupColumn = false,
   disableDndContext = false,
+  selectedItemIds: controlledSelected,
+  onSelectionChange,
   complianceReadOnly = false,
 }: ComplianceDetailTableProps) {
   const sorting = useLocalSorting([])
-  const [selected, setSelected] = useState<ReadonlySet<string>>(new Set())
+  const [localSelected, setLocalSelected] = useState<ReadonlySet<string>>(
+    new Set()
+  )
+  const selectionControlled =
+    controlledSelected !== undefined && onSelectionChange !== undefined
+  const selected = selectionControlled ? controlledSelected! : localSelected
+  const setSelected = selectionControlled
+    ? (onSelectionChange as (_next: Set<string>) => void)
+    : setLocalSelected
   const [expanded, setExpanded] = useState<ExpandedState>({})
 
   const [internalColumnSizing, setInternalColumnSizing] =
@@ -917,7 +934,7 @@ export function ComplianceDetailTable({
 
   return (
     <div className="flex flex-col gap-4">
-      {selectedItemIds.length > 0 && (
+      {!selectionControlled && selectedItemIds.length > 0 && (
         <BulkActionBar
           selectedCount={selectedItemIds.length}
           onClearSelection={() => setSelected(new Set())}
