@@ -204,8 +204,12 @@ export function DocumentTable({
         header: ({ column }) => (
           <SortableHeader column={column} label="Titel" />
         ),
+        // break-word: unbroken filenames (GDPR_policy_…) must wrap inside
+        // the column instead of overflowing into Dokumentnr.
         cell: ({ row }) => (
-          <span className="font-medium">{row.original.title}</span>
+          <span className="font-medium [word-break:break-word]">
+            {row.original.title}
+          </span>
         ),
         // Fill column: 280 is the floor, surplus container width lands here.
         size: 280,

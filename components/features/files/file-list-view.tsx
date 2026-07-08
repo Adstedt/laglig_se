@@ -462,7 +462,10 @@ export function FileListView({
           }
         },
       }}
-      view={{ cardBelow: 800 }}
+      // 640 (not the 800 standard): this table nests beside the folder tree,
+      // so its container is ~690px even on wide screens with chat open — and
+      // at 4 narrow columns the table fits fine down to 640.
+      view={{ cardBelow: 640 }}
     />
   )
 }

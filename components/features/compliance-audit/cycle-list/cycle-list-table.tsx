@@ -227,7 +227,8 @@ export function CycleListTable({ cycles, canCreate }: CycleListTableProps) {
         meta: {
           dt: {
             label: 'Ansvarig revisor',
-            card: { role: 'meta', priority: 4 },
+            // Full label overflows the card's label gutter — shorten there.
+            card: { role: 'meta', priority: 4, cardLabel: 'Ansvarig' },
           },
         },
       },
