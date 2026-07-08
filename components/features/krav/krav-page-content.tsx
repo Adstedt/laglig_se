@@ -40,7 +40,8 @@ import {
 import type { WorkspaceMemberOption } from '@/app/actions/document-list'
 import { KravFilterChips } from './krav-filter-chips'
 import { KravFacetFilters, type KravLawListOption } from './krav-facet-filters'
-import { KravTable, type KravTableSort } from './krav-table'
+import { KravTable, KravSortMenu, type KravTableSort } from './krav-table'
+import { useContainerWidth } from '@/components/ui/data-table'
 import {
   useWorkspaceRequirements,
   useWorkspaceRequirementCounts,
@@ -139,6 +140,15 @@ export function KravPageContent({
 }: KravPageContentProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+
+  // Toolbar container width drives the search placeholder: the descriptive
+  // text clips mid-word when the field shrinks under the chat-sidebar
+  // squeeze, so it swaps to a compact "Sök…" below the same 56rem threshold
+  // as the chip count badges. (CSS can't swap an attribute.)
+  const { ref: toolbarRef, width: toolbarWidth } =
+    useContainerWidth<HTMLDivElement>()
+  const searchPlaceholder =
+    toolbarWidth !== null && toolbarWidth < 896 ? 'Sök…' : 'Sök kravpunkter...'
 
   // Derive URL-driven state. useSearchParams keeps us in sync when the user
   // navigates via back/forward; initial* props seed SSR hydration so the
@@ -488,35 +498,52 @@ export function KravPageContent({
         subtitle="Alla kravpunkter i din arbetsyta — filtrera efter luckor, mina krav eller krav som saknar bevis."
       />
 
-      {/* Preset chips + facet filters + search (single row, wraps on narrow) */}
-      <div className="flex flex-wrap items-center gap-3">
-        <KravFilterChips
-          active={urlFilter}
-          counts={counts}
-          hasSearch={hasSearch}
-          onChange={handleFilterChange}
-          onClear={handleClear}
-        />
+      {/* Preset chips + facet filters + search. Container-aware (Story 28.2):
+          chip count-badges hide below 56rem container width so the row stays
+          a single line when the AI-chat sidebar squeezes the content area.
+          On mobile (<sm) counts stay — wrapping is expected there. */}
+      <div ref={toolbarRef} className="@container">
+        <div className="flex flex-wrap items-center gap-2 @[56rem]:gap-3 [&_[data-chip-count]]:hidden @[56rem]:[&_[data-chip-count]]:inline-flex max-sm:[&_[data-chip-count]]:inline-flex">
+          <KravFilterChips
+            active={urlFilter}
+            counts={counts}
+            hasSearch={hasSearch}
+            onChange={handleFilterChange}
+            onClear={handleClear}
+          />
 
-        {/* Subtle divider between presets and facets (mirrors laglistor) */}
-        <div className="h-5 w-px bg-border/60 hidden sm:block" />
+          {/* Subtle divider between presets and facets (mirrors laglistor) */}
+          <div className="h-5 w-px bg-border/60 hidden sm:block" />
 
-        <KravFacetFilters
-          lawLists={lawLists}
-          members={members}
-          laglistaIds={laglistaIds}
-          responsibleUserIds={responsibleUserIds}
-          onToggleLaglista={handleToggleLaglista}
-          onToggleResponsible={handleToggleResponsible}
-          onClearFacets={handleClearFacets}
-        />
+          <KravFacetFilters
+            lawLists={lawLists}
+            members={members}
+            laglistaIds={laglistaIds}
+            responsibleUserIds={responsibleUserIds}
+            onToggleLaglista={handleToggleLaglista}
+            onToggleResponsible={handleToggleResponsible}
+            onClearFacets={handleClearFacets}
+          />
 
-        <div className="ml-auto w-full sm:w-72">
-          <SearchInput
-            initialValue={urlSearch}
-            onSearch={handleSearchChange}
-            placeholder="Sök kravpunkter..."
-            className="w-full"
+          {/* Flexible width: caps at 288px with room, shrinks to 170px before
+            wrapping — keeps the toolbar on one row when the AI-chat sidebar
+            squeezes the content area (Story 28.2 polish). */}
+          <div className="ml-auto w-full sm:w-auto sm:min-w-[80px] @[56rem]:min-w-[170px] sm:max-w-72 sm:flex-1">
+            <SearchInput
+              initialValue={urlSearch}
+              onSearch={handleSearchChange}
+              placeholder={searchPlaceholder}
+              className="w-full [&::placeholder]:text-ellipsis"
+            />
+          </div>
+
+          {/* Card-regime sort: replaces the table's clickable headers below
+            50rem container width (matches cardBelow: 800). Hidden while the
+            table view renders its own sortable headers. */}
+          <KravSortMenu
+            sort={sort}
+            onSortChange={handleSortChange}
+            className="@[50rem]:hidden"
           />
         </div>
       </div>

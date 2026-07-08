@@ -32,7 +32,7 @@ import {
   WorkspaceViewTabsTrigger,
 } from '@/components/ui/workspace-view-tabs'
 import { GroupedComplianceTable } from '@/components/features/document-list/grouped-compliance-table'
-import { DocumentTable } from '@/components/features/documents/document-table'
+import { MarketingDocumentTable } from './marketing-document-table'
 import { KanbanTab } from '@/components/features/tasks/task-workspace/kanban-tab'
 import type { WorkspaceMember } from '@/components/features/tasks/task-workspace'
 import { TaskApprovalRenderer } from '@/components/features/ai-chat/agent-action-renderers/task-approval-renderer'
@@ -596,7 +596,7 @@ export function UppgifterView() {
 }
 
 /* -------------------------------------------------------- Styrdokument view
- * Renders the REAL DocumentTable fed mocked documents (same as the showcase). */
+ * Renders the FROZEN MarketingDocumentTable fed mocked documents (28.4). */
 
 export function StyrdokumentView() {
   return (
@@ -619,7 +619,7 @@ export function StyrdokumentView() {
         </div>
       </div>
       <div className="mt-4">
-        <DocumentTable
+        <MarketingDocumentTable
           documents={DOCUMENTS}
           sortBy="updated_at"
           sortOrder="desc"

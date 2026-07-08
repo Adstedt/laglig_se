@@ -11,6 +11,14 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+
+// Epic 28: KravTable renders via the DataTable core, whose renderer switch
+// is container-width-driven. happy-dom has no layout (width 0 → card view),
+// so report a wide container to exercise the TABLE renderer these tests pin.
+vi.mock('@/components/ui/data-table/use-container-width', () => ({
+  useContainerWidth: () => ({ ref: () => {}, width: 1400 }),
+}))
+
 import { KravTable } from '@/components/features/krav/krav-table'
 import type { WorkspaceRequirementRow } from '@/app/actions/workspace-requirements'
 import type { WorkspaceMemberOption } from '@/app/actions/document-list'

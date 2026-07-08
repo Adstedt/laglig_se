@@ -273,9 +273,16 @@ export function ManageLawGroupsPopover({
         <PopoverTrigger asChild>
           {/* Disabled without an active list (LawListPrimaryAction precedent) —
               an inert-but-clickable button would lie about its affordance. */}
-          <Button variant="outline" size="sm" disabled={!listId}>
-            <FolderCog className="mr-1.5 h-4 w-4" />
-            Hantera grupper
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!listId}
+            aria-label="Hantera grupper"
+            title="Hantera grupper"
+          >
+            <FolderCog className="h-4 w-4 @[64rem]:mr-1.5" />
+            {/* Icon-only when the toolbar container is narrow (chat open). */}
+            <span className="hidden @[64rem]:inline">Hantera grupper</span>
           </Button>
         </PopoverTrigger>
         <PopoverContent

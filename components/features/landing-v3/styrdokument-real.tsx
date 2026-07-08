@@ -1,14 +1,14 @@
 'use client'
 
 /**
- * Styrdokument showcase body — the REAL `DocumentTable` fed mocked documents,
+ * Styrdokument showcase body — the frozen `MarketingDocumentTable` (28.4),
  * under a page header that mirrors `/workspace/styrdokument`. Presentational
  * only; `pointer-events-none` makes it a static, live-looking screenshot.
  */
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/ui/page-header'
-import { DocumentTable } from '@/components/features/documents/document-table'
+import { MarketingDocumentTable } from './marketing-document-table'
 import { DOCUMENTS } from './styrdokument-mock-data'
 import { noop } from './showcase-utils'
 
@@ -25,7 +25,7 @@ export function StyrdokumentReal() {
           </Button>
         }
       />
-      <DocumentTable
+      <MarketingDocumentTable
         documents={DOCUMENTS}
         sortBy="updated_at"
         sortOrder="desc"

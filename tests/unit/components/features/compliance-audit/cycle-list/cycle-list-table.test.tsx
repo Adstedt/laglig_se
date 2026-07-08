@@ -192,10 +192,13 @@ describe('CycleListTable', () => {
   it('clicking anywhere on a row navigates via router.push to the detail page', () => {
     render(<CycleListTable cycles={FIXTURE_CYCLES} canCreate />)
 
-    // Fire click on the row (data-cycle-id marker).
-    const row = document.querySelector<HTMLElement>('[data-cycle-id="a"]')
-    expect(row).not.toBeNull()
-    fireEvent.click(row!)
+    // Epic 28: the core renders either a <tr> or a card depending on
+    // measured container width (happy-dom measures 0 → card). Click the
+    // non-interactive sub-line next to the name link — it bubbles to the
+    // row/card click handler in both views, while the <a> itself is guarded.
+    const nameLink = screen.getByRole('link', { name: 'Planerad A' })
+    const titleCell = nameLink.parentElement as HTMLElement
+    fireEvent.click(within(titleCell).getByText(/revision/))
 
     expect(routerPushMock).toHaveBeenCalledWith('/laglistor/kontroller/a')
   })

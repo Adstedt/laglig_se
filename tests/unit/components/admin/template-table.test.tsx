@@ -1,4 +1,12 @@
 import { render, screen, fireEvent } from '@testing-library/react'
+import { vi } from 'vitest'
+
+// Epic 28: the DataTable core's renderer switch is container-width-driven;
+// happy-dom has no layout (width 0 → card view). Report a wide container so
+// these tests exercise the TABLE renderer they pin.
+vi.mock('@/components/ui/data-table/use-container-width', () => ({
+  useContainerWidth: () => ({ ref: () => {}, width: 1400 }),
+}))
 import { vi, describe, beforeEach, it, expect } from 'vitest'
 
 const mockPush = vi.fn()

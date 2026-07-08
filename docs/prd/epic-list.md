@@ -74,7 +74,7 @@
 
 ## Epic 7: HR Module — Employee Data Model & Kollektivavtal Intelligence
 
-**Status:** Not Started (0 completed, 8 stories) — re-scoped 2026-07-01 (supersedes the original 12-story MVP HR vision)
+**Status:** Done (formally closed 2026-07-08 — shipped via PR #92 on `feat/epic-7-hr`; 11 story records with PO implementation sign-off in `docs/stories/completed/7.*.md`)
 
 **Goal:** Fortnox-grounded, sync-ready employee register + kollektivavtal ingested into the existing RAG, so the AI answers employee-specific questions grounded in the full law & regulation corpus **and** the company's collective agreement.
 
@@ -424,6 +424,40 @@
 
 ---
 
+## Epic 28: Unified DataTable Core
+
+**Status:** Done (2026-07-08 — all 12 stories complete on `feat/epic-28-table-refactoring`; deviations documented per-story in `docs/stories/completed/28.*.md`: no legacy-behind-flag for laglistor (direct migration, unchanged interfaces, conformance suite), grouped wrappers kept on dnd 'external' instead of `GroupedDataTable`, activity-log stays Tier-0 (cycle-items-tab was subsequently migrated onto the core) with rationale in `docs/architecture/table-conventions.md`)
+
+**Goal:** Collapse ~6,400 lines of bespoke table code (9+ implementations; five heavyweight tables each independently "mirroring" `document-list-table.tsx`) into one shared headless `DataTable` core at `components/ui/data-table/` with two renderers over one column definition — semantic `<table>` for wide containers, virtualized card list for narrow — switched by **container width** (ResizeObserver + hysteresis), so mobile and desktop-with-AI-chat-maximized get the same coherent card experience on every record table.
+
+**Delivers:** Headless core (`useDataTable`, column-meta chrome via `meta.dt`, pluggable state adapters for local/URL/Zustand/localStorage, load-more strategies, dnd modes, expansion-under-virtualization, `GroupedDataTable`, BulkActionBar shell, `useContainerWidth`); risk-ascending migration (krav pilot → styrdokument → admin trio → tasks → personalregister → laglistor last behind an API freeze + parity suite); Playwright conformance harness; fixes en route (broken grouped selection, inverted resize bounds, memo bug, card/table `status` vs `complianceStatus` divergence); deletion of ~4,100L legacy laglistor tables + duplicated primitives (4× SortableHeader, 3× clamp modules, orphaned `virtual-table-body.tsx`).
+
+**Requirements covered:** Cross-cutting UX consistency + narrow-container/mobile support for all tabular surfaces; extends Epic 22's primitive-consolidation philosophy to the table layer; enables Epic 18 (Mobile UX) for every table surface.
+
+**Dependencies:** Epic 22 (Done — badge-tones, TableToolbar consumed as-is). Epic 7 (Done — formally closed 2026-07-08). Epic 26 (landing-v3 imports the live `document-table.tsx` — Story 28.4 freezes a presentational copy before migrating).
+
+**Note:** Brownfield refactor. Governing rules: capability accretion (core gains a feature only with its first consumer), characterization specs before touching laglistor/tasks, legacy behind a flag until parity, core API freeze before laglistor stories. See `docs/prd/epic-28-unified-datatable-core.md`.
+
+**Priority:** High — laglistor/krav/tasks are the core product surfaces; no table has any mobile treatment today, and the maximized chat sidebar squeezes desktop content to ~400–430px of horizontal-scrolling unusability.
+
+---
+
+## Epic 29: ISO Audit Companion — Agent Skills for Revision & Ledningens Genomgång
+
+**Status:** Planned (registered 2026-07-08 — 7 stories scoped incl. 29.2a `ask_user` clarification chips, see `docs/prd/epic-29-iso-audit-companion-agent-skills.md`)
+
+**Goal:** Extend the Epic 19 agent-skills layer with the three ISO-anchored moments (14001/45001 clause 9) the kontroller feature doesn't yet serve conversationally: **`prepare_audit`** (extern revision prep, anchored on cycle history + `law_change_cutoff_date` diff + the four Epic 19 diagnostics), **`ledningens_genomgang`** (assembles ISO 9.3.2 compliance inputs from workspace data, drafts the protokoll as a `REPORT` styrdokument), and **`periodic_review`** (in-cycle assistant on a new `CYCLE` chat context). Connective tissue ships alongside: cycle read tools `get_cycle`/`get_finding`/`list_cycles` (**absorbs scoped-but-unbuilt Story 19.4b**) plus `CREATE_CYCLE`/`CREATE_FINDING` pending-action proposals dispatching to existing Epic 21 server actions.
+
+**Delivers:** Two-phase, value cut after story 2: phase 1 (29.1–29.4) ships both flagship skills read/propose-only over the existing kontroller UI; phase 2 (29.5–29.6) adds the cycle chat context + in-cycle skill. Additive enum migrations only (applied manually). AUDITOR seats get the read tier via existing role narrowing (19.5) — the auditor-channel utility play with zero auditor-specific code.
+
+**Requirements covered:** Closes Epic 19 Story 19.4b; conversational surface over Epic 21's data model; auditor channel strategy; structural retention at four fixed points of the customer's ISO year (årshjulet: kontroll → revision → genomgång → lagbevakning).
+
+**Dependencies:** Epic 19 (skills/loader/narrowing/readers/roles — Done), Epic 21 (cycle models + server actions — Done), Epic 14 (pending-action cards — Done). **Deferred Story 21.10** (cycle-editable runtime guard) is a hard prerequisite for 29.6's `create_finding` (or 29.6 implements the equivalent dispatch guard).
+
+**Priority:** High — `prepare_audit` is strategy-aligned (auditor channel + audit-season retention trigger); `ledningens_genomgang` replaces a consultant deliverable; both are mostly skill-file authoring once the read tier (29.1) lands.
+
+---
+
 ## Backlog Candidate: SOSFS/HSLF-FS Agency Regulation Ingestion
 
 **Status:** Backlog (not scoped — registered 2026-06-11)
@@ -456,6 +490,6 @@
 
 **Epic Status:** 12 Done (incl. Epic 21 substantially-done as of 2026-04-27, UAT-ready with 1 deferred 21.10 + 1 backlogged 21.15), 4 Partial / Active, 9 Not Started / Planned (incl. Epic 23, Epic 24, Epic 25)
 
-**Last updated:** 2026-06-10 (added Epic 27: Company Profile Interview, 3 stories. NOTE: Epic 26 (marketing pages, 12 stories, see `docs/prd/epic-26-marketing-pages-seo-content-engine.md`) shipped its first stories but was never registered in this list — entry + stats refresh pending)
+**Last updated:** 2026-07-08 (added Epic 29: ISO Audit Companion, 7 stories, see `docs/prd/epic-29-iso-audit-companion-agent-skills.md` — absorbs Epic 19 Story 19.4b. Previously 2026-07-07: added Epic 28: Unified DataTable Core, 12 stories, see `docs/prd/epic-28-unified-datatable-core.md`. NOTE: Epic 26 (marketing pages, 12 stories, see `docs/prd/epic-26-marketing-pages-seo-content-engine.md`) shipped its first stories but was never registered in this list — entry + stats refresh pending)
 
 ---

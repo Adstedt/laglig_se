@@ -1,101 +1,43 @@
 'use client'
 
 /**
- * Story 7.2: Personalregister employee table.
+ * Story 7.4/7.4b/7.10 → migrated in Story 28.7 (Epic 28) onto the unified
+ * DataTable core's GroupedDataTable. This file owns the employee columns
+ * (masking-aware cells untouched), group-header rollups, empty states and
+ * the drag-source grip; sections, collapse, per-section sorting, the
+ * DndContext with header-prioritizing collision, drop targets and the
+ * DragOverlay live in components/ui/data-table.
  *
- * Parallel component to the canonical Laglistor `DocumentListTable` /
- * `GroupedDocumentListTable` (approved deviation: that table is hardcoded to
- * `ColumnDef<DocumentListItem>` with no external column API, so this one is
- * built on the same scaffolding but typed over `EmployeeRow`). The Laglistor
- * components are NOT modified or imported.
- *
- * - TanStack table per group section, shared shadcn `Table` primitives,
- *   `EmptyState`.
- * - Story 7.4 (Task 3b, law-table design parity): emphasized two-line
- *   Anställd primary column, hover-reveal sort affordance + thin header
- *   column separators (local `EmployeeSortableHeader` — the shared
- *   `SortableHeader`'s always-on ⇅ icons were the flagged noise),
- *   `ÅÅMMDD-XXXX` personnummer display formatting, and Visa alla / Dölj
- *   alla group controls. Deliberate NON-adaptations: bulk checkboxes
- *   (no bulk ops until 7.6), Typ entity-icon column, avatar column.
- * - Story 7.4: amber "Ej komplett" status badge + per-group
- *   "{n}/{m} kompletta" rollups, all derived from the single
- *   `assessEmployeeCompleteness` rule over UNFILTERED rows.
- * - Grouped rendering: collapsible sections ordered by `EmployeeGroup.position`,
- *   "Ogrupperad" last; empty groups still render so a newly created group is
- *   immediately a drag target.
- * - Drag row → group header via dnd-kit; inline group select per row.
- * - Story 7.4b: column show/hide ("Kolumner" — the shared law-table
- *   affordance) + resize with per-column clamped bounds and
- *   `columnResizeMode: 'onEnd'` (the law table's drag-to-infinite-width fix,
- *   not reintroduced). No column reordering (explicit user exclusion).
- *   User-checkpoint layout round: the column state (visibility + sizing) and
- *   its per-workspace localStorage persistence now live in the parent island
- *   (`personalregister-content.tsx`) so the "Kolumner" control shares one
- *   toolbar row with Kollektivavtal/Hantera grupper — this table is a
- *   CONTROLLED consumer, receiving column state + change handlers via props
- *   and no longer rendering the Kolumner control itself.
- * - No row virtualization (registers are small).
+ * Persistence contract unchanged: column visibility/sizing stays OWNED by
+ * the parent island through employee-column-state.ts (per-workspace
+ * localStorage, sanitize-on-read) — this table remains controlled.
  */
 
 import { useCallback, useMemo, useState } from 'react'
-import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
-  flexRender,
-  type ColumnDef,
-  type ColumnSizingState,
-  type Row,
-  type SortingState,
-  type Updater,
-  type VisibilityState,
+import type {
+  ColumnDef,
+  ColumnSizingState,
+  Updater,
+  VisibilityState,
 } from '@tanstack/react-table'
-import {
-  DndContext,
-  DragOverlay,
-  KeyboardSensor,
-  PointerSensor,
-  pointerWithin,
-  rectIntersection,
-  useDraggable,
-  useDroppable,
-  useSensor,
-  useSensors,
-  type CollisionDetection,
-  type DragEndEvent,
-  type DragOverEvent,
-  type DragStartEvent,
-} from '@dnd-kit/core'
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+import { useDraggable } from '@dnd-kit/core'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  DataTable,
+  GroupedDataTable,
+  type DataTableSection,
+} from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
-  ChevronDown,
-  ChevronRight,
-  ExpandIcon,
   Folder,
   FolderX,
   GripVertical,
-  MinusIcon,
+  Maximize2 as ExpandIcon,
+  Minus as MinusIcon,
   Plus,
   Users,
 } from 'lucide-react'
@@ -116,9 +58,7 @@ import {
   EMPTY_FIELD_LABEL,
 } from './labels'
 
-// Sentinel id for the ungrouped section (mirrors GroupedDocumentListTable)
 const UNGROUPED_ID = '__ungrouped__'
-const GROUP_HEADER_PREFIX = 'group-header-'
 
 interface EmployeeListTableProps {
   /** Rows to display (already tab/search-filtered by the parent). */
@@ -157,6 +97,66 @@ interface EmployeeListTableProps {
   onAddEmployee?: (() => void) | undefined
 }
 
+/**
+ * Drag-source grip cell: the row is dragged BY its handle (dnd-kit
+ * useDraggable on the button); GroupedDataTable owns the DndContext and
+ * the droppable group headers.
+ */
+function EmployeeDragHandleCell({ employeeId }: { employeeId: string }) {
+  const { attributes, listeners, setNodeRef } = useDraggable({
+    id: employeeId,
+  })
+  return (
+    <button
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      className="flex w-full items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
+      aria-label="Dra för att flytta"
+    >
+      <GripVertical className="h-4 w-4" />
+    </button>
+  )
+}
+
+/**
+ * Story 7.4 (Task 3b): sortable header with hover-reveal affordance — the ⇅
+ * icon is hidden until the column is hovered or actively sorted. The core's
+ * header cells carry the `group/head` class this relies on.
+ */
+function EmployeeSortableHeader({
+  column,
+  label,
+}: {
+  column: {
+    getIsSorted: () => false | 'asc' | 'desc'
+    toggleSorting: (_desc?: boolean) => void
+  }
+  label: string
+}) {
+  const sorted = column.getIsSorted()
+
+  return (
+    <Button
+      variant="ghost"
+      onClick={() => column.toggleSorting(sorted === 'asc')}
+      className="-ml-4 h-8"
+    >
+      {label}
+      {sorted === 'asc' ? (
+        <ArrowUp className="ml-2 h-4 w-4" />
+      ) : sorted === 'desc' ? (
+        <ArrowDown className="ml-2 h-4 w-4" />
+      ) : (
+        <ArrowUpDown
+          aria-hidden="true"
+          className="ml-2 h-4 w-4 opacity-0 transition-opacity group-hover/head:opacity-50 group-focus-within/head:opacity-50"
+        />
+      )}
+    </Button>
+  )
+}
+
 export function EmployeeListTable({
   employees,
   allEmployees,
@@ -172,48 +172,11 @@ export function EmployeeListTable({
   onMoveToGroup,
   onAddEmployee,
 }: EmployeeListTableProps) {
-  const [activeId, setActiveId] = useState<string | null>(null)
-  const [overGroupId, setOverGroupId] = useState<string | null>(null)
-  // Collapsed-state per group id; groups default to expanded.
-  const [collapsedGroups, setCollapsedGroups] = useState<
-    Record<string, boolean>
-  >({})
+  // Collapse state as a Set (GroupedDataTable contract).
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
 
-  // Story 7.4b: column visibility + sizing are OWNED by the parent island now
-  // (user-checkpoint layout round) — this table is controlled and simply
-  // threads the props into the per-section TanStack instances.
-  const columnControls: EmployeeColumnControls = useMemo(
-    () => ({
-      visibility: columnVisibility,
-      sizing: columnSizing,
-      onVisibilityChange: onColumnVisibilityChange,
-      onSizingChange: onColumnSizingChange,
-    }),
-    [
-      columnVisibility,
-      columnSizing,
-      onColumnVisibilityChange,
-      onColumnSizingChange,
-    ]
-  )
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 10 } }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  )
-
-  // Prioritize group-header drop targets (same approach as
-  // GroupedDocumentListTable's collision detection).
-  const collisionDetection: CollisionDetection = useCallback((args) => {
-    const pointerCollisions = pointerWithin(args)
-    const headerCollision = pointerCollisions.find((collision) =>
-      String(collision.id).startsWith(GROUP_HEADER_PREFIX)
-    )
-    if (headerCollision) return [headerCollision]
-    return rectIntersection(args)
-  }, [])
+  // Dragging is only meaningful when there are group headers to drop on.
+  const dragEnabled = canManage && groups.length > 0
 
   // Distribute rows into group sections; ungrouped last.
   const { groupedRows, ungroupedRows } = useMemo(() => {
@@ -261,11 +224,8 @@ export function EmployeeListTable({
     return counts
   }, [allEmployees, groups, workspaceHasCollectiveAgreement])
 
-  // Dragging is only meaningful when there are group headers to drop on.
-  const dragEnabled = canManage && groups.length > 0
-
-  const columns = useMemo<ColumnDef<EmployeeRow>[]>(() => {
-    const cols: ColumnDef<EmployeeRow>[] = []
+  const columns = useMemo<ColumnDef<EmployeeRow, unknown>[]>(() => {
+    const cols: ColumnDef<EmployeeRow, unknown>[] = []
 
     // Story 7.4b: size/minSize/maxSize mirror EMPLOYEE_COLUMN_SIZE_BOUNDS in
     // employee-column-state.ts (the clamp source of truth); labels come from
@@ -276,13 +236,24 @@ export function EmployeeListTable({
       cols.push({
         id: 'dragHandle',
         header: () => null,
-        cell: () => null, // Rendered by EmployeeTableRow
+        cell: ({ row }) => (
+          <EmployeeDragHandleCell employeeId={row.original.id} />
+        ),
         size: 40,
         minSize: 40,
         maxSize: 40,
         enableSorting: false,
         enableResizing: false,
         enableHiding: false,
+        meta: {
+          dt: {
+            label: 'Flytta',
+            pinned: 'left',
+            padding: 'tight',
+            mandatory: true,
+            card: { role: 'hidden' },
+          },
+        },
       })
     }
 
@@ -303,6 +274,22 @@ export function EmployeeListTable({
           row.original.employee_id_ref ?? (
             <span className="text-muted-foreground">{EMPTY_FIELD_LABEL}</span>
           ),
+        meta: {
+          dt: {
+            label: EMPLOYEE_COLUMN_LABELS.employee_id_ref ?? 'Anställnings-ID',
+            nowrap: true,
+            card: {
+              role: 'meta',
+              priority: 4,
+              renderCard: (row) =>
+                row.original.employee_id_ref ? (
+                  <span className="text-sm">
+                    {row.original.employee_id_ref}
+                  </span>
+                ) : null,
+            },
+          },
+        },
       },
       {
         id: 'name',
@@ -334,6 +321,15 @@ export function EmployeeListTable({
             ) : null}
           </div>
         ),
+        meta: {
+          dt: {
+            label: EMPLOYEE_COLUMN_LABELS.name ?? 'Anställd',
+            fill: true,
+            mandatory: true,
+            nowrap: true,
+            card: { role: 'title' },
+          },
+        },
       },
       {
         id: 'personnummer',
@@ -360,6 +356,24 @@ export function EmployeeListTable({
                 : formatPersonnummerDisplay(row.original.personnummer)}
           </span>
         ),
+        meta: {
+          dt: {
+            label: EMPLOYEE_COLUMN_LABELS.personnummer ?? 'Personnummer',
+            nowrap: true,
+            card: {
+              role: 'meta',
+              priority: 1,
+              renderCard: (row) =>
+                row.original.personnummer === null ? null : (
+                  <span className="tabular-nums text-sm">
+                    {row.original.personnummer_masked
+                      ? row.original.personnummer
+                      : formatPersonnummerDisplay(row.original.personnummer)}
+                  </span>
+                ),
+            },
+          },
+        },
       },
       {
         id: 'personel_type',
@@ -379,6 +393,22 @@ export function EmployeeListTable({
           ) : (
             <span className="text-muted-foreground">{EMPTY_FIELD_LABEL}</span>
           ),
+        meta: {
+          dt: {
+            label: EMPLOYEE_COLUMN_LABELS.personel_type ?? 'Personaltyp',
+            nowrap: true,
+            card: {
+              role: 'meta',
+              priority: 2,
+              renderCard: (row) =>
+                row.original.personel_type ? (
+                  <span className="text-sm">
+                    {personelTypeLabel(row.original.personel_type)}
+                  </span>
+                ) : null,
+            },
+          },
+        },
       },
       {
         id: 'employment_form',
@@ -398,6 +428,22 @@ export function EmployeeListTable({
           ) : (
             <span className="text-muted-foreground">{EMPTY_FIELD_LABEL}</span>
           ),
+        meta: {
+          dt: {
+            label: EMPLOYEE_COLUMN_LABELS.employment_form ?? 'Anställningsform',
+            nowrap: true,
+            card: {
+              role: 'meta',
+              priority: 3,
+              renderCard: (row) =>
+                row.original.employment_form ? (
+                  <span className="text-sm">
+                    {employmentFormLabel(row.original.employment_form)}
+                  </span>
+                ) : null,
+            },
+          },
+        },
       },
       {
         id: 'salary_form',
@@ -417,6 +463,13 @@ export function EmployeeListTable({
           ) : (
             <span className="text-muted-foreground">{EMPTY_FIELD_LABEL}</span>
           ),
+        meta: {
+          dt: {
+            label: EMPLOYEE_COLUMN_LABELS.salary_form ?? 'Löneform',
+            nowrap: true,
+            card: { role: 'hidden' },
+          },
+        },
       },
       {
         // Story 7.10: Lön — HIDDEN BY DEFAULT (screen-share privacy). The
@@ -461,6 +514,15 @@ export function EmployeeListTable({
             <span className="text-muted-foreground">{EMPTY_FIELD_LABEL}</span>
           )
         },
+        meta: {
+          dt: {
+            label: EMPLOYEE_COLUMN_LABELS.salary ?? 'Lön',
+            nowrap: true,
+            // Screen-share privacy: never surfaces on cards either — the
+            // column is default-hidden and card faces respect visibility.
+            card: { role: 'hidden' },
+          },
+        },
       },
       {
         id: 'collective_agreement',
@@ -478,6 +540,23 @@ export function EmployeeListTable({
           row.original.collective_agreement?.name ?? (
             <span className="text-muted-foreground">{EMPTY_FIELD_LABEL}</span>
           ),
+        meta: {
+          dt: {
+            label:
+              EMPLOYEE_COLUMN_LABELS.collective_agreement ?? 'Kollektivavtal',
+            nowrap: true,
+            card: {
+              role: 'meta',
+              priority: 5,
+              renderCard: (row) =>
+                row.original.collective_agreement?.name ? (
+                  <span className="text-sm">
+                    {row.original.collective_agreement.name}
+                  </span>
+                ) : null,
+            },
+          },
+        },
       },
       {
         id: 'group',
@@ -504,6 +583,13 @@ export function EmployeeListTable({
               {row.original.group?.name ?? 'Ogrupperad'}
             </span>
           ),
+        meta: {
+          dt: {
+            label: EMPLOYEE_COLUMN_LABELS.group ?? 'Grupp',
+            nowrap: true,
+            card: { role: 'meta', priority: 6, interactive: true },
+          },
+        },
       },
       {
         id: 'status',
@@ -535,6 +621,13 @@ export function EmployeeListTable({
             </div>
           )
         },
+        meta: {
+          dt: {
+            label: EMPLOYEE_COLUMN_LABELS.status ?? 'Status',
+            nowrap: true,
+            card: { role: 'badge', priority: 0 },
+          },
+        },
       }
     )
 
@@ -547,79 +640,127 @@ export function EmployeeListTable({
     workspaceHasCollectiveAgreement,
   ])
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    setActiveId(String(event.active.id))
-    setOverGroupId(null)
-  }, [])
+  // ---- Column-state adapter (parent-owned persistence, unchanged) ----
+  const columnState = useMemo(
+    () => ({
+      visibility: columnVisibility,
+      onVisibilityChange: (updater: Updater<VisibilityState>) =>
+        onColumnVisibilityChange(
+          typeof updater === 'function' ? updater(columnVisibility) : updater
+        ),
+      sizing: columnSizing,
+      onSizingChange: onColumnSizingChange,
+    }),
+    [
+      columnVisibility,
+      columnSizing,
+      onColumnVisibilityChange,
+      onColumnSizingChange,
+    ]
+  )
 
-  const handleDragOver = useCallback(
-    (event: DragOverEvent) => {
-      const { over, active } = event
-      if (!over) {
-        setOverGroupId(null)
-        return
-      }
+  const rowInteraction = useMemo(
+    () => ({ onRowClick: (row: EmployeeRow) => onRowClick(row.id) }),
+    [onRowClick]
+  )
 
-      const overId = String(over.id)
-      if (!overId.startsWith(GROUP_HEADER_PREFIX)) {
-        setOverGroupId(null)
-        return
-      }
+  // ---- Expand/collapse-all (Task 3b, law-table placement) ----
+  const handleExpandAll = useCallback(() => setCollapsed(new Set()), [])
+  const handleCollapseAll = useCallback(() => {
+    setCollapsed(new Set([UNGROUPED_ID, ...groups.map((g) => g.id)]))
+  }, [groups])
 
-      const groupId = overId.slice(GROUP_HEADER_PREFIX.length)
-      const targetGroupId = groupId === UNGROUPED_ID ? null : groupId
-      const employee = employees.find((e) => e.id === String(active.id))
-      // Only highlight when the drop would actually move the employee.
-      setOverGroupId(
-        employee && employee.group_id !== targetGroupId ? groupId : null
+  const handleMoveToSection = useCallback(
+    async (employeeId: string, sectionId: string) => {
+      const targetGroupId = sectionId === UNGROUPED_ID ? null : sectionId
+      const employee = employees.find((e) => e.id === employeeId)
+      if (!employee || employee.group_id === targetGroupId) return
+      await onMoveToGroup(employeeId, targetGroupId)
+    },
+    [employees, onMoveToGroup]
+  )
+
+  const renderDragOverlay = useCallback(
+    (employeeId: string) => {
+      const employee = employees.find((e) => e.id === employeeId)
+      if (!employee) return null
+      return (
+        <div className="bg-background border rounded-md p-3 shadow-lg opacity-90">
+          <span className="font-medium text-sm">
+            {employee.first_name} {employee.last_name}
+          </span>
+        </div>
       )
     },
     [employees]
   )
 
-  const handleDragEnd = useCallback(
-    async (event: DragEndEvent) => {
-      const { active, over } = event
-      setActiveId(null)
-      setOverGroupId(null)
+  // ---- Section descriptors ----
+  const sections = useMemo<DataTableSection<EmployeeRow>[]>(() => {
+    const makeHeader = (name: string, groupId: string, isUngrouped: boolean) =>
+      // Render function invoked by GroupedDataTable (not a mounted component).
+      function SectionHeader({ isDropTarget }: { isDropTarget: boolean }) {
+        const counts = unfilteredCounts[groupId]
+        return (
+          <span className="flex items-center gap-2 sm:gap-3">
+            <span className="hidden sm:block">
+              {isUngrouped ? (
+                <FolderX className="h-4 w-4 shrink-0 text-muted-foreground" />
+              ) : (
+                <Folder
+                  className={cn(
+                    'h-4 w-4 shrink-0',
+                    isDropTarget ? 'text-primary' : 'text-primary'
+                  )}
+                />
+              )}
+            </span>
+            <span className="flex-1 text-left text-sm font-medium sm:text-base">
+              {name}
+            </span>
+            {/* Unfiltered counts — group size must not change while
+                searching (QA UX-001). Story 7.4: "{n}/{m} kompletta". */}
+            <span className="text-xs tabular-nums text-muted-foreground">
+              {!counts || counts.total === 0
+                ? '0'
+                : `${counts.complete}/${counts.total} kompletta`}
+            </span>
+          </span>
+        )
+      }
 
-      if (!over) return
-      const overId = String(over.id)
-      if (!overId.startsWith(GROUP_HEADER_PREFIX)) return
+    const makeEmpty = (groupId: string) => {
+      const unfilteredCount = unfilteredCounts[groupId]?.total ?? 0
+      return (
+        // QA UX-001: only a TRULY empty group (unfiltered) shows the
+        // drag-here hint; a group whose rows are merely filtered out
+        // says so instead of pretending to be empty.
+        <p className="py-4 text-center text-sm text-muted-foreground">
+          {unfilteredCount > 0
+            ? 'Inga träffar i denna grupp.'
+            : canManage
+              ? 'Dra anställda hit.'
+              : 'Inga anställda i denna grupp.'}
+        </p>
+      )
+    }
 
-      const groupId = overId.slice(GROUP_HEADER_PREFIX.length)
-      const targetGroupId = groupId === UNGROUPED_ID ? null : groupId
-      const employee = employees.find((e) => e.id === String(active.id))
-      if (!employee || employee.group_id === targetGroupId) return
-
-      await onMoveToGroup(employee.id, targetGroupId)
-    },
-    [employees, onMoveToGroup]
-  )
-
-  const toggleGroup = useCallback((groupId: string) => {
-    setCollapsedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }))
-  }, [])
-
-  // Task 3b: Visa alla / Dölj alla (law-table parity — same placement and
-  // ghost-button affordance as GroupedDocumentListTable's controls).
-  const handleExpandAll = useCallback(() => {
-    setCollapsedGroups({})
-  }, [])
-
-  const handleCollapseAll = useCallback(() => {
-    const collapsed: Record<string, boolean> = { [UNGROUPED_ID]: true }
-    groups.forEach((group) => {
-      collapsed[group.id] = true
+    const list: DataTableSection<EmployeeRow>[] = groups.map((group) => ({
+      id: group.id,
+      items: groupedRows[group.id] ?? [],
+      header: makeHeader(group.name, group.id, false),
+      empty: makeEmpty(group.id),
+    }))
+    list.push({
+      id: UNGROUPED_ID,
+      items: ungroupedRows,
+      header: makeHeader('Ogrupperad', UNGROUPED_ID, true),
+      empty: makeEmpty(UNGROUPED_ID),
     })
-    setCollapsedGroups(collapsed)
-  }, [groups])
+    return list
+  }, [groups, groupedRows, ungroupedRows, unfilteredCounts, canManage])
 
-  const activeEmployee = activeId
-    ? employees.find((e) => e.id === activeId)
-    : null
-
-  // Empty register (no employees at all in the workspace)
+  // ---- Empty register (no employees at all in the workspace) ----
   if (totalCount === 0 && groups.length === 0) {
     return (
       <EmptyState
@@ -641,10 +782,8 @@ export function EmployeeListTable({
     )
   }
 
-  const hasGroups = groups.length > 0
-
-  // Flat table when no groups exist
-  if (!hasGroups) {
+  // ---- Flat table when no groups exist ----
+  if (groups.length === 0) {
     if (employees.length === 0) {
       return (
         <EmptyState
@@ -659,43 +798,35 @@ export function EmployeeListTable({
     }
 
     return (
-      <div className="flex flex-col gap-4">
-        {/* User-checkpoint layout round: the "Kolumner" control moved up to the
-            content-island toolbar; this table only renders the columns. */}
-        <div className="rounded-md border overflow-x-auto">
-          <EmployeeSectionTable
-            rows={ungroupedRows}
-            columns={columns}
-            dragEnabled={false}
-            onRowClick={onRowClick}
-            columnControls={columnControls}
-          />
-        </div>
-      </div>
+      <DataTable<EmployeeRow>
+        data={employees}
+        columns={columns}
+        getRowId={(row) => row.id}
+        columnState={columnState}
+        rowInteraction={rowInteraction}
+        view={{ cardBelow: 800 }}
+      />
     )
   }
 
+  // ---- Grouped sections ----
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
           Visar {employees.length} av {totalCount} anställda.
           {canManage && (
-            <span className="hidden sm:inline ml-1">
+            <span className="ml-1 hidden sm:inline">
               Dra till grupprubriker för att flytta.
             </span>
           )}
         </p>
-        {/* Task 3b: expand/collapse-all controls above the group sections
-            (law-table placement + affordance). The "Kolumner" control now
-            lives in the content-island toolbar (user-checkpoint layout
-            round) — only the view-state controls remain here. */}
         <div className="flex items-center gap-1 sm:gap-2">
           <Button
             variant="ghost"
             size="sm"
             onClick={handleExpandAll}
-            className="h-8 text-xs px-2 sm:px-3"
+            className="h-8 px-2 text-xs sm:px-3"
             title="Visa alla grupper"
           >
             <ExpandIcon className="h-3.5 w-3.5 sm:mr-1" />
@@ -705,7 +836,7 @@ export function EmployeeListTable({
             variant="ghost"
             size="sm"
             onClick={handleCollapseAll}
-            className="h-8 text-xs px-2 sm:px-3"
+            className="h-8 px-2 text-xs sm:px-3"
             title="Dölj alla grupper"
           >
             <MinusIcon className="h-3.5 w-3.5 sm:mr-1" />
@@ -714,465 +845,22 @@ export function EmployeeListTable({
         </div>
       </div>
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={collisionDetection}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="flex flex-col gap-3">
-          {groups.map((group) => (
-            <EmployeeGroupSection
-              key={group.id}
-              groupId={group.id}
-              name={group.name}
-              rows={groupedRows[group.id] ?? []}
-              unfilteredCount={unfilteredCounts[group.id]?.total ?? 0}
-              unfilteredCompleteCount={
-                unfilteredCounts[group.id]?.complete ?? 0
-              }
-              columns={columns}
-              columnControls={columnControls}
-              canManage={canManage}
-              isExpanded={!collapsedGroups[group.id]}
-              onToggle={() => toggleGroup(group.id)}
-              onRowClick={onRowClick}
-              isDropTarget={overGroupId === group.id}
-            />
-          ))}
-
-          <EmployeeGroupSection
-            groupId={UNGROUPED_ID}
-            name="Ogrupperad"
-            rows={ungroupedRows}
-            unfilteredCount={unfilteredCounts[UNGROUPED_ID]?.total ?? 0}
-            unfilteredCompleteCount={
-              unfilteredCounts[UNGROUPED_ID]?.complete ?? 0
-            }
-            columns={columns}
-            columnControls={columnControls}
-            canManage={canManage}
-            isExpanded={!collapsedGroups[UNGROUPED_ID]}
-            onToggle={() => toggleGroup(UNGROUPED_ID)}
-            onRowClick={onRowClick}
-            isUngrouped
-            isDropTarget={overGroupId === UNGROUPED_ID}
-          />
-        </div>
-
-        {/* dropAnimation={null} prevents the "return to origin" ghost effect */}
-        <DragOverlay dropAnimation={null}>
-          {activeEmployee && (
-            <div className="bg-background border rounded-md p-3 shadow-lg opacity-90">
-              <span className="font-medium text-sm">
-                {activeEmployee.first_name} {activeEmployee.last_name}
-              </span>
-            </div>
-          )}
-        </DragOverlay>
-      </DndContext>
+      <GroupedDataTable<EmployeeRow>
+        sections={sections}
+        collapsed={collapsed}
+        onCollapsedChange={setCollapsed}
+        perSectionSorting
+        columns={columns}
+        getRowId={(row) => row.id}
+        columnState={columnState}
+        rowInteraction={rowInteraction}
+        view={{ cardBelow: 800 }}
+        sectionDnd={{
+          enabled: dragEnabled,
+          onMoveToSection: handleMoveToSection,
+          renderDragOverlay,
+        }}
+      />
     </div>
-  )
-}
-
-// ============================================================================
-// Group section (collapsible, droppable header)
-// ============================================================================
-
-interface EmployeeGroupSectionProps {
-  groupId: string
-  name: string
-  rows: EmployeeRow[]
-  /** Total rows in this section, ignoring the active tab/search filter. */
-  unfilteredCount: number
-  /** Complete rows in this section (unfiltered) — Story 7.4 rollup. */
-  unfilteredCompleteCount: number
-  columns: ColumnDef<EmployeeRow>[]
-  columnControls: EmployeeColumnControls
-  canManage: boolean
-  isExpanded: boolean
-  onToggle: () => void
-  onRowClick: (_employeeId: string) => void
-  isUngrouped?: boolean
-  isDropTarget?: boolean
-}
-
-function EmployeeGroupSection({
-  groupId,
-  name,
-  rows,
-  unfilteredCount,
-  unfilteredCompleteCount,
-  columns,
-  columnControls,
-  canManage,
-  isExpanded,
-  onToggle,
-  onRowClick,
-  isUngrouped = false,
-  isDropTarget = false,
-}: EmployeeGroupSectionProps) {
-  // Make the group header a drop target
-  const { setNodeRef } = useDroppable({
-    id: `${GROUP_HEADER_PREFIX}${groupId}`,
-  })
-
-  return (
-    <Collapsible open={isExpanded} onOpenChange={onToggle}>
-      <div
-        ref={setNodeRef}
-        className={cn(
-          'rounded-lg border transition-colors',
-          isDropTarget
-            ? 'border-primary border-2 bg-primary/5'
-            : 'border-border/50 bg-muted/20'
-        )}
-      >
-        <div className="flex w-full items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 min-h-[44px]">
-          <CollapsibleTrigger asChild>
-            <button
-              type="button"
-              className={cn(
-                'p-2 -m-1 rounded hover:bg-muted transition-colors',
-                'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary',
-                'min-w-[44px] min-h-[44px] flex items-center justify-center'
-              )}
-              title={isExpanded ? 'Fäll ihop' : 'Expandera'}
-            >
-              {isExpanded ? (
-                <ChevronDown className="h-5 w-5 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
-              ) : (
-                <ChevronRight className="h-5 w-5 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
-              )}
-            </button>
-          </CollapsibleTrigger>
-
-          <span className="hidden sm:block">
-            {isUngrouped ? (
-              <FolderX className="h-4 w-4 text-muted-foreground shrink-0" />
-            ) : (
-              <Folder className="h-4 w-4 text-primary shrink-0" />
-            )}
-          </span>
-
-          <span className="font-medium flex-1 text-left text-sm sm:text-base">
-            {name}
-          </span>
-
-          {/* Unfiltered counts — group size must not change while searching
-              (QA UX-001). Story 7.4: "{n}/{m} kompletta" rollup, both counts
-              from the same unfiltered source as the header stat. */}
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {unfilteredCount === 0
-              ? '0'
-              : `${unfilteredCompleteCount}/${unfilteredCount} kompletta`}
-          </span>
-        </div>
-
-        <CollapsibleContent>
-          <div className="pb-3 sm:pb-4">
-            {rows.length === 0 ? (
-              // QA UX-001: only a TRULY empty group (unfiltered) shows the
-              // drag-here hint; a group whose rows are merely filtered out
-              // says so instead of pretending to be empty.
-              <p className="text-sm text-muted-foreground py-4 text-center">
-                {unfilteredCount > 0
-                  ? 'Inga träffar i denna grupp.'
-                  : canManage
-                    ? 'Dra anställda hit.'
-                    : 'Inga anställda i denna grupp.'}
-              </p>
-            ) : (
-              <div className="overflow-x-auto">
-                <EmployeeSectionTable
-                  rows={rows}
-                  columns={columns}
-                  dragEnabled={canManage}
-                  onRowClick={onRowClick}
-                  columnControls={columnControls}
-                />
-              </div>
-            )}
-          </div>
-        </CollapsibleContent>
-      </div>
-    </Collapsible>
-  )
-}
-
-// ============================================================================
-// Inner table (one TanStack instance per section)
-// ============================================================================
-
-/**
- * Story 7.4b: shared column show/hide + resize state, lifted to
- * `EmployeeListTable` so every group section renders the same columns at the
- * same widths (one TanStack instance per section, one state above them).
- */
-interface EmployeeColumnControls {
-  visibility: VisibilityState
-  sizing: ColumnSizingState
-  onVisibilityChange: (_visibility: VisibilityState) => void
-  onSizingChange: (_updater: Updater<ColumnSizingState>) => void
-}
-
-interface EmployeeSectionTableProps {
-  rows: EmployeeRow[]
-  columns: ColumnDef<EmployeeRow>[]
-  dragEnabled: boolean
-  onRowClick: (_employeeId: string) => void
-  columnControls: EmployeeColumnControls
-}
-
-function EmployeeSectionTable({
-  rows,
-  columns,
-  dragEnabled,
-  onRowClick,
-  columnControls,
-}: EmployeeSectionTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([])
-
-  const table = useReactTable({
-    data: rows,
-    columns,
-    state: {
-      sorting,
-      columnVisibility: columnControls.visibility,
-      columnSizing: columnControls.sizing,
-    },
-    onSortingChange: setSorting,
-    onColumnVisibilityChange: (updater) => {
-      const next =
-        typeof updater === 'function'
-          ? updater(columnControls.visibility)
-          : updater
-      columnControls.onVisibilityChange(next)
-    },
-    onColumnSizingChange: columnControls.onSizingChange,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getRowId: (row) => row.id,
-    enableColumnResizing: true,
-    // Law-table parity: commit on drag END — per-frame commits were part of
-    // the historical drag-to-infinite-width bug.
-    columnResizeMode: 'onEnd',
-  })
-
-  // Live resize preview clamped to the column's declared bounds (law-table
-  // `getColumnWidth` parity). Also clamps stale persisted sizes defensively —
-  // TanStack's `onEnd` mode commits values unclamped.
-  const { columnSizingInfo } = table.getState()
-  const getColumnWidth = (headerId: string, defaultSize: number) => {
-    const column = table.getColumn(headerId)
-    const minSize = column?.columnDef.minSize ?? 0
-    const maxSize = column?.columnDef.maxSize ?? Infinity
-    if (columnSizingInfo.isResizingColumn === headerId) {
-      const newSize =
-        (columnSizingInfo.startSize ?? defaultSize) +
-        (columnSizingInfo.deltaOffset ?? 0)
-      return Math.max(minSize, Math.min(maxSize, newSize))
-    }
-    return Math.max(minSize, Math.min(maxSize, defaultSize))
-  }
-
-  // Sum of visible column widths; combined with the trailing spacer cell it
-  // keeps declared widths honest under `table-fixed` when the column-sum is
-  // narrower than the container (law-table approach).
-  const liveTotalWidth = table
-    .getVisibleLeafColumns()
-    .reduce((sum, col) => sum + getColumnWidth(col.id, col.getSize()), 0)
-
-  return (
-    <Table className="table-fixed" style={{ minWidth: liveTotalWidth }}>
-      <TableHeader>
-        {table.getHeaderGroups().map((headerGroup) => (
-          <TableRow key={headerGroup.id}>
-            {headerGroup.headers.map((header) => (
-              <TableHead
-                key={header.id}
-                style={{ width: getColumnWidth(header.id, header.getSize()) }}
-                // `group/head` scopes the hover-reveal sort affordance to
-                // the hovered column only (Task 3b — law-table parity).
-                // `overflow-hidden whitespace-nowrap`: a narrow column CLIPS
-                // its own label — it must never spill into the neighbour's
-                // header (user checkpoint: "Anställnings-IDAnställd" overlap).
-                className={cn(
-                  'group/head relative overflow-hidden whitespace-nowrap',
-                  header.id === 'dragHandle' && 'px-2'
-                )}
-              >
-                {header.isPlaceholder
-                  ? null
-                  : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                {/* Story 7.4b: resize grip at the header's right edge — a
-                    separate hit area from the sort button, and pointer-down
-                    stops propagation so a drag never triggers a sort. The
-                    grip doubles as the thin column separator (it replaces
-                    the previous decorative span — law-table affordance). */}
-                {header.column.getCanResize() && (
-                  // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-                  <div
-                    role="separator"
-                    aria-orientation="vertical"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onMouseDown={header.getResizeHandler()}
-                    onTouchStart={header.getResizeHandler()}
-                    className={cn(
-                      'absolute right-0 top-0 h-full w-4 cursor-col-resize select-none touch-none group/resize',
-                      'flex items-center justify-center'
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        'h-4 w-0.5 rounded-full bg-border transition-colors',
-                        'group-hover/resize:bg-primary group-hover/resize:h-6',
-                        header.column.getIsResizing() && 'bg-primary h-6'
-                      )}
-                    />
-                  </div>
-                )}
-              </TableHead>
-            ))}
-            {/* Spacer absorbs leftover width so fixed-width columns don't
-                inflate proportionally (law-table parity). */}
-            <TableHead aria-hidden="true" className="p-0" />
-          </TableRow>
-        ))}
-      </TableHeader>
-      <TableBody>
-        {table.getRowModel().rows.map((row) => (
-          <EmployeeTableRow
-            key={row.id}
-            row={row}
-            dragEnabled={dragEnabled}
-            onRowClick={onRowClick}
-          />
-        ))}
-      </TableBody>
-    </Table>
-  )
-}
-
-// ============================================================================
-// Story 7.4 (Task 3b): sortable header with hover-reveal affordance
-// ============================================================================
-
-/**
- * Same contract and sorting semantics as the shared `SortableHeader`
- * (ghost button, `toggleSorting(sorted === 'asc')`), but the ⇅ icon is
- * hidden until the column is hovered or actively sorted — the always-on
- * icons on every column were the flagged header noise. Requires the
- * wrapping `TableHead` to carry the `group/head` class.
- */
-function EmployeeSortableHeader({
-  column,
-  label,
-}: {
-  column: {
-    getIsSorted: () => false | 'asc' | 'desc'
-    toggleSorting: (_desc?: boolean) => void
-  }
-  label: string
-}) {
-  const sorted = column.getIsSorted()
-
-  return (
-    <Button
-      variant="ghost"
-      onClick={() => column.toggleSorting(sorted === 'asc')}
-      className="-ml-4 h-8"
-    >
-      {label}
-      {sorted === 'asc' ? (
-        <ArrowUp className="ml-2 h-4 w-4" />
-      ) : sorted === 'desc' ? (
-        <ArrowDown className="ml-2 h-4 w-4" />
-      ) : (
-        <ArrowUpDown
-          aria-hidden="true"
-          className="ml-2 h-4 w-4 opacity-0 transition-opacity group-hover/head:opacity-50 group-focus-within/head:opacity-50"
-        />
-      )}
-    </Button>
-  )
-}
-
-// ============================================================================
-// Draggable row with interactive-element click guard
-// ============================================================================
-
-function EmployeeTableRow({
-  row,
-  dragEnabled,
-  onRowClick,
-}: {
-  row: Row<EmployeeRow>
-  dragEnabled: boolean
-  onRowClick: (_employeeId: string) => void
-}) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ id: row.original.id, disabled: !dragEnabled })
-
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0.5 : 1,
-  }
-
-  // Row click opens the Personalkort param — ignore interactive elements
-  // (same guard as the Laglistor SortableRow).
-  const handleRowClick = useCallback(
-    (e: React.MouseEvent<HTMLTableRowElement>) => {
-      const target = e.target as HTMLElement
-      if (
-        target.closest(
-          'button, input, select, a, [role="combobox"], [role="checkbox"]'
-        )
-      ) {
-        return
-      }
-      onRowClick(row.original.id)
-    },
-    [onRowClick, row.original.id]
-  )
-
-  return (
-    <TableRow
-      ref={setNodeRef}
-      style={style}
-      className="group cursor-pointer hover:bg-muted/50"
-      onClick={handleRowClick}
-    >
-      {row.getVisibleCells().map((cell) => (
-        <TableCell
-          key={cell.id}
-          // Nowrap + clip: shrinking a column truncates cell content instead
-          // of wrapping it to two lines (user checkpoint: `890503-` / `2556`).
-          className={cn(
-            'overflow-hidden whitespace-nowrap',
-            cell.column.id === 'dragHandle' && 'px-2'
-          )}
-        >
-          {cell.column.id === 'dragHandle' ? (
-            <button
-              {...attributes}
-              {...listeners}
-              className="flex w-full items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
-              aria-label="Dra för att flytta"
-            >
-              <GripVertical className="h-4 w-4" />
-            </button>
-          ) : (
-            flexRender(cell.column.columnDef.cell, cell.getContext())
-          )}
-        </TableCell>
-      ))}
-      {/* Matches the header's width-absorbing spacer (Story 7.4b). */}
-      <TableCell aria-hidden="true" className="p-0" />
-    </TableRow>
   )
 }

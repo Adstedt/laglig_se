@@ -68,8 +68,9 @@ interface GroupTableSectionProps {
     _items: Array<{ id: string; position: number }>
   ) => Promise<boolean>
   onRowClick?: ((_itemId: string) => void) | undefined
-  onSelectionChange: (_itemIds: string[], _isSelected: boolean) => void
-  selectedItemIds: Set<string>
+  onSelectionChange: (_next: Set<string>) => void
+  selectedItemIds: ReadonlySet<string>
+  forceCardView?: boolean | undefined
   workspaceMembers: WorkspaceMemberOption[]
   groups: ListGroupSummary[]
   onMoveToGroup?:
@@ -99,8 +100,9 @@ export const GroupTableSection = memo(function GroupTableSection({
   onRemoveItem,
   onReorderItems,
   onRowClick,
-  onSelectionChange: _onSelectionChange, // Tracked at parent level
-  selectedItemIds: _selectedItemIds, // Tracked at parent level
+  onSelectionChange,
+  selectedItemIds,
+  forceCardView = false,
   workspaceMembers,
   groups,
   onMoveToGroup,
@@ -252,6 +254,9 @@ export const GroupTableSection = memo(function GroupTableSection({
               </p>
             ) : (
               <DocumentListTable
+                forceCardView={forceCardView}
+                selectedItemIds={selectedItemIds}
+                onSelectionChange={onSelectionChange}
                 items={items}
                 total={itemCount}
                 hasMore={false}

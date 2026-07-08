@@ -6,47 +6,16 @@
  * for quick scanning during audit preparation without opening modals.
  */
 
-import { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react'
-import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual'
-import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
-  flexRender,
-  type ColumnDef,
-  type SortingState,
-  type RowSelectionState,
-  type ColumnSizingState,
-  type ColumnOrderState,
-  type Row,
+import { useState, useMemo, useCallback } from 'react'
+import type {
+  ColumnDef,
+  ColumnOrderState,
+  ColumnSizingState,
+  ExpandedState,
+  Row,
+  Updater,
+  VisibilityState,
 } from '@tanstack/react-table'
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from '@dnd-kit/core'
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
-import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import {
   Tooltip,
@@ -54,64 +23,36 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import {
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  GripVertical,
-  ChevronDown,
-  ChevronUp,
-  FileText,
-  Loader2,
-  Plus,
-  Info,
-} from 'lucide-react'
-import { KravpunkterChecklist } from './legal-document-modal/kravpunkter-checklist'
-import { RichTextDisplay } from '@/components/ui/rich-text-editor'
-import useSWR from 'swr'
-import { type RequirementWithEvidence } from '@/app/actions/law-list-item-requirements'
+import { ChevronDown, ChevronUp, FileText, Info, Plus } from 'lucide-react'
+import { DataTable, useLocalSorting } from '@/components/ui/data-table'
+import { EmptyState } from '@/components/ui/empty-state'
+import { SortableHeader } from '@/components/ui/sortable-header'
 import { BulkActionBar } from './bulk-action-bar'
-import { ComplianceStatusEditor } from './table-cell-editors/compliance-status-editor'
 import { PriorityEditor } from './table-cell-editors/priority-editor'
-import { ResponsibleEditor } from './table-cell-editors/responsible-editor'
-import { CellErrorBoundary } from './table-cells/cell-error-boundary'
-import type {
-  DocumentListItem,
-  WorkspaceMemberOption,
-  ListGroupSummary,
-} from '@/app/actions/document-list'
-import type { ComplianceStatus, LawListItemPriority } from '@prisma/client'
-import type { VisibilityState } from '@tanstack/react-table'
-import { useDebouncedCallback } from 'use-debounce'
-import { DraggableColumnHeader } from '@/components/ui/draggable-column-header'
-import { ChangeIndicator } from '@/components/features/changes/change-indicator'
-import { cn } from '@/lib/utils'
 import {
   getContentTypeIcon,
   getContentTypeBadgeColor,
   getContentTypeLabel,
 } from '@/lib/utils/content-type'
+import type {
+  DocumentListItem,
+  WorkspaceMemberOption,
+  ListGroupSummary,
+} from '@/app/actions/document-list'
+import type { LawListItemPriority, ComplianceStatus } from '@prisma/client'
+import { useDebouncedCallback } from 'use-debounce'
+import { ChangeIndicator } from '@/components/features/changes/change-indicator'
+import { cn } from '@/lib/utils'
+import { ComplianceStatusEditor } from './table-cell-editors/compliance-status-editor'
+import { ResponsibleEditor } from './table-cell-editors/responsible-editor'
+import { CellErrorBoundary } from './table-cells/cell-error-boundary'
+import { KravpunkterChecklist } from './legal-document-modal/kravpunkter-checklist'
+import useSWR from 'swr'
+import { RichTextDisplay } from '@/components/ui/rich-text-editor'
+import { type RequirementWithEvidence } from '@/app/actions/law-list-item-requirements'
 
-// ============================================================================
-// Constants
-// ============================================================================
-
-/** Enable virtualization when items exceed this threshold */
-const VIRTUALIZATION_THRESHOLD = 100
-
-/** Estimated row height for virtualization calculations */
-const ESTIMATED_ROW_HEIGHT = 72
-
-/** Number of rows to render outside viewport for smooth scrolling */
-const OVERSCAN_COUNT = 5
-
-/** Maximum height of virtualized table container */
-const VIRTUAL_TABLE_MAX_HEIGHT = 600
-
-/** Tooltip delay in ms (AC specifies 200-300ms) */
 const TOOLTIP_DELAY = 250
 
-/** Tooltip content for "Hur påverkar detta oss?" column header */
 const HUR_PAVERKAR_TOOLTIP_CONTENT = {
   title: 'Hur påverkar detta oss?',
   lines: [
@@ -121,7 +62,6 @@ const HUR_PAVERKAR_TOOLTIP_CONTENT = {
   ],
 }
 
-/** Tooltip content for "Kravpunkter" column header (renamed from "Hur efterlever vi kraven?" in 17.18) */
 const KRAVPUNKTER_TOOLTIP_CONTENT = {
   title: 'Kravpunkter',
   lines: [
@@ -132,48 +72,12 @@ const KRAVPUNKTER_TOOLTIP_CONTENT = {
 }
 
 // ============================================================================
-// Props
+// Constants
 // ============================================================================
 
-/** Column IDs that cannot be reordered (pinned to edges) */
-const PINNED_COLUMN_IDS = new Set([
-  'select',
-  'dragHandle',
-  'contentType',
-  'expand',
-])
-
-/**
- * Hardcoded width bounds for every column. Used by `handleColumnSizingChange`
- * to clamp values BEFORE they're persisted, so localStorage can never hold
- * an out-of-bounds width — fixes "drag to infinite width" because TanStack's
- * onEnd-mode commit doesn't always honor min/maxSize.
- */
-const COLUMN_SIZE_BOUNDS: Record<string, { min: number; max: number }> = {
-  select: { min: 56, max: 56 },
-  dragHandle: { min: 56, max: 56 },
-  contentType: { min: 72, max: 72 },
-  title: { min: 150, max: 600 },
-  businessContext: { min: 240, max: 500 },
-  kravpunkter: { min: 215, max: 500 },
-  complianceStatus: { min: 200, max: 250 },
-  priority: { min: 170, max: 220 },
-  responsiblePerson: { min: 110, max: 110 },
-  expand: { min: 50, max: 50 },
-}
-
-function clampColumnSizing(
-  sizing: Record<string, number>
-): Record<string, number> {
-  const clamped: Record<string, number> = {}
-  for (const [id, size] of Object.entries(sizing)) {
-    const bounds = COLUMN_SIZE_BOUNDS[id]
-    clamped[id] = bounds
-      ? Math.max(bounds.min, Math.min(bounds.max, size))
-      : size
-  }
-  return clamped
-}
+// ============================================================================
+// Props
+// ============================================================================
 
 interface ComplianceDetailTableProps {
   items: DocumentListItem[]
@@ -235,6 +139,16 @@ interface ComplianceDetailTableProps {
   /** For nested usage in grouped accordion tables */
   hideGroupColumn?: boolean | undefined
   disableDndContext?: boolean | undefined
+  /**
+   * Story 28.9: controlled selection for grouped mode — the wrapper owns
+   * ONE Set across all sections and renders the single bulk bar. When
+   * provided, this table suppresses its own bulk bar.
+   */
+  selectedItemIds?: ReadonlySet<string> | undefined
+  onSelectionChange?: ((_next: Set<string>) => void) | undefined
+  /** Story 28.10: the user's persisted viewMode 'card' forces the card
+   *  renderer at every width (container width only affects table modes). */
+  forceCardView?: boolean | undefined
   /** Story 17.17: When true, inline kravpunkter editor renders read-only */
   complianceReadOnly?: boolean | undefined
 }
@@ -379,8 +293,6 @@ function ExpandedRowContent({
     total: number
   }>({ fulfilled: 0, total: 0 })
 
-  const visibleCells = row.getVisibleCells()
-
   const outerCellClass = 'bg-muted/30 border-t border-border/60 p-0'
   const cardShellClass =
     'mx-auto max-w-6xl rounded-lg border border-border bg-card shadow-sm'
@@ -391,7 +303,7 @@ function ExpandedRowContent({
 
   if (isNotApplicable) {
     return (
-      <TableCell colSpan={visibleCells.length + 1} className={outerCellClass}>
+      <div className={outerCellClass}>
         <div className="px-6 py-6 lg:px-8">
           <div className={cn(cardShellClass, 'px-6 py-5')}>
             <p className="text-sm text-muted-foreground italic">
@@ -399,7 +311,7 @@ function ExpandedRowContent({
             </p>
           </div>
         </div>
-      </TableCell>
+      </div>
     )
   }
 
@@ -411,7 +323,7 @@ function ExpandedRowContent({
       : 0
 
   return (
-    <TableCell colSpan={visibleCells.length} className={outerCellClass}>
+    <div className={outerCellClass}>
       <div className="px-6 py-6 lg:px-8">
         <div className={cn(cardShellClass, 'p-6 lg:p-8')}>
           <div className="grid grid-cols-1 md:grid-cols-[1fr_1.3fr] gap-y-8 md:gap-y-0">
@@ -497,7 +409,7 @@ function ExpandedRowContent({
           </div>
         </div>
       </div>
-    </TableCell>
+    </div>
   )
 }
 
@@ -633,7 +545,7 @@ export function ComplianceDetailTable({
   groups: _groups = [],
   onMoveToGroup: _onMoveToGroup,
   columnVisibility = {},
-  onColumnVisibilityChange: _onColumnVisibilityChange,
+  onColumnVisibilityChange,
   columnSizing: externalColumnSizing,
   onColumnSizingChange,
   columnOrder: externalColumnOrder,
@@ -643,161 +555,43 @@ export function ComplianceDetailTable({
   onAddContent,
   hideGroupColumn: _hideGroupColumn = false,
   disableDndContext = false,
+  selectedItemIds: controlledSelected,
+  onSelectionChange,
+  forceCardView = false,
   complianceReadOnly = false,
 }: ComplianceDetailTableProps) {
-  // Local state
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
-  const [localItems, setLocalItems] = useState<DocumentListItem[]>(items)
-  const [expandedRowIds, setExpandedRowIds] = useState<Set<string>>(
-    () => new Set()
+  const sorting = useLocalSorting([])
+  const [localSelected, setLocalSelected] = useState<ReadonlySet<string>>(
+    new Set()
   )
+  const selectionControlled =
+    controlledSelected !== undefined && onSelectionChange !== undefined
+  const selected = selectionControlled ? controlledSelected! : localSelected
+  const setSelected = selectionControlled
+    ? (onSelectionChange as (_next: Set<string>) => void)
+    : setLocalSelected
+  const [expanded, setExpanded] = useState<ExpandedState>({})
+
   const [internalColumnSizing, setInternalColumnSizing] =
     useState<ColumnSizingState>({})
-
   const [internalColumnOrder, setInternalColumnOrder] =
     useState<ColumnOrderState>([])
-
-  // Use external sizing/order if provided, otherwise use internal
   const columnSizing = externalColumnSizing ?? internalColumnSizing
   const columnOrder = externalColumnOrder ?? internalColumnOrder
-  const handleColumnOrderChange = useCallback(
-    (newOrder: ColumnOrderState) => {
-      if (onColumnOrderChange) {
-        onColumnOrderChange(newOrder)
-      } else {
-        setInternalColumnOrder(newOrder)
-      }
-    },
-    [onColumnOrderChange]
-  )
 
-  const handleColumnSizingChange = useCallback(
-    (
-      updater:
-        | ColumnSizingState
-        | ((_old: ColumnSizingState) => ColumnSizingState)
-    ) => {
-      const newSizing =
-        typeof updater === 'function' ? updater(columnSizing) : updater
-      // Clamp every column to its declared bounds before persisting. TanStack's
-      // `onEnd` resize mode commits unclamped — clamping here is the source
-      // of truth so the persisted store is always valid.
-      const clampedSizing = clampColumnSizing(newSizing)
-      if (onColumnSizingChange) {
-        onColumnSizingChange(clampedSizing)
-      } else {
-        setInternalColumnSizing(clampedSizing)
-      }
-    },
-    [columnSizing, onColumnSizingChange]
-  )
-
-  // Virtualization refs
-  const tableContainerRef = useRef<HTMLDivElement>(null)
-  const shouldVirtualize = localItems.length > VIRTUALIZATION_THRESHOLD
-
-  // Sync local items with props
-  useEffect(() => {
-    setLocalItems(items)
-  }, [items])
-
-  // Row DnD sensors
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  )
-
-  // Debounced reorder
+  // Debounced reorder persistence (legacy parity: 500ms) — the core's
+  // optimistic order overlay keeps the visual order while this settles.
   const debouncedReorder = useDebouncedCallback(
-    async (newItems: DocumentListItem[]) => {
-      const updates = newItems.map((item, index) => ({
-        id: item.id,
-        position: index,
-      }))
+    async (updates: Array<{ id: string; position: number }>) => {
       await onReorderItems(updates)
     },
     500
   )
 
-  // Handle drag end
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const { active, over } = event
-      if (over && active.id !== over.id) {
-        const oldIndex = localItems.findIndex((item) => item.id === active.id)
-        const newIndex = localItems.findIndex((item) => item.id === over.id)
-        const newItems = arrayMove(localItems, oldIndex, newIndex)
-        setLocalItems(newItems)
-        debouncedReorder(newItems)
-      }
-    },
-    [localItems, debouncedReorder]
-  )
-
-  // Toggle row expansion — multiple rows may be expanded simultaneously.
-  const handleToggleExpand = useCallback((rowId: string) => {
-    setExpandedRowIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(rowId)) {
-        next.delete(rowId)
-      } else {
-        next.add(rowId)
-      }
-      return next
-    })
-  }, [])
-
-  // Column definitions
-  const columns: ColumnDef<DocumentListItem>[] = useMemo(
+  // Column definitions (select + drag chrome injected by the core;
+  // expansion chevron injected as an ordinary consumer column).
+  const columns: ColumnDef<DocumentListItem, unknown>[] = useMemo(
     () => [
-      // Select checkbox
-      {
-        id: 'select',
-        header: ({ table }) => (
-          <Checkbox
-            checked={
-              table.getIsAllPageRowsSelected()
-                ? true
-                : table.getIsSomePageRowsSelected()
-                  ? 'indeterminate'
-                  : false
-            }
-            onCheckedChange={(value: boolean) =>
-              table.toggleAllPageRowsSelected(value)
-            }
-            aria-label="Välj alla"
-          />
-        ),
-        cell: ({ row }) => (
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value: boolean) => row.toggleSelected(value)}
-            aria-label="Välj rad"
-          />
-        ),
-        enableSorting: false,
-        enableResizing: false,
-        size: 56,
-        minSize: 56,
-        maxSize: 56,
-      },
-      // Drag handle
-      {
-        id: 'dragHandle',
-        header: '',
-        cell: () => null, // Rendered by SortableRow
-        enableSorting: false,
-        enableResizing: false,
-        size: 56,
-        minSize: 56,
-        maxSize: 56,
-      },
-      // Content Type icon (Typ) - fixed size, consistent across views
       {
         id: 'contentType',
         accessorFn: (row) => row.document.contentType,
@@ -824,8 +618,16 @@ export function ComplianceDetailTable({
         size: 72,
         minSize: 72,
         maxSize: 72,
+        meta: {
+          dt: {
+            label: 'Typ',
+            pinned: 'left',
+            padding: 'tight',
+            mandatory: true,
+            card: { role: 'hidden' },
+          },
+        },
       },
-      // Document title - fixed size, consistent across views
       {
         id: 'title',
         accessorFn: (row) => row.document.title,
@@ -845,7 +647,6 @@ export function ComplianceDetailTable({
               >
                 {row.original.document.title}
               </button>
-              {/* Story 8.1: Pending change indicator */}
               <ChangeIndicator
                 count={row.original.pendingChangeCount}
                 documentId={row.original.document.id}
@@ -859,8 +660,16 @@ export function ComplianceDetailTable({
         size: 300,
         minSize: 150,
         maxSize: 600,
+        meta: {
+          dt: {
+            label: 'Dokument',
+            stickyLeft: true,
+            fill: true,
+            mandatory: true,
+            card: { role: 'title' },
+          },
+        },
       },
-      // Business Context (truncated)
       {
         id: 'businessContext',
         header: () => (
@@ -884,14 +693,31 @@ export function ComplianceDetailTable({
             />
           </CellErrorBoundary>
         ),
+        enableSorting: false,
         size: 240,
         minSize: 240,
         maxSize: 500,
         enableResizing: true,
+        meta: {
+          dt: {
+            label: 'Hur påverkar detta oss?',
+            card: {
+              role: 'meta',
+              priority: 3,
+              cardLabel: 'Påverkan',
+              renderCard: (row) => {
+                const text = stripHtml(row.original.businessContext)
+                if (!text) return null
+                return (
+                  <span className="line-clamp-2 text-sm text-muted-foreground">
+                    {text}
+                  </span>
+                )
+              },
+            },
+          },
+        },
       },
-      // Kravpunkter (Story 17.18: renamed from "Hur efterlever vi kraven?";
-      //  Story 21.22: column id renamed from `complianceActions` → `kravpunkter`
-      //  to free the old slug for the new compliance-narrative field.)
       {
         id: 'kravpunkter',
         header: () => (
@@ -914,12 +740,30 @@ export function ComplianceDetailTable({
             />
           </CellErrorBoundary>
         ),
+        enableSorting: false,
         size: 215,
         minSize: 215,
         maxSize: 500,
         enableResizing: true,
+        meta: {
+          dt: {
+            label: 'Kravpunkter',
+            card: {
+              role: 'meta',
+              priority: 2,
+              renderCard: (row) => {
+                const total = row.original.requirementTotal
+                if (!total) return null
+                return (
+                  <span className="text-sm tabular-nums">
+                    {row.original.requirementFulfilled ?? 0}/{total} uppfyllda
+                  </span>
+                )
+              },
+            },
+          },
+        },
       },
-      // Compliance Status (compact badge)
       {
         id: 'complianceStatus',
         accessorKey: 'complianceStatus',
@@ -936,12 +780,18 @@ export function ComplianceDetailTable({
             />
           </CellErrorBoundary>
         ),
+        enableSorting: false,
         size: 200,
         minSize: 200,
         maxSize: 250,
         enableResizing: true,
+        meta: {
+          dt: {
+            label: 'Status',
+            card: { role: 'badge', priority: 0, interactive: true },
+          },
+        },
       },
-      // Priority (compact badge)
       {
         id: 'priority',
         accessorKey: 'priority',
@@ -956,12 +806,18 @@ export function ComplianceDetailTable({
             }}
           />
         ),
+        enableSorting: false,
         size: 170,
         minSize: 170,
         maxSize: 220,
         enableResizing: true,
+        meta: {
+          dt: {
+            label: 'Prioritet',
+            card: { role: 'badge', priority: 1, interactive: true },
+          },
+        },
       },
-      // Responsible Person (avatar only)
       {
         id: 'responsiblePerson',
         header: 'Ansvarig',
@@ -994,11 +850,17 @@ export function ComplianceDetailTable({
         size: 110,
         minSize: 110,
         maxSize: 110,
+        meta: {
+          dt: {
+            label: 'Ansvarig',
+            card: { role: 'meta', priority: 4, interactive: true },
+          },
+        },
       },
-      // Expand chevron
+      // Expand chevron — toggles the core's controlled expansion state.
       {
         id: 'expand',
-        header: '',
+        header: () => null,
         cell: ({ row }) => (
           <Button
             variant="ghost"
@@ -1006,13 +868,11 @@ export function ComplianceDetailTable({
             className="h-8 w-8 p-0"
             onClick={(e) => {
               e.stopPropagation()
-              handleToggleExpand(row.original.id)
+              row.toggleExpanded()
             }}
-            aria-label={
-              expandedRowIds.has(row.original.id) ? 'Fäll ihop' : 'Expandera'
-            }
+            aria-label={row.getIsExpanded() ? 'Fäll ihop' : 'Expandera'}
           >
-            {expandedRowIds.has(row.original.id) ? (
+            {row.getIsExpanded() ? (
               <ChevronUp className="h-4 w-4" />
             ) : (
               <ChevronDown className="h-4 w-4" />
@@ -1024,6 +884,15 @@ export function ComplianceDetailTable({
         size: 50,
         minSize: 50,
         maxSize: 50,
+        meta: {
+          dt: {
+            label: 'Expandera',
+            pinned: 'right',
+            padding: 'tight',
+            mandatory: true,
+            card: { role: 'hidden' },
+          },
+        },
       },
     ],
     [
@@ -1031,360 +900,125 @@ export function ComplianceDetailTable({
       workspaceMembers,
       onRowClick,
       onAddContent,
-      handleToggleExpand,
-      expandedRowIds,
       complianceReadOnly,
     ]
   )
 
-  // Column reorder handler (native HTML5 DnD via DraggableColumnHeader)
-  const handleColumnReorder = useCallback(
-    (activeId: string, overId: string) => {
-      const currentOrder =
-        columnOrder.length > 0
-          ? columnOrder
-          : columns.map((c) => c.id ?? '').filter(Boolean)
+  // ---- Bulk actions ----
+  const selectedItemIds = useMemo(() => [...selected], [selected])
 
-      const oldIndex = currentOrder.indexOf(activeId)
-      const newIndex = currentOrder.indexOf(overId)
-      if (oldIndex === -1 || newIndex === -1) return
-
-      handleColumnOrderChange(arrayMove(currentOrder, oldIndex, newIndex))
-    },
-    [columnOrder, columns, handleColumnOrderChange]
-  )
-
-  // Table instance
-  const table = useReactTable({
-    data: localItems,
-    columns,
-    state: {
-      sorting,
-      rowSelection,
-      columnVisibility,
-      columnSizing,
-      columnOrder,
-    },
-    onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
-    onColumnSizingChange: handleColumnSizingChange,
-    onColumnOrderChange: (updater) => {
-      const newOrder =
-        typeof updater === 'function' ? updater(columnOrder) : updater
-      handleColumnOrderChange(newOrder)
-    },
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getRowId: (row) => row.id,
-    enableRowSelection: true,
-    enableColumnResizing: true,
-    columnResizeMode: 'onEnd',
-  })
-
-  // Row virtualizer for large datasets
-  // Helper to get column width with live resize preview
-  // Uses columnSizingInfo to show resize feedback without state updates
-  // Respects minSize/maxSize constraints for visual feedback
-  const { columnSizingInfo } = table.getState()
-  const getColumnWidth = (headerId: string, defaultSize: number) => {
-    const column = table.getColumn(headerId)
-    const minSize = column?.columnDef.minSize ?? 0
-    const maxSize = column?.columnDef.maxSize ?? Infinity
-    if (columnSizingInfo.isResizingColumn === headerId) {
-      const newSize =
-        (columnSizingInfo.startSize ?? defaultSize) +
-        (columnSizingInfo.deltaOffset ?? 0)
-      return Math.max(minSize, Math.min(maxSize, newSize))
-    }
-    // Clamp persisted/default size — TanStack onEnd commits unclamped, and
-    // stale localStorage from before bounds existed can render outside.
-    return Math.max(minSize, Math.min(maxSize, defaultSize))
-  }
-
-  // Sum of all visible column widths (live-aware during resize). Combined
-  // with a spacer cell at the end of each row, this lets chrome columns
-  // hold their declared widths instead of inflating proportionally under
-  // `table-fixed` when the column-sum is less than the container width.
-  const liveTotalWidth = table
-    .getVisibleLeafColumns()
-    .reduce((sum, col) => sum + getColumnWidth(col.id, col.getSize()), 0)
-
-  const rows = table.getRowModel().rows
-  const columnOrderKey = useMemo(() => columnOrder.join(','), [columnOrder])
-  const rowVirtualizer = useVirtualizer({
-    count: rows.length,
-    getScrollElement: () => tableContainerRef.current,
-    estimateSize: () => ESTIMATED_ROW_HEIGHT,
-    overscan: OVERSCAN_COUNT,
-    enabled: shouldVirtualize,
-  })
-
-  // Selected items
-  const selectedItemIds = Object.keys(rowSelection).filter(
-    (id) => rowSelection[id]
-  )
-
-  // Handle bulk update
   const handleBulkUpdate = async (updates: {
     complianceStatus?: ComplianceStatus
     responsibleUserId?: string | null
   }) => {
     await onBulkUpdate(selectedItemIds, updates)
-    setRowSelection({})
+    setSelected(new Set())
   }
+
+  const handleReorder = useCallback(
+    (updates: Array<{ id: string; position: number }>) => {
+      debouncedReorder(updates)
+    },
+    [debouncedReorder]
+  )
 
   // Empty state
   if (items.length === 0 && !isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
-        <div className="rounded-full bg-muted p-4">
-          <FileText className="h-8 w-8 text-muted-foreground" />
-        </div>
-        <p className="text-muted-foreground max-w-md">{emptyMessage}</p>
-      </div>
+      <EmptyState
+        icon={
+          <EmptyState.Icon>
+            <FileText className="h-8 w-8 text-muted-foreground" />
+          </EmptyState.Icon>
+        }
+        description={emptyMessage}
+      />
     )
   }
 
-  const renderTableContent = () => (
-    <Table className="table-fixed" style={{ minWidth: liveTotalWidth }}>
-      <TableHeader
-        className={
-          shouldVirtualize ? 'sticky top-0 z-20 bg-background' : undefined
-        }
-      >
-        {table.getHeaderGroups().map((headerGroup) => (
-          <TableRow key={headerGroup.id}>
-            {headerGroup.headers.map((header) => {
-              const isPinned = PINNED_COLUMN_IDS.has(header.id)
-              const headerContent = (
-                <>
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                  {/* Resize handle - only show for resizable columns */}
-                  {header.column.getCanResize() && (
-                    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-                    <div
-                      role="separator"
-                      aria-orientation="vertical"
-                      onPointerDown={(e) => e.stopPropagation()}
-                      onMouseDown={header.getResizeHandler()}
-                      onTouchStart={header.getResizeHandler()}
-                      className={cn(
-                        'absolute right-0 top-0 h-full w-4 cursor-col-resize select-none touch-none group/resize',
-                        'flex items-center justify-center'
-                      )}
-                    >
-                      <div
-                        className={cn(
-                          'h-4 w-0.5 rounded-full bg-border transition-colors',
-                          'group-hover/resize:bg-primary group-hover/resize:h-6',
-                          header.column.getIsResizing() && 'bg-primary h-6'
-                        )}
-                      />
-                    </div>
-                  )}
-                </>
-              )
-
-              if (isPinned) {
-                return (
-                  <TableHead
-                    key={header.id}
-                    style={{
-                      width: getColumnWidth(header.id, header.getSize()),
-                    }}
-                    className={cn(
-                      'relative',
-                      header.id === 'title' &&
-                        'sticky left-0 bg-background z-10',
-                      header.id === 'select' && 'pl-6 pr-2',
-                      header.id === 'dragHandle' && 'px-2',
-                      header.id === 'contentType' && 'pl-5 pr-2'
-                    )}
-                  >
-                    {headerContent}
-                  </TableHead>
-                )
-              }
-
-              return (
-                <DraggableColumnHeader
-                  key={header.id}
-                  id={header.id}
-                  onReorder={handleColumnReorder}
-                  style={{
-                    width: getColumnWidth(header.id, header.getSize()),
-                  }}
-                  className={cn(
-                    'relative',
-                    header.id === 'title' && 'sticky left-0 bg-background z-10'
-                  )}
-                >
-                  {headerContent}
-                </DraggableColumnHeader>
-              )
-            })}
-            {/* Spacer absorbs leftover width so chrome columns don't inflate */}
-            <TableHead aria-hidden="true" className="p-0" />
-          </TableRow>
-        ))}
-      </TableHeader>
-      <TableBody
-        style={
-          shouldVirtualize
-            ? {
-                height: `${rowVirtualizer.getTotalSize()}px`,
-                position: 'relative',
-              }
-            : undefined
-        }
-      >
-        <SortableContext
-          items={localItems.map((item) => item.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          {rows.length > 0 ? (
-            shouldVirtualize ? (
-              rowVirtualizer.getVirtualItems().map((virtualItem) => {
-                const row = rows[virtualItem.index]
-                if (!row) return null
-                return (
-                  <VirtualComplianceRow
-                    key={row.id}
-                    row={row}
-                    virtualItem={virtualItem}
-                    expandedRowIds={expandedRowIds}
-                    onRowClick={onRowClick}
-                    columnOrderKey={columnOrderKey}
-                    complianceReadOnly={complianceReadOnly}
-                    workspaceMembers={workspaceMembers}
-                  />
-                )
-              })
-            ) : (
-              rows.map((row) => (
-                <ComplianceRow
-                  key={row.id}
-                  row={row}
-                  expandedRowIds={expandedRowIds}
-                  onRowClick={onRowClick}
-                  columnOrderKey={columnOrderKey}
-                  complianceReadOnly={complianceReadOnly}
-                  workspaceMembers={workspaceMembers}
-                />
-              ))
-            )
-          ) : (
-            <TableRow>
-              <TableCell
-                colSpan={columns.length + 1}
-                className="h-24 text-center"
-              >
-                {isLoading ? 'Laddar...' : 'Inga resultat.'}
-              </TableCell>
-            </TableRow>
-          )}
-        </SortableContext>
-      </TableBody>
-    </Table>
-  )
-
   return (
     <div className="flex flex-col gap-4">
-      {/* Bulk action bar */}
-      {selectedItemIds.length > 0 && (
+      {!selectionControlled && selectedItemIds.length > 0 && (
         <BulkActionBar
           selectedCount={selectedItemIds.length}
-          onClearSelection={() => setRowSelection({})}
+          onClearSelection={() => setSelected(new Set())}
           onBulkUpdate={handleBulkUpdate}
           workspaceMembers={workspaceMembers}
         />
       )}
 
-      {/* Table */}
-      <div
-        ref={tableContainerRef}
-        className={cn(
-          'rounded-md border overflow-x-auto',
-          shouldVirtualize && 'overflow-y-auto'
-        )}
-        style={
-          shouldVirtualize ? { maxHeight: VIRTUAL_TABLE_MAX_HEIGHT } : undefined
+      <DataTable<DocumentListItem>
+        data={items}
+        columns={columns}
+        getRowId={(row) => row.id}
+        sorting={sorting}
+        selection={{ selected, onSelectedChange: setSelected }}
+        columnState={{
+          visibility: columnVisibility,
+          ...(onColumnVisibilityChange
+            ? {
+                onVisibilityChange: (updater: Updater<VisibilityState>) =>
+                  onColumnVisibilityChange(
+                    typeof updater === 'function'
+                      ? updater(columnVisibility)
+                      : updater
+                  ),
+              }
+            : {}),
+          sizing: columnSizing,
+          onSizingChange: (updater: Updater<ColumnSizingState>) => {
+            const next =
+              typeof updater === 'function' ? updater(columnSizing) : updater
+            if (onColumnSizingChange) onColumnSizingChange(next)
+            else setInternalColumnSizing(next)
+          },
+          order: columnOrder,
+          onOrderChange: (updater: Updater<ColumnOrderState>) => {
+            const next =
+              typeof updater === 'function' ? updater(columnOrder) : updater
+            if (onColumnOrderChange) onColumnOrderChange(next)
+            else setInternalColumnOrder(next)
+          },
+        }}
+        expansion={{
+          renderExpanded: (row) => (
+            <ExpandedRowContent
+              row={row}
+              complianceReadOnly={complianceReadOnly}
+              workspaceMembers={workspaceMembers}
+            />
+          ),
+          expanded,
+          onExpandedChange: (updater) =>
+            setExpanded(
+              typeof updater === 'function' ? updater(expanded) : updater
+            ),
+        }}
+        dnd={
+          disableDndContext
+            ? { mode: 'external' }
+            : { mode: 'self', onReorder: handleReorder }
         }
-      >
-        {disableDndContext ? (
-          renderTableContent()
-        ) : (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-            modifiers={[restrictToVerticalAxis]}
-          >
-            {renderTableContent()}
-          </DndContext>
-        )}
-      </div>
-
-      {/* Load more */}
-      {hasMore && (
-        <div className="flex justify-center pt-4">
-          <Button variant="outline" onClick={onLoadMore} disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Laddar...
-              </>
-            ) : (
-              'Visa fler'
-            )}
-          </Button>
-        </div>
-      )}
+        loadMore={{
+          kind: 'button',
+          hasMore,
+          isLoading,
+          onLoadMore,
+          label: 'Visa fler',
+        }}
+        rowInteraction={
+          onRowClick ? { onRowClick: (row) => onRowClick(row.id) } : {}
+        }
+        status={{ isLoading }}
+        rowHeight="tall"
+        view={forceCardView ? { force: 'card' } : { cardBelow: 800 }}
+      />
     </div>
   )
 }
 
 // ============================================================================
-// Sortable Header Component
-// ============================================================================
-
-function SortableHeader({
-  column,
-  label,
-}: {
-  column: {
-    getIsSorted: () => false | 'asc' | 'desc'
-    toggleSorting: (_desc?: boolean) => void
-  }
-  label: string
-}) {
-  const sorted = column.getIsSorted()
-
-  return (
-    <Button
-      variant="ghost"
-      onClick={() => column.toggleSorting(sorted === 'asc')}
-      className="-ml-4 h-8"
-    >
-      {label}
-      {sorted === 'asc' ? (
-        <ArrowUp className="ml-2 h-4 w-4" />
-      ) : sorted === 'desc' ? (
-        <ArrowDown className="ml-2 h-4 w-4" />
-      ) : (
-        <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-      )}
-    </Button>
-  )
-}
-
-// ============================================================================
-// Header with Tooltip Component (for non-sortable columns)
+// Header with Info Tooltip (non-sortable)
 // ============================================================================
 
 function HeaderWithTooltip({
@@ -1431,231 +1065,3 @@ function HeaderWithTooltip({
     </div>
   )
 }
-
-// ============================================================================
-// Compliance Row Component
-// ============================================================================
-
-const ComplianceRow = memo(function ComplianceRow({
-  row,
-  expandedRowIds,
-  onRowClick,
-  columnOrderKey: _columnOrderKey,
-  complianceReadOnly,
-  workspaceMembers,
-}: {
-  row: ReturnType<
-    ReturnType<typeof useReactTable<DocumentListItem>>['getRowModel']
-  >['rows'][number]
-  expandedRowIds: Set<string>
-  onRowClick?: ((_listItemId: string) => void) | undefined
-  columnOrderKey?: string
-  complianceReadOnly?: boolean | undefined
-  workspaceMembers: WorkspaceMemberOption[]
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: row.id })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  }
-
-  const isExpanded = expandedRowIds.has(row.original.id)
-
-  // Handle row click (ignore interactive elements)
-  const handleRowClick = useCallback(
-    (e: React.MouseEvent<HTMLTableRowElement>) => {
-      if (!onRowClick) return
-      const target = e.target as HTMLElement
-      if (
-        target.closest(
-          'button, input, select, a, [role="combobox"], [role="checkbox"]'
-        )
-      ) {
-        return
-      }
-      onRowClick(row.original.id)
-    },
-    [onRowClick, row.original.id]
-  )
-
-  return (
-    <>
-      <TableRow
-        ref={setNodeRef}
-        style={style}
-        data-state={row.getIsSelected() && 'selected'}
-        className={cn(
-          'group',
-          onRowClick && 'cursor-pointer hover:bg-muted/50',
-          isExpanded && 'bg-muted/30'
-        )}
-        onClick={handleRowClick}
-      >
-        {row.getVisibleCells().map((cell) => (
-          <TableCell
-            key={cell.id}
-            className={cn(
-              cell.column.id === 'title' && 'sticky left-0 bg-background z-10',
-              cell.column.id === 'select' && 'pl-6 pr-2',
-              (cell.column.id === 'dragHandle' ||
-                cell.column.id === 'contentType') &&
-                'px-2'
-            )}
-          >
-            {cell.column.id === 'dragHandle' ? (
-              <button
-                {...attributes}
-                {...listeners}
-                className="flex w-full items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
-                aria-label="Dra för att flytta"
-              >
-                <GripVertical className="h-4 w-4" />
-              </button>
-            ) : (
-              flexRender(cell.column.columnDef.cell, cell.getContext())
-            )}
-          </TableCell>
-        ))}
-        <TableCell aria-hidden="true" className="p-0" />
-      </TableRow>
-      {/* Expanded content */}
-      {isExpanded && (
-        <TableRow>
-          <ExpandedRowContent
-            row={row}
-            complianceReadOnly={complianceReadOnly}
-            workspaceMembers={workspaceMembers}
-          />
-        </TableRow>
-      )}
-    </>
-  )
-})
-
-// ============================================================================
-// Virtual Compliance Row Component
-// ============================================================================
-
-const VirtualComplianceRow = memo(function VirtualComplianceRow({
-  row,
-  virtualItem,
-  expandedRowIds,
-  onRowClick,
-  columnOrderKey: _columnOrderKey,
-  complianceReadOnly,
-  workspaceMembers,
-}: {
-  row: ReturnType<
-    ReturnType<typeof useReactTable<DocumentListItem>>['getRowModel']
-  >['rows'][number]
-  virtualItem: VirtualItem
-  expandedRowIds: Set<string>
-  onRowClick?: ((_listItemId: string) => void) | undefined
-  columnOrderKey?: string
-  complianceReadOnly?: boolean | undefined
-  workspaceMembers: WorkspaceMemberOption[]
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: row.id })
-
-  const isExpanded = expandedRowIds.has(row.original.id)
-
-  const style: React.CSSProperties = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: `${virtualItem.size}px`,
-    transform: transform
-      ? `translate3d(${transform.x}px, ${virtualItem.start + transform.y}px, 0)`
-      : `translateY(${virtualItem.start}px)`,
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 10 : undefined,
-  }
-
-  // Handle row click (ignore interactive elements)
-  const handleRowClick = useCallback(
-    (e: React.MouseEvent<HTMLTableRowElement>) => {
-      if (!onRowClick) return
-      const target = e.target as HTMLElement
-      if (
-        target.closest(
-          'button, input, select, a, [role="combobox"], [role="checkbox"]'
-        )
-      ) {
-        return
-      }
-      onRowClick(row.original.id)
-    },
-    [onRowClick, row.original.id]
-  )
-
-  return (
-    <>
-      <TableRow
-        ref={setNodeRef}
-        style={style}
-        data-state={row.getIsSelected() && 'selected'}
-        className={cn(
-          'group',
-          onRowClick && 'cursor-pointer hover:bg-muted/50',
-          isExpanded && 'bg-muted/30'
-        )}
-        onClick={handleRowClick}
-      >
-        {row.getVisibleCells().map((cell) => (
-          <TableCell
-            key={cell.id}
-            className={cn(
-              cell.column.id === 'title' && 'sticky left-0 bg-background z-10',
-              cell.column.id === 'select' && 'pl-6 pr-2',
-              (cell.column.id === 'dragHandle' ||
-                cell.column.id === 'contentType') &&
-                'px-2'
-            )}
-          >
-            {cell.column.id === 'dragHandle' ? (
-              <button
-                {...attributes}
-                {...listeners}
-                className="flex w-full items-center justify-center cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
-                aria-label="Dra för att flytta"
-              >
-                <GripVertical className="h-4 w-4" />
-              </button>
-            ) : (
-              flexRender(cell.column.columnDef.cell, cell.getContext())
-            )}
-          </TableCell>
-        ))}
-        <TableCell aria-hidden="true" className="p-0" />
-      </TableRow>
-      {/* Expanded content */}
-      {isExpanded && (
-        <TableRow>
-          <ExpandedRowContent
-            row={row}
-            complianceReadOnly={complianceReadOnly}
-            workspaceMembers={workspaceMembers}
-          />
-        </TableRow>
-      )}
-    </>
-  )
-})

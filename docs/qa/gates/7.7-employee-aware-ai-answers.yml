@@ -110,4 +110,4 @@ recommendations:
     - action: 'Commit 7.7 selectively so its File List stays truthful (HYG-001).'
       refs: ['app/globals.css', 'components/layout/workspace-shell.tsx']
     - action: 'PO confirm: AUDITOR may search kollektivavtal text while never seeing the employee pill/lookup (documented stance, pinned by registry tests).'
-      refs: ['docs/stories/7.7.employee-aware-ai-answers.md']
+      refs: ['docs/stories/completed/7.7.employee-aware-ai-answers.md']

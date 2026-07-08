@@ -1,5 +1,12 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+
+// Epic 28: the DataTable core's renderer switch is container-width-driven;
+// happy-dom has no layout (width 0 → card view). Report a wide container so
+// these tests exercise the TABLE renderer they pin.
+vi.mock('@/components/ui/data-table/use-container-width', () => ({
+  useContainerWidth: () => ({ ref: () => {}, width: 1400 }),
+}))
 import userEvent from '@testing-library/user-event'
 import {
   DocumentTable,
@@ -99,9 +106,10 @@ describe('DocumentTable', () => {
     expect(defaultProps.onSort).toHaveBeenCalledWith('title')
   })
 
-  it('renders empty table body when no documents', () => {
+  it('renders the empty state when no documents', () => {
     render(<DocumentTable {...defaultProps} documents={[]} />)
-    // Table header should still exist
-    expect(screen.getByText('Titel')).toBeInTheDocument()
+    // Epic 28: the core swaps a header-only table for an explicit empty
+    // state at zero rows (intended change).
+    expect(screen.getByText('Här är det tomt än så länge.')).toBeInTheDocument()
   })
 })

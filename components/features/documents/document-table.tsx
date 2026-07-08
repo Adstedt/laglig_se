@@ -1,23 +1,22 @@
 'use client'
 
+/**
+ * Story 17.x → migrated in Story 28.4 (Epic 28) onto the unified DataTable
+ * core. Column definitions + adapter mapping only; table mechanics (URL
+ * manualSorting, sticky header, row-click guard, the narrow-container card
+ * renderer) live in components/ui/data-table.
+ *
+ * Public interface unchanged — document-browser-page.tsx owns sort state
+ * via URL params and archive orchestration exactly as before.
+ *
+ * Marketing note (28.4): landing-v3 renders a FROZEN presentational copy
+ * (components/features/landing-v3/marketing-document-table.tsx) — hero
+ * screenshots never track this live implementation.
+ */
+
 import { useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  type ColumnDef,
-  type OnChangeFn,
-  type SortingState,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from '@tanstack/react-table'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import type { ColumnDef, SortingState, Updater } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
 import {
   DropdownMenu,
@@ -36,6 +35,7 @@ import {
 } from 'lucide-react'
 import { formatDistanceToNow, format } from 'date-fns'
 import { sv } from 'date-fns/locale'
+import { DataTable } from '@/components/ui/data-table'
 import { DualStatusBadge } from '@/components/features/documents/dual-status-badge'
 import { VersionHistoryPanel } from '@/components/features/documents/editor/version-history-panel'
 import { getReviewDateStatus } from '@/lib/utils/review-date-status'
@@ -127,6 +127,66 @@ function ReviewDateCell({ date }: { date: string | null }) {
   )
 }
 
+function DocumentActionsMenu({
+  doc,
+  onArchive,
+}: {
+  doc: DocumentItem
+  onArchive: (_documentId: string) => void
+}) {
+  const router = useRouter()
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 w-7 p-0"
+          aria-label={`Åtgärder för ${doc.title}`}
+        >
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem
+          onClick={() => router.push(`/workspace/styrdokument/${doc.id}/edit`)}
+        >
+          <ExternalLink className="mr-2 h-4 w-4" />
+          Öppna
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() =>
+            window.open(
+              `/api/workspace/documents/${doc.id}/export?format=docx`,
+              '_blank'
+            )
+          }
+        >
+          <FileText className="mr-2 h-4 w-4" />
+          Exportera som Word
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() =>
+            window.open(
+              `/api/workspace/documents/${doc.id}/export?format=pdf`,
+              '_blank'
+            )
+          }
+        >
+          <FileDown className="mr-2 h-4 w-4" />
+          Exportera som PDF
+        </DropdownMenuItem>
+        {doc.status !== 'ARCHIVED' && (
+          <DropdownMenuItem onClick={() => onArchive(doc.id)}>
+            <Archive className="mr-2 h-4 w-4" />
+            Arkivera
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 export function DocumentTable({
   documents,
   sortBy,
@@ -136,7 +196,7 @@ export function DocumentTable({
 }: DocumentTableProps) {
   const router = useRouter()
 
-  const columns = useMemo<ColumnDef<DocumentItem>[]>(
+  const columns = useMemo<ColumnDef<DocumentItem, unknown>[]>(
     () => [
       {
         id: 'title',
@@ -144,13 +204,21 @@ export function DocumentTable({
         header: ({ column }) => (
           <SortableHeader column={column} label="Titel" />
         ),
+        // break-word: unbroken filenames (GDPR_policy_…) must wrap inside
+        // the column instead of overflowing into Dokumentnr.
         cell: ({ row }) => (
-          <span className="font-medium">{row.original.title}</span>
+          <span className="font-medium [word-break:break-word]">
+            {row.original.title}
+          </span>
         ),
+        // Fill column: 280 is the floor, surplus container width lands here.
         size: 280,
         minSize: 180,
         maxSize: 600,
         enableSorting: true,
+        meta: {
+          dt: { label: 'Titel', fill: true, card: { role: 'title' } },
+        },
       },
       {
         id: 'document_number',
@@ -165,6 +233,22 @@ export function DocumentTable({
         minSize: 100,
         maxSize: 180,
         enableSorting: false,
+        meta: {
+          dt: {
+            label: 'Dokumentnr',
+            card: {
+              role: 'meta',
+              priority: 1,
+              // Skip the card row entirely when there's no number.
+              renderCard: (row) =>
+                row.original.document_number ? (
+                  <span className="text-sm text-muted-foreground">
+                    {row.original.document_number}
+                  </span>
+                ) : null,
+            },
+          },
+        },
       },
       {
         id: 'document_type',
@@ -180,6 +264,9 @@ export function DocumentTable({
         minSize: 80,
         maxSize: 140,
         enableSorting: false,
+        meta: {
+          dt: { label: 'Typ', card: { role: 'badge', priority: 1 } },
+        },
       },
       {
         id: 'status',
@@ -212,6 +299,12 @@ export function DocumentTable({
         minSize: 220,
         maxSize: 360,
         enableSorting: false,
+        meta: {
+          dt: {
+            label: 'Status',
+            card: { role: 'badge', priority: 0, interactive: true },
+          },
+        },
       },
       {
         id: 'version',
@@ -226,6 +319,9 @@ export function DocumentTable({
         minSize: 70,
         maxSize: 100,
         enableSorting: false,
+        meta: {
+          dt: { label: 'Version', card: { role: 'meta', priority: 4 } },
+        },
       },
       {
         id: 'creator',
@@ -240,6 +336,9 @@ export function DocumentTable({
         minSize: 110,
         maxSize: 200,
         enableSorting: false,
+        meta: {
+          dt: { label: 'Författare', card: { role: 'meta', priority: 2 } },
+        },
       },
       {
         id: 'updated_at',
@@ -264,6 +363,9 @@ export function DocumentTable({
         minSize: 140,
         maxSize: 220,
         enableSorting: true,
+        meta: {
+          dt: { label: 'Senast uppdaterad', card: { role: 'footer' } },
+        },
       },
       {
         id: 'review_date',
@@ -280,19 +382,33 @@ export function DocumentTable({
         minSize: 120,
         maxSize: 200,
         enableSorting: true,
+        meta: {
+          dt: {
+            label: 'Granskningsdatum',
+            card: {
+              role: 'meta',
+              priority: 3,
+              // Only meaningful when set — skip the row otherwise.
+              renderCard: (row) =>
+                row.original.review_date ? (
+                  <span className="text-sm">
+                    <ReviewDateCell date={row.original.review_date} />
+                  </span>
+                ) : null,
+            },
+          },
+        },
       },
       {
         id: 'history',
-        header: '',
+        header: () => null,
         cell: ({ row }) => {
           const doc = row.original
           // Story 17.17 smoke-found polish: the panel's "Aktuell" label
           // should mark the canonical approved baseline currently in force
           // ("i kraft"), NOT whichever version the editor happens to be
-          // displaying. For a dual-state doc, "Aktuell" should be the
-          // approved version (the one that's compliance-active), not the
-          // draft that's still being worked on. Priority: approved → draft
-          // (never-approved fallback) → counter (legacy/edge case).
+          // displaying. Priority: approved → draft (never-approved
+          // fallback) → counter (legacy/edge case).
           const aktuellVersionNumber =
             doc.current_approved_version?.version_number ??
             doc.current_draft_version?.version_number ??
@@ -317,11 +433,6 @@ export function DocumentTable({
                   size="sm"
                   className="h-7 w-7 p-0"
                   aria-label={`Visa versionshistorik för ${doc.title}`}
-                  // Story 17.17 AC 14 — stop click bubbling so the row's
-                  // default editor-navigation handler does not double-fire.
-                  // Radix SheetTrigger's asChild composes its own onClick
-                  // through `composeEventHandlers`, so the Sheet still opens.
-                  onClick={(e) => e.stopPropagation()}
                 >
                   <History className="h-4 w-4" />
                 </Button>
@@ -333,147 +444,76 @@ export function DocumentTable({
         minSize: 40,
         maxSize: 40,
         enableSorting: false,
+        meta: {
+          dt: {
+            label: 'Historik',
+            pinned: 'right',
+            padding: 'tight',
+            card: { role: 'hidden' },
+          },
+        },
       },
       {
         id: 'actions',
-        header: '',
-        cell: ({ row }) => {
-          const doc = row.original
-          return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    router.push(`/workspace/styrdokument/${doc.id}/edit`)
-                  }}
-                >
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  Öppna
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    window.open(
-                      `/api/workspace/documents/${doc.id}/export?format=docx`,
-                      '_blank'
-                    )
-                  }}
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  Exportera som Word
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    window.open(
-                      `/api/workspace/documents/${doc.id}/export?format=pdf`,
-                      '_blank'
-                    )
-                  }}
-                >
-                  <FileDown className="mr-2 h-4 w-4" />
-                  Exportera som PDF
-                </DropdownMenuItem>
-                {doc.status !== 'ARCHIVED' && (
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onArchive(doc.id)
-                    }}
-                  >
-                    <Archive className="mr-2 h-4 w-4" />
-                    Arkivera
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )
-        },
+        header: () => null,
+        cell: ({ row }) => (
+          <DocumentActionsMenu doc={row.original} onArchive={onArchive} />
+        ),
         size: 56,
         minSize: 56,
         maxSize: 56,
         enableSorting: false,
+        meta: {
+          dt: {
+            label: 'Åtgärder',
+            pinned: 'right',
+            padding: 'tight',
+            // Surfaces as the card's kebab via slots.cardActions below.
+            card: { role: 'hidden' },
+          },
+        },
       },
     ],
     [router, onArchive]
   )
 
   // Server-driven sort: the parent (`document-browser-page.tsx`) owns sort
-  // state via URL params and re-fetches on change. We surface the current
-  // sort to TanStack so SortableHeader renders the right arrow, then forward
-  // header clicks to `onSort(field)` — the parent's `handleSort` owns the
-  // asc/desc toggle.
-  const sorting: SortingState = [{ id: sortBy, desc: sortOrder === 'desc' }]
+  // state via URL params and re-fetches on change; the adapter surfaces the
+  // current sort so headers render arrows, and forwards clicks to onSort —
+  // the parent's handleSort owns the asc/desc toggle.
+  const sortingState: SortingState = useMemo(
+    () => [{ id: sortBy, desc: sortOrder === 'desc' }],
+    [sortBy, sortOrder]
+  )
 
-  const handleSortingChange: OnChangeFn<SortingState> = (updater) => {
-    const next = typeof updater === 'function' ? updater(sorting) : updater
+  const handleSortingChange = (updater: Updater<SortingState>) => {
+    const next = typeof updater === 'function' ? updater(sortingState) : updater
     const first = next[0]
     if (first) onSort(first.id as SortField)
   }
 
-  const table = useReactTable({
-    data: documents,
-    columns,
-    state: { sorting },
-    onSortingChange: handleSortingChange,
-    manualSorting: true,
-    getCoreRowModel: getCoreRowModel(),
-  })
-
   return (
-    <div className="rounded-md border overflow-x-auto">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  style={{ minWidth: header.getSize() }}
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                </TableHead>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.map((row) => (
-            <TableRow
-              key={row.id}
-              className="cursor-pointer"
-              onClick={() =>
-                router.push(`/workspace/styrdokument/${row.original.id}/edit`)
-              }
-            >
-              {row.getVisibleCells().map((cell) => (
-                <TableCell
-                  key={cell.id}
-                  style={{ minWidth: cell.column.getSize() }}
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+    <DataTable<DocumentItem>
+      data={documents}
+      columns={columns}
+      getRowId={(row) => row.id}
+      sorting={{
+        sorting: sortingState,
+        onSortingChange: handleSortingChange,
+        manual: true,
+      }}
+      rowInteraction={{
+        onRowClick: (row) =>
+          router.push(`/workspace/styrdokument/${row.id}/edit`),
+      }}
+      slots={{
+        cardActions: (row) => (
+          <DocumentActionsMenu doc={row.original} onArchive={onArchive} />
+        ),
+      }}
+      // Two tiers (matches krav): full table with horizontal scroll down to
+      // 800px container, cards below (chat maximized / mobile).
+      view={{ cardBelow: 800 }}
+    />
   )
 }

@@ -96,6 +96,8 @@ interface GroupedDocumentListTableProps {
   taskProgress?: Map<string, TaskProgress>
   lastActivity?: Map<string, LastActivity>
   emptyMessage?: string | undefined
+  /** Story 28.10: viewMode 'card' renders card lists inside each section. */
+  forceCardView?: boolean | undefined
 }
 
 export function GroupedDocumentListTable({
@@ -126,6 +128,7 @@ export function GroupedDocumentListTable({
   taskProgress,
   lastActivity,
   emptyMessage = 'Inga dokument i listan.',
+  forceCardView = false,
 }: GroupedDocumentListTableProps) {
   const [localItems, setLocalItems] = useState<DocumentListItem[]>(items)
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -298,23 +301,11 @@ export function GroupedDocumentListTable({
     [localItems, onMoveToGroup, onReorderItems]
   )
 
-  // Handle selection changes from individual sections
-  const handleSelectionChange = useCallback(
-    (_groupId: string, itemIds: string[], isSelected: boolean) => {
-      setSelectedItemIds((prev) => {
-        const next = new Set(prev)
-        itemIds.forEach((id) => {
-          if (isSelected) {
-            next.add(id)
-          } else {
-            next.delete(id)
-          }
-        })
-        return next
-      })
-    },
-    []
-  )
+  // Story 28.9: sections receive the ONE Set + setter — cross-section
+  // select-all and the shared bulk bar are correct by construction.
+  const handleSelectionChange = useCallback((next: Set<string>) => {
+    setSelectedItemIds(next)
+  }, [])
 
   // Handle bulk update for selected items (returns void for BulkActionBar compatibility)
   const handleBulkUpdate = useCallback(
@@ -370,41 +361,45 @@ export function GroupedDocumentListTable({
         />
       )}
 
-      {/* Header with stats and expand/collapse controls */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground">
-          Visar {items.length} av {total} dokument.
-          {hasGroups && (
-            <span className="hidden sm:inline ml-1">
-              Dra till grupprubriker för att flytta.
-            </span>
-          )}
-        </p>
-        <div className="flex items-center gap-1 sm:gap-2">
-          {hasGroups && (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onExpandAll}
-                className="h-8 text-xs px-2 sm:px-3"
-                title="Visa alla grupper"
-              >
-                <ExpandIcon className="h-3.5 w-3.5 sm:mr-1" />
-                <span className="hidden sm:inline">Visa alla</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onCollapseAll}
-                className="h-8 text-xs px-2 sm:px-3"
-                title="Dölj alla grupper"
-              >
-                <MinusIcon className="h-3.5 w-3.5 sm:mr-1" />
-                <span className="hidden sm:inline">Dölj alla</span>
-              </Button>
-            </>
-          )}
+      {/* Header with stats and expand/collapse controls. Container-width
+          responsive (not viewport): one row always; the drag hint and the
+          button labels drop when the page is squeezed by the chat sidebar. */}
+      <div className="@container">
+        <div className="flex items-center justify-between gap-2">
+          <p className="min-w-0 truncate text-sm text-muted-foreground">
+            Visar {items.length} av {total} dokument.
+            {hasGroups && (
+              <span className="hidden @[40rem]:inline ml-1">
+                Dra till grupprubriker för att flytta.
+              </span>
+            )}
+          </p>
+          <div className="flex shrink-0 items-center gap-1 @[40rem]:gap-2">
+            {hasGroups && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onExpandAll}
+                  className="h-8 text-xs px-2 @[40rem]:px-3"
+                  title="Visa alla grupper"
+                >
+                  <ExpandIcon className="h-3.5 w-3.5 @[40rem]:mr-1" />
+                  <span className="hidden @[40rem]:inline">Visa alla</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onCollapseAll}
+                  className="h-8 text-xs px-2 @[40rem]:px-3"
+                  title="Dölj alla grupper"
+                >
+                  <MinusIcon className="h-3.5 w-3.5 @[40rem]:mr-1" />
+                  <span className="hidden @[40rem]:inline">Dölj alla</span>
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -425,6 +420,7 @@ export function GroupedDocumentListTable({
 
               return (
                 <GroupTableSection
+                  forceCardView={forceCardView}
                   key={group.id}
                   groupId={group.id}
                   name={group.name}
@@ -447,9 +443,7 @@ export function GroupedDocumentListTable({
                   onRemoveItem={onRemoveItem}
                   onReorderItems={onReorderItems}
                   onRowClick={onRowClick}
-                  onSelectionChange={(itemIds, isSelected) =>
-                    handleSelectionChange(group.id, itemIds, isSelected)
-                  }
+                  onSelectionChange={handleSelectionChange}
                   selectedItemIds={selectedItemIds}
                   workspaceMembers={workspaceMembers}
                   groups={groups}
@@ -464,6 +458,7 @@ export function GroupedDocumentListTable({
             {/* Ungrouped items section */}
             {(ungroupedItems.length > 0 || groups.length > 0) && (
               <GroupTableSection
+                forceCardView={forceCardView}
                 groupId={UNGROUPED_ID}
                 name="Ogrupperade"
                 itemCount={ungroupedItems.length}
@@ -485,9 +480,7 @@ export function GroupedDocumentListTable({
                 onRemoveItem={onRemoveItem}
                 onReorderItems={onReorderItems}
                 onRowClick={onRowClick}
-                onSelectionChange={(itemIds, isSelected) =>
-                  handleSelectionChange(UNGROUPED_ID, itemIds, isSelected)
-                }
+                onSelectionChange={handleSelectionChange}
                 selectedItemIds={selectedItemIds}
                 workspaceMembers={workspaceMembers}
                 groups={groups}

@@ -123,9 +123,16 @@ export function ViewMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1.5">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5"
+          aria-label={`Visningsläge: ${currentViewLabel}`}
+          title={currentViewLabel}
+        >
           <CurrentIcon className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">{currentViewLabel}</span>
+          {/* Icon-only when the toolbar container is narrow (chat open). */}
+          <span className="hidden @[64rem]:inline">{currentViewLabel}</span>
           <ChevronDown className="h-3 w-3 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
