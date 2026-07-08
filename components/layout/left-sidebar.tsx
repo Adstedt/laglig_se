@@ -172,6 +172,37 @@ const workItems: NavItem[] = [
   },
 ]
 
+/**
+ * Icon-label tooltip, rendered only while the sidebar is collapsed. The
+ * Tooltip wrapper must not exist in expanded mode: its content is
+ * collapsed-only, and a Radix tooltip whose content never mounts can't run
+ * its hoverable-content close logic — hovers while expanded would leave it
+ * open forever, and every such tooltip pops in at once on collapse.
+ */
+function NavTooltip({
+  collapsed,
+  label,
+  children,
+}: {
+  collapsed: boolean
+  label: React.ReactNode
+  children: React.ReactElement
+}) {
+  if (!collapsed) return children
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent
+        side="right"
+        sideOffset={24}
+        className="px-2.5 py-1 text-xs font-medium"
+      >
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
 /** Collapsed accordion item — manages tooltip/popover state so they don't overlap */
 function CollapsedAccordionItem({
   item,
@@ -352,34 +383,23 @@ export function LeftSidebar({ user, role }: LeftSidebarProps) {
     // Toggle button for AI Chat
     if (item.isToggle) {
       return (
-        <Tooltip key={item.title}>
-          <TooltipTrigger asChild>
-            <button
-              onClick={toggleRightSidebar}
-              aria-label={collapsed ? item.title : undefined}
-              className={cn(
-                'transition-colors hover:bg-foreground/10 hover:text-foreground text-foreground/60',
-                collapsed
-                  ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
-                  : 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm'
-              )}
-            >
-              <Icon className="h-4 w-4 shrink-0" />
-              {!collapsed && (
-                <span className="flex-1 truncate text-left">{item.title}</span>
-              )}
-            </button>
-          </TooltipTrigger>
-          {collapsed && (
-            <TooltipContent
-              side="right"
-              sideOffset={24}
-              className="px-2.5 py-1 text-xs font-medium"
-            >
-              {item.title}
-            </TooltipContent>
-          )}
-        </Tooltip>
+        <NavTooltip key={item.title} collapsed={collapsed} label={item.title}>
+          <button
+            onClick={toggleRightSidebar}
+            aria-label={collapsed ? item.title : undefined}
+            className={cn(
+              'transition-colors hover:bg-foreground/10 hover:text-foreground text-foreground/60',
+              collapsed
+                ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
+                : 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm'
+            )}
+          >
+            <Icon className="h-4 w-4 shrink-0" />
+            {!collapsed && (
+              <span className="flex-1 truncate text-left">{item.title}</span>
+            )}
+          </button>
+        </NavTooltip>
       )
     }
 
@@ -450,78 +470,64 @@ export function LeftSidebar({ user, role }: LeftSidebarProps) {
     // Regular disabled item
     if (item.disabled) {
       return (
-        <Tooltip key={item.title}>
-          <TooltipTrigger asChild>
-            <span
-              aria-label={collapsed ? item.title : undefined}
-              className={cn(
-                'opacity-40 cursor-not-allowed text-foreground/60',
-                collapsed
-                  ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
-                  : 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm'
-              )}
-            >
-              <Icon className="h-4 w-4 shrink-0" />
-              {!collapsed && (
-                <>
-                  <span className="flex-1 truncate">{item.title}</span>
-                  {item.badge && (
-                    <span className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                      {item.badge}
-                    </span>
-                  )}
-                  {item.lockedReason && <Lock className="h-3 w-3 shrink-0" />}
-                </>
-              )}
-            </span>
-          </TooltipTrigger>
-          {collapsed && (
-            <TooltipContent
-              side="right"
-              sideOffset={24}
-              className="px-2.5 py-1 text-xs font-medium"
-            >
+        <NavTooltip
+          key={item.title}
+          collapsed={collapsed}
+          label={
+            <>
               {item.title}
               {item.badge && ` — ${item.badge}`}
               {item.lockedReason && ` — ${item.lockedReason}`}
-            </TooltipContent>
-          )}
-        </Tooltip>
+            </>
+          }
+        >
+          <span
+            aria-label={collapsed ? item.title : undefined}
+            className={cn(
+              'opacity-40 cursor-not-allowed text-foreground/60',
+              collapsed
+                ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
+                : 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm'
+            )}
+          >
+            <Icon className="h-4 w-4 shrink-0" />
+            {!collapsed && (
+              <>
+                <span className="flex-1 truncate">{item.title}</span>
+                {item.badge && (
+                  <span className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                    {item.badge}
+                  </span>
+                )}
+                {item.lockedReason && <Lock className="h-3 w-3 shrink-0" />}
+              </>
+            )}
+          </span>
+        </NavTooltip>
       )
     }
 
     // Regular link item
     return (
-      <Tooltip key={item.title}>
-        <TooltipTrigger asChild>
-          <Link
-            href={item.href}
-            prefetch={true}
-            aria-label={collapsed ? item.title : undefined}
-            className={cn(
-              'transition-colors',
-              collapsed
-                ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
-                : 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm',
-              active
-                ? 'bg-foreground/10 text-foreground'
-                : 'text-foreground/60 hover:bg-foreground/10 hover:text-foreground'
-            )}
-          >
-            <Icon className="h-4 w-4 shrink-0" />
-            {!collapsed && <span className="truncate">{item.title}</span>}
-          </Link>
-        </TooltipTrigger>
-        {collapsed && (
-          <TooltipContent
-            side="right"
-            sideOffset={24}
-            className="px-2.5 py-1 text-xs font-medium"
-          >
-            {item.title}
-          </TooltipContent>
-        )}
-      </Tooltip>
+      <NavTooltip key={item.title} collapsed={collapsed} label={item.title}>
+        <Link
+          href={item.href}
+          prefetch={true}
+          aria-label={collapsed ? item.title : undefined}
+          className={cn(
+            'transition-colors',
+            collapsed
+              ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
+              : 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm',
+            active
+              ? 'bg-foreground/10 text-foreground'
+              : 'text-foreground/60 hover:bg-foreground/10 hover:text-foreground'
+          )}
+        >
+          <Icon className="h-4 w-4 shrink-0" />
+          {!collapsed && <span className="truncate">{item.title}</span>}
+        </Link>
+      </NavTooltip>
     )
   }
 
@@ -600,83 +606,61 @@ export function LeftSidebar({ user, role }: LeftSidebarProps) {
           {/* Story 25.6 (B.6): Guide entry — always rendered, opens the
               first-run-modal at tutorial-only mode via URL deep-link. Layer
               3 of the re-entry hierarchy per arch §6.5. */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href="/dashboard?onboarding=tutorial"
-                aria-label={collapsed ? 'Guide' : undefined}
-                className={cn(
-                  'transition-colors',
-                  collapsed
-                    ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
-                    : 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm',
-                  searchParams?.get('onboarding') === 'tutorial'
-                    ? 'bg-foreground/10 text-foreground'
-                    : 'text-foreground/60 hover:bg-foreground/10 hover:text-foreground'
-                )}
-              >
-                {collapsed ? (
-                  <LifeBuoy className="h-4 w-4" />
-                ) : (
-                  <>
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center">
-                      <LifeBuoy className="h-4 w-4" />
-                    </span>
-                    <span className="truncate">Guide</span>
-                  </>
-                )}
-              </Link>
-            </TooltipTrigger>
-            {collapsed && (
-              <TooltipContent
-                side="right"
-                sideOffset={24}
-                className="px-2.5 py-1 text-xs font-medium"
-              >
-                Guide
-              </TooltipContent>
-            )}
-          </Tooltip>
+          <NavTooltip collapsed={collapsed} label="Guide">
+            <Link
+              href="/dashboard?onboarding=tutorial"
+              aria-label={collapsed ? 'Guide' : undefined}
+              className={cn(
+                'transition-colors',
+                collapsed
+                  ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
+                  : 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm',
+                searchParams?.get('onboarding') === 'tutorial'
+                  ? 'bg-foreground/10 text-foreground'
+                  : 'text-foreground/60 hover:bg-foreground/10 hover:text-foreground'
+              )}
+            >
+              {collapsed ? (
+                <LifeBuoy className="h-4 w-4" />
+              ) : (
+                <>
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center">
+                    <LifeBuoy className="h-4 w-4" />
+                  </span>
+                  <span className="truncate">Guide</span>
+                </>
+              )}
+            </Link>
+          </NavTooltip>
 
           {/* Inställningar */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link
-                href="/settings"
-                prefetch={true}
-                aria-label={collapsed ? 'Inställningar' : undefined}
-                className={cn(
-                  'transition-colors',
-                  collapsed
-                    ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
-                    : 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm',
-                  pathname.startsWith('/settings')
-                    ? 'bg-foreground/10 text-foreground'
-                    : 'text-foreground/60 hover:bg-foreground/10 hover:text-foreground'
-                )}
-              >
-                {collapsed ? (
-                  <Settings className="h-4 w-4" />
-                ) : (
-                  <>
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center">
-                      <Settings className="h-4 w-4" />
-                    </span>
-                    <span className="truncate">Inställningar</span>
-                  </>
-                )}
-              </Link>
-            </TooltipTrigger>
-            {collapsed && (
-              <TooltipContent
-                side="right"
-                sideOffset={24}
-                className="px-2.5 py-1 text-xs font-medium"
-              >
-                Inställningar
-              </TooltipContent>
-            )}
-          </Tooltip>
+          <NavTooltip collapsed={collapsed} label="Inställningar">
+            <Link
+              href="/settings"
+              prefetch={true}
+              aria-label={collapsed ? 'Inställningar' : undefined}
+              className={cn(
+                'transition-colors',
+                collapsed
+                  ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
+                  : 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm',
+                pathname.startsWith('/settings')
+                  ? 'bg-foreground/10 text-foreground'
+                  : 'text-foreground/60 hover:bg-foreground/10 hover:text-foreground'
+              )}
+            >
+              {collapsed ? (
+                <Settings className="h-4 w-4" />
+              ) : (
+                <>
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center">
+                    <Settings className="h-4 w-4" />
+                  </span>
+                  <span className="truncate">Inställningar</span>
+                </>
+              )}
+            </Link>
+          </NavTooltip>
 
           {/* Workspace Switcher */}
           <div className="mt-0.5">
@@ -686,54 +670,46 @@ export function LeftSidebar({ user, role }: LeftSidebarProps) {
           {/* User avatar with dropdown menu */}
           <div className="mt-0.5">
             <DropdownMenu>
-              <Tooltip>
+              <NavTooltip
+                collapsed={collapsed}
+                label={user?.name || user?.email || 'Konto'}
+              >
                 <DropdownMenuTrigger asChild>
-                  <TooltipTrigger asChild>
-                    <button
-                      aria-label={
-                        collapsed
-                          ? user?.name || user?.email || 'Konto'
-                          : undefined
-                      }
-                      className={cn(
-                        'transition-colors text-foreground/60 hover:bg-foreground/10 hover:text-foreground',
-                        collapsed
-                          ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
-                          : 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm'
-                      )}
-                    >
-                      <Avatar className="h-7 w-7 shrink-0">
-                        <AvatarImage
-                          src={user?.image || undefined}
-                          alt={user?.name || 'User'}
-                        />
-                        <AvatarFallback className="text-xs">
-                          {userInitials}
-                        </AvatarFallback>
-                      </Avatar>
-                      {!collapsed && (
-                        <>
-                          <div className="flex-1 min-w-0 text-left">
-                            <p className="text-sm font-medium truncate">
-                              {user?.name || 'Användare'}
-                            </p>
-                          </div>
-                          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0" />
-                        </>
-                      )}
-                    </button>
-                  </TooltipTrigger>
-                </DropdownMenuTrigger>
-                {collapsed && (
-                  <TooltipContent
-                    side="right"
-                    sideOffset={24}
-                    className="px-2.5 py-1 text-xs font-medium"
+                  <button
+                    aria-label={
+                      collapsed
+                        ? user?.name || user?.email || 'Konto'
+                        : undefined
+                    }
+                    className={cn(
+                      'transition-colors text-foreground/60 hover:bg-foreground/10 hover:text-foreground',
+                      collapsed
+                        ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
+                        : 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm'
+                    )}
                   >
-                    {user?.name || user?.email || 'Konto'}
-                  </TooltipContent>
-                )}
-              </Tooltip>
+                    <Avatar className="h-7 w-7 shrink-0">
+                      <AvatarImage
+                        src={user?.image || undefined}
+                        alt={user?.name || 'User'}
+                      />
+                      <AvatarFallback className="text-xs">
+                        {userInitials}
+                      </AvatarFallback>
+                    </Avatar>
+                    {!collapsed && (
+                      <>
+                        <div className="flex-1 min-w-0 text-left">
+                          <p className="text-sm font-medium truncate">
+                            {user?.name || 'Användare'}
+                          </p>
+                        </div>
+                        <ChevronsUpDown className="h-3.5 w-3.5 shrink-0" />
+                      </>
+                    )}
+                  </button>
+                </DropdownMenuTrigger>
+              </NavTooltip>
               <DropdownMenuContent side="right" align="end" className="w-56">
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
@@ -791,42 +767,29 @@ export function LeftSidebar({ user, role }: LeftSidebarProps) {
 
           {/* Sidebar toggle — always visible at bottom */}
           <div className="mt-0.5">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={toggleLeftSidebar}
-                  aria-label={
-                    collapsed ? 'Expandera sidofält' : 'Dölj sidofält'
-                  }
-                  className={cn(
-                    'transition-colors text-foreground/60 hover:bg-foreground/10 hover:text-foreground',
-                    collapsed
-                      ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
-                      : 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm'
-                  )}
-                >
-                  {collapsed ? (
-                    <PanelLeftOpen className="h-4 w-4" />
-                  ) : (
-                    <>
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center">
-                        <PanelLeftClose className="h-4 w-4" />
-                      </span>
-                      <span className="truncate">Dölj sidofält</span>
-                    </>
-                  )}
-                </button>
-              </TooltipTrigger>
-              {collapsed && (
-                <TooltipContent
-                  side="right"
-                  sideOffset={24}
-                  className="px-2.5 py-1 text-xs font-medium"
-                >
-                  Expandera sidofält
-                </TooltipContent>
-              )}
-            </Tooltip>
+            <NavTooltip collapsed={collapsed} label="Expandera sidofält">
+              <button
+                onClick={toggleLeftSidebar}
+                aria-label={collapsed ? 'Expandera sidofält' : 'Dölj sidofält'}
+                className={cn(
+                  'transition-colors text-foreground/60 hover:bg-foreground/10 hover:text-foreground',
+                  collapsed
+                    ? 'mx-auto flex h-9 w-9 items-center justify-center rounded-lg'
+                    : 'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm'
+                )}
+              >
+                {collapsed ? (
+                  <PanelLeftOpen className="h-4 w-4" />
+                ) : (
+                  <>
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center">
+                      <PanelLeftClose className="h-4 w-4" />
+                    </span>
+                    <span className="truncate">Dölj sidofält</span>
+                  </>
+                )}
+              </button>
+            </NavTooltip>
           </div>
         </div>
       </aside>

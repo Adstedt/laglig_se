@@ -110,3 +110,6 @@ public/sitemaps/
 # SKOLFS ingestion (Story 9.7) — binary PDF cache + transient batch state
 data/skolfs-pdfs/
 data/skolverket-batch-state.json
+
+# Playwright auth state (session cookies)
+tests/.auth/
