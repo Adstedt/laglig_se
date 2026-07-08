@@ -173,6 +173,8 @@ export type LoadMoreStrategy =
       page: number
       pageCount: number
       onPageChange: (_page: number) => void
+      /** Left-aligned summary ("Visar 1–50 av 213 mallar"). */
+      summary?: string
     }
 
 export interface RowInteraction<TData> {

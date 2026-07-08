@@ -1,27 +1,24 @@
 'use client'
 
-import {
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
-  type ColumnDef,
-} from '@tanstack/react-table'
+/**
+ * Story 28.5: migrated onto the unified DataTable core via AdminDataTable.
+ * This file owns columns and search; URL state, debounced search, sorting
+ * and pagination live in admin-data-table.tsx.
+ */
+
+import { useMemo } from 'react'
+import type { ColumnDef } from '@tanstack/react-table'
 import { format, formatDistanceToNow } from 'date-fns'
 import { sv } from 'date-fns/locale'
-import { ArrowUpDown, ChevronLeft, ChevronRight, Search } from 'lucide-react'
-import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Search } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+  AdminDataTable,
+  useAdminSearch,
+  useAdminSorting,
+} from '@/components/admin/admin-data-table'
+import { Input } from '@/components/ui/input'
+import { SortableHeader } from '@/components/ui/sortable-header'
 import type { UserListItem } from '@/lib/admin/queries'
 
 interface UserTableProps {
@@ -32,25 +29,6 @@ interface UserTableProps {
   currentSearch?: string | undefined
   currentSortBy: string
   currentSortDir: 'asc' | 'desc'
-}
-
-function useUpdateSearchParams() {
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-
-  return useCallback(
-    (updates: Record<string, string | null>) => {
-      const params = new URLSearchParams(searchParams.toString())
-      for (const [key, value] of Object.entries(updates)) {
-        if (value === null) params.delete(key)
-        else params.set(key, value)
-      }
-      if (!('page' in updates)) params.delete('page')
-      router.push(`${pathname}?${params.toString()}`)
-    },
-    [router, pathname, searchParams]
-  )
 }
 
 function formatLastLogin(date: Date | null): string {
@@ -67,76 +45,39 @@ export function UserTable({
   currentSortBy,
   currentSortDir,
 }: UserTableProps) {
-  const router = useRouter()
-  const updateParams = useUpdateSearchParams()
-  const [searchValue, setSearchValue] = useState(currentSearch ?? '')
+  const { searchValue, setSearchValue } = useAdminSearch(currentSearch)
+  const sorting = useAdminSorting(currentSortBy, currentSortDir)
 
-  useEffect(() => {
-    setSearchValue(currentSearch ?? '')
-  }, [currentSearch])
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchValue !== (currentSearch ?? '')) {
-        updateParams({
-          search: searchValue || null,
-        })
-      }
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [searchValue, currentSearch, updateParams])
-
-  const handleSort = useCallback(
-    (field: string) => {
-      const newDir =
-        currentSortBy === field && currentSortDir === 'asc' ? 'desc' : 'asc'
-      updateParams({ sortBy: field, sortDir: newDir, page: null })
-    },
-    [currentSortBy, currentSortDir, updateParams]
-  )
-
-  const totalPages = Math.ceil(total / pageSize)
-
-  const columns: ColumnDef<UserListItem>[] = useMemo(
+  const columns = useMemo<ColumnDef<UserListItem, unknown>[]>(
     () => [
       {
+        id: 'name',
         accessorKey: 'name',
-        header: () => (
-          <SortableHeader
-            label="Namn"
-            field="name"
-            currentSortBy={currentSortBy}
-            currentSortDir={currentSortDir}
-            onSort={handleSort}
-          />
-        ),
+        header: ({ column }) => <SortableHeader column={column} label="Namn" />,
         cell: ({ row }) => (
           <span className="font-medium">{row.original.name ?? '—'}</span>
         ),
+        size: 200,
+        minSize: 150,
+        enableSorting: true,
+        meta: { dt: { label: 'Namn', fill: true, card: { role: 'title' } } },
       },
       {
+        id: 'email',
         accessorKey: 'email',
-        header: () => (
-          <SortableHeader
-            label="E-post"
-            field="email"
-            currentSortBy={currentSortBy}
-            currentSortDir={currentSortDir}
-            onSort={handleSort}
-          />
+        header: ({ column }) => (
+          <SortableHeader column={column} label="E-post" />
         ),
         cell: ({ row }) => row.original.email,
+        size: 240,
+        enableSorting: true,
+        meta: { dt: { label: 'E-post', card: { role: 'meta', priority: 0 } } },
       },
       {
+        id: 'last_login_at',
         accessorKey: 'last_login_at',
-        header: () => (
-          <SortableHeader
-            label="Senaste inloggning"
-            field="last_login_at"
-            currentSortBy={currentSortBy}
-            currentSortDir={currentSortDir}
-            onSort={handleSort}
-          />
+        header: ({ column }) => (
+          <SortableHeader column={column} label="Senaste inloggning" />
         ),
         cell: ({ row }) =>
           formatLastLogin(
@@ -144,37 +85,42 @@ export function UserTable({
               ? new Date(row.original.last_login_at)
               : null
           ),
+        size: 180,
+        enableSorting: true,
+        meta: {
+          dt: {
+            label: 'Senaste inloggning',
+            card: { role: 'meta', priority: 1 },
+          },
+        },
       },
       {
         id: 'workspace_count',
         header: 'Arbetsytor',
         cell: ({ row }) => row.original._count.workspace_members,
+        size: 110,
+        enableSorting: false,
+        meta: {
+          dt: { label: 'Arbetsytor', numeric: true, card: { role: 'meta' } },
+        },
       },
       {
+        id: 'created_at',
         accessorKey: 'created_at',
-        header: () => (
-          <SortableHeader
-            label="Skapad"
-            field="created_at"
-            currentSortBy={currentSortBy}
-            currentSortDir={currentSortDir}
-            onSort={handleSort}
-          />
+        header: ({ column }) => (
+          <SortableHeader column={column} label="Skapad" />
         ),
         cell: ({ row }) =>
           format(new Date(row.original.created_at), 'yyyy-MM-dd', {
             locale: sv,
           }),
+        size: 120,
+        enableSorting: true,
+        meta: { dt: { label: 'Skapad', card: { role: 'footer' } } },
       },
     ],
-    [currentSortBy, currentSortDir, handleSort]
+    []
   )
-
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  })
 
   return (
     <div className="space-y-4">
@@ -191,121 +137,18 @@ export function UserTable({
         </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-md border overflow-x-auto">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => router.push(`/admin/users/${row.original.id}`)}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="text-center text-muted-foreground py-8"
-                >
-                  Inga användare hittades
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {total > 0
-            ? `Visar ${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)} av ${total} användare`
-            : 'Inga användare att visa'}
-        </p>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page <= 1}
-            onClick={() => updateParams({ page: String(page - 1) })}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Föregående
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Sida {page} av {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page >= totalPages}
-            onClick={() => updateParams({ page: String(page + 1) })}
-          >
-            Nästa
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function SortableHeader({
-  label,
-  field,
-  currentSortBy,
-  currentSortDir,
-  onSort,
-}: {
-  label: string
-  field: string
-  currentSortBy: string
-  currentSortDir: 'asc' | 'desc'
-  onSort: (_field: string) => void
-}) {
-  const isActive = currentSortBy === field
-  return (
-    <button
-      type="button"
-      className="flex items-center gap-1 hover:text-foreground"
-      onClick={() => onSort(field)}
-    >
-      {label}
-      <ArrowUpDown
-        className={`h-3.5 w-3.5 ${isActive ? 'text-foreground' : 'text-muted-foreground/50'}`}
+      <AdminDataTable<UserListItem>
+        data={data}
+        columns={columns}
+        getRowId={(row) => row.id}
+        sorting={sorting}
+        total={total}
+        page={page}
+        pageSize={pageSize}
+        entityLabel="användare"
+        detailHref={(row) => `/admin/users/${row.id}`}
+        emptyMessage="Inga användare hittades"
       />
-      {isActive && (
-        <span className="sr-only">
-          {currentSortDir === 'asc' ? '(stigande)' : '(fallande)'}
-        </span>
-      )}
-    </button>
+    </div>
   )
 }

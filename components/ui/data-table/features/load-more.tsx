@@ -50,28 +50,39 @@ export function LoadMoreFooter({
   // pagination
   const { page, pageCount, onPageChange } = strategy
   return (
-    <div className="flex items-center justify-end gap-2 pt-4">
-      <span className="text-xs text-muted-foreground">
-        Sida {page} av {Math.max(pageCount, 1)}
-      </span>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => onPageChange(page - 1)}
-        disabled={page <= 1}
-        aria-label="Föregående sida"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => onPageChange(page + 1)}
-        disabled={page >= pageCount}
-        aria-label="Nästa sida"
-      >
-        <ChevronRight className="h-4 w-4" />
-      </Button>
+    <div
+      className={
+        strategy.summary
+          ? 'flex items-center justify-between gap-2 pt-4'
+          : 'flex items-center justify-end gap-2 pt-4'
+      }
+    >
+      {strategy.summary && (
+        <p className="text-sm text-muted-foreground">{strategy.summary}</p>
+      )}
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted-foreground">
+          Sida {page} av {Math.max(pageCount, 1)}
+        </span>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(page - 1)}
+          disabled={page <= 1}
+          aria-label="Föregående sida"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(page + 1)}
+          disabled={page >= pageCount}
+          aria-label="Nästa sida"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   )
 }

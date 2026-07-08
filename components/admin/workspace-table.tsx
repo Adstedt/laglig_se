@@ -1,19 +1,23 @@
 'use client'
 
-import {
-  useReactTable,
-  getCoreRowModel,
-  flexRender,
-  type ColumnDef,
-} from '@tanstack/react-table'
+/**
+ * Story 28.5: migrated onto the unified DataTable core via AdminDataTable.
+ * This file owns columns, header and filters; URL state, debounced search,
+ * sorting and pagination live in admin-data-table.tsx.
+ */
+
+import { useMemo } from 'react'
+import type { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
 import { sv } from 'date-fns/locale'
-import { ArrowUpDown, ChevronLeft, ChevronRight, Search } from 'lucide-react'
-import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Search } from 'lucide-react'
 
+import {
+  AdminDataTable,
+  useAdminSearch,
+  useAdminSorting,
+} from '@/components/admin/admin-data-table'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -22,14 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { SortableHeader } from '@/components/ui/sortable-header'
 import {
   STATUS_LABELS,
   STATUS_VARIANT,
@@ -50,25 +47,6 @@ interface WorkspaceTableProps {
   currentSortDir: 'asc' | 'desc'
 }
 
-function useUpdateSearchParams() {
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-
-  return useCallback(
-    (updates: Record<string, string | null>) => {
-      const params = new URLSearchParams(searchParams.toString())
-      for (const [key, value] of Object.entries(updates)) {
-        if (value === null) params.delete(key)
-        else params.set(key, value)
-      }
-      if (!('page' in updates)) params.delete('page')
-      router.push(`${pathname}?${params.toString()}`)
-    },
-    [router, pathname, searchParams]
-  )
-}
-
 export function WorkspaceTable({
   data,
   total,
@@ -80,146 +58,109 @@ export function WorkspaceTable({
   currentSortBy,
   currentSortDir,
 }: WorkspaceTableProps) {
-  const router = useRouter()
-  const updateParams = useUpdateSearchParams()
-  const [searchValue, setSearchValue] = useState(currentSearch ?? '')
+  const { searchValue, setSearchValue, updateParams } =
+    useAdminSearch(currentSearch)
+  const sorting = useAdminSorting(currentSortBy, currentSortDir)
 
-  useEffect(() => {
-    setSearchValue(currentSearch ?? '')
-  }, [currentSearch])
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchValue !== (currentSearch ?? '')) {
-        updateParams({
-          search: searchValue || null,
-        })
-      }
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [searchValue, currentSearch, updateParams])
-
-  const handleSort = useCallback(
-    (field: string) => {
-      const newDir =
-        currentSortBy === field && currentSortDir === 'asc' ? 'desc' : 'asc'
-      updateParams({ sortBy: field, sortDir: newDir, page: null })
-    },
-    [currentSortBy, currentSortDir, updateParams]
-  )
-
-  const totalPages = Math.ceil(total / pageSize)
-
-  const columns: ColumnDef<WorkspaceListItem>[] = useMemo(
+  const columns = useMemo<ColumnDef<WorkspaceListItem, unknown>[]>(
     () => [
       {
+        id: 'name',
         accessorKey: 'name',
-        header: () => (
-          <SortableHeader
-            label="Namn"
-            field="name"
-            currentSortBy={currentSortBy}
-            currentSortDir={currentSortDir}
-            onSort={handleSort}
-          />
-        ),
+        header: ({ column }) => <SortableHeader column={column} label="Namn" />,
         cell: ({ row }) => (
           <span className="font-medium">{row.original.name}</span>
         ),
+        size: 220,
+        minSize: 160,
+        enableSorting: true,
+        meta: { dt: { label: 'Namn', fill: true, card: { role: 'title' } } },
       },
       {
+        id: 'slug',
         accessorKey: 'slug',
-        header: () => (
-          <SortableHeader
-            label="Slug"
-            field="slug"
-            currentSortBy={currentSortBy}
-            currentSortDir={currentSortDir}
-            onSort={handleSort}
-          />
-        ),
+        header: ({ column }) => <SortableHeader column={column} label="Slug" />,
         cell: ({ row }) => (
           <span className="text-muted-foreground">{row.original.slug}</span>
         ),
+        size: 160,
+        enableSorting: true,
+        meta: { dt: { label: 'Slug', card: { role: 'meta', priority: 2 } } },
       },
       {
         id: 'owner',
         header: 'Ägare',
         cell: ({ row }) => row.original.owner.email,
+        size: 220,
+        enableSorting: false,
+        meta: { dt: { label: 'Ägare', card: { role: 'meta', priority: 1 } } },
       },
       {
+        id: 'subscription_tier',
         accessorKey: 'subscription_tier',
-        header: () => (
-          <SortableHeader
-            label="Nivå"
-            field="subscription_tier"
-            currentSortBy={currentSortBy}
-            currentSortDir={currentSortDir}
-            onSort={handleSort}
-          />
-        ),
+        header: ({ column }) => <SortableHeader column={column} label="Nivå" />,
         cell: ({ row }) => (
           <Badge variant="outline">
             {TIER_LABELS[row.original.subscription_tier]}
           </Badge>
         ),
+        size: 120,
+        enableSorting: true,
+        meta: { dt: { label: 'Nivå', card: { role: 'badge', priority: 1 } } },
       },
       {
+        id: 'status',
         accessorKey: 'status',
-        header: () => (
-          <SortableHeader
-            label="Status"
-            field="status"
-            currentSortBy={currentSortBy}
-            currentSortDir={currentSortDir}
-            onSort={handleSort}
-          />
+        header: ({ column }) => (
+          <SortableHeader column={column} label="Status" />
         ),
         cell: ({ row }) => (
           <Badge variant={STATUS_VARIANT[row.original.status]}>
             {STATUS_LABELS[row.original.status]}
           </Badge>
         ),
+        size: 110,
+        enableSorting: true,
+        meta: { dt: { label: 'Status', card: { role: 'badge', priority: 0 } } },
       },
       {
         id: 'members',
         header: 'Medlemmar',
         cell: ({ row }) => row.original._count.members,
+        size: 110,
+        enableSorting: false,
+        meta: {
+          dt: { label: 'Medlemmar', numeric: true, card: { role: 'meta' } },
+        },
       },
       {
+        id: 'created_at',
         accessorKey: 'created_at',
-        header: () => (
-          <SortableHeader
-            label="Skapad"
-            field="created_at"
-            currentSortBy={currentSortBy}
-            currentSortDir={currentSortDir}
-            onSort={handleSort}
-          />
+        header: ({ column }) => (
+          <SortableHeader column={column} label="Skapad" />
         ),
         cell: ({ row }) =>
           format(new Date(row.original.created_at), 'yyyy-MM-dd', {
             locale: sv,
           }),
+        size: 120,
+        enableSorting: true,
+        meta: { dt: { label: 'Skapad', card: { role: 'footer' } } },
       },
     ],
-    [currentSortBy, currentSortDir, handleSort]
+    []
   )
-
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  })
 
   return (
     <div className="space-y-4">
+      <h1 className="text-2xl font-bold">Arbetsytor</h1>
+
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Sök namn, slug eller e-post..."
+            placeholder="Sök namn, slug eller ägare..."
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             className="pl-9"
@@ -262,123 +203,18 @@ export function WorkspaceTable({
         </Select>
       </div>
 
-      {/* Table */}
-      <div className="rounded-md border overflow-x-auto">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.length > 0 ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() =>
-                    router.push(`/admin/workspaces/${row.original.id}`)
-                  }
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="text-center text-muted-foreground py-8"
-                >
-                  Inga arbetsytor hittades
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {total > 0
-            ? `Visar ${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)} av ${total} arbetsytor`
-            : 'Inga arbetsytor att visa'}
-        </p>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page <= 1}
-            onClick={() => updateParams({ page: String(page - 1) })}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Föregående
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Sida {page} av {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={page >= totalPages}
-            onClick={() => updateParams({ page: String(page + 1) })}
-          >
-            Nästa
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function SortableHeader({
-  label,
-  field,
-  currentSortBy,
-  currentSortDir,
-  onSort,
-}: {
-  label: string
-  field: string
-  currentSortBy: string
-  currentSortDir: 'asc' | 'desc'
-  onSort: (_field: string) => void
-}) {
-  const isActive = currentSortBy === field
-  return (
-    <button
-      type="button"
-      className="flex items-center gap-1 hover:text-foreground"
-      onClick={() => onSort(field)}
-    >
-      {label}
-      <ArrowUpDown
-        className={`h-3.5 w-3.5 ${isActive ? 'text-foreground' : 'text-muted-foreground/50'}`}
+      <AdminDataTable<WorkspaceListItem>
+        data={data}
+        columns={columns}
+        getRowId={(row) => row.id}
+        sorting={sorting}
+        total={total}
+        page={page}
+        pageSize={pageSize}
+        entityLabel="arbetsytor"
+        detailHref={(row) => `/admin/workspaces/${row.id}`}
+        emptyMessage="Inga arbetsytor hittades"
       />
-      {isActive && (
-        <span className="sr-only">
-          {currentSortDir === 'asc' ? '(stigande)' : '(fallande)'}
-        </span>
-      )}
-    </button>
+    </div>
   )
 }
