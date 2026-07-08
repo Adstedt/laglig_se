@@ -447,33 +447,37 @@ export function KravTable({
   }
 
   return (
-    <DataTable<WorkspaceRequirementRow>
-      data={rows}
-      columns={columns}
-      getRowId={(row) => row.id}
-      sorting={{
-        sorting: sortingState,
-        onSortingChange: handleSortingChange,
-        manual: true,
-      }}
-      columnState={columnState}
-      loadMore={{
-        kind: 'button',
-        hasMore: nextCursor !== null,
-        isLoading: isLoadingMore,
-        onLoadMore,
-        label: 'Ladda fler',
-      }}
-      rowInteraction={{
-        onRowClick: (row) => onOpenLawItem(row),
-      }}
-      // Two tiers (user decision 2026-07-08): full table with horizontal
-      // scroll down to 800px container, cards below (chat maximized /
-      // mobile). No column shedding here — hidden columns read as lost
-      // data on this surface; scroll keeps everything reachable.
-      view={{ cardBelow: 800, showCardSortMenu: false }}
-      virtualization={{ maxHeight: '70vh' }}
-    />
+    // Accessible landmark kept from the legacy table (AC 40): screen-reader
+    // users jump straight to the requirements list.
+    <section aria-label="Kravpunkter i arbetsytan">
+      <DataTable<WorkspaceRequirementRow>
+        data={rows}
+        columns={columns}
+        getRowId={(row) => row.id}
+        sorting={{
+          sorting: sortingState,
+          onSortingChange: handleSortingChange,
+          manual: true,
+        }}
+        columnState={columnState}
+        loadMore={{
+          kind: 'button',
+          hasMore: nextCursor !== null,
+          isLoading: isLoadingMore,
+          onLoadMore,
+          label: 'Ladda fler',
+        }}
+        rowInteraction={{
+          onRowClick: (row) => onOpenLawItem(row),
+        }}
+        // Two tiers (user decision 2026-07-08): full table with horizontal
+        // scroll down to 800px container, cards below (chat maximized /
+        // mobile). No column shedding here — hidden columns read as lost
+        // data on this surface; scroll keeps everything reachable.
+        view={{ cardBelow: 800, showCardSortMenu: false }}
+        virtualization={{ maxHeight: '70vh' }}
+      />
+    </section>
   )
 }
 

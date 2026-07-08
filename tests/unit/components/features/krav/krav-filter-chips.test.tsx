@@ -28,11 +28,13 @@ describe('KravFilterChips', () => {
     expect(
       screen.getByRole('button', { name: /Saknar bevis/ })
     ).toBeInTheDocument()
-    // Each badge is present
-    expect(screen.getByText('100')).toBeInTheDocument()
-    expect(screen.getByText('40')).toBeInTheDocument()
-    expect(screen.getByText('15')).toBeInTheDocument()
-    expect(screen.getByText('7')).toBeInTheDocument()
+    // Each badge is present. Epic 28: the component renders BOTH the chip
+    // row and its narrow-container dropdown twin (visibility is CSS-only
+    // container queries), so counts appear once per variant.
+    expect(screen.getAllByText('100').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('40').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('15').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('7').length).toBeGreaterThanOrEqual(1)
   })
 
   it('marks exactly one chip active via aria-pressed (AC 13)', () => {
@@ -148,7 +150,8 @@ describe('KravFilterChips', () => {
         onClear={onClear}
       />
     )
-    await user.click(screen.getByRole('button', { name: /Rensa/ }))
+    // Epic 28: chip-row + dropdown twins both mount — either Rensa works.
+    await user.click(screen.getAllByRole('button', { name: /Rensa/ })[0]!)
     expect(onClear).toHaveBeenCalledTimes(1)
   })
 

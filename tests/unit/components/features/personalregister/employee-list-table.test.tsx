@@ -18,6 +18,13 @@ import {
   waitFor,
 } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+
+// Epic 28: the DataTable core's renderer switch is container-width-driven;
+// happy-dom has no layout (width 0 → card view). Report a wide container so
+// these tests exercise the TABLE renderer they pin.
+vi.mock('@/components/ui/data-table/use-container-width', () => ({
+  useContainerWidth: () => ({ ref: () => {}, width: 1400 }),
+}))
 import type {
   ColumnSizingState,
   Updater,
@@ -173,7 +180,11 @@ function sectionOf(name: string): HTMLElement {
   const heading = screen
     .getAllByText(name)
     .find((el) => el.className.includes('flex-1'))
-  const section = heading?.closest('div.rounded-lg')
+  // Epic 28: in GroupedDataTable the rounded-md droppable wrapper holds
+  // ONLY the trigger; the section content (table / empty slot) is its
+  // SIBLING inside the Collapsible root — climb one level higher so
+  // within(section) sees both.
+  const section = heading?.closest('div.rounded-md')?.parentElement
   if (!(section instanceof HTMLElement)) {
     throw new Error(`Section wrapper not found for "${name}"`)
   }

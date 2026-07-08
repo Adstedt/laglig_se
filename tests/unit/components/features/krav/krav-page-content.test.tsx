@@ -48,6 +48,14 @@ vi.mock('@/app/actions/law-list-item-requirements', () => ({
   updateRequirement: vi.fn().mockResolvedValue({ success: true }),
 }))
 
+// Epic 28: the DataTable renderer switch AND the toolbar's dynamic search
+// placeholder are container-width-driven; happy-dom has no layout (width 0
+// → card view + 'Sök…'). Report a wide container so these tests exercise
+// the wide-mode DOM they pin.
+vi.mock('@/components/ui/data-table/use-container-width', () => ({
+  useContainerWidth: () => ({ ref: () => {}, width: 1400 }),
+}))
+
 vi.mock('sonner', () => ({
   toast: Object.assign(vi.fn(), {
     error: vi.fn(),
@@ -275,7 +283,11 @@ describe('KravPageContent', () => {
     renderFresh('?filter=mine')
 
     // Rensa appears when filter != default. Wait for chips to mount.
-    const clearButton = await screen.findByRole('button', { name: /Rensa/ })
+    // Epic 28: chip-row + narrow-container dropdown twins BOTH mount
+    // (CSS-only visibility) — either Rensa is the same handler.
+    const clearButton = (
+      await screen.findAllByRole('button', { name: /Rensa/ })
+    )[0]!
     await user.click(clearButton)
 
     // Last replace should target /krav with no params.
