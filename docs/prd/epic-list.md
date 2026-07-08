@@ -424,6 +424,24 @@
 
 ---
 
+## Epic 28: Unified DataTable Core
+
+**Status:** Active (0 completed — 12 stories scoped, registered 2026-07-07)
+
+**Goal:** Collapse ~6,400 lines of bespoke table code (9+ implementations; five heavyweight tables each independently "mirroring" `document-list-table.tsx`) into one shared headless `DataTable` core at `components/ui/data-table/` with two renderers over one column definition — semantic `<table>` for wide containers, virtualized card list for narrow — switched by **container width** (ResizeObserver + hysteresis), so mobile and desktop-with-AI-chat-maximized get the same coherent card experience on every record table.
+
+**Delivers:** Headless core (`useDataTable`, column-meta chrome via `meta.dt`, pluggable state adapters for local/URL/Zustand/localStorage, load-more strategies, dnd modes, expansion-under-virtualization, `GroupedDataTable`, BulkActionBar shell, `useContainerWidth`); risk-ascending migration (krav pilot → styrdokument → admin trio → tasks → personalregister → laglistor last behind an API freeze + parity suite); Playwright conformance harness; fixes en route (broken grouped selection, inverted resize bounds, memo bug, card/table `status` vs `complianceStatus` divergence); deletion of ~4,100L legacy laglistor tables + duplicated primitives (4× SortableHeader, 3× clamp modules, orphaned `virtual-table-body.tsx`).
+
+**Requirements covered:** Cross-cutting UX consistency + narrow-container/mobile support for all tabular surfaces; extends Epic 22's primitive-consolidation philosophy to the table layer; enables Epic 18 (Mobile UX) for every table surface.
+
+**Dependencies:** Epic 22 (Done — badge-tones, TableToolbar consumed as-is). Epic 7 (merged PR #92, checklist not formally closed — **Story 28.7 gated on formal closure**). Epic 26 (landing-v3 imports the live `document-table.tsx` — Story 28.4 freezes a presentational copy before migrating).
+
+**Note:** Brownfield refactor. Governing rules: capability accretion (core gains a feature only with its first consumer), characterization specs before touching laglistor/tasks, legacy behind a flag until parity, core API freeze before laglistor stories. See `docs/prd/epic-28-unified-datatable-core.md`.
+
+**Priority:** High — laglistor/krav/tasks are the core product surfaces; no table has any mobile treatment today, and the maximized chat sidebar squeezes desktop content to ~400–430px of horizontal-scrolling unusability.
+
+---
+
 ## Backlog Candidate: SOSFS/HSLF-FS Agency Regulation Ingestion
 
 **Status:** Backlog (not scoped — registered 2026-06-11)
@@ -456,6 +474,6 @@
 
 **Epic Status:** 12 Done (incl. Epic 21 substantially-done as of 2026-04-27, UAT-ready with 1 deferred 21.10 + 1 backlogged 21.15), 4 Partial / Active, 9 Not Started / Planned (incl. Epic 23, Epic 24, Epic 25)
 
-**Last updated:** 2026-06-10 (added Epic 27: Company Profile Interview, 3 stories. NOTE: Epic 26 (marketing pages, 12 stories, see `docs/prd/epic-26-marketing-pages-seo-content-engine.md`) shipped its first stories but was never registered in this list — entry + stats refresh pending)
+**Last updated:** 2026-07-07 (added Epic 28: Unified DataTable Core, 12 stories, see `docs/prd/epic-28-unified-datatable-core.md`. NOTE: Epic 26 (marketing pages, 12 stories, see `docs/prd/epic-26-marketing-pages-seo-content-engine.md`) shipped its first stories but was never registered in this list — entry + stats refresh pending)
 
 ---
