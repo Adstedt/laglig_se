@@ -217,6 +217,54 @@ export function DocumentTable({
         },
       },
       {
+        id: 'document_number',
+        accessorKey: 'document_number',
+        header: 'Dokumentnr',
+        cell: ({ row }) => (
+          <span className="text-muted-foreground text-sm">
+            {row.original.document_number ?? '—'}
+          </span>
+        ),
+        size: 120,
+        minSize: 100,
+        maxSize: 180,
+        enableSorting: false,
+        meta: {
+          dt: {
+            label: 'Dokumentnr',
+            card: {
+              role: 'meta',
+              priority: 1,
+              // Skip the card row entirely when there's no number.
+              renderCard: (row) =>
+                row.original.document_number ? (
+                  <span className="text-sm text-muted-foreground">
+                    {row.original.document_number}
+                  </span>
+                ) : null,
+            },
+          },
+        },
+      },
+      {
+        id: 'document_type',
+        accessorKey: 'document_type',
+        header: 'Typ',
+        cell: ({ row }) => (
+          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+            {DOCUMENT_TYPE_LABELS[row.original.document_type] ??
+              row.original.document_type}
+          </Badge>
+        ),
+        size: 100,
+        minSize: 80,
+        maxSize: 140,
+        enableSorting: false,
+        meta: {
+          dt: { label: 'Typ', card: { role: 'badge', priority: 1 } },
+        },
+      },
+      {
         id: 'status',
         accessorKey: 'status',
         header: 'Status',
@@ -251,54 +299,6 @@ export function DocumentTable({
           dt: {
             label: 'Status',
             card: { role: 'badge', priority: 0, interactive: true },
-          },
-        },
-      },
-      {
-        id: 'document_type',
-        accessorKey: 'document_type',
-        header: 'Typ',
-        cell: ({ row }) => (
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-            {DOCUMENT_TYPE_LABELS[row.original.document_type] ??
-              row.original.document_type}
-          </Badge>
-        ),
-        size: 100,
-        minSize: 80,
-        maxSize: 140,
-        enableSorting: false,
-        meta: {
-          dt: { label: 'Typ', card: { role: 'badge', priority: 1 } },
-        },
-      },
-      {
-        id: 'document_number',
-        accessorKey: 'document_number',
-        header: 'Dokumentnr',
-        cell: ({ row }) => (
-          <span className="text-muted-foreground text-sm">
-            {row.original.document_number ?? '—'}
-          </span>
-        ),
-        size: 120,
-        minSize: 100,
-        maxSize: 180,
-        enableSorting: false,
-        meta: {
-          dt: {
-            label: 'Dokumentnr',
-            card: {
-              role: 'meta',
-              priority: 1,
-              // Skip the card row entirely when there's no number.
-              renderCard: (row) =>
-                row.original.document_number ? (
-                  <span className="text-sm text-muted-foreground">
-                    {row.original.document_number}
-                  </span>
-                ) : null,
-            },
           },
         },
       },

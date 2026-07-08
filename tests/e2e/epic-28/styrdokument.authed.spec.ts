@@ -15,13 +15,15 @@ test.beforeEach(async ({ page }) => {
 
 test('table renders with URL-driven sort headers', async ({ page }) => {
   const table = page.locator('main table')
-  const rowCount = await page
-    .locator('main tbody tr')
-    .count()
-    .catch(() => 0)
-  test.skip(rowCount === 0, 'workspace has no styrdokument')
-
   await expect(table).toBeVisible({ timeout: 15_000 })
+  // Wait for data (or a legitimate empty workspace) before deciding to skip.
+  await page
+    .locator('main tbody tr')
+    .first()
+    .waitFor({ timeout: 10_000 })
+    .catch(() => {})
+  const rowCount = await page.locator('main tbody tr').count()
+  test.skip(rowCount === 0, 'workspace has no styrdokument')
   // Sortable headers render; clicking Titel forwards to the parent's URL sort.
   await table.getByRole('button', { name: 'Titel' }).click()
   await expect(page).toHaveURL(/sort|titel|title/i)
@@ -29,10 +31,12 @@ test('table renders with URL-driven sort headers', async ({ page }) => {
 })
 
 test('narrow viewport flips to cards and restores', async ({ page }) => {
-  const rowCount = await page
+  await page
     .locator('main tbody tr')
-    .count()
-    .catch(() => 0)
+    .first()
+    .waitFor({ timeout: 10_000 })
+    .catch(() => {})
+  const rowCount = await page.locator('main tbody tr').count()
   test.skip(rowCount === 0, 'workspace has no styrdokument')
 
   await page.setViewportSize({ width: 500, height: 900 })
