@@ -1,39 +1,28 @@
 'use client'
 
 /**
- * Story 6.4: All Work Tab
- * Archive view showing all tasks including completed ones
+ * Story 6.4 → migrated in Story 28.6 (Epic 28) onto the unified DataTable
+ * core. Archive view showing all tasks including completed ones —
+ * read-only columns + CSV export; sorting/reorder/cards come from the core.
+ * The local SortableHeader copy (byte-identical to ui/sortable-header) is
+ * deleted.
  */
 
-import { useState, useMemo, useCallback } from 'react'
-import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
-  flexRender,
-  type ColumnDef,
-  type SortingState,
-  type VisibilityState,
-  type ColumnOrderState,
+import { useState, useMemo } from 'react'
+import type {
+  ColumnDef,
+  ColumnOrderState,
+  SortingState,
+  Updater,
 } from '@tanstack/react-table'
-import { arrayMove } from '@dnd-kit/sortable'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { DraggableColumnHeader } from '@/components/ui/draggable-column-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { ColorTagBadge } from '@/components/ui/color-tag-badge'
+import { DataTable } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
+import { SortableHeader } from '@/components/ui/sortable-header'
 import {
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
   CheckCircle2,
   AlertCircle,
   Circle,
@@ -52,10 +41,6 @@ import { getPriorityBadgeProps } from '@/lib/ui/badge-tones'
 import { toast } from 'sonner'
 import type { WorkspaceMember } from './index'
 
-// ============================================================================
-// Props
-// ============================================================================
-
 interface AllWorkTabProps {
   filteredTasks: TaskWithRelations[]
   allTasksCount: number
@@ -63,10 +48,6 @@ interface AllWorkTabProps {
   workspaceMembers: WorkspaceMember[]
   onTaskClick?: (_taskId: string) => void
 }
-
-// ============================================================================
-// Status Icon
-// ============================================================================
 
 function StatusIcon({
   isDone,
@@ -84,10 +65,6 @@ function StatusIcon({
   return <Circle className="h-4 w-4 text-gray-400" />
 }
 
-// ============================================================================
-// Main Component
-// ============================================================================
-
 export function AllWorkTab({
   filteredTasks,
   allTasksCount,
@@ -98,7 +75,6 @@ export function AllWorkTab({
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'created_at', desc: true },
   ])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [columnOrder, setColumnOrder] = useState<ColumnOrderState>([])
   const [isExporting, setIsExporting] = useState(false)
 
@@ -108,7 +84,6 @@ export function AllWorkTab({
     try {
       const result = await exportTasksToCSV()
       if (result.success && result.data) {
-        // Create a blob and download
         const blob = new Blob([result.data.csv], {
           type: 'text/csv;charset=utf-8;',
         })
@@ -132,22 +107,31 @@ export function AllWorkTab({
     }
   }
 
-  // Column definitions
-  const columns: ColumnDef<TaskWithRelations>[] = useMemo(
+  // Column definitions (read-only display cells)
+  const columns: ColumnDef<TaskWithRelations, unknown>[] = useMemo(
     () => [
-      // Status
       {
         id: 'status',
-        header: '',
+        header: () => null,
         cell: ({ row }) => (
           <StatusIcon
             isDone={row.original.column.is_done}
             isOverdue={isTaskOverdue(row.original)}
           />
         ),
+        enableSorting: false,
         size: 40,
+        minSize: 40,
+        maxSize: 40,
+        meta: {
+          dt: {
+            label: 'Status',
+            pinned: 'left',
+            padding: 'tight',
+            card: { role: 'hidden' },
+          },
+        },
       },
-      // Title
       {
         id: 'title',
         accessorKey: 'title',
@@ -170,8 +154,11 @@ export function AllWorkTab({
           )
         },
         size: 300,
+        minSize: 180,
+        meta: {
+          dt: { label: 'Uppgift', fill: true, card: { role: 'title' } },
+        },
       },
-      // Status column
       {
         id: 'columnName',
         accessorFn: (row) => row.column.name,
@@ -185,8 +172,10 @@ export function AllWorkTab({
           />
         ),
         size: 120,
+        meta: {
+          dt: { label: 'Status', card: { role: 'badge', priority: 0 } },
+        },
       },
-      // Assignee
       {
         id: 'assignee',
         accessorFn: (row) => row.assignee?.name ?? row.assignee?.email ?? '',
@@ -212,9 +201,37 @@ export function AllWorkTab({
             </div>
           )
         },
+        enableSorting: false,
         size: 150,
+        meta: {
+          dt: {
+            label: 'Ansvarig',
+            card: {
+              role: 'meta',
+              priority: 1,
+              renderCard: (row) =>
+                row.original.assignee ? (
+                  <span className="inline-flex items-center gap-2 text-sm">
+                    <Avatar className="h-5 w-5">
+                      {row.original.assignee.avatar_url && (
+                        <AvatarImage src={row.original.assignee.avatar_url} />
+                      )}
+                      <AvatarFallback className="text-[10px]">
+                        {(
+                          row.original.assignee.name ??
+                          row.original.assignee.email
+                        )
+                          .slice(0, 2)
+                          .toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {row.original.assignee.name ?? row.original.assignee.email}
+                  </span>
+                ) : null,
+            },
+          },
+        },
       },
-      // Priority
       {
         id: 'priority',
         accessorKey: 'priority',
@@ -230,8 +247,10 @@ export function AllWorkTab({
           ) : null
         },
         size: 100,
+        meta: {
+          dt: { label: 'Prioritet', card: { role: 'badge', priority: 1 } },
+        },
       },
-      // Due date
       {
         id: 'due_date',
         accessorKey: 'due_date',
@@ -254,8 +273,30 @@ export function AllWorkTab({
           )
         },
         size: 100,
+        meta: {
+          dt: {
+            label: 'Förfaller',
+            card: {
+              role: 'meta',
+              priority: 2,
+              renderCard: (row) =>
+                row.original.due_date ? (
+                  <span
+                    className={cn(
+                      'text-sm',
+                      isTaskOverdue(row.original) &&
+                        'text-destructive font-medium'
+                    )}
+                  >
+                    {new Date(row.original.due_date).toLocaleDateString(
+                      'sv-SE'
+                    )}
+                  </span>
+                ) : null,
+            },
+          },
+        },
       },
-      // Created date
       {
         id: 'created_at',
         accessorKey: 'created_at',
@@ -268,8 +309,10 @@ export function AllWorkTab({
           </span>
         ),
         size: 100,
+        meta: {
+          dt: { label: 'Skapad', card: { role: 'footer' } },
+        },
       },
-      // Completed date
       {
         id: 'completed_at',
         accessorKey: 'completed_at',
@@ -287,44 +330,27 @@ export function AllWorkTab({
           )
         },
         size: 100,
+        meta: {
+          dt: {
+            label: 'Avslutad',
+            card: {
+              role: 'meta',
+              priority: 3,
+              renderCard: (row) =>
+                row.original.completed_at ? (
+                  <span className="text-sm text-muted-foreground">
+                    {new Date(row.original.completed_at).toLocaleDateString(
+                      'sv-SE'
+                    )}
+                  </span>
+                ) : null,
+            },
+          },
+        },
       },
     ],
     []
   )
-
-  // Column reorder handler
-  const handleColumnReorder = useCallback(
-    (activeId: string, overId: string) => {
-      const currentOrder =
-        columnOrder.length > 0
-          ? columnOrder
-          : columns.map((c) => c.id ?? '').filter(Boolean)
-
-      const oldIndex = currentOrder.indexOf(activeId)
-      const newIndex = currentOrder.indexOf(overId)
-      if (oldIndex === -1 || newIndex === -1) return
-
-      setColumnOrder(arrayMove(currentOrder, oldIndex, newIndex))
-    },
-    [columnOrder, columns]
-  )
-
-  // Table instance
-  const table = useReactTable({
-    data: filteredTasks,
-    columns,
-    state: {
-      sorting,
-      columnVisibility,
-      columnOrder,
-    },
-    onSortingChange: setSorting,
-    onColumnVisibilityChange: setColumnVisibility,
-    onColumnOrderChange: setColumnOrder,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getRowId: (row) => row.id,
-  })
 
   // Stats
   const stats = useMemo(() => {
@@ -347,7 +373,6 @@ export function AllWorkTab({
           <span>·</span>
           <span>{stats.done} avslutade</span>
           <span>·</span>
-          {/* Export button */}
           <Button
             variant="outline"
             size="sm"
@@ -376,91 +401,37 @@ export function AllWorkTab({
           description="Inga uppgifter hittades med dessa filter."
         />
       ) : (
-        <div className="rounded-md border overflow-x-auto">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <DraggableColumnHeader
-                      key={header.id}
-                      id={header.id}
-                      onReorder={handleColumnReorder}
-                      style={{ width: header.getSize() }}
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </DraggableColumnHeader>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows.map((row) => {
-                const overdue = isTaskOverdue(row.original)
-                return (
-                  <TableRow
-                    key={row.id}
-                    className={cn(
-                      'cursor-pointer hover:bg-muted/50',
-                      row.original.column.is_done && 'opacity-60',
-                      overdue && 'border-l-2 border-l-destructive'
-                    )}
-                    onClick={() => onTaskClick?.(row.original.id)}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </div>
+        <DataTable<TaskWithRelations>
+          data={filteredTasks}
+          columns={columns}
+          getRowId={(row) => row.id}
+          sorting={{
+            sorting,
+            onSortingChange: (updater: Updater<SortingState>) =>
+              setSorting(
+                typeof updater === 'function' ? updater(sorting) : updater
+              ),
+          }}
+          columnState={{
+            order: columnOrder,
+            onOrderChange: (updater: Updater<ColumnOrderState>) =>
+              setColumnOrder(
+                typeof updater === 'function' ? updater(columnOrder) : updater
+              ),
+          }}
+          rowInteraction={{
+            ...(onTaskClick
+              ? { onRowClick: (row: TaskWithRelations) => onTaskClick(row.id) }
+              : {}),
+            getRowClassName: (row: TaskWithRelations) =>
+              cn(
+                row.column.is_done && 'opacity-60',
+                isTaskOverdue(row) && 'border-l-2 border-l-destructive'
+              ),
+          }}
+          view={{ cardBelow: 800 }}
+        />
       )}
     </div>
-  )
-}
-
-// ============================================================================
-// Sortable Header
-// ============================================================================
-
-function SortableHeader({
-  column,
-  label,
-}: {
-  column: {
-    getIsSorted: () => false | 'asc' | 'desc'
-    toggleSorting: (_desc?: boolean) => void
-  }
-  label: string
-}) {
-  const sorted = column.getIsSorted()
-
-  return (
-    <Button
-      variant="ghost"
-      onClick={() => column.toggleSorting(sorted === 'asc')}
-      className="-ml-4 h-8"
-    >
-      {label}
-      {sorted === 'asc' ? (
-        <ArrowUp className="ml-2 h-4 w-4" />
-      ) : sorted === 'desc' ? (
-        <ArrowDown className="ml-2 h-4 w-4" />
-      ) : (
-        <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-      )}
-    </Button>
   )
 }

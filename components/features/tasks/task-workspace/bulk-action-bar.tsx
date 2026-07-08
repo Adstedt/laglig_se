@@ -1,11 +1,13 @@
 'use client'
 
 /**
- * Story 6.4: Task Bulk Action Bar
- * Actions for selected tasks
+ * Story 6.4 → Story 28.6: Task bulk actions on the shared DataTableBulkBar
+ * shell (count/clear/toolbar semantics live there); this file owns only the
+ * task-domain actions: move-to-column, assign, priority, delete.
  */
 
 import { Button } from '@/components/ui/button'
+import { DataTableBulkBar } from '@/components/ui/data-table'
 import {
   Select,
   SelectContent,
@@ -13,13 +15,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { X, MoveRight, UserPlus, Flag, Trash2 } from 'lucide-react'
+import { MoveRight, UserPlus, Flag, Trash2 } from 'lucide-react'
 import type { TaskColumnWithCount } from '@/app/actions/tasks'
 import type { WorkspaceMember } from './index'
-
-// ============================================================================
-// Types
-// ============================================================================
 
 interface BulkActionBarProps {
   selectedCount: number
@@ -34,20 +32,12 @@ interface BulkActionBarProps {
   workspaceMembers: WorkspaceMember[]
 }
 
-// ============================================================================
-// Priority Config
-// ============================================================================
-
 const PRIORITIES = [
   { value: 'CRITICAL', label: 'Kritisk' },
   { value: 'HIGH', label: 'Hög' },
   { value: 'MEDIUM', label: 'Medel' },
   { value: 'LOW', label: 'Låg' },
 ]
-
-// ============================================================================
-// Main Component
-// ============================================================================
 
 export function BulkActionBar({
   selectedCount,
@@ -58,17 +48,10 @@ export function BulkActionBar({
   workspaceMembers,
 }: BulkActionBarProps) {
   return (
-    <div className="flex items-center gap-4 rounded-lg border bg-muted/50 px-4 py-2">
-      {/* Selection info */}
-      <div className="flex items-center gap-2">
-        <span className="font-medium">{selectedCount} valda</span>
-        <Button variant="ghost" size="sm" onClick={onClearSelection}>
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-
-      <div className="h-4 w-px bg-border" />
-
+    <DataTableBulkBar
+      selectedCount={selectedCount}
+      onClearSelection={onClearSelection}
+    >
       {/* Move to column */}
       <div className="flex items-center gap-2">
         <MoveRight className="h-4 w-4 text-muted-foreground" />
@@ -134,6 +117,6 @@ export function BulkActionBar({
         <Trash2 className="mr-2 h-4 w-4" />
         Ta bort
       </Button>
-    </div>
+    </DataTableBulkBar>
   )
 }

@@ -1,41 +1,27 @@
 'use client'
 
 /**
- * Story 6.4: Task List View Tab
- * Story 6.19: Refactored for UX parity with law list table
- *   - Column resizing with persistence
- *   - Inline cell editors (status, priority, due date, assignee)
- *   - table-fixed layout with resize handles
- *   - Filter state lifted to parent (receives filteredTasks)
+ * Story 6.4 / 6.19 → migrated in Story 28.6 (Epic 28) onto the unified
+ * DataTable core. Column definitions + adapter mapping + inline-edit
+ * orchestration only; table mechanics (client sorting, selection, column
+ * reorder/resize with clamp, 56px virtualization, sticky header, row-click
+ * guard, the narrow-container card renderer) live in
+ * components/ui/data-table.
  *
- * Story P.4: Added virtualization for large datasets (>100 items)
+ * Changes vs legacy, per the story ACs:
+ *  - The non-functional dragHandle placeholder column is REMOVED.
+ *  - The select column is injected by the core (Set-based adapter).
+ *  - The inverted dueDate/priority min/max resize bounds are FIXED.
  */
 
-import { useState, useMemo, useCallback, useRef, memo } from 'react'
-import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual'
-import {
-  useReactTable,
-  getCoreRowModel,
-  getSortedRowModel,
-  flexRender,
-  type ColumnDef,
-  type SortingState,
-  type RowSelectionState,
-  type VisibilityState,
-  type ColumnSizingState,
-  type ColumnOrderState,
+import { useState, useMemo, useCallback } from 'react'
+import type {
+  ColumnDef,
+  SortingState,
+  VisibilityState,
+  ColumnSizingState,
+  ColumnOrderState,
 } from '@tanstack/react-table'
-import { arrayMove } from '@dnd-kit/sortable'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { DraggableColumnHeader } from '@/components/ui/draggable-column-header'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -52,10 +38,10 @@ import {
   Trash2,
   UserPlus,
   Flag,
-  GripVertical,
   SquareCheckBig,
   AlertCircle,
 } from 'lucide-react'
+import { DataTable } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { isTaskOverdue } from '@/lib/utils/task-utils'
 import { SortableHeader } from '@/components/ui/sortable-header'
@@ -92,23 +78,10 @@ import { BulkActionBar } from './bulk-action-bar'
 import { TaskDeleteDialog } from '../task-delete-dialog'
 import { toast } from 'sonner'
 
-// ============================================================================
-// Story P.4: Virtualization Configuration
-// ============================================================================
-
 function stripHtml(html: string | null): string {
   if (!html) return ''
   return html.replace(/<[^>]*>/g, '').trim()
 }
-
-const VIRTUALIZATION_THRESHOLD = 100
-const ESTIMATED_ROW_HEIGHT = 56
-const OVERSCAN_COUNT = 5
-const VIRTUAL_TABLE_MAX_HEIGHT = 600
-
-// ============================================================================
-// Task Priority Options (4 levels, matching task schema)
-// ============================================================================
 
 // Story 22.1: shape aligned with the canonical PriorityEditor (Laglistor +
 // Uppgifter share one editor + one tone-aware Badge render). Labels match
@@ -120,13 +93,6 @@ const TASK_PRIORITY_OPTIONS: PriorityOption[] = [
   { value: 'HIGH', label: 'Hög' },
   { value: 'CRITICAL', label: 'Kritisk' },
 ]
-
-// ============================================================================
-// Props
-// ============================================================================
-
-/** Column IDs that cannot be reordered (pinned to edges) */
-const PINNED_COLUMN_IDS = new Set(['select', 'dragHandle', 'type', 'actions'])
 
 interface ListTabProps {
   filteredTasks: TaskWithRelations[]
@@ -149,10 +115,6 @@ interface ListTabProps {
   onCreateTask: () => void
 }
 
-// ============================================================================
-// Main Component
-// ============================================================================
-
 export function ListTab({
   filteredTasks,
   totalTasks,
@@ -170,13 +132,8 @@ export function ListTab({
   onTasksDelete,
   onCreateTask,
 }: ListTabProps) {
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const [selected, setSelected] = useState<ReadonlySet<string>>(new Set())
 
-  // Story P.4: Virtualization state
-  const tableContainerRef = useRef<HTMLDivElement>(null)
-
-  // Local alias so the existing column-cell + memo deps continue to work
-  // without renaming every reference in this large file.
   const isOverdue = useCallback(
     (task: TaskWithRelations) => isTaskOverdue(task),
     []
@@ -194,7 +151,7 @@ export function ListTab({
     [workspaceMembers]
   )
 
-  // ---- Inline edit handlers ----
+  // ---- Inline edit handlers (optimistic via parent + rollback on error) ----
 
   const handleStatusChange = useCallback(
     async (taskId: string, task: TaskWithRelations, newColumnId: string) => {
@@ -202,7 +159,6 @@ export function ListTab({
       const newColumn = taskColumns.find((c) => c.id === newColumnId)
       if (!newColumn) return
 
-      // Optimistic update
       onTaskUpdate(taskId, {
         column_id: newColumnId,
         column: {
@@ -215,7 +171,6 @@ export function ListTab({
 
       const result = await updateTaskStatusColumn(taskId, newColumnId)
       if (!result.success) {
-        // Rollback
         onTaskUpdate(taskId, {
           column_id: previousColumn.id,
           column: previousColumn,
@@ -230,7 +185,6 @@ export function ListTab({
 
   const handlePriorityChange = useCallback(
     async (taskId: string, previousPriority: string, newPriority: string) => {
-      // Optimistic update
       onTaskUpdate(taskId, { priority: newPriority as TaskPriority })
 
       const result = await updateTaskPriority(
@@ -238,7 +192,6 @@ export function ListTab({
         newPriority as TaskPriority
       )
       if (!result.success) {
-        // Rollback
         onTaskUpdate(taskId, { priority: previousPriority as TaskPriority })
         toast.error('Kunde inte uppdatera prioritet', {
           description: result.error,
@@ -250,12 +203,10 @@ export function ListTab({
 
   const handleDueDateChange = useCallback(
     async (taskId: string, previousDate: Date | null, newDate: Date | null) => {
-      // Optimistic update
       onTaskUpdate(taskId, { due_date: newDate })
 
       const result = await updateTaskDueDate(taskId, newDate)
       if (!result.success) {
-        // Rollback
         onTaskUpdate(taskId, { due_date: previousDate })
         toast.error('Kunde inte uppdatera datum', {
           description: result.error,
@@ -275,7 +226,6 @@ export function ListTab({
         ? workspaceMembers.find((m) => m.id === newAssigneeId)
         : null
 
-      // Optimistic update
       onTaskUpdate(taskId, {
         assignee_id: newAssigneeId,
         assignee: newAssignee
@@ -290,7 +240,6 @@ export function ListTab({
 
       const result = await updateTaskAssignee(taskId, newAssigneeId)
       if (!result.success) {
-        // Rollback
         const prevAssignee = previousAssigneeId
           ? workspaceMembers.find((m) => m.id === previousAssigneeId)
           : null
@@ -313,56 +262,10 @@ export function ListTab({
     [workspaceMembers, onTaskUpdate]
   )
 
-  // ---- Column definitions with inline editors ----
+  // ---- Column definitions (select column injected by the core) ----
 
-  const columns: ColumnDef<TaskWithRelations>[] = useMemo(
+  const columns: ColumnDef<TaskWithRelations, unknown>[] = useMemo(
     () => [
-      // Select checkbox
-      {
-        id: 'select',
-        header: ({ table }) => (
-          <Checkbox
-            checked={
-              table.getIsAllPageRowsSelected()
-                ? true
-                : table.getIsSomePageRowsSelected()
-                  ? 'indeterminate'
-                  : false
-            }
-            onCheckedChange={(value: boolean) =>
-              table.toggleAllPageRowsSelected(value)
-            }
-            aria-label="Välj alla"
-          />
-        ),
-        cell: ({ row }) => (
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value: boolean) => row.toggleSelected(value)}
-            aria-label="Välj rad"
-          />
-        ),
-        enableSorting: false,
-        enableResizing: false,
-        size: 56,
-        minSize: 56,
-        maxSize: 56,
-      },
-      // Drag handle (visual placeholder — reorder not yet implemented)
-      {
-        id: 'dragHandle',
-        header: '',
-        cell: () => (
-          <div className="flex items-center justify-center text-muted-foreground">
-            <GripVertical className="h-4 w-4" />
-          </div>
-        ),
-        enableSorting: false,
-        enableResizing: false,
-        size: 56,
-        minSize: 56,
-        maxSize: 56,
-      },
       // Type icon
       {
         id: 'type',
@@ -382,6 +285,15 @@ export function ListTab({
         size: 72,
         minSize: 72,
         maxSize: 72,
+        meta: {
+          dt: {
+            label: 'Typ',
+            pinned: 'left',
+            padding: 'tight',
+            mandatory: true,
+            card: { role: 'hidden' },
+          },
+        },
       },
       // Title
       {
@@ -426,6 +338,9 @@ export function ListTab({
         size: 300,
         minSize: 150,
         maxSize: 600,
+        meta: {
+          dt: { label: 'Uppgift', fill: true, card: { role: 'title' } },
+        },
       },
       // Description (truncated with tooltip)
       {
@@ -466,6 +381,26 @@ export function ListTab({
         size: 240,
         minSize: 150,
         maxSize: 500,
+        meta: {
+          dt: {
+            label: 'Beskrivning',
+            card: {
+              role: 'meta',
+              priority: 2,
+              cardLabel: null,
+              // Skip the row when there is no description.
+              renderCard: (row) => {
+                const text = stripHtml(row.original.description)
+                if (!text) return null
+                return (
+                  <span className="line-clamp-2 text-sm text-muted-foreground">
+                    {text}
+                  </span>
+                )
+              },
+            },
+          },
+        },
       },
       // Status column (inline editor)
       {
@@ -489,6 +424,12 @@ export function ListTab({
         size: 120,
         minSize: 80,
         maxSize: 200,
+        meta: {
+          dt: {
+            label: 'Status',
+            card: { role: 'badge', priority: 0, interactive: true },
+          },
+        },
       },
       // Comments count
       {
@@ -506,9 +447,28 @@ export function ListTab({
           )
         },
         enableResizing: false,
+        enableSorting: false,
         size: 60,
         minSize: 60,
         maxSize: 60,
+        meta: {
+          dt: {
+            label: 'Kommentarer',
+            card: {
+              role: 'footer',
+              renderCard: (row) => {
+                const count = row.original._count.comments
+                if (count === 0) return null
+                return (
+                  <span className="inline-flex items-center gap-1">
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    {count}
+                  </span>
+                )
+              },
+            },
+          },
+        },
       },
       // Assignee (inline editor)
       {
@@ -535,8 +495,48 @@ export function ListTab({
         size: 150,
         minSize: 105,
         maxSize: 250,
+        meta: {
+          dt: {
+            label: 'Ansvarig',
+            card: {
+              role: 'meta',
+              priority: 3,
+              interactive: true,
+              renderCard: (row) => {
+                const task = row.original
+                const member = workspaceMembers.find(
+                  (m) => m.id === task.assignee_id
+                )
+                return (
+                  <span className="inline-flex items-center gap-2">
+                    <AssigneeEditor
+                      value={task.assignee_id}
+                      members={memberOptions}
+                      onChange={async (newAssigneeId) => {
+                        await handleAssigneeChange(
+                          task.id,
+                          task.assignee_id,
+                          newAssigneeId
+                        )
+                      }}
+                    />
+                    <span
+                      className={cn(
+                        'truncate text-sm',
+                        !member && 'text-muted-foreground'
+                      )}
+                    >
+                      {member?.name ?? member?.email ?? 'Ej tilldelad'}
+                    </span>
+                  </span>
+                )
+              },
+            },
+          },
+        },
       },
-      // Due date (inline editor)
+      // Due date (inline editor). 28.6 AC: legacy bounds were inverted
+      // (size 140 < minSize 160) — fixed to a sane 120–200 range.
       {
         id: 'dueDate',
         accessorKey: 'due_date',
@@ -554,11 +554,18 @@ export function ListTab({
             />
           )
         },
-        size: 140,
-        minSize: 160,
+        size: 160,
+        minSize: 120,
         maxSize: 200,
+        meta: {
+          dt: {
+            label: 'Förfallodatum',
+            card: { role: 'meta', priority: 4, interactive: true },
+          },
+        },
       },
-      // Priority (inline editor)
+      // Priority (inline editor). 28.6 AC: legacy bounds were inverted
+      // (size 100 < minSize 130) — fixed to a sane 100–150 range.
       {
         id: 'priority',
         accessorKey: 'priority',
@@ -577,9 +584,15 @@ export function ListTab({
             />
           )
         },
-        size: 100,
-        minSize: 130,
+        size: 130,
+        minSize: 100,
         maxSize: 150,
+        meta: {
+          dt: {
+            label: 'Prioritet',
+            card: { role: 'badge', priority: 1, interactive: true },
+          },
+        },
       },
       // Created date
       {
@@ -596,11 +609,14 @@ export function ListTab({
         size: 100,
         minSize: 80,
         maxSize: 150,
+        meta: {
+          dt: { label: 'Skapad', card: { role: 'footer' } },
+        },
       },
       // Actions
       {
         id: 'actions',
-        header: '',
+        header: () => null,
         cell: ({ row }) => (
           <TaskRowActions task={row.original} onTasksDelete={onTasksDelete} />
         ),
@@ -609,137 +625,36 @@ export function ListTab({
         size: 50,
         minSize: 50,
         maxSize: 50,
+        meta: {
+          dt: {
+            label: 'Åtgärder',
+            pinned: 'right',
+            padding: 'tight',
+            mandatory: true,
+            card: { role: 'hidden' },
+          },
+        },
       },
     ],
     [
       isOverdue,
       taskColumns,
       memberOptions,
+      workspaceMembers,
       handleStatusChange,
       handlePriorityChange,
       handleDueDateChange,
       handleAssigneeChange,
+      onTasksDelete,
     ]
   )
 
-  // ---- Column sizing change handler ----
+  // ---- Bulk actions (optimistic via parent callbacks) ----
 
-  const handleColumnSizingChange = useCallback(
-    (
-      updater:
-        | ColumnSizingState
-        | ((_old: ColumnSizingState) => ColumnSizingState)
-    ) => {
-      const newSizing =
-        typeof updater === 'function' ? updater(columnSizing) : updater
-      onColumnSizingChange(newSizing)
-    },
-    [columnSizing, onColumnSizingChange]
-  )
+  const selectedItemIds = useMemo(() => [...selected], [selected])
 
-  // ---- Column reorder handler (native HTML5 DnD via DraggableColumnHeader) ----
+  const handleClearSelection = useCallback(() => setSelected(new Set()), [])
 
-  const handleColumnReorder = useCallback(
-    (activeId: string, overId: string) => {
-      const currentOrder =
-        columnOrder.length > 0
-          ? columnOrder
-          : table.getAllLeafColumns().map((c) => c.id)
-
-      const oldIndex = currentOrder.indexOf(activeId)
-      const newIndex = currentOrder.indexOf(overId)
-      if (oldIndex === -1 || newIndex === -1) return
-
-      onColumnOrderChange(arrayMove(currentOrder, oldIndex, newIndex))
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [columnOrder, onColumnOrderChange]
-  )
-
-  // ---- Table instance with column resizing ----
-
-  const table = useReactTable({
-    data: filteredTasks,
-    columns,
-    state: {
-      sorting,
-      rowSelection,
-      columnVisibility,
-      columnSizing,
-      columnOrder,
-    },
-    onSortingChange: (updater) => {
-      const newSorting =
-        typeof updater === 'function' ? updater(sorting) : updater
-      onSortingChange(newSorting)
-    },
-    onRowSelectionChange: setRowSelection,
-    onColumnSizingChange: handleColumnSizingChange,
-    onColumnOrderChange: (updater) => {
-      const newOrder =
-        typeof updater === 'function' ? updater(columnOrder) : updater
-      onColumnOrderChange(newOrder)
-    },
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getRowId: (row) => row.id,
-    enableRowSelection: true,
-    enableColumnResizing: true,
-    columnResizeMode: 'onEnd',
-  })
-
-  // Helper to get column width with live resize preview + min/max clamp on
-  // read. The clamp on read covers two cases: TanStack commits resize values
-  // unclamped on `onEnd` mode, and stale localStorage state from before
-  // min/max were declared can otherwise render columns outside bounds.
-  const { columnSizingInfo } = table.getState()
-  const getColumnWidth = (headerId: string, defaultSize: number) => {
-    const column = table.getColumn(headerId)
-    const minSize = column?.columnDef.minSize ?? 0
-    const maxSize = column?.columnDef.maxSize ?? Infinity
-    if (columnSizingInfo.isResizingColumn === headerId) {
-      const newSize =
-        (columnSizingInfo.startSize ?? defaultSize) +
-        (columnSizingInfo.deltaOffset ?? 0)
-      return Math.max(minSize, Math.min(maxSize, newSize))
-    }
-    return Math.max(minSize, Math.min(maxSize, defaultSize))
-  }
-
-  // Sum of all visible column widths (live-aware during a resize). The Table
-  // primitive ships with `w-full` which combined with `table-fixed` forces
-  // columns to share the container width — meaning resizing one column
-  // proportionally squashes the others. Setting an explicit table width that
-  // matches the column sum lets the chrome columns stay rock-steady; the
-  // wrapping `overflow-x-auto` handles horizontal scroll when the total
-  // exceeds the viewport.
-  const liveTotalWidth = table
-    .getVisibleLeafColumns()
-    .reduce((sum, col) => sum + getColumnWidth(col.id, col.getSize()), 0)
-
-  // Stable key to bust memo when column order changes
-  const columnOrderKey = useMemo(() => columnOrder.join(','), [columnOrder])
-
-  // Story P.4: Row virtualizer for large datasets
-  const rows = table.getRowModel().rows
-  const shouldVirtualize = rows.length > VIRTUALIZATION_THRESHOLD
-  const rowVirtualizer = useVirtualizer({
-    count: rows.length,
-    getScrollElement: () => tableContainerRef.current,
-    estimateSize: () => ESTIMATED_ROW_HEIGHT,
-    overscan: OVERSCAN_COUNT,
-    enabled: shouldVirtualize,
-  })
-
-  // Selected item IDs
-  const selectedItemIds = Object.keys(rowSelection).filter(
-    (id) => rowSelection[id]
-  )
-
-  // Clear selection
-  const handleClearSelection = () => setRowSelection({})
-
-  // Handle bulk update (optimistic via parent callbacks)
   const handleBulkUpdate = async (updates: {
     columnId?: string
     assigneeId?: string | null
@@ -753,9 +668,7 @@ export function ListTab({
       priority?: TaskPriority
     } = {}
 
-    if (updates.columnId !== undefined) {
-      bulkUpdates.columnId = updates.columnId
-    }
+    if (updates.columnId !== undefined) bulkUpdates.columnId = updates.columnId
     if (updates.assigneeId !== undefined) {
       bulkUpdates.assigneeId = updates.assigneeId
     }
@@ -763,7 +676,6 @@ export function ListTab({
       bulkUpdates.priority = updates.priority as TaskPriority
     }
 
-    // Optimistic updates via parent
     for (const taskId of selectedItemIds) {
       const task = filteredTasks.find((t) => t.id === taskId)
       if (!task) continue
@@ -788,7 +700,7 @@ export function ListTab({
       }
       onTaskUpdate(taskId, taskUpdates)
     }
-    setRowSelection({})
+    setSelected(new Set())
 
     const result = await updateTasksBulk(selectedItemIds, bulkUpdates)
 
@@ -801,14 +713,12 @@ export function ListTab({
     }
   }
 
-  // Handle bulk delete (optimistic via parent callback)
   const handleBulkDelete = async () => {
     if (selectedItemIds.length === 0) return
     const deletedIds = [...selectedItemIds]
 
-    // Optimistic delete via parent
     onTasksDelete(deletedIds)
-    setRowSelection({})
+    setSelected(new Set())
 
     const result = await deleteTasksBulk(deletedIds)
 
@@ -858,7 +768,6 @@ export function ListTab({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Bulk action bar */}
       {selectedItemIds.length > 0 && (
         <BulkActionBar
           selectedCount={selectedItemIds.length}
@@ -870,162 +779,47 @@ export function ListTab({
         />
       )}
 
-      {/* Table with column resizing */}
-      <div
-        ref={tableContainerRef}
-        className={cn(
-          'rounded-md border overflow-x-auto',
-          shouldVirtualize && 'overflow-y-auto'
-        )}
-        style={
-          shouldVirtualize ? { maxHeight: VIRTUAL_TABLE_MAX_HEIGHT } : undefined
+      <DataTable<TaskWithRelations>
+        data={filteredTasks}
+        columns={columns}
+        getRowId={(row) => row.id}
+        sorting={{
+          sorting,
+          // Store setters take plain values; adapters speak TanStack
+          // updaters — resolve here.
+          onSortingChange: (updater) =>
+            onSortingChange(
+              typeof updater === 'function' ? updater(sorting) : updater
+            ),
+        }}
+        selection={{ selected, onSelectedChange: setSelected }}
+        columnState={{
+          visibility: columnVisibility,
+          sizing: columnSizing,
+          onSizingChange: (updater) =>
+            onColumnSizingChange(
+              typeof updater === 'function' ? updater(columnSizing) : updater
+            ),
+          order: columnOrder,
+          onOrderChange: (updater) =>
+            onColumnOrderChange(
+              typeof updater === 'function' ? updater(columnOrder) : updater
+            ),
+        }}
+        rowInteraction={
+          onTaskClick ? { onRowClick: (row) => onTaskClick(row.id) } : {}
         }
-      >
-        <Table className="table-fixed" style={{ minWidth: liveTotalWidth }}>
-          <TableHeader
-            className={
-              shouldVirtualize ? 'sticky top-0 z-20 bg-background' : undefined
-            }
-          >
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {/* Spacer cells without explicit width absorb the leftover
-                    space when the column-sum < container, so chrome columns
-                    keep their declared widths instead of inflating
-                    proportionally under table-fixed. */}
-                {headerGroup.headers.map((header) => {
-                  const isPinned = PINNED_COLUMN_IDS.has(header.id)
-                  const headerContent = (
-                    <>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                      {/* Resize handle */}
-                      {header.column.getCanResize() && (
-                        // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-                        <div
-                          role="separator"
-                          aria-orientation="vertical"
-                          onPointerDown={(e) => e.stopPropagation()}
-                          onMouseDown={header.getResizeHandler()}
-                          onTouchStart={header.getResizeHandler()}
-                          className={cn(
-                            'absolute right-0 top-0 h-full w-4 cursor-col-resize select-none touch-none group/resize',
-                            'flex items-center justify-center'
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              'h-4 w-0.5 rounded-full bg-border transition-colors',
-                              'group-hover/resize:bg-primary group-hover/resize:h-6',
-                              header.column.getIsResizing() && 'bg-primary h-6'
-                            )}
-                          />
-                        </div>
-                      )}
-                    </>
-                  )
-
-                  if (isPinned) {
-                    return (
-                      <TableHead
-                        key={header.id}
-                        style={{
-                          width: getColumnWidth(header.id, header.getSize()),
-                        }}
-                        className={cn(
-                          'relative',
-                          header.id === 'title' && 'bg-background',
-                          header.id === 'select' && 'pl-6 pr-2',
-                          header.id === 'dragHandle' && 'px-2',
-                          header.id === 'type' && 'pl-5 pr-2'
-                        )}
-                      >
-                        {headerContent}
-                      </TableHead>
-                    )
-                  }
-
-                  return (
-                    <DraggableColumnHeader
-                      key={header.id}
-                      id={header.id}
-                      onReorder={handleColumnReorder}
-                      style={{
-                        width: getColumnWidth(header.id, header.getSize()),
-                      }}
-                      className={cn(
-                        'relative',
-                        header.id === 'title' && 'bg-background'
-                      )}
-                    >
-                      {headerContent}
-                    </DraggableColumnHeader>
-                  )
-                })}
-                <TableHead aria-hidden="true" className="p-0" />
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody
-            style={
-              shouldVirtualize
-                ? {
-                    height: `${rowVirtualizer.getTotalSize()}px`,
-                    position: 'relative',
-                  }
-                : undefined
-            }
-          >
-            {rows.length > 0 ? (
-              shouldVirtualize ? (
-                rowVirtualizer.getVirtualItems().map((virtualItem) => {
-                  const row = rows[virtualItem.index]
-                  if (!row) return null
-                  return (
-                    <VirtualTaskRow
-                      key={row.id}
-                      row={row}
-                      virtualItem={virtualItem}
-                      isOverdue={isOverdue(row.original)}
-                      onTaskClick={onTaskClick}
-                      columnOrderKey={columnOrderKey}
-                    />
-                  )
-                })
-              ) : (
-                rows.map((row) => (
-                  <TaskRow
-                    key={row.id}
-                    row={row}
-                    isOverdue={isOverdue(row.original)}
-                    onTaskClick={onTaskClick}
-                    columnOrderKey={columnOrderKey}
-                  />
-                ))
-              )
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  Inga uppgifter matchar din sökning
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+        virtualization={{ estimateRowHeight: 56 }}
+        // Two tiers (matches krav/styrdokument): full table with horizontal
+        // scroll down to 800px container, cards below.
+        view={{ cardBelow: 800 }}
+      />
     </div>
   )
 }
 
 // ============================================================================
-// Task Row Actions (extracted for state management)
+// Row actions dropdown (kebab) — also the card kebab via cardActions later
 // ============================================================================
 
 function TaskRowActions({
@@ -1096,116 +890,3 @@ function TaskRowActions({
     </>
   )
 }
-
-// ============================================================================
-// Story P.4: Task Row Components (memoized for performance)
-// ============================================================================
-
-type TaskRowType = ReturnType<
-  ReturnType<typeof useReactTable<TaskWithRelations>>['getRowModel']
->['rows'][number]
-
-const TaskRow = memo(function TaskRow({
-  row,
-  isOverdue,
-  onTaskClick,
-  columnOrderKey: _columnOrderKey,
-}: {
-  row: TaskRowType
-  isOverdue: boolean
-  onTaskClick?: ((_taskId: string) => void) | undefined
-  columnOrderKey?: string
-}) {
-  return (
-    <TableRow
-      data-state={row.getIsSelected() && 'selected'}
-      className={cn(
-        'group cursor-pointer hover:bg-muted/50',
-        isOverdue && 'border-l-2 border-l-destructive'
-      )}
-      onClick={(e) => {
-        // Only trigger click if not clicking interactive elements
-        if (
-          !(e.target as HTMLElement).closest(
-            'button, input[type="checkbox"], [role="combobox"], [role="listbox"], [role="option"]'
-          )
-        ) {
-          onTaskClick?.(row.original.id)
-        }
-      }}
-    >
-      {row.getVisibleCells().map((cell) => (
-        <TableCell
-          key={cell.id}
-          className={cn(
-            cell.column.id === 'title' && 'bg-background',
-            cell.column.id === 'select' && 'pl-6 pr-2',
-            (cell.column.id === 'dragHandle' || cell.column.id === 'type') &&
-              'px-2'
-          )}
-        >
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </TableCell>
-      ))}
-      <TableCell aria-hidden="true" className="p-0" />
-    </TableRow>
-  )
-})
-
-const VirtualTaskRow = memo(function VirtualTaskRow({
-  row,
-  virtualItem,
-  isOverdue,
-  onTaskClick,
-  columnOrderKey: _columnOrderKey,
-}: {
-  row: TaskRowType
-  virtualItem: VirtualItem
-  isOverdue: boolean
-  onTaskClick?: ((_taskId: string) => void) | undefined
-  columnOrderKey?: string
-}) {
-  const style: React.CSSProperties = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: `${virtualItem.size}px`,
-    transform: `translateY(${virtualItem.start}px)`,
-  }
-
-  return (
-    <TableRow
-      style={style}
-      data-state={row.getIsSelected() && 'selected'}
-      className={cn(
-        'group cursor-pointer hover:bg-muted/50',
-        isOverdue && 'border-l-2 border-l-destructive'
-      )}
-      onClick={(e) => {
-        if (
-          !(e.target as HTMLElement).closest(
-            'button, input[type="checkbox"], [role="combobox"], [role="listbox"], [role="option"]'
-          )
-        ) {
-          onTaskClick?.(row.original.id)
-        }
-      }}
-    >
-      {row.getVisibleCells().map((cell) => (
-        <TableCell
-          key={cell.id}
-          className={cn(
-            cell.column.id === 'title' && 'bg-background',
-            cell.column.id === 'select' && 'pl-6 pr-2',
-            (cell.column.id === 'dragHandle' || cell.column.id === 'type') &&
-              'px-2'
-          )}
-        >
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </TableCell>
-      ))}
-      <TableCell aria-hidden="true" className="p-0" />
-    </TableRow>
-  )
-})

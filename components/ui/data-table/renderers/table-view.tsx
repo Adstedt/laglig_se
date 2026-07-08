@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { DraggableColumnHeader } from '@/components/ui/draggable-column-header'
 import { cn } from '@/lib/utils'
 import { getColumnWidth, getLiveTotalWidth } from '../column-sizing'
 import { useDataTableContext } from '../context'
@@ -132,6 +133,25 @@ export function TableView<TData>() {
   )
 
   const canResize = Boolean(props.columnState?.sizing !== undefined)
+  const canReorder = Boolean(
+    props.columnState?.order !== undefined && props.columnState?.onOrderChange
+  )
+
+  const handleColumnReorder = useCallback(
+    (activeId: string, overId: string) => {
+      const current =
+        state.columnOrder.length > 0
+          ? [...state.columnOrder]
+          : table.getAllLeafColumns().map((c) => c.id)
+      const from = current.indexOf(activeId)
+      const to = current.indexOf(overId)
+      if (from === -1 || to === -1) return
+      current.splice(to, 0, current.splice(from, 1)[0]!)
+      table.setColumnOrder(current)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [state.columnOrder, table]
+  )
 
   return (
     <div
@@ -150,50 +170,72 @@ export function TableView<TData>() {
         >
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header, headerIndex) => (
-                <TableHead
-                  key={header.id}
-                  style={{
-                    width: getRenderWidth(header.id, header.getSize()),
-                  }}
-                  className={cn(
-                    // overflow-hidden: a header whose content outgrows its
-                    // declared width must clip, never bleed into the next
-                    // column (table-fixed doesn't protect against this).
-                    // [&_button]:text-xs: SortableHeader renders a ghost
-                    // Button whose own text-sm would beat the inherited
-                    // header size — force all header buttons to match.
-                    'relative overflow-hidden whitespace-nowrap text-xs [&_button]:text-xs',
-                    cellClassesFromMeta(header.column, headerIndex === 0)
-                  )}
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                  {canResize && header.column.getCanResize() && (
-                    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-                    <div
-                      role="separator"
-                      aria-orientation="vertical"
-                      onPointerDown={(e) => e.stopPropagation()}
-                      onMouseDown={header.getResizeHandler()}
-                      onTouchStart={header.getResizeHandler()}
-                      className="absolute right-0 top-0 h-full w-4 cursor-col-resize select-none touch-none group/resize flex items-center justify-center"
-                    >
-                      <div
-                        className={cn(
-                          'h-4 w-0.5 rounded-full bg-border transition-colors',
-                          'group-hover/resize:bg-primary group-hover/resize:h-6',
-                          header.column.getIsResizing() && 'bg-primary h-6'
+              {headerGroup.headers.map((header, headerIndex) => {
+                const isPinned = Boolean(
+                  header.column.columnDef.meta?.dt?.pinned
+                )
+                const headClassName = cn(
+                  // overflow-hidden: a header whose content outgrows its
+                  // declared width must clip, never bleed into the next
+                  // column (table-fixed doesn't protect against this).
+                  // [&_button]:text-xs: SortableHeader renders a ghost
+                  // Button whose own text-sm would beat the inherited
+                  // header size — force all header buttons to match.
+                  'relative overflow-hidden whitespace-nowrap text-xs [&_button]:text-xs',
+                  cellClassesFromMeta(header.column, headerIndex === 0)
+                )
+                const headStyle = {
+                  width: getRenderWidth(header.id, header.getSize()),
+                }
+                const headContent = (
+                  <>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
                         )}
-                      />
-                    </div>
-                  )}
-                </TableHead>
-              ))}
+                    {canResize && header.column.getCanResize() && (
+                      // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                      <div
+                        role="separator"
+                        aria-orientation="vertical"
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onMouseDown={header.getResizeHandler()}
+                        onTouchStart={header.getResizeHandler()}
+                        className="absolute right-0 top-0 h-full w-4 cursor-col-resize select-none touch-none group/resize flex items-center justify-center"
+                      >
+                        <div
+                          className={cn(
+                            'h-4 w-0.5 rounded-full bg-border transition-colors',
+                            'group-hover/resize:bg-primary group-hover/resize:h-6',
+                            header.column.getIsResizing() && 'bg-primary h-6'
+                          )}
+                        />
+                      </div>
+                    )}
+                  </>
+                )
+                return canReorder && !isPinned ? (
+                  <DraggableColumnHeader
+                    key={header.id}
+                    id={header.id}
+                    onReorder={handleColumnReorder}
+                    style={headStyle}
+                    className={headClassName}
+                  >
+                    {headContent}
+                  </DraggableColumnHeader>
+                ) : (
+                  <TableHead
+                    key={header.id}
+                    style={headStyle}
+                    className={headClassName}
+                  >
+                    {headContent}
+                  </TableHead>
+                )
+              })}
               {/* Spacer absorbs leftover width */}
               <TableHead aria-hidden="true" className="p-0" />
             </TableRow>

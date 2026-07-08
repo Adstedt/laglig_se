@@ -15,6 +15,7 @@ export {
 } from './view-resolution'
 export { SELECT_COLUMN_ID } from './chrome-columns'
 export { DataTableSortMenu } from './sort-menu'
+export { DataTableBulkBar } from './bulk-action-bar'
 export type {
   CardSlot,
   ColumnStateAdapter,
