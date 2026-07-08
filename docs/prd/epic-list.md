@@ -426,7 +426,7 @@
 
 ## Epic 28: Unified DataTable Core
 
-**Status:** Active (0 completed — 12 stories scoped, registered 2026-07-07)
+**Status:** Done (2026-07-08 — all 12 stories complete on `feat/epic-28-table-refactoring`; deviations documented per-story in `docs/stories/28.*.md`: no legacy-behind-flag for laglistor (direct migration, unchanged interfaces, conformance suite), grouped wrappers kept on dnd 'external' instead of `GroupedDataTable`, activity-log + cycle-items-tab stay Tier-0 with rationale in `docs/architecture/table-conventions.md`)
 
 **Goal:** Collapse ~6,400 lines of bespoke table code (9+ implementations; five heavyweight tables each independently "mirroring" `document-list-table.tsx`) into one shared headless `DataTable` core at `components/ui/data-table/` with two renderers over one column definition — semantic `<table>` for wide containers, virtualized card list for narrow — switched by **container width** (ResizeObserver + hysteresis), so mobile and desktop-with-AI-chat-maximized get the same coherent card experience on every record table.
 

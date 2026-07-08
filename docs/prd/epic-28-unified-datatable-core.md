@@ -1,5 +1,10 @@
 # Epic 28: Unified DataTable Core — Brownfield Consolidation
 
+**Status: Done (2026-07-08).** All 12 stories complete; per-story records with
+documented deviations live in `docs/stories/28.*.md`, the Tier-1/Tier-0
+conventions in `docs/architecture/table-conventions.md`, and the CI grep-gate
+in `scripts/check-table-conventions.sh`.
+
 **Goal:** Collapse ~6,400 lines of bespoke table code across 9+ implementations into one shared, headless `DataTable` core with **two renderers over one column definition** — a semantic `<table>` for wide containers and a virtualized card list for narrow containers — switched by **container width** (not viewport), so mobile and desktop-with-AI-chat-maximized get the same coherent card experience. Every record table in the app gains uniform sorting, selection, column management, virtualization, load-more, empty states, and narrow-mode behavior from a single implementation.
 
 **Value Delivered:** Today five heavyweight tables (laglistor, krav, tasks, personalregister, styrdokument) each independently "mirror" `document-list-table.tsx`, re-deriving the same scaffolding — the resize-clamp subsystem exists in 3 copies, `SortableHeader` in 4, inline virtualizer setup in 3, while the purpose-built shared `virtual-table-body.tsx` sits unused. Users get inconsistent interaction (client sort here, URL sort there; sticky headers on some tables; three different load-more patterns), **no table has any mobile treatment**, and the AI chat sidebar squeezes desktop content to ~400–430px with tables horizontal-scrolling into unusability. Grouped-mode selection in laglistor is silently broken (dead plumbing). After this epic: one core, thin per-table configs, coherent narrow-mode cards everywhere, and one place to improve tables forever.

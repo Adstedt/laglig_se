@@ -33,6 +33,9 @@ jobs:
       - name: Run Prettier check
         run: pnpm format:check
 
+      - name: Table conventions gate (Epic 28)
+        run: ./scripts/check-table-conventions.sh
+
   test:
     runs-on: ubuntu-latest
     env:
