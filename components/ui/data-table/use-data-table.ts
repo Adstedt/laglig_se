@@ -26,7 +26,7 @@ import {
 } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 import { boundsFromColumnDefs, clampColumnSizing } from './column-sizing'
-import { createSelectColumn } from './chrome-columns'
+import { createDragHandleColumn, createSelectColumn } from './chrome-columns'
 import { buildRenderItems } from './features/expansion'
 import type { DataTableProps, DataTableView, UseDataTableResult } from './types'
 import { useContainerWidth } from './use-container-width'
@@ -49,6 +49,7 @@ export function useDataTable<TData>(
     selection,
     columnState,
     expansion,
+    dnd,
     view,
     className,
   } = props
@@ -60,14 +61,43 @@ export function useDataTable<TData>(
   prevViewRef.current = resolvedView
 
   // ---- chrome column injection ----
-  // Depends on selection PRESENCE, not identity: consumers idiomatically
+  // Depends on feature PRESENCE, not identity: consumers idiomatically
   // pass inline adapter literals, and rebuilding columns each render
   // invalidates TanStack's whole row model.
   const selectionEnabled = Boolean(selection)
+  const dndMode = dnd?.mode ?? 'off'
   const allColumns = useMemo<ColumnDef<TData, unknown>[]>(() => {
-    if (!selectionEnabled) return columns
-    return [createSelectColumn<TData>(), ...columns]
-  }, [columns, selectionEnabled])
+    const injected: ColumnDef<TData, unknown>[] = []
+    if (selectionEnabled) injected.push(createSelectColumn<TData>())
+    if (dndMode !== 'off') injected.push(createDragHandleColumn<TData>())
+    return injected.length > 0 ? [...injected, ...columns] : columns
+  }, [columns, selectionEnabled, dndMode])
+
+  // ---- optimistic row order (dnd 'self') ----
+  // On drop the consumer persists asynchronously; this overlay keeps the
+  // visual order stable until fresh data arrives (identity change resets).
+  const [orderOverlay, setOrderOverlay] = useState<string[] | null>(null)
+  const dataRef = useRef(data)
+  if (dataRef.current !== data) {
+    dataRef.current = data
+    if (orderOverlay !== null) setOrderOverlay(null)
+  }
+  const orderedData = useMemo(() => {
+    if (!orderOverlay) return data
+    const byId = new Map(data.map((row) => [getRowId(row), row]))
+    const ordered: TData[] = []
+    for (const id of orderOverlay) {
+      const row = byId.get(id)
+      if (row) {
+        ordered.push(row)
+        byId.delete(id)
+      }
+    }
+    // Anything not in the overlay (fresh rows) appends in data order.
+    for (const row of byId.values()) ordered.push(row)
+    return ordered
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, orderOverlay])
 
   const sizingBounds = useMemo(
     () => boundsFromColumnDefs(allColumns),
@@ -193,7 +223,7 @@ export function useDataTable<TData>(
 
   // ---- TanStack instance ----
   const table = useReactTable<TData>({
-    data,
+    data: orderedData,
     columns: allColumns,
     state: {
       ...(sorting ? { sorting: sorting.sorting } : {}),
@@ -203,7 +233,20 @@ export function useDataTable<TData>(
         ? { columnVisibility: effectiveVisibility }
         : {}),
       ...(columnState?.order !== undefined
-        ? { columnOrder: columnState.order }
+        ? {
+            // Injected chrome columns (select/drag) must stay leftmost even
+            // when persisted orders predate them: TanStack appends ids
+            // missing from columnOrder at the END otherwise.
+            columnOrder: [
+              ...allColumns
+                .map((c) => c.id ?? '')
+                .filter(
+                  (id) =>
+                    id.startsWith('dt-') && !columnState.order!.includes(id)
+                ),
+              ...columnState.order,
+            ],
+          }
         : {}),
       ...(columnState?.sizing !== undefined
         ? { columnSizing: columnState.sizing }
@@ -260,8 +303,24 @@ export function useDataTable<TData>(
     [rows, expansionEnabled, expanded]
   )
 
+  const applyReorder = useCallback(
+    (activeId: string, overId: string) => {
+      if (dnd?.mode !== 'self') return
+      const ids = orderedData.map((row) => getRowId(row))
+      const from = ids.indexOf(activeId)
+      const to = ids.indexOf(overId)
+      if (from === -1 || to === -1 || from === to) return
+      ids.splice(to, 0, ids.splice(from, 1)[0]!)
+      setOrderOverlay(ids)
+      void dnd.onReorder(ids.map((id, index) => ({ id, position: index })))
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dnd, orderedData, getRowId]
+  )
+
   return {
     table,
+    applyReorder,
     containerProps: {
       ref: containerRef,
       className: cn('w-full', className),

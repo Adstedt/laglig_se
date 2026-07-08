@@ -16,6 +16,7 @@ export interface DataTableContextValue<TData> {
   props: DataTableProps<TData>
   /** Measured container width (8px-quantized); null before first measure. */
   containerWidth: number | null
+  applyReorder: (_activeId: string, _overId: string) => void
 }
 
 // Typed at use-site via the useDataTableContext<TData>() cast — a single

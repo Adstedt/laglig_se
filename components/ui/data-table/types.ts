@@ -319,4 +319,6 @@ export interface UseDataTableResult<TData> {
   renderItems: RenderItem<TData>[]
   /** Measured container width (8px-quantized); null before first measure. */
   containerWidth: number | null
+  /** dnd 'self': apply an optimistic reorder + notify the consumer. */
+  applyReorder: (_activeId: string, _overId: string) => void
 }

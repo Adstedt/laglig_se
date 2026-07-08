@@ -12,6 +12,21 @@ import { useCallback, useMemo, useRef } from 'react'
 import { flexRender } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
+import {
   Table,
   TableBody,
   TableHead,
@@ -32,7 +47,7 @@ const DEFAULT_MAX_HEIGHT = 600
 const DETAIL_ESTIMATE_PX = 200
 
 export function TableView<TData>() {
-  const { table, renderItems, props, view, containerWidth } =
+  const { table, renderItems, props, view, containerWidth, applyReorder } =
     useDataTableContext<TData>()
   const {
     virtualization,
@@ -41,7 +56,30 @@ export function TableView<TData>() {
     expansion,
     rowInteraction,
     status,
+    dnd,
   } = props
+
+  const dndMode = dnd?.mode ?? 'off'
+  const rowsSortable =
+    dndMode === 'self'
+      ? !(dnd?.mode === 'self' && dnd.disabled)
+      : dndMode === 'external'
+
+  const dndSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event
+      if (!over || active.id === over.id) return
+      applyReorder(String(active.id), String(over.id))
+    },
+    [applyReorder]
+  )
 
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -133,6 +171,10 @@ export function TableView<TData>() {
   )
 
   const canResize = Boolean(props.columnState?.sizing !== undefined)
+  const rowIds = useMemo(
+    () => renderItems.filter((i) => i.kind === 'row').map((i) => i.row.id),
+    [renderItems]
+  )
   const canReorder = Boolean(
     props.columnState?.order !== undefined && props.columnState?.onOrderChange
   )
@@ -153,7 +195,7 @@ export function TableView<TData>() {
     [state.columnOrder, table]
   )
 
-  return (
+  const tableContent = (
     <div
       ref={scrollRef}
       className={cn(
@@ -255,73 +297,97 @@ export function TableView<TData>() {
               : undefined
           }
         >
-          {renderItems.length > 0 ? (
-            shouldVirtualize ? (
-              virtualizer.getVirtualItems().map((virtualItem) => {
-                const item = renderItems[virtualItem.index]
-                if (!item) return null
-                if (item.kind === 'detail' && expansion) {
+          <SortableContext
+            items={rowIds}
+            strategy={verticalListSortingStrategy}
+            disabled={!rowsSortable}
+          >
+            {renderItems.length > 0 ? (
+              shouldVirtualize ? (
+                virtualizer.getVirtualItems().map((virtualItem) => {
+                  const item = renderItems[virtualItem.index]
+                  if (!item) return null
+                  if (item.kind === 'detail' && expansion) {
+                    return (
+                      <DataTableDetailRow
+                        key={item.key}
+                        row={item.row}
+                        colSpan={visibleColumnCount + 1}
+                        renderExpanded={expansion.renderExpanded}
+                        virtualStart={virtualItem.start}
+                        measureRef={virtualizer.measureElement}
+                        dataIndex={virtualItem.index}
+                        rowWidth={liveTotalWidth}
+                      />
+                    )
+                  }
                   return (
+                    <DataTableRow
+                      key={item.key}
+                      row={item.row}
+                      rowInteraction={rowInteraction}
+                      view={view}
+                      columnStateKey={columnStateKey}
+                      virtualStart={virtualItem.start}
+                      measureRef={virtualizer.measureElement}
+                      dataIndex={virtualItem.index}
+                      rowWidth={liveTotalWidth}
+                      fillColumnId={fillColumn?.id}
+                      fillExtra={fillExtra}
+                      sortable={rowsSortable}
+                    />
+                  )
+                })
+              ) : (
+                renderItems.map((item) =>
+                  item.kind === 'detail' && expansion ? (
                     <DataTableDetailRow
                       key={item.key}
                       row={item.row}
                       colSpan={visibleColumnCount + 1}
                       renderExpanded={expansion.renderExpanded}
-                      virtualStart={virtualItem.start}
-                      measureRef={virtualizer.measureElement}
-                      dataIndex={virtualItem.index}
-                      rowWidth={liveTotalWidth}
+                    />
+                  ) : (
+                    <DataTableRow
+                      key={item.key}
+                      row={item.row}
+                      rowInteraction={rowInteraction}
+                      view={view}
+                      columnStateKey={columnStateKey}
+                      sortable={rowsSortable}
                     />
                   )
-                }
-                return (
-                  <DataTableRow
-                    key={item.key}
-                    row={item.row}
-                    rowInteraction={rowInteraction}
-                    view={view}
-                    columnStateKey={columnStateKey}
-                    virtualStart={virtualItem.start}
-                    measureRef={virtualizer.measureElement}
-                    dataIndex={virtualItem.index}
-                    rowWidth={liveTotalWidth}
-                    fillColumnId={fillColumn?.id}
-                    fillExtra={fillExtra}
-                  />
-                )
-              })
-            ) : (
-              renderItems.map((item) =>
-                item.kind === 'detail' && expansion ? (
-                  <DataTableDetailRow
-                    key={item.key}
-                    row={item.row}
-                    colSpan={visibleColumnCount + 1}
-                    renderExpanded={expansion.renderExpanded}
-                  />
-                ) : (
-                  <DataTableRow
-                    key={item.key}
-                    row={item.row}
-                    rowInteraction={rowInteraction}
-                    view={view}
-                    columnStateKey={columnStateKey}
-                  />
                 )
               )
-            )
-          ) : (
-            <TableRow>
-              <td
-                colSpan={visibleColumnCount + 1}
-                className="h-24 p-4 text-center align-middle text-sm text-muted-foreground"
-              >
-                {status?.isLoading ? 'Laddar…' : 'Inga resultat.'}
-              </td>
-            </TableRow>
-          )}
+            ) : (
+              <TableRow>
+                <td
+                  colSpan={visibleColumnCount + 1}
+                  className="h-24 p-4 text-center align-middle text-sm text-muted-foreground"
+                >
+                  {status?.isLoading ? 'Laddar…' : 'Inga resultat.'}
+                </td>
+              </TableRow>
+            )}
+          </SortableContext>
         </TableBody>
       </Table>
     </div>
   )
+
+  // 'self': the table owns its DndContext. 'external': a parent
+  // (GroupedDataTable or a domain wrapper) provides it.
+  if (dndMode === 'self') {
+    return (
+      <DndContext
+        sensors={dndSensors}
+        collisionDetection={closestCenter}
+        modifiers={[restrictToVerticalAxis]}
+        onDragEnd={handleDragEnd}
+      >
+        {tableContent}
+      </DndContext>
+    )
+  }
+  return tableContent
 }

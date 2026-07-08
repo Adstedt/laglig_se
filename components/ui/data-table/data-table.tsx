@@ -18,7 +18,14 @@ import { useDataTable } from './use-data-table'
 
 export function DataTable<TData>(props: DataTableProps<TData>) {
   const result = useDataTable(props)
-  const { table, view, renderItems, containerProps, containerWidth } = result
+  const {
+    table,
+    view,
+    renderItems,
+    containerProps,
+    containerWidth,
+    applyReorder,
+  } = result
   const { status, slots, loadMore, data } = props
 
   const isInitialLoading = Boolean(status?.isLoading) && data.length === 0
@@ -79,6 +86,7 @@ export function DataTable<TData>(props: DataTableProps<TData>) {
         renderItems: renderItems as never,
         props: props as never,
         containerWidth,
+        applyReorder,
       }}
     >
       <div ref={containerProps.ref} className={containerProps.className}>

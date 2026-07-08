@@ -7,9 +7,13 @@
  * or virtual position change — and nothing else.
  */
 import { memo, useCallback } from 'react'
-import { flexRender, type Row } from '@tanstack/react-table'
+import { flexRender, type Cell, type Row } from '@tanstack/react-table'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { GripVertical } from 'lucide-react'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
+import { DRAG_HANDLE_COLUMN_ID } from '../chrome-columns'
 import { isInteractiveTarget } from '../interactive-guard'
 import { cellClassesFromMeta } from '../meta'
 import type { DataTableView, RowInteraction } from '../types'
@@ -36,6 +40,29 @@ interface DataTableRowProps<TData> {
    *  captured by columnStateKey for the memo comparator. */
   fillColumnId?: string | undefined
   fillExtra?: number | undefined
+  /** dnd 'self'/'external': the row is sortable and renders the grip. */
+  sortable?: boolean | undefined
+}
+
+/** Grip cell content for sortable rows (listeners come from useSortable). */
+function DragGrip({
+  attributes,
+  listeners,
+}: {
+  attributes: Record<string, unknown>
+  listeners: Record<string, unknown> | undefined
+}) {
+  return (
+    <button
+      type="button"
+      {...(attributes as object)}
+      {...((listeners ?? {}) as object)}
+      className="flex w-full cursor-grab items-center justify-center text-muted-foreground hover:text-foreground active:cursor-grabbing"
+      aria-label="Dra för att flytta"
+    >
+      <GripVertical className="h-4 w-4" />
+    </button>
+  )
 }
 
 function DataTableRowInner<TData>({
@@ -49,8 +76,18 @@ function DataTableRowInner<TData>({
   rowWidth,
   fillColumnId,
   fillExtra = 0,
+  sortable = false,
 }: DataTableRowProps<TData>) {
   const onRowClick = rowInteraction?.onRowClick
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setSortableRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: row.id, disabled: !sortable })
 
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLTableRowElement>) => {
@@ -67,6 +104,9 @@ function DataTableRowInner<TData>({
   // group the table engine couples row heights, so measureElement sees
   // heights shift as siblings mount → resize → flushSync → render loop.
   // Isolated rows measure independently and converge.
+  const sortableTransform = sortable
+    ? CSS.Transform.toString(transform)
+    : undefined
   const style: React.CSSProperties | undefined = isVirtual
     ? {
         display: 'table',
@@ -75,13 +115,29 @@ function DataTableRowInner<TData>({
         position: 'absolute',
         top: 0,
         left: 0,
-        transform: `translateY(${virtualStart}px)`,
+        transform: sortable
+          ? transform
+            ? `translate3d(${transform.x}px, ${(virtualStart ?? 0) + transform.y}px, 0)`
+            : `translateY(${virtualStart}px)`
+          : `translateY(${virtualStart}px)`,
+        ...(sortable ? { transition, opacity: isDragging ? 0.5 : 1 } : {}),
       }
-    : undefined
+    : sortable
+      ? {
+          transform: sortableTransform,
+          transition,
+          opacity: isDragging ? 0.5 : 1,
+        }
+      : undefined
+
+  const setRefs = (el: HTMLTableRowElement | null) => {
+    measureRef?.(el)
+    if (sortable) setSortableRef(el)
+  }
 
   return (
     <TableRow
-      ref={measureRef}
+      ref={setRefs}
       data-index={dataIndex}
       style={style}
       data-state={row.getIsSelected() ? 'selected' : undefined}
@@ -91,7 +147,7 @@ function DataTableRowInner<TData>({
       )}
       onClick={handleClick}
     >
-      {row.getVisibleCells().map((cell, cellIndex) => (
+      {row.getVisibleCells().map((cell: Cell<TData, unknown>, cellIndex) => (
         <TableCell
           key={cell.id}
           className={cellClassesFromMeta(cell.column, cellIndex === 0)}
@@ -107,7 +163,16 @@ function DataTableRowInner<TData>({
               : undefined
           }
         >
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          {sortable && cell.column.id === DRAG_HANDLE_COLUMN_ID ? (
+            <DragGrip
+              attributes={attributes as unknown as Record<string, unknown>}
+              listeners={
+                listeners as unknown as Record<string, unknown> | undefined
+              }
+            />
+          ) : (
+            flexRender(cell.column.columnDef.cell, cell.getContext())
+          )}
         </TableCell>
       ))}
       {/* Spacer absorbs leftover width so fixed chrome columns hold size */}
@@ -124,7 +189,8 @@ export const DataTableRow = memo(
     prev.columnStateKey === next.columnStateKey &&
     prev.virtualStart === next.virtualStart &&
     prev.view === next.view &&
-    prev.rowInteraction === next.rowInteraction
+    prev.rowInteraction === next.rowInteraction &&
+    prev.sortable === next.sortable
 ) as typeof DataTableRowInner
 
 /** Expanded-detail row: one full-width cell, measured by the virtualizer. */
