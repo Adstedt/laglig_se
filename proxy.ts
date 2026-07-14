@@ -62,10 +62,8 @@ export async function proxy(request: NextRequest) {
   }
 
   // Story P.2: Geo-routing for EU users (AC: 26)
-  const geo = (
-    request as NextRequest & { geo?: { country?: string; region?: string } }
-  ).geo
-  const country = geo?.country || 'SE'
+  // request.geo was removed in Next 15 — Vercel provides the country via header
+  const country = request.headers.get('x-vercel-ip-country') || 'SE'
   const isEU = isEUCountry(country)
 
   // Skip rate limiting for authenticated workspace routes and API calls
@@ -87,7 +85,13 @@ export async function proxy(request: NextRequest) {
   // Story P.2: Rate limiting at edge (AC: 25)
   // Only apply to public routes and auth endpoints to prevent abuse
   if (ratelimit && !skipRateLimit) {
-    const ip = (request as NextRequest & { ip?: string }).ip ?? '127.0.0.1'
+    // request.ip was removed in Next 15 — without this header fallback every
+    // visitor shared the single '127.0.0.1' bucket and the whole site 429'd
+    // as soon as combined public traffic exceeded the limit.
+    const ip =
+      request.headers.get('x-real-ip') ??
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+      '127.0.0.1'
     const identifier = request.headers.get('authorization') || ip
 
     try {
@@ -151,10 +155,10 @@ async function handleAuthAndRouting(
       headers: requestHeaders,
     },
   })
-  const geo = (
-    request as NextRequest & { geo?: { country?: string; region?: string } }
-  ).geo
-  response.headers.set('X-User-Country', geo?.country || 'SE')
+  response.headers.set(
+    'X-User-Country',
+    request.headers.get('x-vercel-ip-country') || 'SE'
+  )
   response.headers.set('X-User-Region', isEU ? 'EU' : 'NON-EU')
 
   // Story 6.0: Check JWT cache first

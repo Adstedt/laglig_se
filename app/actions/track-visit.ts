@@ -15,6 +15,12 @@ import { prisma } from '@/lib/prisma'
  */
 export async function trackDocumentVisit(documentId: string): Promise<void> {
   try {
+    // Static generation at build time renders pages too — those are not real
+    // visits, and the DB writes compete with build workers for the pooler.
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      return
+    }
+
     // Validate documentId before attempting insert
     if (!documentId || typeof documentId !== 'string') {
       return
