@@ -32,7 +32,17 @@ const ALLOWED_CONTENT_TYPES = new Set([
  * Deletes all existing chunks and creates new ones in a single transaction.
  */
 export async function syncDocumentChunks(
-  documentId: string
+  documentId: string,
+  opts?: {
+    /**
+     * Skip LLM context-prefix generation when markdown exceeds this many chars
+     * (chunks still embed, prefix-less — same degrade path as a Haiku failure).
+     * Cost guard for bulk runs: prefix input ≈ 2× doc tokens, so giant docs
+     * dominate spend (Story 2.6 EU run measured ~119KB mean markdown).
+     * Omit for the default unlimited behavior.
+     */
+    maxPrefixMarkdownChars?: number
+  }
 ): Promise<SyncResult> {
   const start = Date.now()
 
@@ -125,11 +135,19 @@ export async function syncDocumentChunks(
   let chunksEmbedded = 0
   if (created.count > 0) {
     try {
+      const withinPrefixCap =
+        !opts?.maxPrefixMarkdownChars ||
+        (doc.markdown_content?.length ?? 0) <= opts.maxPrefixMarkdownChars
+      if (!withinPrefixCap) {
+        console.log(
+          `[sync-chunks] ${doc.document_number}: markdown ${doc.markdown_content?.length} chars > prefix cap ${opts?.maxPrefixMarkdownChars} — embedding without prefixes (backfill: context_prefix IS NULL)`
+        )
+      }
       chunksEmbedded = await generateEmbeddingsForDocument(
         documentId,
         doc.title,
         doc.document_number,
-        doc.markdown_content
+        withinPrefixCap ? doc.markdown_content : null
       )
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)

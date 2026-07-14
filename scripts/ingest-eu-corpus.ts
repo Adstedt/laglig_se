@@ -21,6 +21,27 @@
  */
 import { config } from 'dotenv'
 config({ path: '.env.local' })
+// Batch jobs must NOT share the app's transaction pooler (port 6543): the
+// 2026-07-08 full run wedged Supavisor (prod ECHECKOUTTIMEOUT → login
+// failures; dashboard restart required). Repoint Prisma at the session-mode
+// connection (DIRECT_URL, port 5432) BEFORE lib/prisma is imported.
+if (process.env.DIRECT_URL) {
+  const sessionUrl = new URL(process.env.DIRECT_URL)
+  // Session mode maps 1 client ↔ 1 backend conn and the pool is SHARED with
+  // dev servers etc. Demanding 10 starved the pool (2026-07-14: 486 P2024
+  // timeouts). A few patient connections are plenty — DB time is a small
+  // fraction of per-doc work; queries queue instead of timing out.
+  sessionUrl.searchParams.set('connection_limit', '4')
+  sessionUrl.searchParams.set('pool_timeout', '120')
+  // MUST be present: lib/prisma's singleton rewrites any DATABASE_URL lacking
+  // `pgbouncer=true` with its own connection_limit=10&pool_timeout=20 — which
+  // silently clobbered this profile on 2026-07-14 (P2024 storms at "limit 10").
+  sessionUrl.searchParams.set('pgbouncer', 'true')
+  process.env.DATABASE_URL = sessionUrl.toString()
+  console.log(
+    '🔌 Using session-mode DB connection (DIRECT_URL:5432, limit 4) — app transaction pooler untouched'
+  )
+}
 import * as fs from 'fs'
 import * as path from 'path'
 import type { DocumentRelationships } from '../lib/external/eurlex'
@@ -296,7 +317,9 @@ async function main() {
   // global in-process at 5 req/s (~2.5 req/doc → ~2 docs/s max), DB pool is
   // connection_limit=10, Anthropic tier 20k req/min (<2% used). 8 workers sits
   // under both hard limits; serial pace was 26s/doc (ETA ~47h), 4-way ~5s/doc.
-  const CONCURRENCY = args.all ? 8 : 1
+  // 6 (not 8): with the 4-connection DB profile, DB-heavy stages queue; fewer
+  // workers keeps queue waits well under pool_timeout on a small instance.
+  const CONCURRENCY = args.all ? 6 : 1
 
   async function processDoc(idx: number): Promise<void> {
     const item = items[idx]!
@@ -643,7 +666,13 @@ async function main() {
 
       // ---- STAGE 3: chunk + embed ----
       if (runEmbed && !metadataOnly && !(args.resume && cpDoc.embed === 'ok')) {
-        const sync = await syncDocumentChunks(docId)
+        // Cost cap (2026-07-08, user decision): docs over 150KB markdown embed
+        // WITHOUT Haiku context prefixes — prefix input ≈ 2× doc tokens, and
+        // the giant-doc tail dominated spend (~$50/2h). Backfill selectively
+        // later via chunks WHERE context_prefix IS NULL.
+        const sync = await syncDocumentChunks(docId, {
+          maxPrefixMarkdownChars: 150_000,
+        })
         row.chunks = sync.chunksCreated
         row.embedded = sync.chunksEmbedded
         cpDoc.embed = 'ok'
