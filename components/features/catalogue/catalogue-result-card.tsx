@@ -1,13 +1,11 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { getDocumentTheme, getDocumentLabel } from '@/lib/document-themes'
-import { prefetchManager } from '@/lib/prefetch'
 import type { BrowseResult } from '@/app/actions/browse'
 
 interface CatalogueResultCardProps {
@@ -24,7 +22,6 @@ export function CatalogueResultCard({
   isWorkspace = false,
 }: CatalogueResultCardProps) {
   const router = useRouter()
-  const cardRef = useRef<HTMLAnchorElement>(null)
   const theme = getDocumentTheme(document.contentType)
 
   // Check if law is not yet in force (ACTIVE but future in-force date)
@@ -40,42 +37,16 @@ export function CatalogueResultCard({
   const baseHref = isWorkspace ? `/browse${theme.href}` : theme.href
   const documentUrl = `${baseHref}/${document.slug}`
 
-  // Initialize prefetch manager and trigger prefetch when card becomes visible
-  useEffect(() => {
-    prefetchManager.init(router)
-
-    const card = cardRef.current
-    if (!card) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            prefetchManager.add(documentUrl)
-            // Unobserve after prefetch triggered - only need to prefetch once
-            observer.unobserve(card)
-          }
-        })
-      },
-      {
-        // Trigger when card is within 100px of viewport (prefetch slightly before visible)
-        rootMargin: '100px',
-        threshold: 0,
-      }
-    )
-
-    observer.observe(card)
-
-    return () => {
-      observer.disconnect()
-    }
-  }, [router, documentUrl])
-
   return (
     <Link
-      ref={cardRef}
       href={documentUrl}
-      prefetch={true}
+      // Prefetch on intent (hover/touch) instead of viewport entry: eager
+      // per-card prefetch fired ~25-50 requests per catalogue page view,
+      // enough for one browsing user to exhaust their own rate limit.
+      // router.prefetch dedupes repeat calls internally.
+      prefetch={false}
+      onMouseEnter={() => router.prefetch(documentUrl)}
+      onTouchStart={() => router.prefetch(documentUrl)}
       className={cn(
         'group block rounded-xl border bg-card p-5',
         'transition-all duration-200',
