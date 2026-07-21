@@ -1,41 +1,18 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { CatalogueResultCard } from '@/components/features/catalogue/catalogue-result-card'
 import type { BrowseResult } from '@/app/actions/browse'
 
 // Mock next/navigation
+const mockPrefetch = vi.fn()
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
-    prefetch: vi.fn(),
+    prefetch: mockPrefetch,
     push: vi.fn(),
     replace: vi.fn(),
   }),
   useSearchParams: () => new URLSearchParams(),
 }))
-
-// Mock prefetch manager
-vi.mock('@/lib/prefetch', () => ({
-  prefetchManager: {
-    init: vi.fn(),
-    add: vi.fn(),
-  },
-}))
-
-// Mock IntersectionObserver as a proper class
-class MockIntersectionObserver {
-  readonly root: Element | null = null
-  readonly rootMargin: string = ''
-  readonly thresholds: ReadonlyArray<number> = []
-  observe = vi.fn()
-  unobserve = vi.fn()
-  disconnect = vi.fn()
-  takeRecords = vi.fn(() => [])
-}
-
-beforeEach(() => {
-  global.IntersectionObserver =
-    MockIntersectionObserver as unknown as typeof IntersectionObserver
-})
 
 afterEach(() => {
   vi.clearAllMocks()
@@ -121,6 +98,24 @@ describe('CatalogueResultCard', () => {
     )
     const link = screen.getByRole('link')
     expect(link).toHaveAttribute('href', '/lagar/arbetsmiljolag-1977-1160')
+  })
+
+  it('does not prefetch on render, only on hover intent', () => {
+    render(
+      <CatalogueResultCard document={mockDocument} query="" position={1} />
+    )
+    expect(mockPrefetch).not.toHaveBeenCalled()
+
+    fireEvent.mouseEnter(screen.getByRole('link'))
+    expect(mockPrefetch).toHaveBeenCalledWith('/lagar/arbetsmiljolag-1977-1160')
+  })
+
+  it('prefetches on touchstart for touch devices', () => {
+    render(
+      <CatalogueResultCard document={mockDocument} query="" position={1} />
+    )
+    fireEvent.touchStart(screen.getByRole('link'))
+    expect(mockPrefetch).toHaveBeenCalledWith('/lagar/arbetsmiljolag-1977-1160')
   })
 
   it('renders EU document with correct theme', () => {
