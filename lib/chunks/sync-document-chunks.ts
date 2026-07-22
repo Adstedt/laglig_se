@@ -118,15 +118,30 @@ export async function syncDocumentChunks(
         : (c.metadata as Prisma.InputJsonValue),
   }))
 
-  // Atomic: delete old + create new
-  const [deleted, created] = await prisma.$transaction([
+  // Atomic: delete old + create new. Inserts are BATCHED (≤50 rows/statement)
+  // so a large doc (hundreds of chunks × embedding vectors) never becomes one
+  // multi-MB statement — oversized frames crash Supavisor's tenant handler
+  // (EDBHANDLEREXITED, Story 2.6 pooler incidents 2026-07). Same transaction,
+  // same atomicity, bounded wire size.
+  const CREATE_BATCH_ROWS = 50
+  const createBatches: (typeof prismaChunks)[] = []
+  for (let i = 0; i < prismaChunks.length; i += CREATE_BATCH_ROWS) {
+    createBatches.push(prismaChunks.slice(i, i + CREATE_BATCH_ROWS))
+  }
+  const [deleted, ...createdBatches] = await prisma.$transaction([
     prisma.contentChunk.deleteMany({
       where: { source_type: 'LEGAL_DOCUMENT', source_id: documentId },
     }),
-    prisma.contentChunk.createMany({
-      data: prismaChunks,
-    }),
+    ...createBatches.map((batch) =>
+      prisma.contentChunk.createMany({ data: batch })
+    ),
   ])
+  const created = {
+    count: (createdBatches as { count: number }[]).reduce(
+      (sum, r) => sum + r.count,
+      0
+    ),
+  }
 
   // Incremental context prefix + embedding generation (Story 14.3)
   // Non-blocking: if LLM/embedding fails, log error but don't roll back chunks.

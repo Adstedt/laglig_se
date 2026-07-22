@@ -27,19 +27,23 @@ config({ path: '.env.local' })
 // connection (DIRECT_URL, port 5432) BEFORE lib/prisma is imported.
 if (process.env.DIRECT_URL) {
   const sessionUrl = new URL(process.env.DIRECT_URL)
-  // Session mode maps 1 client ↔ 1 backend conn and the pool is SHARED with
-  // dev servers etc. Demanding 10 starved the pool (2026-07-14: 486 P2024
-  // timeouts). A few patient connections are plenty — DB time is a small
-  // fraction of per-doc work; queries queue instead of timing out.
-  sessionUrl.searchParams.set('connection_limit', '4')
-  sessionUrl.searchParams.set('pool_timeout', '120')
+  // SAFE SEQUENTIAL PROFILE (2026-07-21, after the third pooler collapse):
+  // every historically-incident-free batch job ran ONE connection, one
+  // statement in flight — a thin steady stream Supavisor digests trivially.
+  // This ingestion's multi-MB statements × concurrent connections crashed the
+  // tenant handler (EDBHANDLEREXITED) three times. connection_limit=1 restores
+  // the safe wire profile: Prisma serializes ALL queries onto one connection;
+  // workers still overlap non-DB waits (CELLAR/Haiku/embeddings). pool_timeout
+  // is generous because queries now queue behind each other by design.
+  sessionUrl.searchParams.set('connection_limit', '1')
+  sessionUrl.searchParams.set('pool_timeout', '300')
   // MUST be present: lib/prisma's singleton rewrites any DATABASE_URL lacking
   // `pgbouncer=true` with its own connection_limit=10&pool_timeout=20 — which
   // silently clobbered this profile on 2026-07-14 (P2024 storms at "limit 10").
   sessionUrl.searchParams.set('pgbouncer', 'true')
   process.env.DATABASE_URL = sessionUrl.toString()
   console.log(
-    '🔌 Using session-mode DB connection (DIRECT_URL:5432, limit 4) — app transaction pooler untouched'
+    '🔌 Using session-mode DB connection (DIRECT_URL:5432, SAFE SEQUENTIAL: limit 1) — one statement in flight'
   )
 }
 import * as fs from 'fs'
@@ -308,6 +312,61 @@ async function main() {
   let errCount = 0
   let wroteAnything = false
   let processedCount = 0
+
+  // ---- Circuit breaker (2026-07-21, post-pooler-incident) ----
+  // Both 2026-07 incidents shared one shape: the pooler sickens and the run
+  // keeps pounding it with retries, turning a stumble into a wedge. Two
+  // tripwires open the breaker; the run then checkpoints and exits(3), which
+  // the supervisor treats as HALT (no respawn). Production health outranks
+  // ingestion progress.
+  const BREAKER_EXIT_CODE = 3
+  const CONN_ERROR_STREAK_LIMIT = 8
+  let connErrorStreak = 0
+  let breakerOpen = false
+  let breakerReason = ''
+  const CONN_ERROR_RE =
+    /ECHECKOUTTIMEOUT|EDBHANDLEREXITED|Timed out fetching a new connection|Can't reach database server|Connection reset|ECONNREFUSED|ETIMEDOUT|kind: Closed/i
+  function tripBreaker(reason: string) {
+    if (breakerOpen) return
+    breakerOpen = true
+    breakerReason = reason
+    console.error(
+      `\n🛑 CIRCUIT BREAKER OPEN — ${reason}. Halting gracefully (checkpoint saved; resume with --resume when infra is healthy).`
+    )
+  }
+
+  // App-health watchdog: probe the APP's transaction pooler (6543) once a
+  // minute with a single short-lived connection. Two consecutive failures =
+  // the shared tenant is degrading while we run → stop immediately.
+  let appProbeFails = 0
+  const appPoolUrl = (process.env.DATABASE_URL ?? '').split('?')[0]
+  const watchdog = appPoolUrl
+    ? setInterval(() => {
+        void (async () => {
+          try {
+            const { Client } = await import('pg')
+            const probe = new Client({
+              connectionString: appPoolUrl,
+              connectionTimeoutMillis: 8000,
+            })
+            probe.on('error', () => {})
+            await probe.connect()
+            await probe.query('SELECT 1')
+            await probe.end()
+            appProbeFails = 0
+          } catch {
+            appProbeFails++
+            console.warn(
+              `⚠️  app-pool watchdog: probe failed (${appProbeFails}/2)`
+            )
+            if (appProbeFails >= 2) {
+              tripBreaker('app transaction pooler failing health probes')
+            }
+          }
+        })()
+      }, 60_000)
+    : null
+  watchdog?.unref()
   // Serializes relationship batch-prefetches so concurrent workers don't fire
   // duplicate SPARQL batches for the same window.
   let relFetchChain: Promise<void> = Promise.resolve()
@@ -317,9 +376,11 @@ async function main() {
   // global in-process at 5 req/s (~2.5 req/doc → ~2 docs/s max), DB pool is
   // connection_limit=10, Anthropic tier 20k req/min (<2% used). 8 workers sits
   // under both hard limits; serial pace was 26s/doc (ETA ~47h), 4-way ~5s/doc.
-  // 6 (not 8): with the 4-connection DB profile, DB-heavy stages queue; fewer
-  // workers keeps queue waits well under pool_timeout on a small instance.
-  const CONCURRENCY = args.all ? 6 : 1
+  // 3 workers overlap network waits (CELLAR/SPARQL/Haiku/OpenAI) ONLY — all
+  // DB statements serialize onto the single connection (see the URL override
+  // above), so the pooler never sees concurrent payloads regardless of worker
+  // count. More workers would just deepen the DB queue toward pool_timeout.
+  const CONCURRENCY = args.all ? 3 : 1
 
   async function processDoc(idx: number): Promise<void> {
     const item = items[idx]!
@@ -683,12 +744,19 @@ async function main() {
       cpDoc.status = String(row.status)
       delete cpDoc.error
       okCount++
+      connErrorStreak = 0
     } catch (err) {
       row.status = 'ERROR'
       row.error = err instanceof Error ? err.message : String(err)
       cpDoc.status = 'ERROR'
       cpDoc.error = String(row.error).slice(0, 300)
       errCount++
+      if (CONN_ERROR_RE.test(String(row.error))) {
+        connErrorStreak++
+        if (connErrorStreak >= CONN_ERROR_STREAK_LIMIT) {
+          tripBreaker(`${connErrorStreak} consecutive connection-class errors`)
+        }
+      }
       if (err instanceof Error && err.stack) {
         console.error(`\n[STACK ${baseCelex}]\n${err.stack}\n`)
       }
@@ -704,6 +772,7 @@ async function main() {
     { length: Math.min(CONCURRENCY, Math.max(items.length, 1)) },
     async () => {
       for (;;) {
+        if (breakerOpen) return
         const idx = nextIdx++
         if (idx >= items.length) return
         await processDoc(idx)
@@ -720,6 +789,15 @@ async function main() {
   )
   await Promise.all(workers)
   if (checkpoint) saveCheckpoint(checkpoint)
+  if (watchdog) clearInterval(watchdog)
+
+  if (breakerOpen) {
+    console.error(
+      `\n🛑 Halted by circuit breaker (${breakerReason}) after ${processedCount} docs (ok=${okCount} err=${errCount}). Checkpoint saved — resume later with --resume.`
+    )
+    await prisma.$disconnect()
+    process.exit(BREAKER_EXIT_CODE)
+  }
 
   // ---- Retire bucket (AC 12a): in-DB-but-not-in-corpus → ARCHIVED, never deleted ----
   if (args.retire) {
