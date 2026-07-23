@@ -1,8 +1,11 @@
 # Brief: Avvikelser as a first-class entity + ISO-grade audit cycles
 
-**Status:** Concept checkpoint (not yet scheduled for build)
+**Status:** ✅ **Absorbed into Epic 23 (re-scoped 2026-07-23)** — this brief is now Epic 23's
+authoritative design source; build per the §9 phasing. See
+`docs/sprint-change-proposal-avvikelser-capa-2026-07-23.md` and
+`docs/prd/epic-23-anmarkningar-first-class.md`. *(Was: Concept checkpoint, 2026-07-22.)*
 **Date:** 2026-07-22
-**Related epics:** Epic 21 (Lagefterlevnadskontroll), Epic 23 (ad-hoc findings tolerance), Epic 29 (ISO audit companion / agent)
+**Related epics:** Epic 21 (Lagefterlevnadskontroll — cycle upgrades), Epic 23 (**this brief = its scope**), Epic 29 (ISO audit companion / agent — the skills layer on top)
 
 ---
 
@@ -117,19 +120,36 @@ as clean graph queries instead of guessing — curated, high-signal context.
 - **Data.** New `listFindingsForWorkspace()` in `app/actions/compliance-finding.ts` —
   workspace-scoped, cross-cycle. Extend `FindingRow` with `cycleName`/`cycleId` (nullable now)
   and `source`. Once `workspace_id` is a real column it's a one-line `where`.
-- **Table.** Build on the `DataTable` core following **`CycleListTable`** (read/filter/navigate,
-  not the heavy inline-edit Laglistor grid). Columns: type icon · title · severity · source ·
-  linked-to (cycle / kravpunkt / styrdokument chips) · owner · due date (overdue emphasis) ·
-  status · created. `FilterChipGroup` on **type · severity · source · status · overdue**. One
-  register, links as a facet — audit-sourced and ad-hoc findings are the same list, filtered.
+- **Structure — mirror Laglistor exactly (decided 2026-07-22): filterable list + item modal,
+  one mental model.** The page is *not* a read/navigate table with a separate detail route; it
+  reproduces the Laglistor "browse the list, work in the modal" pattern so findings feel like
+  the same kind of object as law-list items. Concretely, mirror
+  `components/features/document-list/document-list-page-content.tsx`:
+  - A `findings-page-content` client component owns `selectedFindingId` state; the table's
+    `onRowClick` opens the finding modal (no route change), exactly like `handleOpenModal` /
+    `selectedListItemId` in the laglista page-content.
+  - **Deep-link, not a detail page.** Support a URL param (e.g. `/avvikelser?avvikelse=<id>`)
+    that opens the modal on load — same mechanism as `documentIdFromUrl` (line 630) in the
+    laglista page-content — so an individual finding stays shareable/linkable without a
+    dedicated `[findingId]` route.
+- **Table.** Build on the gold-standard **`DataTable` core** and follow the **`DocumentListTable`**
+  consumer (the canonical laglista grid — *not* migrated to shadcn), so inline-edit affordances
+  (status, severity, owner, due date) match how users already edit law-list items. Columns:
+  type icon · title · severity · source · linked-to (cycle / kravpunkt / styrdokument chips) ·
+  owner · due date (overdue emphasis) · status · created. `FilterChipGroup` on **type · severity ·
+  source · status · overdue**. One register, links as a facet — audit-sourced and ad-hoc findings
+  are the same list, filtered.
+- **Item modal — the primary workspace.** Adapt/extend the existing `finding-editor` into the
+  full modal experience, structured like `legal-document-modal/` (header + details box +
+  sections). Everything happens in the modal: description → root cause → corrective task →
+  verification → evidence, plus the relationship panel (cycle / kravpunkt / styrdokument /
+  recurrence) and cross-cycle review history. This is where the CAPA loop is worked, mirroring
+  how the law-list-item modal is where compliance work happens.
 - **Raise flow.** A "Ny avvikelse" action from the register (and later from any linked entity's
-  page). Reuses the existing `finding-editor` modal, extended with a `source` picker and
-  optional link pickers (cycle / kravpunkt / styrdokument). **Linking is optional and cheap** —
-  a finding must be raiseable in seconds with zero links, enriched later. If linking feels
-  mandatory, the operational path dies.
-- **Detail.** A finding gets its own addressable view (`/avvikelser/[findingId]`) showing the
-  full CAPA loop: description → root cause → corrective task → verification → evidence, plus its
-  relationship panel and its cross-cycle review history.
+  page) opens the same modal in create mode, with a `source` picker and optional link pickers
+  (cycle / kravpunkt / styrdokument). **Linking is optional and cheap** — a finding must be
+  raiseable in seconds with zero links, enriched later. If linking feels mandatory, the
+  operational path dies.
 
 ---
 
@@ -223,7 +243,9 @@ not-`STÄNGD`.
 
 ## 10. Open decisions
 
-1. **Source taxonomy** — the 8 sources above, or a leaner starting set?
+1. **Source taxonomy** — ~~the 8 sources above, or a leaner starting set?~~ **RESOLVED 2026-07-23 (PO):
+   the full 8-value set** (`INTERNREVISION · LAGREVISION · DRIFT · TILLBUD · KLAGOMAL ·
+   EXTERNREVISION · LEDNINGENS_GENOMGANG · MYNDIGHET`). Baked into Story 23.1's keystone migration.
 2. **Status enum** — the 5-state CAPA model in §7, or keep closer to today's open/closed with
    the verification step bolted on?
 3. **Reporter role** — a lightweight "can raise, can't manage/close" role in Phase 2, or
@@ -248,7 +270,8 @@ not-`STÄNGD`.
 | Finding editor modal | `components/features/compliance-audit/finding-editor/finding-editor.tsx` |
 | Cycle-scoped list action | `app/actions/compliance-finding.ts` (`listFindingsForCycle`) |
 | Nav items | `components/layout/left-sidebar.tsx` (`platformItems`) |
-| Table core / reference consumer | `components/ui/data-table/` / `components/features/compliance-audit/cycle-list/cycle-list-table.tsx` |
+| Table core | `components/ui/data-table/` |
+| Reference consumer to mirror (list + modal) | `components/features/document-list/document-list-page-content.tsx` (list/modal state + `?item` deep-link), `document-list-table.tsx` (grid), `legal-document-modal/` (item modal) |
 | Agent cycle/finding readers | `lib/agent/tools/{list-cycles,get-cycle,get-finding}.ts` |
 | Agent tool registry | `lib/agent/tools/index.ts` |
 | Corrective-task linkage (dispatch) | `app/actions/pending-agent-actions.ts` (`CREATE_TASK` branch) |
