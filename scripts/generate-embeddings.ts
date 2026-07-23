@@ -63,7 +63,10 @@ const BATCH_PROGRESS_FILE = path.join(
   'data',
   'batch-progress.json'
 )
-const EMBEDDING_BATCH_SIZE = 100
+// 32 (was 100): chunks can reach ~8K tokens (Story 2.6 KEPT_RAW giants), and
+// OpenAI caps embedding requests at 300K tokens — 100 × 8K = 800K blew past it
+// in the giant-chunk clusters. 32 × 8K = 256K stays under worst-case.
+const EMBEDDING_BATCH_SIZE = 32
 const EMBEDDING_DELAY_MS = 200 // delay between OpenAI batches
 const CONTEXT_DELAY_MS = 500 // delay between Haiku calls
 const MAX_CONSECUTIVE_FAILURES = 5
@@ -122,6 +125,13 @@ interface CliArgs {
   batchStatus: boolean
   batchCollect: boolean
   batchFull: boolean
+  /**
+   * Embed chunks WITHOUT a context_prefix too. Needed for populations where
+   * prefixes are intentionally absent — e.g. Story 2.6's EU cost cap skips
+   * Haiku prefixes for >150KB-markdown docs, but their chunks must still be
+   * embedded (bare) to be retrievable. Default keeps prefix-before-embedding.
+   */
+  allowUnprefixed: boolean
 }
 
 // ============================================================================
@@ -170,6 +180,7 @@ function parseArgs(): CliArgs {
     batchStatus: false,
     batchCollect: false,
     batchFull: false,
+    allowUnprefixed: false,
   }
 
   for (let i = 0; i < args.length; i++) {
@@ -185,6 +196,9 @@ function parseArgs(): CliArgs {
         break
       case '--skip-context':
         result.skipContext = true
+        break
+      case '--allow-unprefixed':
+        result.allowUnprefixed = true
         break
       case '--source-type':
         result.sourceType = args[++i] ?? null
@@ -215,7 +229,7 @@ async function runEstimate(sourceTypeFilter: string | null): Promise<void> {
   console.log('Calculating cost estimate...\n')
 
   const sourceFilter = sourceTypeFilter
-    ? Prisma.sql`AND ld.content_type = ${sourceTypeFilter}`
+    ? Prisma.sql`AND ld.content_type = ${sourceTypeFilter}::"ContentType"`
     : Prisma.sql``
 
   // Count documents with chunks but no context_prefix
@@ -459,10 +473,14 @@ async function runEmbeddingGeneration(
   // produce one first (prefixes add significant retrieval power, so we never embed
   // without them). This also keeps the scan off the chunks the context phase has
   // yet to reach. (Previously this filter only applied when --limit was set.)
-  const prefixFilter = Prisma.sql`AND cc.context_prefix IS NOT NULL`
+  // `--allow-unprefixed` bypasses this for populations where prefixes are
+  // intentionally absent (Story 2.6 EU cost cap) — bare embedding beats invisible.
+  const prefixFilter = args.allowUnprefixed
+    ? Prisma.sql``
+    : Prisma.sql`AND cc.context_prefix IS NOT NULL`
 
   const sourceFilter = args.sourceType
-    ? Prisma.sql`AND ld.content_type = ${args.sourceType}`
+    ? Prisma.sql`AND ld.content_type = ${args.sourceType}::"ContentType"`
     : Prisma.sql``
 
   const cursorFilter = progress.lastProcessedChunkId

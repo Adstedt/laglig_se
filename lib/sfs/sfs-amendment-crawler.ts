@@ -63,12 +63,30 @@ export interface DiscoverOptions {
   fetchFn?: typeof fetch
   /** Minimum delay between pagination requests in ms (default: 200) */
   requestDelayMs?: number
+  /**
+   * Called after each index page with that page's new (filtered, enriched)
+   * documents. Lets the caller persist incrementally instead of waiting for
+   * the full scan — a hard kill mid-scan then loses only the unscanned tail.
+   */
+  onPage?: (
+    _documents: DiscoveredDocument[],
+    _info: { pagesScanned: number }
+  ) => Promise<void>
+  /**
+   * Epoch-ms deadline. Scanning stops gracefully before fetching the next
+   * page once passed; the result reports scanCompleted=false.
+   */
+  deadlineAt?: number
+  /** Per-request timeout in ms (default: 15000) */
+  fetchTimeoutMs?: number
 }
 
 export interface DiscoverResult {
   documents: DiscoveredDocument[]
   pagesScanned: number
   highestNumericPart: number
+  /** False when the scan stopped early on deadlineAt instead of exhausting pages */
+  scanCompleted: boolean
 }
 
 export interface DiscoveredDocument {
@@ -457,16 +475,29 @@ export function parseDocumentPage(
 // Crawler Functions
 // =============================================================================
 
+const DEFAULT_FETCH_TIMEOUT_MS = 15_000
+
 async function fetchPage(
   url: string,
-  fetchFn: typeof fetch
+  fetchFn: typeof fetch,
+  timeoutMs: number = DEFAULT_FETCH_TIMEOUT_MS
 ): Promise<string | null> {
-  const response = await fetchFn(url, {
-    headers: {
-      'User-Agent': USER_AGENT,
-      Accept: 'text/html',
-    },
-  })
+  let response: Response
+  try {
+    response = await fetchFn(url, {
+      headers: {
+        'User-Agent': USER_AGENT,
+        Accept: 'text/html',
+      },
+      // A hanging request must never eat the whole function budget
+      signal: AbortSignal.timeout(timeoutMs),
+    })
+  } catch (error) {
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      throw new Error(`Fetch timed out after ${timeoutMs}ms for ${url}`)
+    }
+    throw error
+  }
 
   if (!response.ok) {
     if (response.status === 404) return null
@@ -584,6 +615,28 @@ export async function crawlDocumentPage(
  * - Stops paginating when all rows on a page are at or below the watermark
  * - Enriches each row with documentType, baseLawSfs, pdfUrl
  */
+/** Enrich an index row with classification and URLs */
+function enrichRow(row: IndexPageRow): DiscoveredDocument {
+  const documentType = classifyDocument(row.title)
+  const baseLawSfs =
+    documentType === 'amendment' || documentType === 'repeal'
+      ? extractBaseLawSfs(row.title)
+      : null
+
+  const urls = constructPdfUrls(row.sfsNumber, row.publishedDate)
+
+  return {
+    sfsNumber: row.sfsNumber,
+    title: row.title,
+    publishedDate: row.publishedDate,
+    numericPart: row.numericPart,
+    documentType,
+    baseLawSfs,
+    pdfUrl: urls.pdf,
+    htmlUrl: urls.html,
+  }
+}
+
 export async function discoverFromIndex(
   year: number,
   options: DiscoverOptions = {}
@@ -593,14 +646,26 @@ export async function discoverFromIndex(
     knownNumbers,
     fetchFn = fetch,
     requestDelayMs = 200,
+    onPage,
+    deadlineAt,
+    fetchTimeoutMs = DEFAULT_FETCH_TIMEOUT_MS,
   } = options
 
-  const allRows: IndexPageRow[] = []
+  const documents: DiscoveredDocument[] = []
+  const seen = new Set<string>()
+  let highestNumericPart = 0
   let pagesScanned = 0
+  let scanCompleted = true
   let currentPage: number | null = null // null = first page (no ?page= param)
 
-  // Paginate through index pages
+  // Paginate through index pages. Each page is filtered, enriched, and handed
+  // to onPage immediately, so callers can persist as the scan progresses.
   while (true) {
+    if (deadlineAt !== undefined && Date.now() >= deadlineAt) {
+      scanCompleted = false
+      break
+    }
+
     // URL pattern: .../regulations/YYYY/index.html (page 0)
     //              .../regulations/YYYY/index.html%3Fpage=N.html (page N)
     const indexUrl =
@@ -612,7 +677,7 @@ export async function discoverFromIndex(
       await delay(requestDelayMs)
     }
 
-    const html = await fetchPage(indexUrl, fetchFn)
+    const html = await fetchPage(indexUrl, fetchFn, fetchTimeoutMs)
     pagesScanned++
 
     if (!html) break
@@ -620,7 +685,34 @@ export async function discoverFromIndex(
     const rows = parseIndexPageRows(html, year)
     if (rows.length === 0) break
 
-    allRows.push(...rows)
+    // Dedup (same SFS number can appear on overlapping pages), track high-water
+    const uniqueRows: IndexPageRow[] = []
+    for (const row of rows) {
+      if (row.numericPart > highestNumericPart) {
+        highestNumericPart = row.numericPart
+      }
+      if (!seen.has(row.sfsNumber)) {
+        seen.add(row.sfsNumber)
+        uniqueRows.push(row)
+      }
+    }
+
+    // Filter to rows we don't already have. knownNumbers (when provided)
+    // catches below-watermark gaps; afterNumericPart is the legacy
+    // high-water behavior.
+    const filtered =
+      knownNumbers !== undefined
+        ? uniqueRows.filter((r) => !knownNumbers.has(r.numericPart))
+        : afterNumericPart !== undefined
+          ? uniqueRows.filter((r) => r.numericPart > afterNumericPart)
+          : uniqueRows
+
+    const pageDocuments = filtered.map(enrichRow)
+    documents.push(...pageDocuments)
+
+    if (onPage && pageDocuments.length > 0) {
+      await onPage(pageDocuments, { pagesScanned })
+    }
 
     // If all rows on this page are at or below watermark, stop paginating
     // (index is in descending order — once we're past the watermark, all
@@ -641,52 +733,5 @@ export async function discoverFromIndex(
     currentPage = nextPage
   }
 
-  if (allRows.length === 0) {
-    return { documents: [], pagesScanned, highestNumericPart: 0 }
-  }
-
-  // Deduplicate rows (same SFS number can appear on overlapping pages)
-  const seen = new Set<string>()
-  const uniqueRows: IndexPageRow[] = []
-  for (const row of allRows) {
-    if (!seen.has(row.sfsNumber)) {
-      seen.add(row.sfsNumber)
-      uniqueRows.push(row)
-    }
-  }
-
-  const highestNumericPart = Math.max(...uniqueRows.map((r) => r.numericPart))
-
-  // Filter to rows we don't already have. knownNumbers (when provided) catches
-  // below-watermark gaps; afterNumericPart is the legacy high-water behavior.
-  const filtered =
-    knownNumbers !== undefined
-      ? uniqueRows.filter((r) => !knownNumbers.has(r.numericPart))
-      : afterNumericPart !== undefined
-        ? uniqueRows.filter((r) => r.numericPart > afterNumericPart)
-        : uniqueRows
-
-  // Enrich each row with classification and URLs
-  const documents: DiscoveredDocument[] = filtered.map((row) => {
-    const documentType = classifyDocument(row.title)
-    const baseLawSfs =
-      documentType === 'amendment' || documentType === 'repeal'
-        ? extractBaseLawSfs(row.title)
-        : null
-
-    const urls = constructPdfUrls(row.sfsNumber, row.publishedDate)
-
-    return {
-      sfsNumber: row.sfsNumber,
-      title: row.title,
-      publishedDate: row.publishedDate,
-      numericPart: row.numericPart,
-      documentType,
-      baseLawSfs,
-      pdfUrl: urls.pdf,
-      htmlUrl: urls.html,
-    }
-  })
-
-  return { documents, pagesScanned, highestNumericPart }
+  return { documents, pagesScanned, highestNumericPart, scanCompleted }
 }

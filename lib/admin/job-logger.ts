@@ -91,6 +91,45 @@ export async function failJobRun(runId: string, error: Error): Promise<void> {
 }
 
 /**
+ * Mark zombie RUNNING runs as FAILED.
+ *
+ * A Vercel hard kill (maxDuration timeout, OOM) never reaches a cron's catch
+ * block, so the run row stays RUNNING forever and no failure email is sent —
+ * this is how discover-sfs-amendments failed silently for 5 weeks (2026-06/07).
+ * Any run still RUNNING well past the longest allowed maxDuration (800s) was
+ * killed; record it as FAILED so monitoring can see it.
+ *
+ * Returns the swept runs (job_name + started_at) for reporting.
+ */
+export async function sweepStaleJobRuns(
+  staleAfterMinutes = 20
+): Promise<{ job_name: string; started_at: Date }[]> {
+  const cutoff = new Date(Date.now() - staleAfterMinutes * 60_000)
+  try {
+    const stale = await prisma.cronJobRun.findMany({
+      where: { status: 'RUNNING', started_at: { lt: cutoff } },
+      select: { id: true, job_name: true, started_at: true },
+    })
+    if (stale.length === 0) return []
+
+    await prisma.cronJobRun.updateMany({
+      where: { id: { in: stale.map((r) => r.id) } },
+      data: {
+        status: 'FAILED',
+        completed_at: new Date(),
+        error_message:
+          'Marked FAILED by stale-run sweep: run never completed — ' +
+          'function was hard-killed (maxDuration timeout or crash) before reaching its error handler.',
+      },
+    })
+    return stale.map(({ job_name, started_at }) => ({ job_name, started_at }))
+  } catch (error) {
+    console.error('Failed to sweep stale job runs:', error)
+    return []
+  }
+}
+
+/**
  * Append a log line to the job run's log_output field.
  * Uses raw SQL for efficient concatenation without re-reading the full field.
  */
