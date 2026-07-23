@@ -17,6 +17,13 @@ vi.mock('@/lib/prisma', () => ({
     changeAssessment: {
       upsert: vi.fn(),
     },
+    // Story 29.1: create_task findingId guards + pending-row persistence.
+    complianceFinding: {
+      findFirst: vi.fn(),
+    },
+    pendingAgentAction: {
+      create: vi.fn(),
+    },
   },
 }))
 
@@ -141,6 +148,136 @@ describe('create_task tool', () => {
     expect((result as { message: string }).message).toContain(
       'Ingen kolumn hittades'
     )
+  })
+})
+
+// Story 29.1 (AC 15): create_task findingId delta — tool-time guards + params
+// persistence + preview coupling text.
+describe('create_task tool — findingId (Story 29.1)', () => {
+  const mockFindingFindFirst = vi.mocked(prisma.complianceFinding.findFirst)
+  const mockPendingCreate = vi.mocked(prisma.pendingAgentAction.create)
+  const tool = createCreateTaskTool('workspace-1')
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('schema accepts an optional findingId (proposal without one is unchanged)', async () => {
+    const result = await tool.execute(
+      { title: 'Vanlig uppgift', priority: 'MEDIUM', execute: false },
+      toolOpts
+    )
+    expect(result).toHaveProperty('confirmation_required', true)
+    expect(mockFindingFindFirst).not.toHaveBeenCalled()
+    const preview = (result as { preview: string }).preview
+    expect(preview).not.toContain('avvikelsen')
+  })
+
+  it('workspace-scoped guard query; miss → wrapToolError, NO pending row', async () => {
+    mockFindingFindFirst.mockResolvedValue(null)
+
+    const result = await tool.execute(
+      { title: 'Åtgärd', findingId: 'f-missing', execute: false },
+      toolOpts
+    )
+
+    expect(mockFindingFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: 'f-missing',
+          cycle: { workspace_id: 'workspace-1' },
+        },
+      })
+    )
+    expect(result).toHaveProperty('error', true)
+    expect(mockPendingCreate).not.toHaveBeenCalled()
+  })
+
+  it('closed finding → wrapToolError with the spawnTaskForFinding wording', async () => {
+    mockFindingFindFirst.mockResolvedValue({
+      id: 'f-1',
+      closed_at: new Date(),
+      corrective_action_task_id: null,
+      cycle_id: 'c-1',
+    } as never)
+
+    const result = await tool.execute(
+      { title: 'Åtgärd', findingId: 'f-1', execute: false },
+      toolOpts
+    )
+
+    expect(result).toHaveProperty('error', true)
+    expect((result as { message: string }).message).toBe(
+      'Kan inte skapa åtgärdsuppgift för stängd finding'
+    )
+    expect(mockPendingCreate).not.toHaveBeenCalled()
+  })
+
+  it('existing corrective task → wrapToolError steering to get_task/assign_task', async () => {
+    mockFindingFindFirst.mockResolvedValue({
+      id: 'f-1',
+      closed_at: null,
+      corrective_action_task_id: 'task-existing',
+      cycle_id: 'c-1',
+    } as never)
+
+    const result = await tool.execute(
+      { title: 'Åtgärd', findingId: 'f-1', execute: false },
+      toolOpts
+    )
+
+    expect(result).toHaveProperty('error', true)
+    expect((result as { message: string }).message).toBe(
+      'Åtgärdsuppgift finns redan'
+    )
+    const guidance = (result as { guidance: string }).guidance
+    expect(guidance).toContain('get_task')
+    expect(guidance).toContain('assign_task')
+    expect(mockPendingCreate).not.toHaveBeenCalled()
+  })
+
+  it('findingId + execute:true → rejected (link only exists on the approval path)', async () => {
+    // QA (29.1): the legacy direct-execute branch has no finding-link step —
+    // letting it through would create the orphan task the story removes.
+    const result = await tool.execute(
+      { title: 'Åtgärd', findingId: 'f-1', execute: true },
+      toolOpts
+    )
+
+    expect(result).toHaveProperty('error', true)
+    expect((result as { message: string }).message).toBe(
+      'findingId kräver godkännandeflödet'
+    )
+    expect(mockFindingFindFirst).not.toHaveBeenCalled()
+    expect(mockPendingCreate).not.toHaveBeenCalled()
+  })
+
+  it('happy path: persists findingId in the pending-row params + coupling preview', async () => {
+    mockFindingFindFirst.mockResolvedValue({
+      id: 'f-1',
+      closed_at: null,
+      corrective_action_task_id: null,
+      cycle_id: 'c-1',
+    } as never)
+    mockPendingCreate.mockResolvedValue({ id: 'pa-1' } as never)
+
+    // Context with assistantMessageId → the pending row IS created.
+    const toolWithCtx = createCreateTaskTool('workspace-1', {
+      userId: 'user-1',
+      assistantMessageId: 'cm-1',
+    })
+    const result = await toolWithCtx.execute(
+      { title: 'Åtgärda avvikelsen', findingId: 'f-1', execute: false },
+      toolOpts
+    )
+
+    expect(result).toHaveProperty('confirmation_required', true)
+    const createArg = mockPendingCreate.mock.calls[0]![0] as {
+      data: { params: Record<string, unknown> }
+    }
+    expect(createArg.data.params.findingId).toBe('f-1')
+    const preview = (result as { preview: string }).preview
+    expect(preview).toContain('kopplas som åtgärd till avvikelsen')
   })
 })
 

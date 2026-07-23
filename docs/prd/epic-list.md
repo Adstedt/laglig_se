@@ -338,21 +338,21 @@
 
 ---
 
-## Epic 23: Anmärkningar som förstklassiga objekt
+## Epic 23: Avvikelser som förstklassiga objekt + ISO-grade audit cycles
 
-**Status:** Planned (0 completed — 5 stories scoped)
+**Status:** Planned (0 completed — **re-scoped 2026-07-23** to a 3-phase ~8-story program; was 5 stories)
 
-**Goal:** Lift `ComplianceFinding` out of cycle scope into a first-class workspace object with its own registry page (`/anmärkningar`), shared cross-surface modal, and ad-hoc creation pathway — so avvikelser, observationer and förbättringsförslag exist as continuously-tracked compliance signals, not just artefacts of a closed audit.
+**Goal:** Make the **avvikelse (`ComplianceFinding`)** a first-class, standalone entity — its own top-level **Avvikelser** register (`/avvikelser`, Laglistor-mirrored list + item modal), optional typed links to cycles / kravpunkter / styrdokument / prior findings, a CAPA lifecycle, and ISO audit-cycle upgrades — so the full nonconformity loop (raise → root-cause → correct → verify effective → detect recurrence → report to ledningen) is demonstrable to a certification auditor, and the Epic 29 agent traverses it as a clean graph.
 
-**Delivers:** Schema migration making `ComplianceFinding.cycle_id` nullable + `workspace_id`/`created_by_user_id`/`assignee_id` columns + `Comment.finding_id` polymorphic extension + anchor CHECK constraint; new `/anmärkningar` registry page mirroring `/uppgifter` architecture (PageHeader + TableToolbar + shadcn Table + URL-synced filters); shared `<FindingModal>` on the `SplitPanelModal` shell with feature-parity to `<TaskModal>` (activity feed, linked artifacts, status actions); rewire of three entry points (cycle-detail Findings tab, law-list-item modal, registry CTA) onto the shared modal; cross-cycle visibility via cycle wizard "kända vid start" panel + Findings tab "Visa öppna från tidigare kontroller" toggle; sidebar nav entry under Efterlevnad with red-pip count.
+**Delivers (3 phases per the brief §9):** **Phase 1** — finding-as-hub schema (`cycle_id` nullable + `SetNull`, `workspace_id`, `source` enum; **no anchor CHECK** — zero-link raise is the point), `listFindingsForWorkspace`, the `/avvikelser` register (built on the **DataTable core**, mirroring Laglistor's list+modal, flat top-level nav after Kontroller), and the `list_findings` agent tool. **Phase 2** — standalone raise flow + typed edges (`ComplianceFindingDocumentLink` to styrdokument), `get_finding` edge readers, CAPA status enum. **Phase 3** — cross-cycle review join, kickoff carry-forward, effectiveness-verification step, recurrence detection + `recurs_from_finding_id`, management-review export, agent kickoff-agenda + triage.
 
-**Requirements covered:** Resolves brief Q294 ("findings visible outside the cycle?") and Q295 ("carried-over avvikelser?") from `docs/lagefterlevnadskontroll-brief.md`. Implements ISO 19011 audit-output taxonomy (avvikelse / observation / förbättringsförslag) as continuous-improvement register — core to ISO 9001 §10.2, ISO 14001 §10.2, ISO 45001 §10.2 management-system audits.
+**Requirements covered:** Resolves brief Q294/Q295 (`lagefterlevnadskontroll-brief.md`) *and* the full `avvikelser-standalone-and-iso-audit-cycles-brief.md` (2026-07-22, now Epic 23's authoritative design source). ISO 10.2 (nonconformity + corrective action, any source), 9.2 (previous-audit results), 9.3 (management review) — the Annex SL loop shared by ISO 9001/14001/45001/27001/50001.
 
-**Dependencies:** Epic 21 (Active/UAT-ready — source of `ComplianceFinding`, `FindingEditor`, `FindingCard`, `cycle-findings-tab.tsx`; hard dependency, refactored), Epic 22 (Done PR #60 — consumes `<PageHeader>`, `<TableToolbar>`, `<FilterChip>`, `<Badge tone>`, `<EmptyState>` from day one), Epic 6 (Done — source of `Comment` polymorphic model, `ActivityLog`, threaded comments UX), Epic 17 (Done — source of `LinkedArtifactsPanel` SWR pattern reused for the modal's right rail).
+**Dependencies:** Epic 21 (source of the cycle/finding models — hard dependency, extended), Epic 22 (Done — DataTable primitives), Epic 28 (Done — the DataTable core the register is built on), Epic 6/17 (Done — Comment/ActivityLog/LinkedArtifacts reuse). **Layering:** Epic 23 is the **foundation** under **Epic 29** (skills) — Epic 29's skill stories (29.2/29.4/29.6) depend on Epic 23 Phase 1.
 
-**Note:** Brownfield enhancement. Schema change is additive + backward-compatible (nullable column, denormalised mirrors backfilled). Existing cycle-scoped reads keep working unchanged. Sealed-cycle PDFs remain bit-identical (point-in-time guard in Story 23.5). Source artefacts: `_prototypes/anmarkningar-page-and-modal.html` (visual reference for page + modal + entry-point matrix). See `docs/prd/epic-23-anmarkningar-first-class.md`.
+**Note:** Brownfield. Schema changes additive + manual-apply. Re-scoped via `docs/sprint-change-proposal-avvikelser-capa-2026-07-23.md`; original 5-story decomposition retained (collapsed) in the epic doc, partially superseded. See `docs/prd/epic-23-anmarkningar-first-class.md` + `docs/briefs/avvikelser-standalone-and-iso-audit-cycles-brief.md`.
 
-**Priority:** High — unblocks continuous-improvement workflows core to ISO management-system audits, resolves long-standing post-MVP question from the lagefterlevnadskontroll brief, and sequences naturally after Epic 22 (now done) so new surfaces use canonical primitives from day one.
+**Priority:** High — the CAPA loop is the most-scrutinised part of an ISO management-system audit, it's the foundation the Epic 29 agent skills stand on, and Phase 1 alone ships a cross-cycle avvikelseregister where none exists today.
 
 ---
 
@@ -452,7 +452,7 @@
 
 **Requirements covered:** Closes Epic 19 Story 19.4b; conversational surface over Epic 21's data model; auditor channel strategy; structural retention at four fixed points of the customer's ISO year (årshjulet: kontroll → revision → genomgång → lagbevakning).
 
-**Dependencies:** Epic 19 (skills/loader/narrowing/readers/roles — Done), Epic 21 (cycle models + server actions — Done), Epic 14 (pending-action cards — Done). **Deferred Story 21.10** (cycle-editable runtime guard) is a hard prerequisite for 29.6's `create_finding` (or 29.6 implements the equivalent dispatch guard).
+**Dependencies:** Epic 19 (skills/loader/narrowing/readers/roles — Done), Epic 21 (cycle models + server actions — Done), Epic 14 (pending-action cards — Done). **Epic 23 (re-scoped 2026-07-23) is the foundation layer** — the skill stories (29.2/29.4/29.6) depend on Epic 23 Phase 1 (finding-as-hub model + `list_findings`) and should be drafted after it lands; the infra stories (29.2a, 29.3, 29.5) and shipped 29.1 are independent. **Deferred Story 21.10** (cycle-editable runtime guard) is a hard prerequisite for 29.6's `create_finding` (or 29.6 implements the equivalent dispatch guard). See `docs/sprint-change-proposal-avvikelser-capa-2026-07-23.md`.
 
 **Priority:** High — `prepare_audit` is strategy-aligned (auditor channel + audit-season retention trigger); `ledningens_genomgang` replaces a consultant deliverable; both are mostly skill-file authoring once the read tier (29.1) lands.
 
@@ -490,6 +490,6 @@
 
 **Epic Status:** 12 Done (incl. Epic 21 substantially-done as of 2026-04-27, UAT-ready with 1 deferred 21.10 + 1 backlogged 21.15), 4 Partial / Active, 9 Not Started / Planned (incl. Epic 23, Epic 24, Epic 25)
 
-**Last updated:** 2026-07-08 (added Epic 29: ISO Audit Companion, 7 stories, see `docs/prd/epic-29-iso-audit-companion-agent-skills.md` — absorbs Epic 19 Story 19.4b. Previously 2026-07-07: added Epic 28: Unified DataTable Core, 12 stories, see `docs/prd/epic-28-unified-datatable-core.md`. NOTE: Epic 26 (marketing pages, 12 stories, see `docs/prd/epic-26-marketing-pages-seo-content-engine.md`) shipped its first stories but was never registered in this list — entry + stats refresh pending)
+**Last updated:** 2026-07-23 (**Epic 23 re-scoped** to absorb the avvikelser-standalone + ISO-audit-cycles brief — finding-as-hub model, 3-phase ~8-story program, now the foundation layer under Epic 29's skills; see `docs/sprint-change-proposal-avvikelser-capa-2026-07-23.md`. Story 29.1 shipped (cycle read tier). Previously 2026-07-08: added Epic 29: ISO Audit Companion, 7 stories, see `docs/prd/epic-29-iso-audit-companion-agent-skills.md` — absorbs Epic 19 Story 19.4b. Previously 2026-07-07: added Epic 28: Unified DataTable Core, 12 stories, see `docs/prd/epic-28-unified-datatable-core.md`. NOTE: Epic 26 (marketing pages, 12 stories, see `docs/prd/epic-26-marketing-pages-seo-content-engine.md`) shipped its first stories but was never registered in this list — entry + stats refresh pending)
 
 ---

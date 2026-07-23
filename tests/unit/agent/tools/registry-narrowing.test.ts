@@ -86,13 +86,14 @@ describe('registry narrowing — no-regression harness (Story 19.7c)', () => {
   // Story 17.11b: bumped 33 → 34 (added add_document_section write tool).
   // Story 7.7: bumped 34 → 35 (added search_collective_agreements; the also-
   // added lookup_employee is role-conditional and excluded from FULL above).
-  it('sanity: full factory registry is 35 tools (update flow-required sets if this changes)', () => {
-    expect(FULL).toHaveLength(35)
+  // Story 29.1: bumped 35 → 38 (list_cycles / get_cycle / get_finding readers).
+  it('sanity: full factory registry is 38 tools (update flow-required sets if this changes)', () => {
+    expect(FULL).toHaveLength(38)
   })
 
   it('activeSkills undefined → full set (legacy callers unaffected)', () => {
-    expect(toolKeys('MEMBER', undefined)).toHaveLength(35)
-    expect(toolKeys(undefined, undefined)).toHaveLength(35)
+    expect(toolKeys('MEMBER', undefined)).toHaveLength(38)
+    expect(toolKeys(undefined, undefined)).toHaveLength(38)
   })
 
   it('change context keeps every tool the assessment flow uses', () => {
@@ -128,12 +129,13 @@ describe('registry narrowing — no-regression harness (Story 19.7c)', () => {
     )
   })
 
-  it('activeSkills [] → baseline only (save_assessment gated, 34 tools)', () => {
+  it('activeSkills [] → baseline only (save_assessment gated, 37 tools)', () => {
     const k = toolKeys('MEMBER', [])
     expect(k).not.toContain('save_assessment')
     // Story 17.11b: bumped 32 → 33 (added add_document_section to baseline).
     // Story 7.7: bumped 33 → 34 (search_collective_agreements in baseline).
-    expect(k).toHaveLength(34)
+    // Story 29.1: bumped 34 → 37 (the three cycle readers join the baseline).
+    expect(k).toHaveLength(37)
   })
 
   // Story 7.7 Task 2b: when the role DOES hold employees:view, both new tools

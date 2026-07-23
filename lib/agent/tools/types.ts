@@ -47,6 +47,10 @@ export interface ContextHandle {
     | 'requirement'
     | 'change_assessment'
     | 'finding'
+    // Story 29.1: Epic 21 cycle-graph nodes (list_cycles / get_cycle / get_finding).
+    | 'cycle'
+    | 'audit_item'
+    | 'report'
   label: string
   count?: number
 }

@@ -309,3 +309,118 @@ export async function sendAmendmentDiscoveryEmail(
     console.error('Failed to send amendment discovery email:', result.error)
   }
 }
+
+// =============================================================================
+// SFS Pipeline Health (end-to-end freshness monitoring)
+// =============================================================================
+
+export interface SfsPipelineHealthReport {
+  healthy: boolean
+  issues: string[]
+  officialHighest: number | null
+  officialLatestPublished: string | null
+  dbHighestKnown: number
+  missingInRange: number
+  pendingBacklog: number
+  failedBacklog: number
+  oldestPendingAgeDays: number | null
+  sweptZombieRuns: { job_name: string; started_at: Date }[]
+  lastSuccess: Record<string, string | null>
+}
+
+/**
+ * Send SFS pipeline health alert. Only called when the pipeline is unhealthy
+ * (or a sweep found zombie runs) — silence means healthy.
+ */
+export async function sendSfsPipelineHealthEmail(
+  report: SfsPipelineHealthReport
+): Promise<void> {
+  const subject = `\u{1F6A8} SFS Pipeline Health: ${report.issues.length} issue(s) - ${new Date().toLocaleDateString('sv-SE')}`
+
+  const issuesHtml = report.issues
+    .map((i) => `<li style="margin-bottom: 6px;">${i}</li>`)
+    .join('')
+
+  const zombiesHtml =
+    report.sweptZombieRuns.length > 0
+      ? `<h3>Zombie cron runs swept (hard-killed, never completed)</h3>
+         <ul>${report.sweptZombieRuns
+           .map(
+             (z) =>
+               `<li>${z.job_name} — started ${new Date(z.started_at).toISOString()}</li>`
+           )
+           .join('')}</ul>`
+      : ''
+
+  const lastSuccessRows = Object.entries(report.lastSuccess)
+    .map(
+      ([job, ts]) => `
+      <tr>
+        <td style="padding: 8px; border: 1px solid #ddd;">${job}</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${ts ?? 'never'}</td>
+      </tr>`
+    )
+    .join('')
+
+  const html = `
+    <h2>SFS Pipeline Health Alert</h2>
+    <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+
+    <h3 style="color: #c0392b;">Issues</h3>
+    <ul>${issuesHtml}</ul>
+
+    <h3>Coverage</h3>
+    <table style="border-collapse: collapse; width: 100%; max-width: 480px;">
+      <tr>
+        <td style="padding: 8px; border: 1px solid #ddd;">Official register highest (svenskforfattningssamling.se)</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${report.officialHighest ?? 'unreachable'}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border: 1px solid #ddd;">Official latest published</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${report.officialLatestPublished ?? '—'}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border: 1px solid #ddd;">Our DB highest known (laws ∪ amendments)</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${report.dbHighestKnown}</td>
+      </tr>
+      <tr style="background: ${report.missingInRange > 0 ? '#f8d7da' : '#f8f9fa'};">
+        <td style="padding: 8px; border: 1px solid #ddd;"><strong>Missing SFS numbers in range</strong></td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${report.missingInRange}</td>
+      </tr>
+      <tr style="background: ${report.pendingBacklog > 60 ? '#fff3cd' : '#f8f9fa'};">
+        <td style="padding: 8px; border: 1px solid #ddd;">PENDING backlog</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${report.pendingBacklog}</td>
+      </tr>
+      <tr style="background: ${report.failedBacklog > 0 ? '#fff3cd' : '#f8f9fa'};">
+        <td style="padding: 8px; border: 1px solid #ddd;">FAILED backlog</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${report.failedBacklog}</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border: 1px solid #ddd;">Oldest PENDING age (days)</td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${report.oldestPendingAgeDays ?? '—'}</td>
+      </tr>
+    </table>
+
+    <h3>Last successful run per job</h3>
+    <table style="border-collapse: collapse; width: 100%; max-width: 480px;">${lastSuccessRows}</table>
+
+    ${zombiesHtml}
+
+    <hr style="margin-top: 24px;">
+    <p style="font-size: 12px; color: #999;">
+      Automated alert from /api/cron/sfs-pipeline-health. Silence means healthy.
+    </p>
+  `
+
+  const result = await sendHtmlEmail({
+    to: ADMIN_EMAIL,
+    subject,
+    html,
+    from: 'cron',
+  })
+  if (result.success) {
+    console.log('SFS pipeline health alert email sent')
+  } else {
+    console.error('Failed to send pipeline health email:', result.error)
+  }
+}

@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Laglig.se — Architecture Map</title></head>
+<body>
+<style>
+  :root{
+    --bg:#f5f3ee; --panel:#fbfaf7; --card:#ffffff; --ink:#211e19; --sub:#6b665b;
+    --line:#e5e1d6; --line-soft:#eeebe2; --amber:#a16a12; --amber-soft:#f4e8d3;
+    --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-serif;
+    --good:#3d6b47; --warn:#8a5a12; --crit:#8c3b2e;
+    --chip:#f0ede4; --shadow:0 1px 2px rgba(33,30,25,.05),0 4px 16px rgba(33,30,25,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#161511; --panel:#1c1a16; --card:#211f1a; --ink:#ece8de; --sub:#9d968a;
+      --line:#37332b; --line-soft:#2b2823; --amber:#d9a648; --amber-soft:#3a3122;
+      --good:#8fbf9a; --warn:#d9a648; --crit:#d98a7b;
+      --chip:#2b2823; --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f5f3ee; --panel:#fbfaf7; --card:#ffffff; --ink:#211e19; --sub:#6b665b;
+    --line:#e5e1d6; --line-soft:#eeebe2; --amber:#a16a12; --amber-soft:#f4e8d3;
+    --good:#3d6b47; --warn:#8a5a12; --crit:#8c3b2e;
+    --chip:#f0ede4; --shadow:0 1px 2px rgba(33,30,25,.05),0 4px 16px rgba(33,30,25,.05);
+  }
+  :root[data-theme="dark"]{
+    --bg:#161511; --panel:#1c1a16; --card:#211f1a; --ink:#ece8de; --sub:#9d968a;
+    --line:#37332b; --line-soft:#2b2823; --amber:#d9a648; --amber-soft:#3a3122;
+    --good:#8fbf9a; --warn:#d9a648; --crit:#d98a7b;
+    --chip:#2b2823; --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{transition:none!important} }
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  code,.path{font-family:var(--mono);font-size:.86em;background:var(--chip);padding:.1em .38em;border-radius:4px;white-space:nowrap}
+  .path{white-space:normal;word-break:break-word}
+
+  .wrap{display:grid;grid-template-columns:238px minmax(0,1fr);min-height:100vh}
+  nav{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--panel);border-right:1px solid var(--line);padding:22px 14px 32px}
+  .brand{display:flex;align-items:baseline;gap:8px;padding:0 10px 4px}
+  .brand b{font-size:16px;letter-spacing:-.01em}
+  .brand span{font-size:11px;color:var(--sub)}
+  .navnote{font-size:11.5px;color:var(--sub);padding:0 10px 14px;border-bottom:1px solid var(--line-soft);margin-bottom:12px}
+  nav a.item{display:block;padding:6px 10px;border-radius:7px;text-decoration:none;font-size:13.5px;color:var(--sub)}
+  nav a.item:hover{background:var(--line-soft);color:var(--ink)}
+  nav a.item.on{background:var(--amber-soft);color:var(--amber);font-weight:600}
+  nav .grp{font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--sub);padding:15px 10px 5px}
+  #q{width:100%;margin:2px 0 10px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:13px var(--sans)}
+  #q:focus{outline:2px solid var(--amber);outline-offset:0;border-color:transparent}
+
+  main{padding:34px 44px 90px;max-width:1180px}
+  header.hero{margin-bottom:30px}
+  .eyebrow{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:6px}
+  h1{font-size:31px;letter-spacing:-.02em;margin:0 0 8px;text-wrap:balance}
+  .lede{color:var(--sub);max-width:70ch;margin:0}
+  section{margin:46px 0;scroll-margin-top:24px}
+  h2{font-size:21px;letter-spacing:-.015em;margin:0 0 4px;padding-top:10px;border-top:2px solid var(--ink)}
+  h2 .sec-eyebrow{display:block;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--sub);margin-bottom:3px}
+  .secdesc{color:var(--sub);margin:2px 0 18px;max-width:76ch}
+  h3{font-size:15px;margin:24px 0 8px}
+
+  /* mermaid diagram frame */
+  .dia{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin:14px 0;box-shadow:var(--shadow);overflow-x:auto}
+  .dia .cap{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--amber);margin:2px 2px 6px}
+  pre.mermaid{margin:0;font-family:var(--mono);font-size:12px;line-height:1.5;color:var(--sub);background:transparent;min-width:0}
+  .dia svg{max-width:100%}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:15px 17px;box-shadow:var(--shadow)}
+  .card h4{margin:0 0 2px;font-size:14.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .card .sub{color:var(--sub);font-size:12.8px;margin:0 0 9px}
+  .card ul{margin:0;padding-left:17px;font-size:13.2px}
+  .card li{margin:3px 0}
+  .card li::marker{color:var(--sub)}
+
+  .tag{font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:99px;background:var(--chip);color:var(--sub)}
+  .tag.amber{background:var(--amber-soft);color:var(--amber)}
+  .tag.good{color:var(--good)} .tag.warn{color:var(--warn)} .tag.crit{color:var(--crit)}
+
+  table{width:100%;border-collapse:collapse;font-size:13.2px;background:var(--card)}
+  .tblwrap{overflow-x:auto;border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--line)}
+  th{text-align:left;font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);padding:9px 13px;background:var(--panel);border-bottom:1px solid var(--line)}
+  td{padding:8px 13px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td:first-child{white-space:nowrap;font-family:var(--mono);font-size:12.3px}
+  .num{font-variant-numeric:tabular-nums}
+
+  .kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:11px;margin:16px 0}
+  .kv .k{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 14px;box-shadow:var(--shadow)}
+  .kv .k b{display:block;font-size:19px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .kv .k span{color:var(--sub);font-size:12.2px}
+
+  .note{border-left:3px solid var(--amber);background:var(--card);border-radius:0 10px 10px 0;padding:11px 15px;font-size:13.4px;margin:12px 0;box-shadow:var(--shadow)}
+  .note b{color:var(--amber)}
+  .hidden{display:none!important}
+  footer{margin-top:56px;color:var(--sub);font-size:12.5px;border-top:1px solid var(--line);padding-top:14px}
+  @media (max-width:880px){ .wrap{grid-template-columns:1fr} nav{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line)} main{padding:22px 18px 60px} }
+</style>
+
+<div class="wrap">
+<nav aria-label="Map sections">
+  <div class="brand"><b>laglig.se</b><span>architecture map</span></div>
+  <div class="navnote">Living document · 2026-07-23<br>Agent twin: <code>app-map.json</code></div>
+  <input id="q" type="search" placeholder="Filter tools, routes, models…" aria-label="Filter map content">
+  <a class="item" href="#overview">System overview</a>
+  <a class="item" href="#request">Request &amp; auth flow</a>
+  <div class="grp">Product</div>
+  <a class="item" href="#surfaces">Surfaces &amp; routes</a>
+  <a class="item" href="#content">Marketing &amp; SEO</a>
+  <div class="grp">Backend</div>
+  <a class="item" href="#backend">API &amp; server actions</a>
+  <a class="item" href="#crons">Cron jobs</a>
+  <a class="item" href="#data">Data model (ER)</a>
+  <a class="item" href="#lifecycles">State machines</a>
+  <div class="grp">Intelligence</div>
+  <a class="item" href="#ai">AI chat &amp; RAG</a>
+  <a class="item" href="#tools">Agent tools (all 41)</a>
+  <a class="item" href="#ingestion">Legal ingestion</a>
+  <div class="grp">Platform</div>
+  <a class="item" href="#platform">Auth, billing, infra</a>
+  <a class="item" href="#ops">Ops gotchas</a>
+</nav>
+
+<main>
+<header class="hero">
+  <div class="eyebrow">Architecture map</div>
+  <h1>Laglig.se — the whole app on one page</h1>
+  <p class="lede">Swedish legal-compliance SaaS: companies build laglistor from an 11K+ document legal corpus, track compliance per law, get a tool-using AI agent grounded in that corpus, monitor amendments, and run ISO-grade audit cycles. Diagrams are Mermaid — rendered live; the raw text is readable if rendering is unavailable. <code>app-map.json</code> is the machine twin.</p>
+</header>
+
+<!-- ============ OVERVIEW ============ -->
+<section id="overview">
+  <h2><span class="sec-eyebrow">01</span>System overview</h2>
+  <div class="kv">
+    <div class="k"><b class="num">65</b><span>Prisma models · 57 enums</span></div>
+    <div class="k"><b class="num">27</b><span>Vercel cron jobs</span></div>
+    <div class="k"><b class="num">~55</b><span>server-action modules</span></div>
+    <div class="k"><b class="num">41</b><span>agent tools</span></div>
+    <div class="k"><b class="num">11K+</b><span>SFS laws · ~65K EU docs</span></div>
+    <div class="k"><b class="num">~470</b><span>ops scripts</span></div>
+  </div>
+
+  <div class="dia"><div class="cap">System layers &amp; primary data paths</div>
+<pre class="mermaid">
+flowchart TB
+  subgraph CLIENTS["Clients &amp; entry"]
+    B["Browser<br/>React 19 · Tailwind · Tiptap · Zustand+SWR"]
+    CRON["Vercel Cron<br/>Bearer CRON_SECRET"]
+    SW["Stripe webhooks<br/>signature-verified"]
+  end
+  subgraph EDGE["Edge"]
+    MW["proxy.ts middleware<br/>JWT gate · rate limit · geo"]
+  end
+  subgraph UI["UI realms"]
+    PUB["(marketing)+(public)<br/>MarketingShell · SEO/GEO"]
+    APP["(workspace)<br/>WorkspaceShell · chat-first Hem"]
+    AUTH["(auth) · onboarding · invite"]
+    ADM["/admin<br/>separate JWT realm"]
+  end
+  subgraph SRV["Application layer"]
+    SA["Server actions<br/>app/actions/* (~55 modules)"]
+    API["API routes<br/>chat · search · laws · billing"]
+    AGENT["AI agent<br/>lib/agent: 41 tools · skills · RAG"]
+    LIB["lib/ services (~404 files)<br/>sync · chunks · usage · email · audit"]
+  end
+  subgraph DATA["Data layer"]
+    PG[("Postgres/Supabase<br/>Prisma 6 · pgvector HNSW · pg_trgm")]
+    ES[("Elasticsearch<br/>laglig_documents")]
+    RD[("Upstash Redis<br/>auth ctx · rate · cache")]
+    ST[("Supabase Storage<br/>PDFs · files · reports")]
+  end
+  subgraph EXT["External"]
+    ANT["Anthropic<br/>Sonnet 4.6 chat · PDF vision · Haiku prefixes"]
+    OAI["OpenAI<br/>embeddings · GPT-4 summaries"]
+    CO["Cohere Rerank v4"]
+    STR["Stripe"]
+    RES["Resend"]
+    SRC["Legal sources<br/>Riksdagen · SFS-index · EUR-Lex · av.se · SKOLFS"]
+  end
+  B --> MW --> UI
+  CRON --> API
+  SW --> API
+  PUB --> SA
+  APP --> SA
+  APP --> API
+  ADM --> SA
+  SA --> LIB
+  API --> AGENT
+  API --> LIB
+  AGENT --> LIB
+  LIB --> PG
+  LIB --> ES
+  LIB --> RD
+  LIB --> ST
+  AGENT --> ANT
+  AGENT --> OAI
+  AGENT --> CO
+  LIB --> STR
+  LIB --> RES
+  CRON -. "ingestion crons" .-> SRC
+  SRC -.-> LIB
+</pre></div>
+
+  <div class="dia"><div class="cap">The domain spine — where every feature attaches</div>
+<pre class="mermaid">
+flowchart LR
+  W["Workspace<br/><i>tenant root</i>"] --> LL["LawList"] --> LLI["LawListItem<br/><b>the hinge</b><br/>unique(list × document)"]
+  LLI --> LD["LegalDocument<br/><i>global catalog</i>"]
+  LLI --> REQ["Kravpunkter<br/>LawListItemRequirement"]
+  REQ --> EV["Evidence<br/>file ⊻ styrdokument"]
+  LLI --> CA["ChangeAssessment"] --> CE["ChangeEvent"]
+  LLI --> T["Tasks (M:N)"]
+  LLI --> AI2["ComplianceAuditItem"]
+  LLI --> F["ComplianceFinding"]
+  LLI --> WD["Styrdokument links (M:N)"]
+  style LLI fill:#f4e8d3,stroke:#a16a12,stroke-width:2px,color:#211e19
+</pre></div>
+</section>
+
+<!-- ============ REQUEST ============ -->
+<section id="request">
+  <h2><span class="sec-eyebrow">02</span>Request &amp; auth flow</h2>
+  <p class="secdesc">Middleware only checks JWT presence; the real tenancy/RBAC/billing enforcement is server-side in <code>getWorkspaceContext()</code> — Prisma can't run in Edge.</p>
+  <div class="dia"><div class="cap">From request to authorized workspace context</div>
+<pre class="mermaid">
+flowchart LR
+  R["Request"] --> MW{"proxy.ts (Edge)"}
+  MW -- "public route" --> RL{"Upstash rate limit<br/>300/min prod"} -- ok --> PAGE["render"]
+  RL -- exceeded --> E429["429 + X-RateLimit-*"]
+  MW -- "protected prefix<br/>/dashboard /laglistor /tasks<br/>/settings /workspace /hr ..." --> JWT{"NextAuth JWT?<br/>(60s memory cache)"}
+  JWT -- no --> LOGIN["302 /login?callbackUrl"]
+  JWT -- yes --> LAYOUT["(workspace) layout — force-dynamic"]
+  LAYOUT --> CK{"active_workspace_id cookie"}
+  CK -- "none, 1 ws" --> AUTO["auto-select"]
+  CK -- "none, n ws" --> SEL["302 /select-workspace"]
+  CK -- "none, 0 ws" --> OB["302 /onboarding"]
+  AUTO --> CTX
+  CK -- set --> CTX["getWorkspaceContext()<br/>Redis-cached 5min"]
+  CTX --> MEM{"WorkspaceMember + role"}
+  MEM -- no --> DENY["ACCESS_DENIED"]
+  MEM -- yes --> GATES{"billing gates"}
+  GATES -- past_due / trial_expired --> BILL["302 /settings?tab=billing"]
+  GATES -- ok --> SHELL["WorkspaceShell + page<br/>role → ~17 permissions"]
+</pre></div>
+  <div class="note" data-f><b>Session model:</b> Supabase Auth stores credentials; NextAuth CredentialsProvider calls <code>signInWithPassword</code>, upserts the user into Prisma, and issues a 30-day JWT. Roles: OWNER · ADMIN · HR_MANAGER · MEMBER · AUDITOR (read-only, including agent tools).</div>
+</section>
+
+<!-- ============ SURFACES ============ -->
+<section id="surfaces">
+  <h2><span class="sec-eyebrow">03</span>Surfaces &amp; routes</h2>
+  <div class="dia"><div class="cap">Route atlas — every family, keyed by shell</div>
+<pre class="mermaid">
+flowchart TB
+  ROOT["app/"]
+  ROOT --> MK["(marketing) — MarketingShell"]
+  MK --> MK1["/omraden + [slug] · ~50 guides"]
+  MK --> MK2["/branscher/[slug] · 7"]
+  MK --> MK3["/funktioner/[slug] · 6-7"]
+  MK --> MK4["/ordbok + [term] · ~28"]
+  MK --> MK5["/og-image/[kind]/[slug]"]
+  ROOT --> PB["(public) — MarketingShell"]
+  PB --> PB1["/lagar + [id] + historik + version/[date]<br/>+ andringar/[id]"]
+  PB --> PB2["/alla-lagar + [lawSlug] · ISR 3600s"]
+  PB --> PB3["/foreskrifter/[slug]"]
+  PB --> PB4["/eu + [type] + [type]/[id]"]
+  PB --> PB5["/sok · /rattskallor + sida/[page]"]
+  PB --> PB6["(legal): villkor · integritet ·<br/>cookies · PUB-avtal · underbiträden"]
+  ROOT --> WS["(workspace) — WorkspaceShell"]
+  WS --> WS1["/dashboard (chat-first Hem)"]
+  WS --> WS2["/laglistor + mallar/[slug]<br/>+ skapa/[importId]/granska"]
+  WS --> WS3["/laglistor/kontroller + skapa<br/>+ [cycleId] + rapport/pdf"]
+  WS --> WS4["/krav · /tasks"]
+  WS --> WS5["/browse/** (in-app legal DB)"]
+  WS --> WS6["/workspace/styrdokument + edit<br/>/workspace/activity"]
+  WS --> WS7["/filer/[...path] · /personalregister"]
+  WS --> WS8["/settings (+billing tab)"]
+  ROOT --> AU["(auth) + standalone"]
+  AU --> AU1["/login /signup /reset-password<br/>/verify-email"]
+  AU --> AU2["/onboarding · /select-workspace<br/>/invite/[token] · /auth/callback"]
+  ROOT --> AD["/admin — AdminSidebar"]
+  AD --> AD1["dashboard · users/[id] · workspaces/[id]"]
+  AD --> AD2["templates/[id]/items/[itemId] + overlap"]
+  AD --> AD3["catalog-requests · usage ·<br/>cron-jobs/[jobName]/[runId]"]
+  style WS fill:#f4e8d3,stroke:#a16a12,color:#211e19
+</pre></div>
+
+  <div class="cards">
+    <div class="card" data-f><h4>WorkspaceShell nav <span class="tag amber">the app</span></h4>
+      <p class="sub"><span class="path">components/layout/workspace-shell.tsx</span> · Zustand layout store · WorkspaceProvider</p>
+      <ul>
+        <li><b>Platform:</b> Hem · Assistent (chat modal) · Efterlevnad ▸ Laglistor / Krav / Ändringar / Mallar · Kontroller · Regelverk ▸ browse</li>
+        <li><b>Work:</b> Uppgifter · Styrdokument · Filer · Aktivitetslogg · HR</li>
+        <li>RightSidebar + ChatModal auto-folded on /dashboard (Hem <i>is</i> the chat)</li>
+        <li>Banners injected by layout: impersonation · paused workspace · trial countdown</li>
+      </ul>
+    </div>
+    <div class="card" data-f><h4>Standalone &amp; misc</h4>
+      <ul>
+        <li><code>/</code> homepage (landing-v3 promoted 2026-06-06) · <code>/landing-v2</code> archived (noindex)</li>
+        <li><code>/styleguide</code> component index (404 in prod) · <code>/offline</code> PWA fallback · <code>/cap-shot</code> temp screenshot rig</li>
+        <li><code>/permission-denied</code> · <code>/admin/cache-dashboard</code> (workspace-gated)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTENT ============ -->
+<section id="content">
+  <h2><span class="sec-eyebrow">04</span>Marketing content &amp; SEO</h2>
+  <div class="dia"><div class="cap">Typed MDX pipeline — invalid frontmatter fails the build</div>
+<pre class="mermaid">
+flowchart LR
+  MDX["content/marketing/<br/>{kind}/slug.mdx"] --> ZOD{"Zod frontmatter<br/>faq ≥3 · desc ≤170"}
+  ZOD -- invalid --> FAIL["next build FAILS<br/>[MARKETING_FRONTMATTER_INVALID]"]
+  ZOD -- valid --> CAT["catalog-link.ts<br/>relatedCatalogLaws verified<br/>against live LegalDocument"]
+  CAT --> TPL["BasePageTemplate<br/>hero → article → conversion →<br/>CatalogLawList → FAQ → related"]
+  TPL --> LD2["JSON-LD<br/>Breadcrumb+FAQ (+Article/DefinedTerm)"]
+  TPL --> OG["og-image route (next/og)"]
+  BUILD["postbuild"] --> SM["generate-sitemaps.ts<br/>static XML → public/ (CDN)"]
+  SM --> AUDIT["dead-link audit →<br/>.next/marketing-link-warnings.txt"]
+  CRON2["refresh-sitemap cron 16:30"] --> HOOK["Vercel Deploy Hook rebuild"]
+</pre></div>
+  <div class="cards">
+    <div class="card" data-f><h4>Content kinds</h4>
+      <ul>
+        <li><b>omraden</b> (~50) · <b>branscher</b> (7) · <b>funktioner</b> (6–7) — shared base schema (hero, CTA, org-check, faq ≥3)</li>
+        <li><b>ordbok</b> (~28) — lighter glossary schema, answer-first shortDefinition ≤320</li>
+        <li><b>jamfor / kundcase</b> — placeholders only</li>
+        <li>Authoring = <b>content-page skill</b> (Semrush → frontmatter → legal-fact check → SEO/GEO)</li>
+      </ul>
+    </div>
+    <div class="card" data-f><h4>SEO / GEO</h4>
+      <ul>
+        <li><code>robots.ts</code> blocks AI-<i>training</i> bots (GPTBot, ClaudeBot, CCBot…), allows answer engines (Claude-SearchBot, PerplexityBot, ChatGPT-User)</li>
+        <li><code>lib/catalog/public-url.ts</code> — ContentType→URL, exhaustive-never</li>
+        <li>Legislation JSON-LD on law pages; Goal is answer-engine comprehension, not rich chips</li>
+      </ul>
+    </div>
+    <div class="card" data-f><h4>Emails (React Email + Resend)</h4>
+      <ul>
+        <li>Legal: amendment-digest/notification · catalog-request-fulfilled · import-review-ready</li>
+        <li>Tasks: assigned · due · overdue · weekly digest &nbsp;·&nbsp; Collab: comments · status · invitation · paused</li>
+        <li>Billing: trial-ended · payment-failed · enterprise-inquiry ×2 &nbsp;·&nbsp; Internal: feedback · catalog-request</li>
+        <li>Shared cream/ink layout · preference-aware · FROM: notifieringar@ no-reply@ uppdateringar@ cron@</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BACKEND ============ -->
+<section id="backend">
+  <h2><span class="sec-eyebrow">05</span>API routes &amp; server actions</h2>
+  <p class="secdesc">Reads render server-side; mutations flow through ~55 server-action modules. API routes exist for streaming, public data, webhooks, cron, and SWR.</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Endpoint</th><th>Purpose</th><th>Auth</th></tr></thead>
+    <tbody>
+      <tr data-f><td>POST /api/chat</td><td><b>The AI entrypoint.</b> Streaming agent, tools + web search, prompt caching, 300s. Rate 10/min user, 50/min ws; quota-gated (402 at 2×)</td><td>workspace</td></tr>
+      <tr data-f><td>GET /api/search</td><td>Elasticsearch full-text (Swedish, fuzzy, highlight), PG fallback</td><td>public</td></tr>
+      <tr data-f><td>POST /api/browse</td><td>SWR wrapper over browseDocumentsAction (Redis/unstable_cache)</td><td>public</td></tr>
+      <tr data-f><td>GET /api/laws/[sfs]/history · diff · diff/[amendmentSfs] · version/[date] · sections/.../history</td><td>Version timeline, diffs, point-in-time reconstruction, per-§ history</td><td>public</td></tr>
+      <tr data-f><td>POST /api/workspace/generate-law-list</td><td>Headless AI law-list generation skill (800s, idempotent 409); poll/cancel via generation-status</td><td>workspace</td></tr>
+      <tr data-f><td>/api/workspace/invitations (+/[id], /resend)</td><td>Create+email, list, revoke, resend invites</td><td>members:invite</td></tr>
+      <tr data-f><td>GET /api/workspace/context · list · POST switch</td><td>Workspace context for useWorkspace, list, cookie switch</td><td>session</td></tr>
+      <tr data-f><td>GET /api/workspace/documents/[id]/export · activity-log/export</td><td>Styrdokument → DOCX/PDF · activity CSV</td><td>workspace</td></tr>
+      <tr data-f><td>POST /api/billing/checkout · portal · GET invoices</td><td>Stripe checkout / portal / invoices</td><td>workspace:billing</td></tr>
+      <tr data-f><td>POST /api/webhooks/stripe</td><td>Idempotent event ledger; tier activation, usage reset, pause, grace, emails</td><td>signature</td></tr>
+      <tr data-f><td>POST /api/company/lookup · analyze · public/company-preview</td><td>BolagsAPI + AI regulatory-area analysis (public variant = marketing org-check widget)</td><td>session / public</td></tr>
+      <tr data-f><td>/api/notifications (+unread-count, [id]/read, mark-all-read)</td><td>In-app notification feed</td><td>workspace</td></tr>
+      <tr data-f><td>GET /api/files/[fileId]</td><td>Supabase Storage proxy (CORS)</td><td>workspace</td></tr>
+      <tr data-f><td>/laglistor/kontroller/[cycleId]/rapport/pdf</td><td>Route handler streaming sealed revisionsrapport PDF (chromium, 300s)</td><td>workspace</td></tr>
+      <tr data-f><td>POST /api/email/unsubscribe</td><td>HMAC-signed token unsubscribe</td><td>token</td></tr>
+      <tr data-f><td>POST /api/internal/invalidate-cache</td><td>Ingestion scripts → revalidateTag</td><td>CRON_SECRET</td></tr>
+      <tr data-f><td>GET /api/admin/sync-status · template-section-items</td><td>Ingestion monitoring · template editor data</td><td>admin</td></tr>
+      <tr data-f><td>GET /api/health/db · /api/auth/me · /api/test-error</td><td>Health (pgvector check) · current user · Sentry test</td><td>public/session</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Server-action domains (app/actions/)</h3>
+  <div class="cards">
+    <div class="card" data-f><h4>Compliance core</h4><ul>
+      <li><code>document-list.ts</code> (~25) — list/item/group CRUD, export</li>
+      <li><code>law-list-item-requirements.ts</code> — kravpunkter + evidence links</li>
+      <li><code>compliance-audit-{cycle,item,report,finding}.ts</code> — Epic 21: materialise items, bedömning, sign-off, spawnTaskForFinding, generateCycleReport</li>
+      <li><code>change-assessment.ts / change-events.ts</code> — ändringar workflow</li>
+      <li><code>law-list-import.ts</code> — Epic 24: createImport → parseImportFile → runMatching → commitImport → proposeGroupings · <code>catalog-ingest-request.ts</code></li>
+    </ul></div>
+    <div class="card" data-f><h4>Work &amp; documents</h4><ul>
+      <li><code>tasks.ts</code> (~30) + <code>task-modal.ts</code> — board, columns, bulk, CSV, workload</li>
+      <li><code>documents.ts</code> (~30) — dual-version lifecycle: autosave → draft → review → promote/discard; DOCX import</li>
+      <li><code>files.ts</code> (~35) — upload, extraction, folder tree, linking, bulk</li>
+      <li><code>template-adoption.ts</code> · <code>linked-artifacts.ts</code> · <code>prefetch-documents.ts</code> · <code>track-visit.ts</code></li>
+    </ul></div>
+    <div class="card" data-f><h4>AI &amp; chat</h4><ul>
+      <li><code>ai-chat.ts</code> — persistence, conversations, archive, search</li>
+      <li><code>pending-agent-actions.ts</code> — approve/reject, openDraftInEditor → finalize/reject, updateParams, expire</li>
+    </ul></div>
+    <div class="card" data-f><h4>Workspace, HR &amp; admin</h4><ul>
+      <li><code>workspace.ts / workspace-settings.ts / invitations.ts / onboarding-modal.ts / company-profile.ts / seats.ts / usage.ts / notifications.ts / auth.ts</code></li>
+      <li>HR: <code>employees.ts</code> · <code>collective-agreements.ts</code> (upload/bulk-assign)</li>
+      <li>Admin: <code>admin-{auth,cron,impersonate,templates,workspaces,document-lookup}.ts</code></li>
+      <li>Public data: <code>browse.ts / search.ts / cross-references.ts</code></li>
+    </ul></div>
+  </div>
+</section>
+
+<!-- ============ CRONS ============ -->
+<section id="crons">
+  <h2><span class="sec-eyebrow">06</span>Cron jobs — the heartbeat</h2>
+  <p class="secdesc">27 jobs: GET + Bearer CRON_SECRET, logged to <code>CronJobRun</code>, registered in <code>lib/admin/job-registry.ts</code>. No queue broker — background work = cron + DB status machines.</p>
+  <div class="dia"><div class="cap">The daily pipeline (UTC) — recurring jobs (hourly/10-min/1-min) in the table below</div>
+<pre class="mermaid">
+gantt
+  dateFormat HH:mm
+  axisFormat %H:%M
+  section Lifecycle
+  expire-trials           :00:30, 20m
+  cleanup-invitations     :02:00, 20m
+  expire-pending-actions  :03:00, 20m
+  cleanup-workspaces      :06:00, 20m
+  section Discover
+  discover-skolfs-changes :06:00, 30m
+  discover-sfs-amendments x2 :10:00, 195m
+  process-sfs-amendments hourly :00:20, 30m
+  sfs-pipeline-health     :07:30, 15m
+  section Notify
+  notify-amendment-changes :07:00, 30m
+  notify-task-deadlines    :07:10, 20m
+  section Sync
+  sync-sfs-updates        :15:00, 40m
+  sync-sfs                :16:00, 40m
+  refresh-sitemap         :16:30, 15m
+  prewarm-cache           :17:00, 15m
+  warm-cache              :17:15, 15m
+  section Ops
+  daily-ops-digest        :21:00, 20m
+</pre></div>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Schedule (UTC)</th><th>Job</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr data-f><td>0 16 daily</td><td>sync-sfs</td><td>Insert newest SFS laws from Riksdagen (≤20/run, early-exit after 20 consecutive existing)</td></tr>
+      <tr data-f><td>0 15 daily</td><td>sync-sfs-updates</td><td>Diff existing laws (48h lookback) → DocumentVersion + ChangeEvent + Amendment</td></tr>
+      <tr data-f><td>0 10,13 (2×)</td><td>discover-sfs-amendments</td><td>Discovery ONLY (2026-07 split): crawl SFS index → create PENDING AmendmentDocument incrementally per page (fetch timeouts, deadline guard)</td></tr>
+      <tr data-f><td>20 * hourly</td><td>process-sfs-amendments</td><td>Drain PENDING/FAILED amendments via lib/sfs/amendment-processor (PDF → Claude Sonnet → SectionChange + ChangeEvent); atomic PROCESSING claims, per-record budget guard, LLM timeout; maxDuration 800</td></tr>
+      <tr data-f><td>30 7 daily</td><td>sfs-pipeline-health</td><td>Watchdog: sweep zombie RUNNING cron runs → FAILED, official SFS register vs DB coverage, backlog age, last-success recency; alerts by email only when unhealthy</td></tr>
+      <tr data-f><td>0 6 daily</td><td>discover-skolfs-changes</td><td>Skolverket API state-diff → ChangeEvents</td></tr>
+      <tr data-f><td>0 * hourly</td><td>process-chunks</td><td>Self-healing RAG: chunk + embed anything missing/stale (≤50 docs)</td></tr>
+      <tr data-f><td>*/10</td><td>extract-files</td><td>Uploaded-file text extraction → RAG ingestion (cost-estimated)</td></tr>
+      <tr data-f><td>* every min</td><td>sweep-draft-reindex</td><td>Reindex dirty styrdokument after 60s debounce</td></tr>
+      <tr data-f><td>30 * hourly</td><td>enrich-amendment-summaries</td><td>AI summaries for amendments lacking them (Anthropic)</td></tr>
+      <tr data-f><td>0 7 / 10 7 / 0 7 Mon</td><td>notify-amendment-changes · notify-task-deadlines · notify-weekly-digest</td><td>Digest emails + in-app notifications</td></tr>
+      <tr data-f><td>0 6 Sun / 0 4 Sun</td><td>retry-failed-pdfs · reset-usage-safety</td><td>PDF retries · stale usage-counter backstop (&gt;35d)</td></tr>
+      <tr data-f><td>0 21 daily</td><td>daily-ops-digest</td><td>Pipeline health + SFS-gap detection email</td></tr>
+      <tr data-f><td>30 0 / 0 3 / 0 2 / 0 6</td><td>expire-trials · expire-pending-actions · cleanup-invitations · cleanup-workspaces</td><td>Lifecycle hygiene (trials, 7d proposals, invites, 30d soft-deletes)</td></tr>
+      <tr data-f><td>0 3 1st / 0 9 Mon</td><td>aggregate-costs · unit-economics-report</td><td>Monthly WorkspaceCost rollup · weekly founder margin email</td></tr>
+      <tr data-f><td>(manual)</td><td>generate-summaries</td><td>AI change-event summaries; admin triggerJob only</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============ DATA ============ -->
+<section id="data">
+  <h2><span class="sec-eyebrow">07</span>Data model — entity relationships</h2>
+  <p class="secdesc"><code>prisma/schema.prisma</code>: 65 models, 57 enums. Two worlds — the global legal catalog (no workspace_id) and the tenant world rooted at Workspace. Split across three ER diagrams.</p>
+
+  <div class="dia"><div class="cap">ER 1 · Tenant compliance core</div>
+<pre class="mermaid">
+erDiagram
+  USER ||--o{ WORKSPACE_MEMBER : ""
+  WORKSPACE ||--o{ WORKSPACE_MEMBER : "role: OWNER ADMIN HR_MANAGER MEMBER AUDITOR"
+  WORKSPACE ||--|| COMPANY_PROFILE : "SNI, activity_flags, certs"
+  WORKSPACE ||--o{ WORKSPACE_INVITATION : "token, TTL"
+  WORKSPACE ||--o{ LAW_LIST : ""
+  LAW_LIST ||--o{ LAW_LIST_GROUP : ""
+  LAW_LIST ||--o{ LAW_LIST_ITEM : ""
+  LAW_LIST_ITEM }o--|| LEGAL_DOCUMENT : "unique(list,doc)"
+  LAW_LIST_ITEM ||--o{ REQUIREMENT : "kravpunkter"
+  REQUIREMENT ||--o{ EVIDENCE_LINK : ""
+  EVIDENCE_LINK }o--o| WORKSPACE_FILE : "XOR"
+  EVIDENCE_LINK }o--o| WORKSPACE_DOCUMENT : "XOR"
+  LAW_LIST_ITEM ||--o{ CHANGE_ASSESSMENT : ""
+  CHANGE_ASSESSMENT }o--|| CHANGE_EVENT : ""
+  LAW_LIST_ITEM ||--o{ COMPLIANCE_STATUS_LOG : "audit trail"
+  WORKSPACE ||--o{ TASK_COLUMN : "max 8"
+  TASK_COLUMN ||--o{ TASK : ""
+  TASK }o--o{ LAW_LIST_ITEM : "TaskListItemLink"
+  TASK ||--o{ COMMENT : "threaded 3-level, mentions"
+  TASK }o--o{ WORKSPACE_FILE : "FileTaskLink"
+  TASK }o--o{ WORKSPACE_DOCUMENT : "DocTaskLink"
+  WORKSPACE ||--o{ WORKSPACE_FILE : "folder tree, sha256"
+  WORKSPACE ||--o{ WORKSPACE_DOCUMENT : "styrdokument"
+  WORKSPACE_DOCUMENT ||--o{ WORKSPACE_DOCUMENT_VERSION : "immutable, Tiptap JSON"
+  LAW_LIST ||--o{ AUDIT_CYCLE : "Epic 21"
+  AUDIT_CYCLE ||--o{ AUDIT_ITEM : "bedömning + snapshot"
+  AUDIT_ITEM }o--|| LAW_LIST_ITEM : ""
+  AUDIT_CYCLE ||--o{ FINDING : "AVVIKELSE OBSERVATION FORBATTRING"
+  FINDING |o--o| TASK : "corrective action"
+  AUDIT_CYCLE ||--o{ AUDIT_REPORT : "sealed PDF + manifest"
+  AUDIT_CYCLE }o--o{ TASK : "CycleTaskLink"
+  LAW_LIST_ITEM {
+    enum compliance_status "EJ_PABORJAD PAGAENDE UPPFYLLD EJ_UPPFYLLD EJ_TILLAMPLIG"
+    text business_context
+    text compliance_narrative
+    enum source "ONBOARDING MANUAL IMPORT TEMPLATE"
+    date last_change_acknowledged_at
+  }
+  WORKSPACE_DOCUMENT {
+    uuid current_approved_version_id
+    uuid current_draft_version_id
+    enum status "DRAFT IN_REVIEW APPROVED SUPERSEDED ARCHIVED"
+    bool needs_reindex
+  }
+</pre></div>
+
+  <div class="dia"><div class="cap">ER 2 · Global legal catalog &amp; change tracking</div>
+<pre class="mermaid">
+erDiagram
+  LEGAL_DOCUMENT ||--o| COURT_CASE : "1:1 ext"
+  LEGAL_DOCUMENT ||--o| EU_DOCUMENT : "1:1 ext, CELEX"
+  LEGAL_DOCUMENT ||--o{ CROSS_REFERENCE : "cites implements amends"
+  LEGAL_DOCUMENT ||--o{ DOCUMENT_SUBJECT : "taxonomy"
+  LEGAL_DOCUMENT ||--o{ LAW_SECTION : "per kapitel/paragraf"
+  LEGAL_DOCUMENT ||--o{ LEGISLATIVE_REF : "prop bet rskr SOU DS"
+  LEGAL_DOCUMENT ||--o{ DOCUMENT_VERSION : "full-text snapshots"
+  LEGAL_DOCUMENT ||--o{ AMENDMENT : "base law"
+  AMENDMENT }o--o| LEGAL_DOCUMENT : "amending law"
+  AMENDMENT_DOCUMENT ||--o{ SECTION_CHANGE : "AMENDED REPEALED NEW RENUMBERED"
+  LEGAL_DOCUMENT ||--o{ CHANGE_EVENT : "notification spine"
+  LEGAL_DOCUMENT ||--o| DOCUMENT_VISIT : "hot-path counter"
+  LAW_LIST_TEMPLATE ||--o{ TEMPLATE_SECTION : ""
+  TEMPLATE_SECTION ||--o{ TEMPLATE_ITEM : "editorial commentary"
+  TEMPLATE_ITEM }o--|| LEGAL_DOCUMENT : ""
+  LEGAL_DOCUMENT {
+    enum content_type "SFS_LAW SFS_AMENDMENT COURT_CASE_x EU_REG EU_DIR AGENCY_REG"
+    string document_number "unique, SFS 1977:1160"
+    text html_content "SSOT"
+    text markdown_content "for RAG"
+    tsvector search_vector
+    string last_change_ref
+  }
+  CHANGE_EVENT {
+    enum change_type "NEW_LAW AMENDMENT REPEAL METADATA NEW_RULING UPCOMING"
+    text ai_summary
+    bool notification_sent
+  }
+</pre></div>
+
+  <div class="dia"><div class="cap">ER 3 · AI, RAG, HR &amp; import</div>
+<pre class="mermaid">
+erDiagram
+  WORKSPACE ||--o{ CHAT_MESSAGE : ""
+  CHAT_MESSAGE ||--o{ PENDING_AGENT_ACTION : "approval cards"
+  WORKSPACE ||--o{ CHAT_USAGE_EVENT : "tokens + cost per turn"
+  WORKSPACE ||--o{ AGENT_DECISION_LOG : "one row per tool call"
+  CONTENT_CHUNK }o--o| WORKSPACE : "null = global corpus"
+  WORKSPACE ||--|| WORKSPACE_USAGE : "BigInt token counter"
+  WORKSPACE ||--o{ WORKSPACE_COST : "monthly unit economics"
+  WORKSPACE ||--o{ EMPLOYEE : "Fortnox-shaped"
+  EMPLOYEE }o--o| EMPLOYEE_GROUP : ""
+  EMPLOYEE }o--o| COLLECTIVE_AGREEMENT : "assigned avtal"
+  EMPLOYEE }o--o| EMPLOYEE : "manager"
+  COLLECTIVE_AGREEMENT }o--o| WORKSPACE_FILE : "uploaded PDF"
+  WORKSPACE ||--o{ LAW_LIST_IMPORT : "Epic 24"
+  LAW_LIST_IMPORT ||--o{ IMPORT_ROW : "LLM match reasoning"
+  IMPORT_ROW }o--o| LEGAL_DOCUMENT : "matched"
+  IMPORT_ROW ||--o| CATALOG_INGEST_REQUEST : "missing from catalog"
+  CONTENT_CHUNK {
+    enum source_type "LEGAL_DOCUMENT USER_FILE CONVERSATION ASSESSMENT WORKSPACE_DOCUMENT COLLECTIVE_AGREEMENT"
+    text context_prefix "Haiku-generated"
+    vector embedding "1536d HNSW cosine"
+    enum content_role "STYCKE ALLMANT_RAD TABLE ..."
+  }
+  PENDING_AGENT_ACTION {
+    enum action_type "14 types"
+    enum status "PENDING APPROVED REJECTED EXPIRED IN_EDITOR"
+    json params "editable snapshot"
+    date expires_at "now + 7d"
+  }
+  EMPLOYEE {
+    string personnummer "AES-256-GCM"
+    string monthly_salary "encrypted"
+    enum personel_type "TJM ARB"
+  }
+</pre></div>
+  <div class="note" data-f><b>Raw SQL facts:</b> RLS enabled default-deny on every table with zero policies (tripwire for leaked anon key; Prisma connects as postgres/BYPASSRLS). pg_trgm GIN on <code>legal_documents.title</code> powers import matching. <code>legal_documents.embedding</code> exists but semantic search runs on ContentChunk only. No DB triggers/functions — everything is application code.</div>
+</section>
+
+<!-- ============ LIFECYCLES ============ -->
+<section id="lifecycles">
+  <h2><span class="sec-eyebrow">08</span>State machines</h2>
+  <div class="dia"><div class="cap">Styrdokument dual-version lifecycle (Epic 17)</div>
+<pre class="mermaid">
+stateDiagram-v2
+  [*] --> DRAFT : createDocument / adopt template / agent draft approved
+  DRAFT --> IN_REVIEW : submitDraftForReview
+  IN_REVIEW --> DRAFT : back to draft
+  IN_REVIEW --> APPROVED : promoteDraftToApproved
+  DRAFT --> APPROVED : promoteDraftToApproved
+  APPROVED --> DRAFT : new draft (dual pointers, approved stays live)
+  APPROVED --> SUPERSEDED : replaced
+  APPROVED --> ARCHIVED : retired
+  note right of APPROVED : current_approved_version_id + current_draft_version_id coexist. Every save marks needs_reindex → sweep cron re-embeds.
+</pre></div>
+  <div class="dia"><div class="cap">PendingAgentAction — human-in-the-loop writes</div>
+<pre class="mermaid">
+stateDiagram-v2
+  [*] --> PENDING : write tool called mid-stream
+  PENDING --> APPROVED : approvePendingAction → executes for real
+  PENDING --> REJECTED : rejectPendingAction
+  PENDING --> IN_EDITOR : openDraftInEditor (draft_styrdokument)
+  IN_EDITOR --> APPROVED : finalizeDraftFromEditor
+  IN_EDITOR --> REJECTED : rejectDraftFromEditor
+  PENDING --> EXPIRED : 7d TTL (expire-pending-actions cron)
+  note right of PENDING : Params are an editable snapshot — user can adjust before approving. State fed back to the model each turn.
+</pre></div>
+  <div class="dia"><div class="cap">Audit cycle (Epic 21) &amp; law-list import (Epic 24)</div>
+<pre class="mermaid">
+stateDiagram-v2
+  state "ComplianceAuditCycle" as C {
+    [*] --> PLANERAD : wizard (scope + cutoff date)
+    PLANERAD --> PAGAENDE : start → materialiseCycleItems
+    PAGAENDE --> AVSLUTAD : completeCycle → sealed_at + report PDF
+    AVSLUTAD --> [*]
+  }
+  state "LawListImport" as I {
+    [*] --> UPLOADED : xlsx/csv/paste
+    UPLOADED --> MATCHING : parse + column mapping
+    MATCHING --> AWAITING_REVIEW : LLM matcher + confidence
+    AWAITING_REVIEW --> COMMITTED : commitImport → LawList
+    MATCHING --> FAILED
+    AWAITING_REVIEW --> [*] : rows may spawn CatalogIngestRequest
+  }
+</pre></div>
+  <div class="dia"><div class="cap">ChangeEvent → workspace reaction</div>
+<pre class="mermaid">
+flowchart LR
+  CE["ChangeEvent<br/>(from sync/discover crons)"] --> SUM["ai_summary<br/>(summary crons)"]
+  CE --> NOTIF["notify-amendment-changes 07:00<br/>per-workspace digest + in-app"]
+  NOTIF --> HEM["Hem ?changeId deep-link<br/>+ Ändringar tab"]
+  HEM --> ASSESS["ChangeAssessment<br/>REVIEWED · ACTION_REQUIRED ·<br/>NOT_APPLICABLE · DEFERRED"]
+  ASSESS --> STAT["update compliance status<br/>(logged in ComplianceStatusLog)"]
+  ASSESS --> TASKS["spawn tasks"]
+  ASSESS -.->|"agent skill assess_change<br/>+ save_assessment tool"| ASSESS
+</pre></div>
+</section>
+
+<!-- ============ AI ============ -->
+<section id="ai">
+  <h2><span class="sec-eyebrow">09</span>AI chat &amp; RAG</h2>
+  <p class="secdesc">One entrypoint, agentic retrieval (the model decides when to search — nothing is pre-injected), human-in-the-loop writes.</p>
+  <div class="dia"><div class="cap">A chat turn, end to end</div>
+<pre class="mermaid">
+sequenceDiagram
+  autonumber
+  actor U as User
+  participant C as POST /api/chat
+  participant Q as Gates
+  participant M as Claude Sonnet 4.6
+  participant T as Tool registry (41)
+  participant V as pgvector + Cohere
+  participant DB as Prisma
+  U->>C: messages + contextType + attachments
+  C->>Q: session · role · rate limit (10/min) · token quota
+  Q-->>C: ok (or 402 at 2x cap)
+  C->>DB: preallocate assistant message stub (FK for actions)
+  C->>M: streamText: system-prompt.md + company/employee ctx + pending-actions block + skill · 3 cache breakpoints · adaptive thinking · max 10 steps
+  loop Agentic loop
+    M->>T: search_laws("semester vid uppsägning")
+    T->>V: embed (OpenAI) → HNSW cosine ×4 over-fetch → Rerank v4
+    V-->>M: ranked chunks + citation keys
+    M->>T: get_law_list_item / list_bevis_gaps / ...
+    M->>T: create_task (write)
+    T->>DB: PendingAgentAction (PENDING) — not executed
+    T->>DB: AgentDecisionLog (every call)
+  end
+  M-->>U: stream: text + [Källa:] cite pills + reasoning + action cards
+  C->>DB: onFinish: fill stub · metadata · ChatUsageEvent + WorkspaceUsage (1 tx)
+  U->>DB: approve/reject action cards (server actions)
+</pre></div>
+
+  <div class="cards">
+    <div class="card" data-f><h4>Skills system</h4>
+      <ul>
+        <li>File-based bundles (SKILL/PROCEDURE/CRITERIA/STYLE.md) compiled to a build-time manifest — runtime is fs-free</li>
+        <li><b>draft_styrdokument</b> · <b>assess_change</b> (whitelists save_assessment) · <b>gap_analysis</b> · headless <b>generate-law-list</b> (onboarding, 800s route, own tool pair)</li>
+        <li>Skills set the primary prompt + narrow the tool whitelist; <code>activate_skill</code> loads another mid-conversation</li>
+      </ul>
+    </div>
+    <div class="card" data-f><h4>Provider strategy</h4>
+      <ul>
+        <li><code>AI_CHAT_MODEL</code> env: Anthropic default (prompt caching + adaptive thinking + web_search w/ Swedish legal domain whitelist) vs OpenAI gpt-4-turbo fallback path</li>
+        <li>Cache breakpoints: system/tools · stable history · moving loop; cache tokens discounted in usage accounting</li>
+        <li>Cost per turn → ChatUsageEvent (input/output/cache/reasoning tokens, USD estimate)</li>
+      </ul>
+    </div>
+    <div class="card" data-f><h4>Retrieval internals</h4>
+      <ul>
+        <li><code>lib/agent/retrieval.ts</code>: SET LOCAL hnsw.ef_search=100 · over-fetch 4× · workspace-scoped · source/content-type filters · REPEALED excluded</li>
+        <li>Chunk text = contextual_header + Haiku context_prefix + content</li>
+        <li><code>legal-ref-detector.ts</code> spots SFS numbers + kapitel/§ refs in queries for targeted retrieval</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TOOLS ============ -->
+<section id="tools">
+  <h2><span class="sec-eyebrow">10</span>Agent tools — the complete registry</h2>
+  <p class="secdesc">41 tools. <code>createAgentTools()</code> builds the registry per request, closing over workspace + user. Filtering: role (AUDITOR loses all writes; employee tools permission-gated) → skill whitelist (only <code>save_assessment</code> is skill-gated today; new tools are always-available by default) → every invocation logged to <code>AgentDecisionLog</code>.</p>
+
+  <div class="dia"><div class="cap">Tool gating pipeline</div>
+<pre class="mermaid">
+flowchart LR
+  REG["TOOL_REGISTRY_POLICY<br/>25 read · 14 write"] --> ROLE{"role filter"}
+  ROLE -- "AUDITOR" --> RO["reads only"]
+  ROLE -- "employees:view" --> LE["+ lookup_employee"]
+  ROLE -- "employees:manage" --> SAL["+ get_employee_salary"]
+  ROLE --> SKILL{"skill whitelist"}
+  SKILL -- "assess_change active" --> SA["+ save_assessment"]
+  SKILL --> FINAL["session registry"]
+  WEB["web_search<br/>route-injected, non-AUDITOR<br/>Swedish legal domains"] --> FINAL
+  FINAL --> LOG["every call → AgentDecisionLog<br/>writes → PendingAgentAction"]
+</pre></div>
+
+  <h3>Read tools — always available (22)</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Tool</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr data-f><td>search_laws</td><td>Semantic search over the whole legal corpus (the RAG entry point). Returns cited chunks</td></tr>
+      <tr data-f><td>search_workspace_files</td><td>Semantic search over the workspace's own uploaded files (policies, avtal, evidence PDFs, spreadsheets)</td></tr>
+      <tr data-f><td>search_collective_agreements</td><td>Semantic search over uploaded kollektivavtal (Story 7.7 — biases toward the employee's assigned agreement)</td></tr>
+      <tr data-f><td>search_workspace_documents</td><td>Semantic search over the workspace's styrdokument (policies, rutiner, riskbedömningar)</td></tr>
+      <tr data-f><td>search_law_list_items</td><td>Find a law-list item by law name or SFS number</td></tr>
+      <tr data-f><td>search_tasks</td><td>Search workspace tasks by title</td></tr>
+      <tr data-f><td>read_file</td><td>Read an ENTIRE workspace file by fileId (not just retrieval excerpts)</td></tr>
+      <tr data-f><td>get_law_list_item</td><td>An item's real compliance state: status, business context, "how do we comply" narrative, status history, kravpunkter with evidence counts, past assessments, linked tasks/documents</td></tr>
+      <tr data-f><td>get_task</td><td>Task detail: title, column, priority, assignee, dates, truncated comments, handles to linked items/files/finding</td></tr>
+      <tr data-f><td>get_workspace_document</td><td>Full content + metadata of one styrdokument</td></tr>
+      <tr data-f><td>list_workspace_documents</td><td>List styrdokument, filterable by type, status, dual-state, or linkage to a task/item</td></tr>
+      <tr data-f><td>list_linked_artifacts</td><td>All files + styrdokument connected to a law-list item — directly, as kravpunkt evidence, or via linked tasks</td></tr>
+      <tr data-f><td>list_cycles</td><td>Audit cycles overview: type, status, period, cutoff date, scope, progress, open/closed findings. "0 cycles" is itself a key auditor answer</td></tr>
+      <tr data-f><td>get_cycle</td><td>One cycle's full state: progress, truncated item rows with bedömning, findings, reports, linked tasks</td></tr>
+      <tr data-f><td>get_finding</td><td>One finding: type, severity, root cause, due date, closure metadata, handles to cycle/item/kravpunkt/corrective task</td></tr>
+      <tr data-f><td>list_bevis_gaps</td><td>Kravpunkter that require evidence but have none — workspace-wide prioritization</td></tr>
+      <tr data-f><td>list_unassessed_changes</td><td>Law changes on watched laws still lacking an assessment (counted per change × list)</td></tr>
+      <tr data-f><td>list_overdue</td><td>Overdue tasks (due date passed, not in a done column), most overdue first</td></tr>
+      <tr data-f><td>list_stale_documents</td><td>Styrdokument past their review_date (retired docs excluded)</td></tr>
+      <tr data-f><td>get_document_details</td><td>Full detail for a legal document by ID or document number</td></tr>
+      <tr data-f><td>get_change_details</td><td>Section-level old/new text for a change event</td></tr>
+      <tr data-f><td>get_company_context</td><td>Company profile + compliance posture (feeds tailored answers)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Read tools — conditional (5)</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Tool</th><th>Gate</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr data-f><td>lookup_employee</td><td>employees:view</td><td>Find an employee by name (case-insensitive substring on first/last name)</td></tr>
+      <tr data-f><td>get_employee_salary</td><td>employees:manage</td><td>One employee's compensation — for kollektivavtal salary-compliance checks (stricter gate than lookup)</td></tr>
+      <tr data-f><td>web_search</td><td>non-AUDITOR (route-injected)</td><td>Anthropic web search restricted to a Swedish legal domain whitelist</td></tr>
+      <tr data-f><td>suggest_followups</td><td>always (UX helper)</td><td>Propose follow-up question chips after a change assessment</td></tr>
+      <tr data-f><td>activate_skill</td><td>always</td><td>Load a different skill's full instructions mid-conversation</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Write tools — all produce PendingAgentAction approval cards (14)</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Tool</th><th>Proposes</th></tr></thead>
+    <tbody>
+      <tr data-f><td>create_task</td><td>A new task (title, description, column, priority, due date, assignee)</td></tr>
+      <tr data-f><td>assign_task</td><td>Reassigning an existing task to a workspace member</td></tr>
+      <tr data-f><td>add_task_comment</td><td>A comment on a task (e.g. the agent's assessment where the assignee sees it)</td></tr>
+      <tr data-f><td>update_compliance_status</td><td>Changing a law-list item's compliance status (transition logged)</td></tr>
+      <tr data-f><td>add_obligation</td><td>A new kravpunkt (specific requirement) on a watched law</td></tr>
+      <tr data-f><td>update_requirement</td><td>Editing an existing kravpunkt (text, fulfilled, bevis_required, responsible)</td></tr>
+      <tr data-f><td>add_context_note</td><td>A business-context note explaining why a law is relevant to this company</td></tr>
+      <tr data-f><td>save_assessment</td><td>Persisting a ChangeAssessment (status + impact + notes) — <b>skill-gated to assess_change</b> (needs a changeEventId)</td></tr>
+      <tr data-f><td>draft_styrdokument</td><td>A complete new governing document (policy, rutin, riskbedömning…) — can open IN_EDITOR for review before approval</td></tr>
+      <tr data-f><td>update_document</td><td>Editing a specific section of an existing styrdokument and/or renaming it (Story 17.11)</td></tr>
+      <tr data-f><td>add_document_section</td><td>Inserting a NEW section into an existing styrdokument (Story 17.11b)</td></tr>
+      <tr data-f><td>transition_document_status</td><td>A styrdokument status transition (Draft → In review, back to Draft, Superseded, Archived)</td></tr>
+      <tr data-f><td>link_task_to_document</td><td>Linking an existing task to a styrdokument</td></tr>
+      <tr data-f><td>link_document_to_task</td><td>Linking an existing styrdokument to a task</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Headless-only tools — generate-law-list skill (2)</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Tool</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr data-f><td>get_template_laws</td><td>Fetch curated law recommendations for a regulatory area from expert templates (the floor, not the ceiling)</td></tr>
+      <tr data-f><td>add_laws_to_list</td><td>Bulk-add laws to the workspace law list with grouping + tailored business context (dedupes; only accepts real documentIds)</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note" data-f><b>Registry mechanics</b> (<span class="path">lib/agent/tools/index.ts</span>): <code>TOOL_REGISTRY_POLICY</code> maps every tool to read|write tier. <code>ALWAYS_AVAILABLE</code> = all tools minus web_search (route-injected) minus <code>SKILL_GATED_TOOLS</code> ({save_assessment}). A newly added tool is always-available by default. Shared helpers: <code>reader-utils.ts</code>, <code>pending-action.ts</code> (card factory), <code>decision-log.ts</code>, <code>types.ts</code>, <code>utils.ts</code>.</div>
+</section>
+
+<!-- ============ INGESTION ============ -->
+<section id="ingestion">
+  <h2><span class="sec-eyebrow">11</span>Legal corpus ingestion</h2>
+  <div class="dia"><div class="cap">SFS laws — the primary corpus</div>
+<pre class="mermaid">
+flowchart LR
+  RK["Riksdagen API<br/>5 req/s limit"] --> FETCH["fetch list + HTML/text<br/>sync-sfs 16:00 · updates 15:00"]
+  FETCH --> CLEAN["clean-law-html<br/>+ sfs-law-normalizer"]
+  CLEAN --> CANON["canonical-html-parser<br/>→ CanonicalDocumentJson"]
+  CANON --> MD["html-to-markdown"]
+  MD --> LINK["linkify cross-refs"]
+  LINK --> TX[("transaction:<br/>LegalDocument + DocumentVersion<br/>+ ChangeEvent · PDF → Storage")]
+  TX --> CHUNK["chunk-document<br/>tier 1: one chunk per §<br/>tier 2: övergångsbest./bilagor ~800 tok<br/>tier 3: markdown fallback (&lt;60% coverage)"]
+  CHUNK --> PFX["Haiku context prefix<br/>≤100 chunks/call · sv ~3 chars/token"]
+  PFX --> EMB["OpenAI embed 1536d<br/>≤100/batch + degradation ladder"]
+  EMB --> VEC[("content_chunks<br/>pgvector HNSW · ≤50 rows/insert")]
+  TX --> ESI[("Elasticsearch<br/>laglig_documents")]
+</pre></div>
+  <div class="dia"><div class="cap">Amendments — Claude reads the PDFs</div>
+<pre class="mermaid">
+flowchart LR
+  IDX["svenskforfattningssamling.se<br/>year index crawl 10-13h ×4"] --> CLS{"classify title regex"}
+  CLS -- "amendment / repeal / new" --> BASE["extract base_law_sfs<br/>(~90 named-law table, chained refs)"]
+  BASE --> PEND[("AmendmentDocument PENDING<br/>knownNumbers set re-surfaces gaps")]
+  PEND --> PDF["PDF → Supabase Storage"]
+  PDF --> LLM["Claude Sonnet vision<br/>PDF-direct → semantic HTML<br/>+ validate + normalize"]
+  LLM --> SC[("SectionChange rows<br/>+ effective date + prop context")]
+  SC --> LDOC["LegalDocument (browsable amendment)"]
+  SC --> CE2["ChangeEvent (deduped)"]
+  CE2 --> NOT["07:00 digests → workspaces"]
+  LLM -- fail --> RETRY["FAILED → retried next run"]
+</pre></div>
+  <div class="cards">
+    <div class="card" data-f><h4>Other corpora</h4>
+      <ul>
+        <li><b>EU</b> — EUR-Lex SPARQL/Cellar (~60K regulations, ~4.7K directives), eu-html-transformer, NIM cross-refs to Swedish implementations</li>
+        <li><b>AFS</b> — cheerio scrape of av.se consolidated text; <b>SKOLFS</b> — Skolverket statute API + per-doc baseline diff; <b>agency PDFs</b> (MSBFS, NFS, SOSFS…) — PDF → Claude HTML via 105KB registry</li>
+        <li><b>Court cases</b> — Domstolsverket rättspraxis; <b>workspace files &amp; kollektivavtal</b> — extract cron → USER_FILE / COLLECTIVE_AGREEMENT chunks</li>
+      </ul>
+    </div>
+    <div class="card" data-f><h4>Self-healing &amp; guarantees</h4>
+      <ul>
+        <li><code>process-chunks</code> hourly: re-chunk/re-embed anything with no chunks, stale chunks, or NULL embeddings</li>
+        <li>Prefixes best-effort, <b>embeddings guaranteed</b> (a Haiku failure once left 24K chunks of 76 laws invisible — never again)</li>
+        <li>Version reconstruction: any law's text at any date from LawSection + SectionChange (powers /historik + diff APIs)</li>
+      </ul>
+    </div>
+    <div class="card" data-f><h4>scripts/ (~470 files)</h4>
+      <ul>
+        <li>Bulk ingest (<code>ingest-*</code> 17), sync/backfill (<code>sync-*</code>, <code>backfill-*</code> 18), amendment tooling, Anthropic <b>Batch API</b> pipeline (prepare/submit/process — 50% off bulk conversions)</li>
+        <li>~150 diagnostics (<code>check/verify/debug/investigate-*</code>), demo seeds (7 industries), screenshot rigs, index SQL</li>
+        <li><code>generate-embeddings.ts</code> — 2-phase Haiku prefix + OpenAI embed with Batch mode</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PLATFORM ============ -->
+<section id="platform">
+  <h2><span class="sec-eyebrow">12</span>Auth, billing &amp; platform</h2>
+  <div class="cards">
+    <div class="card" data-f><h4>Billing &amp; quotas</h4>
+      <ul>
+        <li>Tiers: TRIAL/SOLO (1 user · 3M tokens · 1GB) · TEAM (3 · 9M · 5GB, +addon seat = +1 user +1.5M) · ENTERPRISE (sales-led, unlimited/100GB)</li>
+        <li><code>lib/usage/limits.ts</code> = SSOT; soft warn 80%, hard cap 2× → HTTP 402</li>
+        <li>Stripe webhook idempotent via event ledger; usage reset rides the subscription-updated transaction; 3-day payment grace</li>
+        <li>Unit economics: monthly WorkspaceCost rollup + weekly founder email</li>
+      </ul>
+    </div>
+    <div class="card" data-f><h4>Caching layers</h4>
+      <ul>
+        <li>Upstash Redis (no-op fallback): auth context (5min), seats, browse, company preview, rate limits</li>
+        <li>Next unstable_cache + tags; invalidation via /api/internal/invalidate-cache; startup warming + post-sync prewarm crons; middleware JWT memory-cache 60s</li>
+      </ul>
+    </div>
+    <div class="card" data-f><h4>Security &amp; PII</h4>
+      <ul>
+        <li>CSP + HSTS + frame-deny; RLS default-deny tripwire</li>
+        <li>Personnummer + salaries AES-256-GCM (<code>lib/crypto/field-encryption.ts</code>)</li>
+        <li>workspace_id hard predicate on every workspace chunk write; HMAC unsubscribe tokens; enumeration-safe signup</li>
+      </ul>
+    </div>
+    <div class="card" data-f><h4>Observability &amp; testing</h4>
+      <ul>
+        <li>Sentry client/server/edge (replay + traces); CronJobRun history in /admin/cron-jobs</li>
+        <li>Vitest ~329 unit/integration (integration single-fork vs staging DB); Playwright ~39 e2e (authed project via stored state)</li>
+        <li>Daily ops digest + SFS gap detection</li>
+      </ul>
+    </div>
+    <div class="card" data-f><h4>Typed env (lib/env.ts)</h4>
+      <ul>
+        <li>T3 env validates DB, Supabase, NextAuth, Stripe (price-ID regex), admin at boot</li>
+        <li>Untyped but load-bearing: AI keys, COHERE_API_KEY (rerank degrades), ELASTICSEARCH_URL (PG fallback), CHROMIUM_PACK_URL (prod scope!), ENCRYPTION_KEY, CRON_SECRET, AI_CHAT_MODEL</li>
+      </ul>
+    </div>
+    <div class="card" data-f><h4>PDF export stack <span class="tag warn">fragile</span></h4>
+      <ul>
+        <li>puppeteer-core + @sparticuz/chromium-min, dynamic imports; prod downloads brotli pack from CHROMIUM_PACK_URL</li>
+        <li>Forced function tracing into rapport/pdf + document export routes; .npmrc node-linker=hoisted</li>
+        <li>react-pdf is the considered replacement — don't dismantle meanwhile</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ OPS ============ -->
+<section id="ops">
+  <h2><span class="sec-eyebrow">13</span>Ops gotchas — read before touching prod</h2>
+  <div class="note" data-f><b>Supavisor pooler is the #1 fragility.</b> Multi-MB insert statements × concurrency crash the pooler's tenant handler. Safe ingest profile: <code>connection_limit=1</code>, ≤50-row insert batches (enforced in <code>sync-document-chunks.ts</code>), breaker/watchdog. A wedged pool (ECHECKOUTTIMEOUT with idle DB) is fixed only by a dashboard project restart. Batch jobs must never use the prod transaction pooler.</div>
+  <div class="note" data-f><b>Migrations are manual.</b> Never apply DB migrations from the assistant/CI — hand the command to Alexander (<code>prisma migrate deploy</code>). DDL hangs = leaked idle-in-transaction connections; terminate them first. Never use the Supabase web editor for DDL.</div>
+  <div class="note" data-f><b>PDF export is fragile by design.</b> node-linker=hoisted + chromium-min + CHROMIUM_PACK_URL (must exist in the prod env scope) + forced function tracing.</div>
+  <div class="note" data-f><b>"draft_styrdokument failed" may be a quota cap.</b> Chat returns HTTP 402 at 2× the tier token cap — check <code>WorkspaceUsage.tokens_used_this_period</code> before debugging the skill.</div>
+  <div class="note" data-f><b>Canonical UI patterns.</b> Laglistor's DocumentListTable is the gold-standard table (don't migrate to shadcn). Safiro = titles/section labels only (font-medium, never faux-bold); GSF for content. Landing palette: warm ink/grays on cream, one sparing amber accent.</div>
+  <div class="note" data-f><b>Search vs semantics.</b> Full-text = Elasticsearch (PG ILIKE fallback). Semantic = ContentChunk pgvector only — <code>legal_documents.embedding</code> exists but is unused for search.</div>
+  <div class="note" data-f><b>Cron hard-kills are silent.</b> A job killed at maxDuration leaves a RUNNING zombie in CronJobRun and sends no failure email (the catch block never runs). Incident: <code>discover-sfs-amendments</code> hard-killed every run 2026-06-17→07-23 → amendments stale from 2026:1198. Fixed 2026-07-23: discovery/processing split into separate crons with budget guards, and <code>sfs-pipeline-health</code> (daily 07:30) sweeps zombies → FAILED and alerts on register-vs-DB staleness. Zombies in other jobs still surface via the same sweep.</div>
+
+  <footer>
+    Generated 2026-07-23 from a 7-explorer codebase sweep + tool-registry read · Sources: app/, lib/, prisma/schema.prisma, vercel.json, scripts/, content/ · Machine twin: <code>docs/app-map/app-map.json</code> · Regenerate both when architecture shifts.
+  </footer>
+</section>
+</main>
+</div>
+
+<script type="module">
+/* Local viewing: load Mermaid from CDN. Inside the Claude artifact the CSP blocks
+   this import and native mermaid rendering takes over — both paths render. */
+try {
+  const { default: mermaid } = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  mermaid.initialize({ startOnLoad: true, theme: dark ? 'dark' : 'neutral', securityLevel: 'loose',
+    themeVariables: dark ? { fontFamily: 'sans-serif' } : { fontFamily: 'sans-serif', primaryColor: '#f4e8d3', primaryBorderColor: '#a16a12', lineColor: '#6b665b' } });
+} catch (e) { /* CSP or offline: pre.mermaid renders natively (artifact) or stays readable as text */ }
+</script>
+<script>
+(function(){
+  var q=document.getElementById('q');
+  var items=[].slice.call(document.querySelectorAll('[data-f]'));
+  q.addEventListener('input',function(){
+    var v=q.value.trim().toLowerCase();
+    items.forEach(function(el){
+      el.classList.toggle('hidden', v!=='' && el.textContent.toLowerCase().indexOf(v)===-1);
+    });
+  });
+  var links=[].slice.call(document.querySelectorAll('nav a.item'));
+  var secs=links.map(function(a){return document.querySelector(a.getAttribute('href'))}).filter(Boolean);
+  function spy(){
+    var y=window.scrollY+120, cur=secs[0];
+    secs.forEach(function(s){ if(s.offsetTop<=y) cur=s; });
+    links.forEach(function(a){ a.classList.toggle('on', a.getAttribute('href')==='#'+cur.id); });
+  }
+  window.addEventListener('scroll',spy,{passive:true}); spy();
+})();
+</script>
+</body></html>

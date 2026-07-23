@@ -21,6 +21,10 @@ import { createSearchTasksTool } from './search-tasks'
 import { createGetLawListItemTool } from './get-law-list-item'
 import { createGetTaskTool } from './get-task'
 import { createListLinkedArtifactsTool } from './list-linked-artifacts'
+// Story 29.1: cycle read tier over Epic 21's lagefterlevnadskontroll models.
+import { createListCyclesTool } from './list-cycles'
+import { createGetCycleTool } from './get-cycle'
+import { createGetFindingTool } from './get-finding'
 // Story 19.3: workspace-wide diagnostic aggregates (gap detection).
 import { createListBevisGapsTool } from './list-bevis-gaps'
 import { createListUnassessedChangesTool } from './list-unassessed-changes'
@@ -133,6 +137,9 @@ type ToolName =
   | 'get_law_list_item'
   | 'get_task'
   | 'list_linked_artifacts'
+  | 'list_cycles'
+  | 'get_cycle'
+  | 'get_finding'
   | 'list_bevis_gaps'
   | 'list_unassessed_changes'
   | 'list_overdue'
@@ -180,6 +187,10 @@ export const TOOL_REGISTRY_POLICY = {
   get_law_list_item: 'read',
   get_task: 'read',
   list_linked_artifacts: 'read',
+  // Story 29.1: cycle read tier — AUDITOR keeps all three automatically.
+  list_cycles: 'read',
+  get_cycle: 'read',
+  get_finding: 'read',
   list_bevis_gaps: 'read',
   list_unassessed_changes: 'read',
   list_overdue: 'read',
@@ -285,6 +296,11 @@ export function createAgentTools(
       writeContext
     ),
     get_task: createGetTaskTool(workspaceId, writeContext),
+    // Story 29.1: cycle read tier — readers take workspaceId only (all ids are
+    // explicit args; no CYCLE chat context exists until Story 29.5).
+    list_cycles: createListCyclesTool(workspaceId),
+    get_cycle: createGetCycleTool(workspaceId),
+    get_finding: createGetFindingTool(workspaceId),
     // Story 19.3: workspace-wide diagnostics — read-tier, no context needed
     // (aggregates with no entry-node id; scope is the closure workspaceId).
     list_bevis_gaps: createListBevisGapsTool(workspaceId),

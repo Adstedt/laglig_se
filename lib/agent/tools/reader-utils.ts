@@ -9,8 +9,13 @@ import {
   type PriorityValue,
 } from '@/lib/ui/badge-tones'
 import type {
+  AuditType,
   ChangeType,
+  ComplianceCycleStatus,
   ComplianceStatus,
+  EfterlevnadsBedomning,
+  FindingSeverity,
+  FindingType,
   ImpactLevel,
   WorkspaceDocumentStatus,
 } from '@prisma/client'
@@ -127,4 +132,125 @@ export function changeTypeLabel(
   value: ChangeType | null | undefined
 ): string | null {
   return value ? CHANGE_TYPE_LABELS[value] : null
+}
+
+// ---------------------------------------------------------------------------
+// Story 29.1: Epic 21 cycle-graph labels (list_cycles / get_cycle / get_finding).
+// Status/type/severity reuse the single source of truth in `lib/ui/badge-tones`;
+// audit-type + bedömning are small local maps mirroring the IMPACT_LEVEL_LABELS
+// precedent (the UI sources are `'use client'` / component-local constants).
+// ---------------------------------------------------------------------------
+
+/**
+ * Canonical Swedish label for a `ComplianceCycleStatus` (PLANERAD → "Planerad",
+ * PAGAENDE → "Pågående", AVSLUTAD → "Avslutad") — same labels as the cycle pills.
+ */
+export function cycleStatusLabel(
+  value: ComplianceCycleStatus | null | undefined
+): string | null {
+  return value ? getStatusBadgeProps('cycle-status', value).label : null
+}
+
+/**
+ * Canonical Swedish label for a `FindingType` (AVVIKELSE → "Avvikelse",
+ * OBSERVATION → "Observation", FORBATTRING → "Förbättringsförslag").
+ */
+export function findingTypeLabel(
+  value: FindingType | null | undefined
+): string | null {
+  return value ? getStatusBadgeProps('finding-type', value).label : null
+}
+
+/**
+ * Canonical Swedish label for a `FindingSeverity` (MAJOR → "Större",
+ * MINOR → "Mindre"). Null-tolerant — only AVVIKELSE findings carry a severity.
+ */
+export function findingSeverityLabel(
+  value: FindingSeverity | null | undefined
+): string | null {
+  return value ? getStatusBadgeProps('finding-severity', value).label : null
+}
+
+/**
+ * Swedish label for the `AuditType` enum. Mirrors the label derivation in
+ * `components/features/compliance-audit/cycle-detail/cycle-detail-header.tsx`
+ * (a `'use client'` component — can't be imported server-side).
+ */
+const AUDIT_TYPE_LABELS: Record<AuditType, string> = {
+  INTERN: 'Intern revision',
+  EXTERN: 'Extern revision',
+}
+
+export function auditTypeLabel(
+  value: AuditType | null | undefined
+): string | null {
+  return value ? AUDIT_TYPE_LABELS[value] : null
+}
+
+/**
+ * Swedish label for the `EfterlevnadsBedomning` enum. Mirrors
+ * `BEDOMNING_OPTIONS` in `components/features/compliance-audit/bedomning-copy.ts`
+ * (constants-only but UI-coloured; duplicated per the IMPACT_LEVEL_LABELS
+ * precedent).
+ */
+const BEDOMNING_LABELS: Record<EfterlevnadsBedomning, string> = {
+  UPPFYLLD: 'Uppfylld',
+  DELVIS: 'Delvis',
+  EJ_UPPFYLLD: 'Ej uppfylld',
+  EJ_TILLAMPLIG: 'Ej tillämplig',
+}
+
+export function bedomningLabel(
+  value: EfterlevnadsBedomning | null | undefined
+): string | null {
+  return value ? BEDOMNING_LABELS[value] : null
+}
+
+/**
+ * Story 29.1: the `scopeSummary` shape shared by list_cycles + get_cycle rows —
+ * kind + counts parsed DEFENSIVELY from the `scope_definition` Json
+ * (`{kind: 'all'|'groups'|'items', groupIds?, itemIds?}`). Malformed/unknown
+ * Json falls back to `{ kind: 'all', groupCount: null, itemCount: null }` —
+ * never throws. `materialisedItemCount` is the true `_count.items`.
+ */
+export interface ScopeSummary {
+  kind: 'all' | 'groups' | 'items'
+  groupCount: number | null
+  itemCount: number | null
+  materialisedItemCount: number
+}
+
+export function parseScopeSummary(
+  scopeDefinition: unknown,
+  materialisedItemCount: number
+): ScopeSummary {
+  const fallback: ScopeSummary = {
+    kind: 'all',
+    groupCount: null,
+    itemCount: null,
+    materialisedItemCount,
+  }
+  if (!scopeDefinition || typeof scopeDefinition !== 'object') return fallback
+  const def = scopeDefinition as {
+    kind?: unknown
+    groupIds?: unknown
+    itemIds?: unknown
+  }
+  if (def.kind === 'groups') {
+    return {
+      kind: 'groups',
+      groupCount: Array.isArray(def.groupIds) ? def.groupIds.length : null,
+      itemCount: null,
+      materialisedItemCount,
+    }
+  }
+  if (def.kind === 'items') {
+    return {
+      kind: 'items',
+      groupCount: null,
+      itemCount: Array.isArray(def.itemIds) ? def.itemIds.length : null,
+      materialisedItemCount,
+    }
+  }
+  return fallback
 }

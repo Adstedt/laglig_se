@@ -68,6 +68,9 @@ interface CreateTaskParams {
   title: string
   description?: string
   relatedDocumentId?: string // LawListItem id
+  // Story 29.1: ComplianceFinding id — when set, the dispatched task is linked
+  // back to the finding as its corrective action (Story 21.8 invariant).
+  findingId?: string | null
   priority?: TaskPriority
 }
 
@@ -294,6 +297,40 @@ export async function approvePendingAction(
         switch (action.action_type) {
           case 'CREATE_TASK': {
             const params = action.params as unknown as CreateTaskParams
+
+            // Story 29.1 (AC 16): re-assert the tool-time finding guards at
+            // approval time (staleness protection — the finding may have been
+            // closed or given a corrective task since the proposal). Guards run
+            // BEFORE createTask; a guard failure keeps the row PENDING.
+            let finding: { id: string; cycle_id: string | null } | null = null
+            if (params.findingId != null) {
+              const liveFinding = await prisma.complianceFinding.findFirst({
+                where: {
+                  id: params.findingId,
+                  cycle: { workspace_id: workspaceId },
+                },
+                select: {
+                  id: true,
+                  closed_at: true,
+                  corrective_action_task_id: true,
+                  cycle_id: true,
+                },
+              })
+              if (!liveFinding) {
+                return { success: false, error: 'Avvikelsen hittades inte' }
+              }
+              if (liveFinding.closed_at !== null) {
+                return {
+                  success: false,
+                  error: 'Kan inte skapa åtgärdsuppgift för stängd finding',
+                }
+              }
+              if (liveFinding.corrective_action_task_id !== null) {
+                return { success: false, error: 'Åtgärdsuppgift finns redan' }
+              }
+              finding = { id: liveFinding.id, cycle_id: liveFinding.cycle_id }
+            }
+
             const result = await createTask({
               title: params.title,
               // Task.description is a rich-text/HTML field; the agent proposes
@@ -312,8 +349,60 @@ export async function approvePendingAction(
                 error: result.error ?? 'Kunde inte skapa uppgiften',
               }
             }
-            resultRef = { taskId: result.data.id }
+            const taskId = result.data.id
+
+            // Story 29.1 (AC 16): honour the Story 21.8 invariant in ONE
+            // transaction — (a) Task.compliance_finding_id, (b) the cycle link
+            // row when the finding has a cycle (Epic 23 tolerance: ad-hoc
+            // findings will have cycle_id null), (c) back-fill the finding's
+            // corrective_action_task_id ONLY when currently null.
+            if (finding !== null) {
+              const findingId = finding.id
+              const cycleId = finding.cycle_id
+              try {
+                await prisma.$transaction(async (tx) => {
+                  await tx.task.update({
+                    where: { id: taskId },
+                    data: { compliance_finding_id: findingId },
+                  })
+                  if (cycleId !== null) {
+                    await tx.complianceCycleTaskLink.create({
+                      data: { task_id: taskId, cycle_id: cycleId },
+                    })
+                  }
+                  await tx.complianceFinding.updateMany({
+                    where: { id: findingId, corrective_action_task_id: null },
+                    data: { corrective_action_task_id: taskId },
+                  })
+                })
+              } catch (err) {
+                console.error(
+                  `[CREATE_TASK] finding link failed for ${findingId}:`,
+                  err instanceof Error ? err.message : err
+                )
+                // Name the partial state — the task exists but is not linked.
+                return {
+                  success: false,
+                  error:
+                    'Uppgiften skapades men kunde inte kopplas till avvikelsen',
+                }
+              }
+            }
+
+            resultRef = {
+              taskId,
+              ...(finding !== null ? { findingId: finding.id } : {}),
+            }
             revalidatePaths = ['/laglistor', '/tasks']
+            if (finding !== null) {
+              // The kontroller surfaces render the finding's åtgärd.
+              revalidatePaths.push('/laglistor/kontroller')
+              if (finding.cycle_id !== null) {
+                revalidatePaths.push(
+                  `/laglistor/kontroller/${finding.cycle_id}`
+                )
+              }
+            }
             break
           }
 

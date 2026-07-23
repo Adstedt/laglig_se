@@ -32,7 +32,17 @@ const ALLOWED_CONTENT_TYPES = new Set([
  * Deletes all existing chunks and creates new ones in a single transaction.
  */
 export async function syncDocumentChunks(
-  documentId: string
+  documentId: string,
+  opts?: {
+    /**
+     * Skip LLM context-prefix generation when markdown exceeds this many chars
+     * (chunks still embed, prefix-less — same degrade path as a Haiku failure).
+     * Cost guard for bulk runs: prefix input ≈ 2× doc tokens, so giant docs
+     * dominate spend (Story 2.6 EU run measured ~119KB mean markdown).
+     * Omit for the default unlimited behavior.
+     */
+    maxPrefixMarkdownChars?: number
+  }
 ): Promise<SyncResult> {
   const start = Date.now()
 
@@ -108,15 +118,30 @@ export async function syncDocumentChunks(
         : (c.metadata as Prisma.InputJsonValue),
   }))
 
-  // Atomic: delete old + create new
-  const [deleted, created] = await prisma.$transaction([
+  // Atomic: delete old + create new. Inserts are BATCHED (≤50 rows/statement)
+  // so a large doc (hundreds of chunks × embedding vectors) never becomes one
+  // multi-MB statement — oversized frames crash Supavisor's tenant handler
+  // (EDBHANDLEREXITED, Story 2.6 pooler incidents 2026-07). Same transaction,
+  // same atomicity, bounded wire size.
+  const CREATE_BATCH_ROWS = 50
+  const createBatches: (typeof prismaChunks)[] = []
+  for (let i = 0; i < prismaChunks.length; i += CREATE_BATCH_ROWS) {
+    createBatches.push(prismaChunks.slice(i, i + CREATE_BATCH_ROWS))
+  }
+  const [deleted, ...createdBatches] = await prisma.$transaction([
     prisma.contentChunk.deleteMany({
       where: { source_type: 'LEGAL_DOCUMENT', source_id: documentId },
     }),
-    prisma.contentChunk.createMany({
-      data: prismaChunks,
-    }),
+    ...createBatches.map((batch) =>
+      prisma.contentChunk.createMany({ data: batch })
+    ),
   ])
+  const created = {
+    count: (createdBatches as { count: number }[]).reduce(
+      (sum, r) => sum + r.count,
+      0
+    ),
+  }
 
   // Incremental context prefix + embedding generation (Story 14.3)
   // Non-blocking: if LLM/embedding fails, log error but don't roll back chunks.
@@ -125,11 +150,19 @@ export async function syncDocumentChunks(
   let chunksEmbedded = 0
   if (created.count > 0) {
     try {
+      const withinPrefixCap =
+        !opts?.maxPrefixMarkdownChars ||
+        (doc.markdown_content?.length ?? 0) <= opts.maxPrefixMarkdownChars
+      if (!withinPrefixCap) {
+        console.log(
+          `[sync-chunks] ${doc.document_number}: markdown ${doc.markdown_content?.length} chars > prefix cap ${opts?.maxPrefixMarkdownChars} — embedding without prefixes (backfill: context_prefix IS NULL)`
+        )
+      }
       chunksEmbedded = await generateEmbeddingsForDocument(
         documentId,
         doc.title,
         doc.document_number,
-        doc.markdown_content
+        withinPrefixCap ? doc.markdown_content : null
       )
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)

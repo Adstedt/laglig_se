@@ -23,6 +23,9 @@ export interface LLMParserOptions {
   apiKey?: string
   model?: string
   maxRetries?: number
+  /** Hard per-attempt timeout for the LLM request (default: 180s). A hanging
+   * call must never eat a cron function's whole execution budget. */
+  timeoutMs?: number
 }
 
 /**
@@ -44,7 +47,10 @@ export async function parseAmendmentPdf(
     )
   }
 
-  const client = new Anthropic({ apiKey })
+  const timeoutMs = options.timeoutMs ?? 180_000
+  // SDK-level retries disabled: this function does its own retry loop, and
+  // stacked retries multiply worst-case latency past any cron budget.
+  const client = new Anthropic({ apiKey, timeout: timeoutMs, maxRetries: 0 })
   const model = options.model || 'claude-sonnet-4-6'
   const maxRetries = options.maxRetries || 3
 

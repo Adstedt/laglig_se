@@ -607,6 +607,20 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('INNAN du föreslår update_compliance_status')
   })
 
+  // Story 29.1 (AC 20): the cycle read tier's three tool bullets. Entry via
+  // list_cycles → get_cycle → get_finding for revision/kontroller/avvikelse
+  // questions; cutoff-date semantics; count-0 positively reported.
+  it('includes the three cycle-reader tool bullets (Story 29.1, AC 20)', async () => {
+    const prompt = await buildSystemPrompt()
+    expect(prompt).toContain('list_cycles')
+    expect(prompt).toContain('get_cycle')
+    expect(prompt).toContain('get_finding')
+    // Traversal steering + cutoff mark + positive-zero.
+    expect(prompt).toContain('list_cycles → get_cycle → get_finding')
+    expect(prompt).toContain('ändringar bedömda t.o.m.')
+    expect(prompt).toContain('0 kontroller är ett viktigt fynd')
+  })
+
   it('stays within approximate token budget (~2000-5500 tokens)', async () => {
     const prompt = await buildSystemPrompt()
     // Rough approximation: 1 token ≈ 4 characters for Swedish text.
@@ -631,7 +645,10 @@ describe('buildSystemPrompt', () => {
     // draft_styrdokument skill (~50 tokens, description kept terse). Still a
     // runaway-growth guard — the next breach should trigger the structured-
     // parts / prompt-caching v2 refactor (Story 14.26 note).
-    expect(estimatedTokens).toBeLessThan(7100)
+    // Story 29.1 bump: 7100 → 7400. Three terse cycle-reader bullets (AC 20;
+    // ~170 tokens — deep A3/back-planning steering deliberately lives in the
+    // 29.2 skill, NOT here). Prompt now ~7304. Same runaway-growth caveat.
+    expect(estimatedTokens).toBeLessThan(7400)
   })
 })
 

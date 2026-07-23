@@ -1,6 +1,20 @@
-# Epic 23: Anmärkningar som förstklassiga objekt — Brownfield Enhancement
+# Epic 23: Avvikelser som förstklassiga objekt + ISO-grade audit cycles — Brownfield Enhancement
 
-**Goal:** Lift `ComplianceFinding` out of cycle scope into a first-class workspace object with its own registry page (`/anmärkningar`), shared cross-surface modal, and ad-hoc creation pathway — so avvikelser, observationer and förbättringsförslag exist as continuously-tracked compliance signals, not just artifacts of a closed audit.
+> **⚠️ SCOPE RE-BASED 2026-07-23 (Sprint Change Proposal).** This epic was re-scoped
+> to absorb `docs/briefs/avvikelser-standalone-and-iso-audit-cycles-brief.md` (2026-07-22),
+> which is now its **authoritative design source** (the sections below are the PRD-level
+> projection; the brief carries the detailed model, phasing, and code references — same
+> relationship Epic 28 has with its refactor plan). See
+> `docs/sprint-change-proposal-avvikelser-capa-2026-07-23.md` for the full analysis.
+>
+> **What changed vs the original (pre-brief) epic, now superseded below:**
+> - The finding becomes a **hub**: schema adds `source` (not just `cycle_id`-nullable + `workspace_id`); typed edges to **styrdokument**, **cross-cycle review**, and **recurrence**.
+> - Surface: the register mirrors **Laglistor** (the `DataTable` core + item modal), **not** a `SplitPanelModal` `<FindingModal>`. Route is **`/avvikelser`**; nav is a **flat top-level item after Kontroller** (not "under Efterlevnad").
+> - Adds **ISO cycle upgrades** (carry-forward, effectiveness verification, recurrence detection, management-review export) and the **agent read tools** (`list_findings`, `get_finding` edge readers) that Epic 29's skills consume.
+> - Grows from 5 stories to a **3-phase program (~9 stories)**; see the revised Stories section.
+> - The original prototype refs (`_prototypes/anmarkningar-*.html`, SplitPanelModal shell) and the `/anmärkningar` naming are **superseded**; the pre-brief body is retained below for context only where it still holds (schema-additivity approach, activity-log/comment reuse).
+
+**Goal:** Make the **avvikelse (`ComplianceFinding`)** a first-class, standalone entity — its own top-level **Avvikelser** register (`/avvikelser`, Laglistor-mirrored list + item modal), optional typed links to cycles / kravpunkter / styrdokument / prior findings, a CAPA lifecycle, and a set of audit-cycle upgrades — so the tedious ISO nonconformity loop (raise → root-cause → correct → verify effective → detect recurrence → report to ledningen) is demonstrable to a certification auditor, and the Epic 29 agent can traverse it as a clean graph.
 
 **Value Delivered:** Today findings can only be raised inside a `ComplianceAuditCycle` and are buried under cycle-detail tabs once the cycle closes. Customers in regulated industries (ISO 9001 §10.2, ISO 14001 §10.2, ISO 45001 §10.2) need a continuous-improvement register: any team member should be able to file an observation or improvement suggestion on a Tuesday afternoon without scheduling an audit cycle, and prior-cycle findings still open should remain visible during day-to-day work — not just when the next cycle opens. This epic delivers the register without diluting the audit primitive (findings remain anchored to a `LawListItem` or `Requirement`; the cycle context is preserved when present).
 
@@ -80,6 +94,43 @@ Decouple `ComplianceFinding` from `ComplianceAuditCycle` lifecycle, ship a works
 ---
 
 ## Stories
+
+> **Authoritative decomposition (2026-07-23) — the brief's 3-phase program (§9).**
+> The detailed 23.1–23.5 breakdown further below is the *original* decomposition, kept
+> for its salvageable implementation detail (schema-additivity, activity-log/comment reuse,
+> revisionsrapport guard) but **partially superseded** — where it says `SplitPanelModal`,
+> `/anmärkningar`, or "nav under Efterlevnad", read the phase table here instead. Draft each
+> story just-in-time via `create-next-story` when its phase is greenlit.
+
+**Phase 1 — model + register (read).** *Ships value immediately: a cross-cycle avvikelseregister where none exists.*
+- **23.1 (revised)** — Finding-as-hub schema + server actions: `cycle_id` nullable + `onDelete: SetNull`, add `workspace_id` + **`source` enum**, **no anchor CHECK** (a finding needs only `workspace_id`; all links optional per brief §4), `Comment.finding_id`, `listFindingsForWorkspace`. *See the revised 23.1 story file — the two conflict fixes (C1 anchor-CHECK, C2 source) are applied there.*
+- **23.2** — `/avvikelser` register page + nav: **Laglistor-mirrored** (DataTable core + `document-list-page-content` list/modal state + `?avvikelse=<id>` deep-link), flat top-level **"Avvikelser"** nav item after Kontroller. Type/severity/source/status/overdue filter facets.
+- **23.3** — `list_findings` agent tool (workspace-wide, cross-cycle, open-only/by-source/overdue) — the one discovery gap in the current tool surface; mirrors the 29.1 reader conventions, sequenced after 23.1's schema.
+
+**Phase 2 — standalone raise + typed links.**
+- **23.4** — "Ny avvikelse" raise flow (source picker + optional link pickers; zero-link raise in seconds) + finding item modal (mirror `legal-document-modal/`).
+- **23.5** — Typed edges: `ComplianceFindingDocumentLink` (styrdokument, `GOVERNED_BY` / `RESULTED_IN_UPDATE`); `get_finding` edge extensions (styrdokument + recurrence); CAPA status enum (`ÖPPEN → UTREDS → ÅTGÄRD_PÅGÅR → INVÄNTAR_VERIFIERING → STÄNGD`).
+
+**Phase 3 — ISO cycle loop.**
+- **23.6** — `ComplianceFindingCycleReview` join + kickoff carry-forward (wizard "kända vid start" / cycle-tab "öppna från tidigare kontroller" — the shared "open finding relevant to scope X" query Epic 29's A3 anchor also uses).
+- **23.7** — Effectiveness-verification step (split "action done" from "verified effective next review") + recurrence detection + `recurs_from_finding_id`.
+- **23.8** — Management-review export (cross-cycle rollup: open/closed by source, overdue carryover, recurrence rate) for ledningens genomgång; agent kickoff-agenda + on-raise triage.
+
+### UI parity mandate (2026-07-23 — binding on stories 23.2 & 23.4)
+
+The register and its modals must **clone the Laglistor experience**, not merely resemble it — a finding should feel like *the same kind of object* as a law-list item, one mental model, so muscle memory transfers. This is a hard constraint, not a stylistic preference:
+
+- **Listing page ← Laglistor page.** Clone the structure of `components/features/document-list/document-list-page-content.tsx`: a `findings-page-content` client component owning `selectedFindingId` state, `onRowClick` → open modal (no route change), `?avvikelse=<id>` deep-link on load (mirror `documentIdFromUrl`). Grid = the **`DataTable` core** following the `DocumentListTable` consumer (the canonical, non-shadcn laglista grid) so inline-edit affordances (status, severity, owner, due date) match how law-list items are already edited.
+- **Item / work modal ← law-list-item modal.** The modal where you *work a finding* clones `components/features/document-list/legal-document-modal/` (header + details box + sections + right rail). This is the CAPA workspace — description → root cause → corrective task → verification → evidence, plus the relationship panel and cross-cycle history.
+- **Creation modal ← reuse the cycle-audit `finding-editor`.** Do **not** build a new create form. Reuse/extend the existing, proven `components/features/compliance-audit/finding-editor/finding-editor.tsx` (already used for raising findings inside a cycle — its field set, validation, severity/anchor pickers) as the "Ny avvikelse" raise experience, adding the `source` picker and optional link pickers. Whether it opens as the item modal in create-mode or a dedicated lighter create modal is the SM/UX call at 23.4 draft — but the *form logic is inherited from the cycle-audit editor*, so raising an avvikelse from the register and from inside a cycle are the same code path. Zero-link raise in seconds stays the acceptance bar (brief §4).
+- **Linkable (as discussed).** Both senses: (1) **typed edges** — cycle / kravpunkt / styrdokument / recurrence, editable from the modal's relationship panel (Phase 2 adds `ComplianceFindingDocumentLink`); (2) **deep-linkable** — every finding addressable via `?avvikelse=<id>` so it's shareable without a dedicated `[findingId]` route, exactly like a law-list item.
+
+**Open decisions (brief §10, resolve at each phase's story-draft time):** ~~source taxonomy breadth~~ (RESOLVED 2026-07-23: full 8-value set) · 5-state CAPA vs bolt-on verification · reporter role · link-relation typing depth.
+
+---
+
+<details>
+<summary><strong>Original decomposition (pre-brief, partially superseded — retained for implementation detail)</strong></summary>
 
 ### Story 23.1 — Findings schema + server-action layer for ad-hoc
 
@@ -179,6 +230,8 @@ Decouple `ComplianceFinding` from `ComplianceAuditCycle` lifecycle, ship a works
 
 **Risk:** Revisionsrapport renderer change touches sealed-cycle output shape — needs explicit "this only affects future cycles" guard. Mitigation: gate on `cycle.created_at >= migration_date` so historical PDFs remain bit-identical.
 
+</details>
+
 ---
 
 ## Dependency graph
@@ -267,3 +320,12 @@ All five accepted as recommended, no overrides. Story drafts proceed on these co
 - Resolve the five Open Decisions above before drafting Story 23.1
 
 The epic should deliver a continuously-tracked compliance-signal register while preserving the audit-discipline integrity of cycle-scoped findings."
+
+---
+
+## Change Log
+
+| Date | Version | Description | Author |
+|------|---------|-------------|--------|
+| (pre-2026-07-23) | v1 | Original epic — findings first-class via `SplitPanelModal` FindingModal + `/anmärkningar` registry, 5 stories. Basis: `lagefterlevnadskontroll-brief.md` Q294/Q295. | PM |
+| 2026-07-23 | v2 | **Re-scoped** to absorb `avvikelser-standalone-and-iso-audit-cycles-brief.md` (now authoritative design source). Finding-as-hub (adds `source`, styrdokument/cross-cycle/recurrence edges); register mirrors Laglistor (DataTable+modal) at `/avvikelser` with flat top-level nav; adds ISO cycle upgrades + agent read tools (`list_findings`, `get_finding` edges). 5 stories → 3-phase ~8-story program. Original decomposition retained under a collapsed section, partially superseded. Per `sprint-change-proposal-avvikelser-capa-2026-07-23.md`. | Sarah (PO) |

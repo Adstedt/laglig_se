@@ -53,6 +53,11 @@ vi.mock('@/lib/prisma', () => ({
       findFirst: vi.fn(),
       update: vi.fn(),
     },
+    // Story 29.1: CREATE_TASK findingId dispatch — guard re-assert + tx link.
+    complianceFinding: {
+      findFirst: vi.fn(),
+    },
+    $transaction: vi.fn(),
     workspaceDocument: {
       deleteMany: vi.fn(),
       // Story 17.11: dispatch re-reads the live document for the status guard.
@@ -241,6 +246,209 @@ describe('approvePendingAction', () => {
     ).mockResolvedValue(row({ user_id: 'other_user' }))
     const result = await approvePendingAction('pa_1')
     expect(result).toEqual({ success: false, error: 'Forbidden' })
+  })
+
+  it('params without findingId → legacy behaviour (no finding guard, no link tx)', async () => {
+    ;(
+      prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+    ).mockResolvedValue(row())
+    mockCreateTask.mockResolvedValue({
+      success: true,
+      data: { id: 'task_1', title: 'Test' },
+    })
+    ;(
+      prisma.pendingAgentAction.update as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({})
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(true)
+    expect(prisma.complianceFinding.findFirst).not.toHaveBeenCalled()
+    expect(prisma.$transaction).not.toHaveBeenCalled()
+    expect(result.data?.resultRef).toEqual({ taskId: 'task_1' })
+  })
+})
+
+// Story 29.1 (AC 16): CREATE_TASK dispatch with findingId — guard re-assert
+// at approval time (staleness protection) + the Story 21.8 transactional
+// invariant (compliance_finding_id + cycle link row + corrective back-fill).
+describe('approvePendingAction → CREATE_TASK with findingId (Story 29.1)', () => {
+  const findingParams = {
+    title: 'Åtgärda avvikelsen',
+    description: null,
+    findingId: 'f_1',
+    priority: 'HIGH',
+  }
+  const fu = () =>
+    prisma.pendingAgentAction.findUnique as ReturnType<typeof vi.fn>
+  const findingFindFirst = () =>
+    prisma.complianceFinding.findFirst as ReturnType<typeof vi.fn>
+  const tx = {
+    task: { update: vi.fn() },
+    complianceCycleTaskLink: { create: vi.fn() },
+    complianceFinding: { updateMany: vi.fn() },
+  }
+
+  beforeEach(() => {
+    tx.task.update.mockReset().mockResolvedValue({})
+    tx.complianceCycleTaskLink.create.mockReset().mockResolvedValue({})
+    tx.complianceFinding.updateMany.mockReset().mockResolvedValue({ count: 1 })
+    ;(prisma.$transaction as ReturnType<typeof vi.fn>).mockImplementation(
+      async (cb: (_tx: typeof tx) => Promise<unknown>) => cb(tx)
+    )
+    ;(
+      prisma.pendingAgentAction.update as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({})
+    ;(
+      prisma.agentDecisionLog.updateMany as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({})
+  })
+
+  it('success: guards pass → createTask, then ONE tx sets finding_id + link row + back-fill; revalidates kontroller paths', async () => {
+    const { revalidatePath } = await import('next/cache')
+    fu().mockResolvedValue(row({ params: findingParams }))
+    findingFindFirst().mockResolvedValue({
+      id: 'f_1',
+      closed_at: null,
+      corrective_action_task_id: null,
+      cycle_id: 'c_1',
+    })
+    mockCreateTask.mockResolvedValue({
+      success: true,
+      data: { id: 'task_1', title: 'Åtgärda avvikelsen' },
+    })
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(true)
+    // Guard re-asserted workspace-scoped BEFORE createTask.
+    expect(findingFindFirst()).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'f_1', cycle: { workspace_id: 'ws_123' } },
+      })
+    )
+    // Story 21.8 invariant — all three writes in the one transaction client.
+    expect(tx.task.update).toHaveBeenCalledWith({
+      where: { id: 'task_1' },
+      data: { compliance_finding_id: 'f_1' },
+    })
+    expect(tx.complianceCycleTaskLink.create).toHaveBeenCalledWith({
+      data: { task_id: 'task_1', cycle_id: 'c_1' },
+    })
+    // Back-fill ONLY when currently null (conditional updateMany).
+    expect(tx.complianceFinding.updateMany).toHaveBeenCalledWith({
+      where: { id: 'f_1', corrective_action_task_id: null },
+      data: { corrective_action_task_id: 'task_1' },
+    })
+    expect(result.data?.resultRef).toEqual({
+      taskId: 'task_1',
+      findingId: 'f_1',
+    })
+    // AC 16: kontroller list + the cycle detail page render the åtgärd.
+    expect(vi.mocked(revalidatePath)).toHaveBeenCalledWith(
+      '/laglistor/kontroller'
+    )
+    expect(vi.mocked(revalidatePath)).toHaveBeenCalledWith(
+      '/laglistor/kontroller/c_1'
+    )
+  })
+
+  it('finding closed since proposal → error, row stays PENDING, createTask NOT called', async () => {
+    fu().mockResolvedValue(row({ params: findingParams }))
+    findingFindFirst().mockResolvedValue({
+      id: 'f_1',
+      closed_at: new Date(),
+      corrective_action_task_id: null,
+      cycle_id: 'c_1',
+    })
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Kan inte skapa åtgärdsuppgift för stängd finding',
+    })
+    expect(mockCreateTask).not.toHaveBeenCalled()
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+  })
+
+  it('finding got a corrective task since proposal → error before createTask', async () => {
+    fu().mockResolvedValue(row({ params: findingParams }))
+    findingFindFirst().mockResolvedValue({
+      id: 'f_1',
+      closed_at: null,
+      corrective_action_task_id: 'task_other',
+      cycle_id: 'c_1',
+    })
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Åtgärdsuppgift finns redan',
+    })
+    expect(mockCreateTask).not.toHaveBeenCalled()
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+  })
+
+  it('finding missing / cross-workspace → error before createTask', async () => {
+    fu().mockResolvedValue(row({ params: findingParams }))
+    findingFindFirst().mockResolvedValue(null)
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Avvikelsen hittades inte',
+    })
+    expect(mockCreateTask).not.toHaveBeenCalled()
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
+  })
+
+  it('Epic 23 tolerance: cycle_id null → link-row creation SKIPPED, no throw', async () => {
+    fu().mockResolvedValue(row({ params: findingParams }))
+    findingFindFirst().mockResolvedValue({
+      id: 'f_1',
+      closed_at: null,
+      corrective_action_task_id: null,
+      cycle_id: null,
+    })
+    mockCreateTask.mockResolvedValue({
+      success: true,
+      data: { id: 'task_1', title: 'Åtgärda avvikelsen' },
+    })
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result.success).toBe(true)
+    expect(tx.task.update).toHaveBeenCalled()
+    expect(tx.complianceCycleTaskLink.create).not.toHaveBeenCalled()
+    expect(tx.complianceFinding.updateMany).toHaveBeenCalled()
+  })
+
+  it('link-tx failure → names the partial state, row stays PENDING', async () => {
+    fu().mockResolvedValue(row({ params: findingParams }))
+    findingFindFirst().mockResolvedValue({
+      id: 'f_1',
+      closed_at: null,
+      corrective_action_task_id: null,
+      cycle_id: 'c_1',
+    })
+    mockCreateTask.mockResolvedValue({
+      success: true,
+      data: { id: 'task_1', title: 'Åtgärda avvikelsen' },
+    })
+    ;(prisma.$transaction as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('deadlock')
+    )
+
+    const result = await approvePendingAction('pa_1')
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Uppgiften skapades men kunde inte kopplas till avvikelsen',
+    })
+    expect(prisma.pendingAgentAction.update).not.toHaveBeenCalled()
   })
 })
 

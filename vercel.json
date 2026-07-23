@@ -39,15 +39,15 @@
     },
     {
       "path": "/api/cron/discover-sfs-amendments",
-      "schedule": "0 11 * * *"
-    },
-    {
-      "path": "/api/cron/discover-sfs-amendments",
-      "schedule": "0 12 * * *"
-    },
-    {
-      "path": "/api/cron/discover-sfs-amendments",
       "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/cron/process-sfs-amendments",
+      "schedule": "20 * * * *"
+    },
+    {
+      "path": "/api/cron/sfs-pipeline-health",
+      "schedule": "30 7 * * *"
     },
     {
       "path": "/api/cron/discover-skolfs-changes",

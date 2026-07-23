@@ -1,0 +1,864 @@
+{
+ "name": "laglig.se",
+ "purpose": "Swedish legal-compliance SaaS: companies build and maintain law lists (laglistor), track compliance per law, get AI assistance grounded in the Swedish legal corpus, monitor law changes, run ISO-grade internal audits, and manage HR/employee compliance.",
+ "generatedAt": "2026-07-23",
+ "generatedBy": "Claude Code architecture sweep (7 parallel subsystem explorers). Regenerate by re-running a full-codebase documentation pass; update this file when architecture changes.",
+ "companionHtml": "docs/app-map/app-map.html",
+ "stack": {
+  "framework": "Next.js 16 (preview) App Router + Turbopack, React 19-era",
+  "language": "TypeScript, pnpm workspace (single package)",
+  "database": "PostgreSQL on Supabase (Supavisor pooler) via Prisma 6; pgvector for embeddings; pg_trgm for fuzzy title match",
+  "auth": "Hybrid: Supabase Auth = credential store; NextAuth (JWT strategy, 30d) = session; Prisma mirrors users + membership",
+  "ai": "Vercel AI SDK v6 (@ai-sdk/anthropic + @ai-sdk/openai) + raw @anthropic-ai/sdk. Chat = Claude Sonnet 4.6 (gpt-4-turbo fallback via AI_CHAT_MODEL env). Embeddings = OpenAI text-embedding-3-small (1536d). Rerank = Cohere Rerank v4. Context prefixes = Claude Haiku.",
+  "search": "Elasticsearch (index laglig_documents, Swedish analyzer) with PostgreSQL ILIKE fallback",
+  "cache": "Upstash Redis (no-op fallback) + Next unstable_cache tags; in-memory JWT cache in middleware",
+  "billing": "Stripe (one Customer per workspace; Card/Klarna/Swish)",
+  "email": "Resend + React Email templates in emails/",
+  "hosting": "Vercel (Fluid serverless, 27 cron jobs, Deploy Hook for sitemap rebuild); Sentry for errors; middleware in proxy.ts (Edge)",
+  "pdf": "puppeteer-core + @sparticuz/chromium-min (CHROMIUM_PACK_URL in prod; node-linker=hoisted; fragile — do not dismantle)",
+  "styling": "Tailwind + shadcn/Radix; Safiro font for titles/labels, GSF for content; Tiptap rich-text editor",
+  "testing": "Vitest (unit ~329 tests, integration vs staging DB) + Playwright e2e (~39 specs)"
+ },
+ "coreDomainSpine": {
+  "description": "The central object chain. LawListItem is the join between the per-tenant compliance world and the global legal catalog; nearly every workspace feature hangs off it.",
+  "chain": "Workspace → LawList → LawListItem → LegalDocument(global)",
+  "hangsOffLawListItem": [
+   "LawListItemRequirement (kravpunkter) → RequirementEvidenceLink (XOR file|document)",
+   "ChangeAssessment → ChangeEvent",
+   "ComplianceStatusLog",
+   "Task links (M:N)",
+   "WorkspaceFile links (M:N)",
+   "WorkspaceDocument links (M:N)",
+   "ComplianceAuditItem",
+   "ComplianceFinding"
+  ]
+ },
+ "routeGroups": [
+  {
+   "group": "(auth)",
+   "purpose": "Unauthenticated account flows; centered-card layout, client form islands (_*.tsx)",
+   "routes": [
+    "/login",
+    "/signup",
+    "/reset-password",
+    "/reset-password/confirm",
+    "/verify-email"
+   ]
+  },
+  {
+   "group": "(marketing)",
+   "purpose": "Programmatic SEO content pages (Epic 26). MDX from content/marketing/*, typed Zod frontmatter, generateStaticParams + dynamicParams=false, JSON-LD, ForceLightTheme",
+   "routes": [
+    {
+     "path": "/omraden",
+     "note": "legal-area hub; hard-coded display groups, renders only published slugs"
+    },
+    {
+     "path": "/omraden/[slug]",
+     "note": "TopicPageTemplate; ~50 pages (GDPR, NIS2, miljöbalken...)"
+    },
+    {
+     "path": "/branscher/[slug]",
+     "note": "IndustryPageTemplate; 7 industries"
+    },
+    {
+     "path": "/funktioner/[slug]",
+     "note": "FeaturePageTemplate; 6-7 product features"
+    },
+    {
+     "path": "/ordbok",
+     "note": "glossary A–Ö index"
+    },
+    {
+     "path": "/ordbok/[term]",
+     "note": "GlossaryTermTemplate; ~28 terms; DefinedTerm JSON-LD"
+    },
+    {
+     "path": "/og-image/[kind]/[slug]",
+     "note": "route handler; 1200×630 OG images via next/og, landing-v3 palette"
+    }
+   ]
+  },
+  {
+   "group": "(public)",
+   "purpose": "Free public legal database (SEO-indexed). MarketingShell chrome (NavbarV3 + FooterV3). Server-rendered from LegalDocument",
+   "routes": [
+    {
+     "path": "/lagar",
+     "note": "SFS catalogue with filters/search"
+    },
+    {
+     "path": "/lagar/[id]",
+     "note": "law reader; TOC client island, floating references; Legislation JSON-LD"
+    },
+    {
+     "path": "/lagar/[id]/historik",
+     "note": "amendment/version timeline"
+    },
+    {
+     "path": "/lagar/[id]/version/[date]",
+     "note": "point-in-time reconstructed version"
+    },
+    {
+     "path": "/lagar/andringar/[id]",
+     "note": "single amendment detail"
+    },
+    {
+     "path": "/alla-lagar",
+     "note": "full SFS A–Z index"
+    },
+    {
+     "path": "/alla-lagar/[lawSlug]",
+     "note": "per-law SEO landing; ISR revalidate=3600; 11K+ docs"
+    },
+    {
+     "path": "/foreskrifter/[slug]",
+     "note": "agency regulation (myndighetsföreskrift) reader"
+    },
+    {
+     "path": "/eu | /eu/[type] | /eu/[type]/[id]",
+     "note": "EU catalogue → förordningar/direktiv → reader with linked Swedish laws"
+    },
+    {
+     "path": "/sok",
+     "note": "global full-text search"
+    },
+    {
+     "path": "/rattskallor (+/sida/[page])",
+     "note": "unified legal-sources catalogue, paginated SSG"
+    },
+    {
+     "path": "/villkor /integritetspolicy /cookiepolicy /personuppgiftsbitradesavtal /underbitraden",
+     "note": "(legal) subgroup; legal-doc-registry + LegalSidebar"
+    },
+    {
+     "path": "/unsubscribe",
+     "note": "email unsubscribe (noindex)"
+    }
+   ]
+  },
+  {
+   "group": "(workspace)",
+   "purpose": "Authenticated SaaS app. Layout = enforcement hub: session → active-workspace cookie → getWorkspaceContextSafe() (billing gates) → WorkspaceShell + impersonation/paused/trial banners. force-dynamic",
+   "routes": [
+    {
+     "path": "/dashboard",
+     "note": "'Hem' chat-first dashboard (HemPage); ?changeId deep-link; first-run onboarding modal"
+    },
+    {
+     "path": "/krav",
+     "note": "kravpunkter (requirements) overview with filters"
+    },
+    {
+     "path": "/tasks",
+     "note": "Kanban/list/calendar via TaskWorkspace"
+    },
+    {
+     "path": "/laglistor",
+     "note": "law lists hub + Ändringar tab"
+    },
+    {
+     "path": "/laglistor/mallar (+/[slug])",
+     "note": "template catalogue + detail/adopt"
+    },
+    {
+     "path": "/laglistor/kontroller (+/skapa, /[cycleId], /[cycleId]/rapport/pdf)",
+     "note": "compliance audit cycles (Epic 21): wizard, item assessment, findings, sealed PDF report (route handler, maxDuration 300)"
+    },
+    {
+     "path": "/laglistor/skapa/[importId]/granska",
+     "note": "law-list import review (Epic 24)"
+    },
+    {
+     "path": "/browse/**",
+     "note": "in-app mirror of the public legal DB with add-to-law-list actions (rattskallor, lagar, foreskrifter, eu)"
+    },
+    {
+     "path": "/workspace/styrdokument (+/[documentId]/edit)",
+     "note": "governing documents browser + Tiptap DocumentEditor (agent approval, ?view=approved)"
+    },
+    {
+     "path": "/workspace/activity",
+     "note": "activity log, client component, URL-driven filters + export"
+    },
+    {
+     "path": "/filer (+/[...path])",
+     "note": "file browser with folder tree"
+    },
+    {
+     "path": "/personalregister",
+     "note": "HR employee register; employees:view (OWNER/HR_MANAGER)"
+    },
+    {
+     "path": "/settings (+/billing redirect)",
+     "note": "tabbed: members, workflow, company, billing; billing-gate bypass so conversion surface renders"
+    },
+    {
+     "path": "/admin/cache-dashboard",
+     "note": "cache metrics"
+    },
+    {
+     "path": "/permission-denied",
+     "note": "access denied screen"
+    }
+   ]
+  },
+  {
+   "group": "admin",
+   "purpose": "Internal ops console, separate auth realm (getAdminSession, admin JWT via jose + ADMIN_EMAILS). AdminSidebar + AdminHeader chrome",
+   "routes": [
+    "/admin/dashboard",
+    "/admin/users (+/[id])",
+    "/admin/workspaces (+/[id]) — tier/status actions",
+    "/admin/templates (+/[id], /items/[itemId], /overlap)",
+    "/admin/catalog-requests",
+    "/admin/usage",
+    "/admin/cron-jobs (+/errors, /[jobName], /[jobName]/[runId])"
+   ]
+  },
+  {
+   "group": "standalone",
+   "purpose": "Top-level routes outside groups",
+   "routes": [
+    {
+     "path": "/",
+     "note": "live homepage (promoted from landing-v3 2026-06-06)"
+    },
+    {
+     "path": "/onboarding",
+     "note": "post-signup wizard: company info → activity questions → tier picker → confirm; + pending invitations"
+    },
+    {
+     "path": "/select-workspace",
+     "note": "chooser; auto-redirect 0→onboarding, 1→dashboard"
+    },
+    {
+     "path": "/invite/[token]",
+     "note": "invitation accept/decline; branches on session/email-match/expired"
+    },
+    {
+     "path": "/auth/callback, /auth/verify",
+     "note": "route handlers for Supabase/email auth callbacks"
+    },
+    {
+     "path": "/landing-v2",
+     "note": "archived prototype (noindex)"
+    },
+    {
+     "path": "/styleguide (+/data-table)",
+     "note": "living component index; 404 in prod"
+    },
+    {
+     "path": "/offline",
+     "note": "PWA fallback"
+    },
+    {
+     "path": "/cap-shot",
+     "note": "TEMP screenshot-capture route; delete candidate"
+    }
+   ]
+  }
+ ],
+ "navigationShells": {
+  "marketing": "MarketingShell (components/marketing/templates/marketing-shell.tsx) = NavbarV3 megamenu + FooterV3; ForceLightTheme",
+  "workspace": "WorkspaceShell (components/layout/workspace-shell.tsx, client) = LeftSidebar (Platform: Hem, Assistent, Efterlevnad▸Laglistor/Krav/Ändringar/Mallar, Kontroller, Regelverk▸browse | Work: Uppgifter, Styrdokument, Filer, Aktivitetslogg, HR) + Header + RightSidebar/ChatModal (AI panel, auto-folded on /dashboard) + Breadcrumbs. State: useLayoutStore (Zustand) + WorkspaceProvider",
+  "admin": "AdminSidebar + AdminHeader, plain shell, admin JWT gate"
+ },
+ "middleware": {
+  "file": "proxy.ts (Next.js 16 middleware naming, Edge runtime)",
+  "verifies": "NextAuth JWT via getToken(NEXTAUTH_SECRET); in-memory verification cache 60s TTL",
+  "rateLimit": "Upstash sliding window 300 req/min prod (500 dev) on public/auth routes only; skipped for authed app/API prefixes; 429 + X-RateLimit-* headers",
+  "protectedPrefixes": [
+   "/dashboard",
+   "/settings",
+   "/laglistor",
+   "/tasks",
+   "/hr",
+   "/workspace",
+   "/select-workspace",
+   "/w/",
+   "/api/protected",
+   "/api/workspace"
+  ],
+  "geo": "x-vercel-ip-country → X-User-Country / X-User-Region (EU detection)",
+  "note": "Middleware gates on JWT presence only. Real workspace membership/role/billing enforcement lives in the (workspace) layout + lib/auth/workspace-context.ts (Prisma unavailable in Edge)."
+ },
+ "authAndPermissions": {
+  "sessionFlow": "Login → NextAuth CredentialsProvider → supabase.auth.signInWithPassword → upsert user in Prisma → JWT session (30d). Signup → supabase.auth.signUp with emailRedirectTo /auth/verify (invite-aware).",
+  "workspaceContext": "lib/auth/workspace-context.ts — getWorkspaceContext(): user → active_workspace_id cookie → WorkspaceMember → role. React-cached + Redis (auth:context:{email}:{workspaceId}, 5min). Billing gates: assertNotPastDue / assertTrialNotExpired redirect to /settings?tab=billing. Errors: UNAUTHORIZED|NO_WORKSPACE|WORKSPACE_DELETED|ACCESS_DENIED|PAYMENT_PAST_DUE|TRIAL_EXPIRED.",
+  "roles": [
+   "OWNER",
+   "ADMIN",
+   "HR_MANAGER",
+   "MEMBER",
+   "AUDITOR (read-only, incl. read-only agent tools)"
+  ],
+  "permissions": "lib/auth/permissions.ts — ~17 string-literal permissions (workspace:delete/billing/settings, members:*, lists:*, documents:*, tasks:edit, changes:acknowledge, employees:*, activity:view, ai:chat, read); hasPermission()/canX() helpers; lib/api/require-permission.ts guards API routes"
+ },
+ "billing": {
+  "model": "Stripe; one Customer per workspace; tiers TRIAL/SOLO/TEAM/ENTERPRISE (ENTERPRISE sales-led, not self-serve)",
+  "quotas": "lib/usage/limits.ts is SSOT: TRIAL/SOLO 1 user/3M AI tokens/1GB; TEAM 3 users/9M/5GB (+addon seat = +1 user +1.5M); ENTERPRISE unlimited/100GB. Soft warn at 80%, hard cap at 2× → HTTP 402 from chat (memory: 'draft_styrdokument failed' can be a 402 quota cap in disguise).",
+  "webhook": "app/api/webhooks/stripe/route.ts — idempotent via StripeWebhookEvent insert-before-mutate; handles checkout completed (tier activate + trial-pause recovery), subscription.updated (tier + Pattern-A usage reset in same transaction), deleted (PAUSED), payment_failed (3-day grace + email), payment_succeeded",
+  "trials": "lib/billing/trial-*.ts + expire-trials cron 00:30; trial_picked_tier drives effective limits"
+ },
+ "apiSurface": {
+  "chat": {
+   "endpoint": "POST /api/chat (maxDuration 300)",
+   "note": "the single AI entrypoint; streaming, agent tools, web search, prompt caching, rate limits 10/min user 50/min workspace, quota check pre-stream"
+  },
+  "search": [
+   "GET /api/search (ES + PG fallback, public)",
+   "POST /api/browse (SWR wrapper)"
+  ],
+  "lawVersions": [
+   "GET /api/laws/[sfs]/history",
+   "GET /api/laws/[sfs]/diff (+/[amendmentSfs])",
+   "GET /api/laws/[sfs]/version/[date]",
+   "GET /api/laws/[sfs]/sections/[chapter]/[section]/history"
+  ],
+  "billing": [
+   "POST /api/billing/checkout",
+   "POST /api/billing/portal",
+   "GET /api/billing/invoices",
+   "POST /api/webhooks/stripe"
+  ],
+  "workspace": [
+   "GET /api/workspace/context|list",
+   "POST /api/workspace/switch",
+   "POST /api/workspace/generate-law-list (maxDuration 800, AI law-list skill, idempotent)",
+   "GET|DELETE /api/workspace/generation-status",
+   "GET /api/workspace/law-list-preview",
+   "invitations CRUD + resend",
+   "GET /api/workspace/activity-log/export (CSV)",
+   "GET /api/workspace/documents/[id]/export (DOCX/PDF)"
+  ],
+  "company": [
+   "POST /api/company/lookup (BolagsAPI)",
+   "POST /api/company/analyze",
+   "POST /api/public/company-preview (public marketing widget)"
+  ],
+  "notifications": [
+   "GET /api/notifications (+unread-count, [id]/read, mark-all-read)",
+   "POST /api/email/unsubscribe (signed token)"
+  ],
+  "misc": [
+   "GET /api/files/[fileId] (storage proxy)",
+   "GET /api/auth/me",
+   "GET /api/health/db",
+   "POST /api/internal/invalidate-cache (CRON_SECRET)",
+   "GET /api/admin/sync-status (ADMIN_SECRET)",
+   "GET /api/admin/template-section-items"
+  ]
+ },
+ "serverActions": {
+  "location": "app/actions/*.ts (~55 'use server' modules) — the mutation/data layer behind workspace pages",
+  "domains": {
+   "chat": "ai-chat.ts (persistence/conversations), pending-agent-actions.ts (approval-card loop: approve/reject/openDraftInEditor/finalize)",
+   "lawLists": "document-list.ts (~25), legal-document-modal.ts, law-list-item-requirements.ts (kravpunkter + evidence), law-list-import.ts (Epic 24: createImport→parseImportFile→runMatching→commitImport→proposeGroupings), catalog-ingest-request.ts",
+   "tasks": "tasks.ts (~30, board CRUD/columns/bulk/CSV), task-modal.ts",
+   "compliance": "compliance-audit-cycle.ts, compliance-audit-item.ts, compliance-audit-report.ts (generateCycleReport), compliance-finding.ts (spawnTaskForFinding), change-assessment.ts, change-events.ts",
+   "documents": "documents.ts (~30: dual-version draft/approved lifecycle, review workflow, DOCX import), files.ts (~35: upload/extract/folders/links), template-adoption.ts, linked-artifacts.ts, prefetch-documents.ts, track-visit.ts",
+   "workspace": "workspace.ts, workspace-settings.ts, invitations.ts, workspace-activity.ts, workspace-requirements.ts, onboarding-modal.ts, company-profile.ts, seats.ts, usage.ts, notifications.ts",
+   "hr": "employees.ts, collective-agreements.ts (upload/bulk-assign)",
+   "auth": "auth.ts (signup, validation, email availability)",
+   "admin": "admin-auth.ts, admin-cron.ts (triggerJob), admin-impersonate.ts, admin-templates.ts (~17), admin-workspaces.ts, admin-document-lookup.ts",
+   "publicData": "browse.ts, search.ts, cross-references.ts"
+  }
+ },
+ "cronJobs": {
+  "auth": "All GET with Bearer CRON_SECRET; logged via lib/admin/job-logger → CronJobRun; registry lib/admin/job-registry.ts; manually triggerable via admin triggerJob",
+  "jobs": [
+   {
+    "schedule": "0 16 * * *",
+    "route": "sync-sfs",
+    "purpose": "catch-up sync 300 newest SFS laws from Riksdagen (MAX_INSERTS_PER_RUN=20)"
+   },
+   {
+    "schedule": "0 15 * * *",
+    "route": "sync-sfs-updates",
+    "purpose": "diff existing laws (48h systemdatum lookback), archive DocumentVersion, create ChangeEvent + Amendment"
+   },
+   {
+    "schedule": "0 10,13 * * * (2x)",
+    "route": "discover-sfs-amendments",
+    "purpose": "discovery ONLY (2026-07 split): crawl svenskforfattningssamling.se index, create PENDING AmendmentDocument incrementally per page; fetch timeouts + deadline guard; processing moved to process-sfs-amendments"
+   },
+   {
+    "schedule": "20 * * * *",
+    "route": "process-sfs-amendments",
+    "purpose": "drain PENDING/FAILED amendments via shared lib/sfs/amendment-processor (PDF -> Claude Sonnet -> SectionChange/ChangeEvent); atomic PROCESSING claims, per-record budget guard, LLM call timeout; maxDuration 800"
+   },
+   {
+    "schedule": "30 7 * * *",
+    "route": "sfs-pipeline-health",
+    "purpose": "watchdog: sweeps zombie RUNNING cron runs -> FAILED (hard kills never reach catch/email), compares official SFS register vs DB coverage, checks PENDING backlog age + last-success recency; alert email only when unhealthy"
+   },
+   {
+    "schedule": "0 6 * * *",
+    "route": "discover-skolfs-changes",
+    "purpose": "Skolverket SKOLFS API state-diff"
+   },
+   {
+    "schedule": "0 * * * *",
+    "route": "process-chunks",
+    "purpose": "self-healing RAG: chunk docs missing/stale chunks, embed NULL embeddings (BATCH_LIMIT=50)"
+   },
+   {
+    "schedule": "*/10 * * * *",
+    "route": "extract-files",
+    "purpose": "extract text from uploaded WorkspaceFiles → RAG ingestion"
+   },
+   {
+    "schedule": "* * * * *",
+    "route": "sweep-draft-reindex",
+    "purpose": "reindex dirty workspace_documents past 60s debounce"
+   },
+   {
+    "schedule": "30 * * * *",
+    "route": "enrich-amendment-summaries",
+    "purpose": "AI summaries for amendments (Anthropic)"
+   },
+   {
+    "schedule": "0 7 * * *",
+    "route": "notify-amendment-changes",
+    "purpose": "daily digest emails + in-app notifications for un-notified ChangeEvents"
+   },
+   {
+    "schedule": "10 7 * * *",
+    "route": "notify-task-deadlines",
+    "purpose": "due-soon/overdue notifications"
+   },
+   {
+    "schedule": "0 7 * * 1",
+    "route": "notify-weekly-digest",
+    "purpose": "weekly task digest"
+   },
+   {
+    "schedule": "0 6 * * 0",
+    "route": "retry-failed-pdfs",
+    "purpose": "retry failed SFS PDF fetches"
+   },
+   {
+    "schedule": "0 17 * * * / 15 17 * * *",
+    "route": "prewarm-cache / warm-cache",
+    "purpose": "warm browse + popular-document caches after sync"
+   },
+   {
+    "schedule": "0 21 * * *",
+    "route": "daily-ops-digest",
+    "purpose": "pipeline health + SFS gap detection email"
+   },
+   {
+    "schedule": "30 0 * * *",
+    "route": "expire-trials",
+    "purpose": "trial expiration enforcement"
+   },
+   {
+    "schedule": "0 3 * * *",
+    "route": "expire-pending-actions",
+    "purpose": "expire PENDING agent action proposals (7d TTL)"
+   },
+   {
+    "schedule": "0 2/6 * * *",
+    "route": "cleanup-invitations / cleanup-workspaces",
+    "purpose": "expire invitations; hard-delete workspaces soft-deleted 30+ days"
+   },
+   {
+    "schedule": "0 4 * * 0",
+    "route": "reset-usage-safety",
+    "purpose": "backstop reset of stale WorkspaceUsage (>35 days)"
+   },
+   {
+    "schedule": "30 16 * * *",
+    "route": "refresh-sitemap",
+    "purpose": "Vercel Deploy Hook rebuild for fresh sitemaps"
+   },
+   {
+    "schedule": "0 3 1 * *",
+    "route": "aggregate-costs",
+    "purpose": "monthly unit-economics → WorkspaceCost"
+   },
+   {
+    "schedule": "0 9 * * 1",
+    "route": "unit-economics-report",
+    "purpose": "weekly founder margin email"
+   },
+   {
+    "schedule": "(manual)",
+    "route": "generate-summaries",
+    "purpose": "AI change-event summaries; triggered via admin"
+   }
+  ]
+ },
+ "dataModel": {
+  "schema": "prisma/schema.prisma (~2764 lines, 65 models, 57 enums, snake_case @@map, 74 migrations). RLS enabled default-deny on all tables with no policies (Prisma connects as postgres BYPASSRLS) — protects against leaked anon key.",
+  "domains": {
+   "tenancy": {
+    "models": [
+     "User",
+     "Workspace (tenant root: slug, org_number, tier, status, Stripe fields, trial fields, law_list_generation_*, first-run cols, soft-delete)",
+     "WorkspaceMember (role)",
+     "WorkspaceInvitation (token)",
+     "CompanyProfile (1:1; SNI, activity_flags, certifications, BolagsAPI enrichment — feeds the AI)"
+    ]
+   },
+   "legalCatalog": {
+    "scope": "GLOBAL (not workspace-scoped)",
+    "models": [
+     "LegalDocument (master row: content_type, document_number unique, html_content SSOT, markdown_content for RAG, search_vector tsvector, embedding vector(1536) unused for search, last_change_* SSOT)",
+     "CourtCase (1:1)",
+     "EuDocument (1:1, celex unique)",
+     "CrossReference (typed edges)",
+     "DocumentSubject",
+     "LawSection (per kapitel/§ for versioning)",
+     "LegislativeRef (prop/bet/rskr/SOU/DS)",
+     "DocumentVisit"
+    ],
+    "contentTypes": [
+     "SFS_LAW",
+     "SFS_AMENDMENT",
+     "COURT_CASE_AD/HD/HOVR/HFD/MOD/MIG",
+     "EU_REGULATION",
+     "EU_DIRECTIVE",
+     "AGENCY_REGULATION"
+    ]
+   },
+   "changeTracking": {
+    "models": [
+     "Amendment (base↔amending, affected_sections Json)",
+     "AmendmentDocument (the PDF: parse_status, prop context)",
+     "SectionChange (AMENDED/REPEALED/NEW/RENUMBERED)",
+     "DocumentVersion (full-text snapshots)",
+     "ChangeEvent (the spine of notifications: NEW_LAW/AMENDMENT/REPEAL/METADATA_UPDATE/NEW_RULING/UPCOMING_AMENDMENT, ai_summary, notification_sent)"
+    ]
+   },
+   "lawLists": {
+    "models": [
+     "LawList (register, is_default)",
+     "LawListGroup",
+     "LawListItem (CENTRAL: unique(list,document), compliance_status EJ_PABORJAD/PAGAENDE/UPPFYLLD/EJ_UPPFYLLD/EJ_TILLAMPLIG, commentary/ai_commentary/business_context/compliance_narrative, source ONBOARDING/MANUAL/IMPORT/TEMPLATE, last_change_acknowledged_at)",
+     "LawListItemRequirement (kravpunkter: is_fulfilled, bevis_required, per-krav responsible)",
+     "RequirementEvidenceLink (XOR file|workspace document)"
+    ]
+   },
+   "tasks": {
+    "models": [
+     "TaskColumn (Kanban, max 8, is_done)",
+     "Task (priority incl CRITICAL, compliance_finding back-ref)",
+     "TaskListItemLink",
+     "ComplianceCycleTaskLink",
+     "Comment (threaded 3-level, mentions, polymorphic task|law_list_item)"
+    ]
+   },
+   "filesAndDocuments": {
+    "models": [
+     "WorkspaceFile (file/folder tree, Supabase storage_path, category BEVIS/POLICY/AVTAL/CERTIFIKAT/OVRIGT/CHAT_ATTACHMENT, extracted_text for RAG, extraction_status, sha256 dedupe)",
+     "FileTaskLink/FileListItemLink",
+     "WorkspaceDocument (styrdokument; DUAL-VERSION pointers current_approved + current_draft + draft_status; needs_reindex)",
+     "WorkspaceDocumentVersion (immutable; Tiptap JSON SSOT; source TIPTAP/IMPORT/AGENT)",
+     "WorkspaceDocumentTemplate",
+     "WorkspaceDocumentTaskLink/ListItemLink"
+    ]
+   },
+   "aiChat": {
+    "models": [
+     "ChatMessage (context_type GLOBAL/TASK/LAW/CHANGE/IMPORT_*/FILE_EXTRACTION, metadata Json citations)",
+     "ChatUsageEvent (per-turn tokens + cost)",
+     "PendingAgentAction (approval cards; 14 action types; PENDING/APPROVED/REJECTED/EXPIRED/IN_EDITOR; 7d expiry)",
+     "AgentDecisionLog (per tool call audit)"
+    ]
+   },
+   "rag": {
+    "models": [
+     "ContentChunk (THE vector store: source_type LEGAL_DOCUMENT/USER_FILE/CONVERSATION/ASSESSMENT/WORKSPACE_DOCUMENT/COLLECTIVE_AGREEMENT, workspace_id null=global, contextual_header + context_prefix + content, embedding vector(1536) HNSW cosine m=16 ef_construction=64)"
+    ]
+   },
+   "changeAssessment": {
+    "models": [
+     "ChangeAssessment (ChangeEvent × LawListItem: REVIEWED/ACTION_REQUIRED/NOT_APPLICABLE/DEFERRED, impact, ai_analysis)",
+     "ComplianceStatusLog"
+    ]
+   },
+   "auditCycles": {
+    "epic": 21,
+    "models": [
+     "ComplianceAuditCycle (INTERN/EXTERN, PLANERAD/PAGAENDE/AVSLUTAD, scope_definition, law_change_cutoff_date, sealed_at)",
+     "ComplianceAuditItem (efterlevnadsbedomning UPPFYLLD/DELVIS/EJ_UPPFYLLD/EJ_TILLAMPLIG, kravpunkter_snapshot)",
+     "ComplianceFinding (AVVIKELSE/OBSERVATION/FORBATTRING, severity MAJOR/MINOR, corrective_action_task)",
+     "ComplianceAuditReport (sealed PDF/HTML + manifest)"
+    ]
+   },
+   "templates": {
+    "scope": "GLOBAL",
+    "models": [
+     "LawListTemplate (slug, domain, variants)",
+     "TemplateSection",
+     "TemplateItem (compliance_summary, expert_commentary, content_status STUB/AI_GENERATED/HUMAN_REVIEWED/APPROVED)"
+    ]
+   },
+   "import": {
+    "epic": 24,
+    "models": [
+     "LawListImport (UPLOADED→MATCHING→AWAITING_REVIEW→COMMITTED|FAILED)",
+     "LawListImportRow (match_status, confidence, LLM match_reasoning)",
+     "CatalogIngestRequest (ops queue for missing catalog docs)"
+    ]
+   },
+   "hr": {
+    "epic": 7,
+    "models": [
+     "Employee (Fortnox-mapped; personnummer + salary ENCRYPTED AES-256-GCM; employment_form Fortnox codes; personel_type TJM/ARB; manager self-ref)",
+     "EmployeeGroup",
+     "CollectiveAgreement (kollektivavtal → WorkspaceFile; PENDING/PROCESSING/READY/FAILED)"
+    ]
+   },
+   "billingOps": {
+    "models": [
+     "StripeWebhookEvent (idempotency ledger)",
+     "WorkspaceUsage (1:1 tokens_used_this_period BigInt)",
+     "WorkspaceCost (monthly unit economics)",
+     "CronJobRun"
+    ]
+   },
+   "telemetry": {
+    "models": [
+     "ActivityLog (workspace audit)",
+     "AdminAuditLog",
+     "OnboardingEvent"
+    ]
+   }
+  }
+ },
+ "libServices": {
+  "agent": "lib/agent — THE core AI module. retrieval.ts (2-stage RAG: pgvector HNSW over-fetch 4× → Cohere Rerank v4), system-prompt.ts (system-prompt.md + company/employee/skill context), context-assembly.ts, build-model-messages.ts, prompt-cache.ts (3 Anthropic ephemeral breakpoints), thinking-effort.ts (adaptive thinking), web-search-config.ts (Swedish legal domain whitelist), legal-ref-detector.ts, skill-loader (build-time manifest; skills: draft_styrdokument, assess_change, gap_analysis, generate-law-list), tools/ (~50 files; createAgentTools factory; read tools + write tools that produce PendingAgentAction approval cards; role-filtered, AUDITOR read-only; every call logged to AgentDecisionLog)",
+  "chunks": "lib/chunks — RAG ingestion: chunkDocument (3-tier: §-level / non-§ merge / markdown fallback w/ <60% coverage guard), generateContextPrefixes (Claude Haiku, max 100 chunks/request, Swedish 3-chars/token estimator), embed-chunks (OpenAI batches ≤100 with degradation ladder), syncDocumentChunks (atomic delete+insert, ≤50 rows/statement for Supavisor safety), ingest-extracted-file, workspace-document-reindex",
+  "search": "lib/search — rerank.ts (Cohere v4, passthrough w/o key), match-candidates.ts (import fuzzy matching: doc-number + pg_trgm title similarity)",
+  "external": "lib/external — elasticsearch.ts (searchDocuments, Swedish analyzer, PG fallback), riksdagen.ts (rate-limited 5/s), eurlex.ts (SPARQL/CELLAR), pdf-parser.ts (unpdf), llm-amendment-parser.ts (Claude PDF-direct vision)",
+  "sfs": "lib/sfs — classify, sfs-amendment-crawler (svenskforfattningssamling.se, knownNumbers gap re-surfacing), pdf-fetcher → Supabase, amendment-to-legal-document, clean-law-html",
+  "agency": "lib/agency — AFS scraper/transformer (cheerio on av.se), SKOLFS api/detector/events, agency-pdf-registry, regulatory-bodies (prefix→body map)",
+  "eu": "lib/eu — eu-html-transformer (CELLAR ELI → canonical schema)",
+  "sync": "lib/sync — change-detection (diff lib), version-archive, amendment-creator, ai-summary-queue (GPT-4 summaries)",
+  "legalDocument": "lib/legal-document — version-reconstruction (law text at any date from LawSection + SectionChange), version-diff, version-cache",
+  "transforms": "lib/transforms — CanonicalDocumentJson schema, canonical-html-parser (content-type-agnostic), html-to-markdown, normalizers per source",
+  "import": "lib/import — parser (xlsx/csv/paste), matcher (LLM disambiguation), grouping-llm (Haiku clustering into subject areas)",
+  "complianceAudit": "lib/compliance-audit — task-spawner (from AVVIKELSE findings), authorization, revisionsrapport-renderer → PDF, report-staleness",
+  "linkify": "lib/linkify — detect + inject navigable cross-reference links in legal HTML; save-cross-references",
+  "usage": "lib/usage — check (quota assert, 402), limits (tier SSOT), cost-estimator, seats/seat-cache, storage",
+  "billing_stripe_costs": "lib/billing (trial lifecycle), lib/stripe (client, price IDs, customer), lib/costs (unit economics)",
+  "email": "lib/email — Resend service (preference-aware, retry, four FROM addresses), unsubscribe HMAC tokens, cron notifications, ops digest",
+  "notifications": "lib/notifications — amendment + task notifications, recipient resolution",
+  "auth": "lib/auth — session, require-auth, permissions matrix, workspace-context (RBAC + billing gates)",
+  "supabase_files": "lib/supabase (browser/server/admin-storage clients), lib/files/upload-core (mime allowlist, 25MB, dedupe, quota)",
+  "documents": "lib/documents — Tiptap↔DOCX/HTML/PDF conversions, extract-file (PDF→Claude, DOCX→mammoth, XLS→SheetJS)",
+  "pdf": "lib/pdf/render-html-to-pdf — puppeteer + chromium-min (FRAGILE prod stack, CHROMIUM_PACK_URL)",
+  "cache": "lib/cache — Upstash redis (no-op fallback), server-cache (unstable_cache + tags), prewarm/warm-on-startup, invalidation",
+  "db": "lib/db — connection-retry, optimized queries (law-list, workspace, dashboard, template-catalog)",
+  "employees_crypto": "lib/employees (personnummer validation/masking, encrypted salary, repository), lib/crypto/field-encryption (AES-256-GCM), lib/integrations/fortnox (payload mapper)",
+  "bolagsapi_onboarding": "lib/bolagsapi (company lookup), lib/company-preview (website analyzer via Claude), lib/onboarding (question selector, tier recommendation), lib/shared/regulatory-area-mapper",
+  "marketing_seo": "lib/marketing (MDX loader, Zod frontmatter, glossary, catalog-link build-time resolver, metadata/JSON-LD), lib/seo/meta, lib/catalog/public-url (ContentType→URL, exhaustive-never)",
+  "admin": "lib/admin — admin JWT auth (jose), job-registry, job-logger, health, template workflow",
+  "clientState": "lib/stores (Zustand: workspace, document-list, task-list, layout, ui, breadcrumb), lib/hooks (~22 SWR/React hooks), lib/swr-keys, lib/prefetch",
+  "misc": "lib/validation (Zod), lib/security/headers, lib/sentry, lib/consent, lib/activity + lib/services/activity-logger, lib/service-worker, lib/env (T3 typed env), lib/prisma (singleton, pgbouncer)"
+ },
+ "aiChatPipeline": {
+  "entry": "POST /api/chat",
+  "steps": [
+   "1. Session + workspace context (role)",
+   "2. Upstash rate limit (10/min user, 50/min workspace)",
+   "3. assertWithinTokenQuota (402 at 2× cap, warn header at 80%)",
+   "4. Load CompanyProfile (+Employee if HR context) → context blocks",
+   "5. buildPendingActionsContext → <pending_agent_actions> workflow state",
+   "6. buildSystemPrompt (system-prompt.md + contexts + active skill)",
+   "7. Preallocate assistant ChatMessage stub (FK for mid-loop PendingAgentActions)",
+   "8. createAgentTools (role + skill filtered) + Anthropic web_search (non-AUDITOR)",
+   "9. streamText: Claude Sonnet 4.6, stopWhen stepCountIs(10), adaptive thinking, 3 ephemeral cache breakpoints"
+  ],
+  "retrieval": "AGENTIC — model calls search tools which run retrieveContext: OpenAI embed query → pgvector HNSW cosine (workspace-scoped, over-fetch 4×, ef_search=100, REPEALED excluded) → Cohere Rerank v4 → ranked chunks with citation keys. No pre-injected context block.",
+  "writes": "Human-in-the-loop: every mutating tool creates a PendingAgentAction approval card; nothing commits until user approves (actions/pending-agent-actions.ts). Drafts can open in the Tiptap editor (IN_EDITOR).",
+  "citations": "[Källa: …] markers → rehype-citation-pills → <cite> pills resolved via streamed citationSources metadata",
+  "accounting": "onFinish: fill stub, persist metadata, estimateCostUsd → ChatUsageEvent + WorkspaceUsage in one transaction (cache tokens discounted)"
+ },
+ "agentTools": {
+  "registry": "lib/agent/tools/index.ts — TOOL_REGISTRY_POLICY maps every tool to read|write tier. createAgentTools(workspaceId, userId, ctx, role, activeSkills) builds per-request. Filtering: role (AUDITOR read-only; employee tools permission-gated) → skill whitelist (ALWAYS_AVAILABLE ∪ active skills' whitelists; only save_assessment is skill-gated — new tools are always-available by default). Every call logged to AgentDecisionLog. Writes never execute directly — they create PendingAgentAction approval cards.",
+  "readAlwaysAvailable": {
+   "search_laws": "Semantic search over the whole legal corpus (RAG entry point); returns cited chunks",
+   "search_workspace_files": "Semantic search over the workspace's uploaded files",
+   "search_collective_agreements": "Semantic search over uploaded kollektivavtal (biases to employee's assigned agreement)",
+   "search_workspace_documents": "Semantic search over the workspace's styrdokument",
+   "search_law_list_items": "Find a law-list item by law name or SFS number",
+   "search_tasks": "Search tasks by title",
+   "read_file": "Read an ENTIRE workspace file by fileId (not just excerpts)",
+   "get_law_list_item": "Item's compliance state: status, business context, narrative, status history, kravpunkter w/ evidence counts, assessments, links",
+   "get_task": "Task detail + truncated comments + handles to linked items/files/finding",
+   "get_workspace_document": "Full content + metadata of one styrdokument",
+   "list_workspace_documents": "List styrdokument, filterable by type/status/dual-state/linkage",
+   "list_linked_artifacts": "All files + styrdokument connected to a law-list item (direct, evidence, via tasks)",
+   "list_cycles": "Audit cycles overview (type, status, scope, progress, findings) — '0 cycles' is a key auditor answer",
+   "get_cycle": "One cycle's full state: progress, item rows with bedömning, findings, reports, linked tasks",
+   "get_finding": "One finding: type, severity, root cause, closure metadata, handles to cycle/item/kravpunkt/task",
+   "list_bevis_gaps": "Kravpunkter requiring evidence but missing it, workspace-wide",
+   "list_unassessed_changes": "Law changes on watched laws lacking an assessment (per change × list)",
+   "list_overdue": "Overdue tasks, most overdue first",
+   "list_stale_documents": "Styrdokument past review_date",
+   "get_document_details": "Full legal-document detail by ID or document number",
+   "get_change_details": "Section-level old/new text for a change event",
+   "get_company_context": "Company profile + compliance posture",
+   "suggest_followups": "Follow-up question chips after a change assessment",
+   "activate_skill": "Load a different skill's instructions mid-conversation"
+  },
+  "readConditional": {
+   "lookup_employee": "GATE employees:view — find employee by name (case-insensitive substring)",
+   "get_employee_salary": "GATE employees:manage — one employee's compensation for kollektivavtal salary-compliance",
+   "web_search": "Route-injected, non-AUDITOR — Anthropic web search on Swedish legal domain whitelist"
+  },
+  "writeToolsAllProduceApprovalCards": {
+   "create_task": "New task (title, column, priority, due date, assignee)",
+   "assign_task": "Reassign an existing task",
+   "add_task_comment": "Comment on a task (agent's assessment where assignee sees it)",
+   "update_compliance_status": "Change a law-list item's compliance status (transition logged)",
+   "add_obligation": "New kravpunkt on a watched law",
+   "update_requirement": "Edit an existing kravpunkt (text, fulfilled, bevis_required, responsible)",
+   "add_context_note": "Business-context note on why a law is relevant",
+   "save_assessment": "SKILL-GATED to assess_change — persist a ChangeAssessment (needs changeEventId)",
+   "draft_styrdokument": "Complete new governing document; can open IN_EDITOR before approval",
+   "update_document": "Edit a section of an existing styrdokument and/or rename (Story 17.11)",
+   "add_document_section": "Insert a NEW section into an existing styrdokument (17.11b)",
+   "transition_document_status": "Styrdokument status transition (Draft→In review→…)",
+   "link_task_to_document": "Link task → styrdokument",
+   "link_document_to_task": "Link styrdokument → task"
+  },
+  "headlessOnly_generateLawListSkill": {
+   "get_template_laws": "Curated law recommendations for a regulatory area from expert templates (floor, not ceiling)",
+   "add_laws_to_list": "Bulk-add laws to the law list with grouping + business context; dedupes; only real documentIds"
+  },
+  "sharedHelpers": [
+   "reader-utils.ts",
+   "pending-action.ts (card factory)",
+   "decision-log.ts",
+   "types.ts",
+   "utils.ts"
+  ]
+ },
+ "ingestionPipeline": {
+  "sources": [
+   {
+    "name": "Riksdagen Open Data",
+    "host": "data.riksdagen.se",
+    "provides": "SFS list + full text/HTML, propositioner"
+   },
+   {
+    "name": "Svensk författningssamling",
+    "host": "svenskforfattningssamling.se",
+    "provides": "amendment/repeal index + PDFs (source of truth for amendments)"
+   },
+   {
+    "name": "EUR-Lex / Cellar",
+    "host": "eur-lex.europa.eu, publications.europa.eu",
+    "provides": "EU regulations (~60k) + directives (~4.7k) via SPARQL, CELEX, NIM"
+   },
+   {
+    "name": "Arbetsmiljöverket",
+    "host": "av.se",
+    "provides": "AFS föreskrifter (HTML scrape)"
+   },
+   {
+    "name": "Skolverket SKOLFS",
+    "host": "skolfs.skolverket.se",
+    "provides": "statute API, change detection"
+   },
+   {
+    "name": "Socialstyrelsen",
+    "host": "socialstyrelsen.se",
+    "provides": "SOSFS/HSLF-FS"
+   },
+   {
+    "name": "Domstolsverket",
+    "host": "rattspraxis.etjanst.domstol.se",
+    "provides": "court cases"
+   },
+   {
+    "name": "BolagsAPI",
+    "provides": "company org-number lookup (onboarding, not legal corpus)"
+   },
+   {
+    "name": "lagen.nu / Notisum",
+    "provides": "fallback lookup + reference data"
+   }
+  ],
+  "sfsFlow": "Riksdagen fetch → clean-law-html + sfs-law-normalizer → canonical-html-parser → JSON + markdown → linkify → LegalDocument + DocumentVersion + ChangeEvent (transaction) → chunk (§-level) → Haiku context prefix → OpenAI embed → content_chunks pgvector → Elasticsearch index",
+  "amendmentFlow": "discover-sfs-amendments cron (discovery only, incremental per index page) -> PENDING AmendmentDocument; process-sfs-amendments cron hourly (shared lib/sfs/amendment-processor, atomic PROCESSING claims, budget guard): PDF -> Claude Sonnet vision parse -> semantic HTML -> validate -> SectionChange rows + LegalDocument + deduped ChangeEvent -> prop context from Riksdagen. Classification: amendment/repeal/new via NAMED_LAW_SFS table ~90 laws; knownNumbers set re-surfaces gaps. sfs-pipeline-health cron (daily) watchdogs freshness vs the official register and sweeps zombie cron runs. Local drain: scripts/backfill-sfs-amendments.ts (safe sequential DB profile).",
+  "workspaceFlow": "Upload → lib/files/upload-core (Supabase) → extract-files cron (10min) → lib/documents/extract-file (PDF→Claude, DOCX→mammoth) → ingest-extracted-file → chunks (USER_FILE | COLLECTIVE_AGREEMENT) → embed. Styrdokument saves mark needs_reindex → sweep-draft-reindex cron (1min, 60s debounce).",
+  "selfHealing": "process-chunks cron hourly: docs with no/stale chunks or NULL embeddings get re-synced. Prefixes best-effort, embeddings GUARANTEED (past incident: 24K chunks of 76 laws invisible).",
+  "esIndex": "laglig_documents — separate from pgvector chunk store; title^3 document_number^2 multi_match, AUTO fuzziness, Swedish analyzer; bulkIndexDocuments + syncAllDocuments (cursor, batch 100)",
+  "guardrails": [
+   "Supavisor fragility: chunk inserts ≤50 rows/statement; batch jobs must use connection_limit=1 and never the prod transaction pooler; wedge fix = dashboard project restart",
+   "Riksdagen rate limit 5 req/s 100/min with backoff; PDF fetcher 1/s; scrapers 200ms–1s between pages",
+   "Every cron: maxDuration 300, 30s timeout buffer, per-run caps, graceful early termination",
+   "workspace_id hard-required predicate on every workspace chunk write (cross-tenant defense)"
+  ],
+  "scriptsDir": "scripts/ (~470 files): ingest-* (bulk SFS/EU/agency), sync-*, fetch-/crawl-*, backfill-* (18), amendment tooling, Anthropic Batch API pipeline (prepare/submit/process lagar batches), diagnostics (check-* ~107, verify-*, debug-*), seeds (seed-demo-workspace-*), capture-* (marketing screenshots), SQL index scripts. generate-embeddings.ts = 2-phase Haiku+OpenAI with Batch API 50%-off mode."
+ },
+ "contentSystem": {
+  "location": "content/marketing/{omraden,branscher,funktioner,ordbok} (+ jamfor, kundcase empty placeholders)",
+  "contract": "Zod frontmatter (lib/marketing/frontmatter-schemas.ts): title, description ≤170, hero* fields, primaryCta, showOrgCheck, relatedCatalogLaws (build-time verified against LegalDocument via catalog-link.ts), relatedPages, faq min 3. Invalid frontmatter FAILS next build. Underscore-prefixed files never publish.",
+  "rendering": "app/(marketing)/{kind}/[slug]/page.tsx → dynamic import of compiled MDX → {Topic|Feature|Industry}PageTemplate → BasePageTemplate fixed section order (hero → MDX article → conversion → CatalogLawList → optional ChangeFeed → FAQ → related → CTA). mdx-components.tsx maps typography + exposes bridge-row components (SplitFeature, ScreenshotFrame, FeatureGrid, ProofBlock, ProcessSteps...).",
+  "seo": {
+   "sitemaps": "scripts/generate-sitemaps.ts at postbuild → static XML in public/ (GSC rejected dynamic route). Chunked over ACTIVE LegalDocuments; chunk 0 carries marketing URLs. Daily refresh-sitemap cron → Deploy Hook. Build-time dead-link audit → .next/marketing-link-warnings.txt.",
+   "robots": "app/robots.ts — blocks AI-training crawlers (GPTBot, ClaudeBot, CCBot...), allows answer engines (Claude-SearchBot, PerplexityBot, ChatGPT-User)",
+   "jsonLd": "BreadcrumbList + FAQPage always; Article for funktioner/branscher; Legislation on law pages; DefinedTerm on ordbok; goal is GEO (answer-engine comprehension)"
+  },
+  "authoring": "Use the content-page skill (Semrush research → typed frontmatter → legal-fact verification → SEO/GEO validation). Voice: 'beviset på plats' house forms; no stiff derived nouns; read aloud as HR user. Never reference Almåsa."
+ },
+ "emails": {
+  "stack": "React Email templates in emails/ on shared laglig-email-layout (cream/ink tokens); sent via lib/email/email-service (Resend, preference-aware, retry)",
+  "templates": {
+   "legalChange": [
+    "amendment-digest",
+    "amendment-notification",
+    "catalog-request-fulfilled",
+    "import-review-ready"
+   ],
+   "tasks": [
+    "task-assigned",
+    "task-due-reminder",
+    "task-overdue",
+    "weekly-task-digest"
+   ],
+   "collab": [
+    "comment-notification",
+    "status-changed-notification",
+    "workspace-invitation",
+    "workspace-paused"
+   ],
+   "billing": [
+    "trial-ended",
+    "payment-failed",
+    "enterprise-inquiry",
+    "enterprise-inquiry-trial-ended"
+   ],
+   "internal": [
+    "product-feedback-internal",
+    "catalog-request-received-internal"
+   ],
+   "supabaseAuth": [
+    "supabase templates/confirmsignup.html",
+    "resetpassword.html"
+   ]
+  }
+ },
+ "environment": {
+  "typed": "lib/env.ts (@t3-oss/env-nextjs): DATABASE_URL, DIRECT_URL, SUPABASE_SERVICE_ROLE_KEY, NEXTAUTH_SECRET/URL, STRIPE_SECRET_KEY/WEBHOOK_SECRET/PRICE_IDs, ADMIN_EMAILS/ADMIN_JWT_SECRET, BOLAGSAPI_API_KEY, SALES_NOTIFICATION_EMAIL; client: NEXT_PUBLIC_SUPABASE_URL/ANON_KEY, NEXT_PUBLIC_APP_URL",
+  "untyped": "UPSTASH_REDIS_REST_URL/TOKEN, ELASTICSEARCH_URL/API_KEY, RESEND_API_KEY, OPENAI_API_KEY, ANTHROPIC key, COHERE_API_KEY, CHROMIUM_PACK_URL (prod scope!), PUPPETEER_EXECUTABLE_PATH, ENCRYPTION_KEY (AES-256-GCM), CRON_SECRET, SENTRY_*, GA/Google Ads ids, FOUNDER_EMAIL, AI_CHAT_MODEL (anthropic|openai)"
+ },
+ "operationalNotes": [
+  "Supabase migration/DDL hangs = leaked idle-in-transaction connections; terminate them; run via prisma migrate deploy, never the web editor. Migrations are applied MANUALLY by Alexander — hand over the command, never run them.",
+  "Prod ECHECKOUTTIMEOUT with idle DB = Supavisor transaction pool wedged; only fix is dashboard project restart. Batch jobs must not use the prod transaction pooler.",
+  "Ingestion safe profile: connection_limit=1, ≤50-row insert batches, breaker/watchdog.",
+  "PDF export stack is fragile: node-linker=hoisted + chromium-min + CHROMIUM_PACK_URL (prod env scope). react-pdf is the considered replacement.",
+  "'draft_styrdokument failed' may be an HTTP 402 quota cap — check WorkspaceUsage.tokens_used_this_period first.",
+  "DocumentListTable (Laglistor) is the canonical table pattern — do not migrate to shadcn.",
+  "legal_documents.embedding column exists but semantic search runs via ContentChunk only.",
+  "Cron hard-kills at maxDuration leave silent RUNNING zombies in CronJobRun (no failure email). Known: discover-sfs-amendments hard-killed every run since 2026-06-17 → stale amendments. Check /admin/cron-jobs for zombies."
+ ],
+ "docsOrganization": "docs/ is a BMad-method knowledge base: architecture/ (sharded, ~50 files), prd/ (~37), stories/ (~31), epics/, briefs/, marketing/, seo/, reference/ (data model, ERD, APIs), performance/, feature-specifications/, components/, ux/, qa/, setup/, legal/, plans/. Monoliths: prd.md, architecture.md (441KB), brief.md, front-end-spec.md."
+}
